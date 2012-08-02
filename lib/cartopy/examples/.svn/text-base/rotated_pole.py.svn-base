@@ -1,0 +1,33 @@
+"""
+This example demonstrates the way a box is warped when it is defined in a rotated space. 
+Notice that the box contains the north pole, adding extra complexity to the underlying transformation. 
+
+"""
+
+import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
+
+def main():
+    rp = ccrs.RotatedPole(pole_latitude=45, pole_longitude=180)
+    pc = ccrs.PlateCarree()
+    
+    ax = plt.subplot(211, projection=rp)
+    ax.bluemarble()
+    ax.coastlines()
+    x, y = [-44, -44, 45, 45, -44], [-45, 45, 45, -45, -45]
+    ax.plot(x, y, marker='o', transform=rp)
+    ax.fill(x, y, color='coral', transform=rp, alpha=0.4)
+    ax.gridlines()   
+    
+    
+    ax = plt.subplot(212, projection=pc)
+    ax.bluemarble()
+    ax.coastlines()
+    ax.plot(x, y, transform=rp)
+    ax.fill(x, y, transform=rp, color='coral', alpha=0.4)
+    ax.gridlines()
+    plt.show()
+
+if __name__ == '__main__':
+    main()

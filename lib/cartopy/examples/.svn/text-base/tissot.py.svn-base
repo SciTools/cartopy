@@ -1,0 +1,32 @@
+"""
+This example demonstrates the way a box is warped when it is defined in a rotated space. 
+
+
+XXX Keep the meaning, but re-word the following line: 
+Notice that the box contains the north pole, adding extra complexity to the underlying transformation. 
+
+
+"""
+# XXX Needs Geodetic to work first.
+
+import matplotlib.pyplot as plt
+
+import cartopy
+import numpy
+
+def main():
+    pc = cartopy.prj.PlateCarree()
+    
+    ax = plt.axes(projection=cartopy.prj.Mercator())
+    ax.coastlines()
+    ax.set_global()
+#    g = ax.projection.as_geodetic()
+    radius = 15 # degrees
+    
+    for lat in numpy.arange(-80, 90, 20):
+        for lon in numpy.arange(-160, 180, 40):
+            ax.geod_circle_meters(lon, lat, 500e3, facecolor='blue', alpha=0.7)
+    plt.show()
+
+if __name__ == '__main__':
+    main()

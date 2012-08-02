@@ -1,0 +1,9 @@
+*.pyc
+lib/cartopy/trace.cpp
+lib/cartopy/trace.so
+lib/cartopy/_crs.c
+lib/cartopy/_crs.so
+
+.project
+.pydevproject
+
