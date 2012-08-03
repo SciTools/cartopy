@@ -1,9 +1,18 @@
-*.pyc
+# standard python ignores
+*.py[co]
+build
+docs/build
+
+
+# cartopy build files
 lib/cartopy/trace.cpp
 lib/cartopy/trace.so
 lib/cartopy/_crs.c
 lib/cartopy/_crs.so
 
+
+
+# pydev files
 .project
 .pydevproject
 
