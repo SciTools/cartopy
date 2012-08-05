@@ -17,7 +17,6 @@
 
 """
 Provides a collection of sub-packages for loading, saving and retrieving various data formats.
-
 """
 
 def fh_getter(fh, mode='r', needs_filename=False):
