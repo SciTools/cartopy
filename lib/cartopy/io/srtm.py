@@ -69,6 +69,7 @@ def read_SRTM3(fh):
     if x_dir == 'W':
         x *= -1
 
+    # xxx extent may need to be wider by half a pixel
     return elev[::-1, ...], ccrs.PlateCarree(), [x, x + 1, y, y + 1]
 
 
