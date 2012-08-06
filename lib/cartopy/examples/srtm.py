@@ -8,18 +8,38 @@ import cartopy.io.srtm as io_srtm
 
 
 def main():
-    pc = ccrs.PlateCarree()
+    ax = plt.axes(projection=ccrs.PlateCarree())
 
-    ax = plt.axes(projection=pc)
+    elev, crs, extent = io_srtm.srtm(-4, 50)
 
-    img, crs, extent = io_srtm.srtm(-4, 50)
-    ax.imshow(numpy.log(img),
+    elev = numpy.ma.masked_less_equal(elev, 0, copy=False)
+
+    ax.imshow(numpy.ma.log(elev**2),
                 extent=extent,
-                transform=crs)
+                transform=crs,
+                cmap='Greens',
+                )
 
-
+    ax.coastlines()
     plt.show()
 
 
+def main2():
+    ax = plt.axes(projection=ccrs.PlateCarree())
+
+    elev, crs, extent = io_srtm.srtm_composite(-6, 50, 4, 3)
+
+    elev = numpy.ma.masked_less_equal(elev, 0, copy=False)
+
+    ax.imshow(numpy.ma.log(elev**2),
+              extent=extent,
+              transform=crs,
+              cmap='Greens',
+              )
+
+    ax.coastlines()
+
+    plt.show()
+
 if __name__ == '__main__':
-    main()
+    main2()

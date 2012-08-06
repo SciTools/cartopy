@@ -22,6 +22,32 @@ def srtm(lon, lat):
     fname = SRTM3_retrieve(lon, lat)
     return read_SRTM3(fname)
 
+def srtm_composite(lon_min, lat_min, nx, ny):
+
+    # XXX nx and ny have got confused in the code (numpy array ordering?). However, the interface works well.
+
+    bottom_left_ll = (lon_min, lat_min)
+    shape = numpy.array([1201, 1201])
+    img = numpy.empty(shape * (nx, ny))
+
+    for i in range(nx):
+        for j in range(ny):
+            x_img_slice = slice(i * shape[0], (i + 1) * shape[0])
+            y_img_slice = slice(j * shape[1], (j + 1) * shape[1])
+
+            tile_img, crs, extent = srtm(bottom_left_ll[0] + j, bottom_left_ll[1] + i)
+
+#            print x_img_slice, y_img_slice
+#            print img[y_img_slice, x_img_slice].shape
+#            print extent
+#            print
+
+            img[x_img_slice, y_img_slice] = tile_img
+
+    extent = (bottom_left_ll[0], bottom_left_ll[0] + ny, bottom_left_ll[1], bottom_left_ll[1] + nx)
+
+    return img, crs, extent
+
 
 def read_SRTM3(fh):
     fh, fname = fh_getter(fh, needs_filename=True)
