@@ -1,0 +1,32 @@
+Drawing a geodetic polygon
+==========================
+
+
+.. plot::
+    :include-source:
+    
+    import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
+    
+    import cartopy.crs as ccrs
+    
+    desired_projections = [ccrs.PlateCarree(),
+                           ccrs.RotatedPole(pole_latitude=45, pole_longitude=180)]
+    for plot_num, desired_proj in enumerate(desired_projections):
+    
+        ax = plt.subplot(2, 1, plot_num + 1, projection=desired_proj)
+    
+        ax.set_global()
+        
+        
+        rect = mpatches.Rectangle([70, -45], 90, 90, 
+                                   facecolor='coral',
+                                   alpha=0.2, 
+                                   transform=ccrs.Geodetic())
+        ax.add_patch(rect)
+        
+        ax.coastlines()
+        
+        plt.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.Geodetic())
+        
+    plt.show()

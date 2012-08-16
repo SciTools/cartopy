@@ -344,6 +344,10 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
                                                            )
             result = matplotlib.axes.Axes.imshow(self, img, *args, extent=extent, **kwargs)
         
+            if result.get_clip_path() is self.patch:
+                # image does not already have clipping set, clip to axes patch
+                result.set_clip_path(self.patch)
+        
         if not update_datalim:
             self.dataLim.set_points(data_lim)
             self.viewLim.set_points(view_lim)

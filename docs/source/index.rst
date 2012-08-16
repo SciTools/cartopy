@@ -1,8 +1,10 @@
 .. toctree::
     :hidden:
 
-    building_from_source/index.rst
     who_uses_cartopy.rst
+    building_from_source/index.rst
+    introductory_examples/index.rst
+    
     
 
 Introduction
@@ -33,6 +35,12 @@ Installation
 Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
 :ref:`building from source <building_from_source>` section.   
+
+Getting started
+===============
+
+See :doc:`these examples <introductory_examples/index>` for an introduction to using cartopy with matplotlib.
+
 
 Getting involved
 ================

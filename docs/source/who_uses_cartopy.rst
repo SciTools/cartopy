@@ -3,4 +3,4 @@
 Who uses cartopy
 ================
 
-UK Met Office
+ * UK Met Office
