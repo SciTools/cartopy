@@ -51,7 +51,7 @@ def main():
     #print ax.ll_boundary_poly()
 #    ax.stock_img('bluemarble')
 #    ax.coastlines()
-    ax.gshhs_line()
+    #ax.gshhs_line()
 #    ax.coastlines_land()
     
     plt.plot(-0.08, 51.53, 'o', transform=pc)
