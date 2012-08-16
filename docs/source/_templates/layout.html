@@ -3,6 +3,7 @@
 {%- block extrahead %}
 {{ super() }}
 <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<link rel="stylesheet" href="_static/linewidth.css" type="text/css" />
 {% endblock %}
 
 
@@ -12,6 +13,9 @@
              <li><a href="{{ pathto('gallery') }}">gallery</a>|&nbsp;</li>
         -->
 {% endblock %}
+
+
+
 
 {% block sidebarlogo %}
 <a href="{{ pathto('index') }}">
