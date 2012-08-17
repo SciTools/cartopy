@@ -32,6 +32,11 @@ and is at version |version|. You can find the source code for cartopy on
 Installation
 ============
 
+.. note::
+
+    Cartopy is in very early development. Installation instructions are likely to be 
+    non-existant/incomplete until capabilities have settled down. (forecast for late September 2012)
+
 Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
 :ref:`building from source <building_from_source>` section.   
@@ -49,22 +54,23 @@ Cartopy was originally developed at the UK Met Office to allow scientists to vis
 their data on maps quickly, easily and most importantly, accurately. 
 Cartopy has since been made freely available under the terms of the 
 `GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_ and is suitable to be used in a variety
-of different scientific fields.
+of scientific fields.
 
 There are many ways to get involved in the development of cartopy:
 
  * Report bugs to https://github.com/SciTools/cartopy/issues (please look to see if there are any outstanding
    bugs which cover the issue before making a new one).
  * Helping others with support questions on `stackoverflow <http://stackoverflow.com/questions/tagged/cartopy>`_. 
+
+..
  * Contribute to the documentation fixing typos, adding examples, explaining things more clearly, or even
    re-designing its layout/logos etc..
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bugs>`).
  * Contributing enhancements and new features 
    (:issues:`a wish list of features can also be found on github <wishlist>`).
                           
-If you or your organisation use cartopy, we would love to hear about it. You could submit a pull request with the 
-appropriate update to the :ref:`"who uses cartopy" <cartopy_users>` page, or alternatively you can simply 
-contact us via the user's mailinglist (TBD).
+If you or your organisation use cartopy, we would love to hear about it. You could submit a pull request which updates
+the :ref:`"who uses cartopy" <cartopy_users>` page or alternatively you can simply contact us via the cartopy mailing list (address TBD).
 
 
 
