@@ -49,7 +49,7 @@ def main():
     #print ax.native_extents()
     #print ax.map_domain(ccrs.PlateCarree())
     #print ax.ll_boundary_poly()
-#    ax.stock_img('bluemarble')
+    ax.stock_img('bluemarble')
 #    ax.coastlines()
     #ax.gshhs_line()
 #    ax.coastlines_land()

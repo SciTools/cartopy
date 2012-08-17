@@ -18,5 +18,6 @@ Drawing contours
     plt.contourf(lons, lats, data, transform=ccrs.Geodetic())
     
     ax.coastlines()
+    ax.gridlines()
         
     plt.show()

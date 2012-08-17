@@ -13,7 +13,7 @@ Introduction
 Cartopy is a Python library designed to make drawing maps for data analysis easy and enjoyable.
 
 Primarily the non-drawing functionality of cartopy makes use of proj.4, numpy, geos and shapely; 
-with a simple and intuitive interfacing to matplotlib for the actual map drawing.
+with simple and intuitive interfacing to matplotlib for map drawing.
 
 Some of the key features of cartopy are:
 
@@ -21,7 +21,7 @@ Some of the key features of cartopy are:
  * point, line, polygon and image transformations between projections
  * integration to expose advanced mapping in matplotlib with a simple and intuitive interface
  * mechanisms for accessing specialist data such as those from the "Shuttle Radar Topography 
-   Mission" (SRTM) and the "Global Self-consistent, Hierarchical, High-resolution Shoreline Database" (GSHHS)
+   Mission" (SRTM) and the "Global Self-consistent, Hierarchical, High-resolution Shoreline" database (GSHHS).
  
 
 Cartopy is licensed under `GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_ 
@@ -45,11 +45,11 @@ See :doc:`these examples <introductory_examples/index>` for an introduction to u
 Getting involved
 ================
 
-Cartopy was originally developed at the UK Met Office to allow its scientists and collaborators alike to visualise 
-their data on maps quickly, easily and most importantly accurately. 
+Cartopy was originally developed at the UK Met Office to allow scientists to visualise 
+their data on maps quickly, easily and most importantly, accurately. 
 Cartopy has since been made freely available under the terms of the 
-`GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_ and is used in many fields including 
-Meteorology and Oceanography.
+`GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_ and is suitable to be used in a variety
+of different scientific fields.
 
 There are many ways to get involved in the development of cartopy:
 

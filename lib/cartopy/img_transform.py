@@ -153,8 +153,8 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj, targ
 #    xyz = ll_to_cart(ll)
     
 #    native_xy = stack(target_x_points.flatten(), target_y_points.flatten())
-#    lons, lats = target_proj.unproject_points(target_x_points.flatten(), target_y_points.flatten())
-#    target_ll = stack(lons, lats)
+#    target_geocent = target_proj.as_geocentric().transform_points(target_proj, target_x_points.flatten(), target_y_points.flatten())
+#    target_ll = stack(target_geocent[:, 0], target_geocent[:, 1])
 #    ll = stack(lons, lats)
 #    target_xyz = ll_to_cart(ll)
     target_xyz = source_cs.as_geocentric().transform_points(target_proj, target_x_points.flatten(), target_y_points.flatten())
@@ -195,9 +195,9 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj, targ
 #    new_array[outof_extent_points] = missing
 #    
 #    # clip any points which do not map back to their own point (i.e. 365 might map back to 5 in degrees and so would be clipped)
-#    recalculated_x, _ = target_proj.project_points(target_ll[:, 0], target_ll[:, 1])
-#    recalculated_x = recalculated_x.reshape(desired_ny, desired_nx)
-#    native_x = native_xy[:, 0].reshape(desired_ny, desired_nx)
+ #   recalculated_coords, _ = target_proj.transform_points(source_cs.as_geocentric(), target_ll[:, 0], target_ll[:, 1])
+ #   recalculated_x = recalculated_x.reshape(desired_ny, desired_nx)
+ #   native_x = native_xy[:, 0].reshape(desired_ny, desired_nx)
     
 #    non_self_inverse_points = numpy.abs(recalculated_x - native_x) > 1e-3
 #    # XXX useful for repeated values such as those in interrupted Goodes.
