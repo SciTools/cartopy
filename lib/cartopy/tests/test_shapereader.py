@@ -5,9 +5,8 @@ from shapely.geometry import MultiPolygon, Polygon
 
 import cartopy.io.shapereader as shapereader
 
-
-LAKES_PATH = os.path.join(os.path.dirname(shapereader.__file__), 'data', '110m_lakes')
-RIVERS_PATH = os.path.join(os.path.dirname(shapereader.__file__), 'data', '110m-rivers-lake-centerlines')
+LAKES_PATH = shapereader.natural_earth(resolution='110m', category='physical', name='lakes')
+RIVERS_PATH = shapereader.natural_earth(resolution='110m', category='physical', name='rivers-lake-centerlines')
 
 
 class TestLakes(unittest.TestCase):

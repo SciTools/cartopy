@@ -193,9 +193,10 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
         os.makedirs(shape_dir)
         
     # find the only shapefile in the directory. This is because NE have inconsistent zip file naming conventions.
-    shapefile = glob.glob(os.path.join(data_dir, full_name, '*.shp'))[:1]
+    glob_pattern = os.path.join(data_dir, full_name, '*.shp')
+    shapefiles = glob.glob(glob_pattern)
     
-    if not shapefile:
+    if not shapefiles:
         # download the zip file
         import urllib2
         import cStringIO as StringIO
@@ -207,12 +208,13 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
         shapefile_online = urllib2.urlopen(file_url)
         zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
         zfh.extractall(shape_dir)
+        
+        shapefiles = glob.glob(glob_pattern)
     
-    # turn the single list into a filename
-    shapefile, = shapefile
-
-
-    return shapefile
+    if len(shapefiles) != 1:
+        raise ValueError('%s shapefiles were found, expecting just one to match %s' % (len(shapefiles), glob_pattern))
+    
+    return shapefiles[0]
 
 
 def mpl_axes_plot(axes, geometries):
