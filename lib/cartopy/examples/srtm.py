@@ -20,11 +20,8 @@ def main():
                 cmap='Greens',
                 )
 
-
 #    ax.coastlines()
     plt.show()
-
-
 
 
 from pylab import *
@@ -147,4 +144,4 @@ def main2():
     plt.show()
 
 if __name__ == '__main__':
-    main3()
+    main2()

@@ -36,12 +36,6 @@ def srtm_composite(lon_min, lat_min, nx, ny):
             y_img_slice = slice(j * shape[1], (j + 1) * shape[1])
 
             tile_img, crs, extent = srtm(bottom_left_ll[0] + j, bottom_left_ll[1] + i)
-
-#            print x_img_slice, y_img_slice
-#            print img[y_img_slice, x_img_slice].shape
-#            print extent
-#            print
-
             img[x_img_slice, y_img_slice] = tile_img
 
     extent = (bottom_left_ll[0], bottom_left_ll[0] + ny, bottom_left_ll[1], bottom_left_ll[1] + nx)
@@ -81,23 +75,26 @@ def SRTM3_retrieve(lon, lat, data_dir=None):
 
     x = '%s%03d' % ('E' if lon > 0 else 'W', abs(int(lon)))
     y = '%s%02d' % ('N' if lat > 0 else 'S', abs(int(lat)))
-    # XXX figure out how to get the correct SRTM continent...
-    SRTM_server = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Eurasia/'
 
-    filename = '{y}{x}.hgt'.format(base_url=SRTM_server, x=x, y=y)
+    filename = '{y}{x}.hgt'.format(x=x, y=y)
 
     filepath = os.path.join(data_dir, filename)
 
     if not os.path.exists(filepath):
         # download the zip file
+        print _SRTM3_FILE_LOOKUP.keys()
+        print [u'{y}{x}'.format(x=x, y=y)]
+        file_url = _SRTM3_FILE_LOOKUP.get(u'{y}{x}'.format(x=x, y=y), None)
+        # no file exists in the SRTM dataset for these coordinates
+        if file_url is None:
+            return None
+
         import urllib2
         import cStringIO as StringIO
         from zipfile import ZipFile
 
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
-
-        file_url = SRTM_server + filename + '.zip'
 
         srtm_online = urllib2.urlopen(file_url)
         zfh = ZipFile(StringIO.StringIO(srtm_online.read()), 'r')
@@ -106,6 +103,46 @@ def SRTM3_retrieve(lon, lat, data_dir=None):
     return filepath
 
 
+def _create_srtm3_dict():
+    """
+    Returns a dictionary mapping srtm filename to the URL of the file.
+
+    This is slow as it must query the SRTM server to identify the continent from
+    which the tile comes. Hence a json file with this content exists in ```_JSON_SRTM3_LOOKUP```.
+
+    The json file was created with::
+
+        $> python -c "import cartopy.io.srtm as srtm; import json; json.dump(srtm._create_srtm3_dict(), open(srtm._JSON_SRTM3_LOOKUP, 'w'));"
+
+    """
+    # lazy imports. In most situations, these are not dependencies of cartopy.
+    import urllib
+    from BeautifulSoup import BeautifulSoup
+
+    files = {}
+
+    for continent in ['Australia', 'Africa', 'Eurasia', 'Islands', 'North_America', 'South_America']:
+
+        url = "http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/%s" % continent
+        f = urllib.urlopen(url)
+        html = f.read()
+        soup = BeautifulSoup(html)
+
+        for link in soup('li'):
+            name = str(link.text)
+            if name != ' Parent Directory':
+                # remove the '.hgt.zip'
+                files[name[:-8]] = url + '/' + name
+    return files
+
+
+_JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__), os.path.splitext(os.path.basename(__file__))[0] + '.json')
+import json
+_SRTM3_FILE_LOOKUP = json.load(open(_JSON_SRTM3_LOOKUP))
+
+
 if __name__ == '__main__':
-    fname = SRTM3_retrieve(-4, 52)
+#    fname = SRTM3_retrieve(3, -73)
+    fname = SRTM3_retrieve(-91, 45)
+    print fname
     img, crs, extent = read_SRTM3(fname)
