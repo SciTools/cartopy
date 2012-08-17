@@ -1,3 +1,21 @@
+# (C) British Crown Copyright 2011 - 2012, Met Office
+#
+# This file is part of cartopy.
+#
+# cartopy is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# cartopy is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 Combines the shapefile access of the Python Shapefile Library with the
 geometry representation of shapely.
@@ -16,9 +34,8 @@ geometry representation of shapely.
 """
 from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
 import shapefile
+import os
 
-
-__version__ = '0.1'
 
 __all__ = ['Reader', 'Record']
 
@@ -97,10 +114,10 @@ class Record(object):
         self.fields = fields
 
     def __repr__(self):
-        return '<Record: %r, %r, <fields>>' % (self.geometry, self._attributes)
+        return '<Record: %r, %r, <fields>>' % (self.geometry, self.attributes)
 
     def __str__(self):
-        return 'Record(%s, %s, <fields>)' % (self.geometry, self._attributes)
+        return 'Record(%s, %s, <fields>)' % (self.geometry, self.attributes)
 
     def __getattr__(self, name):
         if name == 'bounds':
@@ -108,7 +125,7 @@ class Record(object):
         elif name == 'geometry':
             value = self.geometry = _make_geometry(self._geometry_factory, self._shape)
         else:
-            value = object.__getattribute__(name)
+            value = object.__getattribute__(self, name)
         return value
 
 
@@ -153,3 +170,75 @@ class Reader(object):
             shape_record = self._reader.shapeRecord(i)
             attributes = dict(zip(field_names, shape_record.record))
             yield Record(shape_record.shape, geometry_factory, attributes, fields)
+
+
+def natural_earth(resolution='110m', category='physical', name='coastline', data_dir=None):
+    """
+    Returns the path to the requested natural earth shapefile, downloading and unziping if necessary.
+    
+    """
+    import glob
+    
+    if data_dir is None:
+        dname = os.path.dirname
+        # be more clever in the data directory so that users can define a setting.
+        data_dir = os.path.join(dname(dname(__file__)), 'data', 'shapefiles', 'natural_earth')
+        
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    full_name = '%s-%s' % (resolution, name)
+    shape_dir = os.path.join(data_dir, full_name)
+    if not os.path.exists(shape_dir):
+        os.makedirs(shape_dir)
+        
+    # find the only shapefile in the directory. This is because NE have inconsistent zip file naming conventions.
+    shapefile = glob.glob(os.path.join(data_dir, full_name, '*.shp'))[:1]
+    
+    if not shapefile:
+        # download the zip file
+        import urllib2
+        import cStringIO as StringIO
+        from zipfile import ZipFile
+        # note the repeated http. That is intentional
+        file_url = ('http://www.naturalearthdata.com/http//www.naturalearthdata.com/'
+                    'download/%s/%s/%s.zip' % (resolution, category, full_name))
+        
+        shapefile_online = urllib2.urlopen(file_url)
+        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        zfh.extractall(shape_dir)
+    
+    # turn the single list into a filename
+    shapefile, = shapefile
+
+
+    return shapefile
+
+
+def mpl_axes_plot(axes, geometries):
+    """Plot lines on the given axes, given the geometries."""
+    # TODO: This interface should be exposed nicely on the geoaxes itself.
+    import matplotlib.collections as mcollections
+    import cartopy.mpl_integration.patch as patch
+    
+    paths = []
+    for geom in geometries:            
+        paths.extend(patch.geos_to_path(axes.projection.project_geometry(geom)))            
+    axes.add_collection(mcollections.PathCollection(paths, facecolor='none'), autolim=False)
+     
+
+if __name__ == '__main__':
+    coastlines = natural_earth(resolution='110m', category='physical', name='coastline')
+    for record in Reader(coastlines).records():
+        print record.attributes
+        
+    
+    # XXX TODO: Turn into a tutorial
+    coastlines = natural_earth(resolution='110m', category='cultural', name='admin-0-countries')
+    cntry_size = [(record.attributes['NAME'], int(record.attributes['POP_EST'])) for record in Reader(coastlines).records()]
+    
+    # return the countries, grouped alphabetically, sorted by size.
+    import itertools
+    cntry_size.sort(key=lambda (name, population): (name[0], population))
+    for k, g in itertools.groupby(cntry_size, key=lambda item: item[0][0]):
+        print k, list(g)

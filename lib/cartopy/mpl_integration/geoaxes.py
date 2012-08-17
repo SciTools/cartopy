@@ -133,15 +133,14 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
         return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat), ns, abs(lon), ew)
     
-    def coastlines(self, **kwargs):
-        import pyppin
+    def coastlines(self):
+        import cartopy.io.shapereader as shapereader
         
-        paths = []
-        for geom in pyppin.Reader(cartopy.COASTLINE_PATH).geometries():            
-            paths.extend(patch.geos_to_path(self.projection.project_geometry(geom)))            
-        # facecolor is not allowed to be anything but none
-        kwargs['facecolor'] = 'none'
-        self.add_collection(mcollections.PathCollection(paths, facecolor='none'), autolim=False)
+        coastline_path = shapereader.natural_earth(resolution='110m', 
+                                                   category='physical', 
+                                                   name='coastline')
+    
+        shapereader.mpl_axes_plot(self, shapereader.Reader(coastline_path).geometries())
         
     def coastlines_land(self, facecolor=colors['land'], **kwargs):
         # XXX Include in cartopy
