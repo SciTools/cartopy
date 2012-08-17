@@ -344,6 +344,12 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
                                                            )
             result = matplotlib.axes.Axes.imshow(self, img, *args, extent=extent, **kwargs)
         
+        # clip the image. This does not work as the patch moves with mouse movement, but the clip path doesn't
+        # This could definitely be fixed in matplotlib 
+#        if result.get_clip_path() in [None, self.patch]:
+#            # image does not already have clipping set, clip to axes patch
+#            result.set_clip_path(self.outline_patch)
+        
         if not update_datalim:
             self.dataLim.set_points(data_lim)
             self.viewLim.set_points(view_lim)
@@ -387,30 +393,32 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         The axes.patch will have its visibility set to False inside GeoAxes.gca()
         """
         import cartopy.mpl_integration.patch as p
-        paths = p.geos_to_path(self.projection.boundary)
+        path, = p.geos_to_path(self.projection.boundary)
         
-        from matplotlib.collections import PatchCollection
+#        from matplotlib.collections import PatchCollection
             
         self.sct = sct = SimpleClippedTransform(self.transScale + self.transLimits, self.transAxes)
         self.smt = SimpleMaskingTransform(self.transScale + self.transLimits, self.transAxes)
     
         # XXX Should be exactly one path...
-        collection = PatchCollection([mpatches.PathPatch(path) for path in paths], 
-                                     color='none', edgecolor='k', zorder=1000, 
-#                                     transform=self.transData,
-                                     transform=sct, clip_on=False,
-                                     )
+        collection = mpatches.PathPatch(path,
+                                        facecolor='none', edgecolor='k', zorder=1000, 
+#                                        transform=self.transData,
+                                        transform=sct, clip_on=False,
+                                        )
         self.outline_patch = collection
-        self.add_collection(collection, autolim=False)
+        # XXX autolim = False
+        self.add_patch(collection)
         
         # put a color patch for background color
         # XXX Should be exactly one path...
-        collection = PatchCollection([mpatches.PathPatch(path) for path in paths], 
-                                     color='w', edgecolor='none', zorder=-1, 
-                                     transform=sct, clip_on=False,
-                                     )
+        collection = mpatches.PathPatch(path,
+                                        facecolor='w', edgecolor='none', zorder=-1, 
+                                        transform=sct, clip_on=False,
+                                        )
         self.background_patch = collection
-        self.add_collection(collection, autolim=False)
+        # XXX autolim = False
+        self.add_patch(collection)
         
         
         self.patch.set_facecolor((1, 1, 1, 0))
