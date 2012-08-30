@@ -51,12 +51,12 @@ def main():
     ax.plot(x, y, transform=rp)
     
     
-    ax.ll_boundary_poly_draw()
+    #ax.ll_boundary_poly_draw()
     
 #    ax.stock_img('bluemarble')
 #    ax.coastlines()
 #    ax.ll_extents_draw()
-    ax.gshhs_line(outline_color='gray')
+    #ax.gshhs_line(outline_color='gray')
     
     plt.show()
     

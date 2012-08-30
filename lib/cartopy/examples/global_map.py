@@ -50,14 +50,13 @@ def main():
     #print ax.map_domain(ccrs.PlateCarree())
     #print ax.ll_boundary_poly()
     ax.stock_img('bluemarble')
-#    ax.coastlines()
+    ax.coastlines()
     #ax.gshhs_line()
 #    ax.coastlines_land()
     
     plt.plot(-0.08, 51.53, 'o', transform=pc)
     plt.plot([-0.08, 132], [51.53, 43.17], transform=pc)
     plt.plot([-0.08, 132], [51.53, 43.17], transform=sph) 
-    
     
     
 #    ax.gshhs_line(resolution='coarse', domain=ax.boundary_poly())
