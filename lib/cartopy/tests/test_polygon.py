@@ -18,8 +18,6 @@
 
 import unittest
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
 import numpy
 from shapely import geometry
 
