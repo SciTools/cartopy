@@ -18,8 +18,6 @@
 
 import unittest
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
 from shapely import geometry
 
 import cartopy.crs as ccrs
