@@ -20,15 +20,13 @@ import itertools
 import os.path
 import unittest
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-import pyppin
 import shapely.geometry as sgeom
 
 import cartopy
 
+import cartopy.io.shapereader as shp
 
-COASTLINE_PATH = os.path.join(os.path.dirname(cartopy.__file__), 'data', '110m_coastline')
+COASTLINE_PATH = shp.natural_earth()
 
 
 class TestCoastline(unittest.TestCase):
@@ -36,7 +34,7 @@ class TestCoastline(unittest.TestCase):
         # Make sure all the coastlines can be projected without raising any
         # exceptions.
         projection = cartopy.crs.TransverseMercator(central_longitude=-90)
-        reader = pyppin.Reader(COASTLINE_PATH)
+        reader = shp.Reader(COASTLINE_PATH)
         all_geometries = list(reader.geometries())
         geometries = []
         geometries += all_geometries

@@ -3,15 +3,15 @@ import unittest
 
 from shapely.geometry import MultiPolygon, Polygon
 
-import cartopy.io.shapereader as shapereader
+import cartopy.io.shapereader as shp
 
-LAKES_PATH = shapereader.natural_earth(resolution='110m', category='physical', name='lakes')
-RIVERS_PATH = shapereader.natural_earth(resolution='110m', category='physical', name='rivers-lake-centerlines')
+LAKES_PATH = shp.natural_earth(resolution='110m', category='physical', name='lakes')
+RIVERS_PATH = shp.natural_earth(resolution='110m', category='physical', name='rivers-lake-centerlines')
 
 
 class TestLakes(unittest.TestCase):
     def setUp(self):
-        self.reader = shapereader.Reader(LAKES_PATH)
+        self.reader = shp.Reader(LAKES_PATH)
 
     def _assert_geometry(self, geometry):
         self.assertEqual(geometry.type, 'MultiPolygon')
@@ -57,7 +57,7 @@ class TestLakes(unittest.TestCase):
 
 class TestRivers(unittest.TestCase):
     def setUp(self):
-        self.reader = shapereader.Reader(RIVERS_PATH)
+        self.reader = shp.Reader(RIVERS_PATH)
 
     def _assert_geometry(self, geometry):
         self.assertEqual(geometry.type, 'MultiLineString')
