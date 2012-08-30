@@ -23,15 +23,14 @@ import sys
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import pyppin
 import shapely.geometry as sgeom
 
 import cartopy
 import cartopy.crs as ccrs
+import cartopy.io.shapereader as shapereader
 
-
-COASTLINE_PATH = os.path.join(os.path.dirname(cartopy.__file__), 'data', '110m_coastline')
-LAND_PATH = os.path.join(os.path.dirname(cartopy.__file__), 'data', '110m_land')
+COASTLINE_PATH = shapereader.natural_earth('coastline')
+LAND_PATH = shapereader.natural_earth('land')
 
 
 def _arrows(projection, geometry):
@@ -169,7 +168,7 @@ def test(projections):
                 draw_line_string(projection, line_string, linestyle=':')
 
         if 'coastline' in bits:
-            reader = pyppin.Reader(COASTLINE_PATH)
+            reader = shapereader.Reader(COASTLINE_PATH)
             print 'Reading coastline ...'
             all_geometries = list(reader.geometries())
             print '   ... done.'
@@ -212,7 +211,7 @@ def test(projections):
             draw_polygon(projection, polygon)
 
         if 'continents' in bits:
-            reader = pyppin.Reader(LAND_PATH)
+            reader = shapereader.Reader(LAND_PATH)
             print 'Reading continents ...'
             all_geometries = list(reader.geometries())
             print '   ... done.'
