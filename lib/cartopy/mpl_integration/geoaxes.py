@@ -356,7 +356,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
         return result
         
-    def gridlines(self):
+    def gridlines(self, res):
         if isinstance(self.projection, ccrs.Orthographic):
             import warnings
             warnings.warn('Gridlines and orthographic projections are causing a problem, skipping this operation.')
