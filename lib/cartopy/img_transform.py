@@ -52,10 +52,14 @@ def ll_to_cart(lonslats):
     return stack(x, y, z)
 
 
-def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None, None], offset=0):
+def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None, None]):
     """
     Returns coords in the projection which span the entire projection range evenly.
     
+    Returns: 
+    
+        xs, ys, extent
+        
     The return value is native coordinate system.
     
     """
@@ -64,13 +68,14 @@ def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None,
     y_lower = y_extents[0] or projection.y_limits[0]
     y_upper = y_extents[1] or projection.y_limits[1]
     
-    x, xstep = numpy.linspace(x_lower, x_upper, nx, retstep=True, endpoint=True)
-    y, ystep = numpy.linspace(y_lower, y_upper, ny, retstep=True, endpoint=True)
-    if offset != 0:
-        x += offset * xstep
-        y += offset * ystep
+    x, xstep = numpy.linspace(x_lower, x_upper, nx, retstep=True, endpoint=False)
+    y, ystep = numpy.linspace(y_lower, y_upper, ny, retstep=True, endpoint=False)
+    
+    x += 0.5 * xstep
+    y += 0.5 * ystep
+    
     x, y = numpy.meshgrid(x, y)
-    return x, y
+    return x, y, [x_lower, x_upper, y_lower, y_upper]
 
 
 def projection_coords(projection, nx, ny):
@@ -134,10 +139,10 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
                                        offset=-0.5)
     
     # xxx take into account the extents of the original to determine target_extents? 
-    target_native_xy = mesh_projection(target_proj, target_res[0], target_res[1], 
+    target_native_x, extent = mesh_projection(target_proj, target_res[0], target_res[1], 
                                        x_extents=target_x_extents, y_extents=target_y_extents)
     
-    array, extent = regrid(array, source_native_xy[0], source_native_xy[1], 
+    array = regrid(array, source_native_xy[0], source_native_xy[1], 
                            source_proj, target_proj, 
                            target_native_xy[0], target_native_xy[1])
     return array, extent
@@ -146,6 +151,7 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
 def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj, target_x_points, target_y_points):
     # n.b. source_cs is actually a projection (the coord system of the source coordinates), 
     # but not necessarily the native projection of the source array (i.e. you can provide a warped image with lat lon coordinates).
+    # XXX NB. target_x and target_y must currently be rectangular (i.e. be a 2d np array)
     xyz = source_cs.as_geocentric().transform_points(source_cs, source_x_coords.flatten(), source_y_coords.flatten())
     
 #    lons, lats = source_cs.unproject_points(source_x_coords.flatten(), source_y_coords.flatten())
@@ -204,10 +210,7 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj, targ
 ##    new_array.mask[non_self_inverse_points] = True
 #    new_array[non_self_inverse_points] = missing
 
-    # get the extent in native coordinates
-    extent = numpy.min(target_x_points), numpy.max(target_x_points), numpy.min(target_y_points), numpy.max(target_y_points)
-    
-    return new_array, extent
+    return new_array
 
     
 if __name__ == '__main__':
@@ -273,13 +276,13 @@ if __name__ == '__main__':
 #        data, lons, lats = orca1()
         data, lons, lats = orca2()
         # lons and lats are equivalent to a PlatCarree CS
-        source_cs = ccrs.PlateCarree()
+        source_cs = ccrs.Geodetic()
         
         ############ TARGET ##########################
-        target_x, target_y = mesh_projection(target_proj, 200, 100)
+        target_x, target_y, extent = mesh_projection(target_proj, 500, 500)
         
         ######### DO IT ########################
-        image, extent = regrid(data, lons, lats, source_cs, target_proj, target_x, target_y)
+        image = regrid(data, lons, lats, source_cs, target_proj, target_x, target_y)
         return image, extent, 'upward'
     
     
@@ -301,8 +304,8 @@ if __name__ == '__main__':
     else:   
         ############ DATA REGRIDDING ###############
         image, extent, image_origin = do_data_regrid(target_proj)
+        
     plt.axes(projection=ccrs.PlateCarree())
-    plt.contourf(image, 50, transform=ccrs.PlateCarree())
     plt.gca().coastlines()
-#    plt.imshow(image, origin=image_origin, extent=extent)
+    plt.imshow(image, origin=image_origin, extent=extent)
     plt.show()
