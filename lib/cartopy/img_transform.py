@@ -132,19 +132,15 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
         
     ny, nx = array.shape[:2] 
     source_native_xy = mesh_projection(source_proj, nx, ny,
-                                       x_extents=source_x_extents, y_extents=source_y_extents,
-                                       # XXX Where did this number come from? It works nicely, but that is
-                                       # trial and error. It may be dependent of "origin" in mpl???
-                                       # UPDATE: it may be because of the interpretation of extent in imshow 
-                                       offset=-0.5)
+                                       x_extents=source_x_extents, y_extents=source_y_extents)
     
     # xxx take into account the extents of the original to determine target_extents? 
-    target_native_x, extent = mesh_projection(target_proj, target_res[0], target_res[1], 
+    target_native_x, target_native_y, extent = mesh_projection(target_proj, target_res[0], target_res[1], 
                                        x_extents=target_x_extents, y_extents=target_y_extents)
     
     array = regrid(array, source_native_xy[0], source_native_xy[1], 
                            source_proj, target_proj, 
-                           target_native_xy[0], target_native_xy[1])
+                           target_native_x, target_native_y)
     return array, extent
     
                 
