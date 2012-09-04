@@ -24,10 +24,9 @@ def main():
     pc_t = pc._as_mpl_transform(ax)
     
     ax.coastlines()
-    ax.gridlines()
+    ax.gridlines(15)
     im = ax.bluemarble()
     
-    name, pos = 'pycart', (-145, -37.5)
     name, pos = 'cartopy', (-180, -30)    
     logo_path = matplotlib.textpath.TextPath(pos, name, size=1, prop=FontProperties(family='Arial', weight='bold'))
     # put the letters in the right place
@@ -36,7 +35,7 @@ def main():
     im.set_clip_path(logo_path, transform=pc_t)
 
 #    # add the letters as patches...
-#    # make a dictionary of letters to paths (slightly round about by converting to geos and back)
+#    # make a dictionary of letters to paths (slightly round-about by converting to geos and back)
 #    letter_paths = {letter: path for letter, path in zip(name, pt.geos_to_path(pt.path_to_geos(logo_path)))}
 #    o_path = letter_paths.pop('o')
 #    for path in letter_paths.values():
