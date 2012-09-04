@@ -25,7 +25,7 @@ Notice that the box contains the north pole, adding extra complexity to the unde
 
 
 """
-# XXX Needs Geodetic to work first. Consider using http://geographiclib.sourceforge.net
+# XXX Needs Geodetic functionality from Basemap to work. Consider using http://geographiclib.sourceforge.net
 
 import matplotlib.pyplot as plt
 

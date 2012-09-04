@@ -36,7 +36,7 @@ def main():
     x, y = [-44, -44, 45, 45, -44], [-45, 45, 45, -45, -45]
     ax.plot(x, y, marker='o', transform=rp)
     ax.fill(x, y, color='coral', transform=rp, alpha=0.4)
-    ax.gridlines()   
+    ax.gridlines(15)   
     
     
     ax = plt.subplot(212, projection=pc)
@@ -44,7 +44,7 @@ def main():
     ax.coastlines()
     ax.plot(x, y, transform=rp)
     ax.fill(x, y, transform=rp, color='coral', alpha=0.4)
-    ax.gridlines()
+    ax.gridlines(15)
     plt.show()
 
 if __name__ == '__main__':

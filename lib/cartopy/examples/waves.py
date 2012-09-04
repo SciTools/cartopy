@@ -1,25 +1,7 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
-#
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
-
-
 import matplotlib.pyplot as plt
 import numpy as np
 
-import cartopy
+import cartopy.crs as ccrs
 
 
 def sample_data(shape=(73, 145)):
@@ -39,15 +21,11 @@ def sample_data(shape=(73, 145)):
 
 
 def main():
-#    ax = plt.axes(projection=cartopy.prj.NorthPolarStereo())
-    ax = plt.axes(projection=cartopy.prj.PlateCarree())
-    plt.contourf(*sample_data()), #transform=cartopy.prj.PlateCarree())
-    plt.show()
-    
-
-def main():
-    ax = plt.axes(projection=cartopy.prj.NorthPolarStereo())
-    ax.contourf(*sample_data(), transform=cartopy.prj.PlateCarree())
+    # XXX This is really suffering from a lack of performance. Takes an inordinate amount of time.
+    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    ax.contourf(*sample_data(), nlev=2, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global()
     plt.show()
     
 

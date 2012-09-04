@@ -24,6 +24,7 @@ from cartopy.examples.waves import sample_data
 
 def main():
     pc = cartopy.prj.PlateCarree()
+    geod = pc.as_geodetic()
     rob = cartopy.prj.Robinson()
     igh = cartopy.prj.InterruptedGoodeHomolosine()
     nps = cartopy.prj.NorthPolarStereo()
@@ -35,17 +36,17 @@ def main():
     z = z.__getitem__(slices)
     
     plt.subplot(2, 2, 1, projection=pc)
-    plt.scatter(x, y, c=z, transform=pc)
+    plt.scatter(x, y, c=z, transform=geod)
     
     plt.subplot(2, 2, 2, projection=rob)
-    plt.scatter(x, y, c=z, transform=pc)
+    plt.scatter(x, y, c=z, transform=geod)
     
     # XXX Ask the mpl mailing list to find out how you might create a subplot and subsequently modify it's projection.
 #    plt.subplot(2, 2, 3, )#projection=igh)
 #    plt.scatter(x, y, c=z, transform=pc)
     
     plt.subplot(2, 2, 4, projection=nps)
-    plt.scatter(x, y, c=z, transform=pc)
+    plt.scatter(x, y, c=z, transform=geod)
     
     plt.show()
 

@@ -59,9 +59,11 @@ def main():
     # XXX do a vector plot
     lons, lats, udata, vdata = sample_data()
     
-#    plt.streamplot(lons, lats, udata, vdata)
-    ax = plt.axes(projection=cartopy.prj.PlateCarree())
-    ax.streamplot(*sample_data(), transform=cartopy.prj.PlateCarree())
+    pc = cartopy.prj.PlateCarree()
+    pc_180 = cartopy.prj.PlateCarree(central_longitude=180)
+    
+    ax = plt.axes(projection=pc)
+    ax.streamplot(*sample_data(), transform=pc_180)
     ax.coastlines()
 
     plt.show()
