@@ -15,6 +15,13 @@
 {% endblock %}
 
 
+{% block document %}
+        <!-- put an empty image aligned right to clear the logo. -->
+        <img align="right" src="" alt="" style="width: 100px; height: 125px;" />
+        {{ super() }}
+{% endblock %}
+
+
 
 
 {% block sidebarlogo %}

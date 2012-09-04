@@ -60,7 +60,7 @@ setup(
       
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},
-    package_data={'cartopy': ['data/*']},
+    #package_data={'cartopy': ['data/*']},
     # requires proj4 headers
     ext_modules=[
         Extension('cartopy.trace', ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],

@@ -62,7 +62,12 @@ def test_multiple_projections():
         
         plt.plot([-0.08, 132], [51.53, 43.17], color='blue', 
                  transform=ccrs.Geodetic())
-        
+
+#
+#@image_comparison(baseline_images=['image_transform'])
+#def test_image_transforms():
+#    plt.subplot(131, projection=ccrs.PlateCarree())
+#    
 
 if __name__=='__main__':
     import nose

@@ -301,4 +301,4 @@ extlinks = {'issues': ('https://github.com/SciTools/cartopy/issues?state=open&la
                       'issues labeled with ')}
 
 
-
+plot_formats = [('png', 80)]
