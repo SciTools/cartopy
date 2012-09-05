@@ -178,12 +178,12 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
     
     """
     import glob
-    
+
     if data_dir is None:
         dname = os.path.dirname
         # be more clever in the data directory so that users can define a setting.
         data_dir = os.path.join(dname(dname(__file__)), 'data', 'shapefiles', 'natural_earth')
-        
+
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -191,11 +191,11 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
     shape_dir = os.path.join(data_dir, full_name)
     if not os.path.exists(shape_dir):
         os.makedirs(shape_dir)
-        
+
     # find the only shapefile in the directory. This is because NE have inconsistent zip file naming conventions.
     glob_pattern = os.path.join(data_dir, full_name, '*.shp')
     shapefiles = glob.glob(glob_pattern)
-    
+
     if not shapefiles:
         # download the zip file
         import urllib2
@@ -204,41 +204,41 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
         # note the repeated http. That is intentional
         file_url = ('http://www.naturalearthdata.com/http//www.naturalearthdata.com/'
                     'download/%s/%s/%s.zip' % (resolution, category, full_name))
-        
+
         shapefile_online = urllib2.urlopen(file_url)
         zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
         zfh.extractall(shape_dir)
-        
+
         shapefiles = glob.glob(glob_pattern)
-    
+
     if len(shapefiles) != 1:
         raise ValueError('%s shapefiles were found, expecting just one to match %s' % (len(shapefiles), glob_pattern))
-    
+
     return shapefiles[0]
 
 
-def mpl_axes_plot(axes, geometries):
+def mpl_axes_plot(axes, geometries, **kwargs):
     """Plot lines on the given axes, given the geometries."""
     # TODO: This interface should be exposed nicely on the geoaxes itself.
     import matplotlib.collections as mcollections
     import cartopy.mpl_integration.patch as patch
-    
+
     paths = []
-    for geom in geometries:            
-        paths.extend(patch.geos_to_path(axes.projection.project_geometry(geom)))            
-    axes.add_collection(mcollections.PathCollection(paths, facecolor='none'), autolim=False)
-     
+    for geom in geometries:
+        paths.extend(patch.geos_to_path(axes.projection.project_geometry(geom)))
+    axes.add_collection(mcollections.PathCollection(paths, facecolor='none', **kwargs), autolim=False)
+
 
 if __name__ == '__main__':
     coastlines = natural_earth(resolution='110m', category='physical', name='coastline')
     for record in Reader(coastlines).records():
         print record.attributes
-        
-    
+
+
     # XXX TODO: Turn into a tutorial
     coastlines = natural_earth(resolution='110m', category='cultural', name='admin-0-countries')
     cntry_size = [(record.attributes['NAME'], int(record.attributes['POP_EST'])) for record in Reader(coastlines).records()]
-    
+
     # return the countries, grouped alphabetically, sorted by size.
     import itertools
     cntry_size.sort(key=lambda (name, population): (name[0], population))
