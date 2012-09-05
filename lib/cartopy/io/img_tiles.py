@@ -84,20 +84,55 @@ class GoogleTiles(object):
 
     _subtiles = subtiles
 
+    @staticmethod
+    def tile_bbox(prj, x, y, z, lat_extent_at_z0=(-85., 85.), bottom_up=True, native=True):
+        """
+        Returns the x0, x1, y0, y1 bounding box for the given x, y, z tile position.
+        
+        NOTE: This interface is highly liable to change in the future.
+        """
+        n = 2 ** z
+        assert 0 <= x <= (n - 1), "Tile's x index is out of range. Upper limit %s. Got %s" % (n, x)
+        assert 0 <= y <= (n - 1), "Tile's y index is out of range. Upper limit %s. Got %s" % (n, y)
+
+        x0 = -180.
+        # compute the box height in native coordinates for this zoom level
+        box_w = 360. / n
+
+        result = prj.transform_points(ccrs.PlateCarree(), numpy.array([0., 0]), numpy.array(lat_extent_at_z0))
+        y1, y0 = result[:, 1]
+        # compute the box height in native coordinates for this zoom level
+        box_h = (y1 - y0) / n
+
+        # compute the native x & native y extents of the box
+    #    x_lower, x_upper = x0 + x*box_w, x0 + (x+1)*box_w
+    #    y_lower, y_upper = y0 + y*box_h, y0 + (y+1)*box_h
+        n_xs = x0 + (x + numpy.arange(0, 2, dtype=numpy.float64)) * box_w
+        n_ys = y0 + (y + numpy.arange(0, 2, dtype=numpy.float64)) * box_h
+
+        if not bottom_up:
+            # n.b. assumes that the projection is symmetric
+            n_ys = -1 * n_ys[::-1]
+
+        if native:
+            return n_xs, n_ys
+        else:
+            b_xs, b_ys = prj.unproject_points(n_xs, n_ys)
+
+            return b_xs, b_ys
+
     def tileextent(self, x_y_z):
         x, y, z = x_y_z
         # this was a copy from tiledomain
-        import cartopy.examples.gmaptiles as gmt
         prj = ccrs.Mercator()
-        x_lim, y_lim = gmt.tile_bbox(prj, x, y, z, bottom_up=True)
+        x_lim, y_lim = self.tile_bbox(prj, x, y, z, bottom_up=True)
 
         return tuple(x_lim) + tuple(y_lim)
 
     def tiledomain(self, x_y_z):
         x, y, z = x_y_z
-        import cartopy.examples.gmaptiles as gmt
         prj = ccrs.Mercator()
-        x_lim, y_lim = gmt.tile_bbox(prj, x, y, z, bottom_up=True)
+        x_lim, y_lim = self.tile_bbox(prj, x, y, z, bottom_up=True)
 
         result = ccrs.PlateCarree().transform_points(prj, x_lim.astype(numpy.float64), y_lim.astype(numpy.float64))
         x_lim = result[:, 0]
