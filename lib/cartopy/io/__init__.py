@@ -15,5 +15,33 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Container package for Cartopy's input and output modules."""
-pass
+"""
+Provides a collection of sub-packages for loading, saving and retrieving various data formats.
+
+"""
+
+def fh_getter(fh, mode='r', needs_filename=False):
+    """
+    Given a file handle, filename or (file handle, filename) tuple return
+    (file handle, filename) in the given read/write mode.
+
+    """
+    if mode != 'r':
+        raise ValueError('Only mode "r" currently supported.')
+
+    if isinstance(fh, basestring):
+        filename = fh
+        fh = open(fh, mode)
+    elif isinstance(fh, tuple):
+        fh, filename = fh
+
+    if filename is None:
+        try:
+            filename = fh.name
+        except AttributeError: # does this occur?
+            if needs_filename:
+                raise ValueError('filename cannot be determined')
+            else:
+                filename = ''
+
+    return fh, filename
