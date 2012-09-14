@@ -31,6 +31,15 @@ from cartopy._crs import CRS, Geocentric, Geodetic
 import cartopy.trace
 
 
+class RotatedGeodetic(Geodetic):
+    """Defines a rotated, spherical CRS."""
+    def __init__(self, pole_longitude=0.0, pole_latitude=90.0):
+        proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
+            'o_lat_p': pole_latitude, 'lon_0': 180 + pole_longitude,
+            'to_meter': math.radians(1)}
+        Geodetic.__init__(self, proj4_params)
+
+
 class Projection(CRS):
     """
     Defines a projected coordinate system with flat topology and Euclidean
