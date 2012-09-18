@@ -16,6 +16,8 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from io import BytesIO
+import pickle
 import unittest
 
 import numpy
@@ -46,5 +48,15 @@ class TestCRS(unittest.TestCase):
         numpy.testing.assert_array_almost_equal(r_inverted, [lon, lat])
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_pickle():
+    # check that we can pickle a simple CRS
+    fh = BytesIO()
+    pickle.dump(ccrs.PlateCarree(), fh)
+    fh.seek(0)
+    pc = pickle.load(fh)
+    assert pc == ccrs.PlateCarree()
+    
+
+if __name__=='__main__':
+    import nose
+    nose.runmodule(argv=['-s','--with-doctest'], exit=False)

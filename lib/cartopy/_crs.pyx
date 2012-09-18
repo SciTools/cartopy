@@ -62,7 +62,15 @@ cdef class CRS:
         if not self.proj4:
             raise Proj4Error()
 
-            
+    def __reduce__(self):
+        return self.__class__, tuple()
+    
+    def __getstate__(self):
+        return {'proj4_params': self.proj4_params}
+    
+    def __setstate__(self, state):
+        self.__init__(self, **state)
+    
     # TODO
     #def __str__
     #def _geod(self): # to return the pyproj.Geod
