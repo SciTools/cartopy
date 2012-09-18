@@ -112,7 +112,10 @@ class Projection(CRS):
         method_name = self._method_map.get(geom_type)
         if not method_name:
             raise ValueError('Unsupported geometry type {!r}'.format(geom_type))
-        return getattr(self, method_name)(geometry, src_crs)
+        if src_crs == self:
+            return geometry
+        else:
+            return getattr(self, method_name)(geometry, src_crs)
 
     def _project_linear(self, geometry, src_crs):
         return cartopy.trace.project_linear(geometry, src_crs, self)
