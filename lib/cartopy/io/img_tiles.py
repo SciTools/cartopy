@@ -285,6 +285,8 @@ class QuadtreeTiles(GoogleTiles):
 
 def _merge_tiles(tiles):
     """Return a single image, merging the given images."""
+    if not tiles:
+        raise ValueError('A non-empty list of tiles should be provided to merge.')
     xset = [set(x) for i, x, y, _ in tiles]
     yset = [set(y) for i, x, y, _ in tiles]
 

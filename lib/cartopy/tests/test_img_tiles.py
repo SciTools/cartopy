@@ -92,6 +92,10 @@ def test_quadtree_wts():
                  (0.0, 22.5, -22.426293834596891, -44.852587669193753))
 
 
+def test_merge():
+    raise ValueError('TODO')
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

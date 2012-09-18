@@ -83,12 +83,14 @@ class ImageCollection(object):
         Scan the given directory for images with associated tfw files.
         Append any found results to self.images
 
+        .. note:: Does not recursively look through directories.
+
         """
         imgs = glob.glob(os.path.join(directory, glob_pattern))
 
         # maps tilename to [bbox_poly, [children]]
         tiles = {}
-        for tiff in imgs:
+        for img in imgs:
             dirname, fname = os.path.split(img)
             orig_tfw = fname[:-3] + 'tfw'
             for tfw in [orig_tfw, orig_tfw.upper()]:
@@ -111,10 +113,12 @@ class ImageCollection(object):
             min_y, max_y = sorted([ul_corner[1] - pix_size[1] / 2.,
                                    ul_corner[1] + pix_size[1] * shape[1] - pix_size[1] / 2.])
             extent = (min_x, max_x, min_y, max_y)
+            self.images.append(Img(img, self._extent_finalize(extent, img), 'lower', tuple(pix_size)))
 
-            bbox = box(*extent)
-
-            self.images.append(Img(img, extent, 'lower', tuple(pix_size)))
+    def _extent_finalize(self, extent, filename):
+        """The final extent of an image is passed through this method. This
+        is a good place to implement rounding or some other processing."""
+        return extent
 
 
 class NestedImageCollection(object):
@@ -146,20 +150,24 @@ class NestedImageCollection(object):
 
         tiles = {}
 
-
         if _ancestry is not None:
             self._ancestry = _ancestry
         else:
             for parent_collection, collection in itertools.izip(collections, collections[1:]):
                 for parent_image in parent_collection.images:
                     for image in collection.images:
-                        if parent_image.bbox().contains(image.bbox()):
+                        if self._is_parent(parent_image, image):
                             # append the child image to the parent's ancestry
                             self._ancestry.setdefault((parent_collection.name, parent_image),
                                                       []).append((collection.name, image))
 
             # TODO check that the ancestry is in a good state (i.e. that each
             # collection has child images)
+
+    @staticmethod
+    def _is_parent(potential_parent_image, image):
+        """Returns whether the given Image is the parent of image. Used by __init__."""
+        return potential_parent_image.bbox().contains(image.bbox())
 
     def image_for_domain(self, target_domain, target_z):
         # XXX Copied from cartopy.io.img_tiles
@@ -173,9 +181,9 @@ class NestedImageCollection(object):
                 img, extent, origin = self.get_image(tile)
             except IOError:
                 continue
-            print 'tile found'
+
             img = numpy.array(img)
-            print 'shp: ',extent[0], extent[1], img.shape[1], extent
+
             x = numpy.linspace(extent[0], extent[1], img.shape[1], endpoint=False)
             y = numpy.linspace(extent[2], extent[3], img.shape[0], endpoint=False)
             tiles.append([numpy.array(img), x, y, origin])
@@ -215,7 +223,9 @@ class NestedImageCollection(object):
         return img_data, img.extent, img.origin
 
     @classmethod
-    def from_configuration(cls, name, crs, name_dir_pairs):
+    def from_configuration(cls, name, crs, name_dir_pairs,
+                           glob_pattern='*.tif', img_collection_cls=ImageCollection,
+                           ):
         """
         Creates a NestedImageCollection given the [collection name, directory] pairs.
         This is very convenient functionality for simple configuration level creation
@@ -234,72 +244,7 @@ class NestedImageCollection(object):
         """
         collections = []
         for collection_name, collection_dir in name_dir_pairs:
-            collection = ImageCollection(collection_name, crs)
-            collection.scan_dir_for_imgs(collection_dir)
+            collection = img_collection_cls(collection_name, crs)
+            collection.scan_dir_for_imgs(collection_dir, glob_pattern=glob_pattern)
             collections.append(collection)
         return cls(name, crs, collections)
-
-
-################ END OF CODE ###################
-
-
-def create_config():
-    from cartopy.io.inspect_image_directory import NestedImageCollection
-    r = NestedImageCollection.from_configuration('os',
-                                                 ccrs.OSGB(),
-                                                 [['OS 1:1,000,000', '/project/dmms_static/MAP_GB1M1AOS__'],
-                                                  ['OS 1:250,000', '/project/dmms_static/MAP_GB250K1AOS__'],
-                                                  ['OS 1:50,000', '/project/dmms_static/MAP_GB50K1AOS__'],
-                                                  ],
-                                                 )
-    return r
-
-def slow_creation():
-
-    dir = '/project/dmms_static/MAP_GB1M1AOS__'
-    os_1m = ImageCollection('OS 1:1,000,000', ccrs.OSGB())
-    _process_dir(dir, os_1m)
-
-
-    dir = '/project/dmms_static/MAP_GB250K1AOS__'
-    os_250k = ImageCollection('OS 1:250,000', ccrs.OSGB())
-    _process_dir(dir, os_250k)
-
-    dir = '/project/dmms_static/MAP_GB50K1AOS__'
-    os_50k = ImageCollection('OS 1:50,000', ccrs.OSGB())
-    _process_dir(dir, os_50k)
-
-    r = NestedImageCollection('os', ccrs.OSGB(), [os_1m, os_250k])
-    return r
-
-if __name__ == '__main__':
-    import cartopy.crs as ccrs
-
-    import cPickle as pickle
-#    r = create_config()
-#    pickle.dump(r, open('osbg_nest.pkl', 'wb'))
-#    exit()
-
-    r2 = pickle.load(open('osbg_nest.pkl', 'rb'))
-    print r2
-
-    print [c.name for c in r2._collections]
-
-
-    # Edinburgh castle...
-    extent = [326472, 672397, 328640, 674349]
-    import shapely.geometry
-    target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
-                                              [extent[2], extent[1]],
-                                              [extent[2], extent[3]],
-                                              [extent[0], extent[3]],
-                                              [extent[0], extent[1]]])
-    print 'target: ', list(r2.find_images(target_domain, 'OS 1:1,000,000'))
-    print 'target: ', list(r2.find_images(target_domain, 'OS 1:250,000'))
-
-    print 'target: ', list(r2.find_images(target_domain, 'OS 1:250,000'))
-#    img, extent, origin = r2.image_for_domain(target_domain, 'OS 1:50,000')
-    img, extent, origin = r2.image_for_domain(target_domain, 'OS 1:1,000,000')
-    import matplotlib.pyplot as plt
-    plt.imshow(img, extent=extent, origin=origin)
-    plt.show()

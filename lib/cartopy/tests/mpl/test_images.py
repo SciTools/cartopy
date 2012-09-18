@@ -7,6 +7,7 @@ import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
 from cartopy.tests.mpl import image_comparison
+import cartopy.tests.test_img_nest as ctest_nest
 
 
 @image_comparison(baseline_images=['web_tiles'])
@@ -56,6 +57,18 @@ def test_web_tiles():
     ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
               interpolation='bilinear', origin=origin)
     ax.coastlines()
+
+
+
+@image_comparison(baseline_images=['image_nest'])
+def test_image_nest():
+    nest_z0_z1 = ctest_nest.gen_nest()
+
+    ax = plt.axes(projection=ccrs.Mercator())
+    ax.set_xlim(-45, 45)
+    ax.set_ylim(-45, 90)
+    ax.coastlines()
+    ax.add_image(nest_z0_z1, 'aerial z1 test')
 
 
 if __name__ == '__main__':
