@@ -15,6 +15,11 @@ import cartopy.crs as ccrs
 from cartopy.io import fh_getter
 
 
+import json
+_JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__), os.path.splitext(os.path.basename(__file__))[0] + '.json')
+_SRTM3_FILE_LOOKUP = json.load(open(_JSON_SRTM3_LOOKUP))
+
+
 def srtm(lon, lat):
     """
     Return (elevation, crs, extent) for the given longitude latitude.
@@ -82,8 +87,6 @@ def SRTM3_retrieve(lon, lat, data_dir=None):
 
     if not os.path.exists(filepath):
         # download the zip file
-        print _SRTM3_FILE_LOOKUP.keys()
-        print [u'{y}{x}'.format(x=x, y=y)]
         file_url = _SRTM3_FILE_LOOKUP.get(u'{y}{x}'.format(x=x, y=y), None)
         # no file exists in the SRTM dataset for these coordinates
         if file_url is None:
@@ -134,15 +137,3 @@ def _create_srtm3_dict():
                 # remove the '.hgt.zip'
                 files[name[:-8]] = url + '/' + name
     return files
-
-
-_JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__), os.path.splitext(os.path.basename(__file__))[0] + '.json')
-import json
-_SRTM3_FILE_LOOKUP = json.load(open(_JSON_SRTM3_LOOKUP))
-
-
-if __name__ == '__main__':
-#    fname = SRTM3_retrieve(3, -73)
-    fname = SRTM3_retrieve(-91, 45)
-    print fname
-    img, crs, extent = read_SRTM3(fname)
