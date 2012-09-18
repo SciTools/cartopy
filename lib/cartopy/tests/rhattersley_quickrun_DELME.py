@@ -60,7 +60,7 @@ def draw_line_string(projection, line_string, color='black', linestyle='-'):
     for line_string in multi_line_string:
         plt.plot(*zip(*line_string.coords), marker='', color=color, linestyle=linestyle)
         #_arrows(projection, line_string)
-    
+
 
 def draw_polygon(projection, polygon, color=None):
     multi_polygon = projection.project_geometry(polygon)
@@ -201,7 +201,7 @@ def test(projections):
             # Wedge - demonstrates removal of interior when split (CW)
             polygon = sgeom.Polygon([(-5, 10), (20, 0), (-5, -10), (10, 0)])
             draw_polygon(projection, polygon)
-            
+
             # "Antarctica" (incl. non-physical boundary segments) (CW)
             polygon = sgeom.Polygon([(-50, -80), (90, -80), (160, -70), (160, -90), (-160, -90), (-160, -70)])
             draw_polygon(projection, polygon)

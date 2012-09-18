@@ -40,6 +40,7 @@ class GoogleTiles(object):
     def __init__(self, desired_tile_form='RGB'):
         # XXX consider fixing the CRS???
         self.imgs = []
+        self.crs = ccrs.Mercator()
         self.desired_tile_form = desired_tile_form
 
     def image_for_domain(self, target_domain, target_z):
@@ -49,7 +50,7 @@ class GoogleTiles(object):
                 img, extent, origin = self.get_image(tile)
             except IOError:
                 continue
-
+            print tile, extent
             img = numpy.array(img)
             x = numpy.linspace(extent[0], extent[1], img.shape[1], endpoint=False)
             y = numpy.linspace(extent[2], extent[3], img.shape[0], endpoint=False)
@@ -150,7 +151,7 @@ class GoogleTiles(object):
         url = 'http://chart.apis.google.com/chart?chst=d_text_outline&chs=256x256&chf=bg,' + \
               's,00000055&chld=FFFFFF|16|h|000000|b||||Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')' + \
               '|Zoom%20' + str(tile[2]) + '||||||____________________________'
-        print url
+#        print url
 #        url = 'http://mts0.google.com/vt/lyrs=m@177000000&hl=en&src=api&x=%s&y=%s&z=%s&s=G' % tile
         return url
 
@@ -265,7 +266,7 @@ class QuadtreeTiles(GoogleTiles):
         """
         Find all the quadtree's at the given target zoom, in the given target domain.
          
-        ``target_z must be a value >= 1.
+        target_z must be a value >= 1.
         """
         if target_z == 0:
             raise ValueError('The empty quadtree cannot be returned.')
@@ -283,7 +284,9 @@ class QuadtreeTiles(GoogleTiles):
 
 
 def _merge_tiles(tiles):
-    """Teturn a single image, merging the given images."""
+    """Return a single image, merging the given images."""
+    if not tiles:
+        raise ValueError('A non-empty list of tiles should be provided to merge.')
     xset = [set(x) for i, x, y, _ in tiles]
     yset = [set(y) for i, x, y, _ in tiles]
 

@@ -32,10 +32,8 @@ import cartopy.img_transform
 import cartopy.mpl_integration.patch as patch
 
 
-
 import matplotlib
 assert matplotlib.__version__ >= '1.2', 'Cartopy can only work with matplotlib 1.2 or greater.'
-
 
 
 colors = {
@@ -75,10 +73,9 @@ class InterProjectionTransform(mtransforms.Transform):
             x, y = self.target_projection.transform_point(x, y, self.source_projection)
             return x, y
 
-
-    def transform_point(self, point):
-        # XXX Needs testing
-        return numpy.array([[point[0], point[1]]])
+#    def transform_point(self, point):
+#        # XXX Needs testing
+#        return numpy.array([[point[0], point[1]]])
 
     def transform_path_non_affine(self, path):
         if path.vertices.shape == (1, 2):
@@ -105,6 +102,22 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
     def __init__(self, *args, **kwargs):
         self.projection = kwargs.pop('map_projection')
         super(GenericProjectionAxes, self).__init__(*args, **kwargs)
+        self.img_factories = []
+        self._done_img_factory = False
+
+    def add_image(self, factory, *args, **kwargs):
+        # XXX TODO: Needs working on
+        self.img_factories.append([factory, args, kwargs])
+
+    @matplotlib.axes.allow_rasterization
+    def draw(self, renderer=None, inframe=False):
+        if not self._done_img_factory:
+            for factory, args, kwargs in self.img_factories:
+#                print 'would call ', factory.image_for_domain, 'with\n', self.map_domain(factory.crs)
+                img, extent, origin = factory.image_for_domain(self.map_domain(factory.crs), *args, **kwargs)
+                self.imshow(img, extent=extent, origin=origin, transform=factory.crs)
+        self._done_img_factory = True
+        return matplotlib.axes.Axes.draw(self, renderer=renderer, inframe=inframe)
 
     def __str__(self):
         return '< GenericProjectionAxes: %s >' % self.projection
@@ -133,10 +146,10 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
         return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat), ns, abs(lon), ew)
 
-    def coastlines(self, **kwargs):
+    def coastlines(self, resolution='110m', **kwargs):
         import cartopy.io.shapereader as shapereader
 
-        coastline_path = shapereader.natural_earth(resolution='110m',
+        coastline_path = shapereader.natural_earth(resolution=resolution,
                                                    category='physical',
                                                    name='coastline')
 
@@ -200,11 +213,13 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
     def map_domain(self, crs):
         x1, x2, y1, y2 = self.native_extents()
         native_domain = shapely.geometry.LineString([[x1, y1],
-                                                  [x2, y1],
-                                                  [x2, y2],
-                                                  [x1, y2],
-                                                  [x1, y1]])
-        return crs.project_geometry(native_domain, self.projection)
+                                                      [x2, y1],
+                                                      [x2, y2],
+                                                      [x1, y2],
+                                                      [x1, y1]])
+
+        r = crs.project_geometry(native_domain, self.projection)
+        return r
 
     def ll_boundary_poly(self):
         native_boundary = self.boundary_poly()
