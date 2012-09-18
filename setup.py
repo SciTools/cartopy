@@ -21,9 +21,10 @@ Distribution definition for Cartopy.
 
 """
 
-from distutils.core import setup, Extension
+from distutils.core import setup, Command, Extension
 from distutils.sysconfig import get_config_var
 from distutils.util import convert_path
+import fnmatch
 import os
 
 from Cython.Distutils import build_ext
@@ -49,6 +50,67 @@ def find_package_tree(root_path, root_package):
             prefix = dir_path.split('/')[root_count:]
             packages.extend(['.'.join([root_package] + prefix + [dir_name]) for dir_name in dir_names])
     return packages
+
+
+class MissingHeaderError(Exception):
+    """
+    Raised when one or more files do not have the required copyright
+    and licence header.
+
+    """
+    pass
+
+
+class HeaderCheck(Command):
+    """
+    Checks that all the necessary files have the copyright and licence
+    header.
+
+    """
+
+    description = "check for copyright/licence headers"
+    user_options = []
+
+    exclude_patterns = ('./setup.py',
+                        './build/*',
+                        './dist/*',
+                        './lib/cartopy/examples/*.py')
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        check_paths = []
+        for root, dirs, files in os.walk('.'):
+            for file in files:
+                if file.endswith('.py') or file.endswith('.c'):
+                    path = os.path.join(root, file)
+                    check_paths.append(path)
+
+        for pattern in self.exclude_patterns:
+            exclude = lambda path: not fnmatch.fnmatch(path, pattern)
+            check_paths = filter(exclude, check_paths)
+
+        bad_paths = filter(self._header_bad, check_paths)
+        if bad_paths:
+            raise MissingHeaderError(bad_paths)
+
+    def _header_bad(self, path):
+        target = '(C) British Crown Copyright 2011 - 2012, Met Office'
+        with open(path, 'rt') as text_file:
+            # Check for the header on the first line.
+            line = text_file.readline().rstrip()
+            bad = target not in line
+
+            # Check if it was an executable script, with the header
+            # starting on the second line.
+            if bad and line == '#!/usr/bin/env python':
+                line = text_file.readline().rstrip()
+                bad = target not in line
+        return bad
 
 
 setup(
@@ -79,5 +141,5 @@ setup(
                   ),
     ],
 
-    cmdclass={'build_ext': build_ext},
+    cmdclass={'build_ext': build_ext, 'header_check': HeaderCheck},
 )
