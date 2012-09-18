@@ -63,7 +63,9 @@ def main():
     pc_180 = cartopy.prj.PlateCarree(central_longitude=180)
     
     ax = plt.axes(projection=pc)
+    # XXX Needs work.
     ax.streamplot(*sample_data(), transform=pc_180)
+#    ax.streamplot(*sample_data(), transform=pc)
     ax.coastlines()
 
     plt.show()
