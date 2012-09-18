@@ -73,6 +73,7 @@ class HeaderCheck(Command):
 
     exclude_patterns = ('./setup.py',
                         './build/*',
+                        './docs/build/*',
                         './dist/*',
                         './lib/cartopy/examples/*.py')
 

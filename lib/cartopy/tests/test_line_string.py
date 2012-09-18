@@ -206,6 +206,22 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(len(multi_line_string), 1)
         self.assertEqual(len(multi_line_string[0].coords), 2)
 
+    def test_global_boundary(self):
+        linear_ring = geometry.LineString([
+            (-180, -180),
+            (-180, 180),
+            (180, 180),
+            (180, -180),
+            ])
+        pc = ccrs.PlateCarree()
+        merc = ccrs.Mercator()
+        multi_line_string = pc.project_geometry(linear_ring, merc)
+        assert len(multi_line_string) > 0
+
+        # check the identity transform
+        multi_line_string = merc.project_geometry(linear_ring, merc)
+        assert len(multi_line_string) > 0
+
 
 class TestSymmetry(unittest.TestCase):
     def test_curve(self):

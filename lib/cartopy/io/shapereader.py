@@ -181,7 +181,7 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
 
     if data_dir is None:
         dname = os.path.dirname
-        # be more clever in the data directory so that users can define a setting.
+        # XXX be more clever in the data directory so that users can define a setting.
         data_dir = os.path.join(dname(dname(__file__)), 'data', 'shapefiles', 'natural_earth')
 
     if not os.path.exists(data_dir):
