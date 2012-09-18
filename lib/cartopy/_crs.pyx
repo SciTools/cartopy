@@ -54,9 +54,12 @@ cdef class CRS:
 
     """
     def __init__(self, proj4_params):
-        proj4_params = dict(proj4_params)
-        self.proj4_params = proj4_params
-        init_items = ['+{}={}'.format(k, v) for k, v in proj4_params.iteritems()]
+        self.proj4_params = dict(proj4_params)
+        # Use WGS84 ellipse if one is not specified in proj4_params
+        if 'ellps' not in self.proj4_params:
+            self.proj4_params['ellps'] = 'WGS84'
+        init_items = ['+{}={}'.format(k, v) for
+                      k, v in self.proj4_params.iteritems()]
         self.proj4_init = ' '.join(init_items)
         self.proj4 = pj_init_plus(self.proj4_init)
         if not self.proj4:
