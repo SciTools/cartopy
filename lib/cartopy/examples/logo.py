@@ -40,7 +40,11 @@ def main():
 #    o_path = letter_paths.pop('o')
 #    for path in letter_paths.values():
 #        ax.add_patch(matplotlib.patches.PathPatch(path, color='purple', transform=pc_t, zorder=2))
-    plt.savefig('logo.png', transparent=True, dpi=28) 
+
+
+    # save the logo as used on the web page:
+#    plt.savefig('logo.png', transparent=True, dpi=28) 
+
     plt.show()
         
 if __name__ == '__main__':
