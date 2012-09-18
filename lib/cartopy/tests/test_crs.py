@@ -55,7 +55,7 @@ def test_pickle():
     fh.seek(0)
     pc = pickle.load(fh)
     assert pc == ccrs.PlateCarree()
-    
+
 
 if __name__=='__main__':
     import nose
