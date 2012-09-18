@@ -35,18 +35,21 @@ def main():
     y = y.__getitem__(slices)
     z = z.__getitem__(slices)
     
-    plt.subplot(2, 2, 1, projection=pc)
+    ax = plt.subplot(2, 2, 1, projection=pc)
     plt.scatter(x, y, c=z, transform=geod)
+    ax.coastlines()
     
-    plt.subplot(2, 2, 2, projection=rob)
+    ax = plt.subplot(2, 2, 2, projection=rob)
     plt.scatter(x, y, c=z, transform=geod)
+    ax.coastlines()
     
     # XXX Ask the mpl mailing list to find out how you might create a subplot and subsequently modify it's projection.
 #    plt.subplot(2, 2, 3, )#projection=igh)
 #    plt.scatter(x, y, c=z, transform=pc)
     
-    plt.subplot(2, 2, 4, projection=nps)
+    ax = plt.subplot(2, 2, 4, projection=nps)
     plt.scatter(x, y, c=z, transform=geod)
+    ax.coastlines()
     
     plt.show()
 
