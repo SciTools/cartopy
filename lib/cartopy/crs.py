@@ -597,9 +597,74 @@ class InterruptedGoodeHomolosine(Projection):
         proj4_params = {'proj': 'igh', 'lon_0': central_longitude}
         super(InterruptedGoodeHomolosine, self).__init__(proj4_params)
 
+        # Obtain boundary points
+        points = []
+        s = 2 # Vertical resolution of boundary, in degrees.
+        n = 1 + 180 / 2
+        h = 1 + 90 / 2
+        geodetic_crs = self.as_geodetic()
+        for lat in numpy.linspace(0, -90, h):
+            points.append(self.transform_point(central_longitude - 21, lat,
+                                               geodetic_crs))
+        for lat in numpy.linspace(-90, 0, h):
+            points.append(self.transform_point(central_longitude - 99, lat,
+                                               geodetic_crs))
+        for lat in numpy.linspace(0, -90, h):
+            points.append(self.transform_point(central_longitude - 101, lat,
+                                               geodetic_crs))
+
+        # Left edge
+        for lat in numpy.linspace(-90, 90, n):
+            points.append(self.transform_point(central_longitude - 179, lat,
+                                               geodetic_crs))
+
+        for lat in numpy.linspace(90, 0, h):
+            points.append(self.transform_point(central_longitude - 41, lat,
+                                               geodetic_crs))
+        for lat in numpy.linspace(0, 90, h):
+            points.append(self.transform_point(central_longitude - 39, lat,
+                                               geodetic_crs))
+
+        # Right edge
+        for lat in numpy.linspace(90, -90, n):
+            points.append(self.transform_point(central_longitude + 179, lat,
+                                               geodetic_crs))
+
+        for lat in numpy.linspace(-90, 0, h):
+            points.append(self.transform_point(central_longitude + 81, lat,
+                                               geodetic_crs))
+        for lat in numpy.linspace(0, -90, h):
+            points.append(self.transform_point(central_longitude + 79, lat,
+                                               geodetic_crs))
+        for lat in numpy.linspace(-90, 0, h):
+            points.append(self.transform_point(central_longitude - 19, lat,
+                                               geodetic_crs))
+
+        points.append(self.transform_point(central_longitude - 21, 0,
+                                           geodetic_crs))
+
+        self._boundary = sgeom.LineString(points[::-1])
+
+        x = [p[0] for p in points]
+        y = [p[1] for p in points]
+        self._x_limits = min(x), max(x)
+        self._y_limits = min(y), max(y)
+
+    @property
+    def boundary(self):
+        return self._boundary
+
     @property
     def threshold(self):
-        return 1e5
+        return 1e4
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
 
 
 class _Thing(object):
