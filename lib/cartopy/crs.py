@@ -26,6 +26,7 @@ import math
 
 import numpy
 import shapely.geometry as sgeom
+from shapely.geometry.polygon import LinearRing
 
 from cartopy._crs import CRS, Geocentric, Geodetic
 import cartopy.trace
@@ -68,8 +69,8 @@ class Projection(CRS):
     __metaclass__ = ABCMeta
     
     _method_map = {
-        'LineString': '_project_linear',
-        'LinearRing': '_project_linear',
+        'LineString': '_project_line_string',
+        'LinearRing': '_project_linear_ring',
         'Polygon': '_project_polygon',
         'MultiLineString': '_project_multiline',
         'MultiPolygon': '_project_multipolygon',
@@ -145,13 +146,52 @@ class Projection(CRS):
         else:
             return getattr(self, method_name)(geometry, src_crs)
 
-    def _project_linear(self, geometry, src_crs):
+    def _project_line_string(self, geometry, src_crs):
         return cartopy.trace.project_linear(geometry, src_crs, self)
+
+    def _project_linear_ring(self, linear_ring, src_crs):
+        """
+        Projects the given LinearRing from the src_crs into this CRS and
+        returns the resultant LinearRing or MultiLineString.
+
+        """
+        # 1) Resolve the initial lines into projected segments
+        # 1abc
+        # def23ghi
+        # jkl41
+        multi_line_string = cartopy.trace.project_linear(linear_ring,
+                                                         src_crs, self)
+
+        # 2) Simplify the segments where appropriate.
+        result_geometry = multi_line_string
+        n_lines = len(multi_line_string)
+        # Check for a single ring
+        if (n_lines == 1 and
+              numpy.allclose(multi_line_string[0].coords[0],
+                             multi_line_string[0].coords[-1])):
+            result_geometry = LinearRing(multi_line_string[0].coords[:-1])
+        elif n_lines > 1:
+            # XXX Clumsy! (NB. multi_line_string[-1] causes a
+            # MemoryFault from shapely)
+            line_strings = list(multi_line_string)
+            # Check if we should stitch together the two ends.
+            # i.e. Does the first point of the first line match the
+            # last point of the last line?
+            # def23ghi
+            # jkl41abc
+            if numpy.allclose(line_strings[0].coords[0],
+                              line_strings[-1].coords[-1]):
+                last_coords = list(line_strings[-1].coords)
+                first_coords = list(line_strings[0].coords)[1:]
+                line_strings[-1] = sgeom.LineString(last_coords + first_coords)
+                result_geometry = sgeom.MultiLineString(line_strings[1:])
+
+        return result_geometry
 
     def _project_multiline(self, geometry, src_crs):
         geoms = []
         for geom in geometry.geoms:
-            r = self._project_linear(geom, src_crs)
+            r = self._project_line_string(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
         if geoms:
@@ -169,19 +209,9 @@ class Projection(CRS):
 
     def _project_polygon(self, polygon, src_crs):
         """
-        Returns the projected geometry derived from the given geometry.
-
-        TODO Handle polygons containing holes.
+        Returns the projected polygon(s) derived from the given polygon.
 
         """
-        # Convert initial lines into split, projected, contiguous segments.
-        # 12341 -> (def23ghi, jkl41abc)
-        #
-        # 1---2             d-e-f-2       1-a-b-c
-        # |   |     =>            |       |
-        # 4---3             i-h-g-3       4-l-k-j
-        #
-
         # XXX This shouldn't really be here?
         # The simple 2-dimensional determination of orientation provided
         # by Shapely/GEOS doesn't apply when considering geodetic coordinates.
@@ -192,48 +222,32 @@ class Projection(CRS):
         # into two pieces of equal area.
 #        if not src_crs.is_geodetic():
         polygon = sgeom.polygon.orient(polygon, -1)
-        split, multi_line_string = self._polygon_to_multi_line_string(polygon, src_crs)
+        # TODO: Consider checking the internal rings have the opposite
+        # orientation to the external rings.
 
-        # Patch up the edges if the polygon was split.
-        if split:
-            multi_line_string = self._attach_to_boundary(multi_line_string)
+        # Project the polygon exterior/interior rings.
+        # Each source ring will result in either a ring, or one or more
+        # lines.
+        rings = []
+        multi_lines = []
+        for src_ring in [polygon.exterior] + list(polygon.interiors):
+            geometry = self._project_linear_ring(src_ring, src_crs)
+            if geometry.geom_type == 'LinearRing':
+                rings.append(geometry)
+            else:
+                multi_lines.append(geometry)
 
-        polygons = self._convert_to_polygons(multi_line_string)
+        # Convert all the lines to rings by attaching them to the
+        # boundary.
+        rings.extend(self._attach_lines_to_boundary(multi_lines))
 
-        return polygons
+        # Resolve all the inside vs. outside rings, and convert to the
+        # final MultiPolygon.
+        return self._rings_to_multi_polygon(rings)
 
-    def _polygon_to_multi_line_string(self, polygon, src_crs):
-        # 1) Resolve the initial lines into projected segments
-        # 1abc
-        # def23ghi
-        # jkl41
-        multi_line_string = cartopy.trace.project_linear(polygon.exterior,
-                                                         src_crs, self)
-
-        # 2) Stitch together the two ends (if appropriate)
-        # i.e. Does the first point of the first line match the last point of
-        # the last line?
-        # def23ghi
-        # jkl41abc
-        split = len(multi_line_string) > 1
-        if split:
-            # XXX Clumsy! (NB. multi_line_string[-1] causes a MemoryFault from shapely)
-            line_strings = list(multi_line_string)
-            if numpy.allclose(line_strings[0].coords[0], line_strings[-1].coords[-1]):
-                last_coords = list(line_strings[-1].coords)
-                first_coords = list(line_strings[0].coords)[1:]
-                line_strings[-1] = sgeom.LineString(last_coords + first_coords)
-                multi_line_string = sgeom.MultiLineString(line_strings[1:])
-        elif len(multi_line_string) == 1:
-            # If the end-points line up exactly with the map boundary we might not
-            # have a split - but we still need to stitch the ends back together.
-            split = not numpy.allclose(multi_line_string[0].coords[0], multi_line_string[0].coords[-1])
-
-        return split, multi_line_string
-
-    def _attach_to_boundary(self, multi_line_string):
+    def _attach_lines_to_boundary(self, multi_line_strings):
         """
-        Returns a new MultiLineString by attaching the ends of the given lines
+        Returns a list of LinearRings by attaching the ends of the given lines
         to the boundary, paying attention to the traversal directions of the
         lines and boundary.
 
@@ -249,8 +263,13 @@ class Projection(CRS):
         def boundary_distance(xy):
             return boundary.project(sgeom.Point(*xy))
 
+        # Squash all the LineStrings into a single list.
+        line_strings = []
+        for multi_line_string in multi_line_strings:
+            line_strings.extend(multi_line_string)
+
         # Record the positions of all the segment ends
-        for i, line_string in enumerate(multi_line_string):
+        for i, line_string in enumerate(line_strings):
             first_dist = boundary_distance(line_string.coords[0])
             thing = _Thing(first_dist, False, (i, 'first', line_string.coords[0]))
             edge_things.append(thing)
@@ -276,7 +295,7 @@ class Projection(CRS):
             for thing in edge_things:
                 print '   ', thing
 
-        to_do = {i: line_string for i, line_string in enumerate(multi_line_string)}
+        to_do = {i: line_string for i, line_string in enumerate(line_strings)}
         done = []
         while to_do:
             i, line_string = to_do.popitem()
@@ -313,7 +332,7 @@ class Projection(CRS):
                     if debug:
                         print '   adding line'
                     j = next_thing.data[0]
-                    line_to_append = multi_line_string[j]
+                    line_to_append = line_strings[j]
                     # XXX pelson: this was failing, before I added the if statement, but I don't understand how it could be failing... 
                     if j in to_do:
                         del to_do[j]
@@ -321,23 +340,52 @@ class Projection(CRS):
                     if next_thing.data[1] == 'last':
                         coords_to_append = coords_to_append[::-1]
                     line_string = sgeom.LineString(list(line_string.coords) + coords_to_append)
-        multi_line_string = done
+
+        # XXX Is the last point in each ring actually the same as the first?
+        linear_rings = [LinearRing(line) for line in done]
 
         if debug:
             print '   DONE'
 
-        return multi_line_string
+        return linear_rings
 
-    def _convert_to_polygons(self, multi_line_string):
-        # XXX Optimise
-        polygons = []
-        for line_string in multi_line_string:
-            polygon = sgeom.Polygon(line_string)
-            # XXX pelson: handle null geometries properly
-            if polygon._geom is None:
-                continue
-            if polygon.exterior.is_ccw:
-                # Compute the overall domain of the boundary and the inside-out polygon.
+    def _rings_to_multi_polygon(self, rings):
+        exterior_rings = []
+        interior_rings = []
+        for ring in rings:
+            if ring.is_ccw:
+                interior_rings.append(ring)
+            else:
+                exterior_rings.append(ring)
+
+        polygon_bits = []
+
+        # Turn all the exterior rings into polygon definitions,
+        # "slurping up" and interior rings they contain.
+        for exterior_ring in exterior_rings:
+            polygon = sgeom.Polygon(exterior_ring)
+            holes = []
+            for interior_ring in interior_rings:
+                if polygon.contains(interior_ring):
+                    holes.append(interior_ring)
+                    # XXX Probably quite yucky!
+                    interior_rings.remove(interior_ring)
+            polygon_bits.append((exterior_ring.coords,
+                                 [ring.coords for ring in holes]))
+
+        # Any left over "interior" rings need "inverting" with respect
+        # to the boundary.
+        if interior_rings:
+            boundary_poly = sgeom.Polygon(self.boundary)
+            x3, y3, x4, y4 = boundary_poly.bounds
+            bx = (x4 - x3) * 0.1
+            by = (y4 - y3) * 0.1
+            x3 -= bx
+            y3 -= by
+            x4 += bx
+            y4 += by
+            for ring in interior_rings:
+                polygon = sgeom.Polygon(ring)
                 x1, y1, x2, y2 = polygon.bounds
                 bx = (x2 - x1) * 0.1
                 by = (y2 - y1) * 0.1
@@ -345,15 +393,8 @@ class Projection(CRS):
                 y1 -= by
                 x2 += bx
                 y2 += by
-                boundary_poly = sgeom.Polygon(self.boundary)
-                x3, y3, x4, y4 = boundary_poly.bounds
-                bx = (x4 - x3) * 0.1
-                by = (y4 - y3) * 0.1
-                x3 -= bx
-                y3 -= by
-                x4 += bx
-                y4 += by
-                box = sgeom.box(min(x1, x3), min(y1, y3), max(x2, x4), max(y2, y4))
+                box = sgeom.box(min(x1, x3), min(y1, y3),
+                                max(x2, x4), max(y2, y4))
 
                 # Invert the polygon
                 polygon = box.difference(polygon)
@@ -362,14 +403,13 @@ class Projection(CRS):
                 polygon = boundary_poly.intersection(polygon)
 
                 if not polygon.is_empty:
-                    polygons.append(polygon)
-            else:
-                polygons.append(polygon)
+                    polygon_bits.append(polygon)
 
-        if polygons:
-            polygons = sgeom.MultiPolygon(polygons)
-
-        return polygons
+        if polygon_bits:
+            multi_poly = sgeom.MultiPolygon(polygon_bits)
+        else:
+            multi_poly = sgeom.MultiPolygon()
+        return multi_poly
 
 
 class _RectangularProjection(Projection):
