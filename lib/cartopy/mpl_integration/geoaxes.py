@@ -114,8 +114,8 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         if not self._done_img_factory:
             for factory, args, kwargs in self.img_factories:
 #                print 'would call ', factory.image_for_domain, 'with\n', self.map_domain(factory.crs)
-                img, extent, origin = factory.image_for_domain(self.map_domain(factory.crs), *args, **kwargs)
-                self.imshow(img, extent=extent, origin=origin, transform=factory.crs)
+                img, extent, origin = factory.image_for_domain(self.map_domain(factory.crs), args[0])
+                self.imshow(img, extent=extent, origin=origin, transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
         return matplotlib.axes.Axes.draw(self, renderer=renderer, inframe=inframe)
 
@@ -220,7 +220,22 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
         r = crs.project_geometry(native_domain, self.projection)
         return r
+    
+    def set_extent(self, extents, crs=None):
+        """Set the extent of the map in the given coordinate system."""
+        # TODO: Implement the same semantics as plt.xlim and plt.ylim
+        x1, x2, y1, y2 = extents
+        domain_in_crs = shapely.geometry.LineString([[x1, y1],
+                                                      [x2, y1],
+                                                      [x2, y2],
+                                                      [x1, y2],
+                                                      [x1, y1]])
 
+        r = self.projection.project_geometry(domain_in_crs, crs)
+        x1, y1, x2, y2 = r.bounds
+        self.set_xlim([x1, x2])
+        self.set_ylim([y1, y2])
+        
     def ll_boundary_poly(self):
         native_boundary = self.boundary_poly()
         foo = native_boundary
@@ -536,7 +551,7 @@ if __name__ == '__main__':
 
 #    ax.bluemarble()
     ax.coastlines()
-    ax.gridlines()
+    ax.gridlines(15)
 #    ax.gshhs()
 #    ax.gshhs(ocean_fill='blue', land_fill='green')
 
@@ -552,7 +567,13 @@ if __name__ == '__main__':
 #    plt.ion()
     coords = [(-0.08, 51.53), (132.00, 43.17)] # London to Vladivostock
     r = ax.plot(*zip(*coords), transform=ll)
-    ax.set_global()
+#    ax.set_global()
+
+    print ax.set_extent([50, 60, -15, 10], crs=ccrs.PlateCarree())
+    print ax.set_extent([50, 60, -15, 10], crs=ccrs.Geodetic())
+    print ax.set_extent([0, 5000, 0, 5000], crs=ccrs.OSGB())
+    print ax.get_xlim()
+    print ax.get_ylim()
 #    import cartopy.test
 #    cs = plt.contourf(*cartopy.test.wave_data(), transform=ll)
 #    cs = plt.contour(*cartopy.test.wave_data(), transform=ll)
