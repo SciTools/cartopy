@@ -20,6 +20,7 @@ import unittest
 
 import numpy
 from shapely.geometry import Polygon
+import shapely.geometry
 
 import cartopy.crs as ccrs
 
@@ -230,6 +231,26 @@ class TestHoles(unittest.TestCase):
         self._assert_bounds(polygon.interiors[0].bounds,
                             -1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
         self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
+
+    def test_multiple_interiors(self):
+        exterior = numpy.array(shapely.geometry.box(0, 0, 12, 12).exterior.coords)
+        interiors = [
+                     numpy.array(shapely.geometry.box(1, 1, 2, 2, ccw=False).exterior.coords),
+                     numpy.array(shapely.geometry.box(1, 8, 2, 9, ccw=False).exterior.coords),
+    #                 np.array(shapely.geometry.box(8, 4, 9, 5, ccw=False).exterior.coords)
+                     ]
+    
+        poly = shapely.geometry.Polygon(exterior, interiors)
+        
+#        poly = shapely.geometry.polygon.orient(poly, -1)
+        target = ccrs.PlateCarree()
+        source = ccrs.Geodetic()
+        
+        print 'transformed polys:'
+        for trans_poly in target.project_geometry(poly, source):
+            print trans_poly
+        
+        assert len(list(target.project_geometry(poly, source))) == 1, 'Should have been just one poly.'
 
 
 if __name__ == '__main__':

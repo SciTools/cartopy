@@ -61,8 +61,36 @@ def test_polygon_interiors():
                                  )
     
     ax.add_collection(collection)
+
+
+def test_contour_interiors():
+    numlev = 2
+    nx, ny = 10, 10
+    
+    lons, lats = np.meshgrid(np.linspace(-50, 50, nx), np.linspace(-45, 45, ny))
+    data = np.sin(np.sqrt(lons**2 + lats**2))
+    
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax.set_global()
+    plt.title("Native projection")
+    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    
+    plt.subplot(212, projection=ccrs.PlateCarree())
+    plt.title("Non-native projection")
+    
+    ax = plt.gca()
+    ax.set_global()
+    
+    trans_workaround = ccrs.Geodetic()._as_mpl_transform(ax)
+    plt.contourf(lons, lats, data, numlev, transform=trans_workaround)
+    ax.coastlines()    
+    
+    plt.show()
+    
     
 
 if __name__=='__main__':
-    import nose
-    nose.runmodule(argv=['-s','--with-doctest'], exit=False)
+#    import nose
+#    nose.runmodule(argv=['-s','--with-doctest'], exit=False)
+    test_contour_interiors()
