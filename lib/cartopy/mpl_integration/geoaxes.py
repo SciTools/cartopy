@@ -511,16 +511,30 @@ def add_holey_poly(transform):
     from matplotlib.collections import PatchCollection
     from matplotlib.path import Path
 
+    import cartopy.mpl_integration.patch as cpatch
+    
 
     poly = mpatches.RegularPolygon((140, 10), 4, 81.0)
     # XXX internal rings are not yet supported...
-    pth = Path([[0, 45], [60, 45], [60, -45], [0, -45], [0, -45], [10, 20], [10, -20], [40, -20], [40, 20], [10, -20]], [1, 2, 2, 2, 79, 1, 2, 2 , 2, 79])
-    pth = Path([[0, 45], [60, 45], [60, -45], [0, -45], [0, -45]], [1, 2, 2, 2, 79])
-#    pth = Path([[0, 45], [0, -45], [60, -45], [60, 45], [0, -45]], [1, 2, 2, 2, 79])
-    poly = mpatches.PathPatch(pth)
-    collection = PatchCollection([poly], cmap=matplotlib.cm.jet, alpha=0.4,
-                                 transform=transform
+    pth = Path([[0, 45], [60, 45], [60, -45], [0, -45], [0, -45], 
+                [10, 20], [10, -20], [40, -20], [40, 20], [10, -20]], 
+               [1, 2, 2, 2, 79, 1, 2, 2 , 2, 79])
+#    pth = Path([[0, 45], [60, 45], [60, -45], [0, -45], [0, -45]], [1, 2, 2, 2, 79])
+#    patches = [mpatches.PathPatch(pth)]
+
+    patches = []
+    for geos in cpatch.path_to_geos(pth):
+        for pth in cpatch.geos_to_path(geos):
+            patches.append(mpatches.PathPatch(pth))
+    
+#    collection = PatchCollection(patches, cmap=matplotlib.cm.jet, alpha=0.4,
+#                                 transform=transform
+#                                 )
+    
+    collection = PatchCollection(patches, cmap=matplotlib.cm.jet, alpha=0.4,
+                                 transform=ccrs.Geodetic()
                                  )
+    
     plt.gca().add_collection(collection)
 
 
@@ -551,13 +565,13 @@ if __name__ == '__main__':
 
 #    ax.bluemarble()
     ax.coastlines()
-    ax.gridlines(15)
+#    ax.gridlines()
 #    ax.gshhs()
 #    ax.gshhs(ocean_fill='blue', land_fill='green')
 
 #    ax.plot(0, 0, 'bx')
 #    ax.plot(-14000000, 0, 'yx')
-#    add_holey_poly(ll)
+    add_holey_poly(ll)
 
     # cardiff in NorthPolar...
 #    ax.plot(-2.568e5, -4.399e6, 'bo', transform=ccrs.NorthPolarStereo(), scalex=False, scaley=False)
