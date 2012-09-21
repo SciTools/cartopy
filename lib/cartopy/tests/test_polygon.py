@@ -237,20 +237,14 @@ class TestHoles(unittest.TestCase):
         interiors = [
                      numpy.array(shapely.geometry.box(1, 1, 2, 2, ccw=False).exterior.coords),
                      numpy.array(shapely.geometry.box(1, 8, 2, 9, ccw=False).exterior.coords),
-    #                 np.array(shapely.geometry.box(8, 4, 9, 5, ccw=False).exterior.coords)
                      ]
     
         poly = shapely.geometry.Polygon(exterior, interiors)
         
-#        poly = shapely.geometry.polygon.orient(poly, -1)
         target = ccrs.PlateCarree()
         source = ccrs.Geodetic()
         
-        print 'transformed polys:'
-        for trans_poly in target.project_geometry(poly, source):
-            print trans_poly
-        
-        assert len(list(target.project_geometry(poly, source))) == 1, 'Should have been just one poly.'
+        assert len(list(target.project_geometry(poly, source))) == 1
 
 
 if __name__ == '__main__':

@@ -365,10 +365,9 @@ class Projection(CRS):
         for exterior_ring in exterior_rings:
             polygon = sgeom.Polygon(exterior_ring)
             holes = []
-            for interior_ring in interior_rings:
+            for interior_ring in interior_rings[:]:
                 if polygon.contains(interior_ring):
                     holes.append(interior_ring)
-                    # XXX Probably quite yucky!
                     interior_rings.remove(interior_ring)
             polygon_bits.append((exterior_ring.coords,
                                  [ring.coords for ring in holes]))
