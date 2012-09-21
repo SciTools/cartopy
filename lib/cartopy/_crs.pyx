@@ -175,21 +175,16 @@ class Geodetic(CRS):
     """
     # XXX Providing a default datum is bad. Providing the ellipse on its own is sufficient to define the ellipse, 
     # and in some cases, can overwrite the desired, well defined ellipse.
-    def __init__(self, proj4_params=None, ellipse='WGS84', datum='WGS84'):
-        """Create the Geodetic.
-        
-        Use the provided proj4_params, if provided,
-        otherwise construct proj4 params from the ellipse and datum.
+    def __init__(self, ellipse='WGS84', datum='WGS84'):
+        """Create a Geodetic CRS.
         
         Kwargs:
         
-            * proj4_params - pre-build proj4 params
-            * ellipse      - ellipsoid definiton used if proj4_params is not set
-            * datum        - datum definiton used if proj4_params is not set
+            * ellipse      - Ellipsoid definiton.
+            * datum        - Datum definiton.
         
         """
-        if proj4_params is None:
-            proj4_params = {'proj': 'lonlat', 'ellps': ellipse, 'datum': datum}
+        proj4_params = {'proj': 'lonlat', 'ellps': ellipse, 'datum': datum}
         super(Geodetic, self).__init__(proj4_params)        
         
     # XXX Implement fwd such as Basemap's Geod. Would be used in the tissot example.
