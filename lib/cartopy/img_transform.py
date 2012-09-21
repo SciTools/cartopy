@@ -144,67 +144,75 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
     return array, extent
     
                 
-def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj, target_x_points, target_y_points):
-    # n.b. source_cs is actually a projection (the coord system of the source coordinates), 
-    # but not necessarily the native projection of the source array (i.e. you can provide a warped image with lat lon coordinates).
-    # XXX NB. target_x and target_y must currently be rectangular (i.e. be a 2d np array)
-    xyz = source_cs.as_geocentric().transform_points(source_cs, source_x_coords.flatten(), source_y_coords.flatten())
-    
-#    lons, lats = source_cs.unproject_points(source_x_coords.flatten(), source_y_coords.flatten())
-#    ll = stack(lons, lats)
-#    xyz = ll_to_cart(ll)
-    
-#    native_xy = stack(target_x_points.flatten(), target_y_points.flatten())
-#    target_geocent = target_proj.as_geocentric().transform_points(target_proj, target_x_points.flatten(), target_y_points.flatten())
-#    target_ll = stack(target_geocent[:, 0], target_geocent[:, 1])
-#    ll = stack(lons, lats)
-#    target_xyz = ll_to_cart(ll)
-    target_xyz = source_cs.as_geocentric().transform_points(target_proj, target_x_points.flatten(), target_y_points.flatten())
+def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
+           target_x_points, target_y_points):
+    # n.b. source_cs is actually a projection (the coord system of the
+    # source coordinates), but not necessarily the native projection of
+    # the source array (i.e. you can provide a warped image with lat lon
+    # coordinates).
+
+    #XXX NB. target_x and target_y must currently be rectangular (i.e. be a 2d np array)
+    xyz = source_cs.as_geocentric().transform_points(source_cs,
+                                                     source_x_coords.flatten(),
+                                                     source_y_coords.flatten())
+    target_xyz = source_cs.as_geocentric().transform_points(target_proj,
+                                                            target_x_points.flatten(),
+                                                            target_y_points.flatten())
     
     kdtree = scipy.spatial.cKDTree(xyz)
-    
     distances, indices = kdtree.query(target_xyz, k=1)
-    
-    desired_ny, desired_nx = target_x_points.shape
-    if array.ndim == 3:
-        # XXX Handle other dimensions
-        new_array = array.reshape(-1, array.shape[-1])[indices].reshape(desired_ny, desired_nx, array.shape[-1])
-        # XXX Handle alpha
-        missing = (0, 0, 0)
-    else:
-        new_array = array.reshape(-1)[indices].reshape(desired_ny, desired_nx)
-        missing = 0#(0, 0, 0)
+    mask = numpy.isinf(distances)
 
-    # clip any bad points (i.e. those that lie outside of the extent of the original image)
-#    source_desired_x, source_desired_y = source_cs.project_points(target_ll[:, 0], target_ll[:, 1])
-#    source_desired_x = source_desired_x.reshape([desired_ny, desired_nx]) 
-#    source_desired_y = source_desired_y.reshape([desired_ny, desired_nx])
-#    outof_extent_points = (
-#                        (source_desired_x < source_cs.x_limits[0]) | 
-#                        (source_desired_x > source_cs.x_limits[1]) | 
-#                        (source_desired_y < source_cs.y_limits[0]) | 
-#                        (source_desired_y > source_cs.y_limits[1])
-#                        )
-    # XXX Assumes the image is rectilinear in its native grid. This is not necessarily true...
-#    outof_extent_points = (
-#                        (source_desired_x < source_x_coords.min()) | 
-#                        (source_desired_x > source_x_coords.max()) | 
-#                        (source_desired_y < source_y_coords.min()) | 
-#                        (source_desired_y > source_y_coords.max())
-#                        )
-#    # XXX handle different shape mask (because of other dimensions)
-##    new_array = numpy.ma.array(new_array, mask=outof_extent_points)
-#    new_array[outof_extent_points] = missing
-#    
-#    # clip any points which do not map back to their own point (i.e. 365 might map back to 5 in degrees and so would be clipped)
- #   recalculated_coords, _ = target_proj.transform_points(source_cs.as_geocentric(), target_ll[:, 0], target_ll[:, 1])
- #   recalculated_x = recalculated_x.reshape(desired_ny, desired_nx)
- #   native_x = native_xy[:, 0].reshape(desired_ny, desired_nx)
-    
-#    non_self_inverse_points = numpy.abs(recalculated_x - native_x) > 1e-3
-#    # XXX useful for repeated values such as those in interrupted Goodes.
-##    new_array.mask[non_self_inverse_points] = True
-#    new_array[non_self_inverse_points] = missing
+    desired_ny, desired_nx = target_x_points.shape
+    if array.ndim == 2:
+        # Handle missing neighours using a masked array
+        if numpy.any(mask):
+            indices = numpy.where(numpy.logical_not(mask), indices, 0)
+            array_1d = numpy.ma.array(array.reshape(-1)[indices], mask=mask)
+        else:
+            array_1d = array.reshape(-1)[indices]
+
+        new_array = array_1d.reshape(desired_ny, desired_nx)
+    elif array.ndim == 3:
+        # Handle missing neighours using a masked array
+        if numpy.any(mask):
+            indices = numpy.where(numpy.logical_not(mask), indices, 0)
+            mask, array_2d = numpy.broadcast_arrays(mask, array.reshape(-1, array.shape[-1]))
+            array_2d = numpy.ma.array(array_2d[indices], mask=mask)
+        else:
+            array_2d = array.reshape(-1, array.shape[-1])[indices]
+
+        new_array = array_2d.reshape(desired_ny, desired_nx, array.shape[-1])
+    else:
+        raise ValueError('Expected array.ndim to be 2 or 3, got {}'.format(array.ndim))
+
+    # Do double transform to clip points that do not map back and forth
+    # to the same point to within a fixed fractional offset.
+    source_desired_xyz = source_cs.transform_points(target_proj,
+                                                    target_x_points.flatten(),
+                                                    target_y_points.flatten())
+    back_to_target_xyz = target_proj.transform_points(source_cs,
+                                                      source_desired_xyz[:, 0],
+                                                      source_desired_xyz[:, 1])
+    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny, desired_nx)
+    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny, desired_nx)
+    FRACTIONAL_OFFSET_THRESHOLD = 1e-2
+    x_extent = numpy.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
+    y_extent = numpy.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
+    non_self_inverse_points = (numpy.abs(target_x_points - back_to_target_x) /
+                               x_extent) > FRACTIONAL_OFFSET_THRESHOLD
+    if numpy.any(non_self_inverse_points):
+        if numpy.ma.isMaskedArray(new_array):
+            new_array.mask[non_self_inverse_points] = True
+        else:
+            new_array = numpy.ma.array(new_array, mask=non_self_inverse_points)
+    non_self_inverse_points = (numpy.abs(target_y_points - back_to_target_y) /
+                               y_extent) > FRACTIONAL_OFFSET_THRESHOLD
+    if numpy.any(non_self_inverse_points):
+        if numpy.ma.isMaskedArray(new_array):
+            new_array.mask[non_self_inverse_points] = True
+        else:
+            new_array = numpy.ma.array(new_array, mask=non_self_inverse_points)
 
     return new_array
 
