@@ -176,7 +176,8 @@ class Geodetic(CRS):
     # XXX Providing a default datum is bad. Providing the ellipse on its own is sufficient to define the ellipse, 
     # and in some cases, can overwrite the desired, well defined ellipse.
     def __init__(self, ellipse='WGS84', datum='WGS84'):
-        """Create a Geodetic CRS.
+        """
+        Create a Geodetic CRS.
         
         Kwargs:
         

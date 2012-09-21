@@ -40,7 +40,8 @@ class RotatedGeodetic(CRS):
 
     """
     def __init__(self, pole_longitude, pole_latitude, ellipse='WGS84', datum='WGS84'):
-        """Create a RotatedGeodetic CRS.
+        """
+        Create a RotatedGeodetic CRS.
         
         Args:
         
