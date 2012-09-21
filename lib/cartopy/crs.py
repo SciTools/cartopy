@@ -602,48 +602,47 @@ class InterruptedGoodeHomolosine(Projection):
 
         # Obtain boundary points
         points = []
-        s = 2 # Vertical resolution of boundary, in degrees.
-        n = 1 + 180 / 2
-        h = 1 + 90 / 2
+        n = 31
         geodetic_crs = self.as_geodetic()
-        for lat in numpy.linspace(0, -90, h):
-            points.append(self.transform_point(central_longitude - 21, lat,
-                                               geodetic_crs))
-        for lat in numpy.linspace(-90, 0, h):
-            points.append(self.transform_point(central_longitude - 99, lat,
-                                               geodetic_crs))
-        for lat in numpy.linspace(0, -90, h):
-            points.append(self.transform_point(central_longitude - 101, lat,
-                                               geodetic_crs))
 
-        # Left edge
+        # Right boundary
         for lat in numpy.linspace(-90, 90, n):
-            points.append(self.transform_point(central_longitude - 179, lat,
-                                               geodetic_crs))
+            points.append(self.transform_point(180 + central_longitude,
+                                               lat, geodetic_crs))
 
-        for lat in numpy.linspace(90, 0, h):
-            points.append(self.transform_point(central_longitude - 41, lat,
-                                               geodetic_crs))
-        for lat in numpy.linspace(0, 90, h):
-            points.append(self.transform_point(central_longitude - 39, lat,
-                                               geodetic_crs))
+        # Top boundary
+        interrupted_lons = (-40.0,)
+        delta = 0.001
+        for lon in interrupted_lons:
+            for lat in numpy.linspace(90, 0, n):
+                points.append(self.transform_point(lon + delta +
+                                                   central_longitude,
+                                                   lat, geodetic_crs))
+            for lat in numpy.linspace(0, 90, n):
+                points.append(self.transform_point(lon - delta +
+                                                   central_longitude,
+                                                   lat, geodetic_crs))
 
-        # Right edge
+        # Left boundary
         for lat in numpy.linspace(90, -90, n):
-            points.append(self.transform_point(central_longitude + 179, lat,
-                                               geodetic_crs))
+            points.append(self.transform_point(-180 + central_longitude,
+                                               lat, geodetic_crs))
 
-        for lat in numpy.linspace(-90, 0, h):
-            points.append(self.transform_point(central_longitude + 81, lat,
-                                               geodetic_crs))
-        for lat in numpy.linspace(0, -90, h):
-            points.append(self.transform_point(central_longitude + 79, lat,
-                                               geodetic_crs))
-        for lat in numpy.linspace(-90, 0, h):
-            points.append(self.transform_point(central_longitude - 19, lat,
-                                               geodetic_crs))
+        # Bottom boundary
+        interrupted_lons = (-100.0, -20.0, 80.0)
+        delta = 0.001
+        for lon in interrupted_lons:
+            for lat in numpy.linspace(-90, 0, n):
+                points.append(self.transform_point(lon - delta +
+                                                   central_longitude,
+                                                   lat, geodetic_crs))
+            for lat in numpy.linspace(0, -90, n):
+                points.append(self.transform_point(lon + delta +
+                                                   central_longitude,
+                                                   lat, geodetic_crs))
 
-        points.append(self.transform_point(central_longitude - 21, 0,
+        # Close loop
+        points.append(self.transform_point(180 + central_longitude, -90,
                                            geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
