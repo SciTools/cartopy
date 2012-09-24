@@ -19,7 +19,8 @@
 import unittest
 
 import numpy
-from shapely import geometry
+from shapely.geometry import Polygon
+import shapely.geometry
 
 import cartopy.crs as ccrs
 
@@ -30,7 +31,7 @@ class TestBoundary(unittest.TestCase):
         # ordering when they are attached to the boundary.
         # Failure to do so will result in invalid polygons (their boundaries
         # cross-over).
-        polygon = geometry.Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = Polygon([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.5)
         multi_polygon = projection.project_geometry(polygon)
         for polygon in multi_polygon:
@@ -40,7 +41,7 @@ class TestBoundary(unittest.TestCase):
         # Check the polygon is attached to the boundary even when no
         # intermediate point for one of the crossing segments would normally
         # exist.
-        polygon = geometry.Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = Polygon([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.6)
         # This will raise an exception if the polygon/boundary intersection
         # fails.
@@ -65,7 +66,7 @@ class TestBoundary(unittest.TestCase):
 
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords in polys:
-            polygon = geometry.Polygon(coords)
+            polygon = Polygon(coords)
             multi_polygon = projection.project_geometry(polygon)
             self.assertEqual(len(multi_polygon), 0)
 
@@ -73,26 +74,26 @@ class TestBoundary(unittest.TestCase):
 class TestMisc(unittest.TestCase):
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90)
-        polygon = geometry.Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = Polygon([(-10, 30), (10, 60), (10, 50)])
         multi_polygon = projection.project_geometry(polygon)
 
     def test_small(self):
         projection = ccrs.Mercator()
-        polygon = geometry.Polygon([
+        polygon = Polygon([
             (-179.9173693847652942, -16.5017831356493616),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
             ])
         multi_polygon = projection.project_geometry(polygon)
         self.assertEqual(len(multi_polygon), 1)
-        self.assertEqual(len(multi_polygon[0].exterior.coords), 5)
+        self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
 
 
 class TestQuality(unittest.TestCase):
     def setUp(self):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
-                                                     pole_latitude=37.5)
-        polygon = geometry.Polygon([
+                                      pole_latitude=37.5)
+        polygon = Polygon([
             (175.0, -57.19913331),
             (177.5, -57.38460319),
             (180.0, -57.445077),
@@ -101,9 +102,9 @@ class TestQuality(unittest.TestCase):
         #from cartopy.tests import show
         #show(projection, self.multi_polygon)
 
-    def test_no_split(self):
-        # Start simple ... there should only be one projected polygon.
-        self.assertEqual(len(self.multi_polygon), 1)
+    def test_split(self):
+        # Start simple ... there should be two projected polygons.
+        self.assertEqual(len(self.multi_polygon), 2)
 
     def test_repeats(self):
         # Make sure we don't have repeated points at the boundary, because
@@ -134,6 +135,116 @@ class TestQuality(unittest.TestCase):
             num_incr = numpy.count_nonzero(delta > 0)
             num_decr = numpy.count_nonzero(delta < 0)
             self.assertLess(abs(num_incr - num_decr), 3, 'Too much assymmetry.')
+
+
+class TestHoles(unittest.TestCase):
+    def _assert_bounds(self, bounds, x1, y1, x2, y2, delta=1):
+        self.assertAlmostEqual(bounds[0], x1, delta=delta)
+        self.assertAlmostEqual(bounds[1], y1, delta=delta)
+        self.assertAlmostEqual(bounds[2], x2, delta=delta)
+        self.assertAlmostEqual(bounds[3], y2, delta=delta)
+
+    def test_simple(self):
+        proj = ccrs.PlateCarree()
+        poly = Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
+                       [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
+        multi_polygon = proj.project_geometry(poly)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 1)
+        self.assertEqual(len(multi_polygon[0].interiors), 1)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, -40, -47, 40, 47)
+        self._assert_bounds(polygon.interiors[0].bounds, -20, -21, 20, 21)
+
+    def test_wrapped_poly_simple_hole(self):
+        proj = ccrs.PlateCarree(-150)
+        poly = Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
+                       [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
+        multi_polygon = proj.project_geometry(poly)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 2)
+        self.assertEqual(len(multi_polygon[0].interiors), 0)
+        self.assertEqual(len(multi_polygon[1].interiors), 1)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, -180, -43, -170, 43)
+        polygon = multi_polygon[1]
+        self._assert_bounds(polygon.bounds, 110, -47, 180, 47)
+        self._assert_bounds(polygon.interiors[0].bounds, 130, -21, 170, 21)
+
+    def test_wrapped_poly_wrapped_hole(self):
+        proj = ccrs.PlateCarree(-180)
+        poly = Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
+                       [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
+        multi_polygon = proj.project_geometry(poly)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 2)
+        self.assertEqual(len(multi_polygon[0].interiors), 0)
+        self.assertEqual(len(multi_polygon[1].interiors), 0)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, -180, -47, -140, 47)
+        polygon = multi_polygon[1]
+        self._assert_bounds(polygon.bounds, 140, -47, 180, 47)
+
+    def test_inverted_poly_simple_hole(self):
+        proj = ccrs.NorthPolarStereo()
+        poly = Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
+                       [[(0, -30), (-90, -30), (-180, -30), (-270, -30)]])
+        multi_polygon = proj.project_geometry(poly)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 1)
+        self.assertEqual(len(multi_polygon[0].interiors), 1)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, -2.4e7, -2.4e7, 2.4e7, 2.4e7, 1e6)
+        self._assert_bounds(polygon.interiors[0].bounds,
+                            -1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
+
+    def test_inverted_poly_clipped_hole(self):
+        proj = ccrs.NorthPolarStereo()
+        poly = Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
+                       [[(135, -60), (45, -60), (-45, -60), (-135, -60)]])
+        multi_polygon = proj.project_geometry(poly)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 1)
+        self.assertEqual(len(multi_polygon[0].interiors), 1)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, -5.0e7, -5.0e7, 5.0e7, 5.0e7, 1e6)
+        self._assert_bounds(polygon.interiors[0].bounds,
+                            -1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
+        self.assertAlmostEqual(polygon.area, 7.30e15, delta=1e13)
+
+    def test_inverted_poly_removed_hole(self):
+        proj = ccrs.NorthPolarStereo()
+        poly = Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
+                       [[(135, -75), (45, -75), (-45, -75), (-135, -75)]])
+        multi_polygon = proj.project_geometry(poly)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 1)
+        self.assertEqual(len(multi_polygon[0].interiors), 1)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, -5.0e7, -5.0e7, 5.0e7, 5.0e7, 1e6)
+        self._assert_bounds(polygon.interiors[0].bounds,
+                            -1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
+        self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
+
+    def test_multiple_interiors(self):
+        exterior = numpy.array(shapely.geometry.box(0, 0, 12, 12).exterior.coords)
+        interiors = [
+                     numpy.array(shapely.geometry.box(1, 1, 2, 2, ccw=False).exterior.coords),
+                     numpy.array(shapely.geometry.box(1, 8, 2, 9, ccw=False).exterior.coords),
+                     ]
+    
+        poly = shapely.geometry.Polygon(exterior, interiors)
+        
+        target = ccrs.PlateCarree()
+        source = ccrs.Geodetic()
+        
+        assert len(list(target.project_geometry(poly, source))) == 1
 
 
 if __name__ == '__main__':
