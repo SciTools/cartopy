@@ -239,4 +239,8 @@ def path_to_geos(path):
         print 'geos time %s' % (time.time() - start_time)
         print '\n'.join(log)
     
+    # remove any zero area polygons
+    result = filter(lambda geom: (isinstance(geom, polygon.Polygon) and geom.area != 0) or \
+                    not isinstance(geom, polygon.Polygon), result) 
+    
     return result
