@@ -31,6 +31,17 @@ from Cython.Distutils import build_ext
 import numpy
 
 
+def file_walk_relative(top, remove=''):
+    """
+    Returns a generator of files from the top of the tree, removing
+    the given prefix from the root/file result.
+
+    """
+    for root, dirs, files in os.walk(top):
+        for file in files:
+            yield os.path.join(root, file).replace(remove, '')
+
+
 def find_package_tree(root_path, root_package):
     """
     Returns the package and all its sub-packages.
@@ -123,7 +134,8 @@ setup(
       
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},
-    #package_data={'cartopy': ['data/*']},
+    package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/mpl/baseline_images/',
+                                                     remove='lib/cartopy/'))},
     # requires proj4 headers
     ext_modules=[
         Extension('cartopy.trace', ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],

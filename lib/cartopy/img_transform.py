@@ -177,8 +177,9 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         # Handle missing neighours using a masked array
         if numpy.any(mask):
             indices = numpy.where(numpy.logical_not(mask), indices, 0)
-            mask, array_2d = numpy.broadcast_arrays(mask, array.reshape(-1, array.shape[-1]))
-            array_2d = numpy.ma.array(array_2d[indices], mask=mask)
+            array_2d = array.reshape(-1, array.shape[-1])[indices]
+            mask, array_2d = numpy.broadcast_arrays(mask.reshape(-1, 1), array_2d)
+            array_2d = numpy.ma.array(array_2d, mask=mask)
         else:
             array_2d = array.reshape(-1, array.shape[-1])[indices]
 
