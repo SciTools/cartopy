@@ -128,8 +128,10 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         self.yaxis.set_visible(False)
         self.autoscale_view(tight=True)
         self.set_aspect('equal')
-#        self.patch.set_transform(self.transData)
+
+        pre_bounary = self.ignore_existing_data_limits
         self._boundary()
+        self.ignore_existing_data_limits = pre_bounary
 
         # gives a better display of data. However, does need to be made clear in the docs.
         self._xmargin = 0.15
