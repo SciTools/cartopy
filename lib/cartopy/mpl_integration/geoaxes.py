@@ -390,29 +390,14 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
         return result
 
-    def gridlines(self, res):
-        if isinstance(self.projection, ccrs.Orthographic):
-            import warnings
-            warnings.warn('Gridlines and orthographic projections are causing a problem, skipping this operation.')
-            return
-        # XXX needs to use proper mpl axes
-        step = 15
-        lons = range(0, 360, step)
-        lats = [-75, 0, 75]
-        for lon in lons:
-            self.plot([lon] * len(lats), lats, linestyle=':', color='k',
-                      transform=ccrs.Geodetic(),
-                      scalex=False, scaley=False
-                      )
-
-        lons = lons + [lons[0] + 360]
-        lats = range(-90 + step, 90, step)
-        for lat in lats:
-            self.plot(lons, [lat] * len(lons), linestyle=':', color='k',
-                      transform=ccrs.Geodetic(),
-                      scalex=False, scaley=False
-                      )
-
+    def gridlines(self, crs=None, **kwargs):
+        if crs is None:
+            crs = ccrs.PlateCarree()
+        from cartopy.mpl_integration.gridliner import Gridliner
+        gl = Gridliner(self)
+        gl.do_gridlines(self, crs, background_patch=self.background_patch, collection_kwargs=kwargs)
+        return gl
+    
     def _gen_axes_spines(self, locations=None, offset=0.0, units='inches'):
         # generate some axes spines, as some Axes super class machinery requires them. Just make them invisible
         spines = matplotlib.axes.Axes._gen_axes_spines(self, locations=locations, offset=offset, units=units)
@@ -470,6 +455,7 @@ class SimpleClippedTransform(mtransforms.Transform):
     """
     input_dims = 2
     output_dims = 2
+    has_inverse = True
     def __init__(self, pre_clip_transform, post_clip_transform, xclip=(0, 1), yclip=(0, 1)):
         mtransforms.Transform.__init__(self)
         self.pre_clip_transform = pre_clip_transform
@@ -485,6 +471,10 @@ class SimpleClippedTransform(mtransforms.Transform):
         numpy.clip(y, self.y_clips[0], self.y_clips[1], y)
         # XXX support ma's?
         return self.post_clip_transform.transform(new_vals)
+
+    def inverted(self):
+        return (self.pre_clip_transform + self.post_clip_transform).inverted()
+
 
 class SimpleMaskingTransform(SimpleClippedTransform):
     def transform_non_affine(self, values):
@@ -506,116 +496,3 @@ class SimpleMaskingTransform(SimpleClippedTransform):
             return result[0, :]
         else:
             return result
-
-
-def add_holey_poly(transform):
-    import matplotlib.patches as mpatches
-    from matplotlib.collections import PatchCollection
-    from matplotlib.path import Path
-
-    import cartopy.mpl_integration.patch as cpatch
-    
-
-    poly = mpatches.RegularPolygon((140, 10), 4, 81.0)
-    # XXX internal rings are not yet supported...
-    pth = Path([[0, 45], [60, 45], [60, -45], [0, -45], [0, -45], 
-                [10, 20], [10, -20], [40, -20], [40, 20], [10, -20]], 
-               [1, 2, 2, 2, 79, 1, 2, 2 , 2, 79])
-#    pth = Path([[0, 45], [60, 45], [60, -45], [0, -45], [0, -45]], [1, 2, 2, 2, 79])
-#    patches = [mpatches.PathPatch(pth)]
-
-    patches = []
-    for geos in cpatch.path_to_geos(pth):
-        for pth in cpatch.geos_to_path(geos):
-            patches.append(mpatches.PathPatch(pth))
-    
-#    collection = PatchCollection(patches, cmap=matplotlib.cm.jet, alpha=0.4,
-#                                 transform=transform
-#                                 )
-    
-    collection = PatchCollection(patches, cmap=matplotlib.cm.jet, alpha=0.4,
-                                 transform=ccrs.Geodetic()
-                                 )
-    
-    plt.gca().add_collection(collection)
-
-
-if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
-#    proj = ccrs.Robinson()  
-#    proj = ccrs.PlateCarree(central_longitude=90)
-    proj = ccrs.PlateCarree()
-#    proj = ccrs.NorthPolarStereo()
-#    proj = ccrs.Orthographic()
-#    proj = ccrs.RotatedPole(pole_longitude=177, pole_latitude=37)    
-
-    # XXX Interrupted isn't working so well yet.
-#    proj = ccrs.InterruptedGoodeHomolosine()
-
-
-    # Initialise the projection
-#    ax = plt.subplot(211, projection=proj)
-    ax = plt.axes(projection=proj)
-
-    # define a trans
-    ll = ccrs.PlateCarree()
-#    ll_transform = InterProjectionTransform(ll, proj) + ax.transData
-
-#    plt.axis(xrange=[0, 50], yrange=[0, 50])
-    # ================
-
-#    ax.bluemarble()
-    ax.coastlines()
-#    ax.gridlines()
-#    ax.gshhs()
-#    ax.gshhs(ocean_fill='blue', land_fill='green')
-
-#    ax.plot(0, 0, 'bx')
-#    ax.plot(-14000000, 0, 'yx')
-    add_holey_poly(ll)
-
-    # cardiff in NorthPolar...
-#    ax.plot(-2.568e5, -4.399e6, 'bo', transform=ccrs.NorthPolarStereo(), scalex=False, scaley=False)
-
-    # cape town
-#    ax.plot(18.25, -33.5, 'ro', transform=ll)
-#    plt.ion()
-    coords = [(-0.08, 51.53), (132.00, 43.17)] # London to Vladivostock
-    r = ax.plot(*zip(*coords), transform=ll)
-#    ax.set_global()
-
-    print ax.set_extent([50, 60, -15, 10], crs=ccrs.PlateCarree())
-    print ax.set_extent([50, 60, -15, 10], crs=ccrs.Geodetic())
-    print ax.set_extent([0, 5000, 0, 5000], crs=ccrs.OSGB())
-    print ax.get_xlim()
-    print ax.get_ylim()
-#    import cartopy.test
-#    cs = plt.contourf(*cartopy.test.wave_data(), transform=ll)
-#    cs = plt.contour(*cartopy.test.wave_data(), transform=ll)
-
-#    x, y, s = cartopy.test.wave_data()
-#    cs = plt.scatter(x.flat, y.flat, transform=ll)
-#    print x.flat[101:102], y.flat[201:202]
-
-#    plt.draw()
-#    print plt.gca().outline_patch.get_transform()
-    plt.show()
-
-
-#    # ================
-#    plt.show()
-#    print r[0].get_transform()._invalid
-#    plt.draw()
-#    print r[0].get_transform()._invalid
-#    import time
-#    time.sleep(2)
-#    plt.gcf().set_size_inches([10, 10])
-#    print r[0].get_transform()._invalid
-#    plt.draw()
-#    print '------------\n' * 4
-##    print r[0].get_transform()
-#    print r[0].get_transform()._invalid
-#    time.sleep(6)
-##    plt.show()
-#    
