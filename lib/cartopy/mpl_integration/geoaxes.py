@@ -133,9 +133,9 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         self._boundary()
         self.ignore_existing_data_limits = pre_bounary
 
-        # gives a better display of data. However, does need to be made clear in the docs.
-        self._xmargin = 0.15
-        self._ymargin = 0.15
+#        # gives a better display of data. However, does need to be made clear in the docs.
+#        self._xmargin = 0.15
+#        self._ymargin = 0.15
 
         return result
 
