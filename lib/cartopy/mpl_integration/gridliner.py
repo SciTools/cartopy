@@ -36,8 +36,7 @@ class Gridliner(object):
         
         rc_params = matplotlib.rcParams
 
-        n_steps = 20
-        n_ticks = 10
+        n_steps = 30
 
         lines = []
         
@@ -47,8 +46,13 @@ class Gridliner(object):
         else:
             endpoint = True
         
-        for x in numpy.linspace(x_lim[0], x_lim[1], n_ticks, endpoint=endpoint):
-            l = zip(numpy.zeros(n_steps) + x, numpy.linspace(y_lim[0], y_lim[1], n_steps, endpoint=True))
+        x_ticks = self.xlocator.tick_values(x_lim[0], x_lim[1])
+        y_ticks = self.ylocator.tick_values(y_lim[0], y_lim[1])
+        
+        for x in numpy.linspace(min(x_ticks), max(x_ticks), len(y_ticks), endpoint=endpoint):
+            l = zip(numpy.zeros(n_steps) + x, 
+                    numpy.linspace(min(y_ticks), max(y_ticks), n_steps, endpoint=True)
+                    )
             lines.append(l)
 
         if collection_kwargs is None:
@@ -66,9 +70,15 @@ class Gridliner(object):
 
 
         lines = []
-        for y in numpy.linspace(y_lim[0], y_lim[1], n_ticks, endpoint=True):
-            l = zip(numpy.linspace(x_lim[0], x_lim[1], n_steps, endpoint=True),
-                              numpy.zeros(n_steps) + y)
+        
+        for y in numpy.linspace(min(y_ticks), max(y_ticks), len(x_ticks), endpoint=True):
+#            l = zip(numpy.linspace(x_lim[0], x_lim[1], n_steps, endpoint=True),
+#                              numpy.zeros(n_steps) + y)
+#            l = zip(x_ticks, numpy.zeros(len(x_ticks)) + y)
+            l = zip(
+                    numpy.linspace(min(x_ticks), max(x_ticks), n_steps, endpoint=True),
+                    numpy.zeros(n_steps) + y,
+                    )
             lines.append(l)
 
         y_lc = mcollections.LineCollection(lines, **collection_kwargs)
@@ -114,6 +124,7 @@ class Gridliner(object):
                 color = 'b'
 
             if DEBUG:
+                import matplotlib.pyplot as plt
                 plt.plot(coords[i, 0], coords[i, 1], 'o' + color, clip_on=False, transform=ax_transform)
 #                plt.text(coords[i, 0], coords[i, 1], str(val), clip_on=False,
 #                         transform=ax_transform, rotation=23,

@@ -28,7 +28,7 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import image_comparison
 
 
-@image_comparison(baseline_images=['gridliner1', 'gridliner2'])
+@image_comparison(baseline_images=['gridliner1'])
 def test_gridliner():
     desired_gridline_prj = [ccrs.PlateCarree(), ccrs.OSGB()]
     projections = [ccrs.PlateCarree(), ccrs.OSGB(), ccrs.RotatedPole(37, 50)]
@@ -50,6 +50,7 @@ def test_gridliner():
     ax.set_global()
     ax.coastlines()
     ax.gridlines(ccrs.PlateCarree(), color='blue', linestyle='-')
+    ax.gridlines(ccrs.OSGB())
         
     ax = plt.subplot(nx, ny, 4, projection=ccrs.PlateCarree())
     ax.set_global()
