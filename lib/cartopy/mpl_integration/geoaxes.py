@@ -530,6 +530,11 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
             X = transformed_pts[..., 0]
             Y = transformed_pts[..., 1]
 
+            # XXX Not a mpl 1.2 thing...
+            no_inf = (X != np.inf) & (Y != np.inf)
+            X = X[no_inf]
+            Y = Y[no_inf]
+
         minx = np.amin(X)
         maxx = np.amax(X)
         miny = np.amin(Y)
@@ -652,6 +657,11 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
             transformed_pts = trans_to_data.transform(pts)
             x = transformed_pts[..., 0]
             y = transformed_pts[..., 1]
+            
+            # XXX Not a mpl 1.2 thing...
+            no_inf = (x != np.inf) & (y != np.inf)
+            x = x[no_inf]
+            y = y[no_inf]
         
         minx = np.amin(x)
         maxx = np.amax(x)
