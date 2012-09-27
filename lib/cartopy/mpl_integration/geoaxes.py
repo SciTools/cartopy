@@ -118,6 +118,8 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
                 self.imshow(img, extent=extent, origin=origin, transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
         return matplotlib.axes.Axes.draw(self, renderer=renderer, inframe=inframe)
+    
+    
 
     def __str__(self):
         return '< GenericProjectionAxes: %s >' % self.projection
@@ -443,6 +445,225 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         self.patch.set_facecolor((1, 1, 1, 0))
         self.patch.set_edgecolor((0.5, 0.5, 0.5))
         self.patch.set_linewidth(0.0)
+
+
+    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
+    def contour(self, *args, **kwargs):
+        t = kwargs.get('transform', None)
+        if hasattr(t, '_as_mpl_transform'):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        return matplotlib.axes.Axes.contour(self, *args, **kwargs)
+    
+    def contourf(self, *args, **kwargs):
+        t = kwargs.get('transform', None)
+        if hasattr(t, '_as_mpl_transform'):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
+    
+    def pcolormesh(self, *args, **kwargs):
+        import warnings
+        import numpy as np
+        import numpy.ma as ma
+        import matplotlib as mpl
+        import matplotlib.cbook as cbook
+        import matplotlib.colors as mcolors
+        import matplotlib.cm as cm
+        from matplotlib import docstring
+        import matplotlib.transforms as transforms
+        import matplotlib.artist as artist
+        from matplotlib.artist import allow_rasterization
+        import matplotlib.backend_bases as backend_bases
+        import matplotlib.path as mpath
+        import matplotlib.mlab as mlab
+        import matplotlib.collections as mcoll
+        
+        if not self._hold: self.cla()
+
+        alpha = kwargs.pop('alpha', None)
+        norm = kwargs.pop('norm', None)
+        cmap = kwargs.pop('cmap', None)
+        vmin = kwargs.pop('vmin', None)
+        vmax = kwargs.pop('vmax', None)
+        shading = kwargs.pop('shading', 'flat').lower()
+        antialiased = kwargs.pop('antialiased', False)
+        kwargs.setdefault('edgecolors', 'None')
+
+        X, Y, C = self._pcolorargs('pcolormesh', *args)
+        Ny, Nx = X.shape
+
+        # convert to one dimensional arrays
+        if shading != 'gouraud':
+            C = ma.ravel(C[0:Ny-1, 0:Nx-1]) # data point in each cell is value at
+                                            # lower left corner
+        else:
+            C = C.ravel()
+        X = X.ravel()
+        Y = Y.ravel()
+
+        coords = np.zeros(((Nx * Ny), 2), dtype=float)
+        coords[:, 0] = X
+        coords[:, 1] = Y
+
+        collection = mcoll.QuadMesh(
+            Nx - 1, Ny - 1, coords,
+            antialiased=antialiased, shading=shading, **kwargs)
+        collection.set_alpha(alpha)
+        collection.set_array(C)
+        if norm is not None: assert(isinstance(norm, mcolors.Normalize))
+        collection.set_cmap(cmap)
+        collection.set_norm(norm)
+        collection.set_clim(vmin, vmax)
+        collection.autoscale_None()
+
+        self.grid(False)
+
+        # Transform from native to data coordinates?
+        t = collection._transform
+        if (not isinstance(t, mtransforms.Transform)
+            and hasattr(t, '_as_mpl_transform')):
+            t = t._as_mpl_transform(self.axes)
+
+        if t and any(t.contains_branch_seperately(self.transData)):
+            trans_to_data = t - self.transData
+            pts = np.vstack([X, Y]).T.astype(np.float)
+            transformed_pts = trans_to_data.transform(pts)
+            X = transformed_pts[..., 0]
+            Y = transformed_pts[..., 1]
+
+        minx = np.amin(X)
+        maxx = np.amax(X)
+        miny = np.amin(Y)
+        maxy = np.amax(Y)
+        
+        corners = (minx, miny), (maxx, maxy)
+        self.update_datalim( corners)
+        self.autoscale_view()
+        self.add_collection(collection)
+        return collection
+    
+    def pcolor(self, *args, **kwargs):
+        import warnings
+        import numpy as np
+        import numpy.ma as ma
+        import matplotlib as mpl
+        import matplotlib.cbook as cbook
+        import matplotlib.colors as mcolors
+        import matplotlib.cm as cm
+        from matplotlib import docstring
+        import matplotlib.transforms as transforms
+        import matplotlib.artist as artist
+        from matplotlib.artist import allow_rasterization
+        import matplotlib.backend_bases as backend_bases
+        import matplotlib.path as mpath
+        import matplotlib.mlab as mlab
+        import matplotlib.collections as mcoll
+
+        if not self._hold: self.cla()
+
+        alpha = kwargs.pop('alpha', None)
+        norm = kwargs.pop('norm', None)
+        cmap = kwargs.pop('cmap', None)
+        vmin = kwargs.pop('vmin', None)
+        vmax = kwargs.pop('vmax', None)
+        shading = kwargs.pop('shading', 'flat')
+
+        X, Y, C = self._pcolorargs('pcolor', *args)
+        Ny, Nx = X.shape
+
+        # convert to MA, if necessary.
+        C = ma.asarray(C)
+        X = ma.asarray(X)
+        Y = ma.asarray(Y)
+        mask = ma.getmaskarray(X)+ma.getmaskarray(Y)
+        xymask = mask[0:-1,0:-1]+mask[1:,1:]+mask[0:-1,1:]+mask[1:,0:-1]
+        # don't plot if C or any of the surrounding vertices are masked.
+        mask = ma.getmaskarray(C)[0:Ny-1,0:Nx-1]+xymask
+
+        newaxis = np.newaxis
+        compress = np.compress
+
+        ravelmask = (mask==0).ravel()
+        X1 = compress(ravelmask, ma.filled(X[0:-1,0:-1]).ravel())
+        Y1 = compress(ravelmask, ma.filled(Y[0:-1,0:-1]).ravel())
+        X2 = compress(ravelmask, ma.filled(X[1:,0:-1]).ravel())
+        Y2 = compress(ravelmask, ma.filled(Y[1:,0:-1]).ravel())
+        X3 = compress(ravelmask, ma.filled(X[1:,1:]).ravel())
+        Y3 = compress(ravelmask, ma.filled(Y[1:,1:]).ravel())
+        X4 = compress(ravelmask, ma.filled(X[0:-1,1:]).ravel())
+        Y4 = compress(ravelmask, ma.filled(Y[0:-1,1:]).ravel())
+        npoly = len(X1)
+
+        xy = np.concatenate((X1[:,newaxis], Y1[:,newaxis],
+                             X2[:,newaxis], Y2[:,newaxis],
+                             X3[:,newaxis], Y3[:,newaxis],
+                             X4[:,newaxis], Y4[:,newaxis],
+                             X1[:,newaxis], Y1[:,newaxis]),
+                             axis=1)
+        verts = xy.reshape((npoly, 5, 2))
+
+        C = compress(ravelmask, ma.filled(C[0:Ny-1,0:Nx-1]).ravel())
+
+        linewidths = (0.25,)
+        if 'linewidth' in kwargs:
+            kwargs['linewidths'] = kwargs.pop('linewidth')
+        kwargs.setdefault('linewidths', linewidths)
+
+        if shading == 'faceted':
+            edgecolors = 'k',
+        else:
+            edgecolors = 'none'
+        if 'edgecolor' in kwargs:
+            kwargs['edgecolors'] = kwargs.pop('edgecolor')
+        ec = kwargs.setdefault('edgecolors', edgecolors)
+
+        # aa setting will default via collections to patch.antialiased
+        # unless the boundary is not stroked, in which case the
+        # default will be False; with unstroked boundaries, aa
+        # makes artifacts that are often disturbing.
+        if 'antialiased' in kwargs:
+            kwargs['antialiaseds'] = kwargs.pop('antialiased')
+        if 'antialiaseds' not in kwargs and ec.lower() == "none":
+                kwargs['antialiaseds'] = False
+
+
+        collection = mcoll.PolyCollection(verts, **kwargs)
+
+        collection.set_alpha(alpha)
+        collection.set_array(C)
+        if norm is not None: assert(isinstance(norm, mcolors.Normalize))
+        collection.set_cmap(cmap)
+        collection.set_norm(norm)
+        collection.set_clim(vmin, vmax)
+        collection.autoscale_None()
+        self.grid(False)
+
+        x = X.compressed()
+        y = Y.compressed()
+        
+        # Transform from native to data coordinates?
+        t = collection._transform
+        if (not isinstance(t, mtransforms.Transform)
+            and hasattr(t, '_as_mpl_transform')):
+            t = t._as_mpl_transform(self.axes)
+
+        if t and any(t.contains_branch_seperately(self.transData)):
+            trans_to_data = t - self.transData
+            pts = np.vstack([x, y]).T.astype(np.float)
+            transformed_pts = trans_to_data.transform(pts)
+            x = transformed_pts[..., 0]
+            y = transformed_pts[..., 1]
+        
+        minx = np.amin(x)
+        maxx = np.amax(x)
+        miny = np.amin(y)
+        maxy = np.amax(y)
+
+        corners = (minx, miny), (maxx, maxy)
+        self.update_datalim( corners)
+        self.autoscale_view()
+        self.add_collection(collection)
+        return collection
+
 
 
 class SimpleClippedTransform(mtransforms.Transform):
