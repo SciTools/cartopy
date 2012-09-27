@@ -60,7 +60,46 @@ def test_update_lim():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.update_datalim([(-10, -10), (-5, -5)])
     assert_array_almost_equal(ax.dataLim.get_points(), np.array([[-10., -10.], [ -5.,  -5.]]))
+
+
+def test_limits_contour():
+    xs, ys = np.meshgrid(np.linspace(250, 350, 15), np.linspace(-45, 45, 20))
+    data = np.sin((xs * ys)*1.e7)
     
+    resulting_extent = np.array([[-110.,  -45.], [ -10.,   45.]])
+    
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+    plt.contourf(xs, ys, data, transform=ccrs.Geodetic())
+    assert_array_almost_equal(ax.dataLim, resulting_extent)
+    plt.close()
+    
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+    plt.contour(xs, ys, data, transform=ccrs.Geodetic())
+    assert_array_almost_equal(ax.dataLim, resulting_extent)
+    plt.close()
+    
+    
+def test_limits_pcolor():
+    xs, ys = np.meshgrid(np.linspace(250, 350, 15), np.linspace(-45, 45, 20))
+    data = (np.sin((xs * ys)*1.e7))[:-1, :-1]
+    
+    resulting_extent = np.array([[-110.,  -45.], [ -10.,   45.]])
+    
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+    plt.pcolor(xs, ys, data, transform=ccrs.Geodetic())
+    assert_array_almost_equal(ax.dataLim, resulting_extent)
+    plt.close()
+    
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+    plt.pcolormesh(xs, ys, data, transform=ccrs.Geodetic())
+    assert_array_almost_equal(ax.dataLim, resulting_extent)
+    plt.close()
+    
+
 
 if __name__=='__main__':
     import nose
