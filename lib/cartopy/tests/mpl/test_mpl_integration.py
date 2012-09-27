@@ -56,7 +56,7 @@ def test_multiple_projections():
                    ccrs.SouthPolarStereo(),
                    ccrs.Orthographic(),
                    ccrs.Mollweide(),
-#                   ccrs.InterruptedGoodeHomolosine(),
+                   ccrs.InterruptedGoodeHomolosine(),
                    ]
 
     fig = plt.figure(figsize=(10, 10))
