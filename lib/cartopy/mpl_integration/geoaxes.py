@@ -62,11 +62,6 @@ class InterProjectionTransform(mtransforms.Transform):
     def transform_non_affine(self, xy):
         """Transforms from native coordinates to lat lons."""
         if isinstance(xy, numpy.ndarray):
-#            print xy.shape
-#            x, y = xy[:, 0:1], xy[:, 1:2]
-#            r = []
-#            for xpt, ypt in zip(x, y):
-#                print xpt, ypt
             return self.target_projection.transform_points(self.source_projection, xy[:, 0], xy[:, 1])[:, 0:2]
         else:
             x, y = xy
