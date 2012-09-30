@@ -5,6 +5,7 @@ Building cartopy from source
 
 The dependencies, with the minimum tested version, of cartopy |version| are:
 
+ * cython - 0.15.1
  * proj.4 - version 
  * geos - 1.7.1
  * python2 - 2.7.3 
