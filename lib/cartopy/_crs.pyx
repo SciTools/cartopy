@@ -140,17 +140,23 @@ cdef class CRS:
         return (cx, cy)
 
     def transform_points(self, CRS src_crs not None, 
-                                np.ndarray[np.double_t, ndim=1] x not None, 
-                                np.ndarray[np.double_t, ndim=1] y not None, 
-                                np.ndarray[np.double_t, ndim=1] z=None):
+                                np.ndarray x not None, 
+                                np.ndarray y not None, 
+                                np.ndarray z=None):
 
         cdef np.ndarray[np.double_t, ndim=2] result
         
+
         if z is None:
+            if x.ndim != 1 or y.ndim != 1:
+                raise ValueError('x and y arrays must be one dimensional')
             if x.shape[0] != y.shape[0]:
                 raise ValueError('x and y arrays must have the same length')
-        elif not x.shape[0] == y.shape[0] == z.shape[0]:
-            raise ValueError('x, y, and z arrays must have the same length')
+        else:
+            if x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
+                raise ValueError('x, y and z arrays must be one dimensional')
+            if not x.shape[0] == y.shape[0] == z.shape[0]:
+                raise ValueError('x, y, and z arrays must have the same length')
 
         npts = x.shape[0]
 
