@@ -178,7 +178,6 @@ class TestWrap(PolygonTests):
         self.assertEqual(len(multi_polygon), 1)
         # Check the rough shape
         polygon = multi_polygon[0]
-        print polygon
         self._assert_bounds(polygon.bounds, -160, 0, -140, 10)
 
 

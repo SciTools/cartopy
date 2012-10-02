@@ -431,7 +431,15 @@ class _RectangularProjection(Projection):
         return (-self._half_height, self._half_height)
 
 
-class PlateCarree(_RectangularProjection):
+class _CylindricalProjection(_RectangularProjection):
+    """
+    The abstract class which denotes cylindrical projections where we
+    want to allow x values to wrap around.
+
+    """
+
+
+class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = {'proj': 'eqc', 'lon_0': central_longitude, 'a': math.degrees(1)}
         super(PlateCarree, self).__init__(proj4_params, 180, 90)
@@ -509,7 +517,7 @@ class Miller(_RectangularProjection):
         return 0.5
 
 
-class RotatedPole(_RectangularProjection):
+class RotatedPole(_CylindricalProjection):
     def __init__(self, pole_longitude=0.0, pole_latitude=90.0):
         proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
             'o_lat_p': pole_latitude, 'lon_0': 180 + pole_longitude,

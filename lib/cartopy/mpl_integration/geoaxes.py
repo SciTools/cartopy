@@ -56,16 +56,6 @@ class InterProjectionTransform(mtransforms.Transform):
         self.target_projection = target_projection
         mtransforms.Transform.__init__(self)
 
-    # These transforms should never compare equal, even where they're
-    # the same object. E.g. PlateCarree() to PlateCarree() might need to
-    # adjust the geometry if the source x coordinates fall outside the
-    # [-180, 180] range of the final map.
-    def __eq__(self, other):
-        return False
-
-    def __ne__(self, other):
-        return not self == other
-
     def __repr__(self):
         return '< InterProjectionTransform %s -> %s >' % (self.source_projection, self.target_projection)
 
@@ -86,7 +76,7 @@ class InterProjectionTransform(mtransforms.Transform):
         bypass = self.source_projection == self.target_projection
         if bypass:
             projection = self.source_projection
-            if isinstance(projection, ccrs.PlateCarree):
+            if isinstance(projection, ccrs._CylindricalProjection):
                 x = path.vertices[:, 0]
                 x_limits = projection.x_limits
                 bypass = x.min() >= x_limits[0] and x.max() <= x_limits[1]
