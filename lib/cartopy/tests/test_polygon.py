@@ -137,13 +137,51 @@ class TestQuality(unittest.TestCase):
             self.assertLess(abs(num_incr - num_decr), 3, 'Too much assymmetry.')
 
 
-class TestHoles(unittest.TestCase):
+class PolygonTests(unittest.TestCase):
     def _assert_bounds(self, bounds, x1, y1, x2, y2, delta=1):
         self.assertAlmostEqual(bounds[0], x1, delta=delta)
         self.assertAlmostEqual(bounds[1], y1, delta=delta)
         self.assertAlmostEqual(bounds[2], x2, delta=delta)
         self.assertAlmostEqual(bounds[3], y2, delta=delta)
 
+
+class TestWrap(PolygonTests):
+    # Test that Plate Carree projection "does the right thing"(tm) with
+    # source data tha extends outside the [-180, 180] range.
+    def test_plate_carree_no_wrap(self):
+        proj = ccrs.PlateCarree()
+        poly = shapely.geometry.box(0, 0, 10, 10)
+        multi_polygon = proj.project_geometry(poly, proj)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 1)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, 0, 0, 10, 10)
+
+    def test_plate_carree_partial_wrap(self):
+        proj = ccrs.PlateCarree()
+        poly = shapely.geometry.box(170, 0, 190, 10)
+        multi_polygon = proj.project_geometry(poly, proj)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 2)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, 170, 0, 180, 10)
+        polygon = multi_polygon[1]
+        self._assert_bounds(polygon.bounds, -180, 0, -170, 10)
+
+    def test_plate_carree_wrap(self):
+        proj = ccrs.PlateCarree()
+        poly = shapely.geometry.box(200, 0, 220, 10)
+        multi_polygon = proj.project_geometry(poly, proj)
+        # Check the structure
+        self.assertEqual(len(multi_polygon), 1)
+        # Check the rough shape
+        polygon = multi_polygon[0]
+        self._assert_bounds(polygon.bounds, -160, 0, -140, 10)
+
+
+class TestHoles(PolygonTests):
     def test_simple(self):
         proj = ccrs.PlateCarree()
         poly = Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],

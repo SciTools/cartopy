@@ -73,6 +73,16 @@ class InterProjectionTransform(mtransforms.Transform):
 #        return numpy.array([[point[0], point[1]]])
 
     def transform_path_non_affine(self, path):
+        bypass = self.source_projection == self.target_projection
+        if bypass:
+            projection = self.source_projection
+            if isinstance(projection, ccrs._CylindricalProjection):
+                x = path.vertices[:, 0]
+                x_limits = projection.x_limits
+                bypass = x.min() >= x_limits[0] and x.max() <= x_limits[1]
+        if bypass:
+            return path
+
         if path.vertices.shape == (1, 2):
             return mpath.Path(self.transform(path.vertices))
 
@@ -445,16 +455,31 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contour(self, *args, **kwargs):
         t = kwargs.get('transform', None)
+        # Keep this bit - even at mpl v1.2
+        if t is None:
+            t = self.projection
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)
     
     def contourf(self, *args, **kwargs):
         t = kwargs.get('transform', None)
+        # Keep this bit - even at mpl v1.2
+        if t is None:
+            t = self.projection
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
+    def scatter(self, *args, **kwargs):
+        t = kwargs.get('transform', None)
+        # Keep this bit - even at mpl v1.2
+        if t is None:
+            t = self.projection
+        if hasattr(t, '_as_mpl_transform'):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        return matplotlib.axes.Axes.scatter(self, *args, **kwargs)
+
     def pcolormesh(self, *args, **kwargs):
         import warnings
         import numpy as np
@@ -542,6 +567,10 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         return collection
     
     def pcolor(self, *args, **kwargs):
+        t = kwargs.get('transform', None)
+        if t is None:
+            kwargs['transform'] = self.projection
+
         import warnings
         import numpy as np
         import numpy.ma as ma
