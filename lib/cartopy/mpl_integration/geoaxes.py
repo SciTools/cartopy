@@ -56,6 +56,16 @@ class InterProjectionTransform(mtransforms.Transform):
         self.target_projection = target_projection
         mtransforms.Transform.__init__(self)
 
+    # These transforms should never compare equal, even where they're
+    # the same object. E.g. PlateCarree() to PlateCarree() might need to
+    # adjust the geometry if the source x coordinates fall outside the
+    # [-180, 180] range of the final map.
+    def __eq__(self, other):
+        return False
+
+    def __ne__(self, other):
+        return not self == other
+
     def __repr__(self):
         return '< InterProjectionTransform %s -> %s >' % (self.source_projection, self.target_projection)
 
@@ -73,6 +83,16 @@ class InterProjectionTransform(mtransforms.Transform):
 #        return numpy.array([[point[0], point[1]]])
 
     def transform_path_non_affine(self, path):
+        bypass = self.source_projection == self.target_projection
+        if bypass:
+            projection = self.source_projection
+            if isinstance(projection, ccrs.PlateCarree):
+                x = path.vertices[:, 0]
+                x_limits = projection.x_limits
+                bypass = x.min() >= x_limits[0] and x.max() <= x_limits[1]
+        if bypass:
+            return path
+
         if path.vertices.shape == (1, 2):
             return mpath.Path(self.transform(path.vertices))
 
@@ -451,6 +471,8 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
     
     def contourf(self, *args, **kwargs):
         t = kwargs.get('transform', None)
+        if t is None:
+            t = self.projection
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)

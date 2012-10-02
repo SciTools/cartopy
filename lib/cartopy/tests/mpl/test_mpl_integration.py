@@ -24,6 +24,24 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import image_comparison
 
 
+@image_comparison(baseline_images=['global_contour_wrap'])
+def test_global_contour_wrap_new_transform():
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+    x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
+    data = np.sin(np.sqrt(x ** 2 + y ** 2))
+    plt.contourf(x, y, data, transform=ccrs.PlateCarree())
+
+
+@image_comparison(baseline_images=['global_contour_wrap'])
+def test_global_contour_wrap_no_transform():
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+    x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
+    data = np.sin(np.sqrt(x ** 2 + y ** 2))
+    plt.contourf(x, y, data)
+
+
 @image_comparison(baseline_images=['global_map'])
 def test_global_map():
     ax = plt.axes(projection=ccrs.Robinson())
