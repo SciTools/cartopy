@@ -49,31 +49,30 @@ class TestBoundary(unittest.TestCase):
 
     def test_out_of_bounds(self):
         # Check that a polygon that is completely out of the map boundary
-        # produces an empty result.
-        # XXX Check efficiency?
+        # doesn't produce an empty result.
         projection = ccrs.TransverseMercator(central_longitude=0)
 
         polys = [
             # All valid
-            [(86, -1), (86, 1), (88, 1), (88, -1)],
-            # One NaN
-            [(86, -1), (86, 1), (130, 1), (88, -1)],
-            # A NaN segment
-            [(86, -1), (86, 1), (130, 1), (130, -1)],
-            # All NaN
-            [(120, -1), (120, 1), (130, 1), (130, -1)],
+            ([(86, -1), (86, 1), (88, 1), (88, -1)], 1),
+            # One out of backwards projection range
+            ([(86, -1), (86, 1), (130, 1), (88, -1)], 1),
+            # An out of backwards projection range segment
+            ([(86, -1), (86, 1), (130, 1), (130, -1)], 1),
+            # All out of backwards projection range
+            ([(120, -1), (120, 1), (130, 1), (130, -1)], 0),
         ]
 
         # Try all four combinations of valid/NaN vs valid/NaN.
-        for coords in polys:
+        for coords, expected_polys in polys:
             polygon = Polygon(coords)
             multi_polygon = projection.project_geometry(polygon)
-            self.assertEqual(len(multi_polygon), 0)
+            self.assertEqual(len(multi_polygon), expected_polys)
 
 
 class TestMisc(unittest.TestCase):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90)
+        projection = ccrs.TransverseMercator(central_longitude= -90)
         polygon = Polygon([(-10, 30), (10, 60), (10, 50)])
         multi_polygon = projection.project_geometry(polygon)
 
@@ -238,7 +237,7 @@ class TestHoles(PolygonTests):
         polygon = multi_polygon[0]
         self._assert_bounds(polygon.bounds, -2.4e7, -2.4e7, 2.4e7, 2.4e7, 1e6)
         self._assert_bounds(polygon.interiors[0].bounds,
-                            -1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
+                            - 1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
 
     def test_inverted_poly_clipped_hole(self):
         proj = ccrs.NorthPolarStereo()
@@ -252,7 +251,7 @@ class TestHoles(PolygonTests):
         polygon = multi_polygon[0]
         self._assert_bounds(polygon.bounds, -5.0e7, -5.0e7, 5.0e7, 5.0e7, 1e6)
         self._assert_bounds(polygon.interiors[0].bounds,
-                            -1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
+                            - 1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
         self.assertAlmostEqual(polygon.area, 7.30e15, delta=1e13)
 
     def test_inverted_poly_removed_hole(self):
@@ -267,7 +266,7 @@ class TestHoles(PolygonTests):
         polygon = multi_polygon[0]
         self._assert_bounds(polygon.bounds, -5.0e7, -5.0e7, 5.0e7, 5.0e7, 1e6)
         self._assert_bounds(polygon.interiors[0].bounds,
-                            -1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
+                            - 1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
         self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
 
     def test_multiple_interiors(self):
@@ -276,12 +275,12 @@ class TestHoles(PolygonTests):
                      numpy.array(shapely.geometry.box(1, 1, 2, 2, ccw=False).exterior.coords),
                      numpy.array(shapely.geometry.box(1, 8, 2, 9, ccw=False).exterior.coords),
                      ]
-    
+
         poly = shapely.geometry.Polygon(exterior, interiors)
-        
+
         target = ccrs.PlateCarree()
         source = ccrs.Geodetic()
-        
+
         assert len(list(target.project_geometry(poly, source))) == 1
 
 

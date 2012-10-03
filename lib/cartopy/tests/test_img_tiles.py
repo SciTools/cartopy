@@ -16,6 +16,7 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 from nose.tools import assert_equal, assert_raises
+from numpy.testing import assert_array_almost_equal as assert_arr_almost
 import numpy as np
 from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
 import matplotlib.pyplot as plt
@@ -28,7 +29,7 @@ import cartopy.io.img_tiles as cimgt
 def test_google_wts():
     gt = cimgt.GoogleTiles()
 
-    extent = [-15, 00, 50, 60]
+    extent = [-15, 0.1, 50, 60]
     target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
                                               [extent[2], extent[1]],
                                               [extent[2], extent[3]],
@@ -46,17 +47,17 @@ def test_google_wts():
     with assert_raises(AssertionError):
         gt.tileextent((0, 1, 0))
 
-    assert_equal(gt.tileextent((0, 0, 0)), (-180.0, 180.0, 179.41035067677481, -179.41035067677487))
-    assert_equal(gt.tileextent((2, 0, 2)), (0.0, 90.0, 179.41035067677481, 89.705175338387392))
-    assert_equal(gt.tileextent((0, 2, 2)), (-180.0, -90.0, -2.8421709430404007e-14, -89.70517533838742))
-    assert_equal(gt.tileextent((2, 2, 2)), (0.0, 90.0, -2.8421709430404007e-14, -89.70517533838742))
-    assert_equal(gt.tileextent((8, 9, 4)), (0.0, 22.5, -22.426293834596891, -44.852587669193753))
+    assert_arr_almost(gt.tileextent((0, 0, 0)), (-180.0, 180.0, 179.02740096396502, -179.02740096396491))
+    assert_arr_almost(gt.tileextent((2, 0, 2)), (0.0, 90.0, 179.02740096396502, 89.513700481982539))
+    assert_arr_almost(gt.tileextent((0, 2, 2)), (-180.0, -90.0, 5.6843418860808015e-14, -89.513700481982426))
+    assert_arr_almost(gt.tileextent((2, 2, 2)), (0.0, 90.0, 5.6843418860808015e-14, -89.513700481982426))
+    assert_arr_almost(gt.tileextent((8, 9, 4)), (0.0, 22.5, -22.37842512, -44.75685024)) # <- zoom 4, contains cape town.
 
 
 def test_quadtree_wts():
     qt = cimgt.QuadtreeTiles()
 
-    extent = [-15, 00, 50, 60]
+    extent = [-15, 0.1, 50, 60]
     target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
                                               [extent[2], extent[1]],
                                               [extent[2], extent[3]],
@@ -81,19 +82,18 @@ def test_quadtree_wts():
     with assert_raises(ValueError):
         qt.tileextent('4')
 
-    assert_equal(qt.tileextent(''), (-180.0, 180.0, 179.4103506767748, -179.41035067677487))
-    assert_equal(qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
-                 (0.0, 90.0, 179.41035067677481, 89.705175338387392))
-    assert_equal(qt.tileextent(qt.tms_to_quadkey((0, 2, 2), google=True)),
-                 (-180.0, -90.0, -2.8421709430404007e-14, -89.70517533838742))
-    assert_equal(qt.tileextent(qt.tms_to_quadkey((2, 2, 2), google=True)),
-                 (0.0, 90.0, -2.8421709430404007e-14, -89.70517533838742))
-    assert_equal(qt.tileextent(qt.tms_to_quadkey((8, 9, 4), google=True)),
-                 (0.0, 22.5, -22.426293834596891, -44.852587669193753))
 
-
-def test_merge():
-    raise ValueError('TODO')
+    assert_arr_almost(qt.tileextent(''), (-180.0, 180.0, 179.02740096, -179.02740096))
+    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
+                      (0.0, 90.0, 179.02740096, 89.51370048))
+    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((0, 2, 2), google=True)),
+                      (-180.0, -90.0, 5.68434189e-14, -8.95137005e+01))
+    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((0, 1, 2), google=True)),
+                      (-180.0, -90.0, 8.95137005e+01, 5.68434189e-14))
+    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 2, 2), google=True)),
+                      (0.0, 90.0, 5.68434189e-14, -8.95137005e+01))
+    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((8, 9, 4), google=True)),
+                      (0.0, 22.5, -22.37842512, -44.75685024))
 
 
 if __name__ == '__main__':

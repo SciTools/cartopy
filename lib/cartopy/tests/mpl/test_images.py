@@ -29,7 +29,7 @@ import cartopy.tests.test_img_nest as ctest_nest
 
 @image_comparison(baseline_images=['web_tiles'])
 def test_web_tiles():
-    extent = [-15, 00, 50, 60]
+    extent = [-15, 0.1, 50, 60]
     target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
                                               [extent[2], extent[1]],
                                               [extent[2], extent[3]],

@@ -63,29 +63,33 @@ class TestBoundary(unittest.TestCase):
 
         rings = [
             # All valid
-            [(86, -1), (86, 1), (88, 1), (88, -1)],
+            ([(86, -1), (86, 1), (88, 1), (88, -1)], 1),
             # One NaN
-            [(86, -1), (86, 1), (130, 1), (88, -1)],
+            ([(86, -1), (86, 1), (130, 1), (88, -1)], 1),
             # A NaN segment
-            [(86, -1), (86, 1), (130, 1), (130, -1)],
+            ([(86, -1), (86, 1), (130, 1), (130, -1)], 1),
             # All NaN
-            [(120, -1), (120, 1), (130, 1), (130, -1)],
+            ([(120, -1), (120, 1), (130, 1), (130, -1)], 0),
         ]
 
         # Try all four combinations of valid/NaN vs valid/NaN.
-        for coords in rings:
+        for coords, expected_n_lines in rings:
             linear_ring = geometry.polygon.LinearRing(coords)
             multi_line_string = projection.project_geometry(linear_ring)
-            self.assertEqual(len(multi_line_string), 0)
+            if expected_n_lines == 1:
+                assert isinstance(multi_line_string, geometry.polygon.LinearRing)
+            else:
+                assert multi_line_string.is_empty
 
 
 class TestMisc(unittest.TestCase):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90)
+        projection = ccrs.TransverseMercator(central_longitude= -90)
         linear_ring = geometry.polygon.LinearRing([(-10, 30), (10, 60), (10, 50)])
         multi_line_string = projection.project_geometry(linear_ring)
-        from cartopy.tests import show
+        #from cartopy.tests import show
         #show(projection, multi_line_string)
+        # XXX not a test...
 
     def test_small(self):
         # What happens when a small (i.e. < threshold) feature crosses the
@@ -97,10 +101,11 @@ class TestMisc(unittest.TestCase):
             (-179.7933201090486079, -16.0208822567412312),
             ])
         multi_line_string = projection.project_geometry(linear_ring)
-        from cartopy.tests import show
+        # there should be one, and only one, returned line:
+        assert isinstance(multi_line_string, geometry.polygon.LinearRing)
+
+        #from cartopy.tests import show
         #show(projection, multi_line_string)
-        self.assertEqual(len(multi_line_string), 1)
-        #self.assertGreater(len(multi_line_string[0].coords), 2)
 
 
 if __name__ == '__main__':
