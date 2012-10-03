@@ -148,7 +148,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
     def format_coord(self, x, y):
         """Return a format string formatting the coordinate value for GUI purposes only."""
-        lon, lat = self.projection.transform_point(x, y, ccrs.Geodetic())
+        lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
 
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'
