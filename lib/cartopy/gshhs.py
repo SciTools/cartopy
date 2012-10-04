@@ -16,7 +16,6 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
 from matplotlib.collections import PatchCollection

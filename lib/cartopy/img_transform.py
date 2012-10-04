@@ -16,9 +16,9 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import matplotlib.pyplot as plt
-import scipy.spatial
+import matplotlib.image
 import numpy
+import scipy.spatial
 
 import cartopy.crs as ccrs
 
@@ -97,7 +97,7 @@ def projection_coords(projection, nx, ny):
 
 
 def get_img_coords_and_nxy(fname, projection):
-    img = plt.imread(fname)
+    img = matplotlib.image.imread(fname)
 
     ny, nx = img.shape[:-1]
 
@@ -222,101 +222,3 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
             new_array = numpy.ma.array(new_array, mask=non_self_inverse_points)
 
     return new_array
-
-
-if __name__ == '__main__':
-    import cartopy
-    def bluemarble():
-        source_proj = ccrs.PlateCarree()
-        fname = '/data/local/dataZoo/cartography/raster/blue_marble_2000_1000.jpg'
-        img_origin = 'lower'
-        img = plt.imread(fname)
-        return img, img_origin, source_proj
-
-    def bluemarble_low():
-        source_proj = ccrs.PlateCarree()
-        fname = '/data/local/dataZoo/cartography/raster/blue_marble_720_360.png'
-        img_origin = 'lower'
-        img = plt.imread(fname)
-        img = img[::-1]
-        return img, img_origin, source_proj
-
-    def polar_bluemarble():
-        source_proj = ccrs.SouthPolarStereo()
-        source_proj._max = 5e6
-        fname = '/home/h02/itpe/foo.png'
-        img_origin = 'lower'
-        img = plt.imread(fname)
-        return img, img_origin, source_proj
-
-    def orca1():
-        from netCDF4 import Dataset
-        fname = '/data/local/dataZoo/NetCDF/ORCA1/CICE_ORCA1_CF.nc'
-        rootgrp = Dataset(fname, 'r', format='NETCDF4')
-        lons = rootgrp.variables['TLON'][:]
-        lats = rootgrp.variables['TLAT'][:]
-        sst = rootgrp.variables['sst'][:]
-        sst = sst.reshape(sst.shape[1:])
-        return sst, lons, lats
-
-    def orca2():
-        from netCDF4 import Dataset
-        fname = '/data/local/dataZoo/NetCDF/ORCA2/ORCA2_1d_00010101_00010101_grid_T_0000.nc'
-        rootgrp = Dataset(fname, 'r', format='NETCDF4')
-        lons = rootgrp.variables['nav_lon'][:]
-        lats = rootgrp.variables['nav_lat'][:]
-        sst = rootgrp.variables['sosstsst'][:][0, ...]
-        lats = lats.astype(numpy.float64)
-        lons = lons.astype(numpy.float64)
-        return sst, lons, lats
-
-    def do_image_warp(target_proj):
-        ######### SOURCE #########################
-        arr, img_origin, source_proj = bluemarble()
-#        arr, img_origin, source_proj = bluemarble_low()
-        arr, img_origin, source_proj = polar_bluemarble()
-
-        ######### DO IT ########################
-        image, extent = warp_array(arr, target_proj, source_proj, (750, 375)
-                           )
-
-        return image, extent, img_origin
-
-    def do_data_regrid(target_proj):
-        ############ SOURCE ##########################
-#        data, lons, lats = orca1()
-        data, lons, lats = orca2()
-        # lons and lats are equivalent to a PlatCarree CS
-        source_cs = ccrs.Geodetic()
-
-        ############ TARGET ##########################
-        target_x, target_y, extent = mesh_projection(target_proj, 500, 500)
-
-        ######### DO IT ########################
-        image = regrid(data, lons, lats, source_cs, target_proj, target_x, target_y)
-        return image, extent, 'upward'
-
-
-    ############################## MAIN STUFF ###############################
-
-
-    ######### TARGET #########################
-#    target_proj = ccrs.InterruptedGoodeHomolosine()
-    target_proj = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
-#    target_proj = ccrs.Robinson()
-#    target_proj = ccrs.Orthographic(central_longitude=-90, central_latitude=45)
-#    target_proj = ccrs.LambertCylindrical()
-    target_proj = ccrs.PlateCarree()
-
-
-    if False:
-        ############ IMAGE WARP ###############
-        image, extent, image_origin = do_image_warp(target_proj)
-    else:
-        ############ DATA REGRIDDING ###############
-        image, extent, image_origin = do_data_regrid(target_proj)
-
-    plt.axes(projection=ccrs.PlateCarree())
-    plt.gca().coastlines()
-    plt.imshow(image, origin=image_origin, extent=extent)
-    plt.show()
