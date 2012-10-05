@@ -98,7 +98,6 @@ def test_limits_pcolor():
     plt.pcolormesh(xs, ys, data, transform=ccrs.Geodetic())
     assert_array_almost_equal(ax.dataLim, resulting_extent)
     plt.close()
-    
 
 
 if __name__=='__main__':

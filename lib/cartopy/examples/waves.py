@@ -25,7 +25,6 @@ def main():
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
     ax.contourf(*sample_data(), nlev=2, transform=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global()
     plt.show()
     
 
