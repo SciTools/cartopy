@@ -24,4 +24,4 @@ import cartopy.crs as prj
 #COASTLINE_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_coastline')
 #LAND_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_land')
 
-__version__ = '0.0 pre-alpha'
+__version__ = '0.4.x'
