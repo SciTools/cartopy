@@ -111,6 +111,12 @@ def test_global_map():
     plt.plot([-0.08, 132], [51.53, 43.17], color='blue',
              transform=ccrs.Geodetic())
 
+@image_comparison(baseline_images=['simple_global'])
+def test_simple_global():
+    plt.axes(projection=ccrs.PlateCarree())
+    plt.gca().coastlines()
+    # produces a global map, despite not having needed to set the limits
+
 
 @image_comparison(baseline_images=['multiple_projections1'])
 def test_multiple_projections():

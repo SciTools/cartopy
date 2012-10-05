@@ -37,7 +37,6 @@ def main():
     
     ax = plt.axes(projection=cartopy.prj.Mercator())
     ax.coastlines()
-    ax.set_global()
 #    g = ax.projection.as_geodetic()
     radius = 15 # degrees
     

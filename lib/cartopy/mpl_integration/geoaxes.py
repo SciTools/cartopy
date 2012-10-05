@@ -112,6 +112,11 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
     @matplotlib.axes.allow_rasterization
     def draw(self, renderer=None, inframe=False):
+        # if no data has been added, and no extents set, then make the map global
+        if self.ignore_existing_data_limits and self._autoscaleXon and self._autoscaleYon:
+            self.set_global()
+            self.ignore_existing_data_limits = True
+
         # XXX This interface needs a tidy up: 
         #       image drawing on pan/zoom; 
         #       caching the resulting image;
@@ -121,6 +126,8 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
                 img, extent, origin = factory.image_for_domain(self._get_extent_geom(factory.crs), args[0])
                 self.imshow(img, extent=extent, origin=origin, transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
+        
+        
         return matplotlib.axes.Axes.draw(self, renderer=renderer, inframe=inframe)
     
     def __str__(self):
