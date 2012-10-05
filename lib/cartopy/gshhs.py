@@ -16,6 +16,13 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 
+
+# PLEASE NOTE: DUE TO SOME MPL RELATED ISSUES, THE GSHHS SUPPORT HAS BEEN DISABLED. 
+#              IT IS ANTICIPATED THAT BY 0.5 THERE WILL BE A CLEAN AND TIDY INTERFACE
+#              TO USE THIS USEFUL DATASET. - pelson
+
+
+ 
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
 from matplotlib.collections import PatchCollection

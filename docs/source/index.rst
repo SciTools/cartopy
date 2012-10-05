@@ -20,9 +20,8 @@ Some of the key features of cartopy are:
  * object oriented projection definitions
  * point, line, polygon and image transformations between projections
  * integration to expose advanced mapping in matplotlib with a simple and intuitive interface
- * mechanisms for accessing specialist data such as those from the "Shuttle Radar Topography 
+ * work-in-progress mechanisms for accessing specialist data such as those from the "Shuttle Radar Topography 
    Mission" (SRTM) and the "Global Self-consistent, Hierarchical, High-resolution Shoreline" database (GSHHS).
- 
 
 Cartopy is licensed under `GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_ 
 and is at version |version|. You can find the source code for cartopy on 
@@ -35,7 +34,7 @@ Installation
 .. note::
 
     Cartopy is in very early development. Installation instructions are likely to be 
-    non-existant/incomplete until capabilities have settled down. (forecast for late September 2012)
+    non-existent/incomplete until capabilities have settled down. (forecast for late September 2012)
 
 Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
@@ -69,8 +68,12 @@ There are many ways to get involved in the development of cartopy:
  * Contributing enhancements and new features 
    (:issues:`a wish list of features can also be found on github <wishlist>`).
                           
-If you or your organisation use cartopy, we would love to hear about it. You could submit a pull request which updates
-the :ref:`"who uses cartopy" <cartopy_users>` page or alternatively you can simply contact us via the cartopy mailing list (address TBD).
+If you or your organisation use cartopy, we would love to hear about it. 
+
+.. 
+    You could submit a pull request which updates
+    the :ref:`"who uses cartopy" <cartopy_users>` page or alternatively you can simply 
+    contact us via the cartopy mailing list (address TBD).
 
 
 
