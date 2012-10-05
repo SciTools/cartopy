@@ -10,6 +10,7 @@ The dependencies, with the minimum tested version, of cartopy |version| are:
  * geos - 1.7.1
  * python2 - 2.7.3 
  * shapely - 1.2.14
+ * pyshp - 1.1.4
  
  
 .. 
