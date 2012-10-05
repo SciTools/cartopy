@@ -36,7 +36,7 @@ import matplotlib
 assert matplotlib.__version__ >= '1.2', 'Cartopy can only work with matplotlib 1.2 or greater.'
 
 
-colors = {
+_colors = {
           'land': numpy.array((240, 240, 220)) / 256.,
           'sea': numpy.array((152, 183, 226)) / 256.,
           }
@@ -67,10 +67,6 @@ class InterProjectionTransform(mtransforms.Transform):
             x, y = xy
             x, y = self.target_projection.transform_point(x, y, self.source_projection)
             return x, y
-
-#    def transform_point(self, point):
-#        # XXX Needs testing
-#        return numpy.array([[point[0], point[1]]])
 
     def transform_path_non_affine(self, path):
         bypass = self.source_projection == self.target_projection
@@ -116,16 +112,17 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
     @matplotlib.axes.allow_rasterization
     def draw(self, renderer=None, inframe=False):
+        # XXX This interface needs a tidy up: 
+        #       image drawing on pan/zoom; 
+        #       caching the resulting image;
+        #       buffering the result by 10%...; 
         if not self._done_img_factory:
             for factory, args, kwargs in self.img_factories:
-#                print 'would call ', factory.image_for_domain, 'with\n', self.map_domain(factory.crs)
-                img, extent, origin = factory.image_for_domain(self.map_domain(factory.crs), args[0])
+                img, extent, origin = factory.image_for_domain(self._get_extent_geom(factory.crs), args[0])
                 self.imshow(img, extent=extent, origin=origin, transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
         return matplotlib.axes.Axes.draw(self, renderer=renderer, inframe=inframe)
     
-    
-
     def __str__(self):
         return '< GenericProjectionAxes: %s >' % self.projection
 
@@ -140,14 +137,14 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         self._boundary()
         self.ignore_existing_data_limits = pre_bounary
 
-#        # gives a better display of data. However, does need to be made clear in the docs.
-#        self._xmargin = 0.15
-#        self._ymargin = 0.15
+        # XXX consider a margin - but only when the map is not global... 
+        # self._xmargin = 0.15
+        # self._ymargin = 0.15
 
         return result
 
     def format_coord(self, x, y):
-        """Return a format string formatting the coordinate value for GUI purposes only."""
+        """Return a string formatted for GUI status bar purposes."""
         lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
 
         ns = 'N' if lat >= 0.0 else 'S'
@@ -164,181 +161,181 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
 
         shapereader.mpl_axes_plot(self, shapereader.Reader(coastline_path).geometries(), **kwargs)
 
-    def coastlines_land(self, facecolor=colors['land'], **kwargs):
-        import cartopy.io.shapereader as shapereader
+    # TODO: expose an interface similar to ax.add_image for shapely things, 
+    # and another for adding paths/patches (consider the land shapefile and gshhs as the primary usecases).
+#    def _coastlines_land(self, facecolor=colors['land'], **kwargs):
+#        import cartopy.io.shapereader as shapereader
+#
+#        land_path = shapereader.natural_earth(resolution='110m',
+#                                               category='physical',
+#                                               name='land')
+#
+#        paths = []
+#        for geom in shapereader.Reader(land_path).geometries():
+#
+#            paths.extend(patch.geos_to_path(self.projection.project_geometry(geom)))
+#        self.add_collection(mcollections.PathCollection(paths, facecolor=facecolor, **kwargs), autolim=False)
+#
+#    def gshhs(self, outline_color='k', land_fill='green', ocean_fill='None', resolution='coarse', domain=None):
+#        import cartopy.gshhs as gshhs
+#        from matplotlib.collections import PatchCollection
+#
+#        if ocean_fill is not None and land_fill is None:
+#            land_fill = self.outline_patch.get_facecolor()
+#
+#        if domain is None:
+#            domain = self.ll_boundary_poly()
+#
+#        paths = []
+#        for points in gshhs.read_gshhc(gshhs.fnames[resolution], poly=True, domain=domain):
+#            # XXX Sometimes we only want to do lines...
+#            poly = shapely.geometry.Polygon(points[::-1, :])
+#            projected = self.projection.project_polygon(poly)
+#
+#            paths.extend(patch.geos_to_path(projected))
+#
+#        if ocean_fill is not None:
+#            self.outline_patch.set_facecolor(ocean_fill)
+#
+#        collection = PatchCollection([mpatches.PathPatch(pth) for pth in paths],
+#                                     edgecolor=outline_color,
+#                                     facecolor=land_fill,
+#                                     zorder=2,
+#                                     )
+#        # XXX Should it update the limits??? (AND HOW???)
+#        self.add_collection(collection)
 
-        land_path = shapereader.natural_earth(resolution='110m',
-                                               category='physical',
-                                               name='land')
+    def get_extent(self, crs=None):
+        """
+        Get the extent (x0, x1, y0, y1) of the map in the given coordinate system.
 
-        paths = []
-        for geom in shapereader.Reader(land_path).geometries():
-
-            paths.extend(patch.geos_to_path(self.projection.project_geometry(geom)))
-        self.add_collection(mcollections.PathCollection(paths, facecolor=facecolor, **kwargs), autolim=False)
-
-    def gshhs(self, outline_color='k', land_fill='green', ocean_fill='None', resolution='coarse', domain=None):
-        import cartopy.gshhs as gshhs
-        from matplotlib.collections import PatchCollection
-
-        if ocean_fill is not None and land_fill is None:
-            land_fill = self.outline_patch.get_facecolor()
-
-        if domain is None:
-            domain = self.ll_boundary_poly()
-
-        paths = []
-        for points in gshhs.read_gshhc(gshhs.fnames[resolution], poly=True, domain=domain):
-            # XXX Sometimes we only want to do lines...
-            poly = shapely.geometry.Polygon(points[::-1, :])
-            projected = self.projection.project_polygon(poly)
-
-            paths.extend(patch.geos_to_path(projected))
-
-        if ocean_fill is not None:
-            self.outline_patch.set_facecolor(ocean_fill)
-
-        collection = PatchCollection([mpatches.PathPatch(pth) for pth in paths],
-                                     edgecolor=outline_color,
-                                     facecolor=land_fill,
-                                     zorder=2,
-                                     )
-        # XXX Should it update the limits??? (AND HOW???)
-        self.add_collection(collection)
-
-    def native_extents(self):
-        west, south, east, north = self.viewLim.get_points().flatten()
-        if west == 0 and south == 0 and east == 1 and north == 1:
+        If no crs is given, the returned extents' coordinate system will be assumed 
+        to be the Geodetic version of this axes' projection.
+        
+        """
+        p = self._get_extent_geom(crs)
+        r = p.bounds
+        x1, y1, x2, y2 = r
+        return x1, x2, y1, y2
+    
+    def _get_extent_geom(self, crs=None):
+        x1, x2 = self.get_xlim()
+        y1, y2 = self.get_ylim()
+        
+        if x1 == 0 and y0 == 0 and x2 == 1 and y2 == 1:
             import itertools
             west, east, south, north = itertools.chain(self.projection.x_limits, self.projection.y_limits)
-        return west, east, south, north
-
-    def boundary_poly(self):
-        # returns the boundary of the axes at its current state
-        x1, x2, y1, y2 = self.native_extents()
-        boundary = shapely.geometry.Polygon([[x1, y1], [x1, y2], [x2, y2], [x2, y1], [x1, y1]])
-        return boundary
-
-    def map_domain(self, crs):
-        x1, x2, y1, y2 = self.native_extents()
-        native_domain = shapely.geometry.LineString([[x1, y1],
-                                                      [x2, y1],
-                                                      [x2, y2],
-                                                      [x1, y2],
-                                                      [x1, y1]])
-
-        r = crs.project_geometry(native_domain, self.projection)
-        return r
-    
+        
+        domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
+                                                     [x2, y2], [x1, y2], [x1, y1]])
+        
+        if self.projection != crs:
+            domain_in_crs = self.projection.project_geometry(domain_in_crs, crs)
+        
+        return domain_in_crs
+        
     def set_extent(self, extents, crs=None):
-        """Set the extent of the map in the given coordinate system."""
-        # TODO: Implement the same semantics as plt.xlim and plt.ylim
+        """
+        Set the extent (x0, x1, y0, y1) of the map in the given coordinate system.
+        
+        If no crs is given, the extents' coordinate system will be assumed to be the
+        Geodetic version of this axes' projection.
+        
+        """
+        # TODO: Implement the same semantics as plt.xlim and 
+        # plt.ylim - allowing users to set None for a minimum and/or maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = shapely.geometry.LineString([[x1, y1],
-                                                      [x2, y1],
-                                                      [x2, y2],
-                                                      [x1, y2],
-                                                      [x1, y1]])
-
+        domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
+                                                     [x2, y2], [x1, y2], [x1, y1]])
+    
         r = self.projection.project_geometry(domain_in_crs, crs)
         x1, y1, x2, y2 = r.bounds
         self.set_xlim([x1, x2])
         self.set_ylim([y1, y2])
         
-    def ll_boundary_poly(self):
-        native_boundary = self.boundary_poly()
-        foo = native_boundary
-        return cartopy.prj.PlateCarree().project_geometry(foo, self.projection)
-
-    def ll_boundary_poly_draw(self):
-        for path in patch.geos_to_path(self.ll_boundary_poly()):
-        # XXX Seems like great circle interpolation is making the plot strange...
-            pp = mpatches.PathPatch(path, color='red', transform=cartopy.prj.PlateCarree(), alpha=0.5)
-            dl = self.viewLim.get_points().copy()
-            self.add_patch(pp)
-            self.viewLim.set_points(dl)
-
     def set_global(self):
         self.set_xlim(self.projection.x_limits)
         self.set_ylim(self.projection.y_limits)
 
-    def geod_circle_meters(self, lon_0, lat_0, radius, npts=80, **kwargs):
-        # radius is in meters
-        geod = self.projection.as_geodetic()
+#    def geod_circle_meters(self, lon_0, lat_0, radius, npts=80, **kwargs):
+#        # radius is in meters
+#        geod = self.projection.as_geodetic()
+#
+#        az = numpy.linspace(0, 360, npts)
+#        lats = numpy.zeros(npts) + lat_0
+#        lons = numpy.zeros(npts) + lon_0
+#        distances = numpy.zeros(npts) + radius
+#
+#        lons, lats, _reverse_az = geod.fwd(lons, lats, az, distances, radians=False)
+#        ll = numpy.concatenate([lons[:, None], lats[:, None]], 1)
+#        from matplotlib.patches import Polygon
+#        poly = Polygon(ll, transform=cartopy.prj.PlateCarree(), **kwargs)
+#        self.add_patch(poly)
+#        return poly
+#
+#    def gshhs_line(self, outline_color='k', domain=None, resolution='low', **kwargs):
+#        # domain is a shapely geometry (Polygon or MultiPolygon)
+#        import cartopy.gshhs as gshhs
+##        import cartopy.spherical as spherical
+#        from matplotlib.collections import PatchCollection, LineCollection
+#
+#        paths = []
+#
+#        projection = self.projection
+#
+#        if domain is None:
+#            domain = self.map_domain(ccrs.PlateCarree())
+#
+#        for points in gshhs.read_gshhc(gshhs.fnames[resolution], poly=False, domain=domain):
+#            paths.extend(patch.geos_to_path(shapely.geometry.LineString(points)))
+#
+##            slinestring = shapely.geometry.LineString(points)
+##            projected = projection.project_geometry(slinestring)            
+##            paths.extend(patch.geos_to_path(projected))
+#
+#        collection = PatchCollection([mpatches.PathPatch(pth) for pth in paths],
+#                             edgecolor=outline_color, facecolor='none',
+#                             transform=ccrs.PlateCarree(),
+#                             **kwargs
+#                             )
+#
+#        self.add_collection(collection, autolim=False)
 
-        az = numpy.linspace(0, 360, npts)
-        lats = numpy.zeros(npts) + lat_0
-        lons = numpy.zeros(npts) + lon_0
-        distances = numpy.zeros(npts) + radius
-
-        lons, lats, _reverse_az = geod.fwd(lons, lats, az, distances, radians=False)
-        ll = numpy.concatenate([lons[:, None], lats[:, None]], 1)
-        from matplotlib.patches import Polygon
-        poly = Polygon(ll, transform=cartopy.prj.PlateCarree(), **kwargs)
-        self.add_patch(poly)
-        return poly
-
-    def gshhs_line(self, outline_color='k', domain=None, resolution='low', **kwargs):
-        # domain is a shapely geometry (Polygon or MultiPolygon)
-        import cartopy.gshhs as gshhs
-#        import cartopy.spherical as spherical
-        from matplotlib.collections import PatchCollection, LineCollection
-
-        paths = []
-
-        projection = self.projection
-
-        if domain is None:
-            domain = self.map_domain(ccrs.PlateCarree())
-
-        for points in gshhs.read_gshhc(gshhs.fnames[resolution], poly=False, domain=domain):
-            paths.extend(patch.geos_to_path(shapely.geometry.LineString(points)))
-
-#            slinestring = shapely.geometry.LineString(points)
-#            projected = projection.project_geometry(slinestring)            
-#            paths.extend(patch.geos_to_path(projected))
-
-        collection = PatchCollection([mpatches.PathPatch(pth) for pth in paths],
-                             edgecolor=outline_color, facecolor='none',
-                             transform=ccrs.PlateCarree(),
-                             **kwargs
-                             )
-
-        self.add_collection(collection, autolim=False)
-
-    def bluemarble(self):
-        # XXX remove this method.
-        return self.stock_img('bluemarble')
-
-    def stock_img(self, img_name):
+    def stock_img(self, name='ne_shaded'):
+        """
+        Add a standard image to the map. 
+        
+        Currently, the only (and default) option is a downsampled version of the Natural Earth
+        shaded relief raster. 
+        
+        """
         # XXX Turn into a dictionary (inside the method)?
-        if img_name == 'bluemarble':
+#        if img_name == 'bluemarble':
+#            source_proj = ccrs.PlateCarree()
+#            fname = '/data/local/dataZoo/cartography/raster/blue_marble_720_360.png'
+##            fname = '/data/local/dataZoo/cartography/raster/blue_marble_2000_1000.jpg'            
+#            img_origin = 'lower'
+#            img = imread(fname)
+#            img = img[::-1]
+#            return self.imshow(img, origin=img_origin, transform=source_proj, extent=[-180, 180, -90, 90])
+#        elif img_name == 'bm_high':
+#            source_proj = ccrs.PlateCarree()
+#            fname = '/data/local/dataZoo/cartography/raster/blue_marble_2000_1000.jpg'
+#            img_origin = 'lower'
+#            img = imread(fname)
+#            return self.imshow(img, origin=img_origin, transform=source_proj, extent=[-180, 180, -90, 90])
+        if name == 'ne_shaded':
+            import os
             source_proj = ccrs.PlateCarree()
-            fname = '/data/local/dataZoo/cartography/raster/blue_marble_720_360.png'
-#            fname = '/data/local/dataZoo/cartography/raster/blue_marble_2000_1000.jpg'            
-            img_origin = 'lower'
-            img = imread(fname)
-            img = img[::-1]
-            return self.imshow(img, origin=img_origin, transform=source_proj, extent=[-180, 180, -90, 90])
-        elif img_name == 'bm_high':
-            source_proj = ccrs.PlateCarree()
-            fname = '/data/local/dataZoo/cartography/raster/blue_marble_2000_1000.jpg'
-            img_origin = 'lower'
-            img = imread(fname)
-            return self.imshow(img, origin=img_origin, transform=source_proj, extent=[-180, 180, -90, 90])
-        elif img_name == 'ne_shaded':
-            source_proj = ccrs.PlateCarree()
-            fname = '/data/local/dataZoo/cartography/raster/NE1_50M_SR_W/NE1_50M_SR_W_720_360.png'
+            fname = os.path.join(os.path.dirname(os.path.dirname(__file__)), 
+                                 'data', 'raster', 'natural_earth',
+                                 '50-natural-earth-1-downsampled.png')
             img_origin = 'lower'
             img = imread(fname)
             img = img[::-1]
             return self.imshow(img, origin=img_origin, transform=source_proj, extent=[-180, 180, -90, 90])
         else:
-            raise ValueError('Unknown stock image.')
-
-#    def margins(self, *args, **kw):
-#        result = matplotlib.axes.Axes.margins(self, *args, **kw)
-#        if result is not None:
+            raise ValueError('Unknown stock image %r.' % name)
 
     def imshow(self, img, *args, **kwargs):
         """
@@ -381,8 +378,17 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
                                                            source_extent=extent,
                                                            target_proj=self.projection,
                                                            target_res=regrid_shape,
-                                                           target_extent=self.native_extents(),
+                                                           target_extent=self.get_extent(self.projection),
                                                            )
+            # as a workaround to a matplotlib limitation, turn any images which are RGB with a mask into 
+            # RGBA images with an alpha channel.
+            if isinstance(img, numpy.ma.MaskedArray) and img.shape[2:3] == (3, ):
+                old_img = img
+                img = numpy.zeros(img.shape[:2] + (4, ))
+                img[:, :, 0:3] = old_img
+                # put an alpha channel in if the image was masked
+                img[:, :, 3] = ~ numpy.any(old_img.mask, axis=2) 
+                
             result = matplotlib.axes.Axes.imshow(self, img, *args, extent=extent, **kwargs)
 
         # clip the image. This does not work as the patch moves with mouse movement, but the clip path doesn't
@@ -462,6 +468,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
             kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)
     
+    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contourf(self, *args, **kwargs):
         t = kwargs.get('transform', None)
         # Keep this bit - even at mpl v1.2
@@ -471,6 +478,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
             kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
+    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def scatter(self, *args, **kwargs):
         t = kwargs.get('transform', None)
         # Keep this bit - even at mpl v1.2
@@ -480,6 +488,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
             kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.scatter(self, *args, **kwargs)
 
+    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def pcolormesh(self, *args, **kwargs):
         import warnings
         import numpy as np
@@ -566,6 +575,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         self.add_collection(collection)
         return collection
     
+    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def pcolor(self, *args, **kwargs):
         t = kwargs.get('transform', None)
         if t is None:
