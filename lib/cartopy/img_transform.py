@@ -189,6 +189,8 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.
+    # XXX THIS ONLY NEEDS TO BE DONE FOR (PSEUDO-)CYLINDRICAL PROJECTIONS (OR ANY OTHERS
+    # WHICH HAVE THE CONCEPT OF WRAPPING)
     source_desired_xyz = source_cs.transform_points(target_proj,
                                                     target_x_points.flatten(),
                                                     target_y_points.flatten())
@@ -197,9 +199,11 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                                       source_desired_xyz[:, 1])
     back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny, desired_nx)
     back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny, desired_nx)
-    FRACTIONAL_OFFSET_THRESHOLD = 1e-2
+    FRACTIONAL_OFFSET_THRESHOLD = 0.1 # data has moved by 10% of the map
+    
     x_extent = numpy.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
     y_extent = numpy.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
+
     non_self_inverse_points = (numpy.abs(target_x_points - back_to_target_x) /
                                x_extent) > FRACTIONAL_OFFSET_THRESHOLD
     if numpy.any(non_self_inverse_points):
@@ -220,5 +224,4 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
             new_array.mask[non_self_inverse_points] = True
         else:
             new_array = numpy.ma.array(new_array, mask=non_self_inverse_points)
-
     return new_array

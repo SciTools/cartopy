@@ -9,9 +9,12 @@ lib/cartopy/trace.cpp
 lib/cartopy/trace.so
 lib/cartopy/_crs.c
 lib/cartopy/_crs.so
-lib/cartopy/data
 docs/build
 
+# some data files:
+lib/cartopy/data/SRTM3
+lib/cartopy/data/wmts
+lib/cartopy/data/gshhs
 
 # pydev files
 .project

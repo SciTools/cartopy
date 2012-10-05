@@ -69,8 +69,12 @@ There are many ways to get involved in the development of cartopy:
  * Contributing enhancements and new features 
    (:issues:`a wish list of features can also be found on github <wishlist>`).
                           
-If you or your organisation use cartopy, we would love to hear about it. You could submit a pull request which updates
-the :ref:`"who uses cartopy" <cartopy_users>` page or alternatively you can simply contact us via the cartopy mailing list (address TBD).
+If you or your organisation use cartopy, we would love to hear about it. 
+
+.. 
+    You could submit a pull request which updates
+    the :ref:`"who uses cartopy" <cartopy_users>` page or alternatively you can simply 
+    contact us via the cartopy mailing list (address TBD).
 
 
 
