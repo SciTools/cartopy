@@ -229,7 +229,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         x1, x2 = self.get_xlim()
         y1, y2 = self.get_ylim()
         
-        if x1 == 0 and y0 == 0 and x2 == 1 and y2 == 1:
+        if x1 == 0 and y1 == 0 and x2 == 1 and y2 == 1:
             import itertools
             west, east, south, north = itertools.chain(self.projection.x_limits, self.projection.y_limits)
         
