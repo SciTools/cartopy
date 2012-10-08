@@ -377,7 +377,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
             extent = kwargs.pop('extent', None)
 
             if not isinstance(transform, ccrs.Projection):
-                raise ValueError('Expected a projection. Cannot handle a %s in imshow.' % type(transform))
+                raise ValueError('Expected a projection subclass. Cannot handle a %s in imshow.' % type(transform))
 
             # XXX adaptive resolution depending on incoming img?
             img, extent = cartopy.img_transform.warp_array(img,

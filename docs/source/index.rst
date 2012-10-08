@@ -3,6 +3,7 @@
 
     who_uses_cartopy.rst
     building_from_source/index.rst
+    matplotlib.rst
     introductory_examples/index.rst
     
     
@@ -42,6 +43,8 @@ Build instructions for specific operating systems can be found in the
 
 Getting started
 ===============
+:doc:`<matplotlib>`
+
 
 See :doc:`these examples <introductory_examples/index>` for an introduction to using cartopy with matplotlib.
 

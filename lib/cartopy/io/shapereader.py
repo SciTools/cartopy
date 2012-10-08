@@ -217,7 +217,7 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
     return shapefiles[0]
 
 
-def mpl_axes_plot(axes, geometries, **kwargs):
+def mpl_axes_plot(axes, geometries, facecolor='none', **kwargs):
     """Plot lines on the given axes, given the geometries."""
     # TODO: This interface should be exposed nicely on the geoaxes itself.
     import matplotlib.collections as mcollections
@@ -226,7 +226,7 @@ def mpl_axes_plot(axes, geometries, **kwargs):
     paths = []
     for geom in geometries:
         paths.extend(patch.geos_to_path(axes.projection.project_geometry(geom)))
-    axes.add_collection(mcollections.PathCollection(paths, facecolor='none', **kwargs), autolim=False)
+    axes.add_collection(mcollections.PathCollection(paths, facecolor=facecolor, **kwargs), autolim=False)
 
 
 if __name__ == '__main__':
