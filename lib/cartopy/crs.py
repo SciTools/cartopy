@@ -205,18 +205,8 @@ class Projection(CRS):
         Returns the projected polygon(s) derived from the given polygon.
 
         """
-        # XXX This shouldn't really be here?
-        # The simple 2-dimensional determination of orientation provided
-        # by Shapely/GEOS doesn't apply when considering geodetic coordinates.
-        # In fact, there is no generic concept of orientation applicable
-        # to geodetic coordinates. One could assume the polygon should
-        # be oriented to select the smaller section of the surface, but
-        # even this breaks down for polygons which divide the surface
-        # into two pieces of equal area.
-#        if not src_crs.is_geodetic():
-        polygon = sgeom.polygon.orient(polygon, -1)
         # TODO: Consider checking the internal rings have the opposite
-        # orientation to the external rings.
+        # orientation to the external rings?
 
         # Project the polygon exterior/interior rings.
         # Each source ring will result in either a ring, or one or more
@@ -232,13 +222,14 @@ class Projection(CRS):
 
         # Convert all the lines to rings by attaching them to the
         # boundary.
-        rings.extend(self._attach_lines_to_boundary(multi_lines))
+        is_ccw = polygon.exterior.is_ccw
+        rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
 
         # Resolve all the inside vs. outside rings, and convert to the
         # final MultiPolygon.
-        return self._rings_to_multi_polygon(rings)
+        return self._rings_to_multi_polygon(rings, is_ccw)
 
-    def _attach_lines_to_boundary(self, multi_line_strings):
+    def _attach_lines_to_boundary(self, multi_line_strings, is_ccw):
         """
         Returns a list of LinearRings by attaching the ends of the given lines
         to the boundary, paying attention to the traversal directions of the
@@ -252,6 +243,8 @@ class Projection(CRS):
         # Convert the boundary to a LineString so we can compute distances
         # along it. (It doesn't work with a LinearRing)
         boundary = sgeom.LineString(self.boundary)
+        if is_ccw:
+            boundary.coords = list(boundary.coords)[::-1]
 
         def boundary_distance(xy):
             return boundary.project(sgeom.Point(*xy))
@@ -345,11 +338,11 @@ class Projection(CRS):
 
         return linear_rings
 
-    def _rings_to_multi_polygon(self, rings):
+    def _rings_to_multi_polygon(self, rings, is_ccw):
         exterior_rings = []
         interior_rings = []
         for ring in rings:
-            if ring.is_ccw:
+            if ring.is_ccw != is_ccw:
                 interior_rings.append(ring)
             else:
                 exterior_rings.append(ring)
