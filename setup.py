@@ -135,7 +135,18 @@ setup(
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},
     package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/mpl/baseline_images/',
-                                                     remove='lib/cartopy/'))},
+                                                     remove='lib/cartopy/')) +\
+                             list(file_walk_relative('lib/cartopy/data/raster',
+                                                     remove='lib/cartopy/')) +\
+                             list(file_walk_relative('lib/cartopy/data/netcdf',
+                                                     remove='lib/cartopy/')) +\
+                             list(file_walk_relative('lib/cartopy/data/wmts',
+                                                     remove='lib/cartopy/')) +\
+                             list(file_walk_relative('lib/cartopy/data/shapefiles/natural_earth',
+                                                     remove='lib/cartopy/'))
+                 },
+
+
     # requires proj4 headers
     ext_modules=[
         Extension('cartopy.trace', ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
