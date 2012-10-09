@@ -21,8 +21,10 @@ def sample_data(shape=(73, 145)):
 
 
 def main():
-    # XXX This is really suffering from a lack of performance. Takes an inordinate amount of time.
+    # XXX This is really suffering from a lack of performance. Takes an inordinate
+    # (or is it infinite???) amount of time.
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
+
     ax.contourf(*sample_data(), nlev=2, transform=ccrs.PlateCarree())
     ax.coastlines()
     plt.show()

@@ -3,7 +3,10 @@
 
     who_uses_cartopy.rst
     building_from_source/index.rst
-    introductory_examples/index.rst
+    matplotlib/intro.rst
+    matplotlib/advanced_plotting.rst
+    matplotlib/geoaxes.rst
+    matplotlib/introductory_examples/index.rst
     
     
 
@@ -31,11 +34,6 @@ and is at version |version|. You can find the source code for cartopy on
 Installation
 ============
 
-.. note::
-
-    Cartopy is in very early development. Installation instructions are likely to be 
-    non-existent/incomplete until capabilities have settled down. (forecast for late September 2012)
-
 Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
 :ref:`building from source <building_from_source>` section.   
@@ -43,7 +41,9 @@ Build instructions for specific operating systems can be found in the
 Getting started
 ===============
 
-See :doc:`these examples <introductory_examples/index>` for an introduction to using cartopy with matplotlib.
+To start using cartopy with matplotlib see the :doc:`matplotlib/intro` section.
+
+Short :doc:`step-by-step examples <matplotlib/introductory_examples/index>` are also available.
 
 
 Getting involved
