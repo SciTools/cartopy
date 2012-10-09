@@ -99,14 +99,31 @@ class InterProjectionTransform(mtransforms.Transform):
         return InterProjectionTransform(self.target_projection, self.source_projection)
 
 
-class GenericProjectionAxes(matplotlib.axes.Axes):
+class GeoAxes(matplotlib.axes.Axes):
     def __init__(self, *args, **kwargs):
         self.projection = kwargs.pop('map_projection')
-        super(GenericProjectionAxes, self).__init__(*args, **kwargs)
+        super(GeoAxes, self).__init__(*args, **kwargs)
+        self._gridliners = []
         self.img_factories = []
         self._done_img_factory = False
 
     def add_image(self, factory, *args, **kwargs):
+        """
+        Adds an image "factory" to the Axes.
+
+        Any image "factory" added, will be asked to retrieve an image
+        with associated metadata for a given bounding box at draw time.
+        The advantage of this approach is that the limits of the map
+        do not need to be known when adding the image factory, but can
+        be deferred until everything which can effect the limits has been
+        added.
+
+        Currently an image "factory" is just an object with
+        a ``image_for_domain`` method. Examples of image factories
+        are :class:`cartopy.io.img_nest.NestedImageCollection` and
+        :class:`cartopy.io.image_tiles.GoogleTiles`.
+
+        """
         # XXX TODO: Needs working on
         self.img_factories.append([factory, args, kwargs])
 
@@ -116,6 +133,11 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         if self.ignore_existing_data_limits and self._autoscaleXon and self._autoscaleYon:
             self.set_global()
             self.ignore_existing_data_limits = True
+
+
+        for gl in self._gridliners:
+            gl.do_gridlines(background_patch=self.background_patch)
+        self._gridliners = []
 
         # XXX This interface needs a tidy up: 
         #       image drawing on pan/zoom; 
@@ -131,7 +153,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         return matplotlib.axes.Axes.draw(self, renderer=renderer, inframe=inframe)
     
     def __str__(self):
-        return '< GenericProjectionAxes: %s >' % self.projection
+        return '< GeoAxes: %s >' % self.projection
 
     def cla(self):
         result = matplotlib.axes.Axes.cla(self)
@@ -151,7 +173,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         return result
 
     def format_coord(self, x, y):
-        """Return a string formatted for GUI status bar purposes."""
+        """Return a string formatted for the matplotlib GUI status bar."""
         lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
 
         ns = 'N' if lat >= 0.0 else 'S'
@@ -160,6 +182,23 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat), ns, abs(lon), ew)
 
     def coastlines(self, resolution='110m', **kwargs):
+        """
+        Adds coastal **outlines** to the current axes from the Natural Earth
+        "coastline" shapefile collection.
+
+        Kwargs:
+
+            * resolution - a named resolution to use from the Natural Earth
+                           dataset. Currently can be one of "110m", "50m", and
+                           "10m".
+
+        .. note::
+
+            Currently no clipping is done on the coastlines before adding them to the axes.
+            This means, if very high resolution coastlines are being used, performance is
+            likely to be severely effected. This should be resolved transparently by v0.5.
+
+        """
         import cartopy.io.shapereader as shapereader
 
         coastline_path = shapereader.natural_earth(resolution=resolution,
@@ -230,8 +269,8 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         y1, y2 = self.get_ylim()
         
         if x1 == 0 and y1 == 0 and x2 == 1 and y2 == 1:
-            import itertools
-            west, east, south, north = itertools.chain(self.projection.x_limits, self.projection.y_limits)
+            x1, x2 = self.projection.x_limits
+            y1, y2 = self.projection.y_limits
         
         domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
                                                      [x2, y2], [x1, y2], [x1, y1]])
@@ -261,6 +300,18 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         self.set_ylim([y1, y2])
         
     def set_global(self):
+        """
+        Set the extent of the Axes to the limits of the projection.
+
+        .. note::
+
+            In some cases where the projection has a limited sensible range
+            the ``set_global`` method does not actually make the whole globe
+            visible. Instead, the most appropriate extents will be used (e.g.
+            Ordnance Survey UK will set the extents to be around the British
+            Isles.
+
+        """
         self.set_xlim(self.projection.x_limits)
         self.set_ylim(self.projection.y_limits)
 
@@ -377,7 +428,7 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
             extent = kwargs.pop('extent', None)
 
             if not isinstance(transform, ccrs.Projection):
-                raise ValueError('Expected a projection. Cannot handle a %s in imshow.' % type(transform))
+                raise ValueError('Expected a projection subclass. Cannot handle a %s in imshow.' % type(transform))
 
             # XXX adaptive resolution depending on incoming img?
             img, extent = cartopy.img_transform.warp_array(img,
@@ -411,11 +462,18 @@ class GenericProjectionAxes(matplotlib.axes.Axes):
         return result
 
     def gridlines(self, crs=None, **kwargs):
+        """
+        Automatically adds gridlines to the axes, in the given coordinate system, at draw time.
+
+        ``**kwargs`` - are passed through to the created :class:`matplotlib.collections.Collection`
+                       allowing control of colors and linewidths etc.
+
+        """
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl_integration.gridliner import Gridliner
-        gl = Gridliner(self)
-        gl.do_gridlines(self, crs, background_patch=self.background_patch, collection_kwargs=kwargs)
+        gl = Gridliner(self, crs=crs, collection_kwargs=kwargs)
+        self._gridliners.append(gl)
         return gl
     
     def _gen_axes_spines(self, locations=None, offset=0.0, units='inches'):

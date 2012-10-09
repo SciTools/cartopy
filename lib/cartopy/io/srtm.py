@@ -43,6 +43,8 @@ def srtm(lon, lat):
     Return (elevation, crs, extent) for the given longitude latitude.
     """
     fname = SRTM3_retrieve(lon, lat)
+    if fname is None:
+        raise ValueError('No srtm tile found for those coordinates.')
     return read_SRTM3(fname)
 
 def srtm_composite(lon_min, lat_min, nx, ny):
