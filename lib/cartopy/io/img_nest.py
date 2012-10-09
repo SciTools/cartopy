@@ -113,7 +113,6 @@ class ImageCollection(object):
             min_y, max_y = sorted([ul_corner[1] - pix_size[1] / 2.,
                                    ul_corner[1] + pix_size[1] * shape[1] - pix_size[1] / 2.])
             extent = (min_x, max_x, min_y, max_y)
-            print extent
             self.images.append(Img(img, self._extent_finalize(extent, img), 'lower', tuple(pix_size)))
 
     def _extent_finalize(self, extent, filename):

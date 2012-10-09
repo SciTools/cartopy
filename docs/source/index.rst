@@ -34,23 +34,16 @@ and is at version |version|. You can find the source code for cartopy on
 Installation
 ============
 
-.. note::
-
-    Cartopy is in very early development. Installation instructions are likely to be 
-    non-existent/incomplete until capabilities have settled down. (forecast for late September 2012)
-
 Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
 :ref:`building from source <building_from_source>` section.   
 
 Getting started
 ===============
-:doc:`matplotlib/intro`
 
-:doc:`projections/table`
+To start using cartopy with matplotlib see the :doc:`matplotlib/intro` section.
 
-
-See :doc:`these examples <matplotlib/introductory_examples/index>` for an introduction to using cartopy with matplotlib.
+Short :doc:`step-by-step examples <matplotlib/introductory_examples/index>` are also available.
 
 
 Getting involved
