@@ -774,6 +774,9 @@ class GeoAxes(matplotlib.axes.Axes):
         return collection
 
 
+# alias GeoAxes - NOTE: THIS WAS NOT IN v0.4.0rc1
+GenericProjectionAxes = GeoAxes
+
 
 class SimpleClippedTransform(mtransforms.Transform):
     """
