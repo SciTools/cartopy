@@ -81,8 +81,8 @@ cdef class CRS:
     def _as_mpl_transform(self, axes=None):
         # XXX This has been replicated in the crs.py Projection class, needs to be consolidated? 
         import cartopy.mpl_integration.geoaxes as geoaxes
-        if not isinstance(axes, geoaxes.GenericProjectionAxes):
-            raise ValueError('Axes should be an instance of GenericProjectionAxes, got %s' % type(axes))
+        if not isinstance(axes, geoaxes.GeoAxes):
+            raise ValueError('Axes should be an instance of GeoAxes, got %s' % type(axes))
         return geoaxes.InterProjectionTransform(self, axes.projection) + axes.transData
 
     property proj4_params:

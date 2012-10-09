@@ -20,14 +20,16 @@ and then adding some coastlines to the axes:
     plt.show()
 
 
-A list of the available projections to be used with matplotlib can be found on the HERE-TODO page.
+A list of the available projections to be used with matplotlib can be found on the :doc:`../projections/table` page.
 
 The line ``plt.axes(projection=ccrs.PlateCarree())`` sets up a GeoAxes instance which exposes a variety
-of other map related methods, in the case of the previous example, we used the :meth:`GeoAxes.coastlines` method
+of other map related methods, in the case of the previous example, we used the
+:meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.coastlines` method
 to add coastlines to the map.
 
-Lets create another map in a different projection, and make use of the :meth:`GeoAxes.stock_img` method
-to add an underlay image to the map:
+Lets create another map in a different projection, and make use of the
+:meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.stock_img` method to add an underlay
+image to the map:
 
 .. plot::
     :include-source:
@@ -37,9 +39,6 @@ to add an underlay image to the map:
 
     ax = plt.axes(projection=ccrs.Mollweide())
     ax.stock_img()
-
-    ax.set_global()
-
     plt.show()
 
 
@@ -54,7 +53,7 @@ Adding data to the map
 Once you have the map just the way you want it, data can be added to it in exactly the same way as
 with normal matplotlib axes. By default, the coordinate system of any data added to a GeoAxes the same as
 the coordinate system of the GeoAxes itself, to control which coordinate system that the given data is
-in, you can add the ``transform`` keyword with an appropriate :mod:`cartopy.crs` instance:
+in, you can add the ``transform`` keyword with an appropriate :mod:`cartopy.crs.CRS` instance:
 
 
 .. plot::
@@ -64,7 +63,6 @@ in, you can add the ``transform`` keyword with an appropriate :mod:`cartopy.crs`
     import matplotlib.pyplot as plt
 
     ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.set_global()
     ax.stock_img()
 
     ny_lon, ny_lat = -75, 43
@@ -100,19 +98,19 @@ those points *on the globe* rather than 2d Cartesian space.
 .. note::
 
     By default, matplotlib automatically sets the limits of your Axes based on the data
-    that you plot. Because cartopy implements a GeoAxes class, this equates to the limits
-    of the resulting map. Sometimes this autoscaling is a desirable feature and other
-    times it is not.
+    that you plot. Because cartopy implements a :class:~cartopy.mpl_integration.geoaxes.GeoAxes`
+    class, this equates to the limits of the resulting map. Sometimes this autoscaling
+    is a desirable feature and other times it is not.
 
     To set the extents of a cartopy GeoAxes, there are several convenient options:
 
-       * For "global" plots, use the :meth:`GeoAxes.set_global` method.
+       * For "global" plots, use the :meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.set_global` method.
        * To set the extents of the map based on a bounding box, in any coordinate system,
-         use the :meth:`GeoAxes.set_extent` method.
+         use the :meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.set_extent` method.
        * Alternatively, the standard limit setting methods can be used in the GeoAxes's
          native coordinate system (e.g. :meth:`~matplotlib.axes.Axes.set_xlim` and
          :meth:`~matplotlib.axes.Axes.set_ylim`).
 
 
-In the :doc:`next section <matplotlib_pt2>`, examples of contouring, block plotting and adding geo-located images are
-provided for more advanced map based visualisations.
+In the :doc:`next section <advanced_plotting>`, examples of contouring, block plotting and adding
+geo-located images are provided for more advanced map based visualisations.

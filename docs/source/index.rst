@@ -3,8 +3,10 @@
 
     who_uses_cartopy.rst
     building_from_source/index.rst
-    matplotlib.rst
-    introductory_examples/index.rst
+    matplotlib/intro.rst
+    matplotlib/advanced_plotting.rst
+    matplotlib/geoaxes.rst
+    matplotlib/introductory_examples/index.rst
     
     
 
@@ -43,10 +45,12 @@ Build instructions for specific operating systems can be found in the
 
 Getting started
 ===============
-:doc:`<matplotlib>`
+:doc:`matplotlib/intro`
+
+:doc:`projections/table`
 
 
-See :doc:`these examples <introductory_examples/index>` for an introduction to using cartopy with matplotlib.
+See :doc:`these examples <matplotlib/introductory_examples/index>` for an introduction to using cartopy with matplotlib.
 
 
 Getting involved

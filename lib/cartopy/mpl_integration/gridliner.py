@@ -19,15 +19,19 @@ class Gridliner(object):
     # NOTE: In future, one of these objects will be add-able to a GeoAxes (and maybe even a plain old mpl axes)
     # and it will call the "do_gridlines" method on draw. This will enable automatic gridline resolution determination
     # on zoom/pan.
-    def __init__(self, axes):
+    def __init__(self, axes, crs, collection_kwargs=None):
         self.axes = axes
         self.gridlines = {}
         # might not be desirable for certain projections (osgb for instance)
         self.xlocator = degree_locator 
         self.ylocator = degree_locator
+        self.crs = crs
+        self.collection_kwargs = collection_kwargs
 
-    def do_gridlines(self, ax, crs, nx=None, ny=None, background_patch=None, collection_kwargs=None):
-        x_lim, y_lim = self.get_domain(ax, crs, nx=nx, ny=ny, background_patch=background_patch)
+    def do_gridlines(self, nx=None, ny=None, background_patch=None):
+        ax = self.axes
+        crs = self.crs
+        x_lim, y_lim = self.get_domain(nx=nx, ny=ny, background_patch=background_patch)
 
         if not isinstance(crs, mtrans.Transform):
             transform = crs._as_mpl_transform(ax)
@@ -55,6 +59,7 @@ class Gridliner(object):
                     )
             lines.append(l)
 
+        collection_kwargs = self.collection_kwargs
         if collection_kwargs is None:
             collection_kwargs = {}
         collection_kwargs = collection_kwargs.copy()
@@ -67,7 +72,6 @@ class Gridliner(object):
         x_lc = mcollections.LineCollection(lines, **collection_kwargs)
         self.gridlines['x'] = x_lc
         self.axes.add_collection(x_lc, autolim=False)
-
 
         lines = []
         
@@ -86,9 +90,10 @@ class Gridliner(object):
         self.axes.add_collection(y_lc, autolim=False)
         return x_lc, y_lc
 
-    def get_domain(self, ax, crs, nx=None, ny=None, background_patch=None):
+    def get_domain(self, nx=None, ny=None, background_patch=None):
         """Returns x_range, y_range"""
-        
+        ax = self.axes
+        crs = self.crs
         DEBUG = False
         
         if not isinstance(crs, mtrans.Transform):
