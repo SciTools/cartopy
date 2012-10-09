@@ -27,6 +27,7 @@ import math
 import numpy
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
+from shapely.prepared import prep
 
 from cartopy._crs import CRS, Geocentric, Geodetic
 import cartopy.trace
@@ -356,12 +357,13 @@ class Projection(CRS):
         polygon_bits = []
 
         # Turn all the exterior rings into polygon definitions,
-        # "slurping up" and interior rings they contain.
+        # "slurping up" any interior rings they contain.
         for exterior_ring in exterior_rings:
             polygon = sgeom.Polygon(exterior_ring)
+            prep_polygon = prep(polygon)
             holes = []
             for interior_ring in interior_rings[:]:
-                if polygon.contains(interior_ring):
+                if prep_polygon.contains(interior_ring):
                     holes.append(interior_ring)
                     interior_rings.remove(interior_ring)
             polygon_bits.append((exterior_ring.coords,
