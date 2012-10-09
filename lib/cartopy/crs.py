@@ -101,6 +101,24 @@ class Projection(CRS):
         pass
 
     @property
+    def cw_boundary(self):
+        try:
+            boundary = self._cw_boundary
+        except AttributeError:
+            boundary = sgeom.LineString(self.boundary)
+            self._cw_boundary = boundary
+        return boundary
+
+    @property
+    def ccw_boundary(self):
+        try:
+            boundary = self._ccw_boundary
+        except AttributeError:
+            boundary = sgeom.LineString(list(self.boundary.coords)[::-1])
+            self._ccw_boundary = boundary
+        return boundary
+
+    @property
     def domain(self):
         try:
             domain = self._domain
@@ -222,7 +240,10 @@ class Projection(CRS):
 
         # Convert all the lines to rings by attaching them to the
         # boundary.
-        is_ccw = polygon.exterior.is_ccw
+        if src_crs.is_geodetic():
+            is_ccw = True
+        else:
+            is_ccw = polygon.exterior.is_ccw
         rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
 
         # Resolve all the inside vs. outside rings, and convert to the
@@ -240,11 +261,12 @@ class Projection(CRS):
         # their distance along the boundary.
         edge_things = []
 
-        # Convert the boundary to a LineString so we can compute distances
-        # along it. (It doesn't work with a LinearRing)
-        boundary = sgeom.LineString(self.boundary)
+        # Get the boundary as a LineString of the correct orientation
+        # so we can compute distances along it.
         if is_ccw:
-            boundary.coords = list(boundary.coords)[::-1]
+            boundary = self.ccw_boundary
+        else:
+            boundary = self.cw_boundary
 
         def boundary_distance(xy):
             return boundary.project(sgeom.Point(*xy))
@@ -365,7 +387,7 @@ class Projection(CRS):
         # Any left over "interior" rings need "inverting" with respect
         # to the boundary.
         if interior_rings:
-            boundary_poly = sgeom.Polygon(self.boundary)
+            boundary_poly = self.domain
             x3, y3, x4, y4 = boundary_poly.bounds
             bx = (x4 - x3) * 0.1
             by = (y4 - y3) * 0.1

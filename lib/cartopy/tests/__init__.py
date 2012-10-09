@@ -42,6 +42,9 @@ def show(projection, geometry):
         for line_string in multi_line_string:
             plt.plot(*zip(*line_string.coords), marker='+', linestyle='-')
 
+    elif geometry.type == 'LinearRing':
+        plt.plot(*zip(*geometry.coords), marker='+', linestyle='-')
+
     if 1:
         # Whole map domain
         plt.autoscale()
