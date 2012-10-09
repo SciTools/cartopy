@@ -127,7 +127,7 @@ class HeaderCheck(Command):
 
 setup(
     name='Cartopy',
-    version='0.4.x',
+    version='0.4.0rc1',
     url='http://github.com/SciTools/cartopy',
     author='Philip Elson',
     author_email='pelson.pub@gmail.com',
