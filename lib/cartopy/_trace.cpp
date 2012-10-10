@@ -554,10 +554,8 @@ void _project_segment(GEOSContextHandle_t handle,
                 t_current = t_max;
                 p_current = p_max;
                 state = get_state(p_current, gp_domain, handle);
-                if (state == POINT_IN)
-                {
+                if(state == POINT_IN)
                     lines.new_line();
-                }
             }
         }
         else if(state == POINT_OUT)
@@ -572,11 +570,8 @@ void _project_segment(GEOSContextHandle_t handle,
                 t_current = t_max;
                 p_current = p_max;
                 state = get_state(p_current, gp_domain, handle);
-                if (state == POINT_IN)
-                {
+                if(state == POINT_IN)
                     lines.new_line();
-                    lines.add_point(p_max);
-                }
             }
         }
         else
@@ -584,6 +579,8 @@ void _project_segment(GEOSContextHandle_t handle,
             t_current = t_max;
             p_current = p_max;
             state = get_state(p_current, gp_domain, handle);
+            if(state == POINT_IN)
+                lines.new_line();
         }
     }
 }
