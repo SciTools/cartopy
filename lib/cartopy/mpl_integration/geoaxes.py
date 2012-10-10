@@ -41,6 +41,16 @@ _colors = {
           'sea': numpy.array((152, 183, 226)) / 256.,
           }
 
+_PATH_TRANSFORM_CACHE = {}
+"""
+Stores a mapping between (id(path), hash(self.source_projection), hash(self.target_projection))
+and the resulting transformed path.
+
+Provides a significant performance boost for contours which, at matplotlib 1.2.0 called
+transform_path_non_affine twice unnecessarily.
+
+"""
+
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
     """Transforms coordinates from the source_projection to the target_projection."""
@@ -48,6 +58,7 @@ class InterProjectionTransform(mtransforms.Transform):
     output_dims = 2
     is_separable = False
     has_inverse = True
+
 
     def __init__(self, source_projection, target_projection):
         # assert target_projection is cartopy.crs.Projection
@@ -69,6 +80,11 @@ class InterProjectionTransform(mtransforms.Transform):
             return x, y
 
     def transform_path_non_affine(self, path):
+        orig_id = (id(path), hash(self.source_projection), hash(self.target_projection))
+        result = _PATH_TRANSFORM_CACHE.get(orig_id, None)
+        if result is not None:
+            return result
+        
         bypass = self.source_projection == self.target_projection
         if bypass:
             projection = self.source_projection
@@ -87,13 +103,18 @@ class InterProjectionTransform(mtransforms.Transform):
             transformed_geoms.append(self.target_projection.project_geometry(geom, self.source_projection))
 
         if not transformed_geoms:
-            return mpath.Path(numpy.empty([0, 2]))
+            result = mpath.Path(numpy.empty([0, 2]))
         else:
             paths = patch.geos_to_path(transformed_geoms)
             if not paths:
                 return mpath.Path(numpy.empty([0, 2]))
             points, codes = zip(*[patch.path_segments(path, curves=False, simplify=False) for path in paths])
-            return mpath.Path(numpy.concatenate(points, 0), numpy.concatenate(codes))
+            result = mpath.Path(numpy.concatenate(points, 0), numpy.concatenate(codes))
+        
+        # store the result in the cache for future performance boosts    
+        _PATH_TRANSFORM_CACHE[orig_id] = result
+        
+        return result
 
     def inverted(self):
         return InterProjectionTransform(self.target_projection, self.source_projection)
@@ -181,6 +202,13 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat), ns, abs(lon), ew)
 
+    _coastlines_cache = {}
+    """
+    Caches a mapping between "resolution" and a tuple of the resulting geometries.
+    Provides a significant performance benefit (when combined with object id caching 
+    in shapereader.mpl_axes_plot) when producing multiple maps of the same projection.
+    """
+    
     def coastlines(self, resolution='110m', **kwargs):
         """
         Adds coastal **outlines** to the current axes from the Natural Earth
@@ -201,11 +229,17 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         import cartopy.io.shapereader as shapereader
 
-        coastline_path = shapereader.natural_earth(resolution=resolution,
-                                                   category='physical',
-                                                   name='coastline')
-
-        shapereader.mpl_axes_plot(self, shapereader.Reader(coastline_path).geometries(), **kwargs)
+        if resolution not in self._coastlines_cache: 
+            coastline_path = shapereader.natural_earth(resolution=resolution,
+                                                       category='physical',
+                                                       name='coastline')
+            geoms = tuple(shapereader.Reader(coastline_path).geometries())
+            # put the geoms in the cache
+            self._coastlines_cache[resolution] = geoms 
+        else:
+            geoms = self._coastlines_cache[resolution]
+        
+        shapereader.mpl_axes_plot(self, geoms, **kwargs)
 
     # TODO: expose an interface similar to ax.add_image for shapely things, 
     # and another for adding paths/patches (consider the land shapefile and gshhs as the primary usecases).
