@@ -78,6 +78,10 @@ cdef class CRS:
     #def __str__
     #def _geod(self): # to return the pyproj.Geod
 
+    def __hash__(self):
+        # XXX means that all proj4_params must be hashable...
+        return hash((self.__class__, tuple(self.proj4_params.iteritems()))) 
+
     def _as_mpl_transform(self, axes=None):
         # XXX This has been replicated in the crs.py Projection class, needs to be consolidated? 
         import cartopy.mpl_integration.geoaxes as geoaxes
