@@ -41,7 +41,15 @@ _colors = {
           'sea': numpy.array((152, 183, 226)) / 256.,
           }
 
-#_CACHE = {}
+_PATH_TRANSFORM_CACHE = {}
+"""
+Stores a mapping between (id(path), hash(self.source_projection), hash(self.target_projection))
+and the resulting transformed path.
+
+Provides a significant performance boost for contours which, at matplotlib 1.2.0 called
+transform_path_non_affine twice unnecessarily.
+
+"""
 
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
@@ -72,14 +80,11 @@ class InterProjectionTransform(mtransforms.Transform):
             return x, y
 
     def transform_path_non_affine(self, path):
-#        orig_id = (id(path),)# self.source_projection, self.target_projection)
-#        r = _CACHE.get(orig_id, None)
-##        print orig_id, _CACHE.keys()
-##        print
-#        # re-use a transform
-#        if r is not None:
-#            print 're-using'
-#            return r
+        orig_id = (id(path), hash(self.source_projection), hash(self.target_projection))
+        result = _PATH_TRANSFORM_CACHE.get(orig_id, None)
+        if result is not None:
+            return result
+        
         bypass = self.source_projection == self.target_projection
         if bypass:
             projection = self.source_projection
@@ -105,7 +110,10 @@ class InterProjectionTransform(mtransforms.Transform):
                 return mpath.Path(numpy.empty([0, 2]))
             points, codes = zip(*[patch.path_segments(path, curves=False, simplify=False) for path in paths])
             result = mpath.Path(numpy.concatenate(points, 0), numpy.concatenate(codes))
-#        _CACHE[orig_id] = result
+        
+        # store the result in the cache for future performance boosts    
+        _PATH_TRANSFORM_CACHE[orig_id] = result
+        
         return result
 
     def inverted(self):
