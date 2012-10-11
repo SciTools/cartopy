@@ -17,7 +17,7 @@
 
 
 """
-Combines the shapefile access of the Python Shapefile Library with the
+Combines the shapefile access of pyshp with the
 geometry representation of shapely.
 
 >>> import os.path
