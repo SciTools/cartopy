@@ -13,7 +13,7 @@
 Introduction
 ============
 
-Cartopy is a Python library designed to make drawing maps for data analysis easy and enjoyable.
+Cartopy is a Python package designed to make drawing maps for data analysis easy and enjoyable.
 
 Primarily the non-drawing functionality of cartopy makes use of proj.4, numpy, geos and shapely; 
 with simple and intuitive interfacing to matplotlib for map drawing.

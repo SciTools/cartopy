@@ -20,10 +20,13 @@ and then adding some coastlines to the axes:
     plt.show()
 
 
-A list of the available projections to be used with matplotlib can be found on the :doc:`../projections/table` page.
+A list of the available projections to be used with matplotlib can be 
+found on the :doc:`../projections/table` page.
 
-The line ``plt.axes(projection=ccrs.PlateCarree())`` sets up a GeoAxes instance which exposes a variety
-of other map related methods, in the case of the previous example, we used the
+The line ``plt.axes(projection=ccrs.PlateCarree())`` sets up a 
+:class:`~cartopy.mpl_integration.geoaxes.GeoAxes` instance 
+which exposes a variety of other map related methods, in the case of the 
+previous example, we used the 
 :meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.coastlines` method
 to add coastlines to the map.
 
@@ -51,9 +54,10 @@ Adding data to the map
 ----------------------
 
 Once you have the map just the way you want it, data can be added to it in exactly the same way as
-with normal matplotlib axes. By default, the coordinate system of any data added to a GeoAxes the same as
-the coordinate system of the GeoAxes itself, to control which coordinate system that the given data is
-in, you can add the ``transform`` keyword with an appropriate :mod:`cartopy.crs.CRS` instance:
+with normal matplotlib axes. By default, the coordinate system of any data added to a GeoAxes is 
+the same as the coordinate system of the GeoAxes itself, to control which coordinate system 
+that the given data is in, you can add the ``transform`` keyword with an appropriate 
+:mod:`cartopy.crs.CRS` instance:
 
 
 .. plot::
@@ -98,7 +102,7 @@ those points *on the globe* rather than 2d Cartesian space.
 .. note::
 
     By default, matplotlib automatically sets the limits of your Axes based on the data
-    that you plot. Because cartopy implements a :class:~cartopy.mpl_integration.geoaxes.GeoAxes`
+    that you plot. Because cartopy implements a :class:`~cartopy.mpl_integration.geoaxes.GeoAxes`
     class, this equates to the limits of the resulting map. Sometimes this autoscaling
     is a desirable feature and other times it is not.
 
