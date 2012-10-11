@@ -3,4 +3,5 @@
 Who uses cartopy
 ================
 
- * UK Met Office
+ * The UK Met Office is using cartopy for its new open source analysis 
+   package <Iris http://scitools.org.uk>_.

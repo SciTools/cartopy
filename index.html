@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Introduction &mdash; cartopy 0.0 pre-alpha documentation</title>
+    <title>Introduction &mdash; cartopy 0.4.x documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.0 pre-alpha',
+        VERSION:     '0.4.x',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="copyright" title="Copyright" href="copyright.html" />
-    <link rel="top" title="cartopy 0.0 pre-alpha documentation" href="#" />
+    <link rel="top" title="cartopy 0.4.x documentation" href="#" />
     <link rel="next" title="Who uses cartopy" href="who_uses_cartopy.html" />
-
-<meta name="google-site-verification" content="_dHjL7RyB_-7QEclM_KyAT2cL_tkEFJHQ2prHB2yrO0" />
+ 
 <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
 <link rel="stylesheet" href="_static/linewidth.css" type="text/css" />
 
@@ -40,7 +41,7 @@
 -->
 <!--
 <p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
-cartopy 0.0 pre-alpha
+cartopy 0.4.x
 </p>
 -->
 </div>
@@ -103,6 +104,9 @@ border="0" alt="Cartopy" style="margin-left: -60px;"/>
       </div>
 
     <div class="document">
+        <!-- put an empty image aligned right to clear the logo. -->
+        <img align="right" src="" alt="" style="width: 100px; height: 125px;" />
+        
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
@@ -111,7 +115,7 @@ border="0" alt="Cartopy" style="margin-left: -60px;"/>
 </div>
 <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>Cartopy is a Python library designed to make drawing maps for data analysis easy and enjoyable.</p>
+<p>Cartopy is a Python package designed to make drawing maps for data analysis easy and enjoyable.</p>
 <p>Primarily the non-drawing functionality of cartopy makes use of proj.4, numpy, geos and shapely; 
 with simple and intuitive interfacing to matplotlib for map drawing.</p>
 <p>Some of the key features of cartopy are:</p>
@@ -120,28 +124,24 @@ with simple and intuitive interfacing to matplotlib for map drawing.</p>
 <li>object oriented projection definitions</li>
 <li>point, line, polygon and image transformations between projections</li>
 <li>integration to expose advanced mapping in matplotlib with a simple and intuitive interface</li>
-<li>mechanisms for accessing specialist data such as those from the &#8220;Shuttle Radar Topography 
+<li>work-in-progress mechanisms for accessing specialist data such as those from the &#8220;Shuttle Radar Topography 
 Mission&#8221; (SRTM) and the &#8220;Global Self-consistent, Hierarchical, High-resolution Shoreline&#8221; database (GSHHS).</li>
 </ul>
 </div></blockquote>
 <p>Cartopy is licensed under <a class="reference external" href="http://www.gnu.org/licenses/lgpl.html">GNU Lesser General Public License</a> 
-and is at version 0.0 pre-alpha. You can find the source code for cartopy on 
+and is at version 0.4.x. You can find the source code for cartopy on 
 <a class="reference external" href="http://github.com/SciTools/cartopy">our github page</a>.</p>
 </div>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Cartopy is in very early development. Installation instructions are likely to be 
-non-existant/incomplete until capabilities have settled down. (forecast for late September 2012)</p>
-</div>
 <p>Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
 <a class="reference internal" href="building_from_source/index.html#building-from-source"><em>building from source</em></a> section.</p>
 </div>
 <div class="section" id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<p>See <a class="reference internal" href="introductory_examples/index.html"><em>these examples</em></a> for an introduction to using cartopy with matplotlib.</p>
+<p>To start using cartopy with matplotlib see the <a class="reference internal" href="matplotlib/intro.html"><em>Using cartopy with matplotlib</em></a> section.</p>
+<p>Short <a class="reference internal" href="matplotlib/introductory_examples/index.html"><em>step-by-step examples</em></a> are also available.</p>
 </div>
 <div class="section" id="getting-involved">
 <h1>Getting involved<a class="headerlink" href="#getting-involved" title="Permalink to this headline">¶</a></h1>
@@ -158,14 +158,14 @@ bugs which cover the issue before making a new one).</li>
 <li>Helping others with support questions on <a class="reference external" href="http://stackoverflow.com/questions/tagged/cartopy">stackoverflow</a>.</li>
 </ul>
 </div></blockquote>
-<p>If you or your organisation use cartopy, we would love to hear about it. You could submit a pull request which updates
-the <a class="reference internal" href="who_uses_cartopy.html#cartopy-users"><em>&#8220;who uses cartopy&#8221;</em></a> page or alternatively you can simply contact us via the cartopy mailing list (address TBD).</p>
+<p>If you or your organisation use cartopy, we would love to hear about it.</p>
 </div>
 
 
           </div>
         </div>
       </div>
+
       <div class="clearer"></div>
     </div>
     <div class="related">

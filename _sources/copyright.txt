@@ -33,7 +33,7 @@ You should find all source files with the following header:
 
 
 Cartopy documentation and examples
--------------------------------
+----------------------------------
 
 All documentation, examples and sample data found on this website and in source repository 
 are licensed under the UK's Open Government Licence:

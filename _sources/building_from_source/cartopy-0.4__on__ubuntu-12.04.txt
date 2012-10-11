@@ -1,0 +1,36 @@
+wget http://python-distribute.org/distribute_setup.py
+sudo python distribute_setup.py
+wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+sudo python get-pip.py
+
+# to install from git source
+sudo apt-get update
+sudo apt-get install git
+
+sudo apt-get install python-dev
+sudo pip install numpy
+
+sudo pip install cython
+sudo apt-get install proj
+
+# install geos 
+sudo sudo apt-add-repository ppa:sharpie/for-science
+sudo apt-get update
+sudo apt-get install libgeos-dev
+
+sudo pip install shapely
+sudo apt-get install python-scipy
+sudo pip install pyshp
+
+
+# for matplotlib 1.2 (no pre-build package available yet)
+sudo apt-get build-dep matplotlib
+git clone https://github.com/matplotlib/matplotlib.git
+cd matplotlib
+sudo python setup.py install
+
+sudo pip install nose
+
+git clone https://github.com/SciTools/cartopy.git
+cd cartopy
+python setup.py install

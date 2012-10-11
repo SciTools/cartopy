@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using cartopy with matplotlib &mdash; cartopy 0.4.x documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="cartopy 0.4.x documentation" href="../index.html" />
+    <link rel="next" title="More advanced mapping with cartopy and matplotlib" href="advanced_plotting.html" />
+    <link rel="prev" title="Building cartopy from source" href="../building_from_source/index.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<link rel="stylesheet" href="_static/linewidth.css" type="text/css" />
+
+  </head>
+  <body>
+<!--
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/cartopy.png" style="float:left; clear:right; margin-right: 40px; " border="0" alt="Cartopy"/></a>
+<p style="clear: both;">i.</p>
+-->
+<!--
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+cartopy 0.4.x
+</p>
+-->
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="advanced_plotting.html" title="More advanced mapping with cartopy and matplotlib"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../building_from_source/index.html" title="Building cartopy from source"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+             <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        -->
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<a href="../index.html">
+<img src="../_static/cartopy.png" 
+border="0" alt="Cartopy" style="margin-left: -60px;"/>
+</a>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using cartopy with matplotlib</a><ul>
+<li><a class="reference internal" href="#beautifully-simple-maps">Beautifully simple maps</a></li>
+<li><a class="reference internal" href="#adding-data-to-the-map">Adding data to the map</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../building_from_source/index.html"
+                        title="previous chapter">Building cartopy from source</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="advanced_plotting.html"
+                        title="next chapter">More advanced mapping with cartopy and matplotlib</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/matplotlib/intro.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+        <!-- put an empty image aligned right to clear the logo. -->
+        <img align="right" src="" alt="" style="width: 100px; height: 125px;" />
+        
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-cartopy-with-matplotlib">
+<h1>Using cartopy with matplotlib<a class="headerlink" href="#using-cartopy-with-matplotlib" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="beautifully-simple-maps">
+<h2>Beautifully simple maps<a class="headerlink" href="#beautifully-simple-maps" title="Permalink to this headline">¶</a></h2>
+<p>Cartopy has exposed an interface to enable easy map creation using matplotlib.
+Creating a basic map is as simple as telling matplotlib to use a specific map projection,
+and then adding some coastlines to the axes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">coastlines</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../matplotlib/intro-1.py">Source code</a>, <a class="reference external" href="../matplotlib/intro-1.png">png</a>)</p>
+<div class="figure">
+<img alt="../_images/intro-1.png" src="../_images/intro-1.png" />
+</div>
+<p>A list of the available projections to be used with matplotlib can be 
+found on the <a class="reference internal" href="../projections/table.html"><em>Cartopy projection list</em></a> page.</p>
+<p>The line <tt class="docutils literal"><span class="pre">plt.axes(projection=ccrs.PlateCarree())</span></tt> sets up a 
+<a class="reference internal" href="geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes" title="cartopy.mpl_integration.geoaxes.GeoAxes"><tt class="xref py py-class docutils literal"><span class="pre">GeoAxes</span></tt></a> instance 
+which exposes a variety of other map related methods, in the case of the 
+previous example, we used the 
+<a class="reference internal" href="geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.coastlines" title="cartopy.mpl_integration.geoaxes.GeoAxes.coastlines"><tt class="xref py py-meth docutils literal"><span class="pre">coastlines()</span></tt></a> method
+to add coastlines to the map.</p>
+<p>Lets create another map in a different projection, and make use of the
+<a class="reference internal" href="geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.stock_img" title="cartopy.mpl_integration.geoaxes.GeoAxes.stock_img"><tt class="xref py py-meth docutils literal"><span class="pre">stock_img()</span></tt></a> method to add an underlay
+image to the map:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Mollweide</span><span class="p">())</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">stock_img</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../matplotlib/intro-2.py">Source code</a>, <a class="reference external" href="../matplotlib/intro-2.png">png</a>)</p>
+<div class="figure">
+<img alt="../_images/intro-2.png" src="../_images/intro-2.png" />
+</div>
+<p>At this point, have a go at picking your own projection and creating a map with an image underlay
+with coastlines over the top (the order that you run the methods is important if no <tt class="docutils literal"><span class="pre">zorder</span></tt>
+keyword is provided).</p>
+</div>
+<div class="section" id="adding-data-to-the-map">
+<h2>Adding data to the map<a class="headerlink" href="#adding-data-to-the-map" title="Permalink to this headline">¶</a></h2>
+<p>Once you have the map just the way you want it, data can be added to it in exactly the same way as
+with normal matplotlib axes. By default, the coordinate system of any data added to a GeoAxes is 
+the same as the coordinate system of the GeoAxes itself, to control which coordinate system 
+that the given data is in, you can add the <tt class="docutils literal"><span class="pre">transform</span></tt> keyword with an appropriate 
+<tt class="xref py py-mod docutils literal"><span class="pre">cartopy.crs.CRS</span></tt> instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">stock_img</span><span class="p">()</span>
+
+<span class="n">ny_lon</span><span class="p">,</span> <span class="n">ny_lat</span> <span class="o">=</span> <span class="o">-</span><span class="mi">75</span><span class="p">,</span> <span class="mi">43</span>
+<span class="n">delhi_lon</span><span class="p">,</span> <span class="n">delhi_lat</span> <span class="o">=</span> <span class="mf">77.23</span><span class="p">,</span> <span class="mf">28.61</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">ny_lon</span><span class="p">,</span> <span class="n">delhi_lon</span><span class="p">],</span> <span class="p">[</span><span class="n">ny_lat</span><span class="p">,</span> <span class="n">delhi_lat</span><span class="p">],</span>
+         <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;o&#39;</span><span class="p">,</span>
+         <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Geodetic</span><span class="p">(),</span>
+         <span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">ny_lon</span><span class="p">,</span> <span class="n">delhi_lon</span><span class="p">],</span> <span class="p">[</span><span class="n">ny_lat</span><span class="p">,</span> <span class="n">delhi_lat</span><span class="p">],</span>
+         <span class="n">color</span><span class="o">=</span><span class="s">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s">&#39;--&#39;</span><span class="p">,</span>
+         <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">(),</span>
+         <span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">ny_lon</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ny_lat</span> <span class="o">-</span> <span class="mi">12</span><span class="p">,</span> <span class="s">&#39;New York&#39;</span><span class="p">,</span>
+         <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;right&#39;</span><span class="p">,</span>
+         <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Geodetic</span><span class="p">())</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">delhi_lon</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="n">delhi_lat</span> <span class="o">-</span> <span class="mi">12</span><span class="p">,</span> <span class="s">&#39;Delhi&#39;</span><span class="p">,</span>
+         <span class="n">horizontalalignment</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">,</span>
+         <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Geodetic</span><span class="p">())</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../matplotlib/intro-3.py">Source code</a>, <a class="reference external" href="../matplotlib/intro-3.png">png</a>)</p>
+<div class="figure">
+<img alt="../_images/intro-3.png" src="../_images/intro-3.png" />
+</div>
+<p>Notice how the line in blue between New York and Delhi is not straight on a flat
+<tt class="xref py py-class docutils literal"><span class="pre">PlateCarree</span></tt> map, this is because the
+<tt class="xref py py-class docutils literal"><span class="pre">Geodetic</span></tt> coordinate system is a truly spherical coordinate
+system, where a line between two points is defined as the shortest path between
+those points <em>on the globe</em> rather than 2d Cartesian space.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>By default, matplotlib automatically sets the limits of your Axes based on the data
+that you plot. Because cartopy implements a <a class="reference internal" href="geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes" title="cartopy.mpl_integration.geoaxes.GeoAxes"><tt class="xref py py-class docutils literal"><span class="pre">GeoAxes</span></tt></a>
+class, this equates to the limits of the resulting map. Sometimes this autoscaling
+is a desirable feature and other times it is not.</p>
+<p>To set the extents of a cartopy GeoAxes, there are several convenient options:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>For &#8220;global&#8221; plots, use the <a class="reference internal" href="geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.set_global" title="cartopy.mpl_integration.geoaxes.GeoAxes.set_global"><tt class="xref py py-meth docutils literal"><span class="pre">set_global()</span></tt></a> method.</li>
+<li>To set the extents of the map based on a bounding box, in any coordinate system,
+use the <a class="reference internal" href="geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.set_extent" title="cartopy.mpl_integration.geoaxes.GeoAxes.set_extent"><tt class="xref py py-meth docutils literal"><span class="pre">set_extent()</span></tt></a> method.</li>
+<li>Alternatively, the standard limit setting methods can be used in the GeoAxes&#8217;s
+native coordinate system (e.g. <tt class="xref py py-meth docutils literal"><span class="pre">set_xlim()</span></tt> and
+<tt class="xref py py-meth docutils literal"><span class="pre">set_ylim()</span></tt>).</li>
+</ul>
+</div></blockquote>
+</div>
+<p>In the <a class="reference internal" href="advanced_plotting.html"><em>next section</em></a>, examples of contouring, block plotting and adding
+geo-located images are provided for more advanced map based visualisations.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="advanced_plotting.html" title="More advanced mapping with cartopy and matplotlib"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../building_from_source/index.html" title="Building cartopy from source"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+             <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        -->
+ 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2011 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>
