@@ -173,11 +173,16 @@ def test_cursor_values():
     r = ax.format_coord(x, y)
     assert_equal(r.encode('ascii', 'ignore'), '1.606e+07, 2.363e+06 (22.095524N, 173.709136E)')
 
-#
-#@image_comparison(baseline_images=['image_transform'])
-#def test_image_transforms():
-#    plt.subplot(131, projection=ccrs.PlateCarree())
-#
+
+@image_comparison(baseline_images=['natural_earth_interface'])
+def test_axes_natural_earth_interface():
+    rob = ccrs.Robinson()
+    
+    ax = plt.axes(projection=rob)
+    
+    ax.natural_earth_shp('rivers-lake-centerlines', edgecolor='black', facecolor='none')
+    ax.natural_earth_shp('lakes', facecolor='blue')
+    
 
 if __name__=='__main__':
     import nose
