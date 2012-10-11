@@ -51,6 +51,20 @@ transform_path_non_affine twice unnecessarily.
 
 """
 
+_GEOMETRY_TO_PATH_CACHE = {}
+"""
+Caches a map between (id(geometries), hash(crs)) to projected paths.
+This provides a significant boost when producing multiple maps of the same projection.
+"""
+
+_NATURAL_EARTH_GEOM_CACHE = {}
+"""
+Caches a mapping between (name, category, resolution) and a tuple of the resulting geometries.
+Provides a significant performance benefit (when combined with object id caching 
+in GeoAxes.add_geometries) when producing multiple maps of the same projection.
+"""
+
+
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
     """Transforms coordinates from the source_projection to the target_projection."""
@@ -202,14 +216,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat), ns, abs(lon), ew)
 
-    _coastlines_cache = {}
-    """
-    Caches a mapping between "resolution" and a tuple of the resulting geometries.
-    Provides a significant performance benefit (when combined with object id caching 
-    in shapereader.mpl_axes_plot) when producing multiple maps of the same projection.
-    """
-    
-    def coastlines(self, resolution='110m', **kwargs):
+    def coastlines(self, resolution='110m', color='black', **kwargs):
         """
         Adds coastal **outlines** to the current axes from the Natural Earth
         "coastline" shapefile collection.
@@ -227,35 +234,71 @@ class GeoAxes(matplotlib.axes.Axes):
             likely to be severely effected. This should be resolved transparently by v0.5.
 
         """
+        kwargs = kwargs.copy()
+        kwargs.setdefault('edgecolor', color)
+        kwargs.setdefault('facecolor', 'none')
+        return self.natural_earth_shp(name='coastline',
+                                      resolution=resolution,
+                                      category='physical', **kwargs)
+        
+    def natural_earth_shp(self, name='land', resolution='110m', category='physical', 
+                          **kwargs):
+        """
+        Adds the geometries from the specified Natural Earth shapefile to the Axes as a 
+        :class:`~matplotlib.collections.PathCollection`.
+        
+        ``**kwargs`` are passed through to the :class:`~matplotlib.collections.PathCollection`
+        constructor.
+        
+        Returns the created :class:`~matplotlib.collections.PathCollection`.
+        
+        .. note::
+
+            Currently no clipping is done on the geometries before adding them to the axes.
+            This means, if very high resolution geometries are being used, performance is
+            likely to be severely effected. This should be resolved transparently by v0.5.
+        
+        """
         import cartopy.io.shapereader as shapereader
 
-        if resolution not in self._coastlines_cache: 
+        kwargs.setdefault('edgecolor', 'face')
+        kwargs.setdefault('facecolor', _colors['land'])
+
+        key = (name, category, resolution) 
+
+        if key not in _NATURAL_EARTH_GEOM_CACHE: 
             coastline_path = shapereader.natural_earth(resolution=resolution,
-                                                       category='physical',
-                                                       name='coastline')
+                                                       category=category,
+                                                       name=name)
             geoms = tuple(shapereader.Reader(coastline_path).geometries())
             # put the geoms in the cache
-            self._coastlines_cache[resolution] = geoms 
+            _NATURAL_EARTH_GEOM_CACHE[key] = geoms 
         else:
-            geoms = self._coastlines_cache[resolution]
+            geoms = _NATURAL_EARTH_GEOM_CACHE[key]
         
-        shapereader.mpl_axes_plot(self, geoms, **kwargs)
-
-    # TODO: expose an interface similar to ax.add_image for shapely things, 
-    # and another for adding paths/patches (consider the land shapefile and gshhs as the primary usecases).
-#    def _coastlines_land(self, facecolor=colors['land'], **kwargs):
-#        import cartopy.io.shapereader as shapereader
-#
-#        land_path = shapereader.natural_earth(resolution='110m',
-#                                               category='physical',
-#                                               name='land')
-#
-#        paths = []
-#        for geom in shapereader.Reader(land_path).geometries():
-#
-#            paths.extend(patch.geos_to_path(self.projection.project_geometry(geom)))
-#        self.add_collection(mcollections.PathCollection(paths, facecolor=facecolor, **kwargs), autolim=False)
-#
+        return self.add_geometries(geoms, ccrs.Geodetic(), 
+                                   **kwargs)
+        
+    def add_geometries(self, geoms, crs, **collection_kwargs):
+        """
+        Add the given shapely geometries (in the given crs) to the axes as 
+        a :class:`~matplotlib.collections.PathCollection`.
+        
+        """
+        oid = (id(geoms), hash(crs), hash(self.projection))
+        if oid in _GEOMETRY_TO_PATH_CACHE:
+            paths = _GEOMETRY_TO_PATH_CACHE[oid]
+        else:
+            paths = []
+            for geom in geoms:
+                paths.extend(patch.geos_to_path(self.projection.project_geometry(geom, crs)))
+            _GEOMETRY_TO_PATH_CACHE[oid] = paths
+            
+        c = mcollections.PathCollection(paths, transform=self.projection, **collection_kwargs)
+        self.add_collection(c, autolim=False)
+        
+        return c
+                
 #    def gshhs(self, outline_color='k', land_fill='green', ocean_fill='None', resolution='coarse', domain=None):
 #        import cartopy.gshhs as gshhs
 #        from matplotlib.collections import PatchCollection
@@ -282,8 +325,7 @@ class GeoAxes(matplotlib.axes.Axes):
 #                                     facecolor=land_fill,
 #                                     zorder=2,
 #                                     )
-#        # XXX Should it update the limits??? (AND HOW???)
-#        self.add_collection(collection)
+#        self.add_collection(collection, autolim=False)
 
     def get_extent(self, crs=None):
         """

@@ -216,30 +216,30 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
 
     return shapefiles[0]
 
-
-_geometry_to_path_cache = {}
-"""
-Caches a map between (id(geometries), hash(axes.projection)) to projected paths.
-This provides a significant boost when producing multiple maps of the same projection.
-"""
-def mpl_axes_plot(axes, geometries, facecolor='none', **kwargs):
-    """Plot lines on the given axes, given the geometries in lon/lat."""
-    # TODO: This interface should be exposed nicely on the geoaxes itself.
-    import matplotlib.collections as mcollections
-    import cartopy.mpl_integration.patch as patch
-
-    oid = (id(geometries), hash(axes.projection))
-    if oid in _geometry_to_path_cache:
-        paths = _geometry_to_path_cache[oid]
-    else:
-        paths = []
-        for geom in geometries:
-            paths.extend(patch.geos_to_path(axes.projection.project_geometry(geom)))
-        _geometry_to_path_cache[oid] = paths
-    axes.add_collection(mcollections.PathCollection(paths, facecolor=facecolor, 
-                                                    transform=axes.transData,
-                                                    **kwargs), 
-                        autolim=False)
+#
+#_geometry_to_path_cache = {}
+#"""
+#Caches a map between (id(geometries), hash(axes.projection)) to projected paths.
+#This provides a significant boost when producing multiple maps of the same projection.
+#"""
+#def mpl_axes_plot(axes, geometries, facecolor='none', **kwargs):
+#    """Plot lines on the given axes, given the geometries in lon/lat."""
+#    # TODO: This interface should be exposed nicely on the geoaxes itself.
+#    import matplotlib.collections as mcollections
+#    import cartopy.mpl_integration.patch as patch
+#
+#    oid = (id(geometries), hash(axes.projection))
+#    if oid in _geometry_to_path_cache:
+#        paths = _geometry_to_path_cache[oid]
+#    else:
+#        paths = []
+#        for geom in geometries:
+#            paths.extend(patch.geos_to_path(axes.projection.project_geometry(geom)))
+#        _geometry_to_path_cache[oid] = paths
+#    axes.add_collection(mcollections.PathCollection(paths, facecolor=facecolor, 
+#                                                    transform=axes.transData,
+#                                                    **kwargs), 
+#                        autolim=False)
 
 
 if __name__ == '__main__':

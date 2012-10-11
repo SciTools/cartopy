@@ -128,7 +128,7 @@ def test_contour_interiors():
     cs = plt.contourf(lons, lats, data, numlev, transform=ccrs.Geodetic())
     
     ax.coastlines()    
-    
+
 
 if __name__=='__main__':
     import nose

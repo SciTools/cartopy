@@ -108,9 +108,9 @@ def test_shapefile_transform_cache():
     project_geometry_counter = CallCounter(ax.projection, 'project_geometry')
     
     with project_geometry_counter:
-        c = cartopy.io.shapereader.mpl_axes_plot(ax, geoms)
-        c = cartopy.io.shapereader.mpl_axes_plot(ax, geoms)
-        c = cartopy.io.shapereader.mpl_axes_plot(ax, geoms[:]) # <- caching will not work for this case
+        c = ax.add_geometries(geoms, ccrs.Geodetic())
+        c = ax.add_geometries(geoms, ccrs.Geodetic())
+        c = ax.add_geometries(geoms[:], ccrs.Geodetic()) # <- caching will not work for this case
     
     # before the performance enhancement, the count would have been n_calls * n_geom,
     # but should now be just n_geom * n_unique_id_geoms_calls (i.e. in this case 2 * n_calls))
