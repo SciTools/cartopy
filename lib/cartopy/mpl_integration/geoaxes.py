@@ -529,7 +529,6 @@ class GeoAxes(matplotlib.axes.Axes):
 #        from matplotlib.collections import PatchCollection
 
         self.sct = sct = SimpleClippedTransform(self.transScale + self.transLimits, self.transAxes)
-        self.smt = SimpleMaskingTransform(self.transScale + self.transLimits, self.transAxes)
 
         # XXX Should be exactly one path...
         collection = mpatches.PathPatch(path,
@@ -841,25 +840,3 @@ class SimpleClippedTransform(mtransforms.Transform):
 
     def inverted(self):
         return (self.pre_clip_transform + self.post_clip_transform).inverted()
-
-
-class SimpleMaskingTransform(SimpleClippedTransform):
-    def transform_non_affine(self, values):
-        values = numpy.array(values)
-        single_point = False
-        if values.ndim == 1:
-            single_point = True
-            values.shape = (1, 2)
-
-        new_vals = self.pre_clip_transform.transform(values)
-        x, y = new_vals[:, 0:1], new_vals[:, 1:2]
-        new_vals = numpy.ma.masked_array(new_vals, mask=None)
-        new_vals.mask[:, 1:2] = (x < self.x_clips[0]) | (x > self.x_clips[1])
-#        new_vals.mask[:, 0:1] = (y < self.y_clips[0]) | (y > self.y_clips[1])
-        numpy.clip(y, self.y_clips[0], self.y_clips[1], y)
-        result = self.post_clip_transform.transform(new_vals)
-
-        if single_point:
-            return result[0, :]
-        else:
-            return result
