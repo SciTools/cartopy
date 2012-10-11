@@ -112,35 +112,6 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
 #                                         quantize, simplify, curves)
 
 
-
-
-
-def path_interpolation(path, n_steps):
-#            path_verts, path_codes =  zip(*list(path.iter_segments(curves=False)))
-    path_verts, path_codes = path_segments(path, curves=False)
-    path_verts = np.array(path_verts)
-    path_codes = np.array(path_codes)
-    verts_split_inds = np.where(path_codes == Path.MOVETO)[0]
-    verts_split = np.split(path_verts, verts_split_inds, 0)
-    codes_split = np.split(path_codes, verts_split_inds, 0)
-    
-    v_collection = []
-    c_collection = []
-    for path_verts, path_codes in zip(verts_split, codes_split):
-        if len(path_verts) == 0:
-            continue
-        import matplotlib.cbook
-#                print path_verts.shape
-        verts = matplotlib.cbook.simple_linear_interpolation(path_verts, n_steps)
-        v_collection.append(verts)
-#                print verts.shape
-        codes = np.ones(verts.shape[0]) * Path.LINETO
-        codes[0] = Path.MOVETO
-        c_collection.append(codes)
-        
-    return Path(np.concatenate(v_collection), np.concatenate(c_collection))
-
-
 def path_to_geos(path):
     """
     """
