@@ -1,0 +1,1011 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cartopy.mpl_integration.geoaxes &mdash; cartopy 0.4.x documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.4.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../../../copyright.html" />
+    <link rel="top" title="cartopy 0.4.x documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<link rel="stylesheet" href="_static/linewidth.css" type="text/css" />
+
+  </head>
+  <body>
+<!--
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../../index.html"><img src="../../../_static/cartopy.png" style="float:left; clear:right; margin-right: 40px; " border="0" alt="Cartopy"/></a>
+<p style="clear: both;">i.</p>
+-->
+<!--
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+cartopy 0.4.x
+</p>
+-->
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+             <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        -->
+
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<a href="../../../index.html">
+<img src="../../../_static/cartopy.png" 
+border="0" alt="Cartopy" style="margin-left: -60px;"/>
+</a>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+        <!-- put an empty image aligned right to clear the logo. -->
+        <img align="right" src="" alt="" style="width: 100px; height: 125px;" />
+        
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cartopy.mpl_integration.geoaxes</h1><div class="highlight"><pre>
+<span class="c"># (C) British Crown Copyright 2011 - 2012, Met Office</span>
+<span class="c">#</span>
+<span class="c"># This file is part of cartopy.</span>
+<span class="c">#</span>
+<span class="c"># cartopy is free software: you can redistribute it and/or modify it under</span>
+<span class="c"># the terms of the GNU Lesser General Public License as published by the</span>
+<span class="c"># Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># cartopy is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c"># GNU Lesser General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c"># along with cartopy.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+
+<span class="kn">import</span> <span class="nn">matplotlib.axes</span>
+<span class="kn">from</span> <span class="nn">matplotlib.image</span> <span class="kn">import</span> <span class="n">imread</span>
+<span class="kn">import</span> <span class="nn">matplotlib.transforms</span> <span class="kn">as</span> <span class="nn">mtransforms</span>
+<span class="kn">import</span> <span class="nn">matplotlib.patches</span> <span class="kn">as</span> <span class="nn">mpatches</span>
+<span class="kn">import</span> <span class="nn">matplotlib.path</span> <span class="kn">as</span> <span class="nn">mpath</span>
+<span class="kn">import</span> <span class="nn">matplotlib.collections</span> <span class="kn">as</span> <span class="nn">mcollections</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">shapely.geometry</span>
+
+<span class="c">#import cartopy.cartesian</span>
+<span class="kn">import</span> <span class="nn">cartopy</span>
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+<span class="kn">import</span> <span class="nn">cartopy.img_transform</span>
+<span class="kn">import</span> <span class="nn">cartopy.mpl_integration.patch</span> <span class="kn">as</span> <span class="nn">patch</span>
+
+
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="k">assert</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">__version__</span> <span class="o">&gt;=</span> <span class="s">&#39;1.2&#39;</span><span class="p">,</span> <span class="s">&#39;Cartopy can only work with matplotlib 1.2 or greater.&#39;</span>
+
+
+<span class="n">_colors</span> <span class="o">=</span> <span class="p">{</span>
+          <span class="s">&#39;land&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">240</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">220</span><span class="p">))</span> <span class="o">/</span> <span class="mf">256.</span><span class="p">,</span>
+          <span class="s">&#39;sea&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">152</span><span class="p">,</span> <span class="mi">183</span><span class="p">,</span> <span class="mi">226</span><span class="p">))</span> <span class="o">/</span> <span class="mf">256.</span><span class="p">,</span>
+          <span class="p">}</span>
+
+<span class="n">_PATH_TRANSFORM_CACHE</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Stores a mapping between (id(path), hash(self.source_projection), hash(self.target_projection))</span>
+<span class="sd">and the resulting transformed path.</span>
+
+<span class="sd">Provides a significant performance boost for contours which, at matplotlib 1.2.0 called</span>
+<span class="sd">transform_path_non_affine twice unnecessarily.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">_GEOMETRY_TO_PATH_CACHE</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Caches a map between (id(geometries), hash(crs)) to projected paths.</span>
+<span class="sd">This provides a significant boost when producing multiple maps of the same projection.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">_NATURAL_EARTH_GEOM_CACHE</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Caches a mapping between (name, category, resolution) and a tuple of the resulting geometries.</span>
+<span class="sd">Provides a significant performance benefit (when combined with object id caching </span>
+<span class="sd">in GeoAxes.add_geometries) when producing multiple maps of the same projection.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="c"># XXX call this InterCRSTransform</span>
+<span class="k">class</span> <span class="nc">InterProjectionTransform</span><span class="p">(</span><span class="n">mtransforms</span><span class="o">.</span><span class="n">Transform</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transforms coordinates from the source_projection to the target_projection.&quot;&quot;&quot;</span>
+    <span class="n">input_dims</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">output_dims</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">is_separable</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">has_inverse</span> <span class="o">=</span> <span class="bp">True</span>
+
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_projection</span><span class="p">,</span> <span class="n">target_projection</span><span class="p">):</span>
+        <span class="c"># assert target_projection is cartopy.crs.Projection</span>
+        <span class="c"># assert source_projection is cartopy.crs.CRS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span> <span class="o">=</span> <span class="n">source_projection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span> <span class="o">=</span> <span class="n">target_projection</span>
+        <span class="n">mtransforms</span><span class="o">.</span><span class="n">Transform</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;&lt; InterProjectionTransform </span><span class="si">%s</span><span class="s"> -&gt; </span><span class="si">%s</span><span class="s"> &gt;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">transform_non_affine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Transforms from native coordinates to lat lons.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span><span class="o">.</span><span class="n">transform_points</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span><span class="p">,</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">xy</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">transform_path_non_affine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">orig_id</span> <span class="o">=</span> <span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span><span class="p">),</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span><span class="p">))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">_PATH_TRANSFORM_CACHE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">orig_id</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+        
+        <span class="n">bypass</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span>
+        <span class="k">if</span> <span class="n">bypass</span><span class="p">:</span>
+            <span class="n">projection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">projection</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">_CylindricalProjection</span><span class="p">):</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">vertices</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">x_limits</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">x_limits</span>
+                <span class="n">bypass</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">x_limits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">x_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">bypass</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">path</span>
+
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">vertices</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">mpath</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">vertices</span><span class="p">))</span>
+
+        <span class="n">transformed_geoms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">patch</span><span class="o">.</span><span class="n">path_to_geos</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <span class="n">transformed_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span><span class="o">.</span><span class="n">project_geometry</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">transformed_geoms</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">mpath</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="n">patch</span><span class="o">.</span><span class="n">geos_to_path</span><span class="p">(</span><span class="n">transformed_geoms</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">mpath</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+            <span class="n">points</span><span class="p">,</span> <span class="n">codes</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">patch</span><span class="o">.</span><span class="n">path_segments</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">curves</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">simplify</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">])</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">mpath</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">codes</span><span class="p">))</span>
+        
+        <span class="c"># store the result in the cache for future performance boosts    </span>
+        <span class="n">_PATH_TRANSFORM_CACHE</span><span class="p">[</span><span class="n">orig_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+        
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">inverted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">InterProjectionTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_projection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_projection</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GeoAxes"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes">[docs]</a><span class="k">class</span> <span class="nc">GeoAxes</span><span class="p">(</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;map_projection&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GeoAxes</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gridliners</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_factories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_done_img_factory</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="GeoAxes.add_image"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.add_image">[docs]</a>    <span class="k">def</span> <span class="nf">add_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factory</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds an image &quot;factory&quot; to the Axes.</span>
+
+<span class="sd">        Any image &quot;factory&quot; added, will be asked to retrieve an image</span>
+<span class="sd">        with associated metadata for a given bounding box at draw time.</span>
+<span class="sd">        The advantage of this approach is that the limits of the map</span>
+<span class="sd">        do not need to be known when adding the image factory, but can</span>
+<span class="sd">        be deferred until everything which can effect the limits has been</span>
+<span class="sd">        added.</span>
+
+<span class="sd">        Currently an image &quot;factory&quot; is just an object with</span>
+<span class="sd">        a ``image_for_domain`` method. Examples of image factories</span>
+<span class="sd">        are :class:`cartopy.io.img_nest.NestedImageCollection` and</span>
+<span class="sd">        :class:`cartopy.io.image_tiles.GoogleTiles`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># XXX TODO: Needs working on</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_factories</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">factory</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">])</span>
+</div>
+    <span class="nd">@matplotlib.axes.allow_rasterization</span>
+    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">renderer</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">inframe</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="c"># if no data has been added, and no extents set, then make the map global</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_existing_data_limits</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_autoscaleXon</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_autoscaleYon</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_global</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ignore_existing_data_limits</span> <span class="o">=</span> <span class="bp">True</span>
+
+
+        <span class="k">for</span> <span class="n">gl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gridliners</span><span class="p">:</span>
+            <span class="n">gl</span><span class="o">.</span><span class="n">do_gridlines</span><span class="p">(</span><span class="n">background_patch</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">background_patch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gridliners</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c"># XXX This interface needs a tidy up: </span>
+        <span class="c">#       image drawing on pan/zoom; </span>
+        <span class="c">#       caching the resulting image;</span>
+        <span class="c">#       buffering the result by 10%...; </span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_done_img_factory</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">factory</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_factories</span><span class="p">:</span>
+                <span class="n">img</span><span class="p">,</span> <span class="n">extent</span><span class="p">,</span> <span class="n">origin</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="n">image_for_domain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_extent_geom</span><span class="p">(</span><span class="n">factory</span><span class="o">.</span><span class="n">crs</span><span class="p">),</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">factory</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_done_img_factory</span> <span class="o">=</span> <span class="bp">True</span>
+        
+        
+        <span class="k">return</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">renderer</span><span class="o">=</span><span class="n">renderer</span><span class="p">,</span> <span class="n">inframe</span><span class="o">=</span><span class="n">inframe</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&#39;&lt; GeoAxes: </span><span class="si">%s</span><span class="s"> &gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span>
+
+    <span class="k">def</span> <span class="nf">cla</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">cla</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autoscale_view</span><span class="p">(</span><span class="n">tight</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s">&#39;equal&#39;</span><span class="p">)</span>
+
+        <span class="n">pre_bounary</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_existing_data_limits</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_boundary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ignore_existing_data_limits</span> <span class="o">=</span> <span class="n">pre_bounary</span>
+
+        <span class="c"># XXX consider a margin - but only when the map is not global... </span>
+        <span class="c"># self._xmargin = 0.15</span>
+        <span class="c"># self._ymargin = 0.15</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">format_coord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a string formatted for the matplotlib GUI status bar.&quot;&quot;&quot;</span>
+        <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Geodetic</span><span class="p">()</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="p">)</span>
+
+        <span class="n">ns</span> <span class="o">=</span> <span class="s">&#39;N&#39;</span> <span class="k">if</span> <span class="n">lat</span> <span class="o">&gt;=</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="s">&#39;S&#39;</span>
+        <span class="n">ew</span> <span class="o">=</span> <span class="s">&#39;E&#39;</span> <span class="k">if</span> <span class="n">lon</span> <span class="o">&gt;=</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="s">&#39;W&#39;</span>
+
+        <span class="k">return</span> <span class="s">u&#39;</span><span class="si">%.4g</span><span class="s">, </span><span class="si">%.4g</span><span class="s"> (</span><span class="si">%f</span><span class="se">\u00b0</span><span class="si">%s</span><span class="s">, </span><span class="si">%f</span><span class="se">\u00b0</span><span class="si">%s</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">),</span> <span class="n">ns</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lon</span><span class="p">),</span> <span class="n">ew</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GeoAxes.coastlines"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.coastlines">[docs]</a>    <span class="k">def</span> <span class="nf">coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;110m&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds coastal **outlines** to the current axes from the Natural Earth</span>
+<span class="sd">        &quot;coastline&quot; shapefile collection.</span>
+
+<span class="sd">        Kwargs:</span>
+
+<span class="sd">            * resolution - a named resolution to use from the Natural Earth</span>
+<span class="sd">                           dataset. Currently can be one of &quot;110m&quot;, &quot;50m&quot;, and</span>
+<span class="sd">                           &quot;10m&quot;.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            Currently no clipping is done on the coastlines before adding them to the axes.</span>
+<span class="sd">            This means, if very high resolution coastlines are being used, performance is</span>
+<span class="sd">            likely to be severely effected. This should be resolved transparently by v0.5.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span> <span class="s">&#39;none&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">natural_earth_shp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;coastline&#39;</span><span class="p">,</span>
+                                      <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span>
+                                      <span class="n">category</span><span class="o">=</span><span class="s">&#39;physical&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="GeoAxes.natural_earth_shp"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.natural_earth_shp">[docs]</a>    <span class="k">def</span> <span class="nf">natural_earth_shp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;land&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s">&#39;110m&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="s">&#39;physical&#39;</span><span class="p">,</span> 
+                          <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds the geometries from the specified Natural Earth shapefile to the Axes as a </span>
+<span class="sd">        :class:`~matplotlib.collections.PathCollection`.</span>
+<span class="sd">        </span>
+<span class="sd">        ``**kwargs`` are passed through to the :class:`~matplotlib.collections.PathCollection`</span>
+<span class="sd">        constructor.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns the created :class:`~matplotlib.collections.PathCollection`.</span>
+<span class="sd">        </span>
+<span class="sd">        .. note::</span>
+
+<span class="sd">            Currently no clipping is done on the geometries before adding them to the axes.</span>
+<span class="sd">            This means, if very high resolution geometries are being used, performance is</span>
+<span class="sd">            likely to be severely effected. This should be resolved transparently by v0.5.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">cartopy.io.shapereader</span> <span class="kn">as</span> <span class="nn">shapereader</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;edgecolor&#39;</span><span class="p">,</span> <span class="s">&#39;face&#39;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;facecolor&#39;</span><span class="p">,</span> <span class="n">_colors</span><span class="p">[</span><span class="s">&#39;land&#39;</span><span class="p">])</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">resolution</span><span class="p">)</span> 
+
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_NATURAL_EARTH_GEOM_CACHE</span><span class="p">:</span> 
+            <span class="n">coastline_path</span> <span class="o">=</span> <span class="n">shapereader</span><span class="o">.</span><span class="n">natural_earth</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">,</span>
+                                                       <span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span>
+                                                       <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">geoms</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shapereader</span><span class="o">.</span><span class="n">Reader</span><span class="p">(</span><span class="n">coastline_path</span><span class="p">)</span><span class="o">.</span><span class="n">geometries</span><span class="p">())</span>
+            <span class="c"># put the geoms in the cache</span>
+            <span class="n">_NATURAL_EARTH_GEOM_CACHE</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">geoms</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">geoms</span> <span class="o">=</span> <span class="n">_NATURAL_EARTH_GEOM_CACHE</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_geometries</span><span class="p">(</span><span class="n">geoms</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Geodetic</span><span class="p">(),</span> 
+                                   <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="GeoAxes.add_geometries"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.add_geometries">[docs]</a>    <span class="k">def</span> <span class="nf">add_geometries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geoms</span><span class="p">,</span> <span class="n">crs</span><span class="p">,</span> <span class="o">**</span><span class="n">collection_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the given shapely geometries (in the given crs) to the axes as </span>
+<span class="sd">        a :class:`~matplotlib.collections.PathCollection`.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oid</span> <span class="o">=</span> <span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">geoms</span><span class="p">),</span> <span class="nb">hash</span><span class="p">(</span><span class="n">crs</span><span class="p">),</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">oid</span> <span class="ow">in</span> <span class="n">_GEOMETRY_TO_PATH_CACHE</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="n">_GEOMETRY_TO_PATH_CACHE</span><span class="p">[</span><span class="n">oid</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">geoms</span><span class="p">:</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">patch</span><span class="o">.</span><span class="n">geos_to_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">project_geometry</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">crs</span><span class="p">)))</span>
+            <span class="n">_GEOMETRY_TO_PATH_CACHE</span><span class="p">[</span><span class="n">oid</span><span class="p">]</span> <span class="o">=</span> <span class="n">paths</span>
+            
+        <span class="n">c</span> <span class="o">=</span> <span class="n">mcollections</span><span class="o">.</span><span class="n">PathCollection</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="p">,</span> <span class="o">**</span><span class="n">collection_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">autolim</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">c</span>
+                
+<span class="c">#    def gshhs(self, outline_color=&#39;k&#39;, land_fill=&#39;green&#39;, ocean_fill=&#39;None&#39;, resolution=&#39;coarse&#39;, domain=None):</span>
+<span class="c">#        import cartopy.gshhs as gshhs</span>
+<span class="c">#        from matplotlib.collections import PatchCollection</span>
+<span class="c">#</span>
+<span class="c">#        if ocean_fill is not None and land_fill is None:</span>
+<span class="c">#            land_fill = self.outline_patch.get_facecolor()</span>
+<span class="c">#</span>
+<span class="c">#        if domain is None:</span>
+<span class="c">#            domain = self.ll_boundary_poly()</span>
+<span class="c">#</span>
+<span class="c">#        paths = []</span>
+<span class="c">#        for points in gshhs.read_gshhc(gshhs.fnames[resolution], poly=True, domain=domain):</span>
+<span class="c">#            # XXX Sometimes we only want to do lines...</span>
+<span class="c">#            poly = shapely.geometry.Polygon(points[::-1, :])</span>
+<span class="c">#            projected = self.projection.project_polygon(poly)</span>
+<span class="c">#</span>
+<span class="c">#            paths.extend(patch.geos_to_path(projected))</span>
+<span class="c">#</span>
+<span class="c">#        if ocean_fill is not None:</span>
+<span class="c">#            self.outline_patch.set_facecolor(ocean_fill)</span>
+<span class="c">#</span>
+<span class="c">#        collection = PatchCollection([mpatches.PathPatch(pth) for pth in paths],</span>
+<span class="c">#                                     edgecolor=outline_color,</span>
+<span class="c">#                                     facecolor=land_fill,</span>
+<span class="c">#                                     zorder=2,</span>
+<span class="c">#                                     )</span>
+<span class="c">#        self.add_collection(collection, autolim=False)</span>
+</div>
+<div class="viewcode-block" id="GeoAxes.get_extent"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.get_extent">[docs]</a>    <span class="k">def</span> <span class="nf">get_extent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the extent (x0, x1, y0, y1) of the map in the given coordinate system.</span>
+
+<span class="sd">        If no crs is given, the returned extents&#39; coordinate system will be assumed </span>
+<span class="sd">        to be the Geodetic version of this axes&#39; projection.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_extent_geom</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">bounds</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">r</span>
+        <span class="k">return</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_get_extent_geom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">()</span>
+        <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">x1</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">y1</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">x2</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">y2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">x_limits</span>
+            <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">y_limits</span>
+        
+        <span class="n">domain_in_crs</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">LineString</span><span class="p">([[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">],</span> <span class="p">[</span><span class="n">x2</span><span class="p">,</span> <span class="n">y1</span><span class="p">],</span>
+                                                     <span class="p">[</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">]])</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">!=</span> <span class="n">crs</span><span class="p">:</span>
+            <span class="n">domain_in_crs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">project_geometry</span><span class="p">(</span><span class="n">domain_in_crs</span><span class="p">,</span> <span class="n">crs</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">domain_in_crs</span>
+        
+<div class="viewcode-block" id="GeoAxes.set_extent"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.set_extent">[docs]</a>    <span class="k">def</span> <span class="nf">set_extent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extents</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the extent (x0, x1, y0, y1) of the map in the given coordinate system.</span>
+<span class="sd">        </span>
+<span class="sd">        If no crs is given, the extents&#39; coordinate system will be assumed to be the</span>
+<span class="sd">        Geodetic version of this axes&#39; projection.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># TODO: Implement the same semantics as plt.xlim and </span>
+        <span class="c"># plt.ylim - allowing users to set None for a minimum and/or maximum value</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">extents</span>
+        <span class="n">domain_in_crs</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">LineString</span><span class="p">([[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">],</span> <span class="p">[</span><span class="n">x2</span><span class="p">,</span> <span class="n">y1</span><span class="p">],</span>
+                                                     <span class="p">[</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">]])</span>
+    
+        <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">project_geometry</span><span class="p">(</span><span class="n">domain_in_crs</span><span class="p">,</span> <span class="n">crs</span><span class="p">)</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">bounds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">])</span>
+        </div>
+<div class="viewcode-block" id="GeoAxes.set_global"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.set_global">[docs]</a>    <span class="k">def</span> <span class="nf">set_global</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the extent of the Axes to the limits of the projection.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            In some cases where the projection has a limited sensible range</span>
+<span class="sd">            the ``set_global`` method does not actually make the whole globe</span>
+<span class="sd">            visible. Instead, the most appropriate extents will be used (e.g.</span>
+<span class="sd">            Ordnance Survey UK will set the extents to be around the British</span>
+<span class="sd">            Isles.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">x_limits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">y_limits</span><span class="p">)</span>
+
+<span class="c">#    def geod_circle_meters(self, lon_0, lat_0, radius, npts=80, **kwargs):</span>
+<span class="c">#        # radius is in meters</span>
+<span class="c">#        geod = self.projection.as_geodetic()</span>
+<span class="c">#</span>
+<span class="c">#        az = numpy.linspace(0, 360, npts)</span>
+<span class="c">#        lats = numpy.zeros(npts) + lat_0</span>
+<span class="c">#        lons = numpy.zeros(npts) + lon_0</span>
+<span class="c">#        distances = numpy.zeros(npts) + radius</span>
+<span class="c">#</span>
+<span class="c">#        lons, lats, _reverse_az = geod.fwd(lons, lats, az, distances, radians=False)</span>
+<span class="c">#        ll = numpy.concatenate([lons[:, None], lats[:, None]], 1)</span>
+<span class="c">#        from matplotlib.patches import Polygon</span>
+<span class="c">#        poly = Polygon(ll, transform=cartopy.prj.PlateCarree(), **kwargs)</span>
+<span class="c">#        self.add_patch(poly)</span>
+<span class="c">#        return poly</span>
+<span class="c">#</span>
+<span class="c">#    def gshhs_line(self, outline_color=&#39;k&#39;, domain=None, resolution=&#39;low&#39;, **kwargs):</span>
+<span class="c">#        # domain is a shapely geometry (Polygon or MultiPolygon)</span>
+<span class="c">#        import cartopy.gshhs as gshhs</span>
+<span class="c">##        import cartopy.spherical as spherical</span>
+<span class="c">#        from matplotlib.collections import PatchCollection, LineCollection</span>
+<span class="c">#</span>
+<span class="c">#        paths = []</span>
+<span class="c">#</span>
+<span class="c">#        projection = self.projection</span>
+<span class="c">#</span>
+<span class="c">#        if domain is None:</span>
+<span class="c">#            domain = self.map_domain(ccrs.PlateCarree())</span>
+<span class="c">#</span>
+<span class="c">#        for points in gshhs.read_gshhc(gshhs.fnames[resolution], poly=False, domain=domain):</span>
+<span class="c">#            paths.extend(patch.geos_to_path(shapely.geometry.LineString(points)))</span>
+<span class="c">#</span>
+<span class="c">##            slinestring = shapely.geometry.LineString(points)</span>
+<span class="c">##            projected = projection.project_geometry(slinestring)            </span>
+<span class="c">##            paths.extend(patch.geos_to_path(projected))</span>
+<span class="c">#</span>
+<span class="c">#        collection = PatchCollection([mpatches.PathPatch(pth) for pth in paths],</span>
+<span class="c">#                             edgecolor=outline_color, facecolor=&#39;none&#39;,</span>
+<span class="c">#                             transform=ccrs.PlateCarree(),</span>
+<span class="c">#                             **kwargs</span>
+<span class="c">#                             )</span>
+<span class="c">#</span>
+<span class="c">#        self.add_collection(collection, autolim=False)</span>
+</div>
+<div class="viewcode-block" id="GeoAxes.stock_img"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.stock_img">[docs]</a>    <span class="k">def</span> <span class="nf">stock_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;ne_shaded&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a standard image to the map. </span>
+<span class="sd">        </span>
+<span class="sd">        Currently, the only (and default) option is a downsampled version of the Natural Earth</span>
+<span class="sd">        shaded relief raster. </span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># XXX Turn into a dictionary (inside the method)?</span>
+<span class="c">#        if img_name == &#39;bluemarble&#39;:</span>
+<span class="c">#            source_proj = ccrs.PlateCarree()</span>
+<span class="c">#            fname = &#39;/data/local/dataZoo/cartography/raster/blue_marble_720_360.png&#39;</span>
+<span class="c">##            fname = &#39;/data/local/dataZoo/cartography/raster/blue_marble_2000_1000.jpg&#39;            </span>
+<span class="c">#            img_origin = &#39;lower&#39;</span>
+<span class="c">#            img = imread(fname)</span>
+<span class="c">#            img = img[::-1]</span>
+<span class="c">#            return self.imshow(img, origin=img_origin, transform=source_proj, extent=[-180, 180, -90, 90])</span>
+<span class="c">#        elif img_name == &#39;bm_high&#39;:</span>
+<span class="c">#            source_proj = ccrs.PlateCarree()</span>
+<span class="c">#            fname = &#39;/data/local/dataZoo/cartography/raster/blue_marble_2000_1000.jpg&#39;</span>
+<span class="c">#            img_origin = &#39;lower&#39;</span>
+<span class="c">#            img = imread(fname)</span>
+<span class="c">#            return self.imshow(img, origin=img_origin, transform=source_proj, extent=[-180, 180, -90, 90])</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;ne_shaded&#39;</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">os</span>
+            <span class="n">source_proj</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">)),</span> 
+                                 <span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;raster&#39;</span><span class="p">,</span> <span class="s">&#39;natural_earth&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;50-natural-earth-1-downsampled.png&#39;</span><span class="p">)</span>
+            <span class="n">img_origin</span> <span class="o">=</span> <span class="s">&#39;lower&#39;</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">imread</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">img_origin</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">source_proj</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Unknown stock image </span><span class="si">%r</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">imshow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the &quot;transform&quot; keyword to imshow.</span>
+<span class="sd">        </span>
+<span class="sd">        Extra kwarg:</span>
+<span class="sd">        transform - is actually a PROJECTION NOT a transform</span>
+<span class="sd">        regrid_shape - default is (750, 375). But may be changed to &quot;auto&quot; in the future...</span>
+<span class="sd">        extent = (left, right, bottom, top) - transform coordinates for the extent of the source image.</span>
+<span class="sd">        target_extent = (left, right, bottom, top) - native coordinates for the extent of the desired image.</span>
+<span class="sd">        origin - default is changed to &#39;lower&#39;</span>
+<span class="sd">        update_datalim - flag whether the image should affect the data limits (default: True)</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;transform&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">regrid_shape</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;regrid_shape&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">750</span><span class="p">,</span> <span class="mi">375</span><span class="p">))</span>
+        <span class="n">update_datalim</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;update_datalim&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;origin&#39;</span><span class="p">,</span> <span class="s">&#39;lower&#39;</span><span class="p">)</span>
+
+        <span class="n">same_projection</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">==</span> <span class="n">transform</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">update_datalim</span><span class="p">:</span>
+            <span class="n">data_lim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataLim</span><span class="o">.</span><span class="n">frozen</span><span class="p">()</span><span class="o">.</span><span class="n">get_points</span><span class="p">()</span>
+            <span class="n">view_lim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewLim</span><span class="o">.</span><span class="n">frozen</span><span class="p">()</span><span class="o">.</span><span class="n">get_points</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">transform</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">transform</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">transData</span> <span class="ow">or</span> <span class="n">same_projection</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span><span class="p">):</span>
+                <span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">_as_mpl_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">extent</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;extent&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Expected a projection subclass. Cannot handle a </span><span class="si">%s</span><span class="s"> in imshow.&#39;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">transform</span><span class="p">))</span>
+
+            <span class="c"># XXX adaptive resolution depending on incoming img?</span>
+            <span class="n">img</span><span class="p">,</span> <span class="n">extent</span> <span class="o">=</span> <span class="n">cartopy</span><span class="o">.</span><span class="n">img_transform</span><span class="o">.</span><span class="n">warp_array</span><span class="p">(</span><span class="n">img</span><span class="p">,</span>
+                                                           <span class="n">source_proj</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                                                           <span class="n">source_extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
+                                                           <span class="n">target_proj</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="p">,</span>
+                                                           <span class="n">target_res</span><span class="o">=</span><span class="n">regrid_shape</span><span class="p">,</span>
+                                                           <span class="n">target_extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_extent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="p">),</span>
+                                                           <span class="p">)</span>
+            <span class="c"># as a workaround to a matplotlib limitation, turn any images which are RGB with a mask into </span>
+            <span class="c"># RGBA images with an alpha channel.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">):</span>
+                <span class="n">old_img</span> <span class="o">=</span> <span class="n">img</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="p">))</span>
+                <span class="n">img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_img</span>
+                <span class="c"># put an alpha channel in if the image was masked</span>
+                <span class="n">img</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">~</span> <span class="n">numpy</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">old_img</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> 
+                
+            <span class="n">result</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c"># clip the image. This does not work as the patch moves with mouse movement, but the clip path doesn&#39;t</span>
+        <span class="c"># This could definitely be fixed in matplotlib </span>
+<span class="c">#        if result.get_clip_path() in [None, self.patch]:</span>
+<span class="c">#            # image does not already have clipping set, clip to axes patch</span>
+<span class="c">#            result.set_clip_path(self.outline_patch)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">update_datalim</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataLim</span><span class="o">.</span><span class="n">set_points</span><span class="p">(</span><span class="n">data_lim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">viewLim</span><span class="o">.</span><span class="n">set_points</span><span class="p">(</span><span class="n">view_lim</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="GeoAxes.gridlines"><a class="viewcode-back" href="../../../matplotlib/geoaxes.html#cartopy.mpl_integration.geoaxes.GeoAxes.gridlines">[docs]</a>    <span class="k">def</span> <span class="nf">gridlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Automatically adds gridlines to the axes, in the given coordinate system, at draw time.</span>
+
+<span class="sd">        ``**kwargs`` - are passed through to the created :class:`matplotlib.collections.Collection`</span>
+<span class="sd">                       allowing control of colors and linewidths etc.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">crs</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">crs</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()</span>
+        <span class="kn">from</span> <span class="nn">cartopy.mpl_integration.gridliner</span> <span class="kn">import</span> <span class="n">Gridliner</span>
+        <span class="n">gl</span> <span class="o">=</span> <span class="n">Gridliner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span> <span class="n">collection_kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gridliners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gl</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gl</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_gen_axes_spines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s">&#39;inches&#39;</span><span class="p">):</span>
+        <span class="c"># generate some axes spines, as some Axes super class machinery requires them. Just make them invisible</span>
+        <span class="n">spines</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">_gen_axes_spines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">locations</span><span class="o">=</span><span class="n">locations</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">spine</span> <span class="ow">in</span> <span class="n">spines</span><span class="o">.</span><span class="n">itervalues</span><span class="p">():</span>
+            <span class="n">spine</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">spines</span>
+
+    <span class="k">def</span> <span class="nf">_boundary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds the map&#39;s boundary. Note, the boundary is not the axes.patch, which provides rectilinear </span>
+<span class="sd">        clipping for all of the map&#39;s artists.</span>
+<span class="sd">        The axes.patch will have its visibility set to False inside GeoAxes.gca()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">cartopy.mpl_integration.patch</span> <span class="kn">as</span> <span class="nn">p</span>
+        <span class="n">path</span><span class="p">,</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">geos_to_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">boundary</span><span class="p">)</span>
+
+<span class="c">#        from matplotlib.collections import PatchCollection</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sct</span> <span class="o">=</span> <span class="n">sct</span> <span class="o">=</span> <span class="n">SimpleClippedTransform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transScale</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transLimits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+
+        <span class="c"># XXX Should be exactly one path...</span>
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">PathPatch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                                        <span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;none&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="c">#                                        transform=self.transData,</span>
+                                        <span class="n">transform</span><span class="o">=</span><span class="n">sct</span><span class="p">,</span> <span class="n">clip_on</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outline_patch</span> <span class="o">=</span> <span class="n">collection</span>
+        <span class="c"># XXX autolim = False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
+
+        <span class="c"># put a color patch for background color</span>
+        <span class="c"># XXX Should be exactly one path...</span>
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">mpatches</span><span class="o">.</span><span class="n">PathPatch</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                                        <span class="n">facecolor</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s">&#39;none&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                        <span class="n">transform</span><span class="o">=</span><span class="n">sct</span><span class="p">,</span> <span class="n">clip_on</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background_patch</span> <span class="o">=</span> <span class="n">collection</span>
+        <span class="c"># XXX autolim = False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_facecolor</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_edgecolor</span><span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_linewidth</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+
+    <span class="c"># mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released</span>
+    <span class="k">def</span> <span class="nf">contour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;transform&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="c"># Keep this bit - even at mpl v1.2</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">&#39;_as_mpl_transform&#39;</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;transform&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">_as_mpl_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">contour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    
+    <span class="c"># mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released</span>
+    <span class="k">def</span> <span class="nf">contourf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;transform&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="c"># Keep this bit - even at mpl v1.2</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">&#39;_as_mpl_transform&#39;</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;transform&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">_as_mpl_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    
+    <span class="c"># mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released</span>
+    <span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;transform&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="c"># Keep this bit - even at mpl v1.2</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">&#39;_as_mpl_transform&#39;</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;transform&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">_as_mpl_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c"># mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released</span>
+    <span class="k">def</span> <span class="nf">pcolormesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">warnings</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+        <span class="kn">import</span> <span class="nn">numpy.ma</span> <span class="kn">as</span> <span class="nn">ma</span>
+        <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.cbook</span> <span class="kn">as</span> <span class="nn">cbook</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="kn">as</span> <span class="nn">mcolors</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="kn">as</span> <span class="nn">cm</span>
+        <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">docstring</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.transforms</span> <span class="kn">as</span> <span class="nn">transforms</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.artist</span> <span class="kn">as</span> <span class="nn">artist</span>
+        <span class="kn">from</span> <span class="nn">matplotlib.artist</span> <span class="kn">import</span> <span class="n">allow_rasterization</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.backend_bases</span> <span class="kn">as</span> <span class="nn">backend_bases</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.path</span> <span class="kn">as</span> <span class="nn">mpath</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.mlab</span> <span class="kn">as</span> <span class="nn">mlab</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.collections</span> <span class="kn">as</span> <span class="nn">mcoll</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hold</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;alpha&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;norm&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;cmap&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;vmin&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;vmax&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">shading</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;shading&#39;</span><span class="p">,</span> <span class="s">&#39;flat&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">antialiased</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;antialiased&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;edgecolors&#39;</span><span class="p">,</span> <span class="s">&#39;None&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pcolorargs</span><span class="p">(</span><span class="s">&#39;pcolormesh&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">Ny</span><span class="p">,</span> <span class="n">Nx</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c"># convert to one dimensional arrays</span>
+        <span class="k">if</span> <span class="n">shading</span> <span class="o">!=</span> <span class="s">&#39;gouraud&#39;</span><span class="p">:</span>
+            <span class="n">C</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">Ny</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="c"># data point in each cell is value at</span>
+                                            <span class="c"># lower left corner</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">C</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(((</span><span class="n">Nx</span> <span class="o">*</span> <span class="n">Ny</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">Y</span>
+
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">mcoll</span><span class="o">.</span><span class="n">QuadMesh</span><span class="p">(</span>
+            <span class="n">Nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Ny</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">coords</span><span class="p">,</span>
+            <span class="n">antialiased</span><span class="o">=</span><span class="n">antialiased</span><span class="p">,</span> <span class="n">shading</span><span class="o">=</span><span class="n">shading</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">))</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_norm</span><span class="p">(</span><span class="n">norm</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">autoscale_None</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c"># Transform from native to data coordinates?</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">_transform</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mtransforms</span><span class="o">.</span><span class="n">Transform</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">&#39;_as_mpl_transform&#39;</span><span class="p">)):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">_as_mpl_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">contains_branch_seperately</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transData</span><span class="p">)):</span>
+            <span class="n">trans_to_data</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">transData</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+            <span class="n">transformed_pts</span> <span class="o">=</span> <span class="n">trans_to_data</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">transformed_pts</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">transformed_pts</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="c"># XXX Not a mpl 1.2 thing...</span>
+            <span class="n">no_inf</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">Y</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">no_inf</span><span class="p">]</span>
+            <span class="n">Y</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[</span><span class="n">no_inf</span><span class="p">]</span>
+
+        <span class="n">minx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">maxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">miny</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        <span class="n">maxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        
+        <span class="n">corners</span> <span class="o">=</span> <span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">),</span> <span class="p">(</span><span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_datalim</span><span class="p">(</span> <span class="n">corners</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autoscale_view</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">collection</span>
+    
+    <span class="c"># mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released</span>
+    <span class="k">def</span> <span class="nf">pcolor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;transform&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;transform&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span>
+
+        <span class="kn">import</span> <span class="nn">warnings</span>
+        <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+        <span class="kn">import</span> <span class="nn">numpy.ma</span> <span class="kn">as</span> <span class="nn">ma</span>
+        <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.cbook</span> <span class="kn">as</span> <span class="nn">cbook</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.colors</span> <span class="kn">as</span> <span class="nn">mcolors</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="kn">as</span> <span class="nn">cm</span>
+        <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">docstring</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.transforms</span> <span class="kn">as</span> <span class="nn">transforms</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.artist</span> <span class="kn">as</span> <span class="nn">artist</span>
+        <span class="kn">from</span> <span class="nn">matplotlib.artist</span> <span class="kn">import</span> <span class="n">allow_rasterization</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.backend_bases</span> <span class="kn">as</span> <span class="nn">backend_bases</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.path</span> <span class="kn">as</span> <span class="nn">mpath</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.mlab</span> <span class="kn">as</span> <span class="nn">mlab</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.collections</span> <span class="kn">as</span> <span class="nn">mcoll</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hold</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;alpha&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;norm&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;cmap&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;vmin&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;vmax&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="n">shading</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;shading&#39;</span><span class="p">,</span> <span class="s">&#39;flat&#39;</span><span class="p">)</span>
+
+        <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pcolorargs</span><span class="p">(</span><span class="s">&#39;pcolor&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">Ny</span><span class="p">,</span> <span class="n">Nx</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c"># convert to MA, if necessary.</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">+</span><span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+        <span class="n">xymask</span> <span class="o">=</span> <span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">1</span><span class="p">:]</span><span class="o">+</span><span class="n">mask</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:]</span><span class="o">+</span><span class="n">mask</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c"># don&#39;t plot if C or any of the surrounding vertices are masked.</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">ma</span><span class="o">.</span><span class="n">getmaskarray</span><span class="p">(</span><span class="n">C</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="n">Ny</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">xymask</span>
+
+        <span class="n">newaxis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span>
+        <span class="n">compress</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">compress</span>
+
+        <span class="n">ravelmask</span> <span class="o">=</span> <span class="p">(</span><span class="n">mask</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="n">X1</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">Y1</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">X2</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">Y2</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">X3</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">Y3</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">X4</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">Y4</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+        <span class="n">npoly</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
+
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">X1</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">Y1</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span>
+                             <span class="n">X2</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">Y2</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span>
+                             <span class="n">X3</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">Y3</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span>
+                             <span class="n">X4</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">Y4</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span>
+                             <span class="n">X1</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">Y1</span><span class="p">[:,</span><span class="n">newaxis</span><span class="p">]),</span>
+                             <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">verts</span> <span class="o">=</span> <span class="n">xy</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">npoly</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">C</span> <span class="o">=</span> <span class="n">compress</span><span class="p">(</span><span class="n">ravelmask</span><span class="p">,</span> <span class="n">ma</span><span class="o">.</span><span class="n">filled</span><span class="p">(</span><span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">Ny</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="n">Nx</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+
+        <span class="n">linewidths</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.25</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="s">&#39;linewidth&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;linewidths&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;linewidth&#39;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;linewidths&#39;</span><span class="p">,</span> <span class="n">linewidths</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shading</span> <span class="o">==</span> <span class="s">&#39;faceted&#39;</span><span class="p">:</span>
+            <span class="n">edgecolors</span> <span class="o">=</span> <span class="s">&#39;k&#39;</span><span class="p">,</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">edgecolors</span> <span class="o">=</span> <span class="s">&#39;none&#39;</span>
+        <span class="k">if</span> <span class="s">&#39;edgecolor&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;edgecolors&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;edgecolor&#39;</span><span class="p">)</span>
+        <span class="n">ec</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;edgecolors&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="p">)</span>
+
+        <span class="c"># aa setting will default via collections to patch.antialiased</span>
+        <span class="c"># unless the boundary is not stroked, in which case the</span>
+        <span class="c"># default will be False; with unstroked boundaries, aa</span>
+        <span class="c"># makes artifacts that are often disturbing.</span>
+        <span class="k">if</span> <span class="s">&#39;antialiased&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;antialiaseds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;antialiased&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s">&#39;antialiaseds&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">ec</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&quot;none&quot;</span><span class="p">:</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;antialiaseds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+
+        <span class="n">collection</span> <span class="o">=</span> <span class="n">mcoll</span><span class="o">.</span><span class="n">PolyCollection</span><span class="p">(</span><span class="n">verts</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_array</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span> <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="n">mcolors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">))</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_cmap</span><span class="p">(</span><span class="n">cmap</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_norm</span><span class="p">(</span><span class="n">norm</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">set_clim</span><span class="p">(</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="n">collection</span><span class="o">.</span><span class="n">autoscale_None</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">Y</span><span class="o">.</span><span class="n">compressed</span><span class="p">()</span>
+        
+        <span class="c"># Transform from native to data coordinates?</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">_transform</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">mtransforms</span><span class="o">.</span><span class="n">Transform</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">&#39;_as_mpl_transform&#39;</span><span class="p">)):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">_as_mpl_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">contains_branch_seperately</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transData</span><span class="p">)):</span>
+            <span class="n">trans_to_data</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">transData</span>
+            <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+            <span class="n">transformed_pts</span> <span class="o">=</span> <span class="n">trans_to_data</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">pts</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">transformed_pts</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">transformed_pts</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+            
+            <span class="c"># XXX Not a mpl 1.2 thing...</span>
+            <span class="n">no_inf</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">y</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">no_inf</span><span class="p">]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">no_inf</span><span class="p">]</span>
+        
+        <span class="n">minx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">maxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">miny</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">maxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="n">corners</span> <span class="o">=</span> <span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">),</span> <span class="p">(</span><span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_datalim</span><span class="p">(</span> <span class="n">corners</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autoscale_view</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_collection</span><span class="p">(</span><span class="n">collection</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">collection</span>
+
+
+<span class="c"># alias GeoAxes - NOTE: THIS WAS NOT IN v0.4.0rc1</span></div>
+<span class="n">GenericProjectionAxes</span> <span class="o">=</span> <span class="n">GeoAxes</span>
+
+
+<span class="k">class</span> <span class="nc">SimpleClippedTransform</span><span class="p">(</span><span class="n">mtransforms</span><span class="o">.</span><span class="n">Transform</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms the values using a pre transform, clips them, then post transforms them.</span>
+<span class="sd">    </span>
+<span class="sd">    This transform should not be widely used, but is useful for transforming a background patch </span>
+<span class="sd">    and clipping the patch to a desired extent.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_dims</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">output_dims</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">has_inverse</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre_clip_transform</span><span class="p">,</span> <span class="n">post_clip_transform</span><span class="p">,</span> <span class="n">xclip</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">yclip</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+        <span class="n">mtransforms</span><span class="o">.</span><span class="n">Transform</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre_clip_transform</span> <span class="o">=</span> <span class="n">pre_clip_transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_clip_transform</span> <span class="o">=</span> <span class="n">post_clip_transform</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_clips</span> <span class="o">=</span> <span class="n">xclip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_clips</span> <span class="o">=</span> <span class="n">yclip</span>
+
+    <span class="k">def</span> <span class="nf">transform_non_affine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="n">new_vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_clip_transform</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">new_vals</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">],</span> <span class="n">new_vals</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_clips</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_clips</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_clips</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_clips</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c"># XXX support ma&#39;s?</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_clip_transform</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">new_vals</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">inverted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre_clip_transform</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_clip_transform</span><span class="p">)</span><span class="o">.</span><span class="n">inverted</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../../../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../../../examples/index.html">examples</a>|&nbsp;</li>
+             <li><a href="../../../gallery.html">gallery</a>|&nbsp;</li>
+        -->
+
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../../../copyright.html">British Crown Copyright</a> 2011 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>

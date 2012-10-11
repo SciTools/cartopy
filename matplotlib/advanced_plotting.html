@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>More advanced mapping with cartopy and matplotlib &mdash; cartopy 0.4.x documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.4.x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="copyright" title="Copyright" href="../copyright.html" />
+    <link rel="top" title="cartopy 0.4.x documentation" href="../index.html" />
+    <link rel="next" title="Cartopy matplotlib integration reference document" href="geoaxes.html" />
+    <link rel="prev" title="Using cartopy with matplotlib" href="intro.html" />
+ 
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<link rel="stylesheet" href="_static/linewidth.css" type="text/css" />
+
+  </head>
+  <body>
+<!--
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/cartopy.png" style="float:left; clear:right; margin-right: 40px; " border="0" alt="Cartopy"/></a>
+<p style="clear: both;">i.</p>
+-->
+<!--
+<p style="margin-left: 15px; font-weight:bolder; font-size:300%; letter-spacing:0.1ex;">
+cartopy 0.4.x
+</p>
+-->
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="geoaxes.html" title="Cartopy matplotlib integration reference document"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Using cartopy with matplotlib"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+             <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        -->
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<a href="../index.html">
+<img src="../_static/cartopy.png" 
+border="0" alt="Cartopy" style="margin-left: -60px;"/>
+</a>
+
+
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">More advanced mapping with cartopy and matplotlib</a><ul>
+<li><a class="reference internal" href="#contour-plots">Contour plots</a></li>
+<li><a class="reference internal" href="#block-plots">Block plots</a></li>
+<li><a class="reference internal" href="#images">Images</a></li>
+<li><a class="reference internal" href="#vector-plotting">Vector plotting</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="intro.html"
+                        title="previous chapter">Using cartopy with matplotlib</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="geoaxes.html"
+                        title="next chapter">Cartopy matplotlib integration reference document</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/matplotlib/advanced_plotting.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+        <!-- put an empty image aligned right to clear the logo. -->
+        <img align="right" src="" alt="" style="width: 100px; height: 125px;" />
+        
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="more-advanced-mapping-with-cartopy-and-matplotlib">
+<h1>More advanced mapping with cartopy and matplotlib<a class="headerlink" href="#more-advanced-mapping-with-cartopy-and-matplotlib" title="Permalink to this headline">¶</a></h1>
+<p>From the outset, cartopy&#8217;s purpose has been to simplify and improve the quality of
+mapping visualisations available for scientific data. Thanks to the simplicity of the cartopy
+interface, in many cases the hardest part of producing such visualisations is getting
+hold of the data in the first place. To address this, a Python package, 
+&lt;Iris <a class="reference external" href="http://scitools.org.uk">http://scitools.org.uk</a>&gt;_, has been created to make loading and saving data from a 
+variety of gridded datasets easier. Some of the following examples make use of the Iris 
+loading capabilities, while others use the netCDF4 Python package so as to show a range 
+of different approaches to data loading.</p>
+<div class="section" id="contour-plots">
+<h2>Contour plots<a class="headerlink" href="#contour-plots" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">netCDF4</span> <span class="kn">import</span> <span class="n">Dataset</span> <span class="k">as</span> <span class="n">netcdf_dataset</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+
+
+<span class="c"># get the path of the file. It can be found in the data directory, conveniently</span>
+<span class="c"># at the same level as the cartopy/crs.py file.</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">ccrs</span><span class="o">.</span><span class="n">__file__</span><span class="p">),</span>
+                     <span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;netcdf&#39;</span><span class="p">,</span> <span class="s">&#39;HadISST1_SST_update.nc&#39;</span>
+                     <span class="p">)</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">netcdf_dataset</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+<span class="n">sst</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s">&#39;sst&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+<span class="n">lats</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s">&#39;lat&#39;</span><span class="p">][:]</span>
+<span class="n">lons</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s">&#39;lon&#39;</span><span class="p">][:]</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">sst</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span>
+             <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">coastlines</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../matplotlib/advanced_plotting-1.py">Source code</a>, <a class="reference external" href="../matplotlib/advanced_plotting-1.png">png</a>)</p>
+<div class="figure">
+<img alt="../_images/advanced_plotting-1.png" src="../_images/advanced_plotting-1.png" />
+</div>
+</div>
+<div class="section" id="block-plots">
+<h2>Block plots<a class="headerlink" href="#block-plots" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">iris</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+
+
+<span class="c"># load some sample iris data</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">sample_data_path</span><span class="p">(</span><span class="s">&#39;rotated_pole.nc&#39;</span><span class="p">)</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">iris</span><span class="o">.</span><span class="n">load_cube</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="c"># iris comes complete with a method to put bounds on a simple point</span>
+<span class="c"># coordinate. This is very useful...</span>
+<span class="n">temperature</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+<span class="n">temperature</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">guess_bounds</span><span class="p">()</span>
+
+<span class="c"># turn the iris Cube data structure into numpy arrays</span>
+<span class="n">gridlons</span> <span class="o">=</span> <span class="n">temperature</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;grid_longitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous_bounds</span><span class="p">()</span>
+<span class="n">gridlats</span> <span class="o">=</span> <span class="n">temperature</span><span class="o">.</span><span class="n">coord</span><span class="p">(</span><span class="s">&#39;grid_latitude&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous_bounds</span><span class="p">()</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span><span class="o">.</span><span class="n">data</span>
+
+<span class="c"># set up a map</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+
+<span class="c"># define the coordinate system that the grid lons and grid lats are on</span>
+<span class="n">rotated_pole</span> <span class="o">=</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">RotatedPole</span><span class="p">(</span><span class="n">pole_longitude</span><span class="o">=</span><span class="mf">177.5</span><span class="p">,</span> <span class="n">pole_latitude</span><span class="o">=</span><span class="mf">37.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">pcolormesh</span><span class="p">(</span><span class="n">gridlons</span><span class="p">,</span> <span class="n">gridlats</span><span class="p">,</span> <span class="n">temperature</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">rotated_pole</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">coastlines</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../matplotlib/advanced_plotting-2.py">Source code</a>, <a class="reference external" href="../matplotlib/advanced_plotting-2.png">png</a>)</p>
+<div class="figure">
+<img alt="../_images/advanced_plotting-2.png" src="../_images/advanced_plotting-2.png" />
+</div>
+</div>
+<div class="section" id="images">
+<h2>Images<a class="headerlink" href="#images" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="kn">as</span> <span class="nn">ccrs</span>
+
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+
+<span class="c"># get the path of the file. It can be found in the data directory, conveniently</span>
+<span class="c"># at the same level as the cartopy/crs.py file.</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">ccrs</span><span class="o">.</span><span class="n">__file__</span><span class="p">),</span>
+                     <span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;raster&#39;</span><span class="p">,</span> <span class="s">&#39;sample&#39;</span><span class="p">,</span> <span class="s">&#39;Miriam.A2012270.2050.2km.jpg&#39;</span>
+                     <span class="p">)</span>
+<span class="n">img_extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">120.67660000000001</span><span class="p">,</span> <span class="o">-</span><span class="mf">106.32104523100001</span><span class="p">,</span> <span class="mf">13.2301484511245</span><span class="p">,</span> <span class="mf">30.766899999999502</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">&#39;Hurricane Miriam from the Aqua/MODIS satellite</span><span class="se">\n</span><span class="s">&#39;</span>
+          <span class="s">&#39;2012 09/26/2012 20:50 UTC&#39;</span><span class="p">)</span>
+
+<span class="c"># set a margin around the data</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xmargin</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ymargin</span><span class="p">(</span><span class="mf">0.10</span><span class="p">)</span>
+
+<span class="c"># add the image. Because this image was a tif, the &quot;origin&quot; of the image is in the</span>
+<span class="c"># upper left corner</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s">&#39;upper&#39;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">img_extent</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">coastlines</span><span class="p">(</span><span class="n">resolution</span><span class="o">=</span><span class="s">&#39;50m&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># mark a known place to help us geo-locate ourselves</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">-</span><span class="mf">117.1625</span><span class="p">,</span> <span class="mf">32.715</span><span class="p">,</span> <span class="s">&#39;bo&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mi">117</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="s">&#39;San Diego&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../matplotlib/advanced_plotting-3.py">Source code</a>, <a class="reference external" href="../matplotlib/advanced_plotting-3.png">png</a>)</p>
+<div class="figure">
+<img alt="../_images/advanced_plotting-3.png" src="../_images/advanced_plotting-3.png" />
+</div>
+</div>
+<div class="section" id="vector-plotting">
+<h2>Vector plotting<a class="headerlink" href="#vector-plotting" title="Permalink to this headline">¶</a></h2>
+<p>Currently the vector plotting is still in development. For anything other than non-native vector plotting,
+consider using Basemap instead.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="geoaxes.html" title="Cartopy matplotlib integration reference document"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Using cartopy with matplotlib"
+             >previous</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <!-- <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+             <li><a href="../gallery.html">gallery</a>|&nbsp;</li>
+        -->
+ 
+      </ul>
+    </div>
+
+    <div class="footer">
+    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="http://reference.data.gov.uk/id/open-government-licence" rel="license">Open Government Licence</a></p>
+        &copy; <a href="../copyright.html">British Crown Copyright</a> 2011 - 2012, Met Office
+    </div>
+
+
+  </body>
+</html>
