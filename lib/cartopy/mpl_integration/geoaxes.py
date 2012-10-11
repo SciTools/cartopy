@@ -14,7 +14,13 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+"""
+This module defines the :class:`GeoAxes` class, for use with matplotlib.
 
+When a matplotlib figure contains a GeoAxes the plotting commands can transform
+plot results from source coordinates to the GeoAxes' target projection.
+
+""" 
 
 import matplotlib.axes
 from matplotlib.image import imread
@@ -75,6 +81,15 @@ class InterProjectionTransform(mtransforms.Transform):
 
 
     def __init__(self, source_projection, target_projection):
+        """
+        Create the transform object from the given projections.
+        
+        Args:
+        
+            * source_projection - A :class:`~cartopy.crs.Projection`.
+            * target_projection - A :class:`~cartopy.crs.Projection`.
+            
+        """
         # assert target_projection is cartopy.crs.Projection
         # assert source_projection is cartopy.crs.CRS
         self.source_projection = source_projection
@@ -85,7 +100,18 @@ class InterProjectionTransform(mtransforms.Transform):
         return '< InterProjectionTransform %s -> %s >' % (self.source_projection, self.target_projection)
 
     def transform_non_affine(self, xy):
-        """Transforms from native coordinates to lat lons."""
+        """
+        Transforms from source to target coordinates.
+        
+        Args:
+        
+            * xy - An (n,2) array of points in source coordinates.
+            
+        Returns:
+        
+            * An (n,2) array of transformed points in target coordinates.
+            
+        """
         if isinstance(xy, numpy.ndarray):
             return self.target_projection.transform_points(self.source_projection, xy[:, 0], xy[:, 1])[:, 0:2]
         else:
@@ -94,6 +120,20 @@ class InterProjectionTransform(mtransforms.Transform):
             return x, y
 
     def transform_path_non_affine(self, path):
+        """
+        Transforms from source to target coordinates.
+        
+        Args:
+        
+            * path - A matplotlib :class:`~matplotlib.path.Path` object with
+                     vertices in source coordinates.
+            
+        Returns
+        
+            * A matplotlib :class:`~matplotlib.path.Path` with vertices
+              in target coordinates.
+            
+        """
         orig_id = (id(path), hash(self.source_projection), hash(self.target_projection))
         result = _PATH_TRANSFORM_CACHE.get(orig_id, None)
         if result is not None:
@@ -131,11 +171,33 @@ class InterProjectionTransform(mtransforms.Transform):
         return result
 
     def inverted(self):
+        """Return a :class:`~cartopy.crs.Projection` which transforms from target to source projections."""
         return InterProjectionTransform(self.target_projection, self.source_projection)
 
 
 class GeoAxes(matplotlib.axes.Axes):
+    """
+    A subclass of :class:`matplotlib.axes.Axes` which transforms between projections.
+    
+    This class replaces the matplotlib :class:`~matplotlib.axes.Axes` class
+    in plots where a target :class:`~cartopy.crs.Projection` is required.
+    
+    When a source projection is provided to one of it's plotting methods,
+    using the *transform* keyword, the standard matplotlib plot result is
+    transformed from (as) source coordinates to the target projection.
+    
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Create a GeoAxes object using standard matplotlib :class:`~matplotlib.axes.Axes` args and keywords.
+
+        Kwargs:
+        
+            * map_projection - The target :class:`~cartopy.crs.Projection` of this Axes object. 
+
+        All other args and keywords are passed straight through to :class:`matplotlib.axes.Axes`. 
+        
+        """
         self.projection = kwargs.pop('map_projection')
         super(GeoAxes, self).__init__(*args, **kwargs)
         self._gridliners = []
@@ -164,6 +226,13 @@ class GeoAxes(matplotlib.axes.Axes):
 
     @matplotlib.axes.allow_rasterization
     def draw(self, renderer=None, inframe=False):
+        """
+        Extends the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
+        
+        Draws grid lines and image factory results before invoking standard matplotlib drawing.
+        A global range is used if no limits have yet been set.
+        
+        """
         # if no data has been added, and no extents set, then make the map global
         if self.ignore_existing_data_limits and self._autoscaleXon and self._autoscaleYon:
             self.set_global()
@@ -191,6 +260,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return '< GeoAxes: %s >' % self.projection
 
     def cla(self):
+        """Clears the current axes and adds boundary lines. Does not reset data limits."""
         result = matplotlib.axes.Axes.cla(self)
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
@@ -341,6 +411,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return x1, x2, y1, y2
     
     def _get_extent_geom(self, crs=None):
+        # Perform the calculations for get_extent(), which just repackages it. 
         x1, x2 = self.get_xlim()
         y1, y2 = self.get_ylim()
         
@@ -473,15 +544,16 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def imshow(self, img, *args, **kwargs):
         """
-        Add the "transform" keyword to imshow.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
         
-        Extra kwarg:
-        transform - is actually a PROJECTION NOT a transform
-        regrid_shape - default is (750, 375). But may be changed to "auto" in the future...
-        extent = (left, right, bottom, top) - transform coordinates for the extent of the source image.
-        target_extent = (left, right, bottom, top) - native coordinates for the extent of the desired image.
-        origin - default is changed to 'lower'
-        update_datalim - flag whether the image should affect the data limits (default: True)
+        Extra kwargs:
+        
+            transform - a :class:`~cartopy.crs.Projection`.
+            regrid_shape - default is (750, 375). But may be changed to "auto" in the future...
+            extent = (left, right, bottom, top) - transform coordinates for the extent of the source image.
+            target_extent = (left, right, bottom, top) - native coordinates for the extent of the desired image.
+            origin - default is changed to 'lower'
+            update_datalim - flag whether the image should affect the data limits (default: True)
         
         """
         transform = kwargs.pop('transform', None)
@@ -561,8 +633,13 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _boundary(self):
         """
-        Adds the map's boundary. Note, the boundary is not the axes.patch, which provides rectilinear 
-        clipping for all of the map's artists.
+        Adds the map's boundary.
+        
+        Note:
+        
+            The boundary is not the axes.patch, which provides rectilinear 
+            clipping for all of the map's artists.
+        
         The axes.patch will have its visibility set to False inside GeoAxes.gca()
         """
         import cartopy.mpl_integration.patch as p
@@ -600,6 +677,14 @@ class GeoAxes(matplotlib.axes.Axes):
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contour(self, *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.contour'.
+        
+        Extra kwargs:
+        
+            transform - a :class:`~cartopy.crs.Projection`.
+        
+        """
         t = kwargs.get('transform', None)
         # Keep this bit - even at mpl v1.2
         if t is None:
@@ -610,6 +695,14 @@ class GeoAxes(matplotlib.axes.Axes):
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contourf(self, *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf'.
+        
+        Extra kwargs:
+        
+            transform - a :class:`~cartopy.crs.Projection`.
+        
+        """
         t = kwargs.get('transform', None)
         # Keep this bit - even at mpl v1.2
         if t is None:
@@ -620,6 +713,14 @@ class GeoAxes(matplotlib.axes.Axes):
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def scatter(self, *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter'.
+        
+        Extra kwargs:
+        
+            transform - a :class:`~cartopy.crs.Projection`.
+        
+        """
         t = kwargs.get('transform', None)
         # Keep this bit - even at mpl v1.2
         if t is None:
@@ -630,6 +731,12 @@ class GeoAxes(matplotlib.axes.Axes):
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def pcolormesh(self, *args, **kwargs):
+        """A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolormesh'.
+        
+        This function contains a workaround for a matplotlib issue
+        and will be removed once the issues has been resolved.
+        
+        """
         import warnings
         import numpy as np
         import numpy.ma as ma
@@ -717,6 +824,12 @@ class GeoAxes(matplotlib.axes.Axes):
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def pcolor(self, *args, **kwargs):
+        """A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolor'.
+        
+        This function contains a workaround for a matplotlib issue
+        and will be removed once the issues has been resolved.
+        
+        """
         t = kwargs.get('transform', None)
         if t is None:
             kwargs['transform'] = self.projection
@@ -851,6 +964,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
 # alias GeoAxes - NOTE: THIS WAS NOT IN v0.4.0rc1
 GenericProjectionAxes = GeoAxes
+"""An alias to the :class:`GeoAxes` class."""
 
 
 class SimpleClippedTransform(mtransforms.Transform):
@@ -865,6 +979,16 @@ class SimpleClippedTransform(mtransforms.Transform):
     output_dims = 2
     has_inverse = True
     def __init__(self, pre_clip_transform, post_clip_transform, xclip=(0, 1), yclip=(0, 1)):
+        """Create the transform.
+        
+        Args:
+        
+            * pre_clip_transform - A :class:`matplotlib.transforms.Transform`.
+            * post_clip_transform - A :class:`matplotlib.transforms.Transform`.
+            * xclip - Defaults to (0,1).
+            * yclip - Defaults to (0,1).
+        
+        """
         mtransforms.Transform.__init__(self)
         self.pre_clip_transform = pre_clip_transform
         self.post_clip_transform = post_clip_transform
@@ -873,6 +997,18 @@ class SimpleClippedTransform(mtransforms.Transform):
         self.y_clips = yclip
 
     def transform_non_affine(self, values):
+        """
+        Transforms from source to target coordinates.
+        
+        Args:
+        
+            * value - An (n,2) array of points in source coordinates.
+            
+        Returns:
+        
+            * An (n,2) array of transformed points in target coordinates.
+            
+        """
         new_vals = self.pre_clip_transform.transform(values)
         x, y = new_vals[:, 0:1], new_vals[:, 1:2]
         numpy.clip(x, self.x_clips[0], self.x_clips[1], x)
@@ -881,4 +1017,5 @@ class SimpleClippedTransform(mtransforms.Transform):
         return self.post_clip_transform.transform(new_vals)
 
     def inverted(self):
+        """Return a :class:`~cartopy.crs.Projection` which transforms from target to source projections."""
         return (self.pre_clip_transform + self.post_clip_transform).inverted()
