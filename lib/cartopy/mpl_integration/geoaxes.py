@@ -49,7 +49,7 @@ _colors = {
 
 _PATH_TRANSFORM_CACHE = {}
 """
-Stores a mapping between (id(path), hash(self.source_projection), hash(self.target_projection))
+Stores a mapping between (hash(path), hash(self.source_projection), hash(self.target_projection))
 and the resulting transformed path.
 
 Provides a significant performance boost for contours which, at matplotlib 1.2.0 called
@@ -59,7 +59,7 @@ transform_path_non_affine twice unnecessarily.
 
 _GEOMETRY_TO_PATH_CACHE = {}
 """
-Caches a map between (id(geometries), hash(crs)) to projected paths.
+Caches a map between (hash(geometries), hash(crs)) to projected paths.
 This provides a significant boost when producing multiple maps of the same projection.
 """
 
@@ -137,7 +137,7 @@ class InterProjectionTransform(mtransforms.Transform):
               in target coordinates.
             
         """
-        orig_id = (id(path), hash(self.source_projection), hash(self.target_projection))
+        orig_id = (hash(path), hash(self.source_projection), hash(self.target_projection))
         result = _PATH_TRANSFORM_CACHE.get(orig_id, None)
         if result is not None:
             return result
@@ -368,7 +368,7 @@ class GeoAxes(matplotlib.axes.Axes):
         a :class:`~matplotlib.collections.PathCollection`.
         
         """
-        oid = (id(geoms), hash(crs), hash(self.projection))
+        oid = (hash(geoms), hash(crs), hash(self.projection))
         if oid in _GEOMETRY_TO_PATH_CACHE:
             paths = _GEOMETRY_TO_PATH_CACHE[oid]
         else:
