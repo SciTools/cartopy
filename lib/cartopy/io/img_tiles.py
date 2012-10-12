@@ -46,6 +46,7 @@ class GoogleTiles(object):
     def image_for_domain(self, target_domain, target_z):
         tiles = []
         for tile in self.find_images(target_domain, target_z):
+            print 'trying tile', tile
             try:
                 img, extent, origin = self.get_image(tile)
             except IOError:
@@ -62,8 +63,8 @@ class GoogleTiles(object):
         """Target domain is a shapely polygon in native coordinates."""
 
         assert isinstance(target_z, int) and target_z >= 0, 'target_z must be an integer >=0.'
-        assert isinstance(target_domain, shapely.geometry.Polygon), 'target_domain should be a poly, ' \
-                                                                    'otherwise domain.intersects will fail.'
+        assert isinstance(target_domain, (shapely.geometry.Polygon, shapely.geometry.MultiPolygon)), \
+                'target_domain should be a poly, otherwise domain.intersects will fail.'
 
         # recursively drill down to the images at the target zoom
         domain = self.tiledomain(start_tile)

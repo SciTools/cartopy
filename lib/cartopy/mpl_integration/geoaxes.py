@@ -262,8 +262,7 @@ class GeoAxes(matplotlib.axes.Axes):
         #       buffering the result by 10%...; 
         if not self._done_img_factory:
             for factory, args, kwargs in self.img_factories:
-                target_domain = self._get_extent_geom(factory.crs)
-                target_domain = shapely.geometry.Polygon(target_domain.coords)
+                target_domain = self._get_extent_geom(factory.crs, poly=True)
                 img, extent, origin = factory.image_for_domain(target_domain, args[0])
                 self.imshow(img, extent=extent, origin=origin, transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
@@ -425,8 +424,12 @@ class GeoAxes(matplotlib.axes.Axes):
         x1, y1, x2, y2 = r
         return x1, x2, y1, y2
     
-    def _get_extent_geom(self, crs=None):
-        # Perform the calculations for get_extent(), which just repackages it. 
+    def _get_extent_geom(self, crs=None, poly=False):
+        """
+        Return either a (multi) polygon or (multi) linestring for the extent
+        of this projection.
+        """
+        
         x1, x2 = self.get_xlim()
         y1, y2 = self.get_ylim()
         
@@ -434,11 +437,17 @@ class GeoAxes(matplotlib.axes.Axes):
             x1, x2 = self.projection.x_limits
             y1, y2 = self.projection.y_limits
         
-        domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
-                                                     [x2, y2], [x1, y2], [x1, y1]])
-        
+        if poly:
+            domain_in_crs = shapely.geometry.box(x1, y1, x2, y2)
+            domain_in_crs = shapely.geometry.Polygon([[x1, y1], [x1, y2],
+                                                      [x2, y2], [x2, y1], [x1, y1]])
+            print domain_in_crs.exterior.coords[:]
+        else:
+            domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
+                                                         [x2, y2], [x1, y2], [x1, y1]])
+            
         if self.projection != crs:
-            domain_in_crs = self.projection.project_geometry(domain_in_crs, crs)
+            domain_in_crs = crs.project_geometry(domain_in_crs, self.projection)
         
         return domain_in_crs
         

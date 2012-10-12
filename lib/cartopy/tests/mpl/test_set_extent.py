@@ -60,7 +60,8 @@ def test_update_lim():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.update_datalim([(-10, -10), (-5, -5)])
     assert_array_almost_equal(ax.dataLim.get_points(), np.array([[-10., -10.], [ -5.,  -5.]]))
-
+    plt.close()
+    
 
 def test_limits_contour():
     xs, ys = np.meshgrid(np.linspace(250, 350, 15), np.linspace(-45, 45, 20))

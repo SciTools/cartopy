@@ -199,7 +199,11 @@ class Projection(CRS):
             r = self._project_polygon(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        return sgeom.MultiPolygon(geoms)
+        if geoms:
+            result = sgeom.MultiPolygon(geoms)
+        else:
+            result = sgeom.MultiPolygon()
+        return result
 
     def _project_polygon(self, polygon, src_crs):
         """
@@ -231,14 +235,20 @@ class Projection(CRS):
             else:
                 multi_lines.append(geometry)
 
-        # Convert all the lines to rings by attaching them to the
-        # boundary.
-        rings.extend(self._attach_lines_to_boundary(multi_lines))
+        multi_lines = filter(lambda shp: not shp.is_empty, multi_lines)
 
+        # if we have non empty multi-lines, then convert all the lines 
+        # to rings by attaching them to the boundary. Otherwise we just have
+        # the boundary...         
+        if multi_lines or rings:
+            rings.extend(self._attach_lines_to_boundary(multi_lines))
+        else:
+            rings = [sgeom.Polygon(self.boundary).exterior]
+        
         # Resolve all the inside vs. outside rings, and convert to the
         # final MultiPolygon.
         return self._rings_to_multi_polygon(rings)
-
+        
     def _attach_lines_to_boundary(self, multi_line_strings):
         """
         Returns a list of LinearRings by attaching the ends of the given lines
@@ -299,8 +309,8 @@ class Projection(CRS):
                 sys.stdout.flush()
                 print
                 print 'Processing: %s, %s' % (i, line_string)
-            edge_things = filter(lambda t: t.kind or t.data[0] != i or t.data[1] != 'last', edge_things)
 
+            edge_things = filter(lambda t: t.kind or t.data[0] != i or t.data[1] != 'last', edge_things)
             while True:
                 # Find the distance of the last point
                 d_last = boundary_distance(line_string.coords[-1])
@@ -316,7 +326,7 @@ class Projection(CRS):
                     combined_coords = list(line_string.coords) + [(boundary_point.x, boundary_point.y)]
                     line_string = sgeom.LineString(combined_coords)
                     # XXX
-                    #edge_things.remove(next_thing)
+                    edge_things.remove(next_thing)
                 elif next_thing.data[0] == i:
                     if debug:
                         print '   close loop'
@@ -337,7 +347,7 @@ class Projection(CRS):
 
         # XXX Is the last point in each ring actually the same as the first?
         linear_rings = [LinearRing(line) for line in done]
-
+        
         if debug:
             print '   DONE'
 
