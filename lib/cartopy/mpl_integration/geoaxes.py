@@ -86,8 +86,8 @@ class InterProjectionTransform(mtransforms.Transform):
         
         Args:
         
-            * source_projection - A :class:`~cartopy.crs.Projection`.
-            * target_projection - A :class:`~cartopy.crs.Projection`.
+            * source_projection - A :class:`~cartopy.crs.CRS`.
+            * target_projection - A :class:`~cartopy.crs.CRS`.
             
         """
         # assert target_projection is cartopy.crs.Projection
@@ -122,6 +122,9 @@ class InterProjectionTransform(mtransforms.Transform):
     def transform_path_non_affine(self, path):
         """
         Transforms from source to target coordinates.
+        
+        Caches results, so subsequent calls with the same *path* argument
+        (and the same source and target projections) are faster.
         
         Args:
         
@@ -171,20 +174,30 @@ class InterProjectionTransform(mtransforms.Transform):
         return result
 
     def inverted(self):
-        """Return a :class:`~cartopy.crs.Projection` which transforms from target to source projections."""
+        """Return a matplotlib :class:`~matplotlib.transforms.Transform` from target to source coordinates."""
         return InterProjectionTransform(self.target_projection, self.source_projection)
 
 
 class GeoAxes(matplotlib.axes.Axes):
     """
-    A subclass of :class:`matplotlib.axes.Axes` which transforms between projections.
+    A subclass of :class:`matplotlib.axes.Axes` which represents a map :class:`~cartopy.crs.Projection`.
     
     This class replaces the matplotlib :class:`~matplotlib.axes.Axes` class
-    in plots where a target :class:`~cartopy.crs.Projection` is required.
+    when created with the *projection* keyword. For example:
+
+        # Set up a standard map for latlon data.
+        geo_axes = pyplot.axes(projection=cartopy.crs.PlateCarree())
+
+        # Set up an OSGB map.
+        geo_axes = pyplot.subplot(2, 2, 1, projection=cartopy.crs.OSGB())
     
     When a source projection is provided to one of it's plotting methods,
     using the *transform* keyword, the standard matplotlib plot result is
-    transformed from (as) source coordinates to the target projection.
+    transformed from source coordinates to the target projection. For example:
+    
+        # Plot latlon data on an OSGB map.
+        pyplot.axes(projection=cartopy.crs.OSGB())
+        pyplot.contourf(x, y, data, transform=cartopy.crs.PlateCarree())
     
     """
     def __init__(self, *args, **kwargs):
@@ -260,7 +273,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return '< GeoAxes: %s >' % self.projection
 
     def cla(self):
-        """Clears the current axes and adds boundary lines. Does not reset data limits."""
+        """Clears the current axes and adds boundary lines."""
         result = matplotlib.axes.Axes.cla(self)
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
@@ -731,10 +744,12 @@ class GeoAxes(matplotlib.axes.Axes):
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def pcolormesh(self, *args, **kwargs):
-        """A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolormesh'.
+        """
+        A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolormesh'.
         
         This function contains a workaround for a matplotlib issue
-        and will be removed once the issues has been resolved.
+        and will be removed once the issue has been resolved.
+        https://github.com/matplotlib/matplotlib/pull/1314
         
         """
         import warnings
@@ -824,10 +839,12 @@ class GeoAxes(matplotlib.axes.Axes):
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def pcolor(self, *args, **kwargs):
-        """A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolor'.
+        """
+        A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolor'.
         
         This function contains a workaround for a matplotlib issue
-        and will be removed once the issues has been resolved.
+        and will be removed once the issue has been resolved.
+        https://github.com/matplotlib/matplotlib/pull/1314
         
         """
         t = kwargs.get('transform', None)
@@ -964,7 +981,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
 # alias GeoAxes - NOTE: THIS WAS NOT IN v0.4.0rc1
 GenericProjectionAxes = GeoAxes
-"""An alias to the :class:`GeoAxes` class."""
+"""(To be removed in v0.5) An alias to the :class:`GeoAxes` class."""
 
 
 class SimpleClippedTransform(mtransforms.Transform):
@@ -979,7 +996,8 @@ class SimpleClippedTransform(mtransforms.Transform):
     output_dims = 2
     has_inverse = True
     def __init__(self, pre_clip_transform, post_clip_transform, xclip=(0, 1), yclip=(0, 1)):
-        """Create the transform.
+        """
+        Create the transform.
         
         Args:
         
@@ -1017,5 +1035,5 @@ class SimpleClippedTransform(mtransforms.Transform):
         return self.post_clip_transform.transform(new_vals)
 
     def inverted(self):
-        """Return a :class:`~cartopy.crs.Projection` which transforms from target to source projections."""
+        """Return a matplotlib :class:`~matplotlib.transforms.Transform` from target to source coordinates."""
         return (self.pre_clip_transform + self.post_clip_transform).inverted()
