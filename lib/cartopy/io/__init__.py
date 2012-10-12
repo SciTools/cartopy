@@ -14,15 +14,27 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 Provides a collection of sub-packages for loading, saving and retrieving various data formats.
+
 """
+
 
 def fh_getter(fh, mode='r', needs_filename=False):
     """
-    Given a file handle, filename or (file handle, filename) tuple return
-    (file handle, filename) in the given read/write mode.
+    Convenience function for opening files.
+    
+    Args:
+    
+        * fh - File handle, filename or (file handle, filename) tuple
+    
+    Kwargs:
+    
+        * mode - Open mode. Defaults to "r".
+        
+    Returns:
+
+        * (file handle, filename), opened in the given mode.
 
     """
     if mode != 'r':
