@@ -76,6 +76,21 @@ def test_web_tiles():
     ax.coastlines()
 
 
+@image_comparison(baseline_images=['image_merging_from_wmts'])
+def test_image_merging_from_wmts():
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+    import cartopy.io.img_tiles as cit
+    
+    ax = plt.subplot(121, projection=ccrs.Mercator())
+    ax.add_image(cit.MapQuestOpenAerial(), 2)
+    ax.coastlines()
+    
+    ax = plt.subplot(122, projection=ccrs.Robinson())
+    ax.add_image(cit.MapQuestOpenAerial(), 2)
+    ax.coastlines()
+    
+
 
 @image_comparison(baseline_images=['image_nest'])
 def test_image_nest():
