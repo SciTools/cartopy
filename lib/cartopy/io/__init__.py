@@ -21,7 +21,8 @@ Provides a collection of sub-packages for loading, saving and retrieving various
 
 
 def fh_getter(fh, mode='r', needs_filename=False):
-    """Convenience function for opening files.
+    """
+    Convenience function for opening files.
     
     Args:
     
