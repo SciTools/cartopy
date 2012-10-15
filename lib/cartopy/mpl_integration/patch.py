@@ -14,13 +14,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
-
-
 """
-Provides geos <-> mpl path support.
+Provides shapely geometry <-> matplotlib path support.
 
-Please note: This code needs a significant spruce and review.
-  
+See also `Shapely Geometric Objects <http://toblerity.github.com/shapely/manual.html#geometric-objects>`_
+and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
+
 """
 
 import numpy as np
@@ -36,9 +35,27 @@ from shapely.geometry.multipolygon import MultiPolygon
 
 
 def geos_to_path(shape):
-    """Return a list of paths created from this shape."""
-    # Iterate through lists/tuples of shapes, concatenating the
-    # results.
+    """
+    Creates a list of :class:`matplotlib.path.Path` objects that describe
+    a shape.
+
+    Args:
+
+    * shape
+        A list, tuple or single instance of any of the following
+        types: :class:`shapely.geometry.point.Point`,
+        :class:`shapely.geometry.linestring.LineString`,
+        :class:`shapely.geometry.polygon.Polygon`,
+        :class:`shapely.geometry.multipoint.MultiPoint`,
+        :class:`shapely.geometry.multipolygon.MultiPolygon`,
+        :class:`shapely.geometry.multilinestring.MultiLineString`,
+        :class:`shapely.geometry.collection.GeometryCollection`,
+        or any type with a _as_mpl_path() method.
+
+    Returns:
+        A list of :class:`matplotlib.path.Path` objects.
+
+    """
     if isinstance(shape, (list, tuple)):
         paths = []
         for shp in shape:
@@ -75,7 +92,26 @@ def geos_to_path(shape):
 def path_segments(path, transform=None, remove_nans=False, clip=None,
                   quantize=False, simplify=False, curves=False,
                   stroke_width=1.0, snap=False):
-    """See path.iter_segments. Vectorised version of that."""
+    """
+    Creates an array of vertices and a corresponding array of codes from a
+    :class:`matplotlib.path.Path`.
+
+    Args:
+
+    * path
+        A :class:`matplotlib.path.Path` instance.
+
+    Kwargs:
+        See :func:`matplotlib.path.iter_segments` for details of the keyword
+        arguments.
+
+    Returns:
+        A (vertices, codes) tuple, where vertices is a numpy array of
+        coordinates, and codes is a numpy array of matplotlib path codes.
+        See :class:`matplotlib.path.Path` for information on the types of
+        codes and their meanings.
+
+    """
     # XXX assigned to avoid a ValueError inside the mpl C code...
     a = transform, remove_nans, clip, quantize, simplify, curves
 
@@ -92,6 +128,19 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
 
 def path_to_geos(path):
     """
+    Creates a list of Shapely geometric objects from a
+    :class:`matplotlib.path.Path`.
+
+    Args:
+
+    * path
+        A :class:`matplotlib.path.Path` instance.
+
+    Returns:
+        A list of :class:`shapely.geometry.polygon.Polygon`,
+        :class:`shapely.geometry.linestring.LineString` and/or
+        :class:`shapely.geometry.multilinestring.MultiLineString` instances.
+
     """
     # Convert path into numpy array of vertices (and associated codes)
     path_verts, path_codes = path_segments(path, curves=False)
