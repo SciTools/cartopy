@@ -32,11 +32,11 @@ def main():
     sph = ccrs.Geodetic()
     
     ax = plt.axes(projection=rob)
-#    ax = plt.axes(projection=pc)
+    #ax = plt.axes(projection=pc)
     
 #    ax = plt.axes(projection=ccrs.NorthPolarStereo())
     
-    ax.set_global()
+    #ax.set_global()
     
     from cartopy.examples.waves import sample_data
     
