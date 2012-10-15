@@ -71,6 +71,51 @@ in GeoAxes.add_geometries) when producing multiple maps of the same projection.
 """
 
 
+class _PathTransformKey(object):
+    def __init__(self, path, src_crs, target_proj):
+        """
+        Creates an object capable of acting as the key in a dictionary based
+        cache for storing paths from projected from a source coordinate system
+        into a target projection.
+        
+        Args:
+        
+            * path:
+                A :class:`~matplotlib.path.Path` instance with
+                vertices defined in the source coordinate system.
+
+            * src_crs:
+                A :class:`~cartopy.crs.CRS` instance representing the
+                source coordinate system.
+
+            * target_proj:
+                A :class:`~cartopy.crs.Projection` instance representing
+                the target projection.
+            
+        """
+        self._path = path
+        self._src_crs = src_crs
+        self._target_proj = target_proj
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return (self._src_crs == other._src_crs and
+                    self._target_proj == other._target_proj and
+                    numpy.all(self._path.vertices == other._path.vertices) and
+                    numpy.all(self._path.codes == other._path.codes))
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        if isinstance(other, type(self)):
+            return not self.__eq__(other)
+        else:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash((self._path, self._src_crs, self._target_proj))
+
+
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
     """Transforms coordinates from the source_projection to the target_projection."""
@@ -137,8 +182,9 @@ class InterProjectionTransform(mtransforms.Transform):
               in target coordinates.
             
         """
-        orig_id = (hash(path), hash(self.source_projection), hash(self.target_projection))
-        result = _PATH_TRANSFORM_CACHE.get(orig_id, None)
+        orig_id = _PathTransformKey(path, self.source_projection,
+                                    self.target_projection)
+        result = _PATH_TRANSFORM_CACHE.get(orig_id)
         if result is not None:
             return result
         
