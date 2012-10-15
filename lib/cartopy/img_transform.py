@@ -26,6 +26,36 @@ import scipy.spatial
 import cartopy.crs as ccrs
 
 
+def warp_img(fname, target_proj, source_proj=None, target_res=(400, 200)):
+    """
+    Regrid the image file from the source projection to the target projection.
+
+    Args:
+
+    * fname:
+        Image filename to be loaded and warped.
+
+    * target_proj:
+        The target :class:`~cartopy.crs.Projection` instance for the image.
+
+    Kwargs:
+
+    * source_proj:
+        The source :class:`~cartopy.crs.Projection` instance of the image.
+        Defaults to a :class:`~cartopy.crs.PlateCarree` projection.
+
+    * target_res:
+        The (nx, ny) resolution of the target projection. Where nx defaults to
+        400 sample points, and ny defaults to 200 sample points.
+
+    """
+
+    if source_proj is None:
+        source_proj = ccrs.PlateCarree()
+
+    raise NotImplementedError('Not yet implemented.')
+
+
 def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None, None]):
     """
     Returns sample points in the given projection which span the entire projection range evenly.
