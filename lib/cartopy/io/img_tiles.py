@@ -46,7 +46,6 @@ class GoogleTiles(object):
     def image_for_domain(self, target_domain, target_z):
         tiles = []
         for tile in self.find_images(target_domain, target_z):
-            print 'trying tile', tile
             try:
                 img, extent, origin = self.get_image(tile)
             except IOError:

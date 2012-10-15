@@ -610,7 +610,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                                            target_res=regrid_shape,
                                                            target_extent=self.get_extent(self.projection),
                                                            )
-            import numpy
+            
             # as a workaround to a matplotlib limitation, turn any images which are RGB with a mask into 
             # RGBA images with an alpha channel.
             if isinstance(img, numpy.ma.MaskedArray) and img.shape[2:3] == (3, ) and \
