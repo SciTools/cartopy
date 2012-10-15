@@ -137,8 +137,27 @@ class InterProjectionTransform(mtransforms.Transform):
               in target coordinates.
             
         """
-        orig_id = (hash(path), hash(self.source_projection), hash(self.target_projection))
-        result = _PATH_TRANSFORM_CACHE.get(orig_id, None)
+        class _PathKey(object):
+            def __init__(self, path):
+                self.path = path
+            def __eq__(self, other):
+                if isinstance(other, type(self)):
+                    return (numpy.all(self.path.vertices == other.path.vertices) and
+                            numpy.all(self.path.codes == other.path.codes))
+                else:
+                    return NotImplemented
+            def __ne__(self, other):
+                if isinstance(other, type(self)):
+                    return not self.__eq__(other)
+                else:
+                    return NotImplemented
+
+        # Use _PathKey object plus hash of projections as a key. We cannot use
+        # id(path) as this does not appear sufficiently unique. We cannot use
+        # the path itself as __eq__ is not defined, so two paths with the
+        # same vertices and codes are not 'equal'.
+        orig_id = (_PathKey(path), hash(self.source_projection), hash(self.target_projection))
+        result = _PATH_TRANSFORM_CACHE.get(orig_id)
         if result is not None:
             return result
         
