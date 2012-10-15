@@ -142,8 +142,8 @@ def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None,
         Defaults to the :attribute:`~cartopy.crs.Projection.y_limits`.
     
     Returns:
-        A tuple of x-direction sample points :class:`numpy.ndarray` of shape (nx, ny), 
-        y-direction sample points :class:`numpy.ndarray` of shape (nx, ny),
+        A tuple of three items. The x-direction sample points :class:`numpy.ndarray` 
+        of shape (nx, ny), y-direction sample points :class:`numpy.ndarray` of shape (nx, ny),
         and the extent of the projection range as (x-lower, x-upper, y-lower, y-upper).
 
     """
@@ -203,7 +203,25 @@ def get_img_coords_and_nxy(fname, projection):
 
 def warp_img(fname, target_proj, source_proj=None, target_res=(400, 200)):
     """
-    XXX Not used! DELETE ME!
+    Regrid the image file from the source projection to the target projection.
+
+    Args:
+
+    * fname:
+        Image filename to be loaded and warped.
+
+    * target_proj:
+        The target :class:`~cartopy.crs.Projection` instance for the image.
+
+    Kwargs:
+
+    * source_proj:
+        The source :class:`~cartopy.crs.Projection` instance of the image.
+        Defaults to a :class:`~cartopy.crs.PlateCarree` projection.
+
+    * target_res:
+        The (nx, ny) resolution of the target projection. Where nx defaults to
+        400 sample points, and ny defaults to 200 sample points.
 
     """
 
@@ -234,8 +252,8 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
         Defaults to a :class:`~cartopy.crs.PlateCarree` projection.
 
     * target_res:
-        The (nx, yx) resolution of the target projection. Where nx defaults to
-        400 sample points, and yx defaults to 200 sample points.
+        The (nx, ny) resolution of the target projection. Where nx defaults to
+        400 sample points, and ny defaults to 200 sample points.
 
     * source_extent:
         The (x-lower, x-upper, y-lower, y-upper) extent in native
