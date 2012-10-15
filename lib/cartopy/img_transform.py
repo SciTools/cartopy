@@ -26,93 +26,6 @@ import scipy.spatial
 import cartopy.crs as ccrs
 
 
-def stack(*one_dim_arrays):
-    """
-    XXX Not used external to this module. Only used within the module 
-    XXX by functions that are not used themselves. DELETE ME?
-
-    Stack the given N :class:`numpy.ndarray`'s of similar shape M into a
-    single :class:`numpy.ndarray` of shape (M, N,).
-
-    Also see, :func:`~cartopy.img_transform.unpack`.
-
-    Args:
-
-    * one_dim_arrays:
-        One or more :class:`~numpy.ndarray` instance of the same shape.
-
-    Returns:
-        A :class:`~numpy.ndarray` instance of shape (M, N).
-    
-    """
-
-    # Ensure all arrays are of the same shape.
-    first = one_dim_arrays[0]
-    first_shape = first.shape
-    assert all([arr.shape == first_shape for arr in one_dim_arrays])
-
-    # Concatenate all the arrays together into one stacked array.
-    arrs = list(one_dim_arrays)
-    for arr in arrs:
-        arr.shape = first_shape + (1,)
-    r = numpy.concatenate(arrs, axis= -1)
-
-    # Undo the shape change to the original arrays.
-    for arr in arrs:
-        arr.shape = first_shape
-    return r
-
-
-def unpack(data):
-    """
-    XXX Not used! DELETE ME?
-
-    Unpack the :class:`~numpy.ndarray` of shape (..., M) into M separate :class:`~numpy.ndarray`'s.
-
-    Also see, :func:`~cartopy.img_transform.stack`.
-
-    Args:
-    
-    * data:
-        The :class:`~numpy.ndarray` to be unpacked.
-    
-    Returns:
-        A list of M :class:`~numpy.ndarray`'s.
-
-    """
-
-    return [data[..., i] for i in xrange(data.shape[-1])]
-
-
-def ll_to_cart(lonslats):
-    """
-    XXX Not used! DELETE ME!
-
-    Converts longitude and latitude coordinate data into Cartesian coordinate data.
-
-    Args:
-
-    * lonslats:
-        A :class:`~numpy.ndarray` instance of shape (M, 2) containing M coordinate 
-        data values in longitude, latitude coordinate order.
-
-    Returns:
-        A single :class:`~numpy.ndarray` of shape (M, 3) containing M 
-        Cartesian coordinate data values in x, y, z order.
-
-    """
-
-    # Unpack into longitude and latitude values.
-    lons, lats = unpack(lonslats)
-
-    # Convert to Cartesian coordinates.
-    # XXX Should be done using crs.Geocentric
-    x = numpy.sin(numpy.deg2rad(90 - lats)) * numpy.cos(numpy.deg2rad(lons))
-    y = numpy.sin(numpy.deg2rad(90 - lats)) * numpy.sin(numpy.deg2rad(lons))
-    z = numpy.cos(numpy.deg2rad(90 - lats))
-    return stack(x, y, z)
-
-
 def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None, None]):
     """
     Returns sample points in the given projection which span the entire projection range evenly.
@@ -165,40 +78,6 @@ def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None,
     # Generate the x-direction and y-direction meshgrids.
     x, y = numpy.meshgrid(x, y)
     return x, y, [x_lower, x_upper, y_lower, y_upper]
-
-
-def projection_coords(projection, nx, ny):
-    """
-    XXX Not used and wrong! DELETE ME!
-
-    Returns coords in the projection which span the entire projection range evenly.
-    
-    The return value is (natives, latslons, xyzs) for convenience.
-    
-    """
-
-    x = numpy.linspace(projection.x_limits[0], projection.x_limits[1], nx).reshape(1, -1)
-    y = numpy.linspace(projection.y_limits[0], projection.y_limits[1], ny).reshape(-1, 1)
-    x, y = numpy.meshgrid(x, y)
-    x, y = x.flat, y.flat
-    native = stack(x, y)
-    lons, lats = projection.unproject_points(x, y)
-    ll = stack(lons, lats)
-    xyz = ll_to_cart(ll)
-    return native, ll, xyz
-
-
-def get_img_coords_and_nxy(fname, projection):
-    """
-    XXX Not used! DELETE ME!
-
-    """
-
-    img = matplotlib.image.imread(fname)
-    ny, nx = img.shape[:-1]
-    _, _, xyz = projection_coords(projection, nx, ny)
-
-    return img, xyz, nx, ny
 
 
 def warp_img(fname, target_proj, source_proj=None, target_res=(400, 200)):
