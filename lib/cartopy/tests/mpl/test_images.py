@@ -23,11 +23,11 @@ import shapely.geometry
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
-from cartopy.tests.mpl import image_comparison
+from cartopy.tests.mpl import ImageTesting
 import cartopy.tests.test_img_nest as ctest_nest
 
 
-@image_comparison(baseline_images=['web_tiles'])
+@ImageTesting(['web_tiles'])
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
@@ -77,7 +77,7 @@ def test_web_tiles():
 
 
 
-@image_comparison(baseline_images=['image_nest'])
+@ImageTesting(['image_nest'])
 def test_image_nest():
     nest_z0_z1 = ctest_nest.gen_nest()
 

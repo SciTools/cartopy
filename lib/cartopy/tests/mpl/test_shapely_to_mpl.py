@@ -26,10 +26,10 @@ import shapely.geometry
 import cartopy.crs as ccrs
 import cartopy.mpl_integration.patch as cpatch
 
-from cartopy.tests.mpl import image_comparison
+from cartopy.tests.mpl import ImageTesting
 
 
-@image_comparison(baseline_images=['poly_interiors'])
+@ImageTesting(['poly_interiors'])
 def test_polygon_interiors():
     
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
@@ -85,7 +85,7 @@ def test_polygon_interiors():
     ax.add_collection(collection)
     
 
-@image_comparison(baseline_images=['contour_with_interiors'])
+@ImageTesting(['contour_with_interiors'])
 def test_contour_interiors():
 #    ############## produces a polygon with multiple holes:
     nx, ny = 10, 10
