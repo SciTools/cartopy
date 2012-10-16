@@ -20,7 +20,7 @@ import unittest
 
 import numpy
 from shapely.geometry import Polygon
-import shapely.geometry
+import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 
@@ -60,7 +60,7 @@ class TestBoundary(unittest.TestCase):
             # An out of backwards projection range segment
             ([(86, -1), (86, 1), (130, 1), (130, -1)], 1),
             # All out of backwards projection range
-            ([(120, -1), (120, 1), (130, 1), (130, -1)], 0),
+            ([(120, -1), (120, 1), (130, 1), (130, -1)], 1), # <----- hmmm - is this what we want???
         ]
 
         # Try all four combinations of valid/NaN vs valid/NaN.
@@ -86,7 +86,23 @@ class TestMisc(unittest.TestCase):
         multi_polygon = projection.project_geometry(polygon)
         self.assertEqual(len(multi_polygon), 1)
         self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
-
+        
+    def test_infinite_loop(self):
+        # test a polygon which used to get stuck in an infinite loop
+        # see https://github.com/SciTools/cartopy/issues/60
+        coords = [(260.625, 68.90383337092122), (360.0, 79.8556091996901), 
+                  (360.0, 77.76848175458498), (0.0, 88.79068047337279), 
+                  (210.0, 90.0), (135.0, 88.79068047337279), 
+                  (260.625, 68.90383337092122)]
+        geom = sgeom.Polygon(coords)
+        
+        target_projection = ccrs.PlateCarree()
+        source_crs = ccrs.Geodetic()
+        
+        multi_polygon = target_projection.project_geometry(geom, source_crs)
+        # check the result is non-empty
+        self.assertFalse(multi_polygon.is_empty)
+        
 
 class TestQuality(unittest.TestCase):
     def setUp(self):
@@ -133,7 +149,7 @@ class TestQuality(unittest.TestCase):
             delta = numpy.diff(x)
             num_incr = numpy.count_nonzero(delta > 0)
             num_decr = numpy.count_nonzero(delta < 0)
-            self.assertLess(abs(num_incr - num_decr), 3, 'Too much assymmetry.')
+            self.assertLess(abs(num_incr - num_decr), 3, 'Too much asymmetry.')
 
 
 class PolygonTests(unittest.TestCase):
@@ -149,7 +165,7 @@ class TestWrap(PolygonTests):
     # source data tha extends outside the [-180, 180] range.
     def test_plate_carree_no_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = shapely.geometry.box(0, 0, 10, 10)
+        poly = sgeom.box(0, 0, 10, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -159,7 +175,7 @@ class TestWrap(PolygonTests):
 
     def test_plate_carree_partial_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = shapely.geometry.box(170, 0, 190, 10)
+        poly = sgeom.box(170, 0, 190, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         self.assertEqual(len(multi_polygon), 2)
@@ -171,7 +187,7 @@ class TestWrap(PolygonTests):
 
     def test_plate_carree_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = shapely.geometry.box(200, 0, 220, 10)
+        poly = sgeom.box(200, 0, 220, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -270,13 +286,13 @@ class TestHoles(PolygonTests):
         self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
 
     def test_multiple_interiors(self):
-        exterior = numpy.array(shapely.geometry.box(0, 0, 12, 12).exterior.coords)
+        exterior = numpy.array(sgeom.box(0, 0, 12, 12).exterior.coords)
         interiors = [
-                     numpy.array(shapely.geometry.box(1, 1, 2, 2, ccw=False).exterior.coords),
-                     numpy.array(shapely.geometry.box(1, 8, 2, 9, ccw=False).exterior.coords),
+                     numpy.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
+                     numpy.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords),
                      ]
 
-        poly = shapely.geometry.Polygon(exterior, interiors)
+        poly = sgeom.Polygon(exterior, interiors)
 
         target = ccrs.PlateCarree()
         source = ccrs.Geodetic()

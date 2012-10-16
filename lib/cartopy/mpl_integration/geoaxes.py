@@ -277,7 +277,8 @@ class GeoAxes(matplotlib.axes.Axes):
         #       buffering the result by 10%...; 
         if not self._done_img_factory:
             for factory, args, kwargs in self.img_factories:
-                img, extent, origin = factory.image_for_domain(self._get_extent_geom(factory.crs), args[0])
+                target_domain = self._get_extent_geom(factory.crs, poly=True)
+                img, extent, origin = factory.image_for_domain(target_domain, args[0])
                 self.imshow(img, extent=extent, origin=origin, transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
         
@@ -441,8 +442,12 @@ class GeoAxes(matplotlib.axes.Axes):
         x1, y1, x2, y2 = r
         return x1, x2, y1, y2
     
-    def _get_extent_geom(self, crs=None):
-        # Perform the calculations for get_extent(), which just repackages it. 
+    def _get_extent_geom(self, crs=None, poly=False):
+        """
+        Return either a (multi) polygon or (multi) linestring for the extent
+        of this projection.
+        """
+        
         x1, x2 = self.get_xlim()
         y1, y2 = self.get_ylim()
         
@@ -450,11 +455,17 @@ class GeoAxes(matplotlib.axes.Axes):
             x1, x2 = self.projection.x_limits
             y1, y2 = self.projection.y_limits
         
-        domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
-                                                     [x2, y2], [x1, y2], [x1, y1]])
-        
+        if poly:
+            domain_in_crs = shapely.geometry.box(x1, y1, x2, y2)
+            domain_in_crs = shapely.geometry.Polygon([[x1, y1], [x1, y2],
+                                                      [x2, y2], [x2, y1], [x1, y1]])
+            print domain_in_crs.exterior.coords[:]
+        else:
+            domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
+                                                         [x2, y2], [x1, y2], [x1, y1]])
+            
         if self.projection != crs:
-            domain_in_crs = self.projection.project_geometry(domain_in_crs, crs)
+            domain_in_crs = crs.project_geometry(domain_in_crs, self.projection)
         
         return domain_in_crs
         
@@ -617,14 +628,18 @@ class GeoAxes(matplotlib.axes.Axes):
                                                            target_res=regrid_shape,
                                                            target_extent=self.get_extent(self.projection),
                                                            )
+            
             # as a workaround to a matplotlib limitation, turn any images which are RGB with a mask into 
             # RGBA images with an alpha channel.
-            if isinstance(img, numpy.ma.MaskedArray) and img.shape[2:3] == (3, ):
+            if isinstance(img, numpy.ma.MaskedArray) and img.shape[2:3] == (3, ) and \
+                                                                img.mask is not False:
                 old_img = img
-                img = numpy.zeros(img.shape[:2] + (4, ))
-                img[:, :, 0:3] = old_img
-                # put an alpha channel in if the image was masked
-                img[:, :, 3] = ~ numpy.any(old_img.mask, axis=2) 
+                img = numpy.zeros(img.shape[:2] + (4, ), dtype=numpy.uint8)
+                if old_img.max() <= 1.0:
+                    img[:, :, :3] = old_img.data * 255
+                else:
+                    img[:, :, :3] = old_img.data
+                img[:, :, 3] = (~ numpy.any(old_img.mask, axis=2)) * 255
                 
             result = matplotlib.axes.Axes.imshow(self, img, *args, extent=extent, **kwargs)
 
@@ -722,6 +737,15 @@ class GeoAxes(matplotlib.axes.Axes):
             t = self.projection
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
+
+        # exclude Geodetic as a vaild source CS
+        if isinstance(kwargs.get('transform', None), InterProjectionTransform) and \
+           kwargs['transform'].source_projection.is_geodetic():
+            
+            raise ValueError('Cartopy cannot currently do spherical contouring. The '
+                             'source CRS cannot be a geodetic, consider using the '
+                             'cyllindrical form (PlateCarree or RotatedPole).')
+ 
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -740,6 +764,15 @@ class GeoAxes(matplotlib.axes.Axes):
             t = self.projection
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
+        
+        # exclude Geodetic as a vaild source CS
+        if isinstance(kwargs.get('transform', None), InterProjectionTransform) and \
+           kwargs['transform'].source_projection.is_geodetic():
+            
+            raise ValueError('Cartopy cannot currently do spherical contouring. The '
+                             'source CRS cannot be a geodetic, consider using the '
+                             'cyllindrical form (PlateCarree or RotatedPole).')
+            
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released

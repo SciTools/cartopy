@@ -50,10 +50,9 @@ class GoogleTiles(object):
                 img, extent, origin = self.get_image(tile)
             except IOError:
                 continue
-            print tile, extent
             img = numpy.array(img)
-            x = numpy.linspace(extent[0], extent[1], img.shape[1], endpoint=False)
-            y = numpy.linspace(extent[2], extent[3], img.shape[0], endpoint=False)
+            x = numpy.linspace(extent[0], extent[1], img.shape[1], endpoint=True)
+            y = numpy.linspace(extent[2], extent[3], img.shape[0], endpoint=True)
             tiles.append([numpy.array(img), x, y, origin])
 
         img, extent, origin = _merge_tiles(tiles)
@@ -63,6 +62,8 @@ class GoogleTiles(object):
         """Target domain is a shapely polygon in native coordinates."""
 
         assert isinstance(target_z, int) and target_z >= 0, 'target_z must be an integer >=0.'
+        assert isinstance(target_domain, (shapely.geometry.Polygon, shapely.geometry.MultiPolygon)), \
+                'target_domain should be a poly, otherwise domain.intersects will fail.'
 
         # recursively drill down to the images at the target zoom
         domain = self.tiledomain(start_tile)
