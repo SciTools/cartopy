@@ -28,7 +28,7 @@ import cartopy.crs as ccrs
 class TestLineString(unittest.TestCase):
     def test_out_of_bounds(self):
         # Check that a line that is completely out of the map boundary produces
-        # a valid polygon (for cylinrical projections).
+        # a valid LineString
         projection = ccrs.TransverseMercator(central_longitude=0)
 
         # For both start & end, define a point that results in well-defined

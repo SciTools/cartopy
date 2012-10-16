@@ -19,8 +19,8 @@
 import unittest
 
 import numpy
-from shapely.geometry import Polygon
-import shapely.geometry
+import shapely.geometry as sgeom
+
 
 import cartopy.crs as ccrs
 
@@ -31,7 +31,7 @@ class TestBoundary(unittest.TestCase):
         # ordering when they are attached to the boundary.
         # Failure to do so will result in invalid polygons (their boundaries
         # cross-over).
-        polygon = Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.5)
         multi_polygon = projection.project_geometry(polygon)
         for polygon in multi_polygon:
@@ -41,7 +41,7 @@ class TestBoundary(unittest.TestCase):
         # Check the polygon is attached to the boundary even when no
         # intermediate point for one of the crossing segments would normally
         # exist.
-        polygon = Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.6)
         # This will raise an exception if the polygon/boundary intersection
         # fails.
@@ -65,7 +65,7 @@ class TestBoundary(unittest.TestCase):
 
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords, expected_polys in polys:
-            polygon = Polygon(coords)
+            polygon = sgeom.Polygon(coords)
             multi_polygon = projection.project_geometry(polygon)
             self.assertEqual(len(multi_polygon), expected_polys)
 
@@ -73,12 +73,12 @@ class TestBoundary(unittest.TestCase):
 class TestMisc(unittest.TestCase):
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude= -90)
-        polygon = Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
         multi_polygon = projection.project_geometry(polygon)
 
     def test_small(self):
         projection = ccrs.Mercator()
-        polygon = Polygon([
+        polygon = sgeom.Polygon([
             (-179.9173693847652942, -16.5017831356493616),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
@@ -87,12 +87,28 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(len(multi_polygon), 1)
         self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
 
+    def test_infinite_loop(self):
+        # test a polygon which used to get stuck in an infinite loop
+        # see https://github.com/SciTools/cartopy/issues/60
+        coords = [(260.625, 68.90383337092122), (360.0, 79.8556091996901), 
+                  (360.0, 77.76848175458498), (0.0, 88.79068047337279), 
+                  (210.0, 90.0), (135.0, 88.79068047337279), 
+                  (260.625, 68.90383337092122)]
+        geom = sgeom.Polygon(coords)
+        
+        target_projection = ccrs.PlateCarree()
+        source_crs = ccrs.Geodetic()
+        
+        multi_polygon = target_projection.project_geometry(geom, source_crs)
+        # check the result is non-empty
+        self.assertFalse(multi_polygon.is_empty)
+
 
 class TestQuality(unittest.TestCase):
     def setUp(self):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
                                       pole_latitude=37.5)
-        polygon = Polygon([
+        polygon = sgeom.Polygon([
             (175.0, -57.19913331),
             (177.5, -57.38460319),
             (180.0, -57.445077),
@@ -149,7 +165,7 @@ class TestWrap(PolygonTests):
     # source data tha extends outside the [-180, 180] range.
     def test_plate_carree_no_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = shapely.geometry.box(0, 0, 10, 10)
+        poly = sgeom.box(0, 0, 10, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -159,7 +175,7 @@ class TestWrap(PolygonTests):
 
     def test_plate_carree_partial_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = shapely.geometry.box(170, 0, 190, 10)
+        poly = sgeom.box(170, 0, 190, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         self.assertEqual(len(multi_polygon), 2)
@@ -171,7 +187,7 @@ class TestWrap(PolygonTests):
 
     def test_plate_carree_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = shapely.geometry.box(200, 0, 220, 10)
+        poly = sgeom.box(200, 0, 220, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -183,7 +199,7 @@ class TestWrap(PolygonTests):
 class TestHoles(PolygonTests):
     def test_simple(self):
         proj = ccrs.PlateCarree()
-        poly = Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
+        poly = sgeom.Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
                        [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
@@ -196,7 +212,7 @@ class TestHoles(PolygonTests):
 
     def test_wrapped_poly_simple_hole(self):
         proj = ccrs.PlateCarree(-150)
-        poly = Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
+        poly = sgeom.Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
                        [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
@@ -212,7 +228,7 @@ class TestHoles(PolygonTests):
 
     def test_wrapped_poly_wrapped_hole(self):
         proj = ccrs.PlateCarree(-180)
-        poly = Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
+        poly = sgeom.Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
                        [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
@@ -227,7 +243,7 @@ class TestHoles(PolygonTests):
 
     def test_inverted_poly_simple_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
+        poly = sgeom.Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
                        [[(0, -30), (-90, -30), (-180, -30), (-270, -30)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
@@ -241,7 +257,7 @@ class TestHoles(PolygonTests):
 
     def test_inverted_poly_clipped_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
+        poly = sgeom.Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
                        [[(135, -60), (45, -60), (-45, -60), (-135, -60)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
@@ -256,7 +272,7 @@ class TestHoles(PolygonTests):
 
     def test_inverted_poly_removed_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
+        poly = sgeom.Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
                        [[(135, -75), (45, -75), (-45, -75), (-135, -75)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
@@ -270,13 +286,13 @@ class TestHoles(PolygonTests):
         self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
 
     def test_multiple_interiors(self):
-        exterior = numpy.array(shapely.geometry.box(0, 0, 12, 12).exterior.coords)
+        exterior = numpy.array(sgeom.box(0, 0, 12, 12).exterior.coords)
         interiors = [
-                     numpy.array(shapely.geometry.box(1, 1, 2, 2, ccw=False).exterior.coords),
-                     numpy.array(shapely.geometry.box(1, 8, 2, 9, ccw=False).exterior.coords),
+                     numpy.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
+                     numpy.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords),
                      ]
 
-        poly = shapely.geometry.Polygon(exterior, interiors)
+        poly = sgeom.Polygon(exterior, interiors)
 
         target = ccrs.PlateCarree()
         source = ccrs.Geodetic()

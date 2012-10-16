@@ -199,7 +199,11 @@ class Projection(CRS):
             r = self._project_polygon(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        return sgeom.MultiPolygon(geoms)
+        if geoms:
+            result = sgeom.MultiPolygon(geoms)
+        else:
+            result = sgeom.MultiPolygon()
+        return result
 
     def _project_polygon(self, polygon, src_crs):
         """
@@ -327,9 +331,7 @@ class Projection(CRS):
                         print '   adding line'
                     j = next_thing.data[0]
                     line_to_append = line_strings[j]
-                    # XXX pelson: this was failing, before I added the if statement, but I don't understand how it could be failing... 
-                    if j in to_do:
-                        del to_do[j]
+                    del to_do[j]
                     coords_to_append = list(line_to_append.coords)
                     if next_thing.data[1] == 'last':
                         coords_to_append = coords_to_append[::-1]
