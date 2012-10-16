@@ -26,6 +26,14 @@ import cartopy.crs as ccrs
 
 
 class TestCRS(unittest.TestCase):
+    def test_hash(self):
+        stereo = ccrs.Stereographic(90)
+        north = ccrs.NorthPolarStereo()
+        self.assertEqual(stereo, north)
+        self.assertFalse(stereo != north)
+        self.assertNotEqual(hash(stereo), hash(north))
+
+        self.assertEqual(ccrs.Geodetic(), ccrs.Geodetic())
 
     def test_osgb(self):
         osgb = ccrs.OSGB()

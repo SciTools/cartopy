@@ -21,6 +21,7 @@ When a matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.
 
 """ 
+import weakref
 
 import matplotlib.axes
 from matplotlib.image import imread
@@ -47,20 +48,28 @@ _colors = {
           'sea': numpy.array((152, 183, 226)) / 256.,
           }
 
-_PATH_TRANSFORM_CACHE = {}
+_PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
 """
-Stores a mapping between (hash(path), hash(self.source_projection), hash(self.target_projection))
-and the resulting transformed path.
+A nested mapping from path, source CRS, and target projection to the
+resulting transformed paths::
 
-Provides a significant performance boost for contours which, at matplotlib 1.2.0 called
-transform_path_non_affine twice unnecessarily.
+    {path: {(source_crs, target_projection): list_of_paths}}
+
+Provides a significant performance boost for contours which, at
+matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
 """
 
-_GEOMETRY_TO_PATH_CACHE = {}
+_GEOMETRY_TO_PATH_CACHE = weakref.WeakKeyDictionary()
 """
-Caches a map between (hash(geometries), hash(crs)) to projected paths.
-This provides a significant boost when producing multiple maps of the same projection.
+A nested mapping from geometry, source CRS, and target projection to the
+resulting transformed paths::
+
+    {geom: {(source_crs, target_projection): list_of_paths}}
+
+This provides a significant boost when producing multiple maps of the
+same projection.
+
 """
 
 _NATURAL_EARTH_GEOM_CACHE = {}
@@ -119,16 +128,16 @@ class InterProjectionTransform(mtransforms.Transform):
             x, y = self.target_projection.transform_point(x, y, self.source_projection)
             return x, y
 
-    def transform_path_non_affine(self, path):
+    def transform_path_non_affine(self, src_path):
         """
         Transforms from source to target coordinates.
         
-        Caches results, so subsequent calls with the same *path* argument
+        Caches results, so subsequent calls with the same *src_path* argument
         (and the same source and target projections) are faster.
         
         Args:
         
-            * path - A matplotlib :class:`~matplotlib.path.Path` object with
+            * src_path - A matplotlib :class:`~matplotlib.path.Path` object with
                      vertices in source coordinates.
             
         Returns
@@ -137,26 +146,28 @@ class InterProjectionTransform(mtransforms.Transform):
               in target coordinates.
             
         """
-        orig_id = (hash(path), hash(self.source_projection), hash(self.target_projection))
-        result = _PATH_TRANSFORM_CACHE.get(orig_id, None)
-        if result is not None:
-            return result
+        mapping = _PATH_TRANSFORM_CACHE.get(src_path)
+        if mapping is not None:
+            key = (self.source_projection, self.target_projection)
+            result = mapping.get(key)
+            if result is not None:
+                return result
         
         bypass = self.source_projection == self.target_projection
         if bypass:
             projection = self.source_projection
             if isinstance(projection, ccrs._CylindricalProjection):
-                x = path.vertices[:, 0]
+                x = src_path.vertices[:, 0]
                 x_limits = projection.x_limits
                 bypass = x.min() >= x_limits[0] and x.max() <= x_limits[1]
         if bypass:
-            return path
+            return src_path
 
-        if path.vertices.shape == (1, 2):
-            return mpath.Path(self.transform(path.vertices))
+        if src_path.vertices.shape == (1, 2):
+            return mpath.Path(self.transform(src_path.vertices))
 
         transformed_geoms = []
-        for geom in patch.path_to_geos(path):
+        for geom in patch.path_to_geos(src_path):
             transformed_geoms.append(self.target_projection.project_geometry(geom, self.source_projection))
 
         if not transformed_geoms:
@@ -169,7 +180,11 @@ class InterProjectionTransform(mtransforms.Transform):
             result = mpath.Path(numpy.concatenate(points, 0), numpy.concatenate(codes))
         
         # store the result in the cache for future performance boosts    
-        _PATH_TRANSFORM_CACHE[orig_id] = result
+        key = (self.source_projection, self.target_projection)
+        if mapping is None:
+            _PATH_TRANSFORM_CACHE[src_path] = {key: result}
+        else:
+            mapping[key] = result
         
         return result
 
@@ -368,20 +383,23 @@ class GeoAxes(matplotlib.axes.Axes):
         a :class:`~matplotlib.collections.PathCollection`.
         
         """
-        oid = (hash(geoms), hash(crs), hash(self.projection))
-        if oid in _GEOMETRY_TO_PATH_CACHE:
-            paths = _GEOMETRY_TO_PATH_CACHE[oid]
-        else:
-            paths = []
-            for geom in geoms:
-                paths.extend(patch.geos_to_path(self.projection.project_geometry(geom, crs)))
-            _GEOMETRY_TO_PATH_CACHE[oid] = paths
-            
-        c = mcollections.PathCollection(paths, transform=self.projection, **collection_kwargs)
+        paths = []
+        key = (crs, self.projection)
+        for geom in geoms:
+            mapping = _GEOMETRY_TO_PATH_CACHE.setdefault(geom, {})
+            geom_paths = mapping.get(key)
+            if geom_paths is None:
+                projected = self.projection.project_geometry(geom, crs)
+                geom_paths = patch.geos_to_path(projected)
+                mapping[key] = geom_paths
+            paths.extend(geom_paths)
+
+        c = mcollections.PathCollection(paths, transform=self.projection,
+                                        **collection_kwargs)
         self.add_collection(c, autolim=False)
         
         return c
-                
+
 #    def gshhs(self, outline_color='k', land_fill='green', ocean_fill='None', resolution='coarse', domain=None):
 #        import cartopy.gshhs as gshhs
 #        from matplotlib.collections import PatchCollection

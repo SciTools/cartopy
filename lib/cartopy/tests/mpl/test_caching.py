@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+import gc
 
 import numpy as np
 from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
@@ -106,19 +107,33 @@ def test_shapefile_transform_cache():
     ax = plt.axes(projection=ccrs.Robinson())
     
     project_geometry_counter = CallCounter(ax.projection, 'project_geometry')
+
+    # Capture the size of the cache before our test
+    gc.collect()
+    initial_cache_size = len(cgeoaxes._GEOMETRY_TO_PATH_CACHE)
     
     with project_geometry_counter:
         c = ax.add_geometries(geoms, ccrs.Geodetic())
         c = ax.add_geometries(geoms, ccrs.Geodetic())
-        c = ax.add_geometries(geoms[:], ccrs.Geodetic()) # <- caching will not work for this case
+        c = ax.add_geometries(geoms[:], ccrs.Geodetic())
     
-    # before the performance enhancement, the count would have been n_calls * n_geom,
-    # but should now be just n_geom * n_unique_id_geoms_calls (i.e. in this case 2 * n_calls))
+    # Before the performance enhancement, the count would have been
+    # n_calls * n_geom, but should now be just n_geom.
     assert project_geometry_counter.count == n_geom, ('The given geometry was transformed '
                                                       'too many times (expected: %s; got %s) - '
                                                       ' the caching is not working.' % 
-                                                      (n_geom * 2, project_geometry_counter.count))
-    
+                                                      (n_geom, project_geometry_counter.count))
+
+    # Check the cache has an entry for each geometry.
+    assert len(cgeoaxes._GEOMETRY_TO_PATH_CACHE) == initial_cache_size + n_geom
+
+    # Check that the cache is empty again once we've dropped all references
+    # to the source paths.
+    plt.clf()
+    del geoms
+    gc.collect()
+    assert len(cgeoaxes._GEOMETRY_TO_PATH_CACHE) == initial_cache_size
+
     plt.close()
 
 
@@ -132,9 +147,9 @@ def test_contourf_transform_path_counting():
     with path_to_geos_counter:
         x, y, z = sample_data((30, 60))
         cs = plt.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
+        n_geom = sum([len(c.get_paths()) for c in cs.collections])
+        del cs, c
         plt.draw()
-    
-    n_geom = sum([len(c.get_paths()) for c in cs.collections])
     
     # before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom
@@ -142,7 +157,16 @@ def test_contourf_transform_path_counting():
                                                   'too many times (expected: %s; got %s) - '
                                                   ' the caching is not working.' % 
                                                   (n_geom, path_to_geos_counter.count))
-    
+
+    # Check the cache has an entry for each geometry.
+    assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == n_geom
+
+    # Check that the cache is empty again once we've dropped all references
+    # to the source paths.
+    plt.clf()
+    gc.collect()
+    assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == 0
+
     plt.close()
     
 
