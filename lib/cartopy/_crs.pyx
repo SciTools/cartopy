@@ -60,10 +60,23 @@ cdef class CRS:
             self.proj4_params['ellps'] = 'WGS84'
         init_items = ['+{}={}'.format(k, v) for
                       k, v in self.proj4_params.iteritems()]
-        self.proj4_init = ' '.join(init_items)
+        self.proj4_init = ' '.join(sorted(init_items))
         self.proj4 = pj_init_plus(self.proj4_init)
         if not self.proj4:
             raise Proj4Error()
+
+    # Cython uses this method instead of the normal rich comparisons.
+    def __richcmp__(self, other, op):
+        # We're only interested in:
+        #   == -> 2
+        #   != -> 3
+        result = NotImplemented
+        if isinstance(other, CRS):
+            if op == 2:
+                result = self.proj4_init == other.proj4_init
+            elif op == 3:
+                result = self.proj4_init != other.proj4_init
+        return result
 
     def __reduce__(self):
         return self.__class__, tuple()
@@ -79,8 +92,7 @@ cdef class CRS:
     #def _geod(self): # to return the pyproj.Geod
 
     def __hash__(self):
-        # XXX means that all proj4_params must be hashable...
-        return hash((self.__class__, tuple(self.proj4_params.iteritems()))) 
+        return hash((type(self), self.proj4_init))
 
     def _as_mpl_transform(self, axes=None):
         # XXX This has been replicated in the crs.py Projection class, needs to be consolidated? 
