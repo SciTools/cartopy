@@ -118,7 +118,7 @@ def test_shapefile_transform_cache():
         c = ax.add_geometries(geoms[:], ccrs.Geodetic())
     
     # Before the performance enhancement, the count would have been
-    # n_calls * n_geom, # but should now be just n_geom.
+    # n_calls * n_geom, but should now be just n_geom.
     assert project_geometry_counter.count == n_geom, ('The given geometry was transformed '
                                                       'too many times (expected: %s; got %s) - '
                                                       ' the caching is not working.' % 

@@ -50,9 +50,10 @@ _colors = {
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
 """
-Stores a mapping from paths to mappings from:
-    (self.source_projection, self.target_projection)
-to the resulting transformed paths.
+A nested mapping from path, source CRS, and target projection to the
+resulting transformed paths::
+
+    {path: {(source_crs, target_projection): list_of_paths}}
 
 Provides a significant performance boost for contours which, at
 matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
@@ -61,9 +62,10 @@ matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
 _GEOMETRY_TO_PATH_CACHE = weakref.WeakKeyDictionary()
 """
-Stores a mapping from geometries to mappings from:
-    (crs, self.projection)
-to the resulting transformed paths.
+A nested mapping from geometry, source CRS, and target projection to the
+resulting transformed paths::
+
+    {geom: {(source_crs, target_projection): list_of_paths}}
 
 This provides a significant boost when producing multiple maps of the
 same projection.
