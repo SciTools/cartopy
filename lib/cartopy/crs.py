@@ -331,7 +331,9 @@ class Projection(CRS):
                         print '   adding line'
                     j = next_thing.data[0]
                     line_to_append = line_strings[j]
-                    del to_do[j]
+                    # XXX pelson: I think this if statement can be removed
+                    if j in to_do:
+                        del to_do[j]
                     coords_to_append = list(line_to_append.coords)
                     if next_thing.data[1] == 'last':
                         coords_to_append = coords_to_append[::-1]

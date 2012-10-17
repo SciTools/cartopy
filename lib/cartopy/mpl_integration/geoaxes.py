@@ -622,12 +622,10 @@ class GeoAxes(matplotlib.axes.Axes):
             if isinstance(img, numpy.ma.MaskedArray) and img.shape[2:3] == (3, ) and \
                                                                 img.mask is not False:
                 old_img = img
-                img = numpy.zeros(img.shape[:2] + (4, ), dtype=numpy.uint8)
-                if old_img.max() <= 1.0:
-                    img[:, :, :3] = old_img.data * 255
-                else:
-                    img[:, :, :3] = old_img.data
-                img[:, :, 3] = (~ numpy.any(old_img.mask, axis=2)) * 255
+                img = numpy.zeros(img.shape[:2] + (4, ))
+                img[:, :, 0:3] = old_img
+                # put an alpha channel in if the image was masked
+                img[:, :, 3] = ~ numpy.any(old_img.mask, axis=2) 
                 
             result = matplotlib.axes.Axes.imshow(self, img, *args, extent=extent, **kwargs)
 
