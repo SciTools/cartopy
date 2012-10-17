@@ -52,8 +52,8 @@ class GoogleTiles(object):
                 continue
             print tile, extent
             img = numpy.array(img)
-            x = numpy.linspace(extent[0], extent[1], img.shape[1], endpoint=False)
-            y = numpy.linspace(extent[2], extent[3], img.shape[0], endpoint=False)
+            x = numpy.linspace(extent[0], extent[1], img.shape[1], endpoint=True)
+            y = numpy.linspace(extent[2], extent[3], img.shape[0], endpoint=True)
             tiles.append([numpy.array(img), x, y, origin])
 
         img, extent, origin = _merge_tiles(tiles)

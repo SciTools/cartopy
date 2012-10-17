@@ -18,6 +18,7 @@
 
 import unittest
 
+from nose.tools import assert_is_instance
 from shapely import geometry
 
 import cartopy.crs as ccrs
@@ -77,7 +78,8 @@ class TestBoundary(unittest.TestCase):
             linear_ring = geometry.polygon.LinearRing(coords)
             multi_line_string = projection.project_geometry(linear_ring)
             if expected_n_lines == 1:
-                assert isinstance(multi_line_string, geometry.polygon.LinearRing)
+                assert_is_instance(multi_line_string, (geometry.polygon.LinearRing,
+                                                       geometry.MultiLineString))
             else:
                 assert multi_line_string.is_empty
 

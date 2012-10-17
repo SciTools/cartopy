@@ -619,7 +619,8 @@ class GeoAxes(matplotlib.axes.Axes):
                                                            )
             # as a workaround to a matplotlib limitation, turn any images which are RGB with a mask into 
             # RGBA images with an alpha channel.
-            if isinstance(img, numpy.ma.MaskedArray) and img.shape[2:3] == (3, ):
+            if isinstance(img, numpy.ma.MaskedArray) and img.shape[2:3] == (3, ) and \
+                                                                img.mask is not False:
                 old_img = img
                 img = numpy.zeros(img.shape[:2] + (4, ))
                 img[:, :, 0:3] = old_img
@@ -740,6 +741,15 @@ class GeoAxes(matplotlib.axes.Axes):
             t = self.projection
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
+            
+        # exclude Geodetic as a vaild source CS
+        if isinstance(kwargs.get('transform', None), InterProjectionTransform) and \
+           kwargs['transform'].source_projection.is_geodetic():
+            
+            raise ValueError('Cartopy cannot currently do spherical contouring. The '
+                             'source CRS cannot be a geodetic, consider using the '
+                             'cyllindrical form (PlateCarree or RotatedPole).')
+        
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -758,6 +768,15 @@ class GeoAxes(matplotlib.axes.Axes):
             t = self.projection
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
+            
+        # exclude Geodetic as a vaild source CS
+        if isinstance(kwargs.get('transform', None), InterProjectionTransform) and \
+           kwargs['transform'].source_projection.is_geodetic():
+            
+            raise ValueError('Cartopy cannot currently do spherical contouring. The '
+                             'source CRS cannot be a geodetic, consider using the '
+                             'cyllindrical form (PlateCarree or RotatedPole).')
+        
         return matplotlib.axes.Axes.scatter(self, *args, **kwargs)
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
