@@ -721,7 +721,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Keep this bit - even at mpl v1.2
         if t is None:
             t = self.projection
-        if not isinstance(t, ccrs.Projection):
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
@@ -742,7 +742,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Keep this bit - even at mpl v1.2
         if t is None:
             t = self.projection
-        if not isinstance(t, ccrs.Projection):
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
@@ -788,7 +788,7 @@ class GeoAxes(matplotlib.axes.Axes):
         t = kwargs.get('transform', None)
         if t is None:
             t = self.projection
-        if not isinstance(t, ccrs.Projection):
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
             raise ValueError('invalid transform:'
                              ' Spherical pcolormesh is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
@@ -908,7 +908,7 @@ class GeoAxes(matplotlib.axes.Axes):
         t = kwargs.get('transform', None)
         if t is None:
             t = self.projection
-        if not isinstance(t, ccrs.Projection):
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
             raise ValueError('invalid transform:'
                              ' Spherical pcolor is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
