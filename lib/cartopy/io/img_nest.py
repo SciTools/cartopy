@@ -187,7 +187,7 @@ class NestedImageCollection(object):
         """
         return potential_parent_image.bbox().contains(image.bbox())
 
-    def image_for_domain(self, target_domain, target_z):
+    def image_for_domain(self, target_domain, target_z, srs=None, image_size=None):
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
