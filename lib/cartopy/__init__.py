@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-
 # convenient name for creating projections
 import cartopy.crs as prj
 
@@ -24,9 +23,10 @@ import shapely.speedups
 if shapely.speedups.available:
     shapely.speedups.enable()
 
-## XXX move elsewhere
-#import os
-#COASTLINE_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_coastline')
-#LAND_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_land')
+# Commonly used sub-modules. Imported here to provide end-user
+# convenience.
+import cartopy.crs
+import cartopy.feature
+
 
 __version__ = '0.5.x'
