@@ -17,7 +17,6 @@
 
 from nose.tools import assert_equal
 import numpy as np
-from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
@@ -182,7 +181,7 @@ def test_axes_natural_earth_interface():
     
     ax.natural_earth_shp('rivers-lake-centerlines', edgecolor='black', facecolor='none')
     ax.natural_earth_shp('lakes', facecolor='blue')
-    
+
 
 if __name__=='__main__':
     import nose
