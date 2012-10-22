@@ -721,8 +721,11 @@ class GeoAxes(matplotlib.axes.Axes):
         # Keep this bit - even at mpl v1.2
         if t is None:
             t = self.projection
-        if hasattr(t, '_as_mpl_transform'):
-            kwargs['transform'] = t._as_mpl_transform(self)
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
+            raise ValueError('invalid transform:'
+                             ' Spherical contouring is not supported - '
+                             ' consider using PlateCarree/RotatedPole.')
+        kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -739,17 +742,11 @@ class GeoAxes(matplotlib.axes.Axes):
         # Keep this bit - even at mpl v1.2
         if t is None:
             t = self.projection
-        if hasattr(t, '_as_mpl_transform'):
-            kwargs['transform'] = t._as_mpl_transform(self)
-            
-        # exclude Geodetic as a vaild source CS
-        if isinstance(kwargs.get('transform', None), InterProjectionTransform) and \
-           kwargs['transform'].source_projection.is_geodetic():
-            
-            raise ValueError('Cartopy cannot currently do spherical contouring. The '
-                             'source CRS cannot be a geodetic, consider using the '
-                             'cyllindrical form (PlateCarree or RotatedPole).')
-        
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
+            raise ValueError('invalid transform:'
+                             ' Spherical contouring is not supported - '
+                             ' consider using PlateCarree/RotatedPole.')
+        kwargs['transform'] = t._as_mpl_transform(self)
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -779,8 +776,27 @@ class GeoAxes(matplotlib.axes.Axes):
         
         return matplotlib.axes.Axes.scatter(self, *args, **kwargs)
 
-    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def pcolormesh(self, *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh'.
+
+        Extra kwargs:
+
+            transform - a :class:`~cartopy.crs.Projection`.
+
+        """
+        t = kwargs.get('transform', None)
+        if t is None:
+            t = self.projection
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
+            raise ValueError('invalid transform:'
+                             ' Spherical pcolormesh is not supported - '
+                             ' consider using PlateCarree/RotatedPole.')
+        kwargs['transform'] = t._as_mpl_transform(self)
+        return self._pcolormesh_patched(self, *args, **kwargs)
+
+    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
+    def _pcolormesh_patched(self, *args, **kwargs):
         """
         A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolormesh'.
         
@@ -845,6 +861,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
         self.grid(False)
 
+        ########################
+        # PATCH FOR MPL 1.2.0rc2
+
         # Transform from native to data coordinates?
         t = collection._transform
         if (not isinstance(t, mtransforms.Transform)
@@ -863,6 +882,9 @@ class GeoAxes(matplotlib.axes.Axes):
             X = X[no_inf]
             Y = Y[no_inf]
 
+        # END OF PATCH
+        ##############
+
         minx = np.amin(X)
         maxx = np.amax(X)
         miny = np.amin(Y)
@@ -873,9 +895,28 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         self.add_collection(collection)
         return collection
+
+    def pcolor(self, *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
+
+        Extra kwargs:
+
+            transform - a :class:`~cartopy.crs.Projection`.
+
+        """
+        t = kwargs.get('transform', None)
+        if t is None:
+            t = self.projection
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
+            raise ValueError('invalid transform:'
+                             ' Spherical pcolor is not supported - '
+                             ' consider using PlateCarree/RotatedPole.')
+        kwargs['transform'] = t._as_mpl_transform(self)
+        return self._pcolor_patched(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
-    def pcolor(self, *args, **kwargs):
+    def _pcolor_patched(self, *args, **kwargs):
         """
         A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolor'.
         
@@ -884,10 +925,6 @@ class GeoAxes(matplotlib.axes.Axes):
         https://github.com/matplotlib/matplotlib/pull/1314
         
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            kwargs['transform'] = self.projection
-
         import warnings
         import numpy as np
         import numpy.ma as ma
@@ -985,6 +1022,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
         x = X.compressed()
         y = Y.compressed()
+
+        ########################
+        # PATCH FOR MPL 1.2.0rc2
         
         # Transform from native to data coordinates?
         t = collection._transform
@@ -1003,6 +1043,9 @@ class GeoAxes(matplotlib.axes.Axes):
             no_inf = (x != np.inf) & (y != np.inf)
             x = x[no_inf]
             y = y[no_inf]
+
+        # END OF PATCH
+        ##############
         
         minx = np.amin(x)
         maxx = np.amax(x)
