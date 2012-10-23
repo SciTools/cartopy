@@ -16,9 +16,188 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
+import os
+import shutil
+import warnings
 
 
-def image_comparison(baseline_images=None, extensions=('png', ), tol=1e-3):
-    # changes the mpl default to only use PNGs
-    return mpl_image_comparison(baseline_images, extensions, tol)
+import matplotlib.testing.compare as mcompare
+import matplotlib._pylab_helpers as pyplot_helpers
+
+
+class ImageTesting(object):
+    """
+    Provides a convenient class for running visual matplotlib tests.
+
+    In general, this class should be used as a decorator to a test function
+    which generates one (or more) figures.
+
+    ::
+
+        @ImageTesting(['simple_test'])
+        def test_simple():
+
+            import matplotlib.pyplot as plt
+            plt.plot(range(10))
+
+
+    To find out where the result and expected images reside one can create
+    a empty ImageTesting class instance and get the paths from the 
+    :meth:`expected_path` and :meth:`result_path` methods::
+    
+        >>> import os
+        >>> import cartopy.tests.mpl
+        >>> img_testing = cartopy.tests.mpl.ImageTesting([])
+        >>> expected_fname = img_testing.expected_path('<TESTNAME>', '<IMGNAME>')
+        >>> result_fname = img_testing.result_path('<TESTNAME>', '<IMGNAME>')
+        >>> img_test_mod_dir = os.path.dirname(cartopy.__file__)
+        
+        >>> print 'Result:', os.path.relpath(result_fname, img_test_mod_dir)
+        Result: tests/mpl/output/<TESTNAME>/result-<IMGNAME>.png
+        
+        >>> print 'Expected:', os.path.relpath(expected_fname, img_test_mod_dir) 
+        Expected: tests/mpl/baseline_images/mpl/<TESTNAME>/<IMGNAME>.png
+    
+    .. note::
+    
+        Subclasses of the ImageTesting class may decide to change the 
+        location of the expected and result images. However, the same 
+        technique for finding the locations of the images should hold true. 
+    
+    """
+
+    root_image_results = os.path.dirname(__file__)
+    """
+    The path where the standard ``baseline_images`` and
+    ``img_test_output`` directories go.
+
+    """
+
+    def __init__(self, img_names, tolerance=1e-3):
+        self.img_names = img_names
+        self.tolerance = tolerance
+
+    def expected_path(self, test_name, img_name, ext='.png'):
+        """
+        Return the full path (minus extension) of where the expected image
+        should be found, given the name of the image being tested and the
+        name of the test being run.
+
+        """
+        expected_fname = os.path.join(self.root_image_results,
+                                      'baseline_images', 'mpl', test_name,
+                                      img_name)
+        return expected_fname + ext 
+
+    def result_path(self, test_name, img_name, ext='.png'):
+        """
+        Return the full path (minus extension) of where the result image
+        should be given the name of the image being tested and the
+        name of the test being run.
+
+        """
+        result_fname = os.path.join(self.root_image_results,
+                                    'output', test_name,
+                                    'result-' + img_name)
+        return result_fname + ext
+
+    def run_figure_comparisons(self, figures, test_name):
+        """
+        Run the figure comparisons against the ``image_names``.
+
+        The number of figures passed must be equal to the number of
+        image names in ``self.image_names``.
+
+        .. note::
+
+            The figures are not closed by this method. If using the decorator
+            version of ImageTesting, they will be closed for you.
+
+        """
+        n_figures_msg = ('Expected %s figures (based  on the number of image '
+                         'result filenames), but there are %s figures available. '
+                         'The most likely reason for this is that this test is producing '
+                         'too many figures, (alternatively if not using ImageCompare as a '
+                         'decorator, it is possible that a test run prior to this one has not '
+                         'closed its figures).' % (len(self.img_names), len(figures))
+                         )
+        assert len(figures) == len(self.img_names), n_figures_msg
+
+        for img_name, figure in zip(self.img_names, figures):
+            expected_path = self.expected_path(test_name, img_name, '.png')
+            result_path = self.result_path(test_name, img_name, '.png')
+
+            if not os.path.isdir(os.path.dirname(expected_path)):
+                os.makedirs(os.path.dirname(expected_path))
+
+            if not os.path.isdir(os.path.dirname(result_path)):
+                os.makedirs(os.path.dirname(result_path))
+
+            self.save_figure(figure, result_path)
+
+            self.do_compare(result_path, expected_path, self.tolerance)
+
+    def save_figure(self, figure, result_fname):
+        """
+        The actual call which saves the figure.
+
+        Returns nothing.
+
+        May be overridden to do figure based pre-processing (such
+        as removing text objects etc.)
+        """
+        figure.savefig(result_fname)
+
+    def do_compare(self, result_fname, expected_fname, tol):
+        """
+        Runs the comparison of the result file with the expected file.
+
+        If an RMS difference greater than ``tol`` is found an assertion
+        error is raised with an appropriate message with the paths to
+        the files concerned.
+
+        """
+        if not os.path.exists(expected_fname):
+            warnings.warn('Created image in %s' % expected_fname)
+            shutil.copy2(result_fname, expected_fname)
+
+        err = mcompare.compare_images(expected_fname, result_fname, tol=tol, in_decorator=True)
+
+        if err:
+            msg = ('Images were different (RMS: %s).\n%s %s %s\nConsider running idiff to '
+                   'inspect these differences.' % (err['rms'], err['actual'],
+                                                   err['expected'], err['diff']))
+            assert False, msg
+
+    def __call__(self, test_func):
+        """Called when the decorator is applied to a function."""
+        test_name = test_func.__name__
+        mod_name = test_func.__module__
+        if mod_name == '__main__':
+            import sys
+            fname = sys.modules[mod_name].__file__
+            mod_name = os.path.basename(os.path.splitext(fname)[0])
+        mod_name = mod_name.rsplit('.', 1)[-1]
+
+        def wrapped(*args, **kwargs):
+            if pyplot_helpers.Gcf.figs:
+                warnings.warn('Figures existed before running the %s %s test. All figures should be '
+                              'closed after they run. They will be closed automatically now.' %
+                              (mod_name, test_name))
+                fig_managers = pyplot_helpers.Gcf.destroy_all()
+
+            r = test_func(*args, **kwargs)
+
+            fig_managers = pyplot_helpers.Gcf._activeQue
+            figures = [manager.canvas.figure for manager in fig_managers]
+
+            try:
+                self.run_figure_comparisons(figures, test_name=mod_name)
+            finally:
+                for figure in figures:
+                    pyplot_helpers.Gcf.destroy_fig(figure)
+            return r
+
+        # nose needs the function's name to be in the form "test_*" to pick it up
+        wrapped.__name__ = test_name
+        return wrapped

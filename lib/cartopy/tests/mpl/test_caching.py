@@ -32,10 +32,6 @@ from cartopy.examples.waves import sample_data
 import cartopy.mpl_integration.patch
 
     
-from cartopy.tests.mpl import image_comparison
-
-
-
 class CallCounter(object):
     """
     Exposes a context manager which can count the number of calls to a specific
