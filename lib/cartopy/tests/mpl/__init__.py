@@ -40,6 +40,30 @@ class ImageTesting(object):
             import matplotlib.pyplot as plt
             plt.plot(range(10))
 
+
+    To find out where the result and expected images reside one can create
+    a empty ImageTesting class instance and get the paths from the 
+    :meth:`expected_path` and :meth:`result_path` methods::
+    
+        >>> import os
+        >>> import cartopy.tests.mpl
+        >>> img_testing = cartopy.tests.mpl.ImageTesting([])
+        >>> expected_fname = img_testing.expected_path('<TESTNAME>', '<IMGNAME>')
+        >>> result_fname = img_testing.result_path('<TESTNAME>', '<IMGNAME>')
+        >>> img_test_mod_dir = os.path.dirname(cartopy.__file__)
+        
+        >>> print 'Result:', os.path.relpath(result_fname, img_test_mod_dir)
+        Result: tests/mpl/output/<TESTNAME>/result-<IMGNAME>.png
+        
+        >>> print 'Expected:', os.path.relpath(expected_fname, img_test_mod_dir) 
+        Expected: tests/mpl/baseline_images/mpl/<TESTNAME>/<IMGNAME>.png
+    
+    .. note::
+    
+        Subclasses of the ImageTesting class may decide to change the 
+        location of the expected and result images. However, the same 
+        technique for finding the locations of the images should hold true. 
+    
     """
 
     root_image_results = os.path.dirname(__file__)
@@ -53,7 +77,7 @@ class ImageTesting(object):
         self.img_names = img_names
         self.tolerance = tolerance
 
-    def expected_path(self, test_name, img_name):
+    def expected_path(self, test_name, img_name, ext='.png'):
         """
         Return the full path (minus extension) of where the expected image
         should be found, given the name of the image being tested and the
@@ -63,9 +87,9 @@ class ImageTesting(object):
         expected_fname = os.path.join(self.root_image_results,
                                       'baseline_images', 'mpl', test_name,
                                       img_name)
-        return expected_fname
+        return expected_fname + ext 
 
-    def result_path(self, test_name, img_name):
+    def result_path(self, test_name, img_name, ext='.png'):
         """
         Return the full path (minus extension) of where the result image
         should be given the name of the image being tested and the
@@ -75,7 +99,7 @@ class ImageTesting(object):
         result_fname = os.path.join(self.root_image_results,
                                     'output', test_name,
                                     'result-' + img_name)
-        return result_fname
+        return result_fname + ext
 
     def run_figure_comparisons(self, figures, test_name):
         """
@@ -100,12 +124,8 @@ class ImageTesting(object):
         assert len(figures) == len(self.img_names), n_figures_msg
 
         for img_name, figure in zip(self.img_names, figures):
-            expected_path = self.expected_path(test_name, img_name)
-            result_path = self.result_path(test_name, img_name)
-
-            # add the extension to the paths:
-            result_path += '.png'
-            expected_path += '.png'
+            expected_path = self.expected_path(test_name, img_name, '.png')
+            result_path = self.result_path(test_name, img_name, '.png')
 
             if not os.path.isdir(os.path.dirname(expected_path)):
                 os.makedirs(os.path.dirname(expected_path))
@@ -166,7 +186,6 @@ class ImageTesting(object):
                               (mod_name, test_name))
                 fig_managers = pyplot_helpers.Gcf.destroy_all()
 
-
             r = test_func(*args, **kwargs)
 
             fig_managers = pyplot_helpers.Gcf._activeQue
@@ -177,6 +196,7 @@ class ImageTesting(object):
             finally:
                 for figure in figures:
                     pyplot_helpers.Gcf.destroy_fig(figure)
+                return r
 
         # nose needs the function's name to be in the form "test_*" to pick it up
         wrapped.__name__ = test_name

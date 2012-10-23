@@ -27,11 +27,13 @@ class ExampleImageTesting(ImageTesting):
         fn = ImageTesting.__call__(self, test_func)
 
         def new_fn(*args, **kwargs):
-            show = plt.show
-            plt.show = lambda *args, **kwargs: None
-            r = fn(*args, **kwargs)
-            plt.show = show
-            return r
+            try:
+                show = plt.show
+                plt.show = lambda *args, **kwargs: None
+                r = fn(*args, **kwargs)
+            finally:
+                plt.show = show
+                return r
 
         new_fn.__name__ = fn.__name__
         return new_fn
