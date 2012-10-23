@@ -436,24 +436,25 @@ class Projection(CRS):
             y4 += by
             for ring in interior_rings:
                 polygon = sgeom.Polygon(ring)
-                x1, y1, x2, y2 = polygon.bounds
-                bx = (x2 - x1) * 0.1
-                by = (y2 - y1) * 0.1
-                x1 -= bx
-                y1 -= by
-                x2 += bx
-                y2 += by
-                box = sgeom.box(min(x1, x3), min(y1, y3),
-                                max(x2, x4), max(y2, y4))
+                if polygon.is_valid:
+                    x1, y1, x2, y2 = polygon.bounds
+                    bx = (x2 - x1) * 0.1
+                    by = (y2 - y1) * 0.1
+                    x1 -= bx
+                    y1 -= by
+                    x2 += bx
+                    y2 += by
+                    box = sgeom.box(min(x1, x3), min(y1, y3),
+                                    max(x2, x4), max(y2, y4))
 
-                # Invert the polygon
-                polygon = box.difference(polygon)
+                    # Invert the polygon
+                    polygon = box.difference(polygon)
 
-                # Intersect the inverted polygon with the boundary
-                polygon = boundary_poly.intersection(polygon)
+                    # Intersect the inverted polygon with the boundary
+                    polygon = boundary_poly.intersection(polygon)
 
-                if not polygon.is_empty:
-                    polygon_bits.append(polygon)
+                    if not polygon.is_empty:
+                        polygon_bits.append(polygon)
 
         if polygon_bits:
             multi_poly = sgeom.MultiPolygon(polygon_bits)
