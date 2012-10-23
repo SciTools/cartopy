@@ -17,15 +17,14 @@
 
 from nose.tools import assert_equal
 import numpy as np
-from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
 
-from cartopy.tests.mpl import image_comparison
+from cartopy.tests.mpl import ImageTesting
 
 
-@image_comparison(baseline_images=['global_contour_wrap'])
+@ImageTesting(['global_contour_wrap'])
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -34,7 +33,7 @@ def test_global_contour_wrap_new_transform():
     plt.contour(x, y, data, transform=ccrs.PlateCarree())
 
 
-@image_comparison(baseline_images=['global_contour_wrap'])
+@ImageTesting(['global_contour_wrap'])
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -43,7 +42,7 @@ def test_global_contour_wrap_no_transform():
     plt.contour(x, y, data)
 
 
-@image_comparison(baseline_images=['global_contourf_wrap'])
+@ImageTesting(['global_contourf_wrap'])
 def test_global_contourf_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -52,7 +51,7 @@ def test_global_contourf_wrap_new_transform():
     plt.contourf(x, y, data, transform=ccrs.PlateCarree())
 
 
-@image_comparison(baseline_images=['global_contourf_wrap'])
+@ImageTesting(['global_contourf_wrap'])
 def test_global_contourf_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -61,7 +60,7 @@ def test_global_contourf_wrap_no_transform():
     plt.contourf(x, y, data)
 
 
-@image_comparison(baseline_images=['global_pcolor_wrap'])
+@ImageTesting(['global_pcolor_wrap'])
 def test_global_pcolor_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -70,7 +69,7 @@ def test_global_pcolor_wrap_new_transform():
     plt.pcolor(x, y, data, transform=ccrs.PlateCarree())
 
 
-@image_comparison(baseline_images=['global_pcolor_wrap'])
+@ImageTesting(['global_pcolor_wrap'])
 def test_global_pcolor_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -79,7 +78,7 @@ def test_global_pcolor_wrap_no_transform():
     plt.pcolor(x, y, data)
 
 
-@image_comparison(baseline_images=['global_scatter_wrap'])
+@ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -88,7 +87,7 @@ def test_global_scatter_wrap_new_transform():
     plt.scatter(x, y, c=data, transform=ccrs.PlateCarree())
 
 
-@image_comparison(baseline_images=['global_scatter_wrap'])
+@ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -97,7 +96,7 @@ def test_global_scatter_wrap_no_transform():
     plt.scatter(x, y, c=data)
 
 
-@image_comparison(baseline_images=['global_map'])
+@ImageTesting(['global_map'])
 def test_global_map():
     ax = plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
@@ -111,14 +110,15 @@ def test_global_map():
     plt.plot([-0.08, 132], [51.53, 43.17], color='blue',
              transform=ccrs.Geodetic())
 
-@image_comparison(baseline_images=['simple_global'])
+
+@ImageTesting(['simple_global'])
 def test_simple_global():
     plt.axes(projection=ccrs.PlateCarree())
     plt.gca().coastlines()
     # produces a global map, despite not having needed to set the limits
 
 
-@image_comparison(baseline_images=['multiple_projections1'])
+@ImageTesting(['multiple_projections1'])
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
@@ -173,8 +173,10 @@ def test_cursor_values():
     r = ax.format_coord(x, y)
     assert_equal(r.encode('ascii', 'ignore'), '1.606e+07, 2.363e+06 (22.095524N, 173.709136E)')
 
+    plt.close()
 
-@image_comparison(baseline_images=['natural_earth_interface'])
+
+@ImageTesting(['natural_earth_interface'])
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
     
@@ -182,7 +184,7 @@ def test_axes_natural_earth_interface():
     
     ax.natural_earth_shp('rivers-lake-centerlines', edgecolor='black', facecolor='none')
     ax.natural_earth_shp('lakes', facecolor='blue')
-    
+
 
 if __name__=='__main__':
     import nose

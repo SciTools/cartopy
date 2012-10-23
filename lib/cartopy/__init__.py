@@ -19,6 +19,11 @@
 # convenient name for creating projections
 import cartopy.crs as prj
 
+# Enable shapely performance enhancements
+import shapely.speedups
+if shapely.speedups.available:
+    shapely.speedups.enable()
+
 ## XXX move elsewhere
 #import os
 #COASTLINE_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_coastline')

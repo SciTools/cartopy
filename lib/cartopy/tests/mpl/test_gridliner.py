@@ -25,10 +25,10 @@ import shapely.geometry
 
 import cartopy.crs as ccrs
 
-from cartopy.tests.mpl import image_comparison
+from cartopy.tests.mpl import ImageTesting
 
 
-@image_comparison(baseline_images=['gridliner1'])
+@ImageTesting(['gridliner1'])
 def test_gridliner():
     desired_gridline_prj = [ccrs.PlateCarree(), ccrs.OSGB()]
     projections = [ccrs.PlateCarree(), ccrs.OSGB(), ccrs.RotatedPole(37, 50)]
