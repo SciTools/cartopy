@@ -22,8 +22,6 @@ from numpy.testing import assert_array_almost_equal
 
 import cartopy.crs as ccrs
 
-from cartopy.tests.mpl import image_comparison
-
 
 @cleanup
 def test_extents():

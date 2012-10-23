@@ -20,9 +20,9 @@ import unittest
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
 import numpy
 
+from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform
 
@@ -81,11 +81,7 @@ class TestRegrid(unittest.TestCase):
                                target_proj, target_x, target_y)
 
 
-def image_comparison(baseline_images=None, extensions=('png', ), tol=1e-8):
-    # changes the mpl default to only use PNGs, and increases the tolerance to be highly rigorous.
-    return mpl_image_comparison(baseline_images, extensions, tol)
-
-@image_comparison(baseline_images=['regrid_blue_marble'])
+@ImageTesting(['regrid_blue_marble'])
 def test_regrid_blue_marble_img():
     # Source data
     filename = '/data/local/dataZoo/cartography/raster/blue_marble_720_360.png'
@@ -128,6 +124,7 @@ def test_regrid_blue_marble_img():
     # Tighten up layout
     gs.tight_layout(plt.gcf())
         
+
 if __name__=='__main__':
     import nose
     nose.runmodule(argv=['-s','--with-doctest'], exit=False)
