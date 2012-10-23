@@ -706,7 +706,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.patch.set_edgecolor((0.5, 0.5, 0.5))
         self.patch.set_linewidth(0.0)
 
-
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contour(self, *args, **kwargs):
         """
@@ -725,7 +724,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        kwargs.setdefault('transform', t)
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -746,7 +745,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        kwargs.setdefault('transform', t)
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -792,7 +791,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical pcolormesh is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        kwargs.setdefault('transform', t)
         return self._pcolormesh_patched(*args, **kwargs)
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -987,7 +986,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical pcolor is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        kwargs.setdefault('transform', t)
         return self._pcolor_patched(*args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
