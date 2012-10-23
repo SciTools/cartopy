@@ -33,7 +33,7 @@ class ExampleImageTesting(ImageTesting):
                 r = fn(*args, **kwargs)
             finally:
                 plt.show = show
-                return r
+            return r
 
         new_fn.__name__ = fn.__name__
         return new_fn

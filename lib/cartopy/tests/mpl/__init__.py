@@ -196,7 +196,7 @@ class ImageTesting(object):
             finally:
                 for figure in figures:
                     pyplot_helpers.Gcf.destroy_fig(figure)
-                return r
+            return r
 
         # nose needs the function's name to be in the form "test_*" to pick it up
         wrapped.__name__ = test_name
