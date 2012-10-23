@@ -793,7 +793,7 @@ class GeoAxes(matplotlib.axes.Axes):
                              ' Spherical pcolormesh is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
         kwargs['transform'] = t._as_mpl_transform(self)
-        return self._pcolormesh_patched(self, *args, **kwargs)
+        return self._pcolormesh_patched(*args, **kwargs)
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def _pcolormesh_patched(self, *args, **kwargs):
@@ -913,7 +913,7 @@ class GeoAxes(matplotlib.axes.Axes):
                              ' Spherical pcolor is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
         kwargs['transform'] = t._as_mpl_transform(self)
-        return self._pcolor_patched(self, *args, **kwargs)
+        return self._pcolor_patched(*args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def _pcolor_patched(self, *args, **kwargs):
