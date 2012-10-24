@@ -117,7 +117,7 @@ def test_regrid_blue_marble_img():
     for i, colour in enumerate(['red', 'green', 'blue']):
         ax = plt.subplot(gs[i + 1], frameon=False, projection=target_proj)
         ax.set_title(colour)
-        plt.pcolormesh(target_x[0, :], target_y[:, 0], new_array[:, :, i],
+        plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
                        cmap=cmaps[colour])
         ax.coastlines()
 
