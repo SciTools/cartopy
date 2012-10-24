@@ -21,6 +21,7 @@ When a matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.
 
 """ 
+import warnings
 import weakref
 
 import matplotlib.axes
@@ -462,11 +463,15 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             # Attempt to select suitable projection for
             # non-projection CRS.
-            if crs.is_geodetic():
-                proj = ccrs.PlateCarree()
-            elif isinstance(crs, ccrs.RotatedGeodetic):
+            if isinstance(crs, ccrs.RotatedGeodetic):
                 proj = ccrs.RotatedPole(crs.proj4_params['lon_0'] - 180,
                                         crs.proj4_params['o_lat_p'])
+                warnings.warn('Approximating coordinate system {!r} with a '
+                              'RotatedPole projection.'.format(crs))
+            elif hasattr(crs, 'is_geodetic') and crs.is_geodetic():
+                proj = ccrs.PlateCarree()
+                warnings.warn('Approximating coordinate system {!r} with the '
+                              'PlateCarree projection.'.format(crs))
             else:
                 raise ValueError('Cannot determine extent in'
                                  ' coordinate system {!r}'.format(crs))
