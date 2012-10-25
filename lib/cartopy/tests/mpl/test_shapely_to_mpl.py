@@ -99,11 +99,11 @@ def test_contour_interiors():
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
     
-    plt.subplot(222, projection=ccrs.PlateCarree())
+    plt.subplot(222, projection=ccrs.Robinson())
     plt.title("Non-native projection")
     ax = plt.gca()
     ax.set_global()
-    plt.contourf(lons, lats, data, numlev, transform=ccrs.Geodetic())
+    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()    
     
     ############## produces singular polygons (zero area polygons)
@@ -121,12 +121,11 @@ def test_contour_interiors():
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()    
     
-    plt.subplot(224, projection=ccrs.PlateCarree())
+    plt.subplot(224, projection=ccrs.Robinson())
     plt.title("Non-native projection")
     ax = plt.gca()
     ax.set_global()
-    cs = plt.contourf(lons, lats, data, numlev, transform=ccrs.Geodetic())
-    
+    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()    
 
 
