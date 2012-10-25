@@ -266,9 +266,6 @@ class Projection(CRS):
         for multi_line_string in multi_line_strings:
             line_strings.extend(multi_line_string)
 
-        # remove any small lines which do not make up part of a polygon
-        line_strings = filter(lambda line_string: len(line_string.coords) > 2, line_strings)
-
         # Record the positions of all the segment ends
         for i, line_string in enumerate(line_strings):
             first_dist = boundary_distance(line_string.coords[0])
@@ -342,6 +339,9 @@ class Projection(CRS):
                         coords_to_append = coords_to_append[::-1]
                     line_string = sgeom.LineString(list(line_string.coords) + coords_to_append)
 
+        # filter out any non-valid linear rings
+        done = filter(lambda linear_ring: len(linear_ring.coords) > 2, done)
+        
         # XXX Is the last point in each ring actually the same as the first?
         linear_rings = [LinearRing(line) for line in done]
 
