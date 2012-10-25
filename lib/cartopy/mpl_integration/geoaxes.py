@@ -493,6 +493,102 @@ class GeoAxes(matplotlib.axes.Axes):
         self.set_xlim(self.projection.x_limits)
         self.set_ylim(self.projection.y_limits)
 
+    def set_xticks(self, ticks, minor=False, crs=None):
+        """
+        Set the x ticks.
+
+        Args:
+
+            * ticks - list of floats denoting the desired position of x ticks.
+
+        Kwargs:
+
+            * minor - boolean flag indicating whether the ticks should be minor
+                      ticks i.e. small and unlabelled (default is False).
+
+            * crs - An instance of :class:`~cartopy.crs.CRS` indicating the
+                    coordinate system of the provided tick values. If no
+                    coordinate system is specified then the values are assumed
+                    to be in the coordinate system of the projection.
+
+        .. note::
+
+            This method is limited to cylindrical projections.
+
+        .. note::
+
+            This interface is subject to change whilst functionality is added
+            to support other map projections.
+
+        """
+        if not isinstance(self.projection, (ccrs._RectangularProjection,
+                                            ccrs._CylindricalProjection,
+                                            ccrs.OSGB)):
+            raise RuntimeError('Cannot set xticks for not-cylindrical '
+                               'coordinate systems.')
+
+        # Switch on drawing of x axis
+        self.xaxis.set_visible(True)
+
+        # Project ticks if crs differs from axes' projection
+        if crs is not None and crs != self.projection:
+            proj_xyz = self.projection.transform_points(crs,
+                                                        numpy.asarray(ticks),
+                                                        numpy.zeros(len(ticks)))
+            xticks = proj_xyz[..., 0]
+        else:
+            xticks = ticks
+
+        return super(GeoAxes, self).set_xticks(xticks, minor)
+
+    def set_yticks(self, ticks, minor=False, crs=None):
+        """
+        Set the y ticks.
+
+        Args:
+
+            * ticks - list of floats denoting the desired position of y ticks.
+
+        Kwargs:
+
+            * minor - boolean flag indicating whether the ticks should be minor
+                      ticks i.e. small and unlabelled (default is False).
+
+            * crs - An instance of :class:`~cartopy.crs.CRS` indicating the
+                    coordinate system of the provided tick values. If no
+                    coordinate system is specified then the values are assumed
+                    to be in the coordinate system of the projection.
+
+        .. note::
+
+            This method is limited to cylindrical projections.
+
+        .. note::
+
+            This interface is subject to change whilst functionality is added
+            to support other map projections.
+
+        """
+        if not isinstance(self.projection, (ccrs._RectangularProjection,
+                                            ccrs._CylindricalProjection,
+                                            ccrs.OSGB)):
+            raise RuntimeError('Cannot set yticks for non-cylindrical '
+                               'coordinate systems.')
+
+        # Switch on drawing of y axis
+        self.yaxis.set_visible(True)
+
+        # Project ticks if crs differs from axes' projection
+        if crs is not None and crs != self.projection:
+            proj_xyz = self.projection.transform_points(crs,
+                                                        numpy.zeros(len(ticks)),
+                                                        numpy.asarray(ticks))
+            yticks = proj_xyz[..., 1]
+        else:
+            yticks = ticks
+
+        return super(GeoAxes, self).set_yticks(yticks, minor)
+
 #    def geod_circle_meters(self, lon_0, lat_0, radius, npts=80, **kwargs):
 #        # radius is in meters
 #        geod = self.projection.as_geodetic()
