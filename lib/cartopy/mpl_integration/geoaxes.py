@@ -21,6 +21,7 @@ When a matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.
 
 """ 
+import warnings
 import weakref
 
 import matplotlib.axes
@@ -450,11 +451,35 @@ class GeoAxes(matplotlib.axes.Axes):
             x1, x2 = self.projection.x_limits
             y1, y2 = self.projection.y_limits
         
-        domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
-                                                     [x2, y2], [x1, y2], [x1, y1]])
-        
-        if self.projection != crs:
-            domain_in_crs = self.projection.project_geometry(domain_in_crs, crs)
+        domain_in_src_proj = shapely.geometry.LineString([[x1, y1], [x2, y1],
+                                                          [x2, y2], [x1, y2],
+                                                          [x1, y1]])
+
+        # Determine target projection based on requested CRS.
+        if crs is None:
+            proj = self.projection
+        elif isinstance(crs, ccrs.Projection):
+            proj = crs
+        else:
+            # Attempt to select suitable projection for
+            # non-projection CRS.
+            if isinstance(crs, ccrs.RotatedGeodetic):
+                proj = ccrs.RotatedPole(crs.proj4_params['lon_0'] - 180,
+                                        crs.proj4_params['o_lat_p'])
+                warnings.warn('Approximating coordinate system {!r} with a '
+                              'RotatedPole projection.'.format(crs))
+            elif hasattr(crs, 'is_geodetic') and crs.is_geodetic():
+                proj = ccrs.PlateCarree()
+                warnings.warn('Approximating coordinate system {!r} with the '
+                              'PlateCarree projection.'.format(crs))
+            else:
+                raise ValueError('Cannot determine extent in'
+                                 ' coordinate system {!r}'.format(crs))
+
+        if proj != self.projection:
+            domain_in_crs = proj.project_geometry(domain_in_src_proj, self.projection)
+        else:
+            domain_in_crs = domain_in_src_proj
         
         return domain_in_crs
         
@@ -471,7 +496,7 @@ class GeoAxes(matplotlib.axes.Axes):
         x1, x2, y1, y2 = extents
         domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
                                                      [x2, y2], [x1, y2], [x1, y1]])
-    
+
         r = self.projection.project_geometry(domain_in_crs, crs)
         x1, y1, x2, y2 = r.bounds
         self.set_xlim([x1, x2])
