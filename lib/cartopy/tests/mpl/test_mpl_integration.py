@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+import warnings
 
 from nose.tools import assert_equal
 import numpy as np
@@ -182,8 +183,17 @@ def test_axes_natural_earth_interface():
     
     ax = plt.axes(projection=rob)
     
-    ax.natural_earth_shp('rivers-lake-centerlines', edgecolor='black', facecolor='none')
-    ax.natural_earth_shp('lakes', facecolor='blue')
+    with warnings.catch_warnings(record=True) as all_warnings:
+        warnings.simplefilter('always')
+
+        ax.natural_earth_shp('rivers-lake-centerlines', edgecolor='black', facecolor='none')
+        ax.natural_earth_shp('lakes', facecolor='blue')
+
+    assert_equal(len(all_warnings), 2)
+    for warning in all_warnings:
+        msg = str(warning.message)
+        assert 'deprecated' in msg
+        assert 'add_feature' in msg
 
 
 if __name__=='__main__':
