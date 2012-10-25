@@ -1,6 +1,7 @@
 .. toctree::
     :hidden:
 
+    whats_new.rst
     who_uses_cartopy.rst
     building_from_source/index.rst
     matplotlib/intro.rst
@@ -44,6 +45,8 @@ Getting started
 To start using cartopy with matplotlib see the :doc:`matplotlib/intro` section.
 
 Short :doc:`step-by-step examples <matplotlib/introductory_examples/index>` are also available.
+
+Also, check out our :doc:`what's new <whats_new>` page.
 
 
 Getting involved
