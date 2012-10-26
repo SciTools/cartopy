@@ -48,7 +48,6 @@ class Img(collections.namedtuple('Img', ['filename', 'extent', 'origin', 'pixel_
         return super(Img, cls).__new__(cls, *new_args, **new_kwargs)
 
     def __init__(self, *args, **kwargs):
-        r = super(Img, self).__init__(self, *args, **kwargs)
         self._bbox = None
 
     def bbox(self):
