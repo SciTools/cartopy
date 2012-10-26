@@ -912,10 +912,12 @@ class GeoAxes(matplotlib.axes.Axes):
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
 
                 # compute the vertical line angles of the pcolor in transformed coordinates
-                horizontal_vert_angles = numpy.arctan2(
-                                                        numpy.diff(transformed_pts[..., 0], axis=1),
-                                                        numpy.diff(transformed_pts[..., 1], axis=1)
-                                                        )
+                with numpy.errstate(invalid='ignore'):
+                    horizontal_vert_angles = numpy.arctan2(
+                                                            numpy.diff(transformed_pts[..., 0], axis=1),
+                                                            numpy.diff(transformed_pts[..., 1], axis=1)
+                                                            )
+                    
                 # if the change in angle is greater than 90 degrees (absolute), then mark
                 # it for masking later on.
                 to_mask = (numpy.abs(numpy.diff(horizontal_vert_angles)) > numpy.pi/2) | \
