@@ -339,6 +339,9 @@ class Projection(CRS):
                         coords_to_append = coords_to_append[::-1]
                     line_string = sgeom.LineString(list(line_string.coords) + coords_to_append)
 
+        # filter out any non-valid linear rings
+        done = filter(lambda linear_ring: len(linear_ring.coords) > 2, done)
+        
         # XXX Is the last point in each ring actually the same as the first?
         linear_rings = [LinearRing(line) for line in done]
 
