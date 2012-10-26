@@ -724,7 +724,10 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs.setdefault('transform', t)
+        if isinstance(t, ccrs.Projection):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        else:
+            kwargs['transform'] = t
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -745,7 +748,10 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs.setdefault('transform', t)
+        if isinstance(t, ccrs.Projection):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        else:
+            kwargs['transform'] = t
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
