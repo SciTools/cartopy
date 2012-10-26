@@ -375,8 +375,7 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             geoms = _NATURAL_EARTH_GEOM_CACHE[key]
         
-        return self.add_geometries(geoms, ccrs.Geodetic(), 
-                                   **kwargs)
+        return self.add_geometries(geoms, ccrs.PlateCarree(), **kwargs)
         
     def add_geometries(self, geoms, crs, **collection_kwargs):
         """
