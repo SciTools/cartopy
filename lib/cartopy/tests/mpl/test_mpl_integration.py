@@ -186,6 +186,124 @@ def test_axes_natural_earth_interface():
     ax.natural_earth_shp('lakes', facecolor='blue')
 
 
+@image_comparison(baseline_images=['pcolormesh_global_wrap1'])
+def test_pcolormesh_global_with_wrap1():
+    # make up some realistic data with bounds (such as data from the UM)
+    nx, ny = 36, 18
+    xbnds = np.linspace(0, 360, nx, endpoint=True)
+    ybnds = np.linspace(-90, 90, ny, endpoint=True)
+
+    x, y = np.meshgrid(xbnds, ybnds)
+    data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data = data[:-1, :-1]
+
+    ax = plt.subplot(211,projection=ccrs.PlateCarree())
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global() # make sure everything is visible
+
+    ax = plt.subplot(212, projection=ccrs.PlateCarree(180))
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global() # make sure everything is visible
+
+
+@image_comparison(baseline_images=['pcolormesh_global_wrap2'])
+def test_pcolormesh_global_with_wrap2():
+    # make up some realistic data with bounds (such as data from the UM)
+    nx, ny = 36, 18
+    xbnds, xstep = np.linspace(0, 360, nx-1, retstep=True, endpoint=True)
+    ybnds, ystep = np.linspace(-90, 90, nx-1, retstep=True, endpoint=True)
+    xbnds -= xstep/2
+    ybnds -= ystep/2
+    xbnds = np.append(xbnds, xbnds[-1] + xstep)
+    ybnds = np.append(ybnds, ybnds[-1] + ystep)
+
+    x, y = np.meshgrid(xbnds, ybnds)
+    data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data = data[:-1, :-1]
+
+    ax = plt.subplot(211,projection=ccrs.PlateCarree())
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global() # make sure everything is visible
+
+    ax = plt.subplot(212, projection=ccrs.PlateCarree(180))
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global() # make sure everything is visible
+
+
+@image_comparison(baseline_images=['pcolormesh_global_wrap3'])
+def test_pcolormesh_global_with_wrap3():
+    nx, ny = 33, 17
+    xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
+    ybnds = np.linspace(91.25, -91.25, ny, endpoint=True)
+    xbnds, ybnds = np.meshgrid(xbnds, ybnds)
+
+    data = np.exp(np.sin(np.deg2rad(xbnds)) + np.cos(np.deg2rad(ybnds)))
+
+    # this step is not necessary, but makes the plot even harder to do (i.e.
+    # it really puts cartopy through its paces)
+    ybnds = np.append(ybnds, ybnds[:, 1:2], axis=1)
+    xbnds = np.append(xbnds, xbnds[:, 1:2] + 360, axis=1)
+    data = np.ma.concatenate([data, data[:, 0:1]], axis=1)
+
+    data = data[:-1, :-1]
+    data = np.ma.masked_greater(data, 2.6)
+
+
+    ax = plt.subplot(211, projection=ccrs.PlateCarree(-45))
+    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    assert c._wrapped_collection_fix is not None, \
+                'No pcolormesh wrapping was done when it should have been.'
+
+    ax.coastlines()
+    ax.set_global() # make sure everything is visible
+
+    ax = plt.subplot(212, projection=ccrs.PlateCarree(-1.87499952))
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global() # make sure everything is visible
+
+
+@image_comparison(baseline_images=['pcolormesh_limited_area_wrap'])
+def test_pcolormesh_limited_area_wrap():
+    # make up some realistic data with bounds (such as data from the UM's North
+    # Atlantic Europe model)
+    nx, ny = 22, 36
+    xbnds = np.linspace(311.91998291, 391.11999512, nx, endpoint=True)
+    ybnds = np.linspace(-23.59000015, 24.81000137, ny, endpoint=True)
+    x, y = np.meshgrid(xbnds, ybnds)
+    data = ((np.sin(np.deg2rad(x)))/10. + np.exp(np.cos(np.deg2rad(y))))
+    data = data[:-1, :-1]
+
+    rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
+
+    plt.figure(figsize=(10, 6))
+
+    ax = plt.subplot(221,projection=ccrs.PlateCarree())
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    ax.coastlines()
+
+    ax = plt.subplot(222, projection=ccrs.PlateCarree(180))
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    ax.coastlines()
+    ax.set_global()
+
+    # draw the same plot, only more zoomed in, and using the 2d versions
+    # of the coordinates (just to test that 1d and 2d are both suitably
+    # being fixed)
+    ax = plt.subplot(223, projection=ccrs.PlateCarree(180))
+    plt.pcolormesh(x, y, data, transform=rp, cmap='Set1')
+    ax.coastlines()
+    ax.set_extent([-70, 0, 0, 80])
+
+    ax = plt.subplot(224, projection=rp)
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    ax.coastlines()
+
+
 if __name__=='__main__':
     import nose
     nose.runmodule(argv=['-s','--with-doctest'], exit=False)
