@@ -36,6 +36,7 @@ import shapely.geometry
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
+import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as patch
 
 
@@ -55,19 +56,6 @@ Provides a significant performance boost for contours which, at
 matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
 """
-
-_GEOMETRY_TO_PATH_CACHE = weakref.WeakKeyDictionary()
-"""
-A nested mapping from geometry, source CRS, and target projection to the
-resulting transformed paths::
-
-    {geom: {(source_crs, target_projection): list_of_paths}}
-
-This provides a significant boost when producing multiple maps of the
-same projection.
-
-"""
-
 
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
@@ -352,7 +340,7 @@ class GeoAxes(matplotlib.axes.Axes):
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
         feature = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
-                                                      resolution, kwargs)
+                                                      resolution, **kwargs)
         return self.add_feature(feature)
 
     def natural_earth_shp(self, name='land', resolution='110m',
@@ -379,89 +367,53 @@ class GeoAxes(matplotlib.axes.Axes):
         kwargs.setdefault('edgecolor', 'face')
         kwargs.setdefault('facecolor', cartopy.feature._COLOURS['land'])
         feature = cartopy.feature.NaturalEarthFeature(category, name,
-                                                      resolution, kwargs)
+                                                      resolution, **kwargs)
         return self.add_feature(feature)
 
     def add_feature(self, feature, **kwargs):
         """
-        Adds the shapes represented by a given feature.
+        Adds the given :class:`~cartopy.feature.Feature` instance to the axes.
 
         Args:
 
         * feature:
-            An instance of :class:`~iris.feature.Feature`.
+            An instance of :class:`~cartopy.feature.Feature`.
 
-        Other keyword arguments are used in the construction of the
-        :class:`~matplotlib.collections.PathCollection` which is used
-        to render the result, thus allowing standard matplotlib control
-        over aspects such as 'facecolor', 'alpha', etc.
+        Kwargs:
+            Keyword arguments to be used when drawing the feature. This allows
+            standard matplotlib control over aspects such as 'facecolor',
+            'alpha', etc.
 
         Returns:
-
-            * A :class:`matplotlib.collections.PathCollection`.
-
-        """
-        # PLACEHOLDER implementation until we have SmartFeatures(tm)
-        # which are subclasses of Artist, with pan/zoom-sensitive,
-        # on-draw behaviour.
-        final_kwargs = feature.kwargs
-        final_kwargs.update(kwargs)
-        return self.add_geometries(feature.geometries(), feature.crs,
-                                   **final_kwargs)
-
-    def add_geometries(self, geoms, crs, **collection_kwargs):
-        """
-        Add the given shapely geometries (in the given crs) to the axes as
-        a :class:`~matplotlib.collections.PathCollection`.
+            * A :class:`cartopy.mpl_integration.feature_artist.FeatureArtist`
+            instance responsible for drawing the feature.
 
         """
-        paths = []
-        key = (crs, self.projection)
-        for geom in geoms:
-            mapping = _GEOMETRY_TO_PATH_CACHE.setdefault(geom, {})
-            geom_paths = mapping.get(key)
-            if geom_paths is None:
-                projected = self.projection.project_geometry(geom, crs)
-                geom_paths = patch.geos_to_path(projected)
-                mapping[key] = geom_paths
-            paths.extend(geom_paths)
+        # Instantiate an artist to draw the feature and add it to the axes.
+        artist = feature_artist.FeatureArtist(feature, **kwargs)
+        return self.add_artist(artist)
 
-        c = mcollections.PathCollection(paths, transform=self.projection,
-                                        **collection_kwargs)
-        self.add_collection(c, autolim=False)
+    def add_geometries(self, geoms, crs, **kwargs):
+        """
+        Add the given shapely geometries (in the given crs) to the axes.
 
-        return c
+        Args:
 
-#    def gshhs(self, outline_color='k', land_fill='green', ocean_fill='None',
-#              resolution='coarse', domain=None):
-#        import cartopy.gshhs as gshhs
-#        from matplotlib.collections import PatchCollection
-#
-#        if ocean_fill is not None and land_fill is None:
-#            land_fill = self.outline_patch.get_facecolor()
-#
-#        if domain is None:
-#            domain = self.ll_boundary_poly()
-#
-#        paths = []
-#        for points in gshhs.read_gshhc(gshhs.fnames[resolution],
-#                                       poly=True, domain=domain):
-#            # XXX Sometimes we only want to do lines...
-#            poly = shapely.geometry.Polygon(points[::-1, :])
-#            projected = self.projection.project_polygon(poly)
-#
-#            paths.extend(patch.geos_to_path(projected))
-#
-#        if ocean_fill is not None:
-#            self.outline_patch.set_facecolor(ocean_fill)
-#
-#        collection = PatchCollection([mpatches.PathPatch(pth)
-#                                      for pth in paths],
-#                                     edgecolor=outline_color,
-#                                     facecolor=land_fill,
-#                                     zorder=2,
-#                                     )
-#        self.add_collection(collection, autolim=False)
+        * geoms:
+            A collection of shapely geometries.
+        * crs:
+            The cartopy CRS in which the provided geometries are defined.
+
+        Kwargs:
+            Keyword arguments to be used when drawing this feature.
+
+        Returns:
+             * A :class:`cartopy.mpl_integration.feature_artist.FeatureArtist`
+             instance responsible for drawing the geometries.
+
+        """
+        feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
+        return self.add_feature(feature)
 
     def get_extent(self, crs=None):
         """
@@ -485,10 +437,10 @@ class GeoAxes(matplotlib.axes.Axes):
         if x1 == 0 and y1 == 0 and x2 == 1 and y2 == 1:
             x1, x2 = self.projection.x_limits
             y1, y2 = self.projection.y_limits
-
-        domain_in_src_proj = shapely.geometry.LineString([[x1, y1], [x2, y1],
-                                                          [x2, y2], [x1, y2],
-                                                          [x1, y1]])
+        
+        domain_in_src_proj = shapely.geometry.Polygon([[x1, y1], [x2, y1],
+                                                       [x2, y2], [x1, y2],
+                                                       [x1, y1]])
 
         # Determine target projection based on requested CRS.
         if crs is None:
@@ -511,14 +463,19 @@ class GeoAxes(matplotlib.axes.Axes):
                 raise ValueError('Cannot determine extent in'
                                  ' coordinate system {!r}'.format(crs))
 
+
+        # Calculate intersection with boundary and project if necesary.
+        boundary_poly = shapely.geometry.Polygon(self.projection.boundary)
         if proj != self.projection:
-            domain_in_crs = proj.project_geometry(domain_in_src_proj,
-                                                  self.projection)
+            # Erode boundary by threshold to avoid transform issues.
+            eroded_boundary_poly = boundary_poly.buffer(-self.projection.threshold)
+            geom_in_src_proj = eroded_boundary_poly.intersection(domain_in_src_proj)
+            geom_in_crs = proj.project_geometry(geom_in_src_proj, self.projection)
         else:
-            domain_in_crs = domain_in_src_proj
+            geom_in_crs = boundary_poly.intersection(domain_in_src_proj)
 
-        return domain_in_crs
-
+        return geom_in_crs
+        
     def set_extent(self, extents, crs=None):
         """
         Set the extent (x0, x1, y0, y1) of the map in the given
