@@ -33,7 +33,7 @@ def test_extents():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_extent(uk, crs=uk_crs)
 #    ax.coastlines() # <- enable to see what is going on (and to make sure it is a plot of the uk)
-    assert_array_almost_equal(ax.viewLim.get_points(), np.array([[-12.5,  49. ], [  4. ,  60. ]]))
+    assert_array_almost_equal(ax.viewLim.get_points(), np.array([[-12.5, 49.], [4. , 60.]]))
     
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
     ax.set_extent(uk, crs=uk_crs)
@@ -57,43 +57,43 @@ def test_update_lim():
     # check that the standard data lim setting works
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.update_datalim([(-10, -10), (-5, -5)])
-    assert_array_almost_equal(ax.dataLim.get_points(), np.array([[-10., -10.], [ -5.,  -5.]]))
+    assert_array_almost_equal(ax.dataLim.get_points(), np.array([[-10., -10.], [-5., -5.]]))
     plt.close()
 
 def test_limits_contour():
     xs, ys = np.meshgrid(np.linspace(250, 350, 15), np.linspace(-45, 45, 20))
-    data = np.sin((xs * ys)*1.e7)
+    data = np.sin((xs * ys) * 1.e7)
     
-    resulting_extent = np.array([[-110.,  -45.], [ -10.,   45.]])
+    resulting_extent = np.array([[250 - 180, -45.], [-10. + 180, 45.]])
     
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.contourf(xs, ys, data, transform=ccrs.Geodetic())
+    plt.contourf(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
     plt.close()
     
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.contour(xs, ys, data, transform=ccrs.Geodetic())
+    plt.contour(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
     plt.close()
     
     
 def test_limits_pcolor():
     xs, ys = np.meshgrid(np.linspace(250, 350, 15), np.linspace(-45, 45, 20))
-    data = (np.sin((xs * ys)*1.e7))[:-1, :-1]
+    data = (np.sin((xs * ys) * 1.e7))[:-1, :-1]
     
-    resulting_extent = np.array([[-110.,  -45.], [ -10.,   45.]])
+    resulting_extent = np.array([[250 - 180, -45.], [-10. + 180, 45.]])
     
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.pcolor(xs, ys, data, transform=ccrs.Geodetic())
+    plt.pcolor(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
     plt.close()
     
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.pcolormesh(xs, ys, data, transform=ccrs.Geodetic())
+    plt.pcolormesh(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
     plt.close()
 
