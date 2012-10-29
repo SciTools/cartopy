@@ -16,7 +16,6 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection

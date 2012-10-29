@@ -17,9 +17,6 @@
 
 from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
-import numpy as np
-from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
-import matplotlib.pyplot as plt
 import shapely.geometry
 
 import cartopy.crs as ccrs
