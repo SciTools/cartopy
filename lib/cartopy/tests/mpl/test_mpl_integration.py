@@ -186,7 +186,7 @@ def test_axes_natural_earth_interface():
     ax.natural_earth_shp('lakes', facecolor='blue')
 
 
-@image_comparison(baseline_images=['pcolormesh_global_wrap1'])
+@ImageTesting(['pcolormesh_global_wrap1'])
 def test_pcolormesh_global_with_wrap1():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -208,7 +208,7 @@ def test_pcolormesh_global_with_wrap1():
     ax.set_global() # make sure everything is visible
 
 
-@image_comparison(baseline_images=['pcolormesh_global_wrap2'])
+@ImageTesting(['pcolormesh_global_wrap2'])
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -234,7 +234,7 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global() # make sure everything is visible
 
 
-@image_comparison(baseline_images=['pcolormesh_global_wrap3'])
+@ImageTesting(['pcolormesh_global_wrap3'])
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -267,7 +267,7 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global() # make sure everything is visible
 
 
-@image_comparison(baseline_images=['pcolormesh_limited_area_wrap'])
+@ImageTesting(['pcolormesh_limited_area_wrap'])
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
