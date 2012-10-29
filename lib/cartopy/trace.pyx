@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>. 
 
+"""
+This module pulls together _trace.cpp, proj.4, GEOS and _crs.pyx to implement a function
+to project a LinearRing/LineString. In general, this should never be called manually,
+instead leaving the processing to be done by the :class:`cartopy.crs.Projection`
+subclasses.
+"""
 
 cdef extern from "geos_c.h":
     ctypedef void *GEOSContextHandle_t
@@ -60,11 +66,13 @@ cdef GEOSContextHandle_t get_geos_context_handle():
 
 
 cdef GEOSGeometry *geos_from_shapely(shapely_geom) except *:
+    """Get the GEOS pointer from the given shapely geometry."""
     cdef ptr geos_geom = shapely_geom._geom
     return <GEOSGeometry *>geos_geom
 
 
 cdef shapely_from_geos(GEOSGeometry *geom):
+    """Turn the given GEOS geometry pointer into a shapely geometry."""
     # This is the "correct" way to do it...
     #   return geom_factory(<ptr>geom)
     # ... but it's quite slow, so we do it by hand.

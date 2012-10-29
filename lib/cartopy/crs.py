@@ -110,12 +110,6 @@ class Projection(CRS):
     def _as_mpl_axes(self):
         import cartopy.mpl_integration.geoaxes as geoaxes
         return geoaxes.GeoAxes, {'map_projection': self}
-    
-    def _as_mpl_transform(self, axes=None):
-        import cartopy.mpl_integration.geoaxes as geoaxes
-        if not isinstance(axes, geoaxes.GeoAxes):
-            raise ValueError('Axes should be an instance of GeoAxes, got %s' % type(axes))
-        return geoaxes.InterProjectionTransform(self, axes.projection) + axes.transData
         
     def project_geometry(self, geometry, src_crs=None):
         """
