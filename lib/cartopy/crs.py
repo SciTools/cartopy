@@ -23,13 +23,14 @@ between them.
 """
 from abc import ABCMeta, abstractproperty
 import math
+import warnings
 
 import numpy
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
 from shapely.prepared import prep
 
-from cartopy._crs import CRS, Geocentric, Geodetic
+from cartopy._crs import CRS, Geocentric, Geodetic, PROJ4_RELEASE
 import cartopy.trace
 
 
@@ -730,6 +731,22 @@ class Mollweide(_WarpedRectangularProjection):
 
 class Robinson(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0):
+        # Disable Robinson when using proj4 4.8 due to discontinuity at
+        # 40 deg N introduced by incomplete fix to issue #113 (see
+        # https://trac.osgeo.org/proj/ticket/113).
+        import re
+        match = re.search(r"\d\.\d", PROJ4_RELEASE)
+        if match is not None:
+            proj4_version = float(match.group())
+            if proj4_version >= 4.8:
+                raise RuntimeError('The Robinson projection is disabled '
+                                   'when using Proj.4 version 4.8.0 '
+                                   'or later.')
+        else:
+            warnings.warn('Cannot determine Proj.4 version. The Robinson '
+                          'projection may be unreliable and should be used '
+                          'with caution.')
+
         proj4_params = {'proj': 'robin', 'lon_0': central_longitude}
         super(Robinson, self).__init__(proj4_params, central_longitude)
 
