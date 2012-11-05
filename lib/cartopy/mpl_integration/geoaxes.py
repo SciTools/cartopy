@@ -525,12 +525,15 @@ class GeoAxes(matplotlib.axes.Axes):
         coordinate system.
 
         If no crs is given, the extents' coordinate system will be assumed
-        to be the Geodetic version of this axes' projection.
+        to be this axes' projection.
 
         """
         # TODO: Implement the same semantics as plt.xlim and
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
+        if crs is None:
+            crs = self.projection
+
         x1, x2, y1, y2 = extents
         domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
                                                      [x2, y2], [x1, y2],
