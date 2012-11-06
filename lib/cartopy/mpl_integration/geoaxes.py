@@ -468,8 +468,8 @@ class GeoAxes(matplotlib.axes.Axes):
         Get the extent (x0, x1, y0, y1) of the map in the given coordinate
         system.
 
-        If no crs is given, the returned extents' coordinate system will be
-        assumed to be the Geodetic version of this axes' projection.
+        If not crs is given, the returned extent will be in this projection's
+        native coordinate system.
 
         """
         p = self._get_extent_geom(crs)
