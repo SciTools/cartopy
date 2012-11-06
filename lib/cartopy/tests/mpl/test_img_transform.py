@@ -16,6 +16,7 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 import operator
+import os
 import unittest
 
 import matplotlib
@@ -81,15 +82,17 @@ class TestRegrid(unittest.TestCase):
                                target_proj, target_x, target_y)
 
 
-@ImageTesting(['regrid_blue_marble'])
-def test_regrid_blue_marble_img():
+@ImageTesting(['regrid_image'])
+def test_regrid_image():
     # Source data
-    filename = '/data/local/dataZoo/cartography/raster/blue_marble_720_360.png'
+    fname = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
+                         'data', 'raster', 'natural_earth',
+                         '50-natural-earth-1-downsampled.png')
     nx = 720
     ny = 360
     source_proj = ccrs.PlateCarree()
     source_x, source_y, source_extent = cartopy.img_transform.mesh_projection(source_proj, nx, ny)
-    data = plt.imread(filename)
+    data = plt.imread(fname)
     # Flip vertically to match source_x/source_y orientation
     data = data[::-1]
 

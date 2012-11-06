@@ -77,7 +77,7 @@ def test_web_tiles():
 
 
 
-@ImageTesting(['image_nest'])
+@ImageTesting(['image_nest'], tolerance=17)
 def test_image_nest():
     nest_z0_z1 = ctest_nest.gen_nest()
 

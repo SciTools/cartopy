@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+stdout_tmp=/tmp/output.stdout.txt
+stderr_tmp=/tmp/output.stderr.txt
+
+eval $@ > $stdout_tmp 2> $stderr_tmp
+
+result=$?
+if [[ $result -ne 0 ]] ; then
+  echo "Failed (exit code $result)"
+  cat $stderr_tmp > /dev/stderr
+  cat $stdout_tmp > /dev/stdout
+fi;
+
+exit $result
+
