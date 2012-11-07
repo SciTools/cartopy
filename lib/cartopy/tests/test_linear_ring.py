@@ -64,24 +64,25 @@ class TestBoundary(unittest.TestCase):
 
         rings = [
             # All valid
-            ([(86, -1), (86, 1), (88, 1), (88, -1)], 1),
+            ([(86, 1), (86, -1), (88, -1), (88, 1)], -1),
             # One NaN
-            ([(86, -1), (86, 1), (130, 1), (88, -1)], 1),
+            ([(86, 1), (86, -1), (130, -1), (88, 1)], 1),
             # A NaN segment
-            ([(86, -1), (86, 1), (130, 1), (130, -1)], 1),
+            ([(86, 1), (86, -1), (130, -1), (130, 1)], 1),
             # All NaN
-            ([(120, -1), (120, 1), (130, 1), (130, -1)], 0),
+            ([(120, 1), (120, -1), (130, -1), (130, 1)], 0),
         ]
 
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords, expected_n_lines in rings:
             linear_ring = geometry.polygon.LinearRing(coords)
-            multi_line_string = projection.project_geometry(linear_ring)
-            if expected_n_lines == 1:
-                assert_is_instance(multi_line_string, (geometry.polygon.LinearRing,
-                                                       geometry.MultiLineString))
+            projected = projection.project_geometry(linear_ring)
+            if expected_n_lines == -1:
+                self.assertIsInstance(projected, geometry.polygon.LinearRing)
             else:
-                assert multi_line_string.is_empty
+                self.assertEqual(len(projected), expected_n_lines)
+                if expected_n_lines == 0:
+                    self.assertTrue(projected.is_empty)
 
 
 class TestMisc(unittest.TestCase):

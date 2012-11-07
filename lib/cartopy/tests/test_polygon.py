@@ -79,9 +79,9 @@ class TestMisc(unittest.TestCase):
     def test_small(self):
         projection = ccrs.Mercator()
         polygon = sgeom.Polygon([
-            (-179.9173693847652942, -16.5017831356493616),
-            (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
+            (-180.0000000000000000, -16.0671326636424396),
+            (-179.9173693847652942, -16.5017831356493616),
             ])
         multi_polygon = projection.project_geometry(polygon)
         self.assertEqual(len(multi_polygon), 1)
@@ -118,9 +118,9 @@ class TestQuality(unittest.TestCase):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
                                       pole_latitude=37.5)
         polygon = sgeom.Polygon([
-            (175.0, -57.19913331),
             (177.5, -57.38460319),
             (180.0, -57.445077),
+            (175.0, -57.19913331),
             ])
         self.multi_polygon = projection.project_geometry(polygon)
         #from cartopy.tests import show
@@ -205,11 +205,16 @@ class TestWrap(PolygonTests):
         self._assert_bounds(polygon.bounds, -160, 0, -140, 10)
 
 
+def ring(minx, miny, maxx, maxy, ccw):
+    box = sgeom.box(minx, miny, maxx, maxy, ccw)
+    return numpy.array(box.exterior.coords)
+
+
 class TestHoles(PolygonTests):
     def test_simple(self):
         proj = ccrs.PlateCarree()
-        poly = sgeom.Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
-                       [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
+        poly = sgeom.Polygon(ring(-40, -40, 40, 40, True),
+                             [ring(-20, -20, 20, 20, False)])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -221,24 +226,24 @@ class TestHoles(PolygonTests):
 
     def test_wrapped_poly_simple_hole(self):
         proj = ccrs.PlateCarree(-150)
-        poly = sgeom.Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
-                       [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
+        poly = sgeom.Polygon(ring(-40, -40, 40, 40, True),
+                             [ring(-20, -20, 20, 20, False)])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 2)
-        self.assertEqual(len(multi_polygon[0].interiors), 0)
-        self.assertEqual(len(multi_polygon[1].interiors), 1)
+        self.assertEqual(len(multi_polygon[0].interiors), 1)
+        self.assertEqual(len(multi_polygon[1].interiors), 0)
         # Check the rough shape
         polygon = multi_polygon[0]
-        self._assert_bounds(polygon.bounds, -180, -43, -170, 43)
-        polygon = multi_polygon[1]
         self._assert_bounds(polygon.bounds, 110, -47, 180, 47)
         self._assert_bounds(polygon.interiors[0].bounds, 130, -21, 170, 21)
+        polygon = multi_polygon[1]
+        self._assert_bounds(polygon.bounds, -180, -43, -170, 43)
 
     def test_wrapped_poly_wrapped_hole(self):
         proj = ccrs.PlateCarree(-180)
-        poly = sgeom.Polygon([(-40, 40), (40, 40), (40, -40), (-40, -40)],
-                       [[(-20, 20), (-20, -20), (20, -20), (20, 20)]])
+        poly = sgeom.Polygon(ring(-40, -40, 40, 40, True),
+                             [ring(-20, -20, 20, 20, False)])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 2)
@@ -246,14 +251,14 @@ class TestHoles(PolygonTests):
         self.assertEqual(len(multi_polygon[1].interiors), 0)
         # Check the rough shape
         polygon = multi_polygon[0]
-        self._assert_bounds(polygon.bounds, -180, -47, -140, 47)
-        polygon = multi_polygon[1]
         self._assert_bounds(polygon.bounds, 140, -47, 180, 47)
+        polygon = multi_polygon[1]
+        self._assert_bounds(polygon.bounds, -180, -47, -140, 47)
 
     def test_inverted_poly_simple_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = sgeom.Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
-                       [[(0, -30), (-90, -30), (-180, -30), (-270, -30)]])
+        poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
+                             [[(0, -30), (90, -30), (180, -30), (270, -30)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -266,8 +271,8 @@ class TestHoles(PolygonTests):
 
     def test_inverted_poly_clipped_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = sgeom.Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
-                       [[(135, -60), (45, -60), (-45, -60), (-135, -60)]])
+        poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
+                             [[(-135, -60), (-45, -60), (45, -60), (135, -60)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -281,8 +286,8 @@ class TestHoles(PolygonTests):
 
     def test_inverted_poly_removed_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = sgeom.Polygon([(0, 0), (90, 0), (180, 0), (270, 0)],
-                       [[(135, -75), (45, -75), (-45, -75), (-135, -75)]])
+        poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
+                             [[(-135, -75), (-45, -75), (45, -75), (135, -75)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -295,11 +300,8 @@ class TestHoles(PolygonTests):
         self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
 
     def test_multiple_interiors(self):
-        exterior = numpy.array(sgeom.box(0, 0, 12, 12).exterior.coords)
-        interiors = [
-                     numpy.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
-                     numpy.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords),
-                     ]
+        exterior = ring(0, 0, 12, 12, True)
+        interiors = [ring(1, 1, 2, 2, False), ring(1, 8, 2, 9, False)]
 
         poly = sgeom.Polygon(exterior, interiors)
 

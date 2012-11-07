@@ -27,6 +27,7 @@ import math
 import numpy
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
+from shapely.prepared import prep
 
 from cartopy._crs import CRS, Geocentric, Geodetic
 import cartopy.trace
@@ -98,6 +99,24 @@ class Projection(CRS):
     @abstractproperty
     def y_limits(self):
         pass
+
+    @property
+    def cw_boundary(self):
+        try:
+            boundary = self._cw_boundary
+        except AttributeError:
+            boundary = sgeom.LineString(self.boundary)
+            self._cw_boundary = boundary
+        return boundary
+
+    @property
+    def ccw_boundary(self):
+        try:
+            boundary = self._ccw_boundary
+        except AttributeError:
+            boundary = sgeom.LineString(list(self.boundary.coords)[::-1])
+            self._ccw_boundary = boundary
+        return boundary
 
     @property
     def domain(self):
@@ -204,18 +223,8 @@ class Projection(CRS):
         Returns the projected polygon(s) derived from the given polygon.
 
         """
-        # XXX This shouldn't really be here?
-        # The simple 2-dimensional determination of orientation provided
-        # by Shapely/GEOS doesn't apply when considering geodetic coordinates.
-        # In fact, there is no generic concept of orientation applicable
-        # to geodetic coordinates. One could assume the polygon should
-        # be oriented to select the smaller section of the surface, but
-        # even this breaks down for polygons which divide the surface
-        # into two pieces of equal area.
-#        if not src_crs.is_geodetic():
-        polygon = sgeom.polygon.orient(polygon, -1)
         # TODO: Consider checking the internal rings have the opposite
-        # orientation to the external rings.
+        # orientation to the external rings?
 
         # Project the polygon exterior/interior rings.
         # Each source ring will result in either a ring, or one or more
@@ -231,13 +240,17 @@ class Projection(CRS):
 
         # Convert all the lines to rings by attaching them to the
         # boundary.
-        rings.extend(self._attach_lines_to_boundary(multi_lines))
+        if src_crs.is_geodetic():
+            is_ccw = True
+        else:
+            is_ccw = polygon.exterior.is_ccw
+        rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
 
         # Resolve all the inside vs. outside rings, and convert to the
         # final MultiPolygon.
-        return self._rings_to_multi_polygon(rings)
+        return self._rings_to_multi_polygon(rings, is_ccw)
 
-    def _attach_lines_to_boundary(self, multi_line_strings):
+    def _attach_lines_to_boundary(self, multi_line_strings, is_ccw):
         """
         Returns a list of LinearRings by attaching the ends of the given lines
         to the boundary, paying attention to the traversal directions of the
@@ -248,9 +261,12 @@ class Projection(CRS):
         # their distance along the boundary.
         edge_things = []
 
-        # Convert the boundary to a LineString so we can compute distances
-        # along it. (It doesn't work with a LinearRing)
-        boundary = sgeom.LineString(self.boundary)
+        # Get the boundary as a LineString of the correct orientation
+        # so we can compute distances along it.
+        if is_ccw:
+            boundary = self.ccw_boundary
+        else:
+            boundary = self.cw_boundary
 
         def boundary_distance(xy):
             return boundary.project(sgeom.Point(*xy))
@@ -344,11 +360,11 @@ class Projection(CRS):
 
         return linear_rings
 
-    def _rings_to_multi_polygon(self, rings):
+    def _rings_to_multi_polygon(self, rings, is_ccw):
         exterior_rings = []
         interior_rings = []
         for ring in rings:
-            if ring.is_ccw:
+            if ring.is_ccw != is_ccw:
                 interior_rings.append(ring)
             else:
                 exterior_rings.append(ring)
@@ -356,12 +372,13 @@ class Projection(CRS):
         polygon_bits = []
 
         # Turn all the exterior rings into polygon definitions,
-        # "slurping up" and interior rings they contain.
+        # "slurping up" any interior rings they contain.
         for exterior_ring in exterior_rings:
             polygon = sgeom.Polygon(exterior_ring)
+            prep_polygon = prep(polygon)
             holes = []
             for interior_ring in interior_rings[:]:
-                if polygon.contains(interior_ring):
+                if prep_polygon.contains(interior_ring):
                     holes.append(interior_ring)
                     interior_rings.remove(interior_ring)
             polygon_bits.append((exterior_ring.coords,
@@ -370,7 +387,7 @@ class Projection(CRS):
         # Any left over "interior" rings need "inverting" with respect
         # to the boundary.
         if interior_rings:
-            boundary_poly = sgeom.Polygon(self.boundary)
+            boundary_poly = self.domain
             x3, y3, x4, y4 = boundary_poly.bounds
             bx = (x4 - x3) * 0.1
             by = (y4 - y3) * 0.1
