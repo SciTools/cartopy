@@ -20,3 +20,8 @@ lib/cartopy/data/gshhs
 .project
 .pydevproject
 
+# Created by editiors
+*~
+\#*
+\.\#*
+*.swp

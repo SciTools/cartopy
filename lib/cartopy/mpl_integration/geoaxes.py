@@ -33,9 +33,8 @@ import matplotlib.collections as mcollections
 import numpy
 import shapely.geometry
 
-#import cartopy.cartesian
-import cartopy
 import cartopy.crs as ccrs
+import cartopy.feature
 import cartopy.img_transform
 import cartopy.mpl_integration.patch as patch
 
@@ -43,11 +42,6 @@ import cartopy.mpl_integration.patch as patch
 import matplotlib
 assert matplotlib.__version__ >= '1.2', 'Cartopy can only work with matplotlib 1.2 or greater.'
 
-
-_colors = {
-          'land': numpy.array((240, 240, 220)) / 256.,
-          'sea': numpy.array((152, 183, 226)) / 256.,
-          }
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
 """
@@ -71,13 +65,6 @@ resulting transformed paths::
 This provides a significant boost when producing multiple maps of the
 same projection.
 
-"""
-
-_NATURAL_EARTH_GEOM_CACHE = {}
-"""
-Caches a mapping between (name, category, resolution) and a tuple of the resulting geometries.
-Provides a significant performance benefit (when combined with object id caching 
-in GeoAxes.add_geometries) when producing multiple maps of the same projection.
 """
 
 
@@ -333,50 +320,65 @@ class GeoAxes(matplotlib.axes.Axes):
             likely to be severely effected. This should be resolved transparently by v0.5.
 
         """
-        kwargs = kwargs.copy()
-        kwargs.setdefault('edgecolor', color)
-        kwargs.setdefault('facecolor', 'none')
-        return self.natural_earth_shp(name='coastline',
-                                      resolution=resolution,
-                                      category='physical', **kwargs)
-        
+        kwargs['edgecolor'] = color
+        kwargs['facecolor'] = 'none'
+        feature = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
+                                                      resolution, kwargs)
+        return self.add_feature(feature)
+
     def natural_earth_shp(self, name='land', resolution='110m', category='physical', 
                           **kwargs):
         """
-        Adds the geometries from the specified Natural Earth shapefile to the Axes as a 
+        Adds the geometries from the specified Natural Earth shapefile to the Axes as a
         :class:`~matplotlib.collections.PathCollection`.
-        
+
         ``**kwargs`` are passed through to the :class:`~matplotlib.collections.PathCollection`
         constructor.
-        
+
         Returns the created :class:`~matplotlib.collections.PathCollection`.
-        
+
         .. note::
 
             Currently no clipping is done on the geometries before adding them to the axes.
             This means, if very high resolution geometries are being used, performance is
             likely to be severely effected. This should be resolved transparently by v0.5.
-        
+
         """
-        import cartopy.io.shapereader as shapereader
-
+        warnings.warn('This method has been deprecated.'
+                      ' Please use `add_feature` instead.')
         kwargs.setdefault('edgecolor', 'face')
-        kwargs.setdefault('facecolor', _colors['land'])
+        kwargs.setdefault('facecolor', cartopy.feature._COLOURS['land'])
+        feature = cartopy.feature.NaturalEarthFeature(category, name,
+                                                      resolution, kwargs)
+        return self.add_feature(feature)
 
-        key = (name, category, resolution) 
+    def add_feature(self, feature, **kwargs):
+        """
+        Adds the shapes represented by a given feature.
 
-        if key not in _NATURAL_EARTH_GEOM_CACHE: 
-            coastline_path = shapereader.natural_earth(resolution=resolution,
-                                                       category=category,
-                                                       name=name)
-            geoms = tuple(shapereader.Reader(coastline_path).geometries())
-            # put the geoms in the cache
-            _NATURAL_EARTH_GEOM_CACHE[key] = geoms 
-        else:
-            geoms = _NATURAL_EARTH_GEOM_CACHE[key]
-        
-        return self.add_geometries(geoms, ccrs.PlateCarree(), **kwargs)
-        
+        Args:
+
+        * feature:
+            An instance of :class:`~iris.feature.Feature`.
+
+        Other keyword arguments are used in the construction of the
+        :class:`~matplotlib.collections.PathCollection` which is used
+        to render the result, thus allowing standard matplotlib control
+        over aspects such as 'facecolor', 'alpha', etc.
+
+        Returns:
+
+            * A :class:`matplotlib.collections.PathCollection`.
+
+        """
+        # PLACEHOLDER implementation until we have SmartFeatures(tm)
+        # which are subclasses of Artist, with pan/zoom-sensitive,
+        # on-draw behaviour.
+        final_kwargs = feature.kwargs
+        final_kwargs.update(kwargs)
+        return self.add_geometries(feature.geometries(), feature.crs,
+                                   **final_kwargs)
+
     def add_geometries(self, geoms, crs, **collection_kwargs):
         """
         Add the given shapely geometries (in the given crs) to the axes as 
@@ -516,6 +518,102 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         self.set_xlim(self.projection.x_limits)
         self.set_ylim(self.projection.y_limits)
+
+    def set_xticks(self, ticks, minor=False, crs=None):
+        """
+        Set the x ticks.
+
+        Args:
+
+            * ticks - list of floats denoting the desired position of x ticks.
+
+        Kwargs:
+
+            * minor - boolean flag indicating whether the ticks should be minor
+                      ticks i.e. small and unlabelled (default is False).
+
+            * crs - An instance of :class:`~cartopy.crs.CRS` indicating the
+                    coordinate system of the provided tick values. If no
+                    coordinate system is specified then the values are assumed
+                    to be in the coordinate system of the projection.
+
+        .. note::
+
+            This method is limited to cylindrical projections.
+
+        .. note::
+
+            This interface is subject to change whilst functionality is added
+            to support other map projections.
+
+        """
+        if not isinstance(self.projection, (ccrs._RectangularProjection,
+                                            ccrs._CylindricalProjection,
+                                            ccrs.OSGB)):
+            raise RuntimeError('Cannot set xticks for not-cylindrical '
+                               'coordinate systems.')
+
+        # Switch on drawing of x axis
+        self.xaxis.set_visible(True)
+
+        # Project ticks if crs differs from axes' projection
+        if crs is not None and crs != self.projection:
+            proj_xyz = self.projection.transform_points(crs,
+                                                        numpy.asarray(ticks),
+                                                        numpy.zeros(len(ticks)))
+            xticks = proj_xyz[..., 0]
+        else:
+            xticks = ticks
+
+        return super(GeoAxes, self).set_xticks(xticks, minor)
+
+    def set_yticks(self, ticks, minor=False, crs=None):
+        """
+        Set the y ticks.
+
+        Args:
+
+            * ticks - list of floats denoting the desired position of y ticks.
+
+        Kwargs:
+
+            * minor - boolean flag indicating whether the ticks should be minor
+                      ticks i.e. small and unlabelled (default is False).
+
+            * crs - An instance of :class:`~cartopy.crs.CRS` indicating the
+                    coordinate system of the provided tick values. If no
+                    coordinate system is specified then the values are assumed
+                    to be in the coordinate system of the projection.
+
+        .. note::
+
+            This method is limited to cylindrical projections.
+
+        .. note::
+
+            This interface is subject to change whilst functionality is added
+            to support other map projections.
+
+        """
+        if not isinstance(self.projection, (ccrs._RectangularProjection,
+                                            ccrs._CylindricalProjection,
+                                            ccrs.OSGB)):
+            raise RuntimeError('Cannot set yticks for non-cylindrical '
+                               'coordinate systems.')
+
+        # Switch on drawing of y axis
+        self.yaxis.set_visible(True)
+
+        # Project ticks if crs differs from axes' projection
+        if crs is not None and crs != self.projection:
+            proj_xyz = self.projection.transform_points(crs,
+                                                        numpy.zeros(len(ticks)),
+                                                        numpy.asarray(ticks))
+            yticks = proj_xyz[..., 1]
+        else:
+            yticks = ticks
+
+        return super(GeoAxes, self).set_yticks(yticks, minor)
 
 #    def geod_circle_meters(self, lon_0, lat_0, radius, npts=80, **kwargs):
 #        # radius is in meters
