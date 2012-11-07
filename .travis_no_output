@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# used by .travis.yml to filter output if there were no problems with the 
+# command, otherwise the stdout and stderr are outputted.
+
+
 stdout_tmp=/tmp/output.stdout.txt
 stderr_tmp=/tmp/output.stderr.txt
 
