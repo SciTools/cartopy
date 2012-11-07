@@ -102,6 +102,15 @@ class TestMisc(unittest.TestCase):
         multi_polygon = target_projection.project_geometry(geom, source_crs)
         # check the result is non-empty
         self.assertFalse(multi_polygon.is_empty)
+        
+    def test_3pt_poly(self):
+        projection = ccrs.OSGB()
+        polygon = sgeom.Polygon([(-1000, -1000), 
+                                 (-1000, 200000), 
+                                 (200000, -1000)])
+        multi_polygon = projection.project_geometry(polygon, ccrs.OSGB())
+        self.assertEqual(len(multi_polygon), 1)
+        self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
 
 
 class TestQuality(unittest.TestCase):

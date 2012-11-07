@@ -16,7 +16,6 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from matplotlib.testing.decorators import image_comparison as mpl_image_comparison
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
@@ -99,11 +98,11 @@ def test_contour_interiors():
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
     
-    plt.subplot(222, projection=ccrs.PlateCarree())
+    plt.subplot(222, projection=ccrs.Robinson())
     plt.title("Non-native projection")
     ax = plt.gca()
     ax.set_global()
-    plt.contourf(lons, lats, data, numlev, transform=ccrs.Geodetic())
+    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()    
     
     ############## produces singular polygons (zero area polygons)
@@ -121,12 +120,11 @@ def test_contour_interiors():
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()    
     
-    plt.subplot(224, projection=ccrs.PlateCarree())
+    plt.subplot(224, projection=ccrs.Robinson())
     plt.title("Non-native projection")
     ax = plt.gca()
     ax.set_global()
-    cs = plt.contourf(lons, lats, data, numlev, transform=ccrs.Geodetic())
-    
+    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()    
 
 

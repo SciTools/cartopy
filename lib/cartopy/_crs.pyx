@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+This module defines the core CRS class which can interface with Proj.4.
+The CRS class is the base-class for all projections defined in :mod:`cartopy.crs`.
+
+"""
 
 import numpy as np
 
@@ -40,6 +45,13 @@ cdef double NAN = float('nan')
 
 
 class Proj4Error(Exception):
+    """
+    Raised when there has been an exception calling proj.4.
+
+    Adds a ``status`` attribute to the exception which has the
+    proj.4 error reference.
+
+    """
     def __init__(self):
         cdef int status
         status = deref(pj_get_errno_ref())
@@ -54,6 +66,13 @@ cdef class CRS:
 
     """
     def __init__(self, proj4_params):
+        """
+        Args:
+
+            * proj4_params - a dictionary of proj4 valid parameters
+                             required to define the desired CRS.
+
+        """
         self.proj4_params = dict(proj4_params)
         # Use WGS84 ellipse if one is not specified in proj4_params
         if 'ellps' not in self.proj4_params:
@@ -79,12 +98,22 @@ cdef class CRS:
         return result
 
     def __reduce__(self):
+        """
+        Implements the __reduce__ API so that unpickling produces a stateless
+        instance of this class (e.g. an empty tuple). The state will then be
+        added via __getstate__ and __setstate__.
+        """
         return self.__class__, tuple()
     
     def __getstate__(self):
+        """Returns the full state of this instance for reconstruction in ``__setstate__``."""
         return {'proj4_params': self.proj4_params}
     
     def __setstate__(self, state):
+        """
+        Takes the dictionary created by ``__getstate__`` and passes it through to the
+        class's __init__ method.
+        """
         self.__init__(self, **state)
     
     # TODO
@@ -92,10 +121,17 @@ cdef class CRS:
     #def _geod(self): # to return the pyproj.Geod
 
     def __hash__(self):
+        """Hashes the CRS based on its class and proj4_init string."""
         return hash((type(self), self.proj4_init))
 
     def _as_mpl_transform(self, axes=None):
-        # XXX This has been replicated in the crs.py Projection class, needs to be consolidated? 
+        """
+        Casts this CRS instance into a :class:`matplotlib.axes.Axes` using
+        the matplotlib ``_as_mpl_transform`` interface.
+
+        """
+        # lazy import mpl_integration.geoaxes (and therefore matplotlib) as mpl
+        # is only an optional dependency
         import cartopy.mpl_integration.geoaxes as geoaxes
         if not isinstance(axes, geoaxes.GeoAxes):
             raise ValueError('Axes should be an instance of GeoAxes, got %s' % type(axes))
@@ -135,6 +171,22 @@ cdef class CRS:
         return bool(pj_is_latlong(self.proj4))
 
     def transform_point(self, double x, double y, CRS src_crs not None):
+        """
+        Transform the given float64 coordinate pair, in the given source
+        coordinate system (``src_crs``), to this coordinate system.
+
+        Args:
+
+        * x - the x coordinate, in ``src_crs`` coordinates, to transform
+        * y - the y coordinate, in ``src_crs`` coordinates, to transform
+        * src_crs - instance of :class:`CRS` that represents the coordinate
+                    system of ``x`` and ``y``.
+
+        Returns:
+
+            (x, y) - in this coordinate system
+
+        """
         cdef:
             double cx, cy
             int status
@@ -159,7 +211,23 @@ cdef class CRS:
                                 np.ndarray x not None, 
                                 np.ndarray y not None, 
                                 np.ndarray z=None):
+        """
+        Transform the given coordinates, in the given source
+        coordinate system (``src_crs``), to this coordinate system.
 
+        Args:
+
+        * src_crs - instance of :class:`CRS` that represents the coordinate
+                    system of ``x``, ``y`` and ``z``.
+        * x - the x coordinates (array), in ``src_crs`` coordinates, to transform
+        * y - the y coordinates (array), in ``src_crs`` coordinates, to transform
+        * z - (optional) the z coordinates (array), in ``src_crs`` coordinates, to transform
+
+        Returns:
+
+            array of shape [npts, 3] in this coordinate system
+
+        """
         cdef np.ndarray[np.double_t, ndim=2] result
         
 
@@ -179,6 +247,8 @@ cdef class CRS:
         result = np.empty([npts, 3], dtype=np.double)
         result[:, 0] = x
         result[:, 1] = y
+        # if a z has been given, put it in the result array which will be
+        # transformed in-place
         if z is None:
             result[:, 2] = 0
         else:
@@ -187,6 +257,7 @@ cdef class CRS:
         if src_crs.is_geodetic():
             result = np.deg2rad(result)
 
+        # call proj.4. The result array is modified in place.
         status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
                               &result[0, 0], &result[0, 1], &result[0, 2]);
                               
@@ -200,22 +271,18 @@ cdef class CRS:
 
 class Geodetic(CRS):
     """
-    Defines a latitude/longitude coordinate system with spherical topology
-    and geographical distance.
-
-    NB. Coordinates are measured in degrees.
+    Defines a latitude/longitude coordinate system with spherical topology,
+    geographical distance and coordinates are measured in degrees.
 
     """
     # XXX Providing a default datum is bad. Providing the ellipse on its own is sufficient to define the ellipse, 
     # and in some cases, can overwrite the desired, well defined ellipse.
     def __init__(self, ellipse='WGS84', datum='WGS84'):
         """
-        Create a Geodetic CRS.
-        
         Kwargs:
         
-            * ellipse      - Ellipsoid definiton.
-            * datum        - Datum definiton.
+            * ellipse - a proj.4 ellipsoid definition, default is 'WGS84'.
+            * datum - a proj.4 datum definition, default is 'WGS84'.
         
         """
         proj4_params = {'proj': 'lonlat', 'ellps': ellipse, 'datum': datum}
@@ -227,9 +294,17 @@ class Geodetic(CRS):
 
 class Geocentric(CRS):
     """
-    Defines a Geocentric coordinate system, where x, y, z are Cartesian coordinates from the center of the Earth.
+    Defines a Geocentric coordinate system, where x, y, z are Cartesian
+    coordinates from the center of the Earth.
     
     """
     def __init__(self, ellipse='WGS84', datum='WGS84'):
+        """
+        Kwargs:
+
+            * ellipse - a proj.4 ellipsoid definition, default is 'WGS84'.
+            * datum - a proj.4 datum definition, default is 'WGS84'.
+
+        """
         proj4_params = {'proj': 'geocent', 'ellps': ellipse, 'datum': datum}
         super(Geocentric, self).__init__(proj4_params)

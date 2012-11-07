@@ -828,7 +828,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.patch.set_edgecolor((0.5, 0.5, 0.5))
         self.patch.set_linewidth(0.0)
 
-
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contour(self, *args, **kwargs):
         """
@@ -847,7 +846,10 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        if isinstance(t, ccrs.Projection):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        else:
+            kwargs['transform'] = t
         return matplotlib.axes.Axes.contour(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -868,7 +870,10 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        if isinstance(t, ccrs.Projection):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        else:
+            kwargs['transform'] = t
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -914,7 +919,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical pcolormesh is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        kwargs.setdefault('transform', t)
         return self._pcolormesh_patched(*args, **kwargs)
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
@@ -996,6 +1001,7 @@ class GeoAxes(matplotlib.axes.Axes):
             trans_to_data = t - self.transData
             pts = np.vstack([X, Y]).T.astype(np.float)
             transformed_pts = trans_to_data.transform(pts)
+
             X = transformed_pts[..., 0]
             Y = transformed_pts[..., 1]
 
@@ -1016,6 +1022,82 @@ class GeoAxes(matplotlib.axes.Axes):
         self.update_datalim( corners)
         self.autoscale_view()
         self.add_collection(collection)
+
+        # XXX Non-standard matplotlib 1.2 thing.
+        # Handle a possible wrap around for rectangular projections.
+        t = kwargs.get('transform', None)
+        if isinstance(t, ccrs.CRS):
+            if isinstance(t, ccrs._RectangularProjection) and \
+                    isinstance(self.projection, ccrs._RectangularProjection):
+
+                C = C.reshape((Ny-1, Nx-1))
+                transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
+
+                # compute the vertical line angles of the pcolor in transformed coordinates
+                with numpy.errstate(invalid='ignore'):
+                    horizontal_vert_angles = numpy.arctan2(
+                                                            numpy.diff(transformed_pts[..., 0], axis=1),
+                                                            numpy.diff(transformed_pts[..., 1], axis=1)
+                                                            )
+                    
+                # if the change in angle is greater than 90 degrees (absolute), then mark
+                # it for masking later on.
+                to_mask = (numpy.abs(numpy.diff(horizontal_vert_angles)) > numpy.pi/2) | \
+                            numpy.isnan(numpy.diff(horizontal_vert_angles))
+
+                if numpy.any(to_mask):
+                    # at this point C has a shape of (Ny-1, Nx-1), to_mask has
+                    # a shape of (Ny, Nx-2) and pts has a shape of (Ny*Nx, 2)
+
+                    mask = numpy.zeros(C.shape, dtype=numpy.bool)
+
+                    # mask out the neighbouring cells if there was a cell found with an
+                    # angle change of more than pi/2 . NB. Masking too much only has a
+                    # detrimental impact on performance.
+                    to_mask_y_shift = to_mask[:-1, :]
+                    mask[:, :-1][to_mask_y_shift] = True
+                    mask[:, 1:][to_mask_y_shift] = True
+
+                    to_mask_x_shift = to_mask[1:, :]
+                    mask[:, :-1][to_mask_x_shift] = True
+                    mask[:, 1:][to_mask_x_shift] = True
+
+                    C_mask = getattr(C, 'mask', None)
+                    if C_mask is not None:
+                        dmask = mask | C_mask
+                    else:
+                        dmask = mask
+
+                    # print 'Ratio of masked data: ',
+                    # print numpy.sum(mask) / float(numpy.product(mask.shape))
+
+                    # create the masked array to be used with this pcolormesh
+                    pcolormesh_data = numpy.ma.array(C, mask=mask)
+
+                    collection.set_array(pcolormesh_data.ravel())
+
+                    # now that the pcolormesh has masked the bad values,
+                    # create a pcolor with just those values that were masked
+                    pcolor_data = pcolormesh_data.copy()
+                    # invert the mask
+                    pcolor_data.mask = ~pcolor_data.mask
+
+                    # remember to re-apply the original data mask to the array
+                    if C_mask is not None:
+                        pcolor_data.mask = pcolor_data.mask | C_mask
+
+                    pts = pts.reshape((Ny, Nx, 2))
+                    pcolor_col = self.pcolor(pts[..., 0], pts[..., 1], pcolor_data, **kwargs)
+                    pcolor_col.set_cmap(cmap)
+                    pcolor_col.set_norm(norm)
+                    pcolor_col.set_clim(vmin, vmax)
+                    # scale the data according to the *original* data
+                    pcolor_col.norm.autoscale_None(C)
+
+                    # put the pcolor_col on the pcolormesh collection so that
+                    # if really necessary, users can do things post this method
+                    collection._wrapped_collection_fix = pcolor_col
+
         return collection
 
     def pcolor(self, *args, **kwargs):
@@ -1034,7 +1116,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('invalid transform:'
                              ' Spherical pcolor is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
-        kwargs['transform'] = t._as_mpl_transform(self)
+        kwargs.setdefault('transform', t)
         return self._pcolor_patched(*args, **kwargs)
     
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
