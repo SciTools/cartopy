@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 from matplotlib.path import Path
-import shapely.geometry
+import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 import cartopy.mpl_integration.patch as cpatch
@@ -35,9 +35,9 @@ def test_polygon_interiors():
     ax.coastlines()    
     ax.set_global() # XXX could be the default???
    
-    pth = Path([[0, 45], [60, 45], [60, -45], [0, -45], [0, -45], 
-                [10, 20], [10, -20], [40, -20], [40, 20], [10, -20]], 
-               [1, 2, 2, 2, 79, 1, 2, 2 , 2, 79])
+    pth = Path([[0, -45], [60, -45], [60, 45], [0, 45], [0, 45],
+                [10, -20], [10, 20], [40, 20], [40, -20], [10, 20]],
+               [1, 2, 2, 2, 79, 1, 2, 2, 2, 79])
     
     patches_native = []
     patches = []
@@ -63,24 +63,21 @@ def test_polygon_interiors():
     
     
     # test multiple interior polygons
-    ax = plt.subplot(212, projection=ccrs.PlateCarree(), xlim=[-5, 15], ylim=[-5, 15])
+    ax = plt.subplot(212, projection=ccrs.PlateCarree(),
+                     xlim=[-5, 15], ylim=[-5, 15])
     ax.coastlines()
     
-    exterior = np.array(shapely.geometry.box(0, 0, 12, 12).exterior.coords)
-    interiors = [
-                 np.array(shapely.geometry.box(1, 1, 2, 2, ccw=False).exterior.coords),
-                 np.array(shapely.geometry.box(1, 8, 2, 9, ccw=False).exterior.coords),
-                 ]
-
-    poly = shapely.geometry.Polygon(exterior, interiors)
+    exterior = np.array(sgeom.box(0, 0, 12, 12).exterior.coords)
+    interiors = [np.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
+                 np.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords)]
+    poly = sgeom.Polygon(exterior, interiors)
     
     patches = []
     for pth in cpatch.geos_to_path(poly):
         patches.append(mpatches.PathPatch(pth))
     
     collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
-                                 transform=ccrs.Geodetic()
-                                 )
+                                 transform=ccrs.Geodetic())
     ax.add_collection(collection)
     
 
