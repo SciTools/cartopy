@@ -128,7 +128,7 @@ class NaturalEarthFeature(Feature):
         return geometries
 
 
-BORDERS = NaturalEarthFeature('cultural', 'admin-0-boundary-lines', '110m',
+BORDERS = NaturalEarthFeature('cultural', 'admin-0-boundary-lines-land', '110m',
                              {'edgecolor': 'black', 'facecolor': 'none'})
 """Small scale (1:110m) country boundaries."""
 

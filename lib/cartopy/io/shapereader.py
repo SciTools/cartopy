@@ -203,8 +203,8 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
         from zipfile import ZipFile
         # note the repeated http. That is intentional
         file_url = ('http://www.naturalearthdata.com/http//www.naturalearthdata.com/'
-                    'download/%s/%s/%s.zip' % (resolution, category, full_name))
-
+                    'download/%s/%s/ne_%s.zip' % (resolution, category, full_name.replace('-', '_')))
+        print 'Downloading: ', file_url
         shapefile_online = urllib2.urlopen(file_url)
         zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
         zfh.extractall(shape_dir)
