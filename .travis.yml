@@ -1,0 +1,30 @@
+language: python
+
+python:
+  # this is not actually used. Because it would take an overly long time
+  # to build scipy we cannot use the virtual env of travis. Instead, we use the
+  # standard apt-get installation of python2.7. See
+  # https://groups.google.com/forum/#!msg/travis-ci/uJgu35XKdmI/UA0Kj1EhavAJ
+  # for the discussion topic
+  #
+  - 2.7
+
+install:
+  - ./.travis_no_output sudo apt-get install python-scipy python-pip
+  - ./.travis_no_output sudo /usr/bin/pip install https://github.com/downloads/matplotlib/matplotlib/matplotlib-1.2.0rc3.tar.gz
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors cython
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pyshp
+  - yes | ./.travis_no_output sudo add-apt-repository ppa:olivier-berten/geo
+  - ./.travis_no_output sudo apt-get update
+  - ./.travis_no_output sudo apt-get install libgeos-dev
+  - ./.travis_no_output sudo apt-get install libproj-dev
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose
+  # its always version 2 currently
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.'* ]]; then ./.travis_no_output sudo /usr/bin/pip install --use-mirrors PIL; fi
+  # install cartopy in the .local directory (in lieu of using virtual env...)
+  - ./.travis_no_output /usr/bin/python setup.py install --user
+
+script:
+  - mkdir ../test_folder
+  - cd ../test_folder
+  - /usr/local/bin/nosetests cartopy
