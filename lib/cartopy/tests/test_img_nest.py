@@ -43,7 +43,7 @@ def _tile_from_img(img):
         like "lib/cartopy/data/wmts/aerial/z_0/x_0_y0.png"
 
         """
-        _, z = os.path.dirname(img.filename).split('_')
+        _, z = os.path.basename(os.path.dirname(img.filename)).split('_')
         xy, _ = os.path.splitext(os.path.basename(img.filename))
         _, x, _, y = xy.split('_')
         return int(x), int(y), int(z)
