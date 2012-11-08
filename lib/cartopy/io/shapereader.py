@@ -193,8 +193,13 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
         os.makedirs(shape_dir)
 
     # find the only shapefile in the directory. This is because NE have inconsistent zip file naming conventions.
-    glob_pattern = os.path.join(data_dir, full_name, '*.shp')
+    glob_pattern = os.path.join(data_dir, full_name, '[!ne_]*.shp')
     shapefiles = glob.glob(glob_pattern)
+
+    # natural earth changed the naming conventions, meaning that new files are prefixed with ne_ .
+    # This is a workaround until a better download mechanism exists (#129)
+    if not shapefiles:
+        glob_pattern = os.path.join(data_dir, full_name, '*.shp')
 
     if not shapefiles:
         # download the zip file
