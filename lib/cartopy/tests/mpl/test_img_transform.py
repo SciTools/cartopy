@@ -25,7 +25,7 @@ import numpy
 
 from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
-import cartopy.img_transform
+import cartopy.img_transform as cimgt
 
 
 class TestRegrid(unittest.TestCase):
@@ -33,7 +33,9 @@ class TestRegrid(unittest.TestCase):
         # Source data
         source_nx = 100
         source_ny = 100
-        source_x = numpy.linspace(-180.0, 180.0, source_nx).astype(numpy.float64)
+        source_x = numpy.linspace(-180.0,
+                                  180.0,
+                                  source_nx).astype(numpy.float64)
         source_y = numpy.linspace(-90, 90.0, source_ny).astype(numpy.float64)
         source_x, source_y = numpy.meshgrid(source_x, source_y)
         data = numpy.arange(source_nx * source_ny,
@@ -44,15 +46,14 @@ class TestRegrid(unittest.TestCase):
         target_nx = 23
         target_ny = 45
         target_proj = ccrs.PlateCarree()
-        target_x, target_y, extent = cartopy.img_transform.mesh_projection(target_proj,
-                                                                           target_nx,
-                                                                           target_ny)
+        target_x, target_y, extent = cimgt.mesh_projection(target_proj,
+                                                           target_nx,
+                                                           target_ny)
 
-        
         # Perform regrid
-        new_array = cartopy.img_transform.regrid(data, source_x, source_y, source_cs,
-                           target_proj, target_x, target_y)
-        
+        new_array = cimgt.regrid(data, source_x, source_y, source_cs,
+                                 target_proj, target_x, target_y)
+
         # Check dimensions of return array
         self.assertEqual(new_array.shape, target_x.shape)
         self.assertEqual(new_array.shape, target_y.shape)
@@ -62,7 +63,9 @@ class TestRegrid(unittest.TestCase):
         # Source data
         source_nx = 100
         source_ny = 100
-        source_x = numpy.linspace(-180.0, 180.0, source_nx).astype(numpy.float64)
+        source_x = numpy.linspace(-180.0,
+                                  180.0,
+                                  source_nx).astype(numpy.float64)
         source_y = numpy.linspace(-90, 90.0, source_ny).astype(numpy.float64)
         source_x, source_y = numpy.meshgrid(source_x, source_y)
         data = numpy.arange(source_nx * source_ny,
@@ -72,26 +75,30 @@ class TestRegrid(unittest.TestCase):
         # Target grids (different shapes)
         target_x_shape = (23, 45)
         target_y_shape = (23, 44)
-        target_x = numpy.arange(reduce(operator.mul, target_x_shape)).reshape(target_x_shape).astype(numpy.float64)
-        target_y = numpy.arange(reduce(operator.mul, target_y_shape)).reshape(target_y_shape).astype(numpy.float64)
+        target_x = numpy.arange(reduce(operator.mul, target_x_shape)).reshape(
+            target_x_shape).astype(numpy.float64)
+        target_y = numpy.arange(reduce(operator.mul, target_y_shape)).reshape(
+            target_y_shape).astype(numpy.float64)
         target_proj = ccrs.PlateCarree()
-        
+
         # Attempt regrid
         with self.assertRaises(ValueError):
-            new_array = cartopy.img_transform.regrid(data, source_x, source_y, source_cs,
-                               target_proj, target_x, target_y)
+            new_array = cimgt.regrid(data, source_x, source_y, source_cs,
+                                     target_proj, target_x, target_y)
 
 
 @ImageTesting(['regrid_image'])
 def test_regrid_image():
     # Source data
-    fname = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 
-                         'data', 'raster', 'natural_earth',
-                         '50-natural-earth-1-downsampled.png')
+    fname = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        'data', 'raster', 'natural_earth',
+        '50-natural-earth-1-downsampled.png')
     nx = 720
     ny = 360
     source_proj = ccrs.PlateCarree()
-    source_x, source_y, source_extent = cartopy.img_transform.mesh_projection(source_proj, nx, ny)
+    source_x, source_y, source_extent = cimgt.mesh_projection(source_proj,
+                                                              nx, ny)
     data = plt.imread(fname)
     # Flip vertically to match source_x/source_y orientation
     data = data[::-1]
@@ -100,13 +107,14 @@ def test_regrid_image():
     target_nx = 300
     target_ny = 300
     target_proj = ccrs.InterruptedGoodeHomolosine()
-    target_x, target_y, target_extent = cartopy.img_transform.mesh_projection(target_proj,
-                                                                              target_nx,
-                                                                              target_ny)
+    target_x, target_y, target_extent = cimgt.mesh_projection(target_proj,
+                                                              target_nx,
+                                                              target_ny)
 
     # Perform regrid
-    new_array = cartopy.img_transform.regrid(data, source_x, source_y, source_proj,
-                                             target_proj, target_x, target_y)
+    new_array = cimgt.regrid(
+        data, source_x, source_y, source_proj,
+        target_proj, target_x, target_y)
 
     # Plot
     fig = plt.figure(figsize=(10, 10))
@@ -121,13 +129,13 @@ def test_regrid_image():
         ax = plt.subplot(gs[i + 1], frameon=False, projection=target_proj)
         ax.set_title(colour)
         plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
-                       cmap=cmaps[colour])
+                   cmap=cmaps[colour])
         ax.coastlines()
 
     # Tighten up layout
     gs.tight_layout(plt.gcf())
-        
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     import nose
-    nose.runmodule(argv=['-s','--with-doctest'], exit=False)
+    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

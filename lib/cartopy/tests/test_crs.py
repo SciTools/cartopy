@@ -21,6 +21,8 @@ import pickle
 import unittest
 
 import numpy
+from numpy.testing import assert_array_almost_equal as array_almost_equal
+
 
 import cartopy.crs as ccrs
 
@@ -38,22 +40,26 @@ class TestCRS(unittest.TestCase):
     def test_osgb(self):
         osgb = ccrs.OSGB()
         ll = ccrs.Geodetic()
-        
+
         # results obtained by streetmap.co.uk.
         lat, lon = numpy.array([50.462023, -3.478831], dtype=numpy.double)
         east, north = numpy.array([295131, 63511], dtype=numpy.double)
-        
+
         # note the handling of precision here...
-        numpy.testing.assert_array_almost_equal(numpy.array(osgb.transform_point(lon, lat, ll)), numpy.array([east, north]), 1)
-        numpy.testing.assert_array_almost_equal(ll.transform_point(east, north, osgb), [lon, lat], 2)
-        
+        array_almost_equal(numpy.array(osgb.transform_point(lon, lat, ll)),
+                           numpy.array([east, north]),
+                           1)
+        array_almost_equal(ll.transform_point(east, north, osgb),
+                           [lon, lat],
+                           2)
+
         r_lon, r_lat = ll.transform_point(east, north, osgb)
         r_inverted = numpy.array(osgb.transform_point(r_lon, r_lat, ll))
-        numpy.testing.assert_array_almost_equal(r_inverted, [east, north], 3)
-        
+        array_almost_equal(r_inverted, [east, north], 3)
+
         r_east, r_north = osgb.transform_point(lon, lat, ll)
         r_inverted = numpy.array(ll.transform_point(r_east, r_north, osgb))
-        numpy.testing.assert_array_almost_equal(r_inverted, [lon, lat])
+        array_almost_equal(r_inverted, [lon, lat])
 
 
 def test_pickle():
@@ -65,6 +71,6 @@ def test_pickle():
     assert pc == ccrs.PlateCarree()
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     import nose
-    nose.runmodule(argv=['-s','--with-doctest'], exit=False)
+    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

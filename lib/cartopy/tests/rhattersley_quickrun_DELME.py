@@ -42,14 +42,16 @@ def _arrows(projection, geometry):
             dy = end[1] - start[1]
             s = 4
             #width = math.sqrt(dx*dx+dy*dy)*0.5*s
-            #arrow = mpatches.Arrow(start[0], start[1], dx*s, dy*s, width=width, alpha=0.4)
+            #arrow = mpatches.Arrow(start[0], start[1], dx*s,
+            #                       dy*s, width=width, alpha=0.4)
             mag = math.sqrt(dx * dx + dy * dy)
             length = projection.threshold * s
             try:
                 dx = length * dx / mag
                 dy = length * dy / mag
                 width = projection.threshold * s * 0.5
-                arrow = mpatches.Arrow(start[0], start[1], dx, dy, width=width, alpha=0.4)
+                arrow = mpatches.Arrow(
+                    start[0], start[1], dx, dy, width=width, alpha=0.4)
                 plt.gca().add_patch(arrow)
             except ZeroDivisionError:
                 pass
@@ -58,7 +60,8 @@ def _arrows(projection, geometry):
 def draw_line_string(projection, line_string, color='black', linestyle='-'):
     multi_line_string = projection.project_geometry(line_string)
     for line_string in multi_line_string:
-        plt.plot(*zip(*line_string.coords), marker='', color=color, linestyle=linestyle)
+        plt.plot(*zip(
+            *line_string.coords), marker='', color=color, linestyle=linestyle)
         #_arrows(projection, line_string)
 
 
@@ -71,19 +74,23 @@ def draw_polygon(projection, polygon, color=None):
         import cartopy.mpl_integration.patch as patch
         paths = patch.geos_to_path(polygon)
         for pth in paths:
-            patch = mpatches.PathPatch(pth, edgecolor='none', alpha=0.5, facecolor=color, lw=0)
+            patch = mpatches.PathPatch(pth, edgecolor='none',
+                                       alpha=0.5, facecolor=color, lw=0)
             plt.gca().add_patch(patch)
-        #plt.fill(*zip(*polygon.exterior.coords), edgecolor='none', alpha=0.5, facecolor=color)
+        #plt.fill(*zip(*polygon.exterior.coords), edgecolor='none',
+        #         alpha=0.5, facecolor=color)
 
 
 def wave_data():
     import numpy as np
     # make up some data on a regular lat/lon grid.
-    nlats = 73; nlons = 145; delta = 2.*np.pi/(nlons-1)
-    lats = (0.5*np.pi-delta*np.indices((nlats,nlons))[0,:,:])
-    lons = (delta*np.indices((nlats,nlons))[1,:,:])
-    wave = 0.75*(np.sin(2.*lats)**8*np.cos(4.*lons))
-    mean = 0.5*np.cos(2.*lats)*((np.sin(2.*lats))**2 + 2.)
+    nlats = 73
+    nlons = 145
+    delta = 2. * np.pi / (nlons - 1)
+    lats = (0.5 * np.pi - delta * np.indices((nlats, nlons))[0, :, :])
+    lons = (delta * np.indices((nlats, nlons))[1, :, :])
+    wave = 0.75 * (np.sin(2. * lats) ** 8 * np.cos(4. * lons))
+    mean = 0.5 * np.cos(2. * lats) * ((np.sin(2. * lats)) ** 2 + 2.)
     lats = np.rad2deg(lats)
     lons = np.rad2deg(lons)
     data = wave + mean
@@ -91,7 +98,7 @@ def wave_data():
 
 
 def test(projections):
-    coords = [(-0.08, 51.53), (132.00, 43.17)] # London to Vladivostock
+    coords = [(-0.08, 51.53), (132.00, 43.17)]  # London to Vladivostock
     orig_line_string = sgeom.LineString(coords)
 
     n_rows = math.ceil(math.sqrt(len(projections)))
@@ -130,7 +137,8 @@ def test(projections):
                     xy = [segment[0] for segment in p.iter_segments()]
                     line_string = sgeom.LineString(xy)
                     #line_string = sgeom.LineString(xy[:3])
-                    draw_line_string(projection, line_string, color=c.get_color()[0])
+                    draw_line_string(projection, line_string,
+                                     color=c.get_color()[0])
 
         if 'contourf' in bits:
             # Filled contours - placeholder for MPL integration
@@ -144,7 +152,8 @@ def test(projections):
                     xy = filter(lambda xy: xy[1] > -90, xy)
                     polygon = sgeom.Polygon(xy)
                     #polygon = sgeom.Polygon(xy[53:56])
-                    draw_polygon(projection, polygon, color=c.get_facecolor()[0])
+                    draw_polygon(projection, polygon,
+                                 color=c.get_facecolor()[0])
 
         if 'boundary' in bits:
             plt.plot(*zip(*projection.boundary.coords), marker='')
@@ -159,7 +168,8 @@ def test(projections):
             step = 15
             lons = range(0, 360, step)
             for lon in lons:
-                line_string = sgeom.LineString([(lon, -75), (lon, 0), (lon, 75)])
+                line_string = sgeom.LineString(
+                    [(lon, -75), (lon, 0), (lon, 75)])
                 draw_line_string(projection, line_string, linestyle=':')
             lons = lons + [lons[0]]
             lats = range(-90 + step, 90, step)
@@ -191,11 +201,13 @@ def test(projections):
 
         if 'polygons' in bits:
             # Square over pole (CW)
-            polygon = sgeom.Polygon([(0, 75), (-90, 75), (-180, 75), (-270, 75)])
+            polygon = sgeom.Polygon(
+                [(0, 75), (-90, 75), (-180, 75), (-270, 75)])
             draw_polygon(projection, polygon)
 
             # Square (CW)
-            polygon = sgeom.Polygon([(150, 75), (-150, 75), (-150, 55), (150, 55)])
+            polygon = sgeom.Polygon(
+                [(150, 75), (-150, 75), (-150, 55), (150, 55)])
             draw_polygon(projection, polygon)
 
             # Wedge - demonstrates removal of interior when split (CW)
@@ -203,7 +215,8 @@ def test(projections):
             draw_polygon(projection, polygon)
 
             # "Antarctica" (incl. non-physical boundary segments) (CW)
-            polygon = sgeom.Polygon([(-50, -80), (90, -80), (160, -70), (160, -90), (-160, -90), (-160, -70)])
+            polygon = sgeom.Polygon([(-50, -80), (
+                90, -80), (160, -70), (160, -90), (-160, -90), (-160, -70)])
             draw_polygon(projection, polygon)
 
             # Wedge
@@ -235,7 +248,8 @@ def test(projections):
 
             for i, multi_polygon in enumerate(geometries):
                 for polygon in multi_polygon:
-                    polygon = sgeom.Polygon(filter(lambda xy: xy[1] > -90, polygon.exterior.coords))
+                    polygon = sgeom.Polygon(filter(
+                        lambda xy: xy[1] > -90, polygon.exterior.coords))
                     draw_polygon(projection, polygon, color=colors.next())
                     #draw_line_string(projection, polygon)
                 import sys

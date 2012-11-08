@@ -49,5 +49,5 @@ class TestNoSpherical(unittest.TestCase):
             self.ax.pcolormesh(self.data, transform=ccrs.Geodetic())
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     unittest.main()

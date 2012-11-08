@@ -26,8 +26,11 @@ import cartopy.crs as ccrs
 
 class TestBoundary(unittest.TestCase):
     def test_cuts(self):
-        # Check that fragments do not start or end with one of the original ... ?
-        linear_ring = geometry.polygon.LinearRing([(-10, 30), (10, 60), (10, 50)])
+        # Check that fragments do not start or end with one of the
+        # original ... ?
+        linear_ring = geometry.polygon.LinearRing([(-10, 30),
+                                                   (10, 60),
+                                                   (10, 50)])
         projection = ccrs.Robinson(170.5)
         multi_line_string = projection.project_geometry(linear_ring)
         from cartopy.tests import show
@@ -44,7 +47,8 @@ class TestBoundary(unittest.TestCase):
             extended_segment = geometry.LineString([start, end])
             # And see if it crosses the boundary.
             intersection = extended_segment.intersection(projection.boundary)
-            self.assertFalse(intersection.is_empty, 'Bad topology near boundary')
+            self.assertFalse(intersection.is_empty,
+                             'Bad topology near boundary')
 
         # Each line resulting from the split should start and end with a
         # segment that crosses the boundary when extended to double length.
@@ -87,8 +91,10 @@ class TestBoundary(unittest.TestCase):
 
 class TestMisc(unittest.TestCase):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude= -90)
-        linear_ring = geometry.polygon.LinearRing([(-10, 30), (10, 60), (10, 50)])
+        projection = ccrs.TransverseMercator(central_longitude=-90)
+        linear_ring = geometry.polygon.LinearRing([(-10, 30),
+                                                   (10, 60),
+                                                   (10, 50)])
         multi_line_string = projection.project_geometry(linear_ring)
         #from cartopy.tests import show
         #show(projection, multi_line_string)
@@ -102,7 +108,7 @@ class TestMisc(unittest.TestCase):
             (-179.9173693847652942, -16.5017831356493616),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
-            ])
+        ])
         multi_line_string = projection.project_geometry(linear_ring)
         # there should be one, and only one, returned line:
         assert isinstance(multi_line_string, geometry.polygon.LinearRing)

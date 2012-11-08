@@ -72,7 +72,7 @@ class TestBoundary(unittest.TestCase):
 
 class TestMisc(unittest.TestCase):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude= -90)
+        projection = ccrs.TransverseMercator(central_longitude=-90)
         polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
         multi_polygon = projection.project_geometry(polygon)
 
@@ -82,7 +82,7 @@ class TestMisc(unittest.TestCase):
             (-179.7933201090486079, -16.0208822567412312),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.9173693847652942, -16.5017831356493616),
-            ])
+        ])
         multi_polygon = projection.project_geometry(polygon)
         self.assertEqual(len(multi_polygon), 1)
         self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
@@ -90,23 +90,23 @@ class TestMisc(unittest.TestCase):
     def test_infinite_loop(self):
         # test a polygon which used to get stuck in an infinite loop
         # see https://github.com/SciTools/cartopy/issues/60
-        coords = [(260.625, 68.90383337092122), (360.0, 79.8556091996901), 
-                  (360.0, 77.76848175458498), (0.0, 88.79068047337279), 
-                  (210.0, 90.0), (135.0, 88.79068047337279), 
+        coords = [(260.625, 68.90383337092122), (360.0, 79.8556091996901),
+                  (360.0, 77.76848175458498), (0.0, 88.79068047337279),
+                  (210.0, 90.0), (135.0, 88.79068047337279),
                   (260.625, 68.90383337092122)]
         geom = sgeom.Polygon(coords)
-        
+
         target_projection = ccrs.PlateCarree()
         source_crs = ccrs.Geodetic()
-        
+
         multi_polygon = target_projection.project_geometry(geom, source_crs)
         # check the result is non-empty
         self.assertFalse(multi_polygon.is_empty)
-        
+
     def test_3pt_poly(self):
         projection = ccrs.OSGB()
-        polygon = sgeom.Polygon([(-1000, -1000), 
-                                 (-1000, 200000), 
+        polygon = sgeom.Polygon([(-1000, -1000),
+                                 (-1000, 200000),
                                  (200000, -1000)])
         multi_polygon = projection.project_geometry(polygon, ccrs.OSGB())
         self.assertEqual(len(multi_polygon), 1)
@@ -121,7 +121,7 @@ class TestQuality(unittest.TestCase):
             (177.5, -57.38460319),
             (180.0, -57.445077),
             (175.0, -57.19913331),
-            ])
+        ])
         self.multi_polygon = projection.project_geometry(polygon)
         #from cartopy.tests import show
         #show(projection, self.multi_polygon)
@@ -158,7 +158,8 @@ class TestQuality(unittest.TestCase):
             delta = numpy.diff(x)
             num_incr = numpy.count_nonzero(delta > 0)
             num_decr = numpy.count_nonzero(delta < 0)
-            self.assertLess(abs(num_incr - num_decr), 3, 'Too much assymmetry.')
+            self.assertLess(abs(num_incr - num_decr), 3,
+                            'Too much asymmetry.')
 
 
 class PolygonTests(unittest.TestCase):
@@ -272,7 +273,8 @@ class TestHoles(PolygonTests):
     def test_inverted_poly_clipped_hole(self):
         proj = ccrs.NorthPolarStereo()
         poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
-                             [[(-135, -60), (-45, -60), (45, -60), (135, -60)]])
+                             [[(-135, -60), (-45, -60),
+                               (45, -60), (135, -60)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)
@@ -287,7 +289,8 @@ class TestHoles(PolygonTests):
     def test_inverted_poly_removed_hole(self):
         proj = ccrs.NorthPolarStereo()
         poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
-                             [[(-135, -75), (-45, -75), (45, -75), (135, -75)]])
+                             [[(-135, -75), (-45, -75),
+                               (45, -75), (135, -75)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         self.assertEqual(len(multi_polygon), 1)

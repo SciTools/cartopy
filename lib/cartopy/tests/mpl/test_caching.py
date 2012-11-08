@@ -29,40 +29,41 @@ import cartopy.mpl_integration.geoaxes as cgeoaxes
 from cartopy.examples.waves import sample_data
 import cartopy.mpl_integration.patch
 
-    
+
 class CallCounter(object):
     """
     Exposes a context manager which can count the number of calls to a specific
     function. (useful for cache checking!)
-    
-    Internally, the target function is replaced with a new one created by this context
-    manager which then increments ``self.count`` every time it is called.
-    
+
+    Internally, the target function is replaced with a new one created
+    by this context manager which then increments ``self.count`` every
+    time it is called.
+
     Example usage::
-    
-        show_counter = CallCounter(plt, 'show')   
+
+        show_counter = CallCounter(plt, 'show')
         with show_counter:
             plt.show()
             plt.show()
             plt.show()
-        
+
         print show_counter.count    # <--- outputs 3
-    
-    
+
+
     """
     def __init__(self, parent, function_name):
         self.count = 0
         self.parent = parent
         self.function_name = function_name
         self.orig_fn = getattr(parent, function_name)
-        
+
     def __enter__(self):
         def replacement_fn(*args, **kwargs):
             self.count += 1
             return self.orig_fn(*args, **kwargs)
-        
+
         setattr(self.parent, self.function_name, replacement_fn)
-        
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         setattr(self.parent, self.function_name, self.orig_fn)
 
@@ -71,52 +72,53 @@ def test_coastline_loading_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added coastline caching.
     # this test ensures it is working...
 
-    
     # count the number of times shapereader.Reader is created.
-    shapereader_counter = CallCounter(cartopy.io.shapereader.Reader, '__init__')
-       
+    shapereader_counter = CallCounter(cartopy.io.shapereader.Reader,
+                                      '__init__')
+
     with shapereader_counter:
         ax1 = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
         ax1.coastlines()
         ax2 = plt.subplot(2, 1, 1, projection=ccrs.Robinson())
         ax2.coastlines()
-    
-    assert shapereader_counter.count == 1, ('The shapereader Reader class was created '
-                                            'more than (actually %s times) - '
-                                            ' the caching is not working.' % 
-                                            shapereader_counter.count)
+
+    msg = ('The shapereader Reader class was created more than (actually %s '
+           'times) - the caching is not working.' % shapereader_counter.count)
+    assert shapereader_counter.count == 1, msg
 
     plt.close()
 
 
 def test_shapefile_transform_cache():
-    # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl geometry caching
-    # based on geometry object id. This test ensures it is working...
+    # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
+    # geometry caching based on geometry object id. This test ensures
+    # it is working...
     coastline_path = cartopy.io.shapereader.natural_earth(resolution="50m",
-                                               category='physical',
-                                               name='coastline')
-    geoms = tuple(cartopy.io.shapereader.Reader(coastline_path).geometries())[:10]
+                                                          category='physical',
+                                                          name='coastline')
+    geoms = tuple(cartopy.io.shapereader.Reader(coastline_path).geometries()
+                  )[:10]
     n_geom = len(geoms)
-    
+
     ax = plt.axes(projection=ccrs.Robinson())
-    
+
     project_geometry_counter = CallCounter(ax.projection, 'project_geometry')
 
     # Capture the size of the cache before our test
     gc.collect()
     initial_cache_size = len(cgeoaxes._GEOMETRY_TO_PATH_CACHE)
-    
+
     with project_geometry_counter:
         c = ax.add_geometries(geoms, ccrs.Geodetic())
         c = ax.add_geometries(geoms, ccrs.Geodetic())
         c = ax.add_geometries(geoms[:], ccrs.Geodetic())
-    
+
     # Before the performance enhancement, the count would have been
     # n_calls * n_geom, but should now be just n_geom.
-    assert project_geometry_counter.count == n_geom, ('The given geometry was transformed '
-                                                      'too many times (expected: %s; got %s) - '
-                                                      ' the caching is not working.' % 
-                                                      (n_geom, project_geometry_counter.count))
+    msg = ('The given geometry was transformed too many times (expected: '
+           '%s; got %s) - the caching is not working.'
+           '' % (n_geom, project_geometry_counter.count))
+    assert project_geometry_counter.count == n_geom, msg
 
     # Check the cache has an entry for each geometry.
     assert len(cgeoaxes._GEOMETRY_TO_PATH_CACHE) == initial_cache_size + n_geom
@@ -135,8 +137,8 @@ def test_contourf_transform_path_counting():
     ax = plt.axes(projection=ccrs.Robinson())
     plt.draw()
 
-    path_to_geos_counter = CallCounter(cartopy.mpl_integration.patch, 
-                                         'path_to_geos')
+    path_to_geos_counter = CallCounter(cartopy.mpl_integration.patch,
+                                       'path_to_geos')
 
     with path_to_geos_counter:
         x, y, z = sample_data((30, 60))
@@ -144,13 +146,13 @@ def test_contourf_transform_path_counting():
         n_geom = sum([len(c.get_paths()) for c in cs.collections])
         del cs, c
         plt.draw()
-    
+
     # before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom
-    assert path_to_geos_counter.count == n_geom, ('The given geometry was transfomed '
-                                                  'too many times (expected: %s; got %s) - '
-                                                  ' the caching is not working.' % 
-                                                  (n_geom, path_to_geos_counter.count))
+    msg = ('The given geometry was transfomed too many times (expected: %s; '
+           'got %s) - the caching is not working.'
+           '' % (n_geom, path_to_geos_counter.count))
+    assert path_to_geos_counter.count == n_geom, msg
 
     # Check the cache has an entry for each geometry.
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == n_geom
@@ -162,8 +164,8 @@ def test_contourf_transform_path_counting():
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == 0
 
     plt.close()
-    
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     import nose
-    nose.runmodule(argv=['-s','--with-doctest'], exit=False)
+    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
