@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 
 # convenient name for creating projections
 import cartopy.crs as prj
@@ -30,3 +31,14 @@ if shapely.speedups.available:
 #LAND_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_land')
 
 __version__ = '0.4.x'
+
+
+config = {'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
+          'downloads': {},
+          }
+"""
+The config dictionary stores global configuration values for cartopy.
+
+XXX Describe the config mechanism.
+
+"""
