@@ -17,6 +17,7 @@
 
 
 import itertools
+import time
 import unittest
 
 import numpy
@@ -71,6 +72,19 @@ class TestLineString(unittest.TestCase):
         from cartopy.tests import show
         #show(projection, multi_line_string)
         self.assertEqual(len(multi_line_string), 2)
+
+    def test_out_of_domain_efficiency(self):
+        # Check we're efficiently dealing with lines that project
+        # outside the map domain.
+        # Because the south pole projects to an *enormous* circle
+        # (radius ~ 1e23) this will take a *long* time to project if the
+        # within-domain exactness criteria are used.
+        line_string = geometry.LineString([(0, -90), (2, -90)])
+        tgt_proj = ccrs.NorthPolarStereo()
+        src_proj = ccrs.PlateCarree()
+        cutoff_time = time.time() + 1
+        tgt_proj.project_geometry(line_string, src_proj)
+        self.assertLess(time.time(), cutoff_time, 'Projection took too long')
 
 
 class FakeProjection(ccrs.PlateCarree):
