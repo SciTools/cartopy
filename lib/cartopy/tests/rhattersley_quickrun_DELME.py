@@ -25,12 +25,11 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import shapely.geometry as sgeom
 
-import cartopy
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shapereader
 
-COASTLINE_PATH = shapereader.natural_earth('coastline')
-LAND_PATH = shapereader.natural_earth('land')
+COASTLINE_PATH = shapereader.natural_earth(name='coastline')
+LAND_PATH = shapereader.natural_earth(name='land')
 
 
 def _arrows(projection, geometry):
