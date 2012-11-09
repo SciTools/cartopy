@@ -110,6 +110,24 @@ class TestMisc(unittest.TestCase):
         #from cartopy.tests import show
         #show(projection, multi_line_string)
 
+    def test_three_points(self):
+        # The following LinearRing when projected from PlateCarree() to
+        # PlateCarree(180.0) results in three points all in close proximity.
+        # If an attempt is made to form a LinearRing from the three points
+        # by combining the first and last an exception will be raised.
+        # Check that this object can be projected without error.
+        coords = [(0.0, -45.0),
+                  (0.0, -44.99974961593933),
+                  (0.000727869825138, -45.0),
+                  (0.0, -45.000105851567454),
+                  (0.0, -45.0)]
+        linear_ring = geometry.polygon.LinearRing(coords)
+        src_proj = ccrs.PlateCarree()
+        target_proj = ccrs.PlateCarree(180.0)
+        try:
+            result = target_proj.project_geometry(linear_ring, src_proj)
+        except ValueError:
+            self.fail("Failed to project LinearRing.")
 
 if __name__ == '__main__':
     unittest.main()
