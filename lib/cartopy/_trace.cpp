@@ -345,6 +345,20 @@ State get_state(Point &point, const GEOSPreparedGeometry *gp_domain,
     return state;
 }
 
+/*
+ * Return whether the given line segment is suitable as an
+ * approximation of the projection of the source line.
+ *
+ * t_start: Interpolation parameter for the start point.
+ * p_start: Projected start point.
+ * t_end: Interpolation parameter for the end point.
+ * p_start: Projected end point.
+ * interpolator: Interpolator for current source line.
+ * threshold: Lateral tolerance in target projection coordinates.
+ * handle: Thread-local context handle for GEOS.
+ * gp_domain: Prepared polygon of target map domain.
+ * inside: Whether the start point is within the map domain.
+ */
 bool straightAndDomain(double t_start, Point &p_start,
                        double t_end, Point &p_end,
                        Interpolator *interpolator, double threshold,
@@ -399,7 +413,28 @@ bool straightAndDomain(double t_start, Point &p_start,
             {
                 double separation;
                 GEOSDistance_r(handle, g_segment, g_mid, &separation);
-                valid = separation <= threshold * 2.0 * (0.5 - fabs(0.5 - along));
+                if (inside)
+                {
+                    // Scale the lateral threshold by the distance from
+                    // the nearest end. I.e. Near the ends the lateral
+                    // threshold is much smaller; it only has its full
+                    // value in the middle.
+                    valid = separation <= threshold * 2.0 *
+                                            (0.5 - fabs(0.5 - along));
+                }
+                else
+                {
+                    // Check if the mid-point makes less than ~11 degree
+                    // angle with the straight line.
+                    // sin(11') => 0.2
+                    // To save the square-root we just use the square of
+                    // the lengths, hence:
+                    // 0.2 ^ 2 => 0.04
+                    double hypot_dx = p_mid.x - p_start.x;
+                    double hypot_dy = p_mid.y - p_start.y;
+                    double hypot = hypot_dx * hypot_dx + hypot_dy * hypot_dy;
+                    valid = ((separation * separation) / hypot) < 0.04;
+                }
             }
         }
 
@@ -585,7 +620,6 @@ void _project_segment(GEOSContextHandle_t handle,
     }
 }
 
-#define DEBUG
 GEOSGeometry *_project_line_string(GEOSContextHandle_t handle,
                                    GEOSGeometry *g_line_string,
                                    Interpolator *interpolator,
