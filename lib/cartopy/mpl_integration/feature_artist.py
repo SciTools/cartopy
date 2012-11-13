@@ -70,19 +70,14 @@ class FeatureArtist(matplotlib.artist.Artist):
         # are all 1 by default. Assuming equal zorder drawing takes place in
         # the following order: collections, patches, lines (default zorder=2),
         # text (default zorder=3), then other artists e.g. FeatureArtist.
-        default_zorder = matplotlib.collections.PathCollection.zorder
-        self.set_zorder(default_zorder)
-        # Override with feature's zorder value (if set).
-        if feature.kwargs.get('zorder') is not None:
-            self.set_zorder(feature.kwargs['zorder'])
-        # Override with artist's custom zorder value (if set).
         if self._kwargs.get('zorder') is not None:
             self.set_zorder(self._kwargs['zorder'])
+        elif feature.kwargs.get('zorder') is not None:
+            self.set_zorder(feature.kwargs['zorder'])
+        else:
+            self.set_zorder(matplotlib.collections.PathCollection.zorder)
 
         self._feature = feature
-
-        # Not sure we need this
-        self.callbacks = matplotlib.cbook.CallbackRegistry()
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
@@ -132,5 +127,5 @@ class FeatureArtist(matplotlib.artist.Artist):
                                                   transform=transform,
                                                   **final_kwargs)
         c.set_clip_path(ax.patch)
-        c.draw(renderer)
+        return c.draw(renderer)
 

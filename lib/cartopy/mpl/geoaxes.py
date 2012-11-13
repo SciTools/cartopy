@@ -463,11 +463,11 @@ class GeoAxes(matplotlib.axes.Axes):
                 raise ValueError('Cannot determine extent in'
                                  ' coordinate system {!r}'.format(crs))
 
-
         # Calculate intersection with boundary and project if necesary.
         boundary_poly = shapely.geometry.Polygon(self.projection.boundary)
         if proj != self.projection:
             # Erode boundary by threshold to avoid transform issues.
+            # This is a workaround for numerical issues at the boundary.
             eroded_boundary_poly = boundary_poly.buffer(-self.projection.threshold)
             geom_in_src_proj = eroded_boundary_poly.intersection(domain_in_src_proj)
             geom_in_crs = proj.project_geometry(geom_in_src_proj, self.projection)

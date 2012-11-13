@@ -84,7 +84,7 @@ class Feature(object):
     @abstractmethod
     def geometries(self):
         """
-        Must be overriden to return a generator of shapely geometries
+        Must be overriden to return an iterator of shapely geometries
         for this feature.
 
         """
@@ -92,7 +92,7 @@ class Feature(object):
 
     def intersecting_geometries(self, extent):
         """
-        Returns a generator of shapely geometries that intersect with
+        Returns an iterator of shapely geometries that intersect with
         the given extent. The extent is assumed to be in the CRS of
         the feature. If extent is None, the method returns all
         geometries for this dataset.
@@ -101,11 +101,10 @@ class Feature(object):
         if extent is not None:
             extent_geom = shapely.geometry.box(extent[0], extent[2],
                                                extent[1], extent[3])
-            predicate = lambda geom: extent_geom.intersects(geom)
+            return (geom for geom in self.geometries() if
+                    extent_geom.intersects(geom))
         else:
-            predicate = lambda geom: True
-
-        return (geom for geom in self.geometries() if predicate(geom))
+            return self.geometries()
 
 
 class ShapelyFeature(Feature):
@@ -131,7 +130,7 @@ class ShapelyFeature(Feature):
         self._geoms = tuple(geometries)
 
     def geometries(self):
-        return (geom for geom in self._geoms)
+        return iter(self._geoms)
 
 
 class NaturalEarthFeature(Feature):
@@ -180,7 +179,7 @@ class NaturalEarthFeature(Feature):
         else:
             geometries = _NATURAL_EARTH_GEOM_CACHE[key]
 
-        return geometries
+        return iter(geometries)
 
 
 class GSHHSFeature(Feature):
@@ -263,12 +262,12 @@ class GSHHSFeature(Feature):
         return scale
 
     def geometries(self):
-        """Returns a generator of shapely geometries for the GSHHS dataset."""
+        """Returns an iterator of shapely geometries for the GSHHS dataset."""
         return self.intersecting_geometries(extent=None)
 
     def intersecting_geometries(self, extent):
         """
-        Returns a generator of shapely geometries for the GSHHS dataset
+        Returns an iterator of shapely geometries for the GSHHS dataset
         that intersect with the given extent.
 
         """
@@ -277,14 +276,9 @@ class GSHHSFeature(Feature):
         else:
             scale = self._scale[0]
 
-        # Set up filter.
         if extent is not None:
             extent_geom = shapely.geometry.box(extent[0], extent[2],
                                                extent[1], extent[3])
-            predicate = lambda geom: extent_geom.intersects(geom)
-        else:
-            predicate = lambda geom: True
-
         for level in self._levels:
             geoms = GSHHSFeature._geometries_cache.get((scale, level))
             if geoms is None:
@@ -297,7 +291,7 @@ class GSHHSFeature(Feature):
                 #print 'DEBUG: Done.'
                 GSHHSFeature._geometries_cache[(scale, level)] = geoms
             for geom in geoms:
-                if predicate(geom):
+                if extent is None or extent_geom.intersects(geom):
                     yield geom
 
 
