@@ -179,20 +179,42 @@ class Projection(CRS):
                              multi_line_string[0].coords[-1])):
             result_geometry = LinearRing(multi_line_string[0].coords[:-1])
         elif n_lines > 1:
-            # XXX Clumsy! (NB. multi_line_string[-1] causes a
-            # MemoryFault from shapely)
             line_strings = list(multi_line_string)
-            # Check if we should stitch together the two ends.
-            # i.e. Does the first point of the first line match the
-            # last point of the last line?
-            # def23ghi
-            # jkl41abc
-            if numpy.allclose(line_strings[0].coords[0],
-                              line_strings[-1].coords[-1]):
-                last_coords = list(line_strings[-1].coords)
-                first_coords = list(line_strings[0].coords)[1:]
-                line_strings[-1] = sgeom.LineString(last_coords + first_coords)
-                result_geometry = sgeom.MultiLineString(line_strings[1:])
+            # Stitch together segments which are close to continuous.
+            # This is important when:
+            # 1) The first source point projects into the map and the
+            # ring has been cut by the boundary.
+            # Continuing the example from above this gives:
+            #   def23ghi
+            #   jkl41abc
+            # 2) The cut ends of segments are too close to reliably
+            # place into an order along the boundary.
+            line_strings = list(multi_line_string)
+            any_modified = False
+            i = 0
+            while i < len(line_strings) - 1:
+                modified = False
+                j = 0
+                while j < len(line_strings):
+                    if i != j and numpy.allclose(line_strings[i].coords[0],
+                                                 line_strings[j].coords[-1],
+                                                 atol=self.threshold):
+                        last_coords = list(line_strings[j].coords)
+                        first_coords = list(line_strings[i].coords)[1:]
+                        combo = sgeom.LineString(last_coords + first_coords)
+                        del line_strings[j], line_strings[i]
+                        line_strings.append(combo)
+                        modified = True
+                        any_modified = True
+                        break
+                    else:
+                        j += 1
+                if not modified:
+                    i += 1
+            if any_modified:
+                result_geometry = sgeom.MultiLineString(line_strings)
+            else:
+                result_geometry = multi_line_string
 
         return result_geometry
 
