@@ -24,7 +24,7 @@ def show(projection, geometry):
     if geometry.type == 'MultiPolygon' and 1:
         multi_polygon = geometry
         for polygon in multi_polygon:
-            import cartopy.mpl_integration.patch as patch
+            import cartopy.mpl.patch as patch
             paths = patch.geos_to_path(polygon)
             for pth in paths:
                 patch = mpatches.PathPatch(pth, edgecolor='none',

@@ -130,9 +130,9 @@ cdef class CRS:
         the matplotlib ``_as_mpl_transform`` interface.
 
         """
-        # lazy import mpl_integration.geoaxes (and therefore matplotlib) as mpl
+        # lazy import mpl.geoaxes (and therefore matplotlib) as mpl
         # is only an optional dependency
-        import cartopy.mpl_integration.geoaxes as geoaxes
+        import cartopy.mpl.geoaxes as geoaxes
         if not isinstance(axes, geoaxes.GeoAxes):
             raise ValueError('Axes should be an instance of GeoAxes, got %s' % type(axes))
         return geoaxes.InterProjectionTransform(self, axes.projection) + axes.transData

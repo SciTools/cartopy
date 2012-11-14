@@ -38,7 +38,7 @@ def produce_axes2(ax):
 
 def produce_axes(ax):
     import cartopy
-    import cartopy.mpl_integration.patch as pt
+    import cartopy.mpl.patch as pt
     import matplotlib.pyplot as plt
     import matplotlib.path as mpath
     import numpy

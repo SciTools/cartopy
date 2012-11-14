@@ -70,7 +70,7 @@ def draw_polygon(projection, polygon, color=None):
         #plt.plot(*zip(*polygon.exterior.coords), marker='+', color=color)
         #_arrows(projection, polygon.exterior)
         #continue
-        import cartopy.mpl_integration.patch as patch
+        import cartopy.mpl.patch as patch
         paths = patch.geos_to_path(polygon)
         for pth in paths:
             patch = mpatches.PathPatch(pth, edgecolor='none',

@@ -23,11 +23,10 @@ from matplotlib.path import Path
 import shapely.geometry
 
 import cartopy.crs as ccrs
-import cartopy.mpl_integration.patch as cpatch
 import cartopy.io.shapereader
-import cartopy.mpl_integration.geoaxes as cgeoaxes
+import cartopy.mpl.geoaxes as cgeoaxes
+import cartopy.mpl.patch
 from cartopy.examples.waves import sample_data
-import cartopy.mpl_integration.patch
 
 
 class CallCounter(object):
@@ -139,8 +138,7 @@ def test_contourf_transform_path_counting():
     ax = plt.axes(projection=ccrs.Robinson())
     plt.draw()
 
-    path_to_geos_counter = CallCounter(cartopy.mpl_integration.patch,
-                                       'path_to_geos')
+    path_to_geos_counter = CallCounter(cartopy.mpl.patch, 'path_to_geos')
 
     with path_to_geos_counter:
         x, y, z = sample_data((30, 60))

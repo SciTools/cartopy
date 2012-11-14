@@ -133,7 +133,7 @@ class Projection(CRS):
         return domain
 
     def _as_mpl_axes(self):
-        import cartopy.mpl_integration.geoaxes as geoaxes
+        import cartopy.mpl.geoaxes as geoaxes
         return geoaxes.GeoAxes, {'map_projection': self}
 
     def project_geometry(self, geometry, src_crs=None):

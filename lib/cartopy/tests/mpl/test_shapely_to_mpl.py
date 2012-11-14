@@ -23,7 +23,7 @@ from matplotlib.path import Path
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
-import cartopy.mpl_integration.patch as cpatch
+import cartopy.mpl.patch as cpatch
 
 from cartopy.tests.mpl import ImageTesting
 
