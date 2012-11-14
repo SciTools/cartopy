@@ -141,10 +141,9 @@ class SRTM3Downloader(DownloadableItem):
         url = SRTM3Downloader._SRTM3_LOOKUP_URL.get(key, None)
         return url
     
-    def _aquire_resource(self, target_path, format_dict):        
+    def acquire_resource(self, target_path, format_dict):        
         import cStringIO as StringIO
         from zipfile import ZipFile
-        import urllib2
         
         target_dir = os.path.dirname(target_path)
         if not os.path.isdir(target_dir):
@@ -152,15 +151,16 @@ class SRTM3Downloader(DownloadableItem):
         
         url = self.url(format_dict)
         
-        # factor into a method... (urlopen?)
-        print 'Downloading: ', url
-        shapefile_online = urllib2.urlopen(url)
-        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        srtm_online = self._urlopen(url)
+        zfh = ZipFile(StringIO.StringIO(srtm_online.read()), 'r')
         
         zip_member_path = u'{y}{x}.hgt'.format(**format_dict)
         member = zfh.getinfo(zip_member_path)
         with open(target_path, 'wb') as fh:
             fh.write(zfh.open(member).read())
+            
+        srtm_online.close()
+        zfh.close()
 
         return target_path
 

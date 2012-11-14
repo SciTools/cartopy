@@ -208,12 +208,14 @@ class NEShpDownloader(DownloadableItem):
     are typically ``category``, ``resolution`` and ``name``.    
      
     """
+    FORMAT_KEYS = ('config', 'resolution', 'category', 'resolution', 'name')    
+    
     # define the NaturalEarth url template (note the repeat of http is 
     # intentional and part of the NE [Natural Earth] scheme).
     _NE_URL_TEMPLATE = ('http://www.naturalearthdata.com/'
                         'http//www.naturalearthdata.com/download/'
                         '{resolution}/{category}/ne_{resolution}_{name}.zip')
-                             
+    
     def __init__(self, 
                  url_template=_NE_URL_TEMPLATE, 
                  target_path_template=None, 
@@ -234,7 +236,7 @@ class NEShpDownloader(DownloadableItem):
             yield ('ne_{resolution}_{name}'
                    '{extension}'.format(extension=ext, **format_dict))
         
-    def _aquire_resource(self, target_path, format_dict):
+    def acquire_resource(self, target_path, format_dict):
         """
         Downloads the zip file and extracts the files listed in
         :meth:`zip_file_contents` to the target path.
@@ -242,7 +244,6 @@ class NEShpDownloader(DownloadableItem):
         """
         import cStringIO as StringIO
         from zipfile import ZipFile
-        import urllib2
         
         target_dir = os.path.dirname(target_path)
         if not os.path.isdir(target_dir):
@@ -250,8 +251,7 @@ class NEShpDownloader(DownloadableItem):
         
         url = self.url(format_dict)
         
-        print 'Downloading: ', url
-        shapefile_online = urllib2.urlopen(url)
+        shapefile_online = self._urlopen(url)
         zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
         
         for member_path in self.zip_file_contents(format_dict):
@@ -261,6 +261,9 @@ class NEShpDownloader(DownloadableItem):
             with open(target, 'wb') as fh:
                 fh.write(zfh.open(member).read())
 
+        shapefile_online.close()
+        zfh.close()
+        
         return target_path
 
     @staticmethod

@@ -158,7 +158,7 @@ def test_downloading_simple_ascii():
         def no_way(*args, **kwargs):
             raise ValueError('Repeated path calls result in repeated '
                              'downloading of the file.')
-        dnld_item.__class__._aquire_resource = no_way
+        dnld_item.__class__.acquire_resource = no_way
         
         assert_equal(dnld_item.path(format_dict), result_path)
     
@@ -198,7 +198,7 @@ def test_natural_earth_downloader():
         def no_way(*args, **kwargs):
             raise ValueError('Subsequent calls to path resulted in '
                              'downloading the resource multiple times')
-        dnld_item.__class__._aquire_resource = no_way
+        dnld_item.__class__.acquire_resource = no_way
         
         assert_equal(dnld_item.path(format_dict), shp_path)
         
@@ -216,7 +216,7 @@ def test_natural_earth_downloader():
                                    )
         # check that the pre_dnld downloader doesn't re-download, but instead
         # uses the path of the previously downloaded item
-        pre_dnld.__class__._aquire_resource = no_way
+        pre_dnld.__class__.acquire_resource = no_way
         assert_equal(pre_dnld.path(format_dict), shp_path)
             
     finally:
