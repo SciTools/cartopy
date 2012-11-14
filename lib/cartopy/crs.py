@@ -179,7 +179,6 @@ class Projection(CRS):
                              multi_line_string[0].coords[-1])):
             result_geometry = LinearRing(multi_line_string[0].coords[:-1])
         elif n_lines > 1:
-            line_strings = list(multi_line_string)
             # Stitch together segments which are close to continuous.
             # This is important when:
             # 1) The first source point projects into the map and the
@@ -192,7 +191,7 @@ class Projection(CRS):
             line_strings = list(multi_line_string)
             any_modified = False
             i = 0
-            while i < len(line_strings) - 1:
+            while i < len(line_strings):
                 modified = False
                 j = 0
                 while j < len(line_strings):
@@ -202,6 +201,8 @@ class Projection(CRS):
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
                         combo = sgeom.LineString(last_coords + first_coords)
+                        if j < i:
+                            i, j = j, i
                         del line_strings[j], line_strings[i]
                         line_strings.append(combo)
                         modified = True
