@@ -63,8 +63,8 @@ def test_update_lim():
     # check that the standard data lim setting works
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.update_datalim([(-10, -10), (-5, -5)])
-    assert_array_almost_equal(
-        ax.dataLim.get_points(), np.array([[-10., -10.], [-5., -5.]]))
+    assert_array_almost_equal(ax.dataLim.get_points(),
+                              np.array([[-10., -10.], [-5., -5.]]))
     plt.close()
 
 

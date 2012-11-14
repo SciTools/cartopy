@@ -189,8 +189,8 @@ class TestBisect(unittest.TestCase):
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(
-                    coord)), 'Unexpected NaN in projected coords.')
+                self.assertFalse(any(numpy.isnan(coord)), 
+                                 'Unexpected NaN in projected coords.')
 
 
 class TestMisc(unittest.TestCase):
@@ -214,12 +214,8 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(len(multi_line_string[0].coords), 2)
 
     def test_global_boundary(self):
-        linear_ring = geometry.LineString([
-            (-180, -180),
-            (-180, 180),
-            (180, 180),
-            (180, -180),
-        ])
+        linear_ring = geometry.LineString([(-180, -180), (-180, 180),
+                                           (180, 180), (180, -180)])
         pc = ccrs.PlateCarree()
         merc = ccrs.Mercator()
         multi_line_string = pc.project_geometry(linear_ring, merc)

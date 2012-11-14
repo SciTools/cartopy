@@ -107,7 +107,7 @@ def test_contour_interiors():
     numlev = 2
     x, y = np.meshgrid(np.arange(-5.5, 5.5, 0.25), np.arange(-5.5, 5.5, 0.25))
     dim = x.shape[0]
-    data = Z = np.sin(np.sqrt(x ** 2 + y ** 2))
+    data = np.sin(np.sqrt(x ** 2 + y ** 2))
     lats = np.arange(dim) + 30
     lons = np.arange(dim) - 20
 

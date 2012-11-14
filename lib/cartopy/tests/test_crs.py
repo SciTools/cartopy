@@ -21,7 +21,7 @@ import pickle
 import unittest
 
 import numpy
-from numpy.testing import assert_array_almost_equal as array_almost_equal
+from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 
 
 import cartopy.crs as ccrs
@@ -46,20 +46,20 @@ class TestCRS(unittest.TestCase):
         east, north = numpy.array([295131, 63511], dtype=numpy.double)
 
         # note the handling of precision here...
-        array_almost_equal(numpy.array(osgb.transform_point(lon, lat, ll)),
-                           numpy.array([east, north]),
-                           1)
-        array_almost_equal(ll.transform_point(east, north, osgb),
-                           [lon, lat],
-                           2)
+        assert_arr_almost_eq(numpy.array(osgb.transform_point(lon, lat, ll)),
+                             numpy.array([east, north]),
+                             1)
+        assert_arr_almost_eq(ll.transform_point(east, north, osgb),
+                             [lon, lat],
+                             2)
 
         r_lon, r_lat = ll.transform_point(east, north, osgb)
         r_inverted = numpy.array(osgb.transform_point(r_lon, r_lat, ll))
-        array_almost_equal(r_inverted, [east, north], 3)
+        assert_arr_almost_eq(r_inverted, [east, north], 3)
 
         r_east, r_north = osgb.transform_point(lon, lat, ll)
         r_inverted = numpy.array(ll.transform_point(r_east, r_north, osgb))
-        array_almost_equal(r_inverted, [lon, lat])
+        assert_arr_almost_eq(r_inverted, [lon, lat])
 
 
 def test_pickle():

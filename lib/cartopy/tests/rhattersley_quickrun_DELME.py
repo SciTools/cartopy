@@ -50,8 +50,8 @@ def _arrows(projection, geometry):
                 dx = length * dx / mag
                 dy = length * dy / mag
                 width = projection.threshold * s * 0.5
-                arrow = mpatches.Arrow(
-                    start[0], start[1], dx, dy, width=width, alpha=0.4)
+                arrow = mpatches.Arrow(start[0], start[1], dx, dy,
+                                       width=width, alpha=0.4)
                 plt.gca().add_patch(arrow)
             except ZeroDivisionError:
                 pass
@@ -60,8 +60,8 @@ def _arrows(projection, geometry):
 def draw_line_string(projection, line_string, color='black', linestyle='-'):
     multi_line_string = projection.project_geometry(line_string)
     for line_string in multi_line_string:
-        plt.plot(*zip(
-            *line_string.coords), marker='', color=color, linestyle=linestyle)
+        plt.plot(*zip(*line_string.coords),
+                 marker='', color=color, linestyle=linestyle)
         #_arrows(projection, line_string)
 
 
@@ -215,8 +215,8 @@ def test(projections):
             draw_polygon(projection, polygon)
 
             # "Antarctica" (incl. non-physical boundary segments) (CW)
-            polygon = sgeom.Polygon([(-50, -80), (
-                90, -80), (160, -70), (160, -90), (-160, -90), (-160, -70)])
+            polygon = sgeom.Polygon([(-50, -80), (90, -80), (160, -70),
+                                     (160, -90), (-160, -90), (-160, -70)])
             draw_polygon(projection, polygon)
 
             # Wedge

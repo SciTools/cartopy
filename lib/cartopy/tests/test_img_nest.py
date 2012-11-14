@@ -54,6 +54,7 @@ class RoundedImageCollection(cimg_nest.ImageCollection):
     """
     Takes account for the fact that the image tiles are stored with
     imprecise tfw files.
+
     """
     def _extent_finalize(self, extent, fname):
         return tuple(round(num, 1) for num in extent)
@@ -77,8 +78,6 @@ def gen_nest():
 
 
 def test_nest():
-    nest_from_config = gen_nest()
-
     z0 = RoundedImageCollection('aerial z0 test', ccrs.Mercator())
     z0.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_0'),
                          glob_pattern='*.png')
@@ -129,6 +128,7 @@ def test_nest():
                  sorted([_tile_from_img(img) for z, img in
                          nest.subtiles(('aerial z1 test', x1_y0_z1))]))
 
+    nest_from_config = gen_nest()
     # check that the the images in the nest from configuration are the same as
     # those created by hand.
     for name in nest_z0_z1._collections_by_name.keys():
@@ -175,18 +175,27 @@ def gen_test_data():
             pix_size_x = x_rng / nx
             pix_size_y = y_rng / ny
             upper_left_center = (extent[0] + pix_size_x / 2,
-                                 (extent[2] + pix_size_y / 2))
+                                 extent[2] + pix_size_y / 2)
 
             tfw_fname = fname[:-4] + '.tfw'
+
+            tfw_str_fmt = ('{x_pix_size}\n'
+                           '{y_rotation}\n'
+                           '{x_rotation}\n'
+                           '{y_pix_size}\n'
+                           '{x_center}\n'
+                           '{y_center}\n')
+
+            tfw_keys = {'x_pix_size': np.float32(pix_size_x),
+                        'y_rotation': 0,
+                        'x_rotation': 0,
+                        'y_pix_size': np.float32(pix_size_y),
+                        'x_center': np.float32(upper_left_center[0]),
+                        'y_center': np.float32(upper_left_center[1]),
+                        }
+
             with open(tfw_fname, 'w') as fh:
-                fh.write('{}\n{}\n{}\n{}\n{}\n{}'.format(
-                         np.float32(pix_size_x),
-                         0, 0,
-                         np.float32(pix_size_y),
-                         np.float32(upper_left_center[0]),
-                         np.float32(upper_left_center[1]),
-                         )
-                         )
+                fh.write(tfw_str_fmt.format(**tfw_keys))
             img.save(fname)
 
 

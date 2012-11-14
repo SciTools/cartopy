@@ -96,8 +96,9 @@ def test_shapefile_transform_cache():
     coastline_path = cartopy.io.shapereader.natural_earth(resolution="50m",
                                                           category='physical',
                                                           name='coastline')
-    geoms = tuple(cartopy.io.shapereader.Reader(coastline_path).geometries()
-                  )[:10]
+    geoms = cartopy.io.shapereader.Reader(coastline_path).geometries()
+    # filter just the first 10 of them
+    geoms = tuple(geoms)[:10]
     n_geom = len(geoms)
 
     ax = plt.axes(projection=ccrs.Robinson())

@@ -78,8 +78,8 @@ def test_gridliner():
     ax.gridlines(ccrs.PlateCarree(), alpha=0.5, linewidth=1.5, linestyle='-')
 
     delta = 1.5e-2
-    plt.subplots_adjust(
-        left=0 + delta, right=1 - delta, top=1 - delta, bottom=0 + delta)
+    plt.subplots_adjust(left=0 + delta, right=1 - delta,
+                        top=1 - delta, bottom=0 + delta)
 
 
 if __name__ == '__main__':
