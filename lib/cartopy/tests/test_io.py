@@ -20,6 +20,7 @@ import contextlib
 import os
 import shutil
 import tempfile
+import warnings
 
 from nose.tools import assert_equal
 
@@ -146,7 +147,13 @@ def test_downloading_simple_ascii():
         
         assert_equal(dnld_item.target_path(format_dict), tmp_fname)
         
-        result_path = dnld_item.path(format_dict)
+        with warnings.catch_warnings(record=True) as w:
+            result_path = dnld_item.path(format_dict)
+            assert len(w) == 1
+            assert issubclass(w[0].category, cio._DownloadWarning)
+            assert_equal(str(w[0].message), 
+                         'Downloading: ' + file_url.format(name='jquery')) 
+            
         assert_equal(result_path, tmp_fname)
         
         with open(tmp_fname, 'r') as fh:
@@ -190,8 +197,12 @@ def test_natural_earth_downloader():
     
     try:
         dnld_item = NEShpDownloader(target_path_template=shp_path_template)
-        shp_path = dnld_item.path(format_dict)
         
+        with warnings.catch_warnings(record=True) as w:
+            shp_path = dnld_item.path(format_dict)
+            assert len(w) == 1
+            assert issubclass(w[0].category, cio._DownloadWarning)
+            
         assert_equal(shp_path_template.format(**format_dict), shp_path)
         
         # check that calling path again doesn't try re-downloading    

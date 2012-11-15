@@ -25,10 +25,6 @@ import shapely.speedups
 if shapely.speedups.available:
     shapely.speedups.enable()
 
-## XXX move elsewhere
-#import os
-#COASTLINE_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_coastline')
-#LAND_PATH = os.path.join(os.path.dirname(__file__), 'data', '110m_land')
 
 __version__ = '0.4.x'
 
@@ -39,6 +35,35 @@ config = {'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
 """
 The config dictionary stores global configuration values for cartopy.
 
-XXX Describe the config mechanism.
+In the first instance, the config is defined in ``cartopy/__init__``. From
+there, it is possible to provide site wide customisations by including a
+``siteconfig.py`` file, along with the cartopy source code, which contains
+a function ``update_config`` which takes the config dictionary instance as its
+first and only argument (from where it is possible to update the dictionary
+howsoever desired).
+
+For users without write permission to the cartopy source directory, a package
+called ``cartopy_userconfig`` should be made importable (consider putting it
+in ``site.getusersitepackages()``) and should expose a
+function called ``update_config`` which takes the config dictionary as its
+first and only argument.
 
 """
+
+
+# try importing a siteconfig file which exposes an update_config function,
+# otherwise, fail gracefully.
+try:
+    from cartopy.siteconfig import update_config as _update_config
+    _update_config(config)
+except ImportError:
+    pass
+
+
+# try importing a cartopy_userconfig file which exposes an update_config
+# function, otherwise, fail gracefully.
+try:
+    from cartopy_userconfig import update_config as _update_config
+    _update_config(config)
+except ImportError:
+    pass

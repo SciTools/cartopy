@@ -79,6 +79,11 @@ class _MissingKeyFormatter(string.Formatter):
             return kwargs.get(key, '{' + key + '}')
     
 
+class _DownloadWarning(Warning):
+    """Issued when a file is being downloaded in by DownloadableItem."""
+    pass 
+
+
 class DownloadableItem(object):
     """
     Represents a resource, that can be configured easily, which knows
@@ -119,8 +124,8 @@ class DownloadableItem(object):
     FORMAT_KEYS = ('config', )
     """
     The minimum keys which should be provided in the ``format_dict``
-    argument for the ``path``, ``url``, ``target_path`` and 
-    ``pre_downloaded_path`` methods.
+    argument for the ``path``, ``url``, ``target_path``, 
+    ``pre_downloaded_path`` and ``acquire_resource`` methods.
     
     """
     
@@ -228,7 +233,7 @@ class DownloadableItem(object):
             if self._cached_path is not False:    
                 self._cached_path = result_path
         
-        return self._cached_path
+        return result_path
     
     def acquire_resource(self, target_path, format_dict):
         """
@@ -264,7 +269,7 @@ class DownloadableItem(object):
         Caller should close the file handle when finished with it.
         
         """ 
-        warnings.warn('Downloading: {}'.format(url))
+        warnings.warn('Downloading: {}'.format(url), _DownloadWarning)
         return urllib2.urlopen(url)
     
     @staticmethod

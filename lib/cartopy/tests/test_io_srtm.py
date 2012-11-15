@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import warnings
+
+import cartopy.io
 import cartopy.io.srtm
 from cartopy.tests.test_io import download_to_temp
     
@@ -22,7 +25,10 @@ from cartopy.tests.test_io import download_to_temp
 def test_srtm3_retrieve():
     # test that the download mechanism for srtm3 works
     with download_to_temp() as tmp_dir:
-        r = cartopy.io.srtm.SRTM3_retrieve(-4, 50)
+        with warnings.catch_warnings(record=True) as w:
+            r = cartopy.io.srtm.SRTM3_retrieve(-4, 50)
+            assert len(w) == 1
+            assert issubclass(w[0].category, cartopy.io._DownloadWarning)
         
         assert r.startswith(tmp_dir), 'File not downloaded to tmp dir'
         

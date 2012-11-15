@@ -184,19 +184,12 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     # get hold of the DownloadableItem (typically a NEShpDownloader instance)
     # which we can then simply call its path method to get the appropriate
     # shapefile (it will download if necessary)
-    ne_downloader = DownloadableItem.from_config(('shapefiles', 
-                                                  'natural_earth',
+    ne_downloader = DownloadableItem.from_config(('shapefiles', 'natural_earth',
                                                   resolution, category, name))
-    format_dict = {'config': config, # XXX consider not passing this through
-                   'category': category, 'name': name, 'resolution': resolution}
+    format_dict = {'config': config, 'category': category, 
+                   'name': name, 'resolution': resolution}
     return ne_downloader.path(format_dict)
     
-    
-# XXX NEW STUFF.... 
-
-
-
-
 
 class NEShpDownloader(DownloadableItem):
     """
@@ -292,8 +285,8 @@ config['downloads'].setdefault(('shapefiles', 'natural_earth'),
                                NEShpDownloader.default_downloader())
 
 
-# XXX cartopy's shapefiles are out of date and the new ones cause problems. Temporarily
-# use the download mechanism to point to the old files::
+# XXX cartopy's shapefiles are out of date and the new ones cause test failiures. Temporarily
+# use the download mechanism to point to the old files. This work should be removed by #150::
 config['downloads'][('shapefiles', 'natural_earth')
                     ].target_path_template = os.path.join('{config[data_dir]}', 
                                              'shapefiles',

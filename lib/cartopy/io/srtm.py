@@ -32,10 +32,7 @@ import numpy
 
 from cartopy import config
 import cartopy.crs as ccrs
-from cartopy.io import fh_getter
-
-
-
+from cartopy.io import fh_getter, DownloadableItem
 
 
 def srtm(lon, lat):
@@ -92,29 +89,21 @@ def read_SRTM3(fh):
     return elev[::-1, ...], ccrs.PlateCarree(), [x, x + 1, y, y + 1]
 
 
-
-from cartopy.io import DownloadableItem
-
 def SRTM3_retrieve(lon, lat):
     x = '%s%03d' % ('E' if lon > 0 else 'W', abs(int(lon)))
     y = '%s%02d' % ('N' if lat > 0 else 'S', abs(int(lat)))
 
-
     srtm_downloader = DownloadableItem.from_config(('SRTM', 'SRTM3'))
-    return srtm_downloader.path({'config': config, # XXX consider removing
-                                 'x': x,
-                                 'y': y,
-                                 })
+    return srtm_downloader.path({'config': config, 'x': x, 'y': y})
 
 
 class SRTM3Downloader(DownloadableItem):
     """
-    
-    Keys: 'x' and 'y'::
-    
-        SRTM3Downloader().url({'x': 'E043', 'y': 'N43'})
+    Provides a SRTM3 download mechanism.
         
     """
+    FORMAT_KEYS = ('config', 'x', 'y')
+    
     _JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__), 
                                             'srtm.json')
     _SRTM3_LOOKUP_URL = json.load(open(_JSON_SRTM3_LOOKUP, 'r'))
@@ -133,6 +122,9 @@ class SRTM3Downloader(DownloadableItem):
         DownloadableItem.__init__(self, None, 
                                         target_path_template, 
                                         pre_downloaded_path_template)
+        # disable path caching (as this SRTM3Downloader can represent multiple
+        # different SRTM3 tiles)
+        self._cached_path = False
         
     def url(self, format_dict):
         # override the url method, looking up the url from the
@@ -213,7 +205,6 @@ class SRTM3Downloader(DownloadableItem):
         return cls(target_path_template=target_path_template)
 
 
-from cartopy import config
 # add a generic SRTM downloader to the config dictionary's 'downloads' section.
 config['downloads'].setdefault(('SRTM', 'SRTM3'),
                                SRTM3Downloader.default_downloader())
