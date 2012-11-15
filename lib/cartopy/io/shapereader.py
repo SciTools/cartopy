@@ -18,18 +18,28 @@
 
 """
 Combines the shapefile access of pyshp with the
-geometry representation of shapely.
+geometry representation of shapely:
 
->>> import os.path
->>> import cartopy.io.shapereader as shapereader
->>> filename = os.path.join(os.path.dirname(shapereader.__file__), 'data', 'Devon')
->>> reader = shapereader.Reader(filename)
->>> len(reader)
-1
->>> list(reader.records()) #doctest: +ELLIPSIS
-[<Record: <shapely.geometry.multipolygon.MultiPolygon object at ...>, {'PMS_REGION': 14, 'SHAPE_AREA': 6597719517.55, 'OBJECTID': 15, 'COUNTRY': 'ENGLAND', 'SNAC_GOR': 'South West', 'COUNTY_STR': 'Devon', 'SHAPE_LEN': 570341.652865}, <fields>>]
->>> list(reader.geometries()) #doctest: +ELLIPSIS
-[<shapely.geometry.multipolygon.MultiPolygon object at ...>]
+    >>> import os.path
+    >>> import cartopy.io.shapereader as shapereader
+    >>> filename = natural_earth(resolution='110m', 
+    ...                          category='physical', 
+    ...                          name='geography_regions_points')
+    >>> reader = shapereader.Reader(filename)
+    >>> len(reader)
+    3
+    >>> records = list(reader.records())
+    >>> print type(records[0])
+    <class 'cartopy.io.shapereader.Record'>
+    >>> print records[0].attributes.keys()
+    ['comment', 'scalerank', 'region', 'name', 'subregion', 'lat_y', \
+'featurecla', 'long_x', 'name_alt']
+    >>> print records[0].attributes['name']
+    Niagara Falls
+    >>> geoms = list(reader.geometries())
+    >>> print type(geoms[0])
+    <class 'shapely.geometry.point.Point'>
+    
 
 """
 from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
@@ -203,12 +213,11 @@ class NEShpDownloader(DownloadableItem):
     """
     FORMAT_KEYS = ('config', 'resolution', 'category', 'resolution', 'name')    
     
-    # define the NaturalEarth url template (note the repeat of http is 
-    # intentional and part of the NE [Natural Earth] scheme).
-    _NE_URL_TEMPLATE = ('http://www.naturalearthdata.com/'
-                        'http//www.naturalearthdata.com/download/'
-                        '{resolution}/{category}/ne_{resolution}_{name}.zip')
-    
+    # define the NaturalEarth url template. The natural earth website
+    # returns a 302 status if accessing directly, so we use the nacis
+    # url directly
+    _NE_URL_TEMPLATE = ('http://www.nacis.org/naturalearth/{resolution}'
+                        '/{category}/ne_{resolution}_{name}.zip')
     def __init__(self, 
                  url_template=_NE_URL_TEMPLATE, 
                  target_path_template=None, 
@@ -270,7 +279,8 @@ class NEShpDownloader(DownloadableItem):
         
             >>> ne_dnldr = NEShpDownloader.default_downloader()
             >>> print ne_dnldr.target_path_template
-            hello world
+            {config[data_dir]}/shapefiles/natural_earth/{category}/\
+{resolution}_{name}.shp
         
         """ 
         ne_path_template = os.path.join('{config[data_dir]}', 'shapefiles',

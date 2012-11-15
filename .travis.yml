@@ -29,4 +29,4 @@ install:
 script:
   - mkdir ../test_folder
   - cd ../test_folder
-  - /usr/local/bin/nosetests cartopy
+  - /usr/local/bin/nosetests cartopy --with-doctest -sv

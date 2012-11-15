@@ -27,6 +27,7 @@ from nose.tools import assert_equal
 import cartopy
 import cartopy.io as cio
 from cartopy.io.shapereader import NEShpDownloader
+from cartopy.tests.mpl.test_caching import CallCounter
 
 
 def test_DownloadableItem_data():
@@ -162,10 +163,9 @@ def test_downloading_simple_ascii():
                              fh.readline())
         
         # check that calling path again doesn't try re-downloading    
-        def no_way(*args, **kwargs):
-            raise ValueError('Repeated path calls result in repeated '
-                             'downloading of the file.')
-        dnld_item.__class__.acquire_resource = no_way
+        with CallCounter(dnld_item, 'acquire_resource') as counter:
+            assert_equal(dnld_item.path(format_dict), tmp_fname)
+        assert counter.count == 0, 'Item was re-downloaded.'
         
         assert_equal(dnld_item.path(format_dict), result_path)
     
@@ -192,26 +192,22 @@ def test_natural_earth_downloader():
     # isn't important - it is the download mechanism that is.
     format_dict = {'category': 'physical',
                    'name': 'rivers_lake_centerlines',
-                   'resolution': '110m'
-                  } 
+                   'resolution': '110m'} 
     
     try:
         dnld_item = NEShpDownloader(target_path_template=shp_path_template)
-        
-        with warnings.catch_warnings(record=True) as w:
+ 
+        # check that the file gest downloaded the first time path is called       
+        with CallCounter(dnld_item, 'acquire_resource') as counter:
             shp_path = dnld_item.path(format_dict)
-            assert len(w) == 1
-            assert issubclass(w[0].category, cio._DownloadWarning)
-            
+        assert counter.count == 1, 'Item not downloaded.'
+        
         assert_equal(shp_path_template.format(**format_dict), shp_path)
         
-        # check that calling path again doesn't try re-downloading    
-        def no_way(*args, **kwargs):
-            raise ValueError('Subsequent calls to path resulted in '
-                             'downloading the resource multiple times')
-        dnld_item.__class__.acquire_resource = no_way
-        
-        assert_equal(dnld_item.path(format_dict), shp_path)
+        # check that calling path again doesn't try re-downloading
+        with CallCounter(dnld_item, 'acquire_resource') as counter:
+            assert_equal(dnld_item.path(format_dict), shp_path)
+        assert counter.count == 0, 'Item was re-downloaded.'
         
         # check that we have the shp and the shx
         exts = ['.shp', '.shx']
@@ -219,7 +215,7 @@ def test_natural_earth_downloader():
             stem = os.path.splitext(shp_path)[0]
             assert os.path.exists(stem + ext), ("Shapefile's {} file doesn't "
                                                 "exist in {1}{0}".format(ext,
-                                                                      stem))
+                                                                        stem))
         
         # check that providing a pre downloaded path actually works 
         pre_dnld = NEShpDownloader(target_path_template=shp_path_template,
@@ -227,8 +223,10 @@ def test_natural_earth_downloader():
                                    )
         # check that the pre_dnld downloader doesn't re-download, but instead
         # uses the path of the previously downloaded item
-        pre_dnld.__class__.acquire_resource = no_way
-        assert_equal(pre_dnld.path(format_dict), shp_path)
+        
+        with CallCounter(pre_dnld, 'acquire_resource') as counter:
+            assert_equal(pre_dnld.path(format_dict), shp_path)
+        assert counter.count == 0, 'Aquire resource called more than once.'
             
     finally:
         shutil.rmtree(tmp_dir)

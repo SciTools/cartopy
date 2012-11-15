@@ -167,10 +167,10 @@ class SRTM3Downloader(DownloadableItem):
     
         The json file was created with::
     
-            >>> import cartopy.io.srtm as srtm
-            >>> import json
-            >>> fh = open(srtm.SRTM3Downloader._JSON_SRTM3_LOOKUP, 'w')
-            >>> json.dump(srtm.SRTM3Downloader._create_srtm3_dict(), fh)
+            import cartopy.io.srtm as srtm
+            import json
+            fh = open(srtm.SRTM3Downloader._JSON_SRTM3_LOOKUP, 'w')
+            json.dump(srtm.SRTM3Downloader._create_srtm3_dict(), fh)
             
         """
         # lazy imports. In most situations, these are not dependencies of cartopy.
@@ -192,6 +192,7 @@ class SRTM3Downloader(DownloadableItem):
                 if name != ' Parent Directory':
                     # remove the '.hgt.zip'
                     files[name[:-8]] = url + '/' + name
+            f.close()
         return files
     
     @classmethod
