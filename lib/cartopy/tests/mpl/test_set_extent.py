@@ -21,7 +21,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 
 import cartopy.crs as ccrs
-
+from cartopy.tests.mpl import ImageTesting
 
 @cleanup
 def test_extents():
@@ -51,7 +51,40 @@ def test_extents():
                               np.array([[-17.17698577,  48.21879707],
                                         [  5.68924381, 60.54218893]])
                               )
-    
+
+@ImageTesting(['set_extent_wrapping'])
+def test_wrapping():
+    # Tests that set_extent() handles longitudes in 0 to 360 format
+    # and that an extent that crosses the boundary is handled appropriately.
+    fig = plt.figure(figsize=(10, 6))
+
+    # Extent of Australia region in 0 to 360.
+    extent_0_to_360 = (85.0, 220.0, -55.0, 20.0)
+
+    # In PlateCarree(180) Australia region is central and
+    # should not wrap. 0 to 360 conversion should be handled implicitly.
+    ax = fig.add_subplot(2, 2, 1, projection=ccrs.PlateCarree(180))
+    ax.coastlines()
+    ax.set_extent(extent_0_to_360, ccrs.PlateCarree())
+
+    # In PlateCarree() the region crosses the boundary so the result
+    # should be a -180 to 180 strip covering -55 to 20 deg lat.
+    ax = fig.add_subplot(2, 2, 2, projection=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_extent(extent_0_to_360, ccrs.PlateCarree())
+
+    # The extent when expressed in the projection of the axes
+    # should not require the crs to be specified.
+    extent = (-95.0, 40.0, -55.0, 20.0)
+    ax = fig.add_subplot(2, 2, 3, projection=ccrs.PlateCarree(180))
+    ax.coastlines()
+    ax.set_extent(extent)
+
+    # If we do set the crs explicitly we should still get the same result as
+    # the previous plot.
+    ax = fig.add_subplot(2, 2, 4, projection=ccrs.PlateCarree(180))
+    ax.coastlines()
+    ax.set_extent(extent, ccrs.PlateCarree(180))
 
 def test_update_lim():
     # check that the standard data lim setting works

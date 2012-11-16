@@ -307,7 +307,7 @@ def test_pcolormesh_limited_area_wrap():
     ax = plt.subplot(223, projection=ccrs.PlateCarree(180))
     plt.pcolormesh(x, y, data, transform=rp, cmap='Set1')
     ax.coastlines()
-    ax.set_extent([-70, 0, 0, 80])
+    ax.set_extent([-70, 0, 0, 80], ccrs.Geodetic())
 
     ax = plt.subplot(224, projection=rp)
     plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
