@@ -74,6 +74,7 @@ class InterProjectionTransform(mtransforms.Transform):
     """
     Transforms coordinates from the source_projection to
     the ``target_projection``.
+
     """
     input_dims = 2
     output_dims = 2
@@ -97,8 +98,9 @@ class InterProjectionTransform(mtransforms.Transform):
         mtransforms.Transform.__init__(self)
 
     def __repr__(self):
-        return ('< InterProjectionTransform %s -> %s >'
-                '' % (self.source_projection, self.target_projection))
+        return ('< {!s} {!s} -> {!s} >'.format(self.__class__.__name__,
+                                               self.source_projection,
+                                               self.target_projection))
 
     def transform_non_affine(self, xy):
         """
@@ -116,8 +118,7 @@ class InterProjectionTransform(mtransforms.Transform):
         prj = self.target_projection
         if isinstance(xy, numpy.ndarray):
             return prj.transform_points(self.source_projection,
-                                        xy[:, 0], xy[:, 1]
-                                        )[:, 0:2]
+                                        xy[:, 0], xy[:, 1])[:, 0:2]
         else:
             x, y = xy
             x, y = prj.transform_point(x, y, self.source_projection)
@@ -193,6 +194,7 @@ class InterProjectionTransform(mtransforms.Transform):
         """
         Return a matplotlib :class:`~matplotlib.transforms.Transform`
         from target to source coordinates.
+
         """
         return InterProjectionTransform(self.target_projection,
                                         self.source_projection)
@@ -756,8 +758,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         kwargs.setdefault('origin', 'lower')
 
-        same_projection = isinstance(
-            transform, ccrs.Projection) and self.projection == transform
+        same_projection = (isinstance(transform, ccrs.Projection) and
+                           self.projection == transform)
 
         if not update_datalim:
             data_lim = self.dataLim.frozen().get_points()
@@ -1025,9 +1027,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # convert to one dimensional arrays
         if shading != 'gouraud':
-            C = ma.ravel(
-                C[0:Ny - 1, 0:Nx - 1])  # data point in each cell is value at
-                                            # lower left corner
+            # data point in each cell is value at lower left corner
+            C = ma.ravel(C[0:Ny - 1, 0:Nx - 1])
         else:
             C = C.ravel()
         X = X.ravel()
@@ -1301,8 +1302,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # Transform from native to data coordinates?
         t = collection._transform
-        if (not isinstance(t, mtransforms.Transform)
-                and hasattr(t, '_as_mpl_transform')):
+        if (not isinstance(t, mtransforms.Transform) and
+                hasattr(t, '_as_mpl_transform')):
             t = t._as_mpl_transform(self.axes)
 
         if t and any(t.contains_branch_seperately(self.transData)):
@@ -1394,5 +1395,6 @@ class SimpleClippedTransform(mtransforms.Transform):
         """
         Return a matplotlib :class:`~matplotlib.transforms.Transform` from
         target to source coordinates.
+
         """
         return (self.pre_clip_transform + self.post_clip_transform).inverted()

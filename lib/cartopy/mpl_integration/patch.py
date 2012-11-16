@@ -181,8 +181,8 @@ def path_to_geos(path):
         # collection, add it to its list of internal polygons, otherwise
         # simple append it as a  new external geom.
         if (len(collection) > 0 and
-            isinstance(collection[-1][0], Polygon) and
-            isinstance(geom, Polygon) and
+                isinstance(collection[-1][0], Polygon) and
+                isinstance(geom, Polygon) and
                 collection[-1][0].contains(geom.exterior)):
             collection[-1][1].append(geom.exterior)
         else:
@@ -207,9 +207,9 @@ def path_to_geos(path):
         geom_collection = [MultiLineString(geom_collection)]
 
     # Remove any zero area Polygons
-    is_zero_poly = lambda geom: ((isinstance(geom, Polygon) and
-                                  geom.area != 0) or
-                                 not isinstance(geom, Polygon))
-    result = filter(is_zero_poly, geom_collection)
+    not_zero_poly = lambda geom: ((isinstance(geom, Polygon) and
+                                   geom.area != 0) or
+                                  not isinstance(geom, Polygon))
+    result = filter(not_zero_poly, geom_collection)
 
     return result
