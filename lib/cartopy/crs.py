@@ -183,7 +183,7 @@ class Projection(CRS):
         if (n_lines == 1 and
                 len(multi_line_string[0].coords) > 3 and
                 numpy.allclose(multi_line_string[0].coords[0],
-                multi_line_string[0].coords[-1])):
+                               multi_line_string[0].coords[-1])):
             result_geometry = LinearRing(multi_line_string[0].coords[:-1])
         elif n_lines > 1:
             # XXX Clumsy! (NB. multi_line_string[-1] causes a
