@@ -273,7 +273,7 @@ class GeoAxes(matplotlib.axes.Axes):
         been set.
 
         """
-        # if no data has been added, and no extents set, then make the
+        # if no data has been added, and no extent set, then make the
         # map global
         if self.ignore_existing_data_limits and \
                 self._autoscaleXon and self._autoscaleYon:
@@ -468,8 +468,8 @@ class GeoAxes(matplotlib.axes.Axes):
         Get the extent (x0, x1, y0, y1) of the map in the given coordinate
         system.
 
-        If not crs is given, the returned extent will be in this projection's
-        native coordinate system.
+        If no crs is given, the coordinate system of the returned extent will
+        be this axes' projection.
 
         """
         p = self._get_extent_geom(crs)
@@ -519,12 +519,12 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return domain_in_crs
 
-    def set_extent(self, extents, crs=None):
+    def set_extent(self, extent, crs=None):
         """
         Set the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
 
-        If no crs is given, the extents' coordinate system will be assumed
+        If no crs is given, the extent's coordinate system will be assumed
         to be this axes' projection.
 
         """
@@ -534,7 +534,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is None:
             crs = self.projection
 
-        x1, x2, y1, y2 = extents
+        x1, x2, y1, y2 = extent
         domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
                                                      [x2, y2], [x1, y2],
                                                      [x1, y1]])
@@ -552,8 +552,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
             In some cases where the projection has a limited sensible range
             the ``set_global`` method does not actually make the whole globe
-            visible. Instead, the most appropriate extents will be used (e.g.
-            Ordnance Survey UK will set the extents to be around the British
+            visible. Instead, the most appropriate extent will be used (e.g.
+            Ordnance Survey UK will set the extent to be around the British
             Isles.
 
         """
