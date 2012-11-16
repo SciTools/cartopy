@@ -437,7 +437,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if x1 == 0 and y1 == 0 and x2 == 1 and y2 == 1:
             x1, x2 = self.projection.x_limits
             y1, y2 = self.projection.y_limits
-        
+
         domain_in_src_proj = shapely.geometry.Polygon([[x1, y1], [x2, y1],
                                                        [x2, y2], [x1, y2],
                                                        [x1, y1]])
@@ -468,14 +468,16 @@ class GeoAxes(matplotlib.axes.Axes):
         if proj != self.projection:
             # Erode boundary by threshold to avoid transform issues.
             # This is a workaround for numerical issues at the boundary.
-            eroded_boundary_poly = boundary_poly.buffer(-self.projection.threshold)
-            geom_in_src_proj = eroded_boundary_poly.intersection(domain_in_src_proj)
-            geom_in_crs = proj.project_geometry(geom_in_src_proj, self.projection)
+            eroded_boundary = boundary_poly.buffer(-self.projection.threshold)
+            geom_in_src_proj = eroded_boundary.intersection(
+                domain_in_src_proj)
+            geom_in_crs = proj.project_geometry(geom_in_src_proj,
+                                                self.projection)
         else:
             geom_in_crs = boundary_poly.intersection(domain_in_src_proj)
 
         return geom_in_crs
-        
+
     def set_extent(self, extents, crs=None):
         """
         Set the extent (x0, x1, y0, y1) of the map in the given

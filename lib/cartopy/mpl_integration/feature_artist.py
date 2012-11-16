@@ -113,7 +113,8 @@ class FeatureArtist(matplotlib.artist.Artist):
                                                                     feature_crs)
                 else:
                     projected_geom = geom
-                geom_paths = cartopy.mpl_integration.patch.geos_to_path(projected_geom)
+                geom_paths = cartopy.mpl_integration.patch.geos_to_path(
+                    projected_geom)
                 mapping[key] = geom_paths
             paths.extend(geom_paths)
 

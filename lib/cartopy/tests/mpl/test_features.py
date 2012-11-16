@@ -46,6 +46,7 @@ def test_natural_earth_custom():
     ax.set_xlim((-26, -12))
     ax.set_ylim((58, 72))
 
+
 @ImageTesting(['gshhs_coastlines'])
 def test_gshhs():
     ax = plt.axes(projection=ccrs.Mollweide())
