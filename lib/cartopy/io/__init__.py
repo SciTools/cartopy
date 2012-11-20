@@ -135,15 +135,6 @@ class DownloadableItem(object):
         self.url_template = url_template
         self.target_path_template = target_path_template
         self.pre_downloaded_path_template = pre_downloaded_path_template
-        # provide a caching mechanism for this DownloadableItem to store the
-        # path of the file that it references. Will be None until self.path()
-        # is called.
-        self._cached_path = None
-        """
-        False if path caching is allowed for this DownloadableItem, None if
-        it is. This will be updated by :meth:`path` if not False.
-        
-        """
         
     def url(self, format_dict):
         """
@@ -219,20 +210,16 @@ class DownloadableItem(object):
             be cached, meaning the same path is always returned.
         
         """
-        result_path = self._cached_path
-        if result_path is None or result_path is False:
-            pre_downloaded_path = self.pre_downloaded_path(format_dict)
-            target_path = self.target_path(format_dict)
-            if pre_downloaded_path is not None and os.path.exists(pre_downloaded_path):
-                result_path = pre_downloaded_path
-            elif os.path.exists(target_path):
-                result_path = target_path
-            else:
-                # we need to download the file
-                result_path = self.acquire_resource(target_path, format_dict)
-             
-            if self._cached_path is not False:    
-                self._cached_path = result_path
+    
+        pre_downloaded_path = self.pre_downloaded_path(format_dict)
+        target_path = self.target_path(format_dict)
+        if pre_downloaded_path is not None and os.path.exists(pre_downloaded_path):
+            result_path = pre_downloaded_path
+        elif os.path.exists(target_path):
+            result_path = target_path
+        else:
+            # we need to download the file
+            result_path = self.acquire_resource(target_path, format_dict)
         
         return result_path
     
@@ -280,7 +267,7 @@ class DownloadableItem(object):
         DownloadableItem (sub)class instance from ``cartopy.config``.
         
         The given specification should be iterable, as it will be traversed
-        in reverse order before it finds the appropriate   
+        in reverse order before it finds the appropriate DownloadableItem.
         
         Returns the appropriate DownloadableItem for the given specification.
         Looks at all levels of the specification, if there isn't one at the top

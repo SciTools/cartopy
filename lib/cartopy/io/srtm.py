@@ -122,9 +122,6 @@ class SRTM3Downloader(DownloadableItem):
         DownloadableItem.__init__(self, None, 
                                         target_path_template, 
                                         pre_downloaded_path_template)
-        # disable path caching (as this SRTM3Downloader can represent multiple
-        # different SRTM3 tiles)
-        self._cached_path = False
         
     def url(self, format_dict):
         # override the url method, looking up the url from the
