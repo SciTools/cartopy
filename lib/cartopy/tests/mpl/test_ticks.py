@@ -22,6 +22,7 @@ import nose.tools
 import cartopy.crs as ccrs
 from cartopy.tests.mpl import ImageTesting
 
+
 def _format_lat(val, i):
     if val > 0:
         return '%.0fN' % val
@@ -29,6 +30,7 @@ def _format_lat(val, i):
         return '%.0fS' % abs(val)
     else:
         return '0'
+
 
 def _format_lon(val, i):
     # Apply periodic boundary conditions
@@ -43,6 +45,7 @@ def _format_lon(val, i):
     elif val < 0:
         return '%.0fW' % abs(val)
 
+
 @ImageTesting(['xticks_no_transform'])
 def test_set_xticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -52,21 +55,24 @@ def test_set_xticks_no_transform():
     ax.set_xticks([-180, -90, 0, 90, 180])
     ax.set_xticks([-135, -45, 45, 135], minor=True)
 
+
 @ImageTesting(['xticks_cylindrical'])
 def test_set_xticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator())
-    ax.coastlines('110m')    
+    ax.coastlines('110m')
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
     ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
     ax.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.PlateCarree())
     ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.PlateCarree())
 
+
 def test_set_xticks_non_cylindrical():
     ax = plt.axes(projection=ccrs.Orthographic())
     with nose.tools.assert_raises(RuntimeError):
         ax.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.Geodetic())
-    with nose.tools.assert_raises(RuntimeError):        
+    with nose.tools.assert_raises(RuntimeError):
         ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.Geodetic())
+
 
 @ImageTesting(['yticks_no_transform'])
 def test_set_yticks_no_transform():
@@ -77,6 +83,7 @@ def test_set_yticks_no_transform():
     ax.set_yticks([-60, -30, 0, 30, 60])
     ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
 
+
 @ImageTesting(['yticks_cylindrical'])
 def test_set_yticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator())
@@ -86,18 +93,20 @@ def test_set_yticks_cylindrical():
     ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.PlateCarree())
     ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.PlateCarree())
 
+
 def test_set_yticks_non_cylindrical():
     ax = plt.axes(projection=ccrs.Orthographic())
     with nose.tools.assert_raises(RuntimeError):
         ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.Geodetic())
-    with nose.tools.assert_raises(RuntimeError):        
+    with nose.tools.assert_raises(RuntimeError):
         ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
+
 
 @ImageTesting(['xyticks'])
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),
-                   ccrs.Mercator(), 
+                   ccrs.Mercator(),
                    ccrs.TransverseMercator())
     for i, prj in enumerate(projections, 1):
         ax = fig.add_subplot(3, 1, i, projection=prj)
