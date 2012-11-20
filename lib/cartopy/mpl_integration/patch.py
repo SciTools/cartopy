@@ -202,7 +202,9 @@ def path_to_geos(path):
         geom_collection = [MultiLineString(geom_collection)]
 
     # Remove any zero area Polygons
-    result = filter(lambda geom: (isinstance(geom, Polygon) and geom.area != 0) or
-                    not isinstance(geom, Polygon), geom_collection)
-    
+    not_zero_poly = lambda geom: ((isinstance(geom, Polygon) and
+                                   not geom._is_empty and geom.area != 0) or
+                                  not isinstance(geom, Polygon))
+    result = filter(not_zero_poly, geom_collection)
+
     return result
