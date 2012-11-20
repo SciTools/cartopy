@@ -79,12 +79,12 @@ class _MissingKeyFormatter(string.Formatter):
             return kwargs.get(key, '{' + key + '}')
     
 
-class _DownloadWarning(Warning):
-    """Issued when a file is being downloaded by a DownloadableItem."""
+class DownloadWarning(Warning):
+    """Issued when a file is being downloaded by a :class:`Downloader`."""
     pass 
 
 
-class DownloadableItem(object):
+class Downloader(object):
     """
     Represents a resource, that can be configured easily, which knows
     how to acquire itself (perhaps via HTTP).
@@ -194,7 +194,7 @@ class DownloadableItem(object):
         :meth:`url` to :meth:`target_path`.
         
         Typically, this is the method that most applications will call, 
-        allowing implementors of new DownloadableItems to specialise
+        allowing implementors of new Downloaders to specialise
         :meth:`acquire_resource`.
         
         Args:
@@ -257,19 +257,19 @@ class DownloadableItem(object):
         Caller should close the file handle when finished with it.
         
         """ 
-        warnings.warn('Downloading: {}'.format(url), _DownloadWarning)
+        warnings.warn('Downloading: {}'.format(url), DownloadWarning)
         return urllib2.urlopen(url)
     
     @staticmethod
     def from_config(specification):
         """
         The ``from_config`` static method implements the logic for acquiring a
-        DownloadableItem (sub)class instance from ``cartopy.config``.
+        Downloader (sub)class instance from ``cartopy.config``.
         
         The given specification should be iterable, as it will be traversed
-        in reverse order before it finds the appropriate DownloadableItem.
+        in reverse order before it finds the appropriate Downloader.
         
-        Returns the appropriate DownloadableItem for the given specification.
+        Returns the appropriate Downloader for the given specification.
         Looks at all levels of the specification, if there isn't one at the top
         level to start with, one will be created (and returned). 
         
@@ -282,7 +282,7 @@ class DownloadableItem(object):
             lookup = specification[:i]
             downloadable_item = downloaders.get(lookup, None)
             if downloadable_item is not None:
-                # put the DownloadableItem at the top level 
+                # put the Downloader at the top level 
                 # (so that it is quicker to find next time).
                 if i < spec_depth:
                     import copy

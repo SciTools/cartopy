@@ -46,7 +46,7 @@ from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
 import shapefile
 import os
 
-from cartopy.io import DownloadableItem
+from cartopy.io import Downloader
 from cartopy import config
 
 
@@ -191,19 +191,19 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     downloading and unziping if necessary.
     
     """
-    # get hold of the DownloadableItem (typically a NEShpDownloader instance)
+    # get hold of the Downloader (typically a NEShpDownloader instance)
     # which we can then simply call its path method to get the appropriate
     # shapefile (it will download if necessary)
-    ne_downloader = DownloadableItem.from_config(('shapefiles', 'natural_earth',
+    ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
                                                   resolution, category, name))
     format_dict = {'config': config, 'category': category, 
                    'name': name, 'resolution': resolution}
     return ne_downloader.path(format_dict)
     
 
-class NEShpDownloader(DownloadableItem):
+class NEShpDownloader(Downloader):
     """
-    Specialises :class:`cartopy.io.DownloadableItem` to download the zipped
+    Specialises :class:`cartopy.io.Downloader` to download the zipped
     Natural Earth shapefiles and extract them to the defined location 
     (typically user configurable). 
     
@@ -223,8 +223,8 @@ class NEShpDownloader(DownloadableItem):
                  target_path_template=None, 
                  pre_downloaded_path_template='',
                  ):
-        # adds some NE defaults to the __init__ of a DownloadableItem
-        DownloadableItem.__init__(self, url_template, 
+        # adds some NE defaults to the __init__ of a Downloader
+        Downloader.__init__(self, url_template, 
                                              target_path_template, 
                                              pre_downloaded_path_template)
     

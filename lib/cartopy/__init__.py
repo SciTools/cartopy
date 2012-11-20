@@ -48,6 +48,20 @@ in ``site.getusersitepackages()``) and should expose a
 function called ``update_config`` which takes the config dictionary as its
 first and only argument.
 
+
+Keys in the config dictionary:
+
+ * ``data_dir`` - the absolute path to a directory where standard data (such 
+                  as that from NaturalEarth) can be found. If it is not found
+                  and the item is downloadable cartopy will download the
+                  appropriate file(s) to a subdirectory of this directory, 
+                  therefore ``data_dir`` should be writable by the user.
+
+ * ``downloaders`` - a dictionary mapping standard "specifications" to the
+                     appropriate :class:`~cartopy.io.Downloader`. For further
+                     documentation and an example see 
+                     :func:`cartopy.io.Downloader.from_config`.
+
 """
 
 

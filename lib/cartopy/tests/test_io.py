@@ -30,8 +30,8 @@ from cartopy.io.shapereader import NEShpDownloader
 from cartopy.tests.mpl.test_caching import CallCounter
 
 
-def test_DownloadableItem_data():
-    di = cio.DownloadableItem('http://testing.com/{category}/{name}.zip',
+def test_Downloader_data():
+    di = cio.Downloader('http://testing.com/{category}/{name}.zip',
                               os.path.join('{data_dir}', '{category}', 
                                            'shape.shp'),
                               '/project/foobar/{category}/sample.shp',
@@ -94,8 +94,8 @@ def download_to_temp():
 def test_from_config():
     generic_url = 'http://example.com/generic_ne/{name}.zip'
     
-    land_downloader = cio.DownloadableItem(generic_url, '', '')
-    generic_ne_downloader = cio.DownloadableItem(generic_url, '', '')
+    land_downloader = cio.Downloader(generic_url, '', '')
+    generic_ne_downloader = cio.Downloader(generic_url, '', '')
     
     ocean_spec = ('shapefile', 'natural_earth', '110m', 'physical', 'ocean')
     land_spec = ('shapefile', 'natural_earth', '110m', 'physical', 'land')
@@ -108,7 +108,7 @@ def test_from_config():
     with config_replace(target_config):
         # ocean spec is not explicitly in the config, but a subset of it is,
         # so check that an appropriate downloader is returned
-        r = cio.DownloadableItem.from_config(ocean_spec)
+        r = cio.Downloader.from_config(ocean_spec)
         
         # check the resulting download item produces a sensible url.
         assert_equal(r.url({'name': 'ocean'}), 
@@ -119,7 +119,7 @@ def test_from_config():
         # check there has been a copy operation
         assert downloaders[generic_spec] is not downloaders[ocean_spec]
 
-        r = cio.DownloadableItem.from_config(land_spec)
+        r = cio.Downloader.from_config(land_spec)
         assert r is land_downloader
 
 
@@ -135,7 +135,7 @@ def test_downloading_simple_ascii():
         target_template = os.path.join(tmp_dir, '{name}.txt')
         tmp_fname = target_template.format(**format_dict)
         
-        dnld_item = cio.DownloadableItem(file_url, target_template)
+        dnld_item = cio.Downloader(file_url, target_template)
         
         assert_equal(dnld_item.target_path(format_dict), tmp_fname)
         
@@ -144,7 +144,7 @@ def test_downloading_simple_ascii():
             
             assert len(w) == 1, ('Expected a single download warning to be '
                                  'raised. Got {}.'.format(len(w)))
-            assert issubclass(w[0].category, cio._DownloadWarning)
+            assert issubclass(w[0].category, cio.DownloadWarning)
             
         with open(tmp_fname, 'r') as fh:
             _ = fh.readline()

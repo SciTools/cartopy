@@ -32,7 +32,7 @@ import numpy
 
 from cartopy import config
 import cartopy.crs as ccrs
-from cartopy.io import fh_getter, DownloadableItem
+from cartopy.io import fh_getter, Downloader
 
 
 def srtm(lon, lat):
@@ -93,11 +93,11 @@ def SRTM3_retrieve(lon, lat):
     x = '%s%03d' % ('E' if lon > 0 else 'W', abs(int(lon)))
     y = '%s%02d' % ('N' if lat > 0 else 'S', abs(int(lat)))
 
-    srtm_downloader = DownloadableItem.from_config(('SRTM', 'SRTM3'))
+    srtm_downloader = Downloader.from_config(('SRTM', 'SRTM3'))
     return srtm_downloader.path({'config': config, 'x': x, 'y': y})
 
 
-class SRTM3Downloader(DownloadableItem):
+class SRTM3Downloader(Downloader):
     """
     Provides a SRTM3 download mechanism.
         
@@ -116,10 +116,10 @@ class SRTM3Downloader(DownloadableItem):
                  target_path_template, 
                  pre_downloaded_path_template='',
                  ):
-        # adds some SRTM3 defaults to the __init__ of a DownloadableItem
+        # adds some SRTM3 defaults to the __init__ of a Downloader
         # namely, the URl is determined on the fly using the 
         # ``SRTM3Downloader._SRTM3_LOOKUP_URL`` dictionary
-        DownloadableItem.__init__(self, None, 
+        Downloader.__init__(self, None, 
                                         target_path_template, 
                                         pre_downloaded_path_template)
         

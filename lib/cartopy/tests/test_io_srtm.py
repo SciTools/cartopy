@@ -28,7 +28,7 @@ def test_srtm3_retrieve():
         with warnings.catch_warnings(record=True) as w:
             r = cartopy.io.srtm.SRTM3_retrieve(-4, 50)
             assert len(w) == 1
-            assert issubclass(w[0].category, cartopy.io._DownloadWarning)
+            assert issubclass(w[0].category, cartopy.io.DownloadWarning)
         
         assert r.startswith(tmp_dir), 'File not downloaded to tmp dir'
         
