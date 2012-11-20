@@ -18,7 +18,6 @@
 
 import unittest
 
-from nose.tools import assert_is_instance
 from shapely import geometry
 
 import cartopy.crs as ccrs
@@ -134,6 +133,37 @@ class TestMisc(unittest.TestCase):
             result = target_proj.project_geometry(linear_ring, src_proj)
         except ValueError:
             self.fail("Failed to project LinearRing.")
+
+    def test_stitch(self):
+        # The following LinearRing wanders in/out of the map domain
+        # but importantly the "vertical" lines at 0'E and 360'E are both
+        # chopped by the map boundary. This results in their ends being
+        # *very* close to each other and confusion over which occurs
+        # first when navigating around the boundary.
+        # Check that these ends are stitched together to avoid the
+        # boundary ordering ambiguity.
+        # NB. This kind of polygon often occurs with MPL's contouring.
+        coords = [(0.0, -70.70499926182919),
+                  (0.0, -71.25),
+                  (0.0, -72.5),
+                  (0.0, -73.49076371657017),
+                  (360.0, -73.49076371657017),
+                  (360.0, -72.5),
+                  (360.0, -71.25),
+                  (360.0, -70.70499926182919),
+                  (350, -73),
+                  (10, -73)]
+        src_proj = ccrs.PlateCarree()
+        target_proj = ccrs.Stereographic(80)
+        linear_ring = geometry.polygon.LinearRing(coords)
+        result = target_proj.project_geometry(linear_ring, src_proj)
+        self.assertEqual(len(result), 1)
+
+        # Check the stitch works in either direction.
+        linear_ring = geometry.polygon.LinearRing(coords[::-1])
+        result = target_proj.project_geometry(linear_ring, src_proj)
+        self.assertEqual(len(result), 1)
+
 
 if __name__ == '__main__':
     unittest.main()
