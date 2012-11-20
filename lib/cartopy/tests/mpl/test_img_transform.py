@@ -63,24 +63,22 @@ class TestRegrid(unittest.TestCase):
         # Source data
         source_nx = 100
         source_ny = 100
-        source_x = numpy.linspace(-180.0, 180.0, source_nx
-                                  ).astype(numpy.float64)
-        source_y = numpy.linspace(-90, 90.0, source_ny
-                                  ).astype(numpy.float64)
+        source_x = numpy.linspace(-180.0, 180.0,
+                                  source_nx).astype(numpy.float64)
+        source_y = numpy.linspace(-90, 90.0,
+                                  source_ny).astype(numpy.float64)
         source_x, source_y = numpy.meshgrid(source_x, source_y)
-        data = numpy.arange(source_nx * source_ny, dtype=numpy.int32
-                            ).reshape(source_ny, source_nx)
+        data = numpy.arange(source_nx * source_ny,
+                            dtype=numpy.int32).reshape(source_ny, source_nx)
         source_cs = ccrs.Geodetic()
 
         # Target grids (different shapes)
         target_x_shape = (23, 45)
         target_y_shape = (23, 44)
-        target_x = numpy.arange(reduce(operator.mul, target_x_shape)
-                                ).reshape(target_x_shape
-                                          ).astype(numpy.float64)
-        target_y = numpy.arange(reduce(operator.mul, target_y_shape)
-                                ).reshape(target_y_shape
-                                          ).astype(numpy.float64)
+        target_x = numpy.arange(reduce(operator.mul, target_x_shape),
+                                dtype=numpy.float64).reshape(target_x_shape)
+        target_y = numpy.arange(reduce(operator.mul, target_y_shape),
+                                dtype=numpy.float64).reshape(target_y_shape)
         target_proj = ccrs.PlateCarree()
 
         # Attempt regrid
