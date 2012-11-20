@@ -182,7 +182,7 @@ def test_axes_natural_earth_interface():
     
     ax = plt.axes(projection=rob)
     
-    ax.natural_earth_shp('rivers-lake-centerlines', edgecolor='black', facecolor='none')
+    ax.natural_earth_shp('rivers_lake_centerlines', edgecolor='black', facecolor='none')
     ax.natural_earth_shp('lakes', facecolor='blue')
 
 
