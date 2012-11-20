@@ -173,8 +173,7 @@ class NestedImageCollection(object):
                             # append the child image to the parent's ancestry
                             key = (parent_collection.name, parent_image)
                             self._ancestry.setdefault(key, []).append(
-                                (collection.name, image)
-                            )
+                                (collection.name, image))
 
             # TODO check that the ancestry is in a good state (i.e. that each
             # collection has child images)
@@ -252,8 +251,7 @@ class NestedImageCollection(object):
     @classmethod
     def from_configuration(cls, name, crs, name_dir_pairs,
                            glob_pattern='*.tif',
-                           img_collection_cls=ImageCollection,
-                           ):
+                           img_collection_cls=ImageCollection):
         """
         Creates a NestedImageCollection given the [collection name, directory]
         pairs. This is very convenient functionality for simple configuration
@@ -266,9 +264,9 @@ class NestedImageCollection(object):
                      ['OS 1:50,000', '/directory/to/1_to_50k'],
                     ]
             r = NestedImageCollection.from_configuration('os',
-                                                 ccrs.OSGB(),
-                                                 files,
-                                                 )
+                                                         ccrs.OSGB(),
+                                                         files,
+                                                         )
 
         """
         collections = []
