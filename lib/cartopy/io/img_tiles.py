@@ -221,7 +221,7 @@ class QuadtreeTiles(GoogleTiles):
     system.
 
     A "tile" in this class refers to a quadkey such as "1", "14" or "141"
-    where the lenght of the quatree is the zoom level in Google Tile terms.
+    where the length of the quatree is the zoom level in Google Tile terms.
 
     """
     def _image_url(self, tile):

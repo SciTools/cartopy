@@ -26,10 +26,10 @@ from PIL import Image
 from shapely.geometry import box
 
 
-_Img_names = ['filename', 'extent', 'origin', 'pixel_size']
+_img_class_attrs = ['filename', 'extent', 'origin', 'pixel_size']
 
 
-class Img(collections.namedtuple('Img', _Img_names)):
+class Img(collections.namedtuple('Img', _img_class_attrs)):
     """
     Represents a simple geolocated image.
 
@@ -166,7 +166,7 @@ class NestedImageCollection(object):
             self._ancestry = _ancestry
         else:
             parent_wth_children = itertools.izip(collections, collections[1:])
-            for parent_collection, collection in parent_wth_child:
+            for parent_collection, collection in parent_wth_children:
                 for parent_image in parent_collection.images:
                     for image in collection.images:
                         if self._is_parent(parent_image, image):
@@ -184,6 +184,7 @@ class NestedImageCollection(object):
         """
         Returns whether the given Image is the parent of image.
         Used by __init__.
+
         """
         return potential_parent_image.bbox().contains(image.bbox())
 
@@ -191,8 +192,8 @@ class NestedImageCollection(object):
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
-            raise ValueError(
-                '%s is not one of the possible collections.' % target_z)
+            raise ValueError('%s is not one of the possible '
+                             'collections.' % target_z)
 
         tiles = []
         for tile in self.find_images(target_domain, target_z):
