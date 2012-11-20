@@ -90,36 +90,43 @@ class Downloader(object):
     how to acquire itself (perhaps via HTTP).
     
     The key interface method is :meth:`path` - typically *all* external calls
-    will be made to that method.
+    will be made to that method. To get hold of an appropriate 
+    :class:`Downloader` instance the :func:`Downloader.from_config` static
+    method should be considered. 
+    
+    .. note:
+        
+            All ``*_template`` arguments should be formattable using the
+            standard :meth:`string.format` rules. The formatting itself
+            is not done until a call to a subsequent method (such as 
+            :meth:`Downloader.path`).
     
     Args:
     
-        ``url_template`` - a string which can be formatted using the 
-                           ``.format`` method with the ``format_dict``
-                           dictionary passed to :meth:`path` to create
-                           the full URL of representing this resource.
+        ``url_template`` - The template of the full URL representing this
+                           resource.
                            
-        ``target_path_template`` - a string which can be formatted using the
-                                   ``.format`` method with the ``format_dict``
-                                   dictionary passed to :meth:`path` to create
-                                   the path of the target file representing
-                                   this resource. If this file doesn't exist
-                                   it will be downloaded via HTTP (subclasses 
-                                   may implement alternative protocols).
-                                   
-    Kwargs:
+        ``target_path_template`` - The template of the full path to the file
+                                   that this Downloader represents. Typically
+                                   the path will be a subdirectory of 
+                                   ``config['data_dir']``, but this is not a
+                                   strict requirement. If the file does not
+                                   exist when calling :meth:`Downloader.path`
+                                   it will be downloaded to this location.
+        
+        Kwargs:
     
-        ``pre_downloaded_path_template`` - a string which can be formatted 
-                                           using the ``.format`` method with 
-                                           the ``format_dict`` dictionary 
-                                           passed to :meth:`path` to create
-                                           the path of a file which represents
-                                           this resource. If the file does not
-                                           exist, it will not necessarily be
-                                           downloaded - instead target_path
-                                           will be used to determine whether
-                                           the resource already exists.
-     
+        ``pre_downloaded_path_template`` - The template of a full path of a 
+                                           file which has been downloaded
+                                           outside of this Downloader which
+                                           should be used as the file that
+                                           this resource represents. If the
+                                           file does not exist when 
+                                           :meth:`Downloader.path` is called
+                                           it will not be downloaded to this
+                                           location (unlike the 
+                                           ``target_path_template`` argument).  
+
     """
     
     FORMAT_KEYS = ('config', )
@@ -203,12 +210,7 @@ class Downloader(object):
                               certain template variables. Subclasses should
                               document which keys are expected as a minimum
                               in their ``FORMAT_KEYS`` class attribute.
-                              
-        .. note::
-        
-            After the first call, unless ``_cached_path`` is False, the result will
-            be cached, meaning the same path is always returned.
-        
+                    
         """
     
         pre_downloaded_path = self.pre_downloaded_path(format_dict)
@@ -261,21 +263,50 @@ class Downloader(object):
         return urllib2.urlopen(url)
     
     @staticmethod
-    def from_config(specification):
+    def from_config(specification, config_dict=None):
         """
         The ``from_config`` static method implements the logic for acquiring a
-        Downloader (sub)class instance from ``cartopy.config``.
+        Downloader (sub)class instance from the config dictionary.
         
-        The given specification should be iterable, as it will be traversed
-        in reverse order before it finds the appropriate Downloader.
+        Args:
         
-        Returns the appropriate Downloader for the given specification.
-        Looks at all levels of the specification, if there isn't one at the top
-        level to start with, one will be created (and returned). 
+            ``specification`` - should be iterable, as it will be traversed
+                                in reverse order to find the most appropriate
+                                Downloader instance for this specification.
+                                An example specification is
+                                ``('shapefiles', 'natural_earth')`` for the
+                                Natural Earth shapefiles.
+        
+        Kwargs:
+        
+            ``config_dict`` - typically this is left as None to use the
+                              default ``cartopy.config`` "downloaders"
+                              dictionary.
+        
+        Example:
+        
+        >>> from cartopy.io import Downloader
+        >>>
+        >>> dnldr = Downloader('http://example.com/{name}', './{name}.txt')
+        >>> config = {('level_1', 'level_2'): dnldr}
+        >>> d1 = Downloader.from_config(('level_1', 'level_2'),
+        ...                             config_dict=config)
+        >>> d2 = Downloader.from_config(('level_1', 'level_2', 'level_3'),
+        ...                             config_dict=config)
+        >>> print d1.url_template
+        http://example.com/{name}
+        >>> print d2.url_template
+        http://example.com/{name}
+        >>> print d1 is d2
+        False         
         
         """
         spec_depth = len(specification)
-        downloaders = config['downloaders']
+        if config_dict is None:
+            downloaders = config['downloaders']
+        else:
+            downloaders = config_dict
+            
         result_downloader = None        
         
         for i in range(spec_depth, 0, -1):
@@ -294,6 +325,5 @@ class Downloader(object):
         else:
             # should never really happen, but could if the user does
             # some strange things...
-            raise ValueError('No generic downloadable item in the '
-                             '{} for {}'.format("config['downloaders']",
-                                                specification))
+            raise ValueError('No generic downloadable item in the config '
+                             'dictionary for {}'.format(specification))
