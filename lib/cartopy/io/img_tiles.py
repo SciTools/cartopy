@@ -17,7 +17,7 @@
 
 
 """
-Implements image tile identification and fetching from various sources. 
+Implements image tile identification and fetching from various sources.
 
 Tile generation is explicitly not yet implemented.
 
@@ -33,9 +33,9 @@ import cartopy.crs as ccrs
 class GoogleTiles(object):
     """
     Implements web tile retrieval using the Google WTS coordinate system.
-    
+
     A "tile" in this class refers to the coordinates (x, y, z).
-    
+
     """
     def __init__(self, desired_tile_form='RGB'):
         # XXX consider fixing the CRS???
@@ -52,8 +52,8 @@ class GoogleTiles(object):
                 continue
             print tile, extent
             img = numpy.array(img)
-            x = numpy.linspace(extent[0], extent[1], img.shape[1], endpoint=True)
-            y = numpy.linspace(extent[2], extent[3], img.shape[0], endpoint=True)
+            x = numpy.linspace(extent[0], extent[1], img.shape[1])
+            y = numpy.linspace(extent[2], extent[3], img.shape[0])
             tiles.append([numpy.array(img), x, y, origin])
 
         img, extent, origin = _merge_tiles(tiles)
@@ -62,7 +62,9 @@ class GoogleTiles(object):
     def _find_images(self, target_domain, target_z, start_tile=(0, 0, 0)):
         """Target domain is a shapely polygon in native coordinates."""
 
-        assert isinstance(target_z, int) and target_z >= 0, 'target_z must be an integer >=0.'
+        assert isinstance(target_z, int) and target_z >= 0, ('target_z must '
+                                                             'be an integer '
+                                                             '>=0.')
 
         # recursively drill down to the images at the target zoom
         domain = self.tiledomain(start_tile)
@@ -71,7 +73,8 @@ class GoogleTiles(object):
                     yield start_tile
             else:
                 for tile in self._subtiles(start_tile):
-                    for result in self._find_images(target_domain, target_z, start_tile=tile):
+                    for result in self._find_images(target_domain, target_z,
+                                                    start_tile=tile):
                         yield result
 
     find_images = _find_images
@@ -86,21 +89,27 @@ class GoogleTiles(object):
     _subtiles = subtiles
 
     @staticmethod
-    def tile_bbox(prj, x, y, z, lat_extent_at_z0=(-85., 85.), bottom_up=True, native=True):
+    def tile_bbox(prj, x, y, z, lat_extent_at_z0=(-85., 85.),
+                  bottom_up=True, native=True):
         """
-        Returns the x0, x1, y0, y1 bounding box for the given x, y, z tile position.
-        
+        Returns the x0, x1, y0, y1 bounding box for the given x, y, z
+        tile position.
+
         NOTE: This interface is highly liable to change in the future.
         """
         n = 2 ** z
-        assert 0 <= x <= (n - 1), "Tile's x index is out of range. Upper limit %s. Got %s" % (n, x)
-        assert 0 <= y <= (n - 1), "Tile's y index is out of range. Upper limit %s. Got %s" % (n, y)
+        assert 0 <= x <= (n - 1), ("Tile's x index is out of range. Upper "
+                                   "limit %s. Got %s" % (n, x))
+        assert 0 <= y <= (n - 1), ("Tile's y index is out of range. Upper "
+                                   "limit %s. Got %s" % (n, y))
 
         x0 = -180.
         # compute the box height in native coordinates for this zoom level
         box_w = 360. / n
 
-        result = prj.transform_points(ccrs.PlateCarree(), numpy.array([0., 0]), numpy.array(lat_extent_at_z0))
+        result = prj.transform_points(ccrs.PlateCarree(),
+                                      numpy.array([0., 0]),
+                                      numpy.array(lat_extent_at_z0))
         y1, y0 = result[:, 1]
         # compute the box height in native coordinates for this zoom level
         box_h = (y1 - y0) / n
@@ -135,7 +144,10 @@ class GoogleTiles(object):
         prj = ccrs.Mercator()
         x_lim, y_lim = self.tile_bbox(prj, x, y, z, bottom_up=True)
 
-        result = ccrs.PlateCarree().transform_points(prj, x_lim.astype(numpy.float64), y_lim.astype(numpy.float64))
+        pc = ccrs.PlateCarree()
+        result = pc.transform_points(prj,
+                                     x_lim.astype(numpy.float64),
+                                     y_lim.astype(numpy.float64))
         x_lim = result[:, 0]
         y_lim = result[:, 1]
 
@@ -148,15 +160,18 @@ class GoogleTiles(object):
         return domain
 
     def _image_url(self, tile):
-        url = 'http://chart.apis.google.com/chart?chst=d_text_outline&chs=256x256&chf=bg,' + \
-              's,00000055&chld=FFFFFF|16|h|000000|b||||Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')' + \
-              '|Zoom%20' + str(tile[2]) + '||||||____________________________'
+        url = ('http://chart.apis.google.com/chart?chst=d_text_outline&'
+               'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
+               'Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')'
+               '|Zoom%20' + str(tile[2]) + '||||||______________________'
+               '______')
 #        print url
-#        url = 'http://mts0.google.com/vt/lyrs=m@177000000&hl=en&src=api&x=%s&y=%s&z=%s&s=G' % tile
+#        url = ('http://mts0.google.com/vt/lyrs=m@177000000&hl=en&src=api&'
+#               'x=%s&y=%s&z=%s&s=G' % tile)
         return url
 
     def get_image(self, tile):
-        import cStringIO # *much* faster than StringIO
+        import cStringIO  # *much* faster than StringIO
         import urllib
 
         url = self._image_url(tile)
@@ -175,17 +190,20 @@ class MapQuestOSM(GoogleTiles):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (z, x, y)
+        url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
+            z, x, y)
         return url
 
 
 class MapQuestOpenAerial(GoogleTiles):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     # The following attribution should be included in the resulting image:
-    # "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture, Farm Service Agency"
+    # "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture,
+    #  Farm Service Agency"
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (z, x, y)
+        url = 'http://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
+            z, x, y)
         return url
 
 
@@ -199,25 +217,29 @@ class OSM(GoogleTiles):
 
 class QuadtreeTiles(GoogleTiles):
     """
-    Implements web tile retrieval using the Microsoft WTS quadkey coordinate system.
-    
-    A "tile" in this class refers to a quadkey such as "1", "14" or "141" where the lenght of the
-    quatree is the zoom level in Google Tile terms. 
-    
+    Implements web tile retrieval using the Microsoft WTS quadkey coordinate
+    system.
+
+    A "tile" in this class refers to a quadkey such as "1", "14" or "141"
+    where the length of the quatree is the zoom level in Google Tile terms.
+
     """
     def _image_url(self, tile):
-        url = 'http://ecn.dynamic.t1.tiles.virtualearth.net/comp/CompositionHandler/' + str(tile) + '?mkt=en-' + \
-              'gb&it=A,G,L&shading=hill&n=z'
-        url = 'http://chart.apis.google.com/chart?chst=d_text_outline&chs=256x256&chf=bg,' + \
-              's,00000055&chld=FFFFFF|16|h|000000|b||||Quadkey:%20%20(' + str(tile) + ')' + \
-              '||||||____________________________'
+        url = ('http://ecn.dynamic.t1.tiles.virtualearth.net/comp/'
+               'CompositionHandler/' + str(tile) + '?mkt=en-'
+               'gb&it=A,G,L&shading=hill&n=z')
+        url = ('http://chart.apis.google.com/chart?chst=d_text_outline&'
+               'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b'
+               '||||Quadkey:%20%20(' + str(tile) + ')||||||____________'
+               '________________')
 
         return url
 
     def tms_to_quadkey(self, tms, google=False):
         quadKey = ""
         x, y, z = tms
-        # this algorithm works with google tiles, rather than tms, so convert to those first.
+        # this algorithm works with google tiles, rather than tms, so convert
+        # to those first.
         if not google:
             y = (2 ** z - 1) - y
         for i in range(z, 0, -1):
@@ -231,10 +253,11 @@ class QuadtreeTiles(GoogleTiles):
         return quadKey
 
     def quadkey_to_tms(self, quadkey, google=False):
-        # algorithm ported from http://msdn.microsoft.com/en-us/library/bb259689.aspx
+        # algorithm ported from
+        # http://msdn.microsoft.com/en-us/library/bb259689.aspx
         assert isinstance(quadkey, basestring), 'quadkey must be a string'
 
-        x = y = 0;
+        x = y = 0
         z = len(quadkey)
         for i in range(z, 0, -1):
             mask = 1 << (i - 1)
@@ -248,7 +271,8 @@ class QuadtreeTiles(GoogleTiles):
                 x |= mask
                 y |= mask
             else:
-                raise ValueError('Invalid QuadKey digit sequence.' + str(quadkey))
+                raise ValueError('Invalid QuadKey digit '
+                                 'sequence.' + str(quadkey))
         # the algorithm works to google tiles, so convert to tms
         if not google:
             y = (2 ** z - 1) - y
@@ -264,8 +288,9 @@ class QuadtreeTiles(GoogleTiles):
 
     def find_images(self, target_domain, target_z, start_tile=None):
         """
-        Find all the quadtree's at the given target zoom, in the given target domain.
-         
+        Find all the quadtree's at the given target zoom, in the given
+        target domain.
+
         target_z must be a value >= 1.
         """
         if target_z == 0:
@@ -279,14 +304,16 @@ class QuadtreeTiles(GoogleTiles):
         for start_tile in start_tiles:
             st = start_tile
             start_tile = self.quadkey_to_tms(start_tile, google=True)
-            for tile in GoogleTiles.find_images(self, target_domain, target_z, start_tile=start_tile):
+            for tile in GoogleTiles.find_images(self, target_domain, target_z,
+                                                start_tile=start_tile):
                 yield self.tms_to_quadkey(tile, google=True)
 
 
 def _merge_tiles(tiles):
     """Return a single image, merging the given images."""
     if not tiles:
-        raise ValueError('A non-empty list of tiles should be provided to merge.')
+        raise ValueError('A non-empty list of tiles should '
+                         'be provided to merge.')
     xset = [set(x) for i, x, y, _ in tiles]
     yset = [set(y) for i, x, y, _ in tiles]
 

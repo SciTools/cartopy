@@ -22,12 +22,16 @@ geometry representation of shapely.
 
 >>> import os.path
 >>> import cartopy.io.shapereader as shapereader
->>> filename = os.path.join(os.path.dirname(shapereader.__file__), 'data', 'Devon')
+>>> filename = os.path.join(os.path.dirname(shapereader.__file__),
+                            'data', 'Devon')
 >>> reader = shapereader.Reader(filename)
 >>> len(reader)
 1
 >>> list(reader.records()) #doctest: +ELLIPSIS
-[<Record: <shapely.geometry.multipolygon.MultiPolygon object at ...>, {'PMS_REGION': 14, 'SHAPE_AREA': 6597719517.55, 'OBJECTID': 15, 'COUNTRY': 'ENGLAND', 'SNAC_GOR': 'South West', 'COUNTY_STR': 'Devon', 'SHAPE_LEN': 570341.652865}, <fields>>]
+[<Record: <shapely.geometry.multipolygon.MultiPolygon object at ...>,
+ {'PMS_REGION': 14, 'SHAPE_AREA': 6597719517.55, 'OBJECTID': 15,
+ 'COUNTRY': 'ENGLAND', 'SNAC_GOR': 'South West', 'COUNTY_STR': 'Devon',
+ 'SHAPE_LEN': 570341.652865}, <fields>>]
 >>> list(reader.geometries()) #doctest: +ELLIPSIS
 [<shapely.geometry.multipolygon.MultiPolygon object at ...>]
 
@@ -73,7 +77,8 @@ def _create_polygon(shape):
                 holes.append(inner_polygon.exterior.coords)
                 break
 
-    polygon_defns = [(outer_polygon.exterior.coords, holes) for outer_polygon, holes in outer_polygons_and_holes]
+    polygon_defns = [(outer_polygon.exterior.coords, holes)
+                     for outer_polygon, holes in outer_polygons_and_holes]
     return MultiPolygon(polygon_defns)
 
 
@@ -99,8 +104,10 @@ class Record(object):
 
         attributes - A dictionary mapping attribute names to attribute values.
         bounds     - A tuple of (minx, miny, maxx, maxy).
-        fields     - A list of field definitions, as per the Python Shapefile Library.
-        geometry   - A shapely.geometry instance or None if it was a null shape.
+        fields     - A list of field definitions, as per the Python
+                     Shapefile Library.
+        geometry   - A shapely.geometry instance or None if it was a null
+                     shape.
 
     """
     def __init__(self, shape, geometry_factory, attributes, fields):
@@ -123,7 +130,8 @@ class Record(object):
         if name == 'bounds':
             value = self.bounds = self.geometry().bounds
         elif name == 'geometry':
-            value = self.geometry = _make_geometry(self._geometry_factory, self._shape)
+            value = self.geometry = _make_geometry(self._geometry_factory,
+                                                   self._shape)
         else:
             value = object.__getattribute__(self, name)
         return value
@@ -132,7 +140,7 @@ class Record(object):
 class Reader(object):
     """
     Provides iterator based access to the contents of a shapefile.
-    
+
     The shapefile geometry is expressed as ``shapely.geometry`` instances.
 
     """
@@ -140,7 +148,8 @@ class Reader(object):
         # Validate the filename/shapefile
         self._reader = reader = shapefile.Reader(filename)
         if reader.shp is None or reader.shx is None or reader.dbf is None:
-            raise ValueError("Incomplete shapefile definition in '%s'." % filename)
+            raise ValueError("Incomplete shapefile definition "
+                             "in '%s'." % filename)
 
         # Figure out how to make appropriate shapely geometry instances
         shapeType = reader.shapeType
@@ -169,20 +178,26 @@ class Reader(object):
         for i in xrange(self._reader.numRecords):
             shape_record = self._reader.shapeRecord(i)
             attributes = dict(zip(field_names, shape_record.record))
-            yield Record(shape_record.shape, geometry_factory, attributes, fields)
+            yield Record(shape_record.shape, geometry_factory, attributes,
+                         fields)
 
 
-def natural_earth(resolution='110m', category='physical', name='coastline', data_dir=None):
+def natural_earth(resolution='110m', category='physical', name='coastline',
+                  data_dir=None):
     """
-    Returns the path to the requested natural earth shapefile, downloading and unziping if necessary.
-    
+    Returns the path to the requested natural earth shapefile, downloading and
+    unziping if necessary.
+
     """
     import glob
 
     if data_dir is None:
         dname = os.path.dirname
-        # XXX be more clever in the data directory so that users can define a setting.
-        data_dir = os.path.join(dname(dname(__file__)), 'data', 'shapefiles', 'natural_earth')
+        # XXX be more clever in the data directory so that users can
+        # define a setting.
+        data_dir = os.path.join(dname(dname(__file__)),
+                                'data', 'shapefiles',
+                                'natural_earth')
 
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -192,11 +207,13 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
     if not os.path.exists(shape_dir):
         os.makedirs(shape_dir)
 
-    # find the only shapefile in the directory. This is because NE have inconsistent zip file naming conventions.
+    # find the only shapefile in the directory. This is because NE have
+    # inconsistent zip file naming conventions.
     glob_pattern = os.path.join(data_dir, full_name, '[!ne_]*.shp')
     shapefiles = glob.glob(glob_pattern)
 
-    # natural earth changed the naming conventions, meaning that new files are prefixed with ne_ .
+    # natural earth changed the naming conventions, meaning that new files
+    # are prefixed with ne_ .
     # This is a workaround until a better download mechanism exists (#129)
     if not shapefiles:
         glob_pattern = os.path.join(data_dir, full_name, '*.shp')
@@ -207,8 +224,11 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
         import cStringIO as StringIO
         from zipfile import ZipFile
         # note the repeated http. That is intentional
-        file_url = ('http://www.naturalearthdata.com/http//www.naturalearthdata.com/'
-                    'download/%s/%s/ne_%s.zip' % (resolution, category, full_name.replace('-', '_')))
+        file_url = ('http://www.naturalearthdata.com/http//www.'
+                    'naturalearthdata.com/download/%s/%s/'
+                    'ne_%s.zip' % (resolution,
+                                   category,
+                                   full_name.replace('-', '_')))
         print 'Downloading: ', file_url
         shapefile_online = urllib2.urlopen(file_url)
         zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
@@ -217,20 +237,23 @@ def natural_earth(resolution='110m', category='physical', name='coastline', data
         shapefiles = glob.glob(glob_pattern)
 
     if len(shapefiles) != 1:
-        raise ValueError('%s shapefiles were found, expecting just one to match %s' % (len(shapefiles), glob_pattern))
+        raise ValueError('%s shapefiles were found, expecting just one to '
+                         'match %s' % (len(shapefiles), glob_pattern))
 
     return shapefiles[0]
 
 
 if __name__ == '__main__':
-    coastlines = natural_earth(resolution='110m', category='physical', name='coastline')
+    coastlines = natural_earth(resolution='110m', category='physical',
+                               name='coastline')
     for record in Reader(coastlines).records():
         print record.attributes
 
-
     # XXX TODO: Turn into a tutorial
-    coastlines = natural_earth(resolution='110m', category='cultural', name='admin-0-countries')
-    cntry_size = [(record.attributes['NAME'], int(record.attributes['POP_EST'])) for record in Reader(coastlines).records()]
+    coastlines = natural_earth(
+        resolution='110m', category='cultural', name='admin-0-countries')
+    cntry_size = [(record.attributes['NAME'], int(record.attributes[
+                   'POP_EST'])) for record in Reader(coastlines).records()]
 
     # return the countries, grouped alphabetically, sorted by size.
     import itertools

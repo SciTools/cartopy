@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 """
-Provides a collection of sub-packages for loading, saving and retrieving various data formats.
+Provides a collection of sub-packages for loading, saving and retrieving
+various data formats.
 
 """
 
@@ -23,15 +24,15 @@ Provides a collection of sub-packages for loading, saving and retrieving various
 def fh_getter(fh, mode='r', needs_filename=False):
     """
     Convenience function for opening files.
-    
+
     Args:
-    
+
         * fh - File handle, filename or (file handle, filename) tuple
-    
+
     Kwargs:
-    
+
         * mode - Open mode. Defaults to "r".
-        
+
     Returns:
 
         * (file handle, filename), opened in the given mode.
@@ -49,7 +50,7 @@ def fh_getter(fh, mode='r', needs_filename=False):
     if filename is None:
         try:
             filename = fh.name
-        except AttributeError: # does this occur?
+        except AttributeError:  # does this occur?
             if needs_filename:
                 raise ValueError('filename cannot be determined')
             else:
