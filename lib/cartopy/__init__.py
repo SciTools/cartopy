@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+import os.path
 
 # convenient name for creating projections
 import cartopy.crs as prj
@@ -30,7 +30,7 @@ __version__ = '0.4.x'
 
 
 config = {'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
-          'downloads': {},
+          'downloaders': {},
           }
 """
 The config dictionary stores global configuration values for cartopy.

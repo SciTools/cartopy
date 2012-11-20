@@ -290,14 +290,14 @@ class NEShpDownloader(DownloadableItem):
 
 
 # add a generic Natural Earth shapefile downloader to the config dictionary's 
-# 'downloads' section.
-config['downloads'].setdefault(('shapefiles', 'natural_earth'),
+# 'downloaders' section.
+config['downloaders'].setdefault(('shapefiles', 'natural_earth'),
                                NEShpDownloader.default_downloader())
 
 
 # XXX cartopy's shapefiles are out of date and the new ones cause test failiures. Temporarily
 # use the download mechanism to point to the old files. This work should be removed by #150::
-config['downloads'][('shapefiles', 'natural_earth')
+config['downloaders'][('shapefiles', 'natural_earth')
                     ].target_path_template = os.path.join('{config[data_dir]}', 
                                              'shapefiles',
                                              'natural_earth', 

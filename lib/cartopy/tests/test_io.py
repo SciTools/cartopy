@@ -22,7 +22,7 @@ import shutil
 import tempfile
 import warnings
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_raises
 
 import cartopy
 import cartopy.io as cio
@@ -61,14 +61,14 @@ def test_DownloadableItem_data():
 @contextlib.contextmanager
 def config_replace(replacement_dict):
     """
-    Provides a context manager to replace the ``cartopy.config['downloads']``
+    Provides a context manager to replace the ``cartopy.config['downloaders']``
     dict with the given dictionary. Great for testing purposes!
     
     """
-    downloads_orig = cartopy.config['downloads']
-    cartopy.config['downloads'] = replacement_dict
+    downloads_orig = cartopy.config['downloaders']
+    cartopy.config['downloaders'] = replacement_dict
     yield
-    cartopy.config['downloads'] = downloads_orig
+    cartopy.config['downloaders'] = downloads_orig
 
 
 @contextlib.contextmanager
@@ -78,19 +78,18 @@ def download_to_temp():
     which is automatically cleaned up on exit.
      
     """
-    old_downloads_dict = cartopy.config['downloads'].copy()
+    old_downloads_dict = cartopy.config['downloaders'].copy()
     old_dir = cartopy.config['data_dir']
     
-    tmp_dir = tempfile.mkdtemp(suffix='cartopy_data')
+    tmp_dir = tempfile.mkdtemp(suffix='_cartopy_data')
     cartopy.config['data_dir'] = tmp_dir
     try:
         yield tmp_dir
-        cartopy.config['downloads'] = old_downloads_dict
+        cartopy.config['downloaders'] = old_downloads_dict
         cartopy.config['data_dir'] = old_dir
     finally:
         shutil.rmtree(tmp_dir)
-
-
+        
 
 def test_from_config():
     generic_url = 'http://example.com/generic_ne/{name}.zip'
@@ -115,10 +114,10 @@ def test_from_config():
         assert_equal(r.url({'name': 'ocean'}), 
                      'http://example.com/generic_ne/ocean.zip')
         
-        downloads = cio.config['downloads']
+        downloaders = cio.config['downloaders']
         
         # check there has been a copy operation
-        assert downloads[generic_spec] is not downloads[ocean_spec]
+        assert downloaders[generic_spec] is not downloaders[ocean_spec]
 
         r = cio.DownloadableItem.from_config(land_spec)
         assert r is land_downloader
@@ -132,47 +131,31 @@ def test_downloading_simple_ascii():
     
     format_dict = {'name': 'jquery'}
     
-    suffix = format_dict['name'] + '.txt'
-    
-    # make a temp file, get its name, then immediately delete it. we use the
-    # filename for saving a DownloadableItem
-    with tempfile.NamedTemporaryFile('r', suffix='_' + suffix) as tmp_fh:
-        tmp_fname = tmp_fh.name
-        
-    try:
-        # turn the explicit filename from tempfile into a template,
-        # removing the "test1.txt" from the filename.
-        target_template = tmp_fname[:-len(suffix)] + '{name}.txt'
+    with download_to_temp() as tmp_dir:
+        target_template = os.path.join(tmp_dir, '{name}.txt')
+        tmp_fname = target_template.format(**format_dict)
         
         dnld_item = cio.DownloadableItem(file_url, target_template)
         
         assert_equal(dnld_item.target_path(format_dict), tmp_fname)
         
         with warnings.catch_warnings(record=True) as w:
-            result_path = dnld_item.path(format_dict)
-            assert len(w) == 1
-            assert issubclass(w[0].category, cio._DownloadWarning)
-            assert_equal(str(w[0].message), 
-                         'Downloading: ' + file_url.format(name='jquery')) 
+            assert_equal(dnld_item.path(format_dict), tmp_fname)
             
-        assert_equal(result_path, tmp_fname)
-        
+            assert len(w) == 1, ('Expected a single download warning to be '
+                                 'raised. Got {}.'.format(len(w)))
+            assert issubclass(w[0].category, cio._DownloadWarning)
+            
         with open(tmp_fname, 'r') as fh:
             _ = fh.readline()
             assert_equal(" * jQuery JavaScript Library v1.8.2\n",
-                             fh.readline())
+                         fh.readline())
         
         # check that calling path again doesn't try re-downloading    
         with CallCounter(dnld_item, 'acquire_resource') as counter:
             assert_equal(dnld_item.path(format_dict), tmp_fname)
         assert counter.count == 0, 'Item was re-downloaded.'
-        
-        assert_equal(dnld_item.path(format_dict), result_path)
-    
-    # remove the tmp_fname no matter what happens
-    finally:
-        os.remove(tmp_fname)
-    
+            
     
 def test_natural_earth_downloader():
     # downloads a file to a temporary location, and uses that temporary

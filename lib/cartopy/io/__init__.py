@@ -80,7 +80,7 @@ class _MissingKeyFormatter(string.Formatter):
     
 
 class _DownloadWarning(Warning):
-    """Issued when a file is being downloaded in by DownloadableItem."""
+    """Issued when a file is being downloaded by a DownloadableItem."""
     pass 
 
 
@@ -89,7 +89,7 @@ class DownloadableItem(object):
     Represents a resource, that can be configured easily, which knows
     how to acquire itself (perhaps via HTTP).
     
-    The key interface methods is :meth:`path` - typically *all* external calls
+    The key interface method is :meth:`path` - typically *all* external calls
     will be made to that method.
     
     Args:
@@ -121,6 +121,7 @@ class DownloadableItem(object):
                                            the resource already exists.
      
     """
+    
     FORMAT_KEYS = ('config', )
     """
     The minimum keys which should be provided in the ``format_dict``
@@ -287,7 +288,7 @@ class DownloadableItem(object):
         
         """
         spec_depth = len(specification)
-        downloaders = config['downloads']
+        downloaders = config['downloaders']
         result_downloader = None        
         
         for i in range(spec_depth, 0, -1):
@@ -307,5 +308,5 @@ class DownloadableItem(object):
             # should never really happen, but could if the user does
             # some strange things...
             raise ValueError('No generic downloadable item in the '
-                             '{} for {}'.format("config['downloads']",
+                             '{} for {}'.format("config['downloaders']",
                                                 specification))

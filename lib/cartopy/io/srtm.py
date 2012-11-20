@@ -206,6 +206,6 @@ class SRTM3Downloader(DownloadableItem):
         return cls(target_path_template=target_path_template)
 
 
-# add a generic SRTM downloader to the config dictionary's 'downloads' section.
-config['downloads'].setdefault(('SRTM', 'SRTM3'),
-                               SRTM3Downloader.default_downloader())
+# add a generic SRTM downloader to the config 'downloaders' section.
+config['downloaders'].setdefault(('SRTM', 'SRTM3'),
+                                 SRTM3Downloader.default_downloader())
