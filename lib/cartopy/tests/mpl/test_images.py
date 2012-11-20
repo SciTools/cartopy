@@ -43,14 +43,12 @@ def test_web_tiles():
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-
     ax = plt.subplot(3, 2, 2, projection=ccrs.Mercator())
     qt = cimgt.QuadtreeTiles()
     img, extent, origin = qt.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
-
 
     ax = plt.subplot(3, 2, 3, projection=ccrs.Mercator())
     mq_osm = cimgt.MapQuestOSM()
@@ -59,7 +57,6 @@ def test_web_tiles():
               interpolation='bilinear', origin=origin)
     ax.coastlines()
 
-
     ax = plt.subplot(3, 2, 4, projection=ccrs.Mercator())
     mq_oa = cimgt.MapQuestOpenAerial()
     img, extent, origin = mq_oa.image_for_domain(target_domain, 1)
@@ -67,14 +64,12 @@ def test_web_tiles():
               interpolation='bilinear', origin=origin)
     ax.coastlines()
 
-
     ax = plt.subplot(3, 2, 5, projection=ccrs.Mercator())
     osm = cimgt.OSM()
     img, extent, origin = osm.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
               interpolation='bilinear', origin=origin)
     ax.coastlines()
-
 
 
 @ImageTesting(['image_nest'], tolerance=17)

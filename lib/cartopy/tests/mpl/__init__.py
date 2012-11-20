@@ -42,28 +42,28 @@ class ImageTesting(object):
 
 
     To find out where the result and expected images reside one can create
-    a empty ImageTesting class instance and get the paths from the 
+    a empty ImageTesting class instance and get the paths from the
     :meth:`expected_path` and :meth:`result_path` methods::
-    
+
         >>> import os
         >>> import cartopy.tests.mpl
         >>> img_testing = cartopy.tests.mpl.ImageTesting([])
-        >>> expected_fname = img_testing.expected_path('<TESTNAME>', '<IMGNAME>')
+        >>> exp_fname = img_testing.expected_path('<TESTNAME>', '<IMGNAME>')
         >>> result_fname = img_testing.result_path('<TESTNAME>', '<IMGNAME>')
         >>> img_test_mod_dir = os.path.dirname(cartopy.__file__)
-        
+
         >>> print 'Result:', os.path.relpath(result_fname, img_test_mod_dir)
         Result: tests/mpl/output/<TESTNAME>/result-<IMGNAME>.png
-        
-        >>> print 'Expected:', os.path.relpath(expected_fname, img_test_mod_dir) 
+
+        >>> print 'Expected:', os.path.relpath(exp_fname, img_test_mod_dir)
         Expected: tests/mpl/baseline_images/mpl/<TESTNAME>/<IMGNAME>.png
-    
+
     .. note::
-    
-        Subclasses of the ImageTesting class may decide to change the 
-        location of the expected and result images. However, the same 
-        technique for finding the locations of the images should hold true. 
-    
+
+        Subclasses of the ImageTesting class may decide to change the
+        location of the expected and result images. However, the same
+        technique for finding the locations of the images should hold true.
+
     """
 
     root_image_results = os.path.dirname(__file__)
@@ -87,7 +87,7 @@ class ImageTesting(object):
         expected_fname = os.path.join(self.root_image_results,
                                       'baseline_images', 'mpl', test_name,
                                       img_name)
-        return expected_fname + ext 
+        return expected_fname + ext
 
     def result_path(self, test_name, img_name, ext='.png'):
         """
@@ -114,12 +114,14 @@ class ImageTesting(object):
             version of ImageTesting, they will be closed for you.
 
         """
-        n_figures_msg = ('Expected %s figures (based  on the number of image '
-                         'result filenames), but there are %s figures available. '
-                         'The most likely reason for this is that this test is producing '
-                         'too many figures, (alternatively if not using ImageCompare as a '
-                         'decorator, it is possible that a test run prior to this one has not '
-                         'closed its figures).' % (len(self.img_names), len(figures))
+        n_figures_msg = ('Expected %s figures (based  on the number of '
+                         'image result filenames), but there are %s figures '
+                         'available. The most likely reason for this is that '
+                         'this test is producing too many figures, '
+                         '(alternatively if not using ImageCompare as a '
+                         'decorator, it is possible that a test run prior to '
+                         'this one has not closed its figures).'
+                         '' % (len(self.img_names), len(figures))
                          )
         assert len(figures) == len(self.img_names), n_figures_msg
 
@@ -161,12 +163,14 @@ class ImageTesting(object):
             warnings.warn('Created image in %s' % expected_fname)
             shutil.copy2(result_fname, expected_fname)
 
-        err = mcompare.compare_images(expected_fname, result_fname, tol=tol, in_decorator=True)
+        err = mcompare.compare_images(expected_fname, result_fname,
+                                      tol=tol, in_decorator=True)
 
         if err:
-            msg = ('Images were different (RMS: %s).\n%s %s %s\nConsider running idiff to '
-                   'inspect these differences.' % (err['rms'], err['actual'],
-                                                   err['expected'], err['diff']))
+            msg = ('Images were different (RMS: %s).\n%s %s %s\nConsider '
+                   'running idiff to inspect these differences.'
+                   '' % (err['rms'], err['actual'],
+                         err['expected'], err['diff']))
             assert False, msg
 
     def __call__(self, test_func):
@@ -181,8 +185,9 @@ class ImageTesting(object):
 
         def wrapped(*args, **kwargs):
             if pyplot_helpers.Gcf.figs:
-                warnings.warn('Figures existed before running the %s %s test. All figures should be '
-                              'closed after they run. They will be closed automatically now.' %
+                warnings.warn('Figures existed before running the %s %s test.'
+                              ' All figures should be closed after they run. '
+                              'They will be closed automatically now.' %
                               (mod_name, test_name))
                 fig_managers = pyplot_helpers.Gcf.destroy_all()
 
@@ -198,6 +203,7 @@ class ImageTesting(object):
                     pyplot_helpers.Gcf.destroy_fig(figure)
             return r
 
-        # nose needs the function's name to be in the form "test_*" to pick it up
+        # nose needs the function's name to be in the form "test_*" to
+        # pick it up
         wrapped.__name__ = test_name
         return wrapped

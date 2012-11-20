@@ -22,8 +22,12 @@ from shapely.geometry import MultiPolygon, Polygon
 
 import cartopy.io.shapereader as shp
 
-LAKES_PATH = shp.natural_earth(resolution='110m', category='physical', name='lakes')
-RIVERS_PATH = shp.natural_earth(resolution='110m', category='physical', name='rivers-lake-centerlines')
+LAKES_PATH = shp.natural_earth(resolution='110m',
+                               category='physical',
+                               name='lakes')
+RIVERS_PATH = shp.natural_earth(resolution='110m',
+                                category='physical',
+                                name='rivers-lake-centerlines')
 
 
 class TestLakes(unittest.TestCase):
@@ -67,7 +71,8 @@ class TestLakes(unittest.TestCase):
         lake_record = records[14]
         self.assertEqual(
             lake_record.attributes,
-            {'FeatureCla': 'Lake', 'Name2': ' ' * 254, 'ScaleRank': 1, 'Name1': 'Lake Okeechobee'})
+            {'FeatureCla': 'Lake', 'Name2': ' ' * 254, 'ScaleRank': 1,
+             'Name1': 'Lake Okeechobee'})
         lake = lake_record.geometry
         self._assert_geometry(lake)
 
@@ -103,7 +108,8 @@ class TestRivers(unittest.TestCase):
         river_record = records[6]
         self.assertEqual(
             river_record.attributes,
-            {'FeatureCla': 'River', 'Name2': ' ' * 254, 'ScaleRank': 2, 'Name1': 'Peace'})
+            {'FeatureCla': 'River', 'Name2': ' ' * 254, 'ScaleRank': 2,
+             'Name1': 'Peace'})
         river = river_record.geometry
         self._assert_geometry(river)
 
