@@ -18,16 +18,14 @@
 This module defines :class:`Feature` instances, for use with
 ax.add_feature().
 
-""" 
+"""
 import numpy as np
 
 import cartopy.crs
 
 
-_COLOURS = {
-            'land': np.array((240, 240, 220)) / 256.,
-            'water': np.array((152, 183, 226)) / 256.,
-           }
+_COLOURS = {'land': np.array((240, 240, 220)) / 256.,
+            'water': np.array((152, 183, 226)) / 256.}
 
 
 _NATURAL_EARTH_GEOM_CACHE = {}
@@ -116,8 +114,8 @@ class NaturalEarthFeature(Feature):
 
         """
         import cartopy.io.shapereader as shapereader
-        key = (self.name, self.category, self.scale) 
-        if key not in _NATURAL_EARTH_GEOM_CACHE: 
+        key = (self.name, self.category, self.scale)
+        if key not in _NATURAL_EARTH_GEOM_CACHE:
             path = shapereader.natural_earth(resolution=self.scale,
                                              category=self.category,
                                              name=self.name)
@@ -128,8 +126,10 @@ class NaturalEarthFeature(Feature):
         return geometries
 
 
-BORDERS = NaturalEarthFeature('cultural', 'admin-0-boundary-lines-land', '110m',
-                             {'edgecolor': 'black', 'facecolor': 'none'})
+BORDERS = NaturalEarthFeature('cultural',
+                              'admin-0-boundary-lines-land',
+                              '110m',
+                              {'edgecolor': 'black', 'facecolor': 'none'})
 """Small scale (1:110m) country boundaries."""
 
 
@@ -145,7 +145,8 @@ LAKES = NaturalEarthFeature('physical', 'lakes', '110m',
 
 
 LAND = NaturalEarthFeature('physical', 'land', '110m',
-                           {'edgecolor': 'face', 'facecolor': _COLOURS['land']})
+                           {'edgecolor': 'face',
+                            'facecolor': _COLOURS['land']})
 """Small scale (1:110m) land polygons, including major islands."""
 
 
