@@ -3,7 +3,6 @@
 build
 docs/build
 
-
 # cartopy build files
 lib/cartopy/trace.cpp
 lib/cartopy/trace.so
@@ -16,6 +15,9 @@ lib/cartopy/tests/mpl/output/
 lib/cartopy/data/SRTM3
 lib/cartopy/data/wmts
 lib/cartopy/data/gshhs
+
+# some configuration files which aren't part of cartopy repo
+lib/cartopy/tests/.pep8_test_exclude.txt
 
 # pydev files
 .project

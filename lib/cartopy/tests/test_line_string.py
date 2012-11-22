@@ -203,7 +203,7 @@ class TestBisect(unittest.TestCase):
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(coord)), 
+                self.assertFalse(any(numpy.isnan(coord)),
                                  'Unexpected NaN in projected coords.')
 
 
