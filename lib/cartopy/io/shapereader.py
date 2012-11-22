@@ -190,7 +190,6 @@ class Reader(object):
                          fields)
 
 
-
 def natural_earth(resolution='110m', category='physical', name='coastline'):
     """
     Returns the path to the requested natural earth shapefile,
@@ -201,7 +200,7 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     # which we can then simply call its path method to get the appropriate
     # shapefile (it will download if necessary)
     ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
-                                                  resolution, category, name))
+                                            resolution, category, name))
     format_dict = {'config': config, 'category': category,
                    'name': name, 'resolution': resolution}
     return ne_downloader.path(format_dict)
@@ -224,6 +223,7 @@ class NEShpDownloader(Downloader):
     # url directly
     _NE_URL_TEMPLATE = ('http://www.nacis.org/naturalearth/{resolution}'
                         '/{category}/ne_{resolution}_{name}.zip')
+
     def __init__(self,
                  url_template=_NE_URL_TEMPLATE,
                  target_path_template=None,
@@ -231,8 +231,8 @@ class NEShpDownloader(Downloader):
                  ):
         # adds some NE defaults to the __init__ of a Downloader
         Downloader.__init__(self, url_template,
-                                             target_path_template,
-                                             pre_downloaded_path_template)
+                            target_path_template,
+                            pre_downloaded_path_template)
 
     def zip_file_contents(self, format_dict):
         """
@@ -291,22 +291,23 @@ class NEShpDownloader(Downloader):
 
         """
         ne_path_template = os.path.join('{config[data_dir]}', 'shapefiles',
-                                         'natural_earth', '{category}',
-                                         '{resolution}_{name}.shp')
+                                        'natural_earth', '{category}',
+                                        '{resolution}_{name}.shp')
         return NEShpDownloader(target_path_template=ne_path_template)
 
 
 # add a generic Natural Earth shapefile downloader to the config dictionary's
 # 'downloaders' section.
-config['downloaders'].setdefault(('shapefiles', 'natural_earth'),
-                               NEShpDownloader.default_downloader())
+_ne_key = ('shapefiles', 'natural_earth')
+config['downloaders'].setdefault(_ne_key,
+                                 NEShpDownloader.default_downloader())
 
 
-# XXX cartopy's shapefiles are out of date and the new ones cause test failiures. Temporarily
-# use the download mechanism to point to the old files. This work should be removed by #150::
-config['downloaders'][('shapefiles', 'natural_earth')
-                    ].target_path_template = os.path.join('{config[data_dir]}',
-                                             'shapefiles',
-                                             'natural_earth',
-                                             '{resolution}-{name}',
-                                             '{resolution}_{name}.shp')
+# XXX cartopy's shapefiles are out of date and the new ones cause test
+# failures. Temporarily use the download mechanism to point to the old
+# files. This work should be removed by #150::
+_target_path_template = os.path.join('{config[data_dir]}',
+                                     'shapefiles', 'natural_earth',
+                                     '{resolution}-{name}',
+                                     '{resolution}_{name}.shp')
+config['downloaders'][_ne_key].target_path_template = _target_path_template

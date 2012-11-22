@@ -108,7 +108,7 @@ class SRTM3Downloader(Downloader):
     FORMAT_KEYS = ('config', 'x', 'y')
 
     _JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__),
-                                            'srtm.json')
+                                      'srtm.json')
     _SRTM3_LOOKUP_URL = json.load(open(_JSON_SRTM3_LOOKUP, 'r'))
     """
     The SRTM3 url lookup dictionary maps keys such as 'N43E043' to the url
@@ -124,8 +124,8 @@ class SRTM3Downloader(Downloader):
         # namely, the URl is determined on the fly using the
         # ``SRTM3Downloader._SRTM3_LOOKUP_URL`` dictionary
         Downloader.__init__(self, None,
-                                        target_path_template,
-                                        pre_downloaded_path_template)
+                            target_path_template,
+                            pre_downloaded_path_template)
 
     def url(self, format_dict):
         # override the url method, looking up the url from the
@@ -162,9 +162,9 @@ class SRTM3Downloader(Downloader):
         """
         Returns a dictionary mapping srtm filename to the URL of the file.
 
-        This is slow as it must query the SRTM server to identify the continent from
-        which the tile comes. Hence a json file with this content exists in
-        ``SRTM3Downloader._JSON_SRTM3_LOOKUP``.
+        This is slow as it must query the SRTM server to identify the
+        continent from which the tile comes. Hence a json file with this
+        content exists in ``SRTM3Downloader._JSON_SRTM3_LOOKUP``.
 
         The json file was created with::
 
@@ -174,7 +174,8 @@ class SRTM3Downloader(Downloader):
             json.dump(srtm.SRTM3Downloader._create_srtm3_dict(), fh)
 
         """
-        # lazy imports. In most situations, these are not dependencies of cartopy.
+        # lazy imports. In most situations, these are not
+        # dependencies of cartopy.
         import urllib
         from BeautifulSoup import BeautifulSoup
 

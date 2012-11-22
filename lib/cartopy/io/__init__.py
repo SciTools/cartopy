@@ -144,6 +144,8 @@ class Downloader(object):
         self.target_path_template = target_path_template
         self.pre_downloaded_path_template = pre_downloaded_path_template
 
+        self._formatter = _MissingKeyFormatter()
+
     def url(self, format_dict):
         """
         The full URL that this resource represents.
@@ -156,7 +158,7 @@ class Downloader(object):
                               in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return _MissingKeyFormatter().format(self.url_template, **format_dict)
+        return self._formatter.format(self.url_template, **format_dict)
 
     def target_path(self, format_dict):
         """
@@ -172,8 +174,8 @@ class Downloader(object):
                               in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return _MissingKeyFormatter().format(self.target_path_template,
-                                             **format_dict)
+        return self._formatter.format(self.target_path_template,
+                                      **format_dict)
 
     def pre_downloaded_path(self, format_dict):
         """
@@ -189,8 +191,8 @@ class Downloader(object):
                               in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return _MissingKeyFormatter().format(self.pre_downloaded_path_template,
-                                             **format_dict)
+        return self._formatter.format(self.pre_downloaded_path_template,
+                                      **format_dict)
 
     def path(self, format_dict):
         """
@@ -213,10 +215,10 @@ class Downloader(object):
                               in their ``FORMAT_KEYS`` class attribute.
 
         """
-
         pre_downloaded_path = self.pre_downloaded_path(format_dict)
         target_path = self.target_path(format_dict)
-        if pre_downloaded_path is not None and os.path.exists(pre_downloaded_path):
+        if (pre_downloaded_path is not None and
+                os.path.exists(pre_downloaded_path)):
             result_path = pre_downloaded_path
         elif os.path.exists(target_path):
             result_path = target_path

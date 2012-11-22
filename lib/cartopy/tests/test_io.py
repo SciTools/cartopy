@@ -32,15 +32,13 @@ from cartopy.tests.mpl.test_caching import CallCounter
 
 def test_Downloader_data():
     di = cio.Downloader('http://testing.com/{category}/{name}.zip',
-                              os.path.join('{data_dir}', '{category}',
-                                           'shape.shp'),
-                              '/project/foobar/{category}/sample.shp',
-                              )
+                        os.path.join('{data_dir}', '{category}',
+                                     'shape.shp'),
+                        '/project/foobar/{category}/sample.shp')
 
     replacement_dict = {'category': 'example',
                         'name': 'test',
-                        'data_dir': os.path.join('/wibble', 'foo', 'bar'),
-                        }
+                        'data_dir': os.path.join('/wibble', 'foo', 'bar')}
 
     assert_equal(di.url(replacement_dict),
                  'http://testing.com/example/test.zip')
@@ -196,9 +194,9 @@ def test_natural_earth_downloader():
         exts = ['.shp', '.shx']
         for ext in exts:
             stem = os.path.splitext(shp_path)[0]
-            assert os.path.exists(stem + ext), ("Shapefile's {} file doesn't "
-                                                "exist in {1}{0}".format(ext,
-                                                                        stem))
+            msg = "Shapefile's {0} file doesn't exist in {1}{0}".format(ext,
+                                                                        stem)
+            assert os.path.exists(stem + ext), msg
 
         # check that providing a pre downloaded path actually works
         pre_dnld = NEShpDownloader(target_path_template=shp_path_template,
