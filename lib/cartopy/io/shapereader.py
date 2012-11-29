@@ -18,27 +18,35 @@
 
 """
 Combines the shapefile access of pyshp with the
-geometry representation of shapely.
+geometry representation of shapely:
 
->>> import os.path
->>> import cartopy.io.shapereader as shapereader
->>> filename = os.path.join(os.path.dirname(shapereader.__file__),
-                            'data', 'Devon')
->>> reader = shapereader.Reader(filename)
->>> len(reader)
-1
->>> list(reader.records()) #doctest: +ELLIPSIS
-[<Record: <shapely.geometry.multipolygon.MultiPolygon object at ...>,
- {'PMS_REGION': 14, 'SHAPE_AREA': 6597719517.55, 'OBJECTID': 15,
- 'COUNTRY': 'ENGLAND', 'SNAC_GOR': 'South West', 'COUNTY_STR': 'Devon',
- 'SHAPE_LEN': 570341.652865}, <fields>>]
->>> list(reader.geometries()) #doctest: +ELLIPSIS
-[<shapely.geometry.multipolygon.MultiPolygon object at ...>]
+    >>> import os.path
+    >>> import cartopy.io.shapereader as shapereader
+    >>> filename = natural_earth(resolution='110m',
+    ...                          category='physical',
+    ...                          name='geography_regions_points')
+    >>> reader = shapereader.Reader(filename)
+    >>> len(reader)
+    3
+    >>> records = list(reader.records())
+    >>> print type(records[0])
+    <class 'cartopy.io.shapereader.Record'>
+    >>> print records[0].attributes.keys()
+    ['comment', 'scalerank', 'region', 'name', 'subregion', 'lat_y', \
+'featurecla', 'long_x', 'name_alt']
+    >>> print records[0].attributes['name']
+    Niagara Falls
+    >>> geoms = list(reader.geometries())
+    >>> print type(geoms[0])
+    <class 'shapely.geometry.point.Point'>
 
 """
 from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
 import shapefile
 import os
+
+from cartopy.io import Downloader
+from cartopy import config
 
 
 __all__ = ['Reader', 'Record']
@@ -182,81 +190,124 @@ class Reader(object):
                          fields)
 
 
-def natural_earth(resolution='110m', category='physical', name='coastline',
-                  data_dir=None):
+def natural_earth(resolution='110m', category='physical', name='coastline'):
     """
-    Returns the path to the requested natural earth shapefile, downloading and
-    unziping if necessary.
+    Returns the path to the requested natural earth shapefile,
+    downloading and unziping if necessary.
 
     """
-    import glob
+    # get hold of the Downloader (typically a NEShpDownloader instance)
+    # which we can then simply call its path method to get the appropriate
+    # shapefile (it will download if necessary)
+    ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
+                                            resolution, category, name))
+    format_dict = {'config': config, 'category': category,
+                   'name': name, 'resolution': resolution}
+    return ne_downloader.path(format_dict)
 
-    if data_dir is None:
-        dname = os.path.dirname
-        # XXX be more clever in the data directory so that users can
-        # define a setting.
-        data_dir = os.path.join(dname(dname(__file__)),
-                                'data', 'shapefiles',
-                                'natural_earth')
 
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+class NEShpDownloader(Downloader):
+    """
+    Specialises :class:`cartopy.io.Downloader` to download the zipped
+    Natural Earth shapefiles and extract them to the defined location
+    (typically user configurable).
 
-    full_name = '%s-%s' % (resolution, name)
-    shape_dir = os.path.join(data_dir, full_name)
-    if not os.path.exists(shape_dir):
-        os.makedirs(shape_dir)
+    The keys which should be passed through when using the ``format_dict``
+    are typically ``category``, ``resolution`` and ``name``.
 
-    # find the only shapefile in the directory. This is because NE have
-    # inconsistent zip file naming conventions.
-    glob_pattern = os.path.join(data_dir, full_name, '[!ne_]*.shp')
-    shapefiles = glob.glob(glob_pattern)
+    """
+    FORMAT_KEYS = ('config', 'resolution', 'category', 'name')
 
-    # natural earth changed the naming conventions, meaning that new files
-    # are prefixed with ne_ .
-    # This is a workaround until a better download mechanism exists (#129)
-    if not shapefiles:
-        glob_pattern = os.path.join(data_dir, full_name, '*.shp')
+    # define the NaturalEarth url template. The natural earth website
+    # returns a 302 status if accessing directly, so we use the nacis
+    # url directly
+    _NE_URL_TEMPLATE = ('http://www.nacis.org/naturalearth/{resolution}'
+                        '/{category}/ne_{resolution}_{name}.zip')
 
-    if not shapefiles:
-        # download the zip file
-        import urllib2
+    def __init__(self,
+                 url_template=_NE_URL_TEMPLATE,
+                 target_path_template=None,
+                 pre_downloaded_path_template='',
+                 ):
+        # adds some NE defaults to the __init__ of a Downloader
+        Downloader.__init__(self, url_template,
+                            target_path_template,
+                            pre_downloaded_path_template)
+
+    def zip_file_contents(self, format_dict):
+        """
+        Returns a generator of the filenames to be found in the downloaded
+        natural earth zip file.
+
+        """
+        for ext in ['.shp', '.dbf', '.shx']:
+            yield ('ne_{resolution}_{name}'
+                   '{extension}'.format(extension=ext, **format_dict))
+
+    def acquire_resource(self, target_path, format_dict):
+        """
+        Downloads the zip file and extracts the files listed in
+        :meth:`zip_file_contents` to the target path.
+
+        """
         import cStringIO as StringIO
         from zipfile import ZipFile
-        # note the repeated http. That is intentional
-        file_url = ('http://www.naturalearthdata.com/http//www.'
-                    'naturalearthdata.com/download/%s/%s/'
-                    'ne_%s.zip' % (resolution,
-                                   category,
-                                   full_name.replace('-', '_')))
-        print 'Downloading: ', file_url
-        shapefile_online = urllib2.urlopen(file_url)
+
+        target_dir = os.path.dirname(target_path)
+        if not os.path.isdir(target_dir):
+            os.makedirs(target_dir)
+
+        url = self.url(format_dict)
+
+        shapefile_online = self._urlopen(url)
+
         zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
-        zfh.extractall(shape_dir)
 
-        shapefiles = glob.glob(glob_pattern)
+        for member_path in self.zip_file_contents(format_dict):
+            ext = os.path.splitext(member_path)[1]
+            target = os.path.splitext(target_path)[0] + ext
+            member = zfh.getinfo(member_path)
+            with open(target, 'wb') as fh:
+                fh.write(zfh.open(member).read())
 
-    if len(shapefiles) != 1:
-        raise ValueError('%s shapefiles were found, expecting just one to '
-                         'match %s' % (len(shapefiles), glob_pattern))
+        shapefile_online.close()
+        zfh.close()
 
-    return shapefiles[0]
+        return target_path
+
+    @staticmethod
+    def default_downloader():
+        """
+        Returns a generic, standard, NEShpDownloader instance.
+
+        Typically, a user will not need to call this staticmethod.
+
+        To find the path template of the NEShpDownloader:
+
+            >>> ne_dnldr = NEShpDownloader.default_downloader()
+            >>> print ne_dnldr.target_path_template
+            {config[data_dir]}/shapefiles/natural_earth/{category}/\
+{resolution}_{name}.shp
+
+        """
+        ne_path_template = os.path.join('{config[data_dir]}', 'shapefiles',
+                                        'natural_earth', '{category}',
+                                        '{resolution}_{name}.shp')
+        return NEShpDownloader(target_path_template=ne_path_template)
 
 
-if __name__ == '__main__':
-    coastlines = natural_earth(resolution='110m', category='physical',
-                               name='coastline')
-    for record in Reader(coastlines).records():
-        print record.attributes
+# add a generic Natural Earth shapefile downloader to the config dictionary's
+# 'downloaders' section.
+_ne_key = ('shapefiles', 'natural_earth')
+config['downloaders'].setdefault(_ne_key,
+                                 NEShpDownloader.default_downloader())
 
-    # XXX TODO: Turn into a tutorial
-    coastlines = natural_earth(
-        resolution='110m', category='cultural', name='admin-0-countries')
-    cntry_size = [(record.attributes['NAME'], int(record.attributes[
-                   'POP_EST'])) for record in Reader(coastlines).records()]
 
-    # return the countries, grouped alphabetically, sorted by size.
-    import itertools
-    cntry_size.sort(key=lambda (name, population): (name[0], population))
-    for k, g in itertools.groupby(cntry_size, key=lambda item: item[0][0]):
-        print k, list(g)
+# XXX cartopy's shapefiles are out of date and the new ones cause test
+# failures. Temporarily use the download mechanism to point to the old
+# files. This work should be removed by #150::
+_target_path_template = os.path.join('{config[data_dir]}',
+                                     'shapefiles', 'natural_earth',
+                                     '{resolution}-{name}',
+                                     '{resolution}_{name}.shp')
+config['downloaders'][_ne_key].target_path_template = _target_path_template

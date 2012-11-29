@@ -63,6 +63,7 @@ class CallCounter(object):
             return self.orig_fn(*args, **kwargs)
 
         setattr(self.parent, self.function_name, replacement_fn)
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         setattr(self.parent, self.function_name, self.orig_fn)

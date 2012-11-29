@@ -189,8 +189,8 @@ def test_axes_natural_earth_interface():
     with warnings.catch_warnings(record=True) as all_warnings:
         warnings.simplefilter('always')
 
-        ax.natural_earth_shp('rivers-lake-centerlines',
-                             edgecolor='black', facecolor='none')
+        ax.natural_earth_shp('rivers_lake_centerlines', edgecolor='black',
+                             facecolor='none')
         ax.natural_earth_shp('lakes', facecolor='blue')
 
     assert_equal(len(all_warnings), 2)
