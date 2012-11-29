@@ -43,10 +43,6 @@ def test_Downloader_data():
     assert_equal(di.url(replacement_dict),
                  'http://testing.com/example/test.zip')
 
-    # not having all the appropriate keys should fail gracefully
-    assert_equal(di.url({}),
-                 'http://testing.com/{category}/{name}.zip')
-
     assert_equal(di.target_path(replacement_dict),
                  os.path.join('/wibble', 'foo', 'bar', 'example', 'shape.shp')
                  )
@@ -114,9 +110,6 @@ def test_from_config():
 
         downloaders = cio.config['downloaders']
 
-        # check there has been a copy operation
-        assert downloaders[generic_spec] is not downloaders[ocean_spec]
-
         r = cio.Downloader.from_config(land_spec)
         assert r is land_downloader
 
@@ -178,7 +171,7 @@ def test_natural_earth_downloader():
     try:
         dnld_item = NEShpDownloader(target_path_template=shp_path_template)
 
-        # check that the file gest downloaded the first time path is called
+        # check that the file gets downloaded the first time path is called
         with CallCounter(dnld_item, 'acquire_resource') as counter:
             shp_path = dnld_item.path(format_dict)
         assert counter.count == 1, 'Item not downloaded.'
@@ -199,7 +192,7 @@ def test_natural_earth_downloader():
             assert os.path.exists(stem + ext), msg
 
         # check that providing a pre downloaded path actually works
-        pre_dnld = NEShpDownloader(target_path_template=shp_path_template,
+        pre_dnld = NEShpDownloader(target_path_template='/not/a/real/file.txt',
                                    pre_downloaded_path_template=shp_path
                                    )
         # check that the pre_dnld downloader doesn't re-download, but instead

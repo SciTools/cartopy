@@ -67,19 +67,6 @@ def fh_getter(fh, mode='r', needs_filename=False):
     return fh, filename
 
 
-class _MissingKeyFormatter(string.Formatter):
-    """
-    Provides a formatter class which can handle missing keys in a
-    format string.
-
-    """
-    def get_value(self, key, args, kwargs):
-        if isinstance(key, (int, long)):
-            raise ValueError('Index based format not applicable.')
-        else:
-            return kwargs.get(key, '{' + key + '}')
-
-
 class DownloadWarning(Warning):
     """Issued when a file is being downloaded by a :class:`Downloader`."""
     pass
@@ -130,7 +117,7 @@ class Downloader(object):
 
     """
 
-    FORMAT_KEYS = ('config', )
+    FORMAT_KEYS = ('config',)
     """
     The minimum keys which should be provided in the ``format_dict``
     argument for the ``path``, ``url``, ``target_path``,
@@ -144,7 +131,10 @@ class Downloader(object):
         self.target_path_template = target_path_template
         self.pre_downloaded_path_template = pre_downloaded_path_template
 
-        self._formatter = _MissingKeyFormatter()
+        # define a formatter which will process the templates. Subclasses
+        # may override the standard ``''.format`` formatting by defining
+        # their own formatter subclass here.
+        self._formatter = string.Formatter()
 
     def url(self, format_dict):
         """
@@ -292,16 +282,12 @@ class Downloader(object):
         >>>
         >>> dnldr = Downloader('http://example.com/{name}', './{name}.txt')
         >>> config = {('level_1', 'level_2'): dnldr}
-        >>> d1 = Downloader.from_config(('level_1', 'level_2'),
-        ...                             config_dict=config)
-        >>> d2 = Downloader.from_config(('level_1', 'level_2', 'level_3'),
+        >>> d1 = Downloader.from_config(('level_1', 'level_2', 'level_3'),
         ...                             config_dict=config)
         >>> print d1.url_template
         http://example.com/{name}
-        >>> print d2.url_template
-        http://example.com/{name}
-        >>> print d1 is d2
-        False
+        >>> print d1.url({'name': 'item_name'})
+        http://example.com/item_name
 
         """
         spec_depth = len(specification)
@@ -316,17 +302,14 @@ class Downloader(object):
             lookup = specification[:i]
             downloadable_item = downloaders.get(lookup, None)
             if downloadable_item is not None:
-                # put the Downloader at the top level
-                # (so that it is quicker to find next time).
-                if i < spec_depth:
-                    import copy
-                    result_downloader = copy.copy(downloadable_item)
-                    downloaders[specification] = result_downloader
-                else:
-                    result_downloader = downloadable_item
-                return result_downloader
-        else:
+                result_downloader = downloadable_item
+                break
+
+        if result_downloader is None:
             # should never really happen, but could if the user does
-            # some strange things...
+            # some strange things like not having any downloaders defined
+            # in the config...
             raise ValueError('No generic downloadable item in the config '
                              'dictionary for {}'.format(specification))
+
+        return result_downloader

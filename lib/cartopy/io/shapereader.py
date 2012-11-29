@@ -216,7 +216,7 @@ class NEShpDownloader(Downloader):
     are typically ``category``, ``resolution`` and ``name``.
 
     """
-    FORMAT_KEYS = ('config', 'resolution', 'category', 'resolution', 'name')
+    FORMAT_KEYS = ('config', 'resolution', 'category', 'name')
 
     # define the NaturalEarth url template. The natural earth website
     # returns a 302 status if accessing directly, so we use the nacis
