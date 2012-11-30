@@ -36,7 +36,7 @@ import shapely.geometry
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
-import cartopy.mpl_integration.patch as patch
+import cartopy.mpl.patch as patch
 
 
 import matplotlib
@@ -826,7 +826,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if crs is None:
             crs = ccrs.PlateCarree()
-        from cartopy.mpl_integration.gridliner import Gridliner
+        from cartopy.mpl.gridliner import Gridliner
         gl = Gridliner(self, crs=crs, collection_kwargs=kwargs)
         self._gridliners.append(gl)
         return gl
@@ -854,7 +854,7 @@ class GeoAxes(matplotlib.axes.Axes):
         The axes.patch will have its visibility set to False inside
         GeoAxes.gca()
         """
-        import cartopy.mpl_integration.patch as p
+        import cartopy.mpl.patch as p
         path, = p.geos_to_path(self.projection.boundary)
 
 #        from matplotlib.collections import PatchCollection
