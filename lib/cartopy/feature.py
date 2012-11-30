@@ -127,7 +127,7 @@ class NaturalEarthFeature(Feature):
 
 
 BORDERS = NaturalEarthFeature('cultural',
-                              'admin-0-boundary-lines-land',
+                              'admin_0_boundary_lines_land',
                               '110m',
                               {'edgecolor': 'black', 'facecolor': 'none'})
 """Small scale (1:110m) country boundaries."""
@@ -156,7 +156,7 @@ OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
 """Small scale (1:110m) ocean polygons."""
 
 
-RIVERS = NaturalEarthFeature('physical', 'rivers-lake-centerlines', '110m',
+RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
                              {'edgecolor': _COLOURS['water'],
                               'facecolor': 'none'})
 """Small scale (1:110m) single-line drainages, including lake centerlines."""

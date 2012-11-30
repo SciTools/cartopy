@@ -25,19 +25,14 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
    - Wikipedia (August 2012)
 
 """
+import json
 import os
 
 import numpy
 
+from cartopy import config
 import cartopy.crs as ccrs
-from cartopy.io import fh_getter
-
-
-import json
-_JSON_SRTM3_LOOKUP = os.path.splitext(os.path.basename(__file__))[0] + '.json'
-_JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__),
-                                  _JSON_SRTM3_LOOKUP)
-_SRTM3_FILE_LOOKUP = json.load(open(_JSON_SRTM3_LOOKUP))
+from cartopy.io import fh_getter, Downloader
 
 
 def srtm(lon, lat):
@@ -97,74 +92,122 @@ def read_SRTM3(fh):
     return elev[::-1, ...], ccrs.PlateCarree(), [x, x + 1, y, y + 1]
 
 
-def SRTM3_retrieve(lon, lat, data_dir=None):
-    if data_dir is None:
-        dname = os.path.dirname
-        # be more clever in the data directory so that users can define a
-        # setting.
-        data_dir = os.path.join(dname(dname(__file__)), 'data', 'SRTM3')
-
+def SRTM3_retrieve(lon, lat):
     x = '%s%03d' % ('E' if lon > 0 else 'W', abs(int(lon)))
     y = '%s%02d' % ('N' if lat > 0 else 'S', abs(int(lat)))
 
-    filename = '{y}{x}.hgt'.format(x=x, y=y)
+    srtm_downloader = Downloader.from_config(('SRTM', 'SRTM3'))
+    return srtm_downloader.path({'config': config, 'x': x, 'y': y})
 
-    filepath = os.path.join(data_dir, filename)
 
-    if not os.path.exists(filepath):
-        # download the zip file
-        file_url = _SRTM3_FILE_LOOKUP.get(u'{y}{x}'.format(x=x, y=y), None)
-        # no file exists in the SRTM dataset for these coordinates
-        if file_url is None:
-            return None
+class SRTM3Downloader(Downloader):
+    """
+    Provides a SRTM3 download mechanism.
 
-        import urllib2
+    """
+    FORMAT_KEYS = ('config', 'x', 'y')
+
+    _JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__),
+                                      'srtm.json')
+    _SRTM3_LOOKUP_URL = json.load(open(_JSON_SRTM3_LOOKUP, 'r'))
+    """
+    The SRTM3 url lookup dictionary maps keys such as 'N43E043' to the url
+    of the file to download.
+
+    """
+
+    def __init__(self,
+                 target_path_template,
+                 pre_downloaded_path_template='',
+                 ):
+        # adds some SRTM3 defaults to the __init__ of a Downloader
+        # namely, the URl is determined on the fly using the
+        # ``SRTM3Downloader._SRTM3_LOOKUP_URL`` dictionary
+        Downloader.__init__(self, None,
+                            target_path_template,
+                            pre_downloaded_path_template)
+
+    def url(self, format_dict):
+        # override the url method, looking up the url from the
+        # ``SRTM3Downloader._SRTM3_LOOKUP_URL`` dictionary
+        key = u'{y}{x}'.format(**format_dict)
+        url = SRTM3Downloader._SRTM3_LOOKUP_URL.get(key, None)
+        return url
+
+    def acquire_resource(self, target_path, format_dict):
         import cStringIO as StringIO
         from zipfile import ZipFile
 
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
+        target_dir = os.path.dirname(target_path)
+        if not os.path.isdir(target_dir):
+            os.makedirs(target_dir)
 
-        srtm_online = urllib2.urlopen(file_url)
+        url = self.url(format_dict)
+
+        srtm_online = self._urlopen(url)
         zfh = ZipFile(StringIO.StringIO(srtm_online.read()), 'r')
-        zfh.extract(filename, data_dir)
 
-    return filepath
+        zip_member_path = u'{y}{x}.hgt'.format(**format_dict)
+        member = zfh.getinfo(zip_member_path)
+        with open(target_path, 'wb') as fh:
+            fh.write(zfh.open(member).read())
+
+        srtm_online.close()
+        zfh.close()
+
+        return target_path
+
+    @staticmethod
+    def _create_srtm3_dict():
+        """
+        Returns a dictionary mapping srtm filename to the URL of the file.
+
+        This is slow as it must query the SRTM server to identify the
+        continent from which the tile comes. Hence a json file with this
+        content exists in ``SRTM3Downloader._JSON_SRTM3_LOOKUP``.
+
+        The json file was created with::
+
+            import cartopy.io.srtm as srtm
+            import json
+            fh = open(srtm.SRTM3Downloader._JSON_SRTM3_LOOKUP, 'w')
+            json.dump(srtm.SRTM3Downloader._create_srtm3_dict(), fh)
+
+        """
+        # lazy imports. In most situations, these are not
+        # dependencies of cartopy.
+        import urllib
+        from BeautifulSoup import BeautifulSoup
+
+        files = {}
+
+        for continent in ['Australia', 'Africa', 'Eurasia', 'Islands',
+                          'North_America', 'South_America']:
+
+            url = "http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/%s" % continent
+            f = urllib.urlopen(url)
+            html = f.read()
+            soup = BeautifulSoup(html)
+
+            for link in soup('li'):
+                name = str(link.text)
+                if name != ' Parent Directory':
+                    # remove the '.hgt.zip'
+                    files[name[:-8]] = url + '/' + name
+            f.close()
+        return files
+
+    @classmethod
+    def default_downloader(cls):
+        """
+        Returns a typical downloader for this class. In general, this static
+        method is used to create the default configuration in cartopy.config
+        """
+        target_path_template = os.path.join('{config[data_dir]}', 'SRTM',
+                                            'SRTM3', '{y}{x}.hgt')
+        return cls(target_path_template=target_path_template)
 
 
-def _create_srtm3_dict():
-    """
-    Returns a dictionary mapping srtm filename to the URL of the file.
-
-    This is slow as it must query the SRTM server to identify the continent
-    from which the tile comes. Hence a json file with this content exists in
-    ```_JSON_SRTM3_LOOKUP```.
-
-    The json file was created with::
-
-        $> python -c "import cartopy.io.srtm as srtm;
-                      import json;
-                      json.dump(srtm._create_srtm3_dict(),
-                                open(srtm._JSON_SRTM3_LOOKUP, 'w'));"
-
-    """
-    # lazy imports. In most situations, these are not dependencies of cartopy.
-    import urllib
-    from BeautifulSoup import BeautifulSoup
-
-    files = {}
-
-    for continent in ['Australia', 'Africa', 'Eurasia', 'Islands',
-                      'North_America', 'South_America']:
-
-        url = "http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/%s" % continent
-        f = urllib.urlopen(url)
-        html = f.read()
-        soup = BeautifulSoup(html)
-
-        for link in soup('li'):
-            name = str(link.text)
-            if name != ' Parent Directory':
-                # remove the '.hgt.zip'
-                files[name[:-8]] = url + '/' + name
-    return files
+# add a generic SRTM downloader to the config 'downloaders' section.
+config['downloaders'].setdefault(('SRTM', 'SRTM3'),
+                                 SRTM3Downloader.default_downloader())
