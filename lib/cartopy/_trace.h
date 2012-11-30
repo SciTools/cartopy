@@ -45,6 +45,7 @@ class Interpolator
     virtual void set_line(Point &start, Point &end);
     virtual Point interpolate(double t)=0;
     virtual Point project(Point &point)=0;
+    virtual ~Interpolator();
 
     protected:
     Point m_start, m_end;
