@@ -36,7 +36,7 @@ Feature API
 ===========
 
 Features (i.e. collections of lines and polygons) are now added to a map
-via the :meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.add_feature`
+via the :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_feature`
 method.
 
 Pre-defined features exist for the small-scale (1:110m)
