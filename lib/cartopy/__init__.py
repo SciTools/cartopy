@@ -15,25 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
 
-# convenient name for creating projections
-import cartopy.crs as prj
+__version__ = '0.5.x'
+
 
 # Enable shapely performance enhancements
 import shapely.speedups
 if shapely.speedups.available:
     shapely.speedups.enable()
 
-# Commonly used sub-modules. Imported here to provide end-user
-# convenience.
-import cartopy.crs
-import cartopy.feature
 
-
-__version__ = '0.5.x'
-
-
+# Configuration
+import os.path
 config = {'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
           }
@@ -70,7 +63,7 @@ Keys in the config dictionary:
 """
 
 
-# try importing a siteconfig file which exposes an update_config function,
+# Try importing a siteconfig file which exposes an update_config function,
 # otherwise, fail gracefully.
 try:
     from cartopy.siteconfig import update_config as _update_config
@@ -79,10 +72,16 @@ except ImportError:
     pass
 
 
-# try importing a cartopy_userconfig file which exposes an update_config
+# Try importing a cartopy_userconfig file which exposes an update_config
 # function, otherwise, fail gracefully.
 try:
     from cartopy_userconfig import update_config as _update_config
     _update_config(config)
 except ImportError:
     pass
+
+
+# Commonly used sub-modules. Imported here to provide end-user
+# convenience.
+import cartopy.crs
+import cartopy.feature

@@ -27,7 +27,7 @@ import matplotlib.cbook
 import matplotlib.collections
 import matplotlib.lines
 
-import cartopy.mpl_integration.patch
+import cartopy.mpl.patch
 
 
 class FeatureArtist(matplotlib.artist.Artist):
@@ -105,15 +105,16 @@ class FeatureArtist(matplotlib.artist.Artist):
         paths = []
         key = ax.projection
         for geom in geoms:
-            mapping = FeatureArtist._geometry_to_path_cache.setdefault(geom, {})
+            mapping = FeatureArtist._geometry_to_path_cache.setdefault(geom,
+                                                                       {})
             geom_paths = mapping.get(key)
             if geom_paths is None:
                 if ax.projection != feature_crs:
-                    projected_geom = ax.projection.project_geometry(geom,
-                                                                    feature_crs)
+                    projected_geom = ax.projection.project_geometry(
+                        geom, feature_crs)
                 else:
                     projected_geom = geom
-                geom_paths = cartopy.mpl_integration.patch.geos_to_path(
+                geom_paths = cartopy.mpl.patch.geos_to_path(
                     projected_geom)
                 mapping[key] = geom_paths
             paths.extend(geom_paths)
@@ -129,4 +130,3 @@ class FeatureArtist(matplotlib.artist.Artist):
                                                   **final_kwargs)
         c.set_clip_path(ax.patch)
         return c.draw(renderer)
-

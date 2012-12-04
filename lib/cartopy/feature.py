@@ -169,8 +169,8 @@ class NaturalEarthFeature(Feature):
         Earth dataset.
 
         """
-        key = (self.name, self.category, self.scale) 
-        if key not in _NATURAL_EARTH_GEOM_CACHE: 
+        key = (self.name, self.category, self.scale)
+        if key not in _NATURAL_EARTH_GEOM_CACHE:
             path = shapereader.natural_earth(resolution=self.scale,
                                              category=self.category,
                                              name=self.name)
@@ -285,19 +285,16 @@ class GSHHSFeature(Feature):
             if geoms is None:
                 # Load GSHHS geometries from appropriate shape file.
                 # TODO selective load based on bbox of each geom in file.
-                path = os.path.join(GSHHS_DATA_DIR, scale,
-                                    'GSHHS_{}_L{}.shp'.format(scale, level))
-                #print 'DEBUG: Loading {}'.format(path)
+                path = shapereader.gshhs(scale, level)
                 geoms = tuple(shapereader.Reader(path).geometries())
-                #print 'DEBUG: Done.'
                 GSHHSFeature._geometries_cache[(scale, level)] = geoms
             for geom in geoms:
                 if extent is None or extent_geom.intersects(geom):
                     yield geom
 
 
-BORDERS = NaturalEarthFeature('cultural', 'admin-0-boundary-lines', '110m',
-                              edgecolor='black', facecolor='none')
+BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
+                              '110m', edgecolor='black', facecolor='none')
 """Small scale (1:110m) country boundaries."""
 
 
@@ -324,7 +321,7 @@ OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
 """Small scale (1:110m) ocean polygons."""
 
 
-RIVERS = NaturalEarthFeature('physical', 'rivers-lake-centerlines', '110m',
+RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
                              edgecolor=_COLOURS['water'],
                              facecolor='none')
 """Small scale (1:110m) single-line drainages, including lake centerlines."""

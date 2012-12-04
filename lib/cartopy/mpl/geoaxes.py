@@ -57,6 +57,7 @@ matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
 """
 
+
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
     """

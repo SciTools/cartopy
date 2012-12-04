@@ -84,7 +84,7 @@ def test_coastline_loading_cache():
         ax2 = plt.subplot(2, 1, 1, projection=ccrs.Robinson())
         ax2.coastlines()
         plt.draw()
-    
+
     assert counter.count == 0, ('The shapereader Reader class was created {} '
                                 'times, indicating that the caching is not '
                                 'working.'.format(counter.count))
