@@ -80,6 +80,15 @@ def test_polygon_interiors():
     ax.add_collection(collection)
 
 
+def test_null_geometry():
+    pth = Path([[358.27203369, 3.56399965],
+                [358.27203369, 3.56399965],
+                [358.27203369, 3.56399965]])
+    geoms = cpatch.path_to_geos(pth)
+
+    assert len(geoms) == 0
+
+
 @ImageTesting(['contour_with_interiors'])
 def test_contour_interiors():
 #    ############## produces a polygon with multiple holes:

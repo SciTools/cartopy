@@ -208,7 +208,7 @@ def path_to_geos(path):
 
     # Remove any zero area Polygons
     not_zero_poly = lambda geom: ((isinstance(geom, Polygon) and
-                                   geom.area != 0) or
+                                   not geom._is_empty and geom.area != 0) or
                                   not isinstance(geom, Polygon))
     result = filter(not_zero_poly, geom_collection)
 
