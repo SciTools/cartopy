@@ -16,8 +16,8 @@ Getting started
 1. Fork the Cartopy repository, create your new fix/feature branch, and
    start committing code. We broadly follow the [gitwash guidelines](http://matthew-brett.github.com/pydagogue/gitwash/git_development.html).
 1. Remember to add appropriate documentation and tests to supplement any new or changed functionality.
-1. If your not already on it (and would like to be), please add yourself to the 
-   contributors list (docs/source/contriubtors.rst)
+1. If you're not already on it (and would like to be), please add yourself to the 
+   contributors list (docs/source/contributors.rst)
 
 
 Submitting changes
