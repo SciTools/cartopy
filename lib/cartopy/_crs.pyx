@@ -25,7 +25,6 @@ import numpy as np
 
 cimport numpy as np
 
-
 from cython.operator cimport dereference as deref
 
 
@@ -37,12 +36,14 @@ cdef extern from "proj_api.h":
     int pj_is_latlong(projPJ)
     char *pj_strerrno(int)
     int *pj_get_errno_ref()
+    char *pj_get_release()
     double DEG_TO_RAD
     double RAD_TO_DEG
 
 
 cdef double NAN = float('nan')
 
+PROJ4_RELEASE = pj_get_release()
 
 class Proj4Error(Exception):
     """
