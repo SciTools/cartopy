@@ -55,12 +55,9 @@ def test_gshhs():
     ax.stock_img()
     # Draw coastlines.
     ax.add_feature(cfeature.GSHHSFeature('coarse', edgecolor='red'))
-    # Draw higher resolution coastlines.
-    ax.add_feature(cfeature.GSHHSFeature('intermediate'))
     # Draw higher resolution lakes (and test overriding of kwargs)
-    ax.add_feature(cfeature.GSHHSFeature('intermediate', levels=[2],
-                                         facecolor='green'),
-                   facecolor='blue')
+    ax.add_feature(cfeature.GSHHSFeature('low', levels=[2],
+                                         facecolor='green'), facecolor='blue')
 
 
 if __name__ == '__main__':
