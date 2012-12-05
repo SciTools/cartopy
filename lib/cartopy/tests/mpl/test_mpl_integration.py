@@ -82,7 +82,10 @@ def test_global_pcolor_wrap_no_transform():
 @ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines()
+    # By default the coastline feature will be drawn after patches.
+    # By setting zorder we can ensure our scatter points are drawn
+    # after the coastlines.
+    ax.coastlines(zorder=0)
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.scatter(x, y, c=data, transform=ccrs.PlateCarree())
@@ -91,7 +94,7 @@ def test_global_scatter_wrap_new_transform():
 @ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(zorder=0)
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.scatter(x, y, c=data)

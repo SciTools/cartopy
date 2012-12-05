@@ -50,14 +50,13 @@ def test_polygon_interiors():
         for pth in cpatch.geos_to_path(geos_buffered):
             patches_native.append(mpatches.PathPatch(pth))
 
+    # Set high zorder to ensure the polygons are drawn on top of coastlines.
     collection = PatchCollection(patches_native, facecolor='red', alpha=0.4,
-                                 transform=ax.projection
-                                 )
+                                 transform=ax.projection, zorder=10)
     ax.add_collection(collection)
 
     collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
-                                 transform=ccrs.Geodetic()
-                                 )
+                                 transform=ccrs.Geodetic(), zorder=10)
 
     ax.add_collection(collection)
 
@@ -76,7 +75,7 @@ def test_polygon_interiors():
         patches.append(mpatches.PathPatch(pth))
 
     collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
-                                 transform=ccrs.Geodetic())
+                                 transform=ccrs.Geodetic(), zorder=10)
     ax.add_collection(collection)
 
 
@@ -91,7 +90,7 @@ def test_null_geometry():
 
 @ImageTesting(['contour_with_interiors'])
 def test_contour_interiors():
-#    ############## produces a polygon with multiple holes:
+    ############### produces a polygon with multiple holes:
     nx, ny = 10, 10
     numlev = 2
     lons, lats = np.meshgrid(np.linspace(-50, 50, nx),

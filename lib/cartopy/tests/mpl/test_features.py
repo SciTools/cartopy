@@ -40,11 +40,24 @@ def test_natural_earth():
 def test_natural_earth_custom():
     ax = plt.axes(projection=ccrs.PlateCarree())
     feature = cfeature.NaturalEarthFeature('physical', 'coastline', '50m',
-                                           {'edgecolor': 'black',
-                                            'facecolor': 'none'})
+                                           edgecolor='black',
+                                           facecolor='none')
     ax.add_feature(feature)
     ax.set_xlim((-26, -12))
     ax.set_ylim((58, 72))
+
+
+@ImageTesting(['gshhs_coastlines'])
+def test_gshhs():
+    ax = plt.axes(projection=ccrs.Mollweide())
+    ax.set_extent([138, 142, 32, 42], ccrs.Geodetic())
+
+    ax.stock_img()
+    # Draw coastlines.
+    ax.add_feature(cfeature.GSHHSFeature('coarse', edgecolor='red'))
+    # Draw higher resolution lakes (and test overriding of kwargs)
+    ax.add_feature(cfeature.GSHHSFeature('low', levels=[2],
+                                         facecolor='green'), facecolor='blue')
 
 
 if __name__ == '__main__':

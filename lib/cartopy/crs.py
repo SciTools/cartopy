@@ -819,7 +819,7 @@ class InterruptedGoodeHomolosine(Projection):
 
     @property
     def threshold(self):
-        return 1e4
+        return 2e4
 
     @property
     def x_limits(self):

@@ -41,9 +41,11 @@ geometry representation of shapely:
     <class 'shapely.geometry.point.Point'>
 
 """
+import itertools
+import os
+
 from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
 import shapefile
-import os
 
 from cartopy.io import Downloader
 from cartopy import config
@@ -311,3 +313,125 @@ _target_path_template = os.path.join('{config[data_dir]}',
                                      '{resolution}-{name}',
                                      '{resolution}_{name}.shp')
 config['downloaders'][_ne_key].target_path_template = _target_path_template
+
+
+def gshhs(scale='c', level=1):
+    """
+    Returns the path to the requested GSHHS shapefile,
+    downloading and unziping if necessary.
+
+    """
+    # Get hold of the Downloader (typically a GSHHSShpDownloader instance)
+    # and call its path method to get the appropriate shapefile (it will
+    # download it if necessary).
+    gshhs_downloader = Downloader.from_config(('shapefiles', 'gshhs',
+                                               scale, level))
+    format_dict = {'config': config, 'scale': scale, 'level': level}
+    return gshhs_downloader.path(format_dict)
+
+
+class GSHHSShpDownloader(Downloader):
+    """
+    Specialises :class:`cartopy.io.Downloader` to download the zipped
+    GSHHS shapefiles and extract them to the defined location.
+
+    The keys which should be passed through when using the ``format_dict``
+    are ``scale`` (a single character indicating the resolution) and ``level``
+    (a number indicating the type of feature).
+
+    """
+    FORMAT_KEYS = ('config', 'scale', 'level')
+
+    _GSHHS_URL_TEMPLATE = 'https://www.ngdc.noaa.gov/mgg/shorelines/data/'\
+                          'gshhs/version2.2.0/GSHHS_shp_2.2.0.zip'
+
+    def __init__(self,
+                 url_template=_GSHHS_URL_TEMPLATE,
+                 target_path_template=None,
+                 pre_downloaded_path_template=''):
+        super(GSHHSShpDownloader, self).__init__(url_template,
+                                                 target_path_template,
+                                                 pre_downloaded_path_template)
+
+    def zip_file_contents(self, format_dict):
+        """
+        Returns a generator of the filenames to be found in the downloaded
+        GSHHS zip file for the specified resource.
+
+        """
+        for ext in ['.shp', '.dbf', '.shx']:
+            yield (os.path.join('GSHHS_shp', '{scale}',
+                                'GSHHS_{scale}_L{level}{extension}').format(
+                                    extension=ext, **format_dict))
+
+    def aqcuire_all_resources(self, format_dict):
+        import cStringIO as StringIO
+        from zipfile import ZipFile
+
+        # Download archive.
+        url = self.url(format_dict)
+        shapefile_online = self._urlopen(url)
+        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        shapefile_online.close()
+
+        # Iterate through all scales and levels and extract relevant files.
+        modified_format_dict = dict(format_dict)
+        scales = ('c', 'l', 'i', 'h', 'f')
+        levels = (1, 2, 3, 4)
+        for scale, level in itertools.product(scales, levels):
+            modified_format_dict.update({'scale': scale, 'level': level})
+            target_path = self.target_path(modified_format_dict)
+            target_dir = os.path.dirname(target_path)
+            if not os.path.isdir(target_dir):
+                os.makedirs(target_dir)
+
+            for member_path in self.zip_file_contents(modified_format_dict):
+                ext = os.path.splitext(member_path)[1]
+                target = os.path.splitext(target_path)[0] + ext
+                member = zfh.getinfo(member_path)
+                with open(target, 'wb') as fh:
+                    fh.write(zfh.open(member).read())
+
+        zfh.close()
+
+    def acquire_resource(self, target_path, format_dict):
+        """
+        Downloads the zip file and extracts the files listed in
+        :meth:`zip_file_contents` to the target path.
+
+        """
+        self.aqcuire_all_resources(format_dict)
+        if not os.path.exists(target_path):
+            raise RuntimeError('Failed to download and extract GSHHS '
+                               'shapefile to {!r}.'.format(target_path))
+
+        return target_path
+
+    @staticmethod
+    def default_downloader():
+        """
+        Returns a GSHHSShpDownloader instance that expects (and if necessary
+        downloads and installs) shapefiles in the data directory of the
+        cartopy installation.
+
+        Typically, a user will not need to call this staticmethod.
+
+        To find the path template of the GSHHSShpDownloader:
+
+            >>> gshhs_dnldr = GSHHSShpDownloader.default_downloader()
+            >>> print gshhs_dnldr.target_path_template
+            {config[data_dir]}/shapefiles/gshhs/{scale}/\
+GSHHS_{scale}_L{level}.shp
+
+        """
+        gshhs_path_template = os.path.join('{config[data_dir]}', 'shapefiles',
+                                           'gshhs', '{scale}',
+                                           'GSHHS_{scale}_L{level}.shp')
+        return GSHHSShpDownloader(target_path_template=gshhs_path_template)
+
+
+# Add a GSHHS shapefile downloader to the config dictionary's
+# 'downloaders' section.
+_gshhs_key = ('shapefiles', 'gshhs')
+config['downloaders'].setdefault(_gshhs_key,
+                                 GSHHSShpDownloader.default_downloader())

@@ -14,16 +14,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
-
-
-import itertools
-import os.path
 import unittest
 
-import shapely.geometry as sgeom
-
 import cartopy
-
 import cartopy.io.shapereader as shp
 
 COASTLINE_PATH = shp.natural_earth()
@@ -44,7 +37,6 @@ class TestCoastline(unittest.TestCase):
         for i, geometry in enumerate(geometries[93:]):
             for line_string in geometry:
                 multi_line_string = projection.project_geometry(line_string)
-
 
 if __name__ == '__main__':
     unittest.main()

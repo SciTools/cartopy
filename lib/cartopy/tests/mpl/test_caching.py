@@ -23,6 +23,7 @@ from matplotlib.path import Path
 import shapely.geometry
 
 import cartopy.crs as ccrs
+from cartopy.mpl.feature_artist import FeatureArtist
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
@@ -70,21 +71,23 @@ class CallCounter(object):
 
 def test_coastline_loading_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added coastline caching.
-    # this test ensures it is working...
+    # This test ensures it is working.
 
-    # count the number of times shapereader.Reader is created.
-    shapereader_counter = CallCounter(cartopy.io.shapereader.Reader,
-                                      '__init__')
-
-    with shapereader_counter:
-        ax1 = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
-        ax1.coastlines()
+    # Create coastlines to ensure they are cached.
+    ax1 = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    ax1.coastlines()
+    plt.draw()
+    # Create another instance of the coastlines and count
+    # the number of times shapereader.Reader is created.
+    counter = CallCounter(cartopy.io.shapereader.Reader, '__init__')
+    with counter:
         ax2 = plt.subplot(2, 1, 1, projection=ccrs.Robinson())
         ax2.coastlines()
+        plt.draw()
 
-    msg = ('The shapereader Reader class was created more than (actually %s '
-           'times) - the caching is not working.' % shapereader_counter.count)
-    assert shapereader_counter.count == 1, msg
+    assert counter.count == 0, ('The shapereader Reader class was created {} '
+                                'times, indicating that the caching is not '
+                                'working.'.format(counter.count))
 
     plt.close()
 
@@ -92,44 +95,44 @@ def test_coastline_loading_cache():
 def test_shapefile_transform_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
     # geometry caching based on geometry object id. This test ensures
-    # it is working...
+    # it is working.
     coastline_path = cartopy.io.shapereader.natural_earth(resolution="50m",
                                                           category='physical',
                                                           name='coastline')
     geoms = cartopy.io.shapereader.Reader(coastline_path).geometries()
-    # filter just the first 10 of them
+    # Use the first 10 of them.
     geoms = tuple(geoms)[:10]
     n_geom = len(geoms)
 
     ax = plt.axes(projection=ccrs.Robinson())
 
-    project_geometry_counter = CallCounter(ax.projection, 'project_geometry')
+    # Empty the cache.
+    FeatureArtist._geometry_to_path_cache.clear()
+    assert len(FeatureArtist._geometry_to_path_cache) == 0
 
-    # Capture the size of the cache before our test
-    gc.collect()
-    initial_cache_size = len(cgeoaxes._GEOMETRY_TO_PATH_CACHE)
+    counter = CallCounter(ax.projection, 'project_geometry')
+    with counter:
+        ax.add_geometries(geoms, ccrs.PlateCarree())
+        ax.add_geometries(geoms, ccrs.PlateCarree())
+        ax.add_geometries(geoms[:], ccrs.PlateCarree())
+        plt.draw()
 
-    with project_geometry_counter:
-        c = ax.add_geometries(geoms, ccrs.Geodetic())
-        c = ax.add_geometries(geoms, ccrs.Geodetic())
-        c = ax.add_geometries(geoms[:], ccrs.Geodetic())
-
-    # Before the performance enhancement, the count would have been
+    # Without caching the count would have been
     # n_calls * n_geom, but should now be just n_geom.
-    msg = ('The given geometry was transformed too many times (expected: '
-           '%s; got %s) - the caching is not working.'
-           '' % (n_geom, project_geometry_counter.count))
-    assert project_geometry_counter.count == n_geom, msg
+    assert counter.count == n_geom, ('The given geometry was transformed too '
+                                     'many times (expected: %s; got %s) - the'
+                                     ' caching is not working.'.format(n_geom,
+                                     n_geom, counter.count))
 
     # Check the cache has an entry for each geometry.
-    assert len(cgeoaxes._GEOMETRY_TO_PATH_CACHE) == initial_cache_size + n_geom
+    assert len(FeatureArtist._geometry_to_path_cache) == n_geom
 
     # Check that the cache is empty again once we've dropped all references
     # to the source paths.
     plt.clf()
     del geoms
     gc.collect()
-    assert len(cgeoaxes._GEOMETRY_TO_PATH_CACHE) == initial_cache_size
+    assert len(FeatureArtist._geometry_to_path_cache) == 0
 
     plt.close()
 
@@ -138,8 +141,11 @@ def test_contourf_transform_path_counting():
     ax = plt.axes(projection=ccrs.Robinson())
     plt.draw()
 
-    path_to_geos_counter = CallCounter(cartopy.mpl.patch, 'path_to_geos')
+    # Capture the size of the cache before our test.
+    gc.collect()
+    initial_cache_size = len(cgeoaxes._PATH_TRANSFORM_CACHE)
 
+    path_to_geos_counter = CallCounter(cartopy.mpl.patch, 'path_to_geos')
     with path_to_geos_counter:
         x, y, z = sample_data((30, 60))
         cs = plt.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
@@ -147,21 +153,21 @@ def test_contourf_transform_path_counting():
         del cs, c
         plt.draw()
 
-    # before the performance enhancement, the count would have been 2 * n_geom,
-    # but should now be just n_geom
+    # Before the performance enhancement, the count would have been 2 * n_geom,
+    # but should now be just n_geom.
     msg = ('The given geometry was transfomed too many times (expected: %s; '
            'got %s) - the caching is not working.'
            '' % (n_geom, path_to_geos_counter.count))
     assert path_to_geos_counter.count == n_geom, msg
 
     # Check the cache has an entry for each geometry.
-    assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == n_geom
+    assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size + n_geom
 
     # Check that the cache is empty again once we've dropped all references
     # to the source paths.
     plt.clf()
     gc.collect()
-    assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == 0
+    assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size
 
     plt.close()
 
