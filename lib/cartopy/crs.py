@@ -731,7 +731,7 @@ class Mollweide(_WarpedRectangularProjection):
 
 class Robinson(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0):
-        # Disable Robinson when using proj4 4.8 due to discontinuity at
+        # Warn when using Robinson with proj4 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://trac.osgeo.org/proj/ticket/113).
         import re
@@ -739,9 +739,10 @@ class Robinson(_WarpedRectangularProjection):
         if match is not None:
             proj4_version = float(match.group())
             if proj4_version >= 4.8:
-                raise RuntimeError('The Robinson projection is disabled '
-                                   'when using Proj.4 version 4.8.0 '
-                                   'or later.')
+                warnings.warn('The Robinson projection from Proj.4 versions '
+                              '4.8.0 and later contains a discontinuity at '
+                              '40 deg latitude. Use this projection with '
+                              'caution.')
         else:
             warnings.warn('Cannot determine Proj.4 version. The Robinson '
                           'projection may be unreliable and should be used '
