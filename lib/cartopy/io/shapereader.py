@@ -342,16 +342,16 @@ class GSHHSShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'scale', 'level')
 
-    _GSHHS_URL = 'https://www.ngdc.noaa.gov/mgg/shorelines/data/'\
-                 'gshhs/version2.2.0/GSHHS_shp_2.2.0.zip'
+    _GSHHS_URL_TEMPLATE = 'https://www.ngdc.noaa.gov/mgg/shorelines/data/'\
+                          'gshhs/version2.2.0/GSHHS_shp_2.2.0.zip'
 
     def __init__(self,
+                 url_template=_GSHHS_URL_TEMPLATE,
                  target_path_template=None,
                  pre_downloaded_path_template=''):
-        super(GSHHSShpDownloader, self).__init__(None,
+        super(GSHHSShpDownloader, self).__init__(url_template,
                                                  target_path_template,
                                                  pre_downloaded_path_template)
-        self.url = GSHHSShpDownloader._GSHHS_URL
 
     def zip_file_contents(self, format_dict):
         """
@@ -369,7 +369,8 @@ class GSHHSShpDownloader(Downloader):
         from zipfile import ZipFile
 
         # Download archive.
-        shapefile_online = self._urlopen(self.url)
+        url = self.url(format_dict)
+        shapefile_online = self._urlopen(url)
         zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 

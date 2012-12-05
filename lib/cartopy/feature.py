@@ -43,17 +43,6 @@ same projection.
 
 """
 
-GSHHS_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data',
-                              'shapefiles', 'gshhs')
-"""
-Path to GSHHS data.
-
-This directory should contain a set of shape files with the following
-naming convention: GSHHS_{scale_char}_L{level}.shp where scale_char is
-one of 'c', 'l', 'i', 'h', or 'f' and level is 1, 2, 3 or 4.
-
-"""
-
 
 class Feature(object):
     """
