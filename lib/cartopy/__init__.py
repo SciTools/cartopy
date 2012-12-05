@@ -27,7 +27,8 @@ if shapely.speedups.available:
 
 # Configuration
 import os.path
-config = {'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
+config = {'pre_existing_data_dir': '',
+          'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
           }
 """
@@ -48,6 +49,11 @@ first and only argument.
 
 
 Keys in the config dictionary:
+
+ * ``pre_existing_data_dir`` - the absolute path to a directory where standard
+                               data (such as that from NaturalEarth) can be
+                               found. If it is not found in this location
+                               the ``data_dir`` config item will be used.
 
  * ``data_dir`` - the absolute path to a directory where standard data (such
                   as that from NaturalEarth) can be found. If it is not found

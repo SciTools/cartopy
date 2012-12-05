@@ -292,10 +292,13 @@ class NEShpDownloader(Downloader):
 {resolution}_{name}.shp
 
         """
-        ne_path_template = os.path.join('{config[data_dir]}', 'shapefiles',
-                                        'natural_earth', '{category}',
-                                        '{resolution}_{name}.shp')
-        return NEShpDownloader(target_path_template=ne_path_template)
+        default_spec = ('shapefiles', 'natural_earth', '{category}',
+                        '{resolution}_{name}.shp')
+        ne_path_template = os.path.join('{config[data_dir]}', *default_spec)
+        pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
+                                         *default_spec)
+        return NEShpDownloader(target_path_template=ne_path_template,
+                               pre_downloaded_path_template=pre_path_template)
 
 
 # add a generic Natural Earth shapefile downloader to the config dictionary's
@@ -303,6 +306,7 @@ class NEShpDownloader(Downloader):
 _ne_key = ('shapefiles', 'natural_earth')
 config['downloaders'].setdefault(_ne_key,
                                  NEShpDownloader.default_downloader())
+<<<<<<< HEAD
 
 
 # XXX cartopy's shapefiles are out of date and the new ones cause test
