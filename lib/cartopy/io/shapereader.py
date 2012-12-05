@@ -306,17 +306,6 @@ class NEShpDownloader(Downloader):
 _ne_key = ('shapefiles', 'natural_earth')
 config['downloaders'].setdefault(_ne_key,
                                  NEShpDownloader.default_downloader())
-<<<<<<< HEAD
-
-
-# XXX cartopy's shapefiles are out of date and the new ones cause test
-# failures. Temporarily use the download mechanism to point to the old
-# files. This work should be removed by #150::
-_target_path_template = os.path.join('{config[data_dir]}',
-                                     'shapefiles', 'natural_earth',
-                                     '{resolution}-{name}',
-                                     '{resolution}_{name}.shp')
-config['downloaders'][_ne_key].target_path_template = _target_path_template
 
 
 def gshhs(scale='c', level=1):
@@ -428,10 +417,14 @@ class GSHHSShpDownloader(Downloader):
 GSHHS_{scale}_L{level}.shp
 
         """
-        gshhs_path_template = os.path.join('{config[data_dir]}', 'shapefiles',
-                                           'gshhs', '{scale}',
-                                           'GSHHS_{scale}_L{level}.shp')
-        return GSHHSShpDownloader(target_path_template=gshhs_path_template)
+        default_spec = ('shapefiles', 'gshhs', '{scale}',
+                        'GSHHS_{scale}_L{level}.shp')
+        gshhs_path_template = os.path.join('{config[data_dir]}',
+                                           *default_spec)
+        pre_path_tmplt = os.path.join('{config[pre_existing_data_dir]}',
+                                      *default_spec)
+        return GSHHSShpDownloader(target_path_template=gshhs_path_template,
+                                  pre_downloaded_path_template=pre_path_tmplt)
 
 
 # Add a GSHHS shapefile downloader to the config dictionary's
