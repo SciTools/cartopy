@@ -41,9 +41,11 @@ geometry representation of shapely:
     <class 'shapely.geometry.point.Point'>
 
 """
+import itertools
+import os
+
 from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
 import shapefile
-import os
 
 from cartopy.io import Downloader
 from cartopy import config
@@ -349,14 +351,7 @@ class GSHHSShpDownloader(Downloader):
         super(GSHHSShpDownloader, self).__init__(None,
                                                  target_path_template,
                                                  pre_downloaded_path_template)
-        self._zfh = None
         self.url = GSHHSShpDownloader._GSHHS_URL
-
-    def __del__(self):
-        # Close zipfile handle. Don't use the zfh property as it
-        # may cause the file to be download unnecessarily.
-        if self._zfh is not None:
-            self._zfh.close()
 
     def zip_file_contents(self, format_dict):
         """
@@ -369,21 +364,34 @@ class GSHHSShpDownloader(Downloader):
                                 'GSHHS_{scale}_L{level}{extension}').format(
                                     extension=ext, **format_dict))
 
-    @property
-    def zfh(self):
-        """
-        Returns a :class:`zipfile.ZipFile` instance that contains the
-        GSHHS data from which shapefiles can be extracted.
-
-        """
+    def aqcuire_all_resources(self, format_dict):
         import cStringIO as StringIO
         from zipfile import ZipFile
-        if self._zfh is None:
-            shapefile_online = self._urlopen(self.url)
-            self._zfh = ZipFile(StringIO.StringIO(shapefile_online.read()),
-                                'r')
-            shapefile_online.close()
-        return self._zfh
+
+        # Download archive.
+        shapefile_online = self._urlopen(self.url)
+        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        shapefile_online.close()
+
+        # Iterate through all scales and levels and extract relevant files.
+        modified_format_dict = dict(format_dict)
+        scales = ('c', 'l', 'i', 'h', 'f')
+        levels = (1, 2, 3, 4)
+        for scale, level in itertools.product(scales, levels):
+            modified_format_dict.update({'scale': scale, 'level': level})
+            target_path = self.target_path(modified_format_dict)
+            target_dir = os.path.dirname(target_path)
+            if not os.path.isdir(target_dir):
+                os.makedirs(target_dir)
+
+            for member_path in self.zip_file_contents(modified_format_dict):
+                ext = os.path.splitext(member_path)[1]
+                target = os.path.splitext(target_path)[0] + ext
+                member = zfh.getinfo(member_path)
+                with open(target, 'wb') as fh:
+                    fh.write(zfh.open(member).read())
+
+        zfh.close()
 
     def acquire_resource(self, target_path, format_dict):
         """
@@ -391,16 +399,10 @@ class GSHHSShpDownloader(Downloader):
         :meth:`zip_file_contents` to the target path.
 
         """
-        target_dir = os.path.dirname(target_path)
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
-
-        for member_path in self.zip_file_contents(format_dict):
-            ext = os.path.splitext(member_path)[1]
-            target = os.path.splitext(target_path)[0] + ext
-            member = self.zfh.getinfo(member_path)
-            with open(target, 'wb') as fh:
-                fh.write(self.zfh.open(member).read())
+        self.aqcuire_all_resources(format_dict)
+        if not os.path.exists(target_path):
+            raise RuntimeError('Failed to download and extract GSHHS '
+                               'shapefile to {!r}.'.format(target_path))
 
         return target_path
 
