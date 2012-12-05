@@ -26,9 +26,13 @@ if shapely.speedups.available:
 
 
 # Configuration
+import logging
 import os.path
+
+
 config = {'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
+          'log': logging.getLogger('cartopy'),
           }
 """
 The config dictionary stores global configuration values for cartopy.
@@ -60,7 +64,13 @@ Keys in the config dictionary:
                      documentation and an example see
                      :func:`cartopy.io.Downloader.from_config`.
 
+ * ``log`` - the :class:`logging.logger` instance for the cartopy library
+             to issue log messages to.
+
 """
+
+# set the default handler of the "cartopy" log to pipe to stderr
+config['log'].addHandler(logging.StreamHandler())
 
 
 # Try importing a siteconfig file which exposes an update_config function,

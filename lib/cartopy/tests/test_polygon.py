@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import contextlib
 import unittest
 
 import numpy
 import shapely.geometry as sgeom
 
-
+from cartopy import config
 import cartopy.crs as ccrs
 
 
@@ -70,11 +70,25 @@ class TestBoundary(unittest.TestCase):
             self.assertEqual(len(multi_polygon), expected_polys)
 
 
+@contextlib.contextmanager
+def no_logging(logger):
+    """
+    Changes the given logger's level to a high value, meaning no log
+    messages are registeded through the lifetime of the context manager
+
+    """
+    lev = logger.level
+    logger.level = 1e10
+    yield
+    logger.level = lev
+
+
 class TestMisc(unittest.TestCase):
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90)
         polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
         multi_polygon = projection.project_geometry(polygon)
+        self.assertEqual(len(multi_polygon), 1)
 
     def test_small(self):
         projection = ccrs.Mercator()
@@ -111,6 +125,54 @@ class TestMisc(unittest.TestCase):
         multi_polygon = projection.project_geometry(polygon, ccrs.OSGB())
         self.assertEqual(len(multi_polygon), 1)
         self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
+
+    def test_null(self):
+        target = ccrs.Stereographic(central_latitude=50)
+        source = ccrs.PlateCarree()
+
+        exterior = [(293.5, 68.21360339), (293.83397518, 68.0),
+                    (294.0, 67.90349595), (294.5, 67.91353255),
+                    (294.79266379, 68.0), (295.0, 68.09027711),
+                    (295.09809829, 68.0), (295.5, 67.63576893),
+                    (295.69456464, 67.5), (296.0, 67.32685704),
+                    (296.5, 67.18735924), (297.0, 67.12245572),
+                    (297.17254044, 67.0), (297.5, 66.86651957),
+                    (298.0, 66.83872133), (298.25236616, 66.5),
+                    (298.0, 66.25487931), (297.70730587, 66.0),
+                    (297.5, 65.81747349), (297.0, 65.73898254),
+                    (296.5, 65.59112511), (296.0, 65.51272251),
+                    (295.92353969, 65.5), (295.5, 65.38391029),
+                    (295.28657922, 65.5), (295.0, 65.58780962),
+                    (294.5, 65.69099636), (294.13607252, 66.0),
+                    (294.0, 66.04385327), (293.5, 66.05226731),
+                    (151.49085068, 66.5), (213.1034195, 67.0),
+                    (101.09407234, 67.5), (90.75016034, 68.0),
+                    (293.5, 68.21360339)]
+
+        interiors = [[(293.5, 67.68316325), (262.31014183, 67.5),
+                      (293.5, 67.38465919), (294.0, 67.20580029),
+                      (294.18715245, 67.0), (294.0, 66.91151915),
+                      (293.5, 66.67395844), (257.13297092, 66.5),
+                      (293.5, 66.38534043), (294.0, 66.24696339),
+                      (294.5, 66.17915312), (294.73333187, 66.0),
+                      (295.0, 65.86576836), (295.5, 65.73423386),
+                      (296.0, 65.81227786), (296.5, 65.85569725),
+                      (297.0, 65.97251656), (297.13087465, 66.0),
+                      (297.5, 66.14530208), (297.94858855, 66.5),
+                      (297.5, 66.664052), (297.0, 66.82383735),
+                      (296.5, 66.85949042), (296.03576971, 67.0),
+                      (296.0, 67.01041699), (295.5, 67.27334513),
+                      (295.05786676, 67.5), (295.0, 67.54974326),
+                      (294.5, 67.64513246), (294.0, 67.6117248),
+                      (293.5, 67.68316325)]]
+
+        geom = sgeom.Polygon(exterior, interiors)
+
+        # Attempt to re-project ... this is where it used to fail.
+        with no_logging(config['log']):
+            geom = target.project_geometry(geom, source)
+
+        self.assertEqual(len(geom), 1)
 
 
 class TestQuality(unittest.TestCase):
