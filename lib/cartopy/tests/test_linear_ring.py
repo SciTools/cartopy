@@ -18,7 +18,6 @@
 
 import unittest
 
-from nose.tools import assert_is_instance
 from shapely import geometry
 
 import cartopy.crs as ccrs
@@ -26,8 +25,11 @@ import cartopy.crs as ccrs
 
 class TestBoundary(unittest.TestCase):
     def test_cuts(self):
-        # Check that fragments do not start or end with one of the original ... ?
-        linear_ring = geometry.polygon.LinearRing([(-10, 30), (10, 60), (10, 50)])
+        # Check that fragments do not start or end with one of the
+        # original ... ?
+        linear_ring = geometry.polygon.LinearRing([(-10, 30),
+                                                   (10, 60),
+                                                   (10, 50)])
         projection = ccrs.Robinson(170.5)
         multi_line_string = projection.project_geometry(linear_ring)
         from cartopy.tests import show
@@ -44,7 +46,8 @@ class TestBoundary(unittest.TestCase):
             extended_segment = geometry.LineString([start, end])
             # And see if it crosses the boundary.
             intersection = extended_segment.intersection(projection.boundary)
-            self.assertFalse(intersection.is_empty, 'Bad topology near boundary')
+            self.assertFalse(intersection.is_empty,
+                             'Bad topology near boundary')
 
         # Each line resulting from the split should start and end with a
         # segment that crosses the boundary when extended to double length.
@@ -87,8 +90,10 @@ class TestBoundary(unittest.TestCase):
 
 class TestMisc(unittest.TestCase):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude= -90)
-        linear_ring = geometry.polygon.LinearRing([(-10, 30), (10, 60), (10, 50)])
+        projection = ccrs.TransverseMercator(central_longitude=-90)
+        linear_ring = geometry.polygon.LinearRing([(-10, 30),
+                                                   (10, 60),
+                                                   (10, 50)])
         multi_line_string = projection.project_geometry(linear_ring)
         #from cartopy.tests import show
         #show(projection, multi_line_string)
@@ -102,13 +107,62 @@ class TestMisc(unittest.TestCase):
             (-179.9173693847652942, -16.5017831356493616),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
-            ])
+        ])
         multi_line_string = projection.project_geometry(linear_ring)
         # there should be one, and only one, returned line:
         assert isinstance(multi_line_string, geometry.polygon.LinearRing)
 
         #from cartopy.tests import show
         #show(projection, multi_line_string)
+
+    def test_three_points(self):
+        # The following LinearRing when projected from PlateCarree() to
+        # PlateCarree(180.0) results in three points all in close proximity.
+        # If an attempt is made to form a LinearRing from the three points
+        # by combining the first and last an exception will be raised.
+        # Check that this object can be projected without error.
+        coords = [(0.0, -45.0),
+                  (0.0, -44.99974961593933),
+                  (0.000727869825138, -45.0),
+                  (0.0, -45.000105851567454),
+                  (0.0, -45.0)]
+        linear_ring = geometry.polygon.LinearRing(coords)
+        src_proj = ccrs.PlateCarree()
+        target_proj = ccrs.PlateCarree(180.0)
+        try:
+            result = target_proj.project_geometry(linear_ring, src_proj)
+        except ValueError:
+            self.fail("Failed to project LinearRing.")
+
+    def test_stitch(self):
+        # The following LinearRing wanders in/out of the map domain
+        # but importantly the "vertical" lines at 0'E and 360'E are both
+        # chopped by the map boundary. This results in their ends being
+        # *very* close to each other and confusion over which occurs
+        # first when navigating around the boundary.
+        # Check that these ends are stitched together to avoid the
+        # boundary ordering ambiguity.
+        # NB. This kind of polygon often occurs with MPL's contouring.
+        coords = [(0.0, -70.70499926182919),
+                  (0.0, -71.25),
+                  (0.0, -72.5),
+                  (0.0, -73.49076371657017),
+                  (360.0, -73.49076371657017),
+                  (360.0, -72.5),
+                  (360.0, -71.25),
+                  (360.0, -70.70499926182919),
+                  (350, -73),
+                  (10, -73)]
+        src_proj = ccrs.PlateCarree()
+        target_proj = ccrs.Stereographic(80)
+        linear_ring = geometry.polygon.LinearRing(coords)
+        result = target_proj.project_geometry(linear_ring, src_proj)
+        self.assertEqual(len(result), 1)
+
+        # Check the stitch works in either direction.
+        linear_ring = geometry.polygon.LinearRing(coords[::-1])
+        result = target_proj.project_geometry(linear_ring, src_proj)
+        self.assertEqual(len(result), 1)
 
 
 if __name__ == '__main__':

@@ -25,7 +25,6 @@ import numpy as np
 
 cimport numpy as np
 
-
 from cython.operator cimport dereference as deref
 
 
@@ -37,12 +36,14 @@ cdef extern from "proj_api.h":
     int pj_is_latlong(projPJ)
     char *pj_strerrno(int)
     int *pj_get_errno_ref()
+    char *pj_get_release()
     double DEG_TO_RAD
     double RAD_TO_DEG
 
 
 cdef double NAN = float('nan')
 
+PROJ4_RELEASE = pj_get_release()
 
 class Proj4Error(Exception):
     """
@@ -130,9 +131,9 @@ cdef class CRS:
         the matplotlib ``_as_mpl_transform`` interface.
 
         """
-        # lazy import mpl_integration.geoaxes (and therefore matplotlib) as mpl
+        # lazy import mpl.geoaxes (and therefore matplotlib) as mpl
         # is only an optional dependency
-        import cartopy.mpl_integration.geoaxes as geoaxes
+        import cartopy.mpl.geoaxes as geoaxes
         if not isinstance(axes, geoaxes.GeoAxes):
             raise ValueError('Axes should be an instance of GeoAxes, got %s' % type(axes))
         return geoaxes.InterProjectionTransform(self, axes.projection) + axes.transData

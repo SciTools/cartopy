@@ -17,8 +17,12 @@
 """
 Provides shapely geometry <-> matplotlib path support.
 
-See also `Shapely Geometric Objects <http://toblerity.github.com/shapely/manual.html#geometric-objects>`_
+
+See also `Shapely Geometric Objects <see_also_shapely>`_
 and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
+
+.. see_also_shapely:
+   http://toblerity.github.com/shapely/manual.html#geometric-objects
 
 """
 
@@ -69,7 +73,7 @@ def geos_to_path(shape):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
             return codes
-        
+
         vertices = np.concatenate([np.array(shape.exterior.xy)] +
                                   [np.array(ring.xy) for ring in
                                    shape.interiors], 1).T
@@ -121,7 +125,7 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
                                                    remove_nans, clip,
                                                    snap, stroke_width,
                                                    simplify, curves)
-    
+
     # Remove the final vertex (with code 0)
     return vertices[:-1, :], codes[:-1]
 
@@ -144,14 +148,14 @@ def path_to_geos(path):
     """
     # Convert path into numpy array of vertices (and associated codes)
     path_verts, path_codes = path_segments(path, curves=False)
-    
+
     # Split into subarrays such that each subarray consists of connected
     # line segments based on the start of each one being marked by a
     # matplotlib MOVETO code.
     verts_split_inds = np.where(path_codes == Path.MOVETO)[0]
     verts_split = np.split(path_verts, verts_split_inds)
     codes_split = np.split(path_codes, verts_split_inds)
-    
+
     # Iterate through the vertices generating a list of
     # (external_geom, [internal_polygons]) tuples.
     collection = []
@@ -162,9 +166,10 @@ def path_to_geos(path):
         # XXX A path can be given which does not end with close poly, in that
         # situation, we have to guess?
         # XXX Implement a point
-                
-        if path_verts.shape[0] > 2 and (path_codes[-1] == Path.CLOSEPOLY or
-                                        all(path_verts[0, :] == path_verts[-1, :])):
+
+        if (path_verts.shape[0] > 2 and
+                (path_codes[-1] == Path.CLOSEPOLY or
+                 all(path_verts[0, :] == path_verts[-1, :]))):
             if path_codes[-1] == Path.CLOSEPOLY:
                 geom = Polygon(path_verts[:-1, :])
             else:
@@ -172,17 +177,17 @@ def path_to_geos(path):
         else:
             geom = LineString(path_verts)
 
-        # If geom is a Polygon and is contained within the last geom in collection,
-        # add it to its list of internal polygons, otherwise simple append it as a
-        # new external geom.
-        if (len(collection) > 0 and 
-                 isinstance(collection[-1][0], Polygon) and
-                 isinstance(geom, Polygon) and
-                 collection[-1][0].contains(geom.exterior)):
+        # If geom is a Polygon and is contained within the last geom in
+        # collection, add it to its list of internal polygons, otherwise
+        # simple append it as a  new external geom.
+        if (len(collection) > 0 and
+                isinstance(collection[-1][0], Polygon) and
+                isinstance(geom, Polygon) and
+                collection[-1][0].contains(geom.exterior)):
             collection[-1][1].append(geom.exterior)
         else:
             collection.append((geom, []))
-    
+
     # Convert each (external_geom, [internal_polygons]) pair into a
     # a shapely Polygon that encapsulates the internal polygons, if the
     # external geom is a LineSting leave it alone.
@@ -194,7 +199,7 @@ def path_to_geos(path):
         else:
             geom = external_geom
         geom_collection.append(geom)
-    
+
     # If the geom_collection only contains LineStrings combine them
     # into a single MultiLinestring.
     if geom_collection and all(isinstance(geom, LineString) for

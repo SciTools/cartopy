@@ -24,10 +24,11 @@ def show(projection, geometry):
     if geometry.type == 'MultiPolygon' and 1:
         multi_polygon = geometry
         for polygon in multi_polygon:
-            import cartopy.mpl_integration.patch as patch
+            import cartopy.mpl.patch as patch
             paths = patch.geos_to_path(polygon)
             for pth in paths:
-                patch = mpatches.PathPatch(pth, edgecolor='none', lw=0, alpha=0.2)
+                patch = mpatches.PathPatch(pth, edgecolor='none',
+                                           lw=0, alpha=0.2)
                 plt.gca().add_patch(patch)
             line_string = polygon.exterior
             plt.plot(*zip(*line_string.coords), marker='+', linestyle='-')
@@ -65,6 +66,7 @@ def show(projection, geometry):
         plt.xlim(1.55e7, 1.65e7)
         plt.ylim(0.3e7, 0.4e7)
 
-    plt.plot(*zip(*projection.boundary.coords), marker='o', scalex=False, scaley=False, zorder=-1)
+    plt.plot(*zip(*projection.boundary.coords), marker='o',
+             scalex=False, scaley=False, zorder=-1)
 
     plt.show()

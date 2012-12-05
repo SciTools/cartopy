@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+import warnings
 
 from nose.tools import assert_equal
 import numpy as np
@@ -161,17 +162,20 @@ def test_cursor_values():
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
     x, y = np.array([-969100.]), np.array([-4457000.])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'), '-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)')
-    
+    assert_equal(r.encode('ascii', 'ignore'),
+                 '-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)')
+
     ax = plt.axes(projection=ccrs.PlateCarree())
     x, y = np.array([-181.5]), np.array([50.])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'), '-181.5, 50 (50.000000N, 178.500000E)')
+    assert_equal(r.encode('ascii', 'ignore'),
+                 '-181.5, 50 (50.000000N, 178.500000E)')
 
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2]), np.array([2363093.4])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'), '1.606e+07, 2.363e+06 (22.095524N, 173.709136E)')
+    assert_equal(r.encode('ascii', 'ignore'),
+                 '1.606e+07, 2.363e+06 (22.095524N, 173.709136E)')
 
     plt.close()
 
@@ -179,11 +183,21 @@ def test_cursor_values():
 @ImageTesting(['natural_earth_interface'])
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
-    
+
     ax = plt.axes(projection=rob)
-    
-    ax.natural_earth_shp('rivers-lake-centerlines', edgecolor='black', facecolor='none')
-    ax.natural_earth_shp('lakes', facecolor='blue')
+
+    with warnings.catch_warnings(record=True) as all_warnings:
+        warnings.simplefilter('always')
+
+        ax.natural_earth_shp('rivers_lake_centerlines', edgecolor='black',
+                             facecolor='none')
+        ax.natural_earth_shp('lakes', facecolor='blue')
+
+    assert_equal(len(all_warnings), 2)
+    for warning in all_warnings:
+        msg = str(warning.message)
+        assert 'deprecated' in msg
+        assert 'add_feature' in msg
 
 
 @ImageTesting(['pcolormesh_global_wrap1'])
@@ -197,25 +211,25 @@ def test_pcolormesh_global_with_wrap1():
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
 
-    ax = plt.subplot(211,projection=ccrs.PlateCarree())
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global() # make sure everything is visible
+    ax.set_global()  # make sure everything is visible
 
     ax = plt.subplot(212, projection=ccrs.PlateCarree(180))
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global() # make sure everything is visible
+    ax.set_global()  # make sure everything is visible
 
 
 @ImageTesting(['pcolormesh_global_wrap2'])
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
-    xbnds, xstep = np.linspace(0, 360, nx-1, retstep=True, endpoint=True)
-    ybnds, ystep = np.linspace(-90, 90, nx-1, retstep=True, endpoint=True)
-    xbnds -= xstep/2
-    ybnds -= ystep/2
+    xbnds, xstep = np.linspace(0, 360, nx - 1, retstep=True, endpoint=True)
+    ybnds, ystep = np.linspace(-90, 90, nx - 1, retstep=True, endpoint=True)
+    xbnds -= xstep / 2
+    ybnds -= ystep / 2
     xbnds = np.append(xbnds, xbnds[-1] + xstep)
     ybnds = np.append(ybnds, ybnds[-1] + ystep)
 
@@ -223,15 +237,15 @@ def test_pcolormesh_global_with_wrap2():
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
 
-    ax = plt.subplot(211,projection=ccrs.PlateCarree())
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global() # make sure everything is visible
+    ax.set_global()  # make sure everything is visible
 
     ax = plt.subplot(212, projection=ccrs.PlateCarree(180))
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global() # make sure everything is visible
+    ax.set_global()  # make sure everything is visible
 
 
 @ImageTesting(['pcolormesh_global_wrap3'])
@@ -252,19 +266,18 @@ def test_pcolormesh_global_with_wrap3():
     data = data[:-1, :-1]
     data = np.ma.masked_greater(data, 2.6)
 
-
     ax = plt.subplot(211, projection=ccrs.PlateCarree(-45))
     c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     assert c._wrapped_collection_fix is not None, \
-                'No pcolormesh wrapping was done when it should have been.'
+        'No pcolormesh wrapping was done when it should have been.'
 
     ax.coastlines()
-    ax.set_global() # make sure everything is visible
+    ax.set_global()  # make sure everything is visible
 
     ax = plt.subplot(212, projection=ccrs.PlateCarree(-1.87499952))
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global() # make sure everything is visible
+    ax.set_global()  # make sure everything is visible
 
 
 @ImageTesting(['pcolormesh_limited_area_wrap'])
@@ -275,14 +288,14 @@ def test_pcolormesh_limited_area_wrap():
     xbnds = np.linspace(311.91998291, 391.11999512, nx, endpoint=True)
     ybnds = np.linspace(-23.59000015, 24.81000137, ny, endpoint=True)
     x, y = np.meshgrid(xbnds, ybnds)
-    data = ((np.sin(np.deg2rad(x)))/10. + np.exp(np.cos(np.deg2rad(y))))
+    data = ((np.sin(np.deg2rad(x))) / 10. + np.exp(np.cos(np.deg2rad(y))))
     data = data[:-1, :-1]
 
     rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
 
     plt.figure(figsize=(10, 6))
 
-    ax = plt.subplot(221,projection=ccrs.PlateCarree())
+    ax = plt.subplot(221, projection=ccrs.PlateCarree())
     plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
     ax.coastlines()
 
@@ -304,6 +317,6 @@ def test_pcolormesh_limited_area_wrap():
     ax.coastlines()
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     import nose
-    nose.runmodule(argv=['-s','--with-doctest'], exit=False)
+    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

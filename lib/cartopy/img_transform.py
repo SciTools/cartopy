@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 """
-This module contains generic functionality to support Cartopy image transformations.
+This module contains generic functionality to support Cartopy image
+transformations.
 
 """
 
@@ -26,20 +27,23 @@ import scipy.spatial
 import cartopy.crs as ccrs
 
 
-def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None, None]):
+def mesh_projection(projection, nx, ny,
+                    x_extents=[None, None],
+                    y_extents=[None, None]):
     """
-    Returns sample points in the given projection which span the entire projection range evenly.
+    Returns sample points in the given projection which span the entire
+    projection range evenly.
 
-    The range of the x-direction and y-direction sample points will be within the bounds
-    of the projection or specified extents.
+    The range of the x-direction and y-direction sample points will be
+    within the bounds of the projection or specified extents.
 
     Args:
-    
+
     * projection:
         A :class:`~cartopy.crs.Projection` instance.
 
     * nx:
-        The number of sample points in the projection x-direction. 
+        The number of sample points in the projection x-direction.
 
     * ny:
         The number of sample points in the projection y-direction.
@@ -47,17 +51,19 @@ def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None,
     Kwargs:
 
     * x_extents:
-        The (lower, upper) x-direction extent of the projection. 
+        The (lower, upper) x-direction extent of the projection.
         Defaults to the :attribute:`~cartopy.crs.Projection.x_limits`.
 
     * y_extents:
         The (lower, upper) y-direction extent of the projection.
         Defaults to the :attribute:`~cartopy.crs.Projection.y_limits`.
-    
+
     Returns:
-        A tuple of three items. The x-direction sample points :class:`numpy.ndarray` 
-        of shape (nx, ny), y-direction sample points :class:`numpy.ndarray` of shape (nx, ny),
-        and the extent of the projection range as (x-lower, x-upper, y-lower, y-upper).
+        A tuple of three items. The x-direction sample points
+        :class:`numpy.ndarray` of shape (nx, ny), y-direction
+        sample points :class:`numpy.ndarray` of shape (nx, ny),
+        and the extent of the projection range as
+        ``(x-lower, x-upper, y-lower, y-upper)``.
 
     """
 
@@ -67,9 +73,12 @@ def mesh_projection(projection, nx, ny, x_extents=[None, None], y_extents=[None,
     y_lower = y_extents[0] or projection.y_limits[0]
     y_upper = y_extents[1] or projection.y_limits[1]
 
-    # Calculate evenly spaced sample points spanning the extent - excluding endpoint.
-    x, xstep = numpy.linspace(x_lower, x_upper, nx, retstep=True, endpoint=False)
-    y, ystep = numpy.linspace(y_lower, y_upper, ny, retstep=True, endpoint=False)
+    # Calculate evenly spaced sample points spanning the
+    # extent - excluding endpoint.
+    x, xstep = numpy.linspace(x_lower, x_upper, nx, retstep=True,
+                              endpoint=False)
+    y, ystep = numpy.linspace(y_lower, y_upper, ny, retstep=True,
+                              endpoint=False)
 
     # Offset the sample points to be within the extent range.
     x += 0.5 * xstep
@@ -110,7 +119,8 @@ def warp_img(fname, target_proj, source_proj=None, target_res=(400, 200)):
     raise NotImplementedError('Not yet implemented.')
 
 
-def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), source_extent=None, target_extent=None):
+def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
+               source_extent=None, target_extent=None):
     """
     Regrid the data array from the source projection to the target projection.
 
@@ -119,7 +129,8 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
     Args:
 
     * array:
-        The :class:`numpy.ndarray` of data to be regridded to the target projection.
+        The :class:`numpy.ndarray` of data to be regridded to the target
+        projection.
 
     * target_proj:
         The target :class:`~cartopy.crs.Projection` instance for the data.
@@ -143,8 +154,9 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
         target projection coordinates.
 
     Returns:
-        A tuple of the regridded :class:`numpy.ndarray` in the target projection and
-        the (x-lower, x-upper, y-lower, y-upper) target projection extent.
+        A tuple of the regridded :class:`numpy.ndarray` in the target
+        projection and the (x-lower, x-upper, y-lower, y-upper) target
+        projection extent.
 
     """
 
@@ -166,15 +178,18 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200), sour
 
     ny, nx = array.shape[:2]
     source_native_xy = mesh_projection(source_proj, nx, ny,
-                                       x_extents=source_x_extents, y_extents=source_y_extents)
+                                       x_extents=source_x_extents,
+                                       y_extents=source_y_extents)
 
-    # XXX Take into account the extents of the original to determine target_extents? 
-    target_native_x, target_native_y, extent = mesh_projection(target_proj, target_res[0], target_res[1],
-                                       x_extents=target_x_extents, y_extents=target_y_extents)
+    # XXX Take into account the extents of the original to determine
+    # target_extents?
+    target_native_x, target_native_y, extent = mesh_projection(
+        target_proj, target_res[0], target_res[1],
+        x_extents=target_x_extents, y_extents=target_y_extents)
 
     array = regrid(array, source_native_xy[0], source_native_xy[1],
-                           source_proj, target_proj,
-                           target_native_x, target_native_y)
+                   source_proj, target_proj,
+                   target_native_x, target_native_y)
     return array, extent
 
 
@@ -184,15 +199,18 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     Regrid the data array from the source projection to the target projection.
 
     Args:
-    
+
     * array:
-        The :class:`numpy.ndarray` of data to be regridded to the target projection.
+        The :class:`numpy.ndarray` of data to be regridded to the
+        target projection.
 
     * source_x_coords:
-        A 2-dimensional source projection :class:`numpy.ndarray` of x-direction sample points. 
+        A 2-dimensional source projection :class:`numpy.ndarray` of
+        x-direction sample points.
 
     * source_y_coords:
-        A 2-dimensional source projection :class:`numpy.ndarray` of y-direction sample points.
+        A 2-dimensional source projection :class:`numpy.ndarray` of
+        y-direction sample points.
 
     * source_cs:
         The source :class:`~cartopy.crs.Projection` instance.
@@ -201,10 +219,12 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         The target :class:`~cartopy.crs.Projection` instance.
 
     * target_x_points:
-        A 2-dimensional target projection :class:`numpy.ndarray` of x-direction sample points.
+        A 2-dimensional target projection :class:`numpy.ndarray` of
+        x-direction sample points.
 
     * target_y_points:
-        A 2-dimensional target projection :class:`numpy.ndarray` of y-direction sample points.
+        A 2-dimensional target projection :class:`numpy.ndarray` of
+        y-direction sample points.
 
     Returns:
         The data array regridded in the target projection.
@@ -216,13 +236,15 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     # the source array (i.e. you can provide a warped image with lat lon
     # coordinates).
 
-    #XXX NB. target_x and target_y must currently be rectangular (i.e. be a 2d np array)
-    xyz = source_cs.as_geocentric().transform_points(source_cs,
-                                                     source_x_coords.flatten(),
-                                                     source_y_coords.flatten())
-    target_xyz = source_cs.as_geocentric().transform_points(target_proj,
-                                                            target_x_points.flatten(),
-                                                            target_y_points.flatten())
+    #XXX NB. target_x and target_y must currently be rectangular (i.e.
+    # be a 2d np array)
+    geo_cent = source_cs.as_geocentric()
+    xyz = geo_cent.transform_points(source_cs,
+                                    source_x_coords.flatten(),
+                                    source_y_coords.flatten())
+    target_xyz = geo_cent.transform_points(target_proj,
+                                           target_x_points.flatten(),
+                                           target_y_points.flatten())
 
     kdtree = scipy.spatial.cKDTree(xyz)
     distances, indices = kdtree.query(target_xyz, k=1)
@@ -243,29 +265,33 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         if numpy.any(mask):
             indices = numpy.where(numpy.logical_not(mask), indices, 0)
             array_2d = array.reshape(-1, array.shape[-1])[indices]
-            mask, array_2d = numpy.broadcast_arrays(mask.reshape(-1, 1), array_2d)
+            mask, array_2d = numpy.broadcast_arrays(
+                mask.reshape(-1, 1), array_2d)
             array_2d = numpy.ma.array(array_2d, mask=mask)
         else:
             array_2d = array.reshape(-1, array.shape[-1])[indices]
 
         new_array = array_2d.reshape(desired_ny, desired_nx, array.shape[-1])
     else:
-        raise ValueError('Expected array.ndim to be 2 or 3, got {}'.format(array.ndim))
+        raise ValueError(
+            'Expected array.ndim to be 2 or 3, got {}'.format(array.ndim))
 
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.
-    # XXX THIS ONLY NEEDS TO BE DONE FOR (PSEUDO-)CYLINDRICAL PROJECTIONS (OR ANY OTHERS
-    # WHICH HAVE THE CONCEPT OF WRAPPING)
+    # XXX THIS ONLY NEEDS TO BE DONE FOR (PSEUDO-)CYLINDRICAL PROJECTIONS
+    # (OR ANY OTHERS WHICH HAVE THE CONCEPT OF WRAPPING)
     source_desired_xyz = source_cs.transform_points(target_proj,
                                                     target_x_points.flatten(),
                                                     target_y_points.flatten())
     back_to_target_xyz = target_proj.transform_points(source_cs,
                                                       source_desired_xyz[:, 0],
                                                       source_desired_xyz[:, 1])
-    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny, desired_nx)
-    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny, desired_nx)
-    FRACTIONAL_OFFSET_THRESHOLD = 0.1 # data has moved by 10% of the map
-    
+    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny,
+                                                        desired_nx)
+    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny,
+                                                        desired_nx)
+    FRACTIONAL_OFFSET_THRESHOLD = 0.1  # data has moved by 10% of the map
+
     x_extent = numpy.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
     y_extent = numpy.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
 

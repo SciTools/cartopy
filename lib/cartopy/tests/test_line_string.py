@@ -46,7 +46,8 @@ class TestLineString(unittest.TestCase):
             else:
                 expected = 1
             self.assertEqual(len(multi_line_string), expected,
-                             'Unexpected line when working from {} to {}'.format(start, end))
+                             'Unexpected line when working from {} '
+                             'to {}'.format(start, end))
 
     def test_simple_fragment_count(self):
         projection = ccrs.PlateCarree()
@@ -184,16 +185,17 @@ class TestBisect(unittest.TestCase):
         self.assertEqual(len(multi_line_string[0].coords), 2)
 
     def test_nan_start(self):
-        projection = ccrs.TransverseMercator(central_longitude= -90)
+        projection = ccrs.TransverseMercator(central_longitude=-90)
         line_string = geometry.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(coord)), 'Unexpected NaN in projected coords.')
+                self.assertFalse(any(numpy.isnan(coord)),
+                                 'Unexpected NaN in projected coords.')
 
     def test_nan_end(self):
-        projection = ccrs.TransverseMercator(central_longitude= -90)
+        projection = ccrs.TransverseMercator(central_longitude=-90)
         line_string = geometry.LineString([(-10, 30), (10, 50)])
         multi_line_string = projection.project_geometry(line_string)
         from cartopy.tests import show
@@ -201,35 +203,33 @@ class TestBisect(unittest.TestCase):
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(coord)), 'Unexpected NaN in projected coords.')
+                self.assertFalse(any(numpy.isnan(coord)),
+                                 'Unexpected NaN in projected coords.')
 
 
 class TestMisc(unittest.TestCase):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude= -90)
+        projection = ccrs.TransverseMercator(central_longitude=-90)
         line_string = geometry.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         from cartopy.tests import show
         #show(projection, multi_line_string)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(coord)), 'Unexpected NaN in projected coords.')
+                self.assertFalse(any(numpy.isnan(coord)),
+                                 'Unexpected NaN in projected coords.')
 
     def test_something(self):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
-                                                     pole_latitude=37.5)
+                                      pole_latitude=37.5)
         line_string = geometry.LineString([(0, 0), (1e-14, 0)])
         multi_line_string = projection.project_geometry(line_string)
         self.assertEqual(len(multi_line_string), 1)
         self.assertEqual(len(multi_line_string[0].coords), 2)
 
     def test_global_boundary(self):
-        linear_ring = geometry.LineString([
-            (-180, -180),
-            (-180, 180),
-            (180, 180),
-            (180, -180),
-            ])
+        linear_ring = geometry.LineString([(-180, -180), (-180, 180),
+                                           (180, 180), (180, -180)])
         pc = ccrs.PlateCarree()
         merc = ccrs.Mercator()
         multi_line_string = pc.project_geometry(linear_ring, merc)
@@ -245,7 +245,7 @@ class TestSymmetry(unittest.TestCase):
     def test_curve(self):
         # Obtain a simple, curved path.
         projection = ccrs.PlateCarree()
-        coords = [(-0.08, 51.53), (132.00, 43.17)] # London to Vladivostock
+        coords = [(-0.08, 51.53), (132.00, 43.17)]  # London to Vladivostock
         line_string = geometry.LineString(coords)
         multi_line_string = projection.project_geometry(line_string)
 

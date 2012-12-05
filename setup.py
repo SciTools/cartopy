@@ -127,7 +127,7 @@ class HeaderCheck(Command):
 
 setup(
     name='Cartopy',
-    version='0.4.x',
+    version='0.5.x',
     url='http://github.com/SciTools/cartopy',
     author='Philip Elson',
     author_email='pelson.pub@gmail.com',
@@ -143,7 +143,8 @@ setup(
                              list(file_walk_relative('lib/cartopy/data/wmts',
                                                      remove='lib/cartopy/')) +\
                              list(file_walk_relative('lib/cartopy/data/shapefiles/natural_earth',
-                                                     remove='lib/cartopy/'))
+                                                     remove='lib/cartopy/')) +\
+                             ['io/srtm.json']
                  },
 
 

@@ -23,42 +23,47 @@ between them.
 """
 from abc import ABCMeta, abstractproperty
 import math
+import warnings
 
 import numpy
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
 from shapely.prepared import prep
 
-from cartopy._crs import CRS, Geocentric, Geodetic
+from cartopy._crs import CRS, Geocentric, Geodetic, PROJ4_RELEASE
 import cartopy.trace
 
 
 class RotatedGeodetic(CRS):
     """
-    Defines a rotated latitude/longitude coordinate system with spherical topology
-    and geographical distance.
+    Defines a rotated latitude/longitude coordinate system with spherical
+    topology and geographical distance.
 
     Coordinates are measured in degrees.
 
     """
-    def __init__(self, pole_longitude, pole_latitude, ellipse='WGS84', datum='WGS84'):
+    def __init__(self, pole_longitude, pole_latitude, ellipse='WGS84',
+                 datum='WGS84'):
         """
         Create a RotatedGeodetic CRS.
-        
+
         Args:
-        
-            * pole_longitude, pole_latitude - Pole position, in unrotated degrees.
+
+            * pole_longitude - Pole longitude position, in unrotated degrees.
+            * pole_latitude - Pole latitude position, in unrotated degrees.
 
         Kwargs:
-        
-            * ellipse      - Ellipsoid definiton.
-            * datum        - Datum definiton.
-        
+
+            * ellipse      - Ellipsoid definition.
+            * datum        - Datum definition.
+
         """
         proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
-            'o_lat_p': pole_latitude, 'lon_0': 180 + pole_longitude,
-            'to_meter': math.radians(1), 'ellps': ellipse, 'datum': datum}
-        super(RotatedGeodetic, self).__init__(proj4_params)        
+                        'o_lat_p': pole_latitude,
+                        'lon_0': 180 + pole_longitude,
+                        'to_meter': math.radians(1), 'ellps': ellipse,
+                        'datum': datum}
+        super(RotatedGeodetic, self).__init__(proj4_params)
 
 
 class Projection(CRS):
@@ -68,7 +73,7 @@ class Projection(CRS):
 
     """
     __metaclass__ = ABCMeta
-    
+
     _method_map = {
         'LineString': '_project_line_string',
         'LinearRing': '_project_linear_ring',
@@ -76,14 +81,16 @@ class Projection(CRS):
         'MultiLineString': '_project_multiline',
         'MultiPolygon': '_project_multipolygon',
     }
-    
+
     def __eq__(self, other):
-        # XXX handle params that have been set to the default value on one, but not the other? 
-        return isinstance(self, type(other)) and self.proj4_params == other.proj4_params
-    
+        # XXX handle params that have been set to the default value on one,
+        # but not the other?
+        return (isinstance(self, type(other)) and
+                self.proj4_params == other.proj4_params)
+
     def __ne__(self, other):
         return not self == other
-    
+
     @abstractproperty
     def boundary(self):
         pass
@@ -127,9 +134,9 @@ class Projection(CRS):
         return domain
 
     def _as_mpl_axes(self):
-        import cartopy.mpl_integration.geoaxes as geoaxes
+        import cartopy.mpl.geoaxes as geoaxes
         return geoaxes.GeoAxes, {'map_projection': self}
-        
+
     def project_geometry(self, geometry, src_crs=None):
         """
         Projects the given geometry into this projection.
@@ -150,7 +157,8 @@ class Projection(CRS):
         geom_type = geometry.geom_type
         method_name = self._method_map.get(geom_type)
         if not method_name:
-            raise ValueError('Unsupported geometry type {!r}'.format(geom_type))
+            raise ValueError('Unsupported geometry '
+                             'type {!r}'.format(geom_type))
         return getattr(self, method_name)(geometry, src_crs)
 
     def _project_line_string(self, geometry, src_crs):
@@ -174,24 +182,48 @@ class Projection(CRS):
         n_lines = len(multi_line_string)
         # Check for a single ring
         if (n_lines == 1 and
-              numpy.allclose(multi_line_string[0].coords[0],
-                             multi_line_string[0].coords[-1])):
+                len(multi_line_string[0].coords) > 3 and
+                numpy.allclose(multi_line_string[0].coords[0],
+                               multi_line_string[0].coords[-1])):
             result_geometry = LinearRing(multi_line_string[0].coords[:-1])
         elif n_lines > 1:
-            # XXX Clumsy! (NB. multi_line_string[-1] causes a
-            # MemoryFault from shapely)
+            # Stitch together segments which are close to continuous.
+            # This is important when:
+            # 1) The first source point projects into the map and the
+            # ring has been cut by the boundary.
+            # Continuing the example from above this gives:
+            #   def23ghi
+            #   jkl41abc
+            # 2) The cut ends of segments are too close to reliably
+            # place into an order along the boundary.
             line_strings = list(multi_line_string)
-            # Check if we should stitch together the two ends.
-            # i.e. Does the first point of the first line match the
-            # last point of the last line?
-            # def23ghi
-            # jkl41abc
-            if numpy.allclose(line_strings[0].coords[0],
-                              line_strings[-1].coords[-1]):
-                last_coords = list(line_strings[-1].coords)
-                first_coords = list(line_strings[0].coords)[1:]
-                line_strings[-1] = sgeom.LineString(last_coords + first_coords)
-                result_geometry = sgeom.MultiLineString(line_strings[1:])
+            any_modified = False
+            i = 0
+            while i < len(line_strings):
+                modified = False
+                j = 0
+                while j < len(line_strings):
+                    if i != j and numpy.allclose(line_strings[i].coords[0],
+                                                 line_strings[j].coords[-1],
+                                                 atol=self.threshold):
+                        last_coords = list(line_strings[j].coords)
+                        first_coords = list(line_strings[i].coords)[1:]
+                        combo = sgeom.LineString(last_coords + first_coords)
+                        if j < i:
+                            i, j = j, i
+                        del line_strings[j], line_strings[i]
+                        line_strings.append(combo)
+                        modified = True
+                        any_modified = True
+                        break
+                    else:
+                        j += 1
+                if not modified:
+                    i += 1
+            if any_modified:
+                result_geometry = sgeom.MultiLineString(line_strings)
+            else:
+                result_geometry = multi_line_string
 
         return result_geometry
 
@@ -279,10 +311,12 @@ class Projection(CRS):
         # Record the positions of all the segment ends
         for i, line_string in enumerate(line_strings):
             first_dist = boundary_distance(line_string.coords[0])
-            thing = _Thing(first_dist, False, (i, 'first', line_string.coords[0]))
+            thing = _Thing(first_dist, False,
+                           (i, 'first', line_string.coords[0]))
             edge_things.append(thing)
             last_dist = boundary_distance(line_string.coords[-1])
-            thing = _Thing(last_dist, False, (i, 'last', line_string.coords[-1]))
+            thing = _Thing(last_dist, False,
+                           (i, 'last', line_string.coords[-1]))
             edge_things.append(thing)
 
         # Record the positions of all the boundary vertices
@@ -294,7 +328,8 @@ class Projection(CRS):
 
         # Order everything as if walking around the boundary.
         # NB. We make line end-points take precedence over boundary points
-        # to ensure that end-points are still found and followed when they coincide.
+        # to ensure that end-points are still found and followed when they
+        # coincide.
         edge_things.sort(key=lambda thing: (thing.distance, thing.kind))
         debug = 0
         if debug:
@@ -313,7 +348,10 @@ class Projection(CRS):
                 sys.stdout.flush()
                 print
                 print 'Processing: %s, %s' % (i, line_string)
-            edge_things = filter(lambda t: t.kind or t.data[0] != i or t.data[1] != 'last', edge_things)
+            filter_fn = lambda t: (t.kind or
+                                   t.data[0] != i or
+                                   t.data[1] != 'last')
+            edge_things = filter(filter_fn, edge_things)
 
             while True:
                 # Find the distance of the last point
@@ -327,7 +365,8 @@ class Projection(CRS):
                     if debug:
                         print '   adding boundary point'
                     boundary_point = next_thing.data
-                    combined_coords = list(line_string.coords) + [(boundary_point.x, boundary_point.y)]
+                    combined_coords = (list(line_string.coords) +
+                                       [(boundary_point.x, boundary_point.y)])
                     line_string = sgeom.LineString(combined_coords)
                     # XXX
                     #edge_things.remove(next_thing)
@@ -347,11 +386,12 @@ class Projection(CRS):
                     coords_to_append = list(line_to_append.coords)
                     if next_thing.data[1] == 'last':
                         coords_to_append = coords_to_append[::-1]
-                    line_string = sgeom.LineString(list(line_string.coords) + coords_to_append)
+                    line_string = sgeom.LineString((list(line_string.coords) +
+                                                    coords_to_append))
 
         # filter out any non-valid linear rings
         done = filter(lambda linear_ring: len(linear_ring.coords) > 2, done)
-        
+
         # XXX Is the last point in each ring actually the same as the first?
         linear_rings = [LinearRing(line) for line in done]
 
@@ -397,24 +437,25 @@ class Projection(CRS):
             y4 += by
             for ring in interior_rings:
                 polygon = sgeom.Polygon(ring)
-                x1, y1, x2, y2 = polygon.bounds
-                bx = (x2 - x1) * 0.1
-                by = (y2 - y1) * 0.1
-                x1 -= bx
-                y1 -= by
-                x2 += bx
-                y2 += by
-                box = sgeom.box(min(x1, x3), min(y1, y3),
-                                max(x2, x4), max(y2, y4))
+                if polygon.is_valid:
+                    x1, y1, x2, y2 = polygon.bounds
+                    bx = (x2 - x1) * 0.1
+                    by = (y2 - y1) * 0.1
+                    x1 -= bx
+                    y1 -= by
+                    x2 += bx
+                    y2 += by
+                    box = sgeom.box(min(x1, x3), min(y1, y3),
+                                    max(x2, x4), max(y2, y4))
 
-                # Invert the polygon
-                polygon = box.difference(polygon)
+                    # Invert the polygon
+                    polygon = box.difference(polygon)
 
-                # Intersect the inverted polygon with the boundary
-                polygon = boundary_poly.intersection(polygon)
+                    # Intersect the inverted polygon with the boundary
+                    polygon = boundary_poly.intersection(polygon)
 
-                if not polygon.is_empty:
-                    polygon_bits.append(polygon)
+                    if not polygon.is_empty:
+                        polygon_bits.append(polygon)
 
         if polygon_bits:
             multi_poly = sgeom.MultiPolygon(polygon_bits)
@@ -459,7 +500,8 @@ class _CylindricalProjection(_RectangularProjection):
 
 class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'eqc', 'lon_0': central_longitude, 'a': math.degrees(1)}
+        proj4_params = {'proj': 'eqc', 'lon_0': central_longitude,
+                        'a': math.degrees(1)}
         super(PlateCarree, self).__init__(proj4_params, 180, 90)
 
     @property
@@ -469,7 +511,8 @@ class PlateCarree(_CylindricalProjection):
 
 class TransverseMercator(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'tmerc', 'lon_0': central_longitude, 'a': math.degrees(1)}
+        proj4_params = {'proj': 'tmerc', 'lon_0':
+                        central_longitude, 'a': math.degrees(1)}
         super(TransverseMercator, self).__init__(proj4_params, 180, 90)
 
     @property
@@ -477,12 +520,14 @@ class TransverseMercator(_RectangularProjection):
         return 0.5
 
 
-# XXX Could become a subclass of TransverseMercator if it exposed enough parameters?
+# XXX Could become a subclass of TransverseMercator if it exposed enough
+# parameters?
 class OSGB(Projection):
     def __init__(self):
-        proj4_params = {'proj': 'tmerc', 'lat_0': 49, 'lon_0': -2, 'k': 0.9996012717,
-            'x_0': 400000, 'y_0': -100000, 'ellps': 'airy', 'datum': 'OSGB36',
-            'units': 'm', 'no_defs': ''}
+        proj4_params = {'proj': 'tmerc', 'lat_0': 49, 'lon_0': -2,
+                        'k': 0.9996012717, 'x_0': 400000, 'y_0': -100000,
+                        'ellps': 'airy', 'datum': 'OSGB36',
+                        'units': 'm', 'no_defs': ''}
         super(OSGB, self).__init__(proj4_params)
 
     @property
@@ -506,7 +551,8 @@ class OSGB(Projection):
 
 class Mercator(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'merc', 'lon_0': central_longitude, 'a': math.degrees(1)}
+        proj4_params = {'proj': 'merc', 'lon_0': central_longitude,
+                        'a': math.degrees(1)}
         super(Mercator, self).__init__(proj4_params, 180, 180)
 
     @property
@@ -516,8 +562,10 @@ class Mercator(_RectangularProjection):
 
 class LambertCylindrical(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'cea', 'lon_0': central_longitude, 'a': math.degrees(1)}
-        super(LambertCylindrical, self).__init__(proj4_params, 180, math.degrees(1))
+        proj4_params = {'proj': 'cea', 'lon_0': central_longitude,
+                        'a': math.degrees(1)}
+        super(LambertCylindrical, self).__init__(proj4_params, 180,
+                                                 math.degrees(1))
 
     @property
     def threshold(self):
@@ -526,7 +574,8 @@ class LambertCylindrical(_RectangularProjection):
 
 class Miller(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'mill', 'lon_0': central_longitude, 'a': math.degrees(1)}
+        proj4_params = {'proj': 'mill', 'lon_0': central_longitude,
+                        'a': math.degrees(1)}
         # XXX How can we derive the vertical limit of 131.98?
         super(Miller, self).__init__(proj4_params, 180, 131.98)
 
@@ -538,10 +587,10 @@ class Miller(_RectangularProjection):
 class RotatedPole(_CylindricalProjection):
     def __init__(self, pole_longitude=0.0, pole_latitude=90.0):
         proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
-            'o_lat_p': pole_latitude, 'lon_0': 180 + pole_longitude,
-            #'to_meter': math.degrees(1)}
-            'to_meter': math.radians(1)}
-            #}
+                        'o_lat_p': pole_latitude,
+                        'lon_0': 180 + pole_longitude,
+                        'to_meter': math.radians(1)
+                        }
         super(RotatedPole, self).__init__(proj4_params, 180, 90)
 
     @property
@@ -554,7 +603,7 @@ class Gnomonic(Projection):
         proj4_params = {'proj': 'gnom', 'lat_0': central_latitude}
         super(Gnomonic, self).__init__(proj4_params)
         self._max = 5e7
-        
+
     @property
     def boundary(self):
         return sgeom.Point(0, 0).buffer(self._max).exterior
@@ -570,7 +619,7 @@ class Gnomonic(Projection):
     @property
     def y_limits(self):
         return (-self._max, self._max)
-        
+
 
 class Stereographic(Projection):
     def __init__(self, central_latitude=0.0):
@@ -607,7 +656,8 @@ class SouthPolarStereo(Stereographic):
 
 class Orthographic(Projection):
     def __init__(self, central_longitude=0.0, central_latitude=0.0):
-        proj4_params = {'proj': 'ortho', 'lon_0': central_longitude, 'lat_0': central_latitude}
+        proj4_params = {'proj': 'ortho', 'lon_0':
+                        central_longitude, 'lat_0': central_latitude}
         super(Orthographic, self).__init__(proj4_params)
         self._max = 6.4e6
 
@@ -637,10 +687,17 @@ class _WarpedRectangularProjection(Projection):
         n = 91
         geodetic_crs = self.as_geodetic()
         for lat in numpy.linspace(-90, 90, n):
-            points.append(self.transform_point(180 + central_longitude, lat, geodetic_crs))
+            points.append(
+                self.transform_point(180 + central_longitude,
+                                     lat, geodetic_crs)
+            )
         for lat in numpy.linspace(90, -90, n):
-            points.append(self.transform_point(-180 + central_longitude, lat, geodetic_crs))
-        points.append(self.transform_point(180 + central_longitude, -90, geodetic_crs))
+            points.append(
+                self.transform_point(-180 + central_longitude,
+                                     lat, geodetic_crs)
+            )
+        points.append(
+            self.transform_point(180 + central_longitude, -90, geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
 
@@ -674,13 +731,30 @@ class Mollweide(_WarpedRectangularProjection):
 
 class Robinson(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0):
+        # Warn when using Robinson with proj4 4.8 due to discontinuity at
+        # 40 deg N introduced by incomplete fix to issue #113 (see
+        # https://trac.osgeo.org/proj/ticket/113).
+        import re
+        match = re.search(r"\d\.\d", PROJ4_RELEASE)
+        if match is not None:
+            proj4_version = float(match.group())
+            if proj4_version >= 4.8:
+                warnings.warn('The Robinson projection from Proj.4 versions '
+                              '4.8.0 and later contains a discontinuity at '
+                              '40 deg latitude. Use this projection with '
+                              'caution.')
+        else:
+            warnings.warn('Cannot determine Proj.4 version. The Robinson '
+                          'projection may be unreliable and should be used '
+                          'with caution.')
+
         proj4_params = {'proj': 'robin', 'lon_0': central_longitude}
         super(Robinson, self).__init__(proj4_params, central_longitude)
 
     @property
     def threshold(self):
         return 1e5
-    
+
 
 class InterruptedGoodeHomolosine(Projection):
     def __init__(self, central_longitude=0):

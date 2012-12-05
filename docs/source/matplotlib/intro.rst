@@ -24,14 +24,14 @@ A list of the available projections to be used with matplotlib can be
 found on the :doc:`../projections/table` page.
 
 The line ``plt.axes(projection=ccrs.PlateCarree())`` sets up a 
-:class:`~cartopy.mpl_integration.geoaxes.GeoAxes` instance 
+:class:`~cartopy.mpl.geoaxes.GeoAxes` instance
 which exposes a variety of other map related methods, in the case of the 
 previous example, we used the 
-:meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.coastlines` method
+:meth:`~cartopy.mpl.geoaxes.GeoAxes.coastlines` method
 to add coastlines to the map.
 
 Lets create another map in a different projection, and make use of the
-:meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.stock_img` method to add an underlay
+:meth:`~cartopy.mpl.geoaxes.GeoAxes.stock_img` method to add an underlay
 image to the map:
 
 .. plot::
@@ -102,15 +102,15 @@ those points *on the globe* rather than 2d Cartesian space.
 .. note::
 
     By default, matplotlib automatically sets the limits of your Axes based on the data
-    that you plot. Because cartopy implements a :class:`~cartopy.mpl_integration.geoaxes.GeoAxes`
+    that you plot. Because cartopy implements a :class:`~cartopy.mpl.geoaxes.GeoAxes`
     class, this equates to the limits of the resulting map. Sometimes this autoscaling
     is a desirable feature and other times it is not.
 
     To set the extents of a cartopy GeoAxes, there are several convenient options:
 
-       * For "global" plots, use the :meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.set_global` method.
+       * For "global" plots, use the :meth:`~cartopy.mpl.geoaxes.GeoAxes.set_global` method.
        * To set the extents of the map based on a bounding box, in any coordinate system,
-         use the :meth:`~cartopy.mpl_integration.geoaxes.GeoAxes.set_extent` method.
+         use the :meth:`~cartopy.mpl.geoaxes.GeoAxes.set_extent` method.
        * Alternatively, the standard limit setting methods can be used in the GeoAxes's
          native coordinate system (e.g. :meth:`~matplotlib.axes.Axes.set_xlim` and
          :meth:`~matplotlib.axes.Axes.set_ylim`).

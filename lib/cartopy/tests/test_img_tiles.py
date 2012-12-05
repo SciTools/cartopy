@@ -35,20 +35,32 @@ def test_google_wts():
 
     with assert_raises(AssertionError):
         list(gt.find_images(target_domain, -1))
-    assert_equal(tuple(gt.find_images(target_domain, 0)), ((0, 0, 0),))
-    assert_equal(tuple(gt.find_images(target_domain, 2)), ((1, 1, 2), (2, 1, 2)))
+    assert_equal(tuple(gt.find_images(target_domain, 0)),
+                 ((0, 0, 0),))
+    assert_equal(tuple(gt.find_images(target_domain, 2)),
+                 ((1, 1, 2), (2, 1, 2)))
 
-    assert_equal(list(gt.subtiles((0, 0, 0))), [(0, 0, 1), (0, 1, 1), (1, 0, 1), (1, 1, 1)])
-    assert_equal(list(gt.subtiles((1, 0, 1))), [(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)])
+    assert_equal(list(gt.subtiles((0, 0, 0))),
+                 [(0, 0, 1), (0, 1, 1), (1, 0, 1), (1, 1, 1)])
+    assert_equal(list(gt.subtiles((1, 0, 1))),
+                 [(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)])
 
     with assert_raises(AssertionError):
         gt.tileextent((0, 1, 0))
 
-    assert_arr_almost(gt.tileextent((0, 0, 0)), (-180.0, 180.0, 179.02740096396502, -179.02740096396491))
-    assert_arr_almost(gt.tileextent((2, 0, 2)), (0.0, 90.0, 179.02740096396502, 89.513700481982539))
-    assert_arr_almost(gt.tileextent((0, 2, 2)), (-180.0, -90.0, 5.6843418860808015e-14, -89.513700481982426))
-    assert_arr_almost(gt.tileextent((2, 2, 2)), (0.0, 90.0, 5.6843418860808015e-14, -89.513700481982426))
-    assert_arr_almost(gt.tileextent((8, 9, 4)), (0.0, 22.5, -22.37842512, -44.75685024)) # <- zoom 4, contains cape town.
+    assert_arr_almost(gt.tileextent((0, 0, 0)),
+                      (-180.0, 180.0,
+                       179.02740096396502, -179.02740096396491))
+    assert_arr_almost(gt.tileextent((2, 0, 2)),
+                      (0.0, 90.0, 179.02740096396502, 89.513700481982539))
+    assert_arr_almost(gt.tileextent((0, 2, 2)),
+                      (-180.0, -90.0,
+                       5.6843418860808015e-14, -89.513700481982426))
+    assert_arr_almost(gt.tileextent((2, 2, 2)),
+                      (0.0, 90.0,
+                       5.6843418860808015e-14, -89.513700481982426))
+    assert_arr_almost(gt.tileextent((8, 9, 4)), (0.0, 22.5, -22.37842512,
+                      -44.75685024))  # <- zoom 4, contains cape town.
 
 
 def test_quadtree_wts():
@@ -79,8 +91,8 @@ def test_quadtree_wts():
     with assert_raises(ValueError):
         qt.tileextent('4')
 
-
-    assert_arr_almost(qt.tileextent(''), (-180.0, 180.0, 179.02740096, -179.02740096))
+    assert_arr_almost(qt.tileextent(''),
+                      (-180.0, 180.0, 179.02740096, -179.02740096))
     assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
                       (0.0, 90.0, 179.02740096, 89.51370048))
     assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((0, 2, 2), google=True)),
