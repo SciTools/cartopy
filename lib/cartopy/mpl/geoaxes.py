@@ -1293,11 +1293,6 @@ class GeoAxes(matplotlib.axes.Axes):
         return collection
 
 
-# alias GeoAxes - NOTE: THIS WAS NOT IN v0.4.0rc1
-GenericProjectionAxes = GeoAxes
-"""(To be removed in v0.5) An alias to the :class:`GeoAxes` class."""
-
-
 class SimpleClippedTransform(mtransforms.Transform):
     """
     Transforms the values using a pre transform, clips them, then post
