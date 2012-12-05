@@ -144,6 +144,8 @@ setup(
                                                      remove='lib/cartopy/')) +\
                              list(file_walk_relative('lib/cartopy/data/shapefiles/natural_earth',
                                                      remove='lib/cartopy/')) +\
+                             list(file_walk_relative('lib/cartopy/data/shapefiles/gshhs',
+                                                     remove='lib/cartopy/')) +\
                              ['io/srtm.json']
                  },
 
