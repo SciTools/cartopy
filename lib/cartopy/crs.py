@@ -28,9 +28,13 @@ import warnings
 import numpy
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
+from shapely.geos import TopologicalError
 from shapely.prepared import prep
 
-from cartopy._crs import CRS, Geocentric, Geodetic, PROJ4_RELEASE
+# pull in the Geocentric and Geodetic crs-es into the crs namespace
+from cartopy._crs import Geocentric, Geodetic
+from cartopy._crs import CRS, PROJ4_RELEASE
+from cartopy import config
 import cartopy.trace
 
 
@@ -448,8 +452,20 @@ class Projection(CRS):
                     box = sgeom.box(min(x1, x3), min(y1, y3),
                                     max(x2, x4), max(y2, y4))
 
-                    # Invert the polygon
-                    polygon = box.difference(polygon)
+                    # the following try..except was added as a result of #152.
+                    # It is tested in test_polygon:TestMisc.test_null, but
+                    # will hopefully be removed (apart from the functional
+                    # code in the try block) in the future.
+                    try:
+                        # Invert the polygon
+                        polygon = box.difference(polygon)
+                    except TopologicalError as err:
+                        msg = ('A topological error occurred with the polygon'
+                               ':\n{!r}\n'
+                               'The exception raised:\n{!s}'.format(polygon,
+                                                                    err))
+                        config['log'].warning(msg)
+                        continue
 
                     # Intersect the inverted polygon with the boundary
                     polygon = boundary_poly.intersection(polygon)
