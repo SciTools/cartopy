@@ -20,8 +20,8 @@
 This example demonstrates the way a box is warped when it is defined
 in a rotated pole coordinate system.
 
-Try changing the ``box_top`` to ``44`` and ``46`` to see the effect that
-including the pole in the polygon has.
+Try changing the ``box_top`` to ``44``, ``46`` and ``75`` to see the effect
+that including the pole in the polygon has.
 
 """
 
