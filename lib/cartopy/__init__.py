@@ -16,7 +16,7 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-__version__ = '0.5.x'
+__version__ = '0.6.x'
 
 
 # Enable shapely performance enhancements
