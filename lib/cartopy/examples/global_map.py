@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-__cartopy_gallery__ = [('intro', 1)]
-
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

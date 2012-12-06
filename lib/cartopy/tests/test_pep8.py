@@ -19,7 +19,7 @@ class TestCodeFormat(unittest.TestCase):
 #        as can be passed to the "pep8" tool's exclude list.
 #
         pep8style = pep8.StyleGuide(quiet=False)
-        pep8style.options.exclude.extend(['gshhs.py', 'examples'])
+        pep8style.options.exclude.extend([])
 
         # allow users to add their own exclude list
         extra_exclude_file = os.path.join(os.path.dirname(__file__),
