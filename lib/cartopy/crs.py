@@ -753,7 +753,7 @@ class Robinson(_WarpedRectangularProjection):
 
     @property
     def threshold(self):
-        return 1e5
+        return 1e4
 
 
 class InterruptedGoodeHomolosine(Projection):
