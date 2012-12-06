@@ -77,10 +77,7 @@ class WMS(object):
         
         """
         # Format the bounds.
-        if target_domain.geom_type == "LineString":
-            bbox = [math.floor(i) for i in target_domain.bounds]
-        else:
-            raise ValueError("Expected target_domain as a LineString")
+        bbox = [math.floor(i) for i in target_domain.bounds]
         
         # Copy the kwargs and add a 'size' keyword if necessary.
         kwargs = deepcopy(self.kwargs)
