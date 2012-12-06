@@ -25,13 +25,13 @@ Contour plots
     from netCDF4 import Dataset as netcdf_dataset
     import numpy as np
 
+    from cartopy import config
     import cartopy.crs as ccrs
 
 
-    # get the path of the file. It can be found in the data directory, conveniently
-    # at the same level as the cartopy/crs.py file.
-    fname = os.path.join(os.path.dirname(ccrs.__file__),
-                         'data', 'netcdf', 'HadISST1_SST_update.nc'
+    # get the path of the file. It can be found in the repo data directory.
+    fname = os.path.join(config["repo_data_dir"],
+                         'netcdf', 'HadISST1_SST_update.nc'
                          )
 
     dataset = netcdf_dataset(fname)
@@ -96,15 +96,15 @@ Images
     import os
     import matplotlib.pyplot as plt
 
+    from cartopy import config
     import cartopy.crs as ccrs
 
 
     fig = plt.figure(figsize=(8, 12))
 
-    # get the path of the file. It can be found in the data directory, conveniently
-    # at the same level as the cartopy/crs.py file.
-    fname = os.path.join(os.path.dirname(ccrs.__file__),
-                         'data', 'raster', 'sample', 'Miriam.A2012270.2050.2km.jpg'
+    # get the path of the file. It can be found in the repo data directory.
+    fname = os.path.join(config["repo_data_dir"],
+                         'raster', 'sample', 'Miriam.A2012270.2050.2km.jpg'
                          )
     img_extent = (-120.67660000000001, -106.32104523100001, 13.2301484511245, 30.766899999999502)
     img = plt.imread(fname)

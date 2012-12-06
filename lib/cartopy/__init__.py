@@ -29,6 +29,7 @@ if shapely.speedups.available:
 import os.path
 config = {'pre_existing_data_dir': '',
           'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
+          'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
           }
 """
@@ -60,6 +61,11 @@ Keys in the config dictionary:
                   and the item is downloadable cartopy will download the
                   appropriate file(s) to a subdirectory of this directory,
                   therefore ``data_dir`` should be writable by the user.
+
+ * ``repo_data_dir`` - the absolute path to the directory where the data
+                       delivered with the cartopy repository is stored.
+                       Typically this will only be set by OS packagers and
+                       system administrators for site wide deployments.
 
  * ``downloaders`` - a dictionary mapping standard "specifications" to the
                      appropriate :class:`~cartopy.io.Downloader`. For further

@@ -23,6 +23,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy
 
+from cartopy import config
 from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
@@ -90,10 +91,8 @@ class TestRegrid(unittest.TestCase):
 @ImageTesting(['regrid_image'])
 def test_regrid_image():
     # Source data
-    fname = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-        'data', 'raster', 'natural_earth',
-        '50-natural-earth-1-downsampled.png')
+    fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
+                         '50-natural-earth-1-downsampled.png')
     nx = 720
     ny = 360
     source_proj = ccrs.PlateCarree()

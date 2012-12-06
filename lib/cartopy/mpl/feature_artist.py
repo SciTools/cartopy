@@ -83,7 +83,7 @@ class FeatureArtist(matplotlib.artist.Artist):
     def draw(self, renderer, *args, **kwargs):
         """
         Draws the geometries of the feature that intersect with the extent of
-        the :class:`cartopy.mpl_integration.GeoAxes` instance to which this
+        the :class:`cartopy.mpl.GeoAxes` instance to which this
         object has been added.
 
         """
