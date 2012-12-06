@@ -1,4 +1,5 @@
 import cartopy
+import cartopy.crs as ccrs
 import cartopy.mpl.patch as pt
 import matplotlib.pyplot as plt
 import matplotlib.path as mpath
@@ -11,41 +12,36 @@ from matplotlib.font_manager import FontProperties
 
 
 def main():
-    pc = cartopy.prj.PlateCarree()
-    rp = cartopy.prj.Robinson()
-        
+
     plt.figure(figsize=[12, 6])
-    ax = plt.axes([0, 0, 1, 1], projection=rp)
-    
-    ax.xaxis.set_visible(False)
-    ax.yaxis.set_visible(False)
-    ax.set_global()
-    # create a transform from PlateCarree to the axes' projection
-    pc_t = pc._as_mpl_transform(ax)
-    
+    ax = plt.axes(projection=ccrs.Robinson())
+
     ax.coastlines()
-    ax.gridlines(15)
-    im = ax.bluemarble()
-    
-    name, pos = 'cartopy', (-180, -30)    
-    logo_path = matplotlib.textpath.TextPath(pos, name, size=1, prop=FontProperties(family='Arial', weight='bold'))
-    # put the letters in the right place
+    ax.gridlines()
+
+    # generate a matplotlib path representing the word "cartopy"
+    fp = FontProperties(family='Arial', weight='bold')
+    logo_path = matplotlib.textpath.TextPath((-175, -35), 'cartopy',
+                                             size=1, prop=fp)
+    # scale the letters up to sensible latitude and longitude sizes
     logo_path._vertices *= numpy.array([95, 160])
-    
-    im.set_clip_path(logo_path, transform=pc_t)
 
-#    # add the letters as patches...
-#    # make a dictionary of letters to paths (slightly round-about by converting to geos and back)
-#    letter_paths = {letter: path for letter, path in zip(name, pt.geos_to_path(pt.path_to_geos(logo_path)))}
-#    o_path = letter_paths.pop('o')
-#    for path in letter_paths.values():
-#        ax.add_patch(matplotlib.patches.PathPatch(path, color='purple', transform=pc_t, zorder=2))
+    # add a background image
+    im = ax.stock_img()
+    # clip the image according to the logo_path. mpl v1.2.0 does not support
+    # the transform API that cartopy makes use of, so we have to convert the
+    # projection into a transform manually
+    plate_carree_transform = ccrs.PlateCarree()._as_mpl_transform(ax)
+    im.set_clip_path(logo_path, transform=plate_carree_transform)
 
-
-    # save the logo as used on the web page:
-#    plt.savefig('logo.png', transparent=True, dpi=28) 
+    # add the path as a patch, drawing black outlines around the text
+    patch = matplotlib.patches.PathPatch(logo_path,
+                                         facecolor='none', edgecolor='black',
+                                         transform=ccrs.PlateCarree())
+    ax.add_patch(patch)
 
     plt.show()
-        
+
+
 if __name__ == '__main__':
     main()

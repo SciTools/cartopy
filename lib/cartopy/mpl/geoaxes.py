@@ -195,7 +195,7 @@ class GeoAxes(matplotlib.axes.Axes):
     map :class:`~cartopy.crs.Projection`.
 
     This class replaces the matplotlib :class:`~matplotlib.axes.Axes` class
-    when created with the *projection* keyword. For example:
+    when created with the *projection* keyword. For example::
 
         # Set up a standard map for latlon data.
         geo_axes = pyplot.axes(projection=cartopy.crs.PlateCarree())
@@ -205,7 +205,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     When a source projection is provided to one of it's plotting methods,
     using the *transform* keyword, the standard matplotlib plot result is
-    transformed from source coordinates to the target projection. For example:
+    transformed from source coordinates to the target projection. For example::
 
         # Plot latlon data on an OSGB map.
         pyplot.axes(projection=cartopy.crs.OSGB())

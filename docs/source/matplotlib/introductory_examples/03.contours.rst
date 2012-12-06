@@ -15,7 +15,7 @@ Drawing contours
 
     lons, lats, data = sample_data(shape=(20, 40))
 
-    plt.contourf(lons, lats, data, transform=ccrs.Geodetic())
+    plt.contourf(lons, lats, data, transform=ccrs.PlateCarree())
 
     ax.coastlines()
     ax.gridlines()
