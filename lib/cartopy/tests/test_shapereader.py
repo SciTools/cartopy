@@ -18,6 +18,8 @@
 import os.path
 import unittest
 
+import numpy
+from numpy.testing import assert_array_almost_equal
 from shapely.geometry import MultiPolygon, Polygon
 
 import cartopy.io.shapereader as shp
@@ -40,19 +42,17 @@ class TestLakes(unittest.TestCase):
         self.assertEqual(len(geometry), 1)
 
         polygon = geometry[0]
-        coords = polygon.exterior.coords
-        self.assertAlmostEqual(coords[0][0], -80.706437751)
-        self.assertAlmostEqual(coords[0][1], 26.7889594589)
-        self.assertAlmostEqual(coords[1][0], -80.9324446276)
-        self.assertAlmostEqual(coords[1][1], 26.82327261)
-        self.assertAlmostEqual(coords[2][0], -80.919706387)
-        self.assertAlmostEqual(coords[2][1], 27.0689165309)
-        self.assertAlmostEqual(coords[3][0], -80.6936995104)
-        self.assertAlmostEqual(coords[3][1], 27.034629218)
-        self.assertAlmostEqual(coords[4][0], -80.706437751)
-        self.assertAlmostEqual(coords[4][1], 26.7889594589)
-        self.assertAlmostEqual(coords[5][0], -80.706437751)
-        self.assertAlmostEqual(coords[5][1], 26.7889594589)
+
+        expected = numpy.array([(-84.85548682324658, 11.147898667846633),
+                                (-85.29013729525353, 11.176165676310276),
+                                (-85.79132117383625, 11.509737046754324),
+                                (-85.8851655748783, 11.900100816287136),
+                                (-85.5653401354239, 11.940330918826362),
+                                (-85.03684526237491, 11.5216484643976),
+                                (-84.85548682324658, 11.147898667846633),
+                                (-84.85548682324658, 11.147898667846633)])
+
+        assert_array_almost_equal(expected, polygon.exterior.coords)
 
         self.assertEqual(len(polygon.interiors), 0)
 
@@ -70,10 +70,11 @@ class TestLakes(unittest.TestCase):
 
         # Choose a nice small lake
         lake_record = records[14]
-        self.assertEqual(
-            lake_record.attributes,
-            {'FeatureCla': 'Lake', 'Name2': ' ' * 254, 'ScaleRank': 1,
-             'Name1': 'Lake Okeechobee'})
+        self.assertEqual(lake_record.attributes.get('name'),
+                         'Lago de\rNicaragua')
+        self.assertEqual(lake_record.attributes.keys(),
+                         ['admin', 'featurecla', 'scalerank',
+                          'name_alt', 'name'])
         lake = lake_record.geometry
         self._assert_geometry(lake)
 

@@ -33,6 +33,7 @@ import matplotlib.collections as mcollections
 import numpy
 import shapely.geometry
 
+from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
@@ -386,7 +387,7 @@ class GeoAxes(matplotlib.axes.Axes):
             'alpha', etc.
 
         Returns:
-            * A :class:`cartopy.mpl_integration.feature_artist.FeatureArtist`
+            * A :class:`cartopy.mpl.feature_artist.FeatureArtist`
             instance responsible for drawing the feature.
 
         """
@@ -409,7 +410,7 @@ class GeoAxes(matplotlib.axes.Axes):
             Keyword arguments to be used when drawing this feature.
 
         Returns:
-             * A :class:`cartopy.mpl_integration.feature_artist.FeatureArtist`
+             * A :class:`cartopy.mpl.feature_artist.FeatureArtist`
              instance responsible for drawing the geometries.
 
         """
@@ -676,8 +677,8 @@ class GeoAxes(matplotlib.axes.Axes):
         if name == 'ne_shaded':
             import os
             source_proj = ccrs.PlateCarree()
-            fname = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                 'data', 'raster', 'natural_earth',
+            fname = os.path.join(config["repo_data_dir"],
+                                 'raster', 'natural_earth',
                                  '50-natural-earth-1-downsampled.png')
             img_origin = 'lower'
             img = imread(fname)

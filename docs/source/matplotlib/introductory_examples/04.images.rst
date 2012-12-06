@@ -7,6 +7,7 @@ Drawing images
     import os
 
     import matplotlib.pyplot as plt
+    from cartopy import config
     import cartopy.crs as ccrs
     from matplotlib.image import imread
 
@@ -14,7 +15,7 @@ Drawing images
 
     ax.set_global()
     # get the path to an image (in this case, a stock image which ships with cartopy)
-    fname = os.path.join(os.path.dirname(ccrs.__file__), 'data',
+    fname = os.path.join(config["repo_data_dir"],
                          'raster', 'natural_earth', '50-natural-earth-1-downsampled.png')
     img = imread(fname)
     ax.imshow(img, origin='upper', transform=ccrs.PlateCarree(), extent=[-180, 180, -90, 90])
