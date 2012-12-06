@@ -19,7 +19,6 @@ from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
 import shapely.geometry
 
-import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
 

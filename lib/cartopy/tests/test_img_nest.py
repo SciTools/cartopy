@@ -25,15 +25,14 @@ from nose.tools import assert_equal, assert_raises
 import numpy as np
 import shapely.geometry
 
+from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.img_nest as cimg_nest
 
 
-_dname = os.path.dirname
-# XXX be more clever in the data directory so that users can define a setting.
-_TEST_DATA_DIR = os.path.join(
-    _dname(_dname(__file__)), 'data', 'wmts', 'aerial')
+_TEST_DATA_DIR = os.path.join(config["repo_data_dir"],
+                              'wmts', 'aerial')
 
 
 def _tile_from_img(img):

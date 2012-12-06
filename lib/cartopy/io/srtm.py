@@ -202,10 +202,15 @@ class SRTM3Downloader(Downloader):
         """
         Returns a typical downloader for this class. In general, this static
         method is used to create the default configuration in cartopy.config
+
         """
-        target_path_template = os.path.join('{config[data_dir]}', 'SRTM',
-                                            'SRTM3', '{y}{x}.hgt')
-        return cls(target_path_template=target_path_template)
+        default_spec = ('SRTM', 'SRTM3', '{y}{x}.hgt')
+        target_path_template = os.path.join('{config[data_dir]}',
+                                            *default_spec)
+        pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
+                                         *default_spec)
+        return cls(target_path_template=target_path_template,
+                   pre_downloaded_path_template=pre_path_template)
 
 
 # add a generic SRTM downloader to the config 'downloaders' section.
