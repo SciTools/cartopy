@@ -27,8 +27,16 @@ if shapely.speedups.available:
 
 # Configuration
 import os.path
+
+# for the writable data directory (i.e. the one where new data goes), follow
+# the XDG guidelines found at
+# http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+_writable_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
+_data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
+                         'cartopy')
+
 config = {'pre_existing_data_dir': '',
-          'data_dir': os.path.join(os.path.dirname(__file__), 'data'),
+          'data_dir': _data_dir,
           'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
           }
@@ -73,6 +81,9 @@ Keys in the config dictionary:
                      :func:`cartopy.io.Downloader.from_config`.
 
 """
+
+del _data_dir
+del _writable_dir
 
 
 # Try importing a siteconfig file which exposes an update_config function,
