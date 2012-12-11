@@ -148,8 +148,6 @@ def test_multiple_projections():
 
         ax.set_global()
 
-        ax.set_title(prj.__class__.__name__)
-
         ax.coastlines()
 
         plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
