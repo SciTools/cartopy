@@ -61,17 +61,17 @@ def _create_point(shape):
 def _create_polyline(shape):
     if not shape.points:
         return MultiLineString()
-    
+
     parts = list(shape.parts) + [None]
     bounds = zip(parts[:-1], parts[1:])
     lines = [shape.points[slice(lower, upper)] for lower, upper in bounds]
     return MultiLineString(lines)
-    
+
 
 def _create_polygon(shape):
     if not shape.points:
         return MultiPolygon()
-    
+
     # Partition the shapefile rings into outer rings/polygons (clockwise) and
     # inner rings/holes (anti-clockwise).
     parts = list(shape.parts) + [None]
