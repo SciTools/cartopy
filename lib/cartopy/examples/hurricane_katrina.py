@@ -8,7 +8,7 @@ import cartopy.io.shapereader as shpreader
 
 def sample_data():
     """
-    Returns a triple of (observation time, latitude, longitude)
+    Returns a list of latitudes and a list of longitudes (lons, lats)
     for Hurricane Katrina (2005).
 
     The data was originally sourced from the HURDAT2 dataset from AOML/NOAA:
@@ -41,8 +41,8 @@ def main():
 
     lons, lats = sample_data()
 
-    # to get the effect of having just the states without a map "background" turn
-    # off the outline and background patches
+    # to get the effect of having just the states without a map "background"
+    # turn off the outline and background patches
     ax.background_patch.set_visible(False)
     ax.outline_patch.set_visible(False)
 
@@ -52,11 +52,12 @@ def main():
     # turn the lons and lats into a shapely LineString
     track = sgeom.LineString(zip(lons, lats))
 
-    # buffer the linestring by two degrees (note: this is a non-physical distance)
+    # buffer the linestring by two degrees (note: this is a non-physical
+    # distance)
     track_buffer = track.buffer(2)
 
     for state in shpreader.Reader(states_shp).geometries():
-        # pick a default color of a "land" green and black outline,
+        # pick a default color for the land with a black outline,
         # this will change if the storm intersects with our track
         facecolor = [0.9375, 0.9375, 0.859375]
         edgecolor = 'black'
