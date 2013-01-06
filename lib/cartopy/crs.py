@@ -622,8 +622,9 @@ class Gnomonic(Projection):
 
 
 class Stereographic(Projection):
-    def __init__(self, central_latitude=0.0):
-        proj4_params = {'proj': 'stere', 'lat_0': central_latitude}
+    def __init__(self, central_latitude=0.0, central_longitude=0.0):
+        proj4_params = {'proj': 'stere', 'lat_0': central_latitude,
+                        'lon_0': central_longitude}
         super(Stereographic, self).__init__(proj4_params)
         self._max = 5e7
 
@@ -645,13 +646,17 @@ class Stereographic(Projection):
 
 
 class NorthPolarStereo(Stereographic):
-    def __init__(self):
-        super(NorthPolarStereo, self).__init__(90)
+    def __init__(self, central_longitude=0.0):
+        super(NorthPolarStereo, self).__init__(
+            central_latitude=90,
+            central_longitude=central_longitude)
 
 
 class SouthPolarStereo(Stereographic):
-    def __init__(self):
-        super(SouthPolarStereo, self).__init__(-90)
+    def __init__(self, central_longitude=0.0):
+        super(SouthPolarStereo, self).__init__(
+            central_latitude=-90,
+            central_longitude=central_longitude)
 
 
 class Orthographic(Projection):
