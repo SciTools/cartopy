@@ -136,7 +136,7 @@ class NaturalEarthFeature(Feature):
         * category:
             The category of the dataset, i.e. either 'cultural' or 'physical'.
         * name:
-            The name of the dataset, e.g. 'admin-0-boundary-lines'.
+            The name of the dataset, e.g. 'admin_0_boundary_lines_land'.
         * scale:
             The dataset scale, i.e. one of '10m', '50m', or '110m'.
             Corresponding to 1:10,000,000, 1:50,000,000, and 1:110,000,000
