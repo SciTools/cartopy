@@ -61,6 +61,23 @@ class TestCRS(unittest.TestCase):
         r_inverted = numpy.array(ll.transform_point(r_east, r_north, osgb))
         assert_arr_almost_eq(r_inverted, [lon, lat])
 
+    def test_europp(self):
+        europp = ccrs.EuroPP()
+        proj4_init = europp.proj4_init
+        # Transverse Mercator, UTM zone 32,
+        self.assertTrue('+proj=tmerc' in proj4_init)
+        self.assertTrue('+zone=32' in proj4_init)
+        # International 1924 ellipsoid.
+        self.assertTrue('+ellps=intl' in proj4_init)
+        # Scale factor on central meridian
+        self.assertTrue('+k=0.9996' in proj4_init)
+        # True origin Standard latitude and longitude
+        self.assertTrue('+lat_0=50' in proj4_init)
+        self.assertTrue('+lon_0=9' in proj4_init)
+        # Map co-ordinates of true origin (metres)
+        self.assertTrue('+x_0=1750000' in proj4_init)
+        self.assertTrue('+y_0=1500000' in proj4_init)
+
 
 def test_pickle():
     # check that we can pickle a simple CRS
