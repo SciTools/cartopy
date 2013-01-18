@@ -549,6 +549,44 @@ class OSGB(Projection):
         return (0, 13e5)
 
 
+class EuroPP(Projection):
+    """
+    UTM Zone 32 projection for EuroPP domain.
+
+    Ellipsoid is International 1924, Datum is ED50.
+
+    """
+    def __init__(self):
+        proj4_params = {'proj': 'tmerc',
+                        'lat_0': 50, 'lon_0': 9,
+                        'k': 0.9996,
+                        'x_0': 1750000, 'y_0': 1500000,
+                        'zone': 32,
+                        'ellps': 'intl',
+                        'units': 'm',
+                        'towgs84': '-87,-98,-121',
+                        'no_defs': ''}
+        super(EuroPP, self).__init__(proj4_params)
+
+    @property
+    def boundary(self):
+        w, h = 3.19e6, 3.8e6
+        return shapely.geometry.LineString([(0, 0), (0, h), (w, h),
+                                            (w, 0), (0, 0)])
+
+    @property
+    def x_limits(self):
+        return (0, 3.19e6)
+
+    @property
+    def y_limits(self):
+        return (0, 3.8e6)
+
+    @property
+    def threshold(self):
+        return 1e4
+
+
 class Mercator(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = {'proj': 'merc', 'lon_0': central_longitude,
