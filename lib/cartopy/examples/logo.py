@@ -23,7 +23,7 @@ def main():
     fp = FontProperties(family='Arial', weight='bold')
     logo_path = matplotlib.textpath.TextPath((-175, -35), 'cartopy',
                                              size=1, prop=fp)
-    # scale the letters up to sensible latitude and longitude sizes
+    # scale the letters up to sensible longitude and latitude sizes
     logo_path._vertices *= numpy.array([95, 160])
 
     # add a background image
