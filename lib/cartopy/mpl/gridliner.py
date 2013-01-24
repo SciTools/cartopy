@@ -63,19 +63,18 @@ class Gridliner(object):
 
         lines = []
 
-        # XXX this bit is cartopy specific. (for circular longitudes)
-        if (isinstance(crs, Projection) and
-                isinstance(crs, _RectangularProjection) and
-                numpy.diff(x_lim) == 2 * crs._half_width):
-            endpoint = False
-        else:
-            endpoint = True
-
         x_ticks = self.xlocator.tick_values(x_lim[0], x_lim[1])
         y_ticks = self.ylocator.tick_values(y_lim[0], y_lim[1])
 
-        for x in numpy.linspace(min(x_ticks), max(x_ticks), len(y_ticks),
-                                endpoint=endpoint):
+        # XXX this bit is cartopy specific. (for circular longitudes)
+        # Purpose: omit plotting the last x line, as it may overlap the first.
+        x_gridline_points = x_ticks[:]
+        if (isinstance(crs, Projection) and
+                isinstance(crs, _RectangularProjection) and
+                numpy.diff(x_lim) == 2 * crs._half_width):
+            x_gridline_points = x_gridline_points[:-1]
+
+        for x in x_gridline_points:
             l = zip(numpy.zeros(n_steps) + x,
                     numpy.linspace(min(y_ticks), max(y_ticks),
                                    n_steps, endpoint=True)
@@ -98,10 +97,7 @@ class Gridliner(object):
 
         lines = []
 
-        for y in numpy.linspace(min(y_ticks), max(y_ticks), len(x_ticks)):
-#            l = zip(numpy.linspace(x_lim[0], x_lim[1], n_steps),
-#                              numpy.zeros(n_steps) + y)
-#            l = zip(x_ticks, numpy.zeros(len(x_ticks)) + y)
+        for y in y_ticks:
             l = zip(numpy.linspace(min(x_ticks), max(x_ticks), n_steps),
                     numpy.zeros(n_steps) + y)
             lines.append(l)
