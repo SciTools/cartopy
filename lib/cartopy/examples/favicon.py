@@ -30,7 +30,7 @@ def main():
 
     # Generate a matplotlib path representing the character "C"
     fp = FontProperties(family='Arial', weight='bold')
-    xy = (-4.5e7,-3.7e7)
+    xy = (-4.5e7, -3.7e7)
     logo_path = matplotlib.textpath.TextPath(xy, 'C', size=1, prop=fp)
 
     # Scale the letters up to sensible X and Y sizes
