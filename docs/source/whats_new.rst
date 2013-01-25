@@ -2,7 +2,7 @@ What's new in Cartopy 0.5
 *************************
 
 :Release: 0.5.0
-:Date: ?? ???, 2012
+:Date: 7 Dec 2012
 
 This document explains the new/changed features of Cartopy in version 0.5.
 
