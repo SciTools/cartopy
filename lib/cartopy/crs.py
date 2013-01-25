@@ -178,15 +178,7 @@ class Projection(CRS):
                                                          src_crs, self)
 
         # 2) Simplify the segments where appropriate.
-        result_geometry = multi_line_string
-        n_lines = len(multi_line_string)
-        # Check for a single ring
-        if (n_lines == 1 and
-                len(multi_line_string[0].coords) > 3 and
-                numpy.allclose(multi_line_string[0].coords[0],
-                               multi_line_string[0].coords[-1])):
-            result_geometry = LinearRing(multi_line_string[0].coords[:-1])
-        elif n_lines > 1:
+        if len(multi_line_string) > 1:
             # Stitch together segments which are close to continuous.
             # This is important when:
             # 1) The first source point projects into the map and the
@@ -221,9 +213,16 @@ class Projection(CRS):
                 if not modified:
                     i += 1
             if any_modified:
-                result_geometry = sgeom.MultiLineString(line_strings)
-            else:
-                result_geometry = multi_line_string
+                multi_line_string = sgeom.MultiLineString(line_strings)
+
+        # 3) Check for a single resulting ring.
+        if (len(multi_line_string) == 1 and
+                len(multi_line_string[0].coords) > 3 and
+                numpy.allclose(multi_line_string[0].coords[0],
+                               multi_line_string[0].coords[-1])):
+            result_geometry = LinearRing(multi_line_string[0].coords[:-1])
+        else:
+            result_geometry = multi_line_string
 
         return result_geometry
 
@@ -255,8 +254,13 @@ class Projection(CRS):
         Returns the projected polygon(s) derived from the given polygon.
 
         """
+        # Determine orientation of polygon.
         # TODO: Consider checking the internal rings have the opposite
         # orientation to the external rings?
+        if src_crs.is_geodetic():
+            is_ccw = True
+        else:
+            is_ccw = polygon.exterior.is_ccw
 
         # Project the polygon exterior/interior rings.
         # Each source ring will result in either a ring, or one or more
@@ -270,13 +274,9 @@ class Projection(CRS):
             else:
                 multi_lines.append(geometry)
 
-        # Convert all the lines to rings by attaching them to the
-        # boundary.
-        if src_crs.is_geodetic():
-            is_ccw = True
-        else:
-            is_ccw = polygon.exterior.is_ccw
-        rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
+        # Convert any lines to rings by attaching them to the boundary.
+        if multi_lines:
+            rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
 
         # Resolve all the inside vs. outside rings, and convert to the
         # final MultiPolygon.

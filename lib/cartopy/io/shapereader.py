@@ -59,6 +59,9 @@ def _create_point(shape):
 
 
 def _create_polyline(shape):
+    if not shape.points:
+        return MultiLineString()
+
     parts = list(shape.parts) + [None]
     bounds = zip(parts[:-1], parts[1:])
     lines = [shape.points[slice(lower, upper)] for lower, upper in bounds]
@@ -66,6 +69,9 @@ def _create_polyline(shape):
 
 
 def _create_polygon(shape):
+    if not shape.points:
+        return MultiPolygon()
+
     # Partition the shapefile rings into outer rings/polygons (clockwise) and
     # inner rings/holes (anti-clockwise).
     parts = list(shape.parts) + [None]
@@ -335,8 +341,9 @@ class GSHHSShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'scale', 'level')
 
-    _GSHHS_URL_TEMPLATE = 'https://www.ngdc.noaa.gov/mgg/shorelines/data/'\
-                          'gshhs/version2.2.0/GSHHS_shp_2.2.0.zip'
+    _GSHHS_URL_TEMPLATE = ('http://www.ngdc.noaa.gov/mgg/shorelines/data/'
+                           'gshhs/oldversions/version2.2.0/'
+                           'GSHHS_shp_2.2.0.zip')
 
     def __init__(self,
                  url_template=_GSHHS_URL_TEMPLATE,
