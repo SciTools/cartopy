@@ -35,30 +35,7 @@ Deprecations
 Feature API
 ===========
 
-Features (i.e. collections of lines and polygons) are now added to a map
-via the :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_feature`
-method.
-
-Pre-defined features exist for the small-scale (1:110m)
-`Natural Earth <http://www.naturalearthdata.com>`_ datasets detailed
-below:
-
-=========== ==================================================
-Name        Description
-=========== ==================================================
-BORDERS     Country boundaries.
-COASTLINE   Coastline, including major islands.
-LAKES       Natural and artificial lakes.
-LAND        Land polygons, including major islands.
-OCEAN       Ocean polygons.
-RIVERS      Single-line drainages, including lake centerlines.
-=========== ==================================================
-
-But any Natural Earth dataset can easily be used by creating an
-instance of :class:`cartopy.feature.NaturalEarthFeature`.
-
-For example, one can draw a map of Africa demonstrating all of the
-pre-defined features with the following code:
+A new features api is now available, see :doc:`tutorials/using_the_shapereader`.
 
 .. literalinclude:: features.py
 
