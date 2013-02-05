@@ -24,12 +24,13 @@ plot results from source coordinates to the GeoAxes' target projection.
 import warnings
 import weakref
 
+import matplotlib
 import matplotlib.axes
+import matplotlib.collections as mcollections
 from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
-import matplotlib.collections as mcollections
 import numpy
 import shapely.geometry
 
@@ -41,7 +42,6 @@ import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as patch
 
 
-import matplotlib
 assert matplotlib.__version__ >= '1.2', ('Cartopy can only work with '
                                          'matplotlib 1.2 or greater.')
 
@@ -775,20 +775,30 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return result
 
-    def gridlines(self, crs=None, **kwargs):
+    def gridlines(self, crs=None, draw_labels=False, **kwargs):
         """
         Automatically adds gridlines to the axes, in the given coordinate
         system, at draw time.
 
-        ``**kwargs`` - are passed through to the created
-                       :class:`matplotlib.collections.Collection`
-                       allowing control of colors and linewidths etc.
+        Kwargs:
+
+        * crs
+            The :class:`cartopy._crs.CRS` defining the coordinate system in
+            which gridlines are drawn.
+            Default is :class:`cartopy.crs.PlateCarree`.
+
+        * draw_labels
+            Label gridlines like axis ticks, around the edge.
+
+        All other keywords control line properties.  These are passed through
+        to :class:`matplotlib.collections.Collection`.
 
         """
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
-        gl = Gridliner(self, crs=crs, collection_kwargs=kwargs)
+        gl = Gridliner(
+            self, crs=crs, draw_labels=draw_labels, collection_kwargs=kwargs)
         self._gridliners.append(gl)
         return gl
 
