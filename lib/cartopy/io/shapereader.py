@@ -118,23 +118,24 @@ class Record(object):
     A single logical entry from a shapefile, combining the attributes with
     their associated geometry.
 
-        attributes - A dictionary mapping attribute names to attribute values.
-        bounds     - A tuple of (minx, miny, maxx, maxy).
-        fields     - A list of field definitions, as per the Python
-                     Shapefile Library.
-        geometry   - A shapely.geometry instance or None if it was a null
-                     shape.
-
     """
     def __init__(self, shape, geometry_factory, attributes, fields):
         self._shape = shape
         self._geometry_factory = geometry_factory
 
+        self._bounds = None
+        # if the record defines a bbox, then use that for the shape's bounds,
+        # rather than using the full geometry in the bounds property
         if hasattr(shape, 'bbox'):
-            self.bounds = tuple(shape.bbox)
+            self._bounds = tuple(shape.bbox)
+
+        self._geometry = False
+        """The cached geometry instance for this Record."""
 
         self.attributes = attributes
-        self.fields = fields
+        """A dictionary mapping attribute names to attribute values."""
+
+        self._fields = fields
 
     def __repr__(self):
         return '<Record: %r, %r, <fields>>' % (self.geometry, self.attributes)
@@ -142,22 +143,38 @@ class Record(object):
     def __str__(self):
         return 'Record(%s, %s, <fields>)' % (self.geometry, self.attributes)
 
-    def __getattr__(self, name):
-        if name == 'bounds':
-            value = self.bounds = self.geometry().bounds
-        elif name == 'geometry':
-            value = self.geometry = _make_geometry(self._geometry_factory,
-                                                   self._shape)
-        else:
-            value = object.__getattribute__(self, name)
-        return value
+    @property
+    def bounds(self):
+        """
+        The bounds of this Record's
+        :meth:`~Record.geometry`.
+
+        """
+        if self._bounds is None:
+            self._bounds = self.geometry.bounds
+        return self._bounds
+
+    @property
+    def geometry(self):
+        """
+        A shapely.geometry instance for this Record.
+
+        The geometry may be ``None`` if a null shape is defined in the
+        shapefile.
+
+        """
+        if self._geometry is False:
+            self._geometry = _make_geometry(self._geometry_factory,
+                                            self._shape)
+        return self._geometry
 
 
 class Reader(object):
     """
-    Provides iterator based access to the contents of a shapefile.
+    Provides an interface for accessing the contents of a shapefile.
 
-    The shapefile geometry is expressed as ``shapely.geometry`` instances.
+    The primary methods used on a Reader instance are
+    :meth:`~Reader.records` and :meth:`~Reader.geometries`.
 
     """
     def __init__(self, filename):
@@ -173,20 +190,33 @@ class Reader(object):
         if self._geometry_factory is None:
             raise ValueError('Unsupported shape type: %s' % shapeType)
 
-        self.fields = self._reader.fields
+        self._fields = self._reader.fields
 
     def __len__(self):
         return self._reader.numRecords
 
     def geometries(self):
-        """Returns an iterator of shapely geometries."""
+        """
+        Returns an iterator of shapely geometries from the shapefile.
+
+        This interface is useful for accessing the geometries of the
+        shapefile where knowledge of the associated metadata is desired.
+        In the case where further metadata is needed use the
+        :meth:`~Reader.records`
+        interface instead, extracting the geometry from the record with the
+        :meth:`~Record.geometry` method.
+
+        """
         geometry_factory = self._geometry_factory
         for i in xrange(self._reader.numRecords):
             shape = self._reader.shape(i)
             yield _make_geometry(geometry_factory, shape)
 
     def records(self):
-        """Returns an iterator of Record instances."""
+        """
+        Returns an iterator of :class:`~Record` instances.
+
+        """
         geometry_factory = self._geometry_factory
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
