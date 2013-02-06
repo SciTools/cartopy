@@ -65,19 +65,19 @@ def main():
         if state.intersects(track):
             facecolor = 'red'
         elif state.intersects(track_buffer):
-            facecolor = '#F2555C'
+            facecolor = '#FF7E00'
 
         ax.add_geometries([state], ccrs.PlateCarree(),
                           facecolor=facecolor, edgecolor=edgecolor)
 
     ax.add_geometries([track_buffer], ccrs.PlateCarree(),
-                      facecolor='coral', alpha=0.5)
+                      facecolor='#C8A2C8', alpha=0.5)
     ax.add_geometries([track], ccrs.PlateCarree(),
                       facecolor='none')
 
     # make two proxy artists to add to a legend
     direct_hit = mpatches.Rectangle((0, 0), 1, 1, facecolor="red")
-    within_2_deg = mpatches.Rectangle((0, 0), 1, 1, facecolor="#F2555C")
+    within_2_deg = mpatches.Rectangle((0, 0), 1, 1, facecolor="#FF7E00")
     labels = ['State directly intersects\nwith track',
               'State is within \n2 degrees of track']
     plt.legend([direct_hit, within_2_deg], labels,
