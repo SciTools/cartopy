@@ -90,7 +90,7 @@ def test_image_merge():
     for i in range(1, 4):
         for j in range(0, 3):
             tiles.append((i, j, 2))
-            
+
     tiler = cimgt.GoogleTiles()
     images_to_merge = []
     for tile in tiles:
@@ -99,13 +99,13 @@ def test_image_merge():
         x = np.linspace(extent[0], extent[1], img.shape[1], endpoint=False)
         y = np.linspace(extent[2], extent[3], img.shape[0], endpoint=False)
         images_to_merge.append([img, x, y, origin])
-    
+
     img, extent, origin = cimgt._merge_tiles(images_to_merge)
     ax = plt.axes(projection=ccrs.Mercator())
     ax.set_global()
     ax.coastlines()
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
-    
+
 
 if __name__ == '__main__':
     import nose
