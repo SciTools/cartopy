@@ -78,6 +78,18 @@ class TestLakes(unittest.TestCase):
         lake = lake_record.geometry
         self._assert_geometry(lake)
 
+    def test_bounds(self):
+        # tests that a file which has a record with a bbox can
+        # use the bbox without first creating the geometry
+        record = self.reader.records().next()
+        self.assertEqual(record._geometry, False, ('The geometry was loaded '
+                                                   'before it was needed.'))
+        self.assertEqual(len(record._bounds), 4)
+        self.assertEqual(record._bounds, record.bounds)
+        self.assertEqual(record._geometry, False, ('The geometry was loaded '
+                                                   'in order to create the '
+                                                   'bounds.'))
+
 
 class TestRivers(unittest.TestCase):
     def setUp(self):
