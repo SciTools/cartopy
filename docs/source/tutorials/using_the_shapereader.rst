@@ -1,10 +1,11 @@
-.. _cartopy_developer_interfaces:
+.. _using_the_shapereader:
 
 Using the cartopy shapereader
 =============================
 
-Cartopy provides an object oriented shapefile reader based on top of the pyshp
-module to provide easy, programmatic, access to standard vector datasets.
+Cartopy provides an object oriented shapefile reader based on top of the 
+`pyshp <http://code.google.com/p/pyshp/>`_ module to provide easy, programmatic,
+access to standard vector datasets.
 
 .. currentmodule:: cartopy.io.shapereader
 
@@ -21,8 +22,9 @@ Helper functions for shapefile acquisition
 -------------------------------------------
 
 Cartopy provides an interface for access to frequently used data such as the
-GSHHS dataset and from the NaturalEarthData website. These interfaces allow
-the user to define the data programmatically, and if the data does not exist
+`GSHHS <http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html>`_ dataset and from
+the `NaturalEarthData <http://www.naturalearthdata.com/>`_ website. 
+These interfaces allow the user to define the data programmatically, and if the data does not exist
 on disk, it will be retrieved from the appropriate source (normally by
 downloading the data from the internet). Currently the interfaces available are:
 
@@ -62,7 +64,7 @@ in the shapefile:
     country = next(countries)
 
 We can get the country's attributes dictionary with the
-:data:`Reader.attributes` attribute:
+:data:`Record.attributes` attribute:
 
 .. doctest:: countries
     :options: +ELLIPSIS
@@ -95,7 +97,7 @@ Which we can print with
 
 **Excercises**:
 
- * **SHP.1**: Repeat the last example to show the 4 most populated African countries according to the shapefile.
+ * **SHP.1**: Repeat the last example to show the 4 most populated African countries in to the shapefile.
         Hint: Look at the possible attributes to find out which continent a country belongs.
         Answer:
 
@@ -123,7 +125,8 @@ Which we can print with
 
         Democratic Republic of the Congo, Egypt, Ethiopia, Nigeria
 
- * **SHP.2**: Find the most populated country grouped by the first letter of the "name_long" according to the shapefile.
+ * **SHP.2**: Using the countries shapefile, find the most populated country grouped 
+   by the first letter of the "name_long".
         Hint: :func:`itertools.groupby` can help with the grouping.
         Answer:
 

@@ -129,8 +129,7 @@ class Record(object):
         self.attributes = attributes
         """A dictionary mapping attribute names to attribute values."""
 
-        self.fields = fields
-        """A list of field definitions as per the Python Shapefile library."""
+        self._fields = fields
 
     def __repr__(self):
         return '<Record: %r, %r, <fields>>' % (self.geometry, self.attributes)
@@ -168,10 +167,8 @@ class Reader(object):
     """
     Provides an interface for accessing the contents of a shapefile.
 
-    The reader itself is lightweight and only stores the number of
-    :data:`~Reader.fields`
-    in the shapefile. To access more information about those fields see the
-    :meth:`~Reader.records` and :meth:`~Reader.geometries` methods.
+    The primary methods used on a Reader instance are
+    :meth:`~Reader.records` and :meth:`~Reader.geometries`.
 
     """
     def __init__(self, filename):
@@ -187,8 +184,7 @@ class Reader(object):
         if self._geometry_factory is None:
             raise ValueError('Unsupported shape type: %s' % shapeType)
 
-        self.fields = self._reader.fields
-        """The number of field in the shapefile."""
+        self._fields = self._reader.fields
 
     def __len__(self):
         return self._reader.numRecords
