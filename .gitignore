@@ -25,8 +25,11 @@ lib/cartopy/siteconfig.py
 .project
 .pydevproject
 
-# Created by editiors
+# Created by editors
 *~
 \#*
 \.\#*
 *.swp
+
+# Operating system files
+\.DS_Store
