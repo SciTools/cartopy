@@ -234,12 +234,12 @@ cdef class CRS:
 
         if z is None:
             if x.ndim != 1 or y.ndim != 1:
-                raise ValueError('x and y arrays must be one dimensional')
+                x, y = x.flatten(), y.flatten()
             if x.shape[0] != y.shape[0]:
                 raise ValueError('x and y arrays must have the same length')
         else:
             if x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
-                raise ValueError('x, y and z arrays must be one dimensional')
+                x, y, z = x.flatten(), y.flatten(), z.flatten()
             if not x.shape[0] == y.shape[0] == z.shape[0]:
                 raise ValueError('x, y, and z arrays must have the same length')
 
