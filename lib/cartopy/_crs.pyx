@@ -231,7 +231,8 @@ cdef class CRS:
         """
         cdef np.ndarray[np.double_t, ndim=2] result
         
-
+        result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
+        
         if z is None:
             if x.ndim != 1 or y.ndim != 1:
                 x, y = x.flatten(), y.flatten()
@@ -266,6 +267,10 @@ cdef class CRS:
             result = np.rad2deg(result)
         #if status:
         #    raise Proj4Error()
+
+        if len(result_shape) > 2:
+            transpose_order = tuple(range(result.ndim)[::-1]) + (2, )
+            return result.reshape(result_shape).transpose(transpose_order)
 
         return result
 
