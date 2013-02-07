@@ -318,8 +318,10 @@ intersphinx_mapping = {'python': ('http://docs.python.org/2', None)}
 
 
 ############ extlinks extension ############
-extlinks = {'issues': ('https://github.com/SciTools/cartopy/issues?state=open&labels=%s',
-                      'issues labeled with ')}
+extlinks = {'issues': ('https://github.com/SciTools/cartopy/issues?milestone=&state=open&labels=%s',
+                      'issues labeled with '),
+            'issue': ('https://github.com/SciTools/cartopy/issues/%s', 'Issue #')
+            }
 
 
 plot_formats = [('png', 80)]
