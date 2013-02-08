@@ -86,10 +86,7 @@ def test_gridliner():
 
 class TestRegrid(unittest.TestCase):
 
-    @ImageTesting(['gridliner_labels'], tolerance=0.003)
-    # Image matching tolerance relaxed here for cross-platform operation.
-    # Reference results created in RHEL6 64-bit did not match Ubuntu 32-bit.
-    # Very slight differences are visible in texts.  Exact reason unknown.
+    @ImageTesting(['gridliner_labels'], tolerance=86)
     def test_grid_labels(self):
         plt.figure(figsize=(8, 10))
 
