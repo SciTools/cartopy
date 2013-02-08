@@ -129,8 +129,7 @@ setup(
     name='Cartopy',
     version='0.6.x',
     url='http://github.com/SciTools/cartopy',
-    author='Philip Elson',
-    author_email='pelson.pub@gmail.com',
+    author='UK Met Office',
       
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},
