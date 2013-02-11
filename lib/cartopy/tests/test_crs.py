@@ -81,12 +81,11 @@ class TestCRS(unittest.TestCase):
     def test_transform_points_nD(self):
         rlons = numpy.array([[350., 352.], [350., 352.]])
         rlats = numpy.array([[-5., -0.], [-4., -1.]])
-        rdata = numpy.array([[1., 2.], [3., 4.]])
 
         src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0,
                                         pole_latitude=38.0)
         target_proj = ccrs.Geodetic()
-        res = target_proj.transform_points(x=rlons, y=rlats, z=rdata,
+        res = target_proj.transform_points(x=rlons, y=rlats,
                                            src_crs=src_proj)
 
         unrotated_lon, unrotated_lat, unrotated_dat = res.transpose()
@@ -99,17 +98,15 @@ class TestCRS(unittest.TestCase):
 
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
-        assert_arr_almost_eq(unrotated_dat, rdata)
 
     def test_transform_points_1D(self):
         rlons = numpy.array([350., 352., 354., 356.])
         rlats = numpy.array([-5., -0., 5., 10.])
-        rdata = numpy.array([1., 2., 3., 4.])
 
         src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0,
                                         pole_latitude=38.0)
         target_proj = ccrs.Geodetic()
-        res = target_proj.transform_points(x=rlons, y=rlats, z=rdata,
+        res = target_proj.transform_points(x=rlons, y=rlats,
                                            src_crs=src_proj)
 
         unrotated_lon, unrotated_lat, unrotated_dat = res.transpose()
@@ -122,7 +119,6 @@ class TestCRS(unittest.TestCase):
 
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
-        assert_arr_almost_eq(unrotated_dat, rdata)
 
 
 def test_pickle():

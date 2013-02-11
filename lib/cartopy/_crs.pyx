@@ -187,6 +187,8 @@ cdef class CRS:
 
             (x, y) - in this coordinate system
 
+        .. seealso:: :meth:`transform_points`
+
         """
         cdef:
             double cx, cy
@@ -221,17 +223,14 @@ cdef class CRS:
         * src_crs - instance of :class:`CRS` that represents the coordinate
                     system of ``x``, ``y`` and ``z``.
         * x - the x coordinates (array), in ``src_crs`` coordinates,
-              to transform
+              to transform.  May be 1 or 2 dimensions.
         * y - the y coordinates (array), in ``src_crs`` coordinates,
               to transform
         * z - (optional) the z coordinates (array), in ``src_crs``
               coordinates, to transform.  Not applicable for projections.
 
         Returns:
-
-            array of shape [npts, 3] in this coordinate system for input
-            arrays of shape [npts] and returns array of shape [npts, d, 3]
-            for input arrays of shape [npts, d].
+           Array of shape ``x.shape + (3, )`` in this coordinate system.
 
         """
         cdef np.ndarray[np.double_t, ndim=2] result
@@ -239,24 +238,23 @@ cdef class CRS:
         result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
         
         if z is None:
-            if not isinstance(src_crs, ccrs.Projection):
-                raise TypeError('z coordinate must be provided for a'
-                                'non-projected coordinate reference system')
-
-            if x.ndim != 1 or y.ndim != 1:
+            if x.ndim > 2 or y.ndim > 2:
+                raise ValueError('x and y arrays must be 1 or 2 dimensional')
+            elif x.ndim != 1 or y.ndim != 1:
                 x, y = x.flatten(), y.flatten()
+
             if x.shape[0] != y.shape[0]:
                 raise ValueError('x and y arrays must have the same length')
         else:
-            if isinstance(src_crs, ccrs.Projection):
-                raise TypeError('z coordinate is not appropriate for a'
-                                'projected coordinate reference system')
-
-            if x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
+            if x.ndim > 2 or y.ndim > 2 or z.ndim > 2:
+                raise ValueError('x, y and z arrays must be 1 or 2'
+                                  'dimensional')
+            elif x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
                 x, y, z = x.flatten(), y.flatten(), z.flatten()
+
             if not x.shape[0] == y.shape[0] == z.shape[0]:
-                raise ValueError(
-                    'x, y, and z arrays must have the same length')
+                raise ValueError('x, y, and z arrays must have the same'
+                                 'length')
 
         npts = x.shape[0]
 
