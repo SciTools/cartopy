@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import contextlib
 import os
 import shutil
 import warnings
 
-
+import matplotlib.pyplot as plt
 import matplotlib.testing.compare as mcompare
 import matplotlib._pylab_helpers as pyplot_helpers
 
@@ -207,3 +207,21 @@ class ImageTesting(object):
         # pick it up
         wrapped.__name__ = test_name
         return wrapped
+
+
+@contextlib.contextmanager
+def mpl_backend(backend):
+    """
+    Context manager to enable temporary switching of matplotlib
+    backend.
+
+    Args:
+
+    * backend:
+        Name of desired backend.
+
+    """
+    orig_backend = plt.get_backend()
+    plt.switch_backend(backend)
+    yield
+    plt.switch_backend(orig_backend)

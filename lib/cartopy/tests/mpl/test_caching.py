@@ -28,6 +28,7 @@ import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
 from cartopy.examples.waves import sample_data
+from cartopy.tests.mpl import mpl_backend
 
 
 class CallCounter(object):
@@ -104,37 +105,40 @@ def test_shapefile_transform_cache():
     geoms = tuple(geoms)[:10]
     n_geom = len(geoms)
 
-    ax = plt.axes(projection=ccrs.Robinson())
+    # Under some backends e.g. 'MacOSX', project_geometry() is not called
+    # unless plt.show() is called so use 'agg' to test caching.
+    with mpl_backend('agg'):
+        ax = plt.axes(projection=ccrs.Robinson())
 
-    # Empty the cache.
-    FeatureArtist._geometry_to_path_cache.clear()
-    assert len(FeatureArtist._geometry_to_path_cache) == 0
+        # Empty the cache.
+        FeatureArtist._geometry_to_path_cache.clear()
+        assert len(FeatureArtist._geometry_to_path_cache) == 0
 
-    counter = CallCounter(ax.projection, 'project_geometry')
-    with counter:
-        ax.add_geometries(geoms, ccrs.PlateCarree())
-        ax.add_geometries(geoms, ccrs.PlateCarree())
-        ax.add_geometries(geoms[:], ccrs.PlateCarree())
-        plt.draw()
+        counter = CallCounter(ax.projection, 'project_geometry')
+        with counter:
+            ax.add_geometries(geoms, ccrs.PlateCarree())
+            ax.add_geometries(geoms, ccrs.PlateCarree())
+            ax.add_geometries(geoms[:], ccrs.PlateCarree())
+            plt.draw()
 
-    # Without caching the count would have been
-    # n_calls * n_geom, but should now be just n_geom.
-    assert counter.count == n_geom, ('The given geometry was transformed too '
-                                     'many times (expected: %s; got %s) - the'
-                                     ' caching is not working.'.format(n_geom,
-                                     n_geom, counter.count))
+        # Without caching the count would have been
+        # n_calls * n_geom, but should now be just n_geom.
+        msg = 'The given geometry was transformed too many times (expected: ' \
+              '{}; got {}) - the caching is not working.'.format(n_geom,
+                                                                 counter.count)
+        assert counter.count == n_geom, msg
 
-    # Check the cache has an entry for each geometry.
-    assert len(FeatureArtist._geometry_to_path_cache) == n_geom
+        # Check the cache has an entry for each geometry.
+        assert len(FeatureArtist._geometry_to_path_cache) == n_geom
 
-    # Check that the cache is empty again once we've dropped all references
-    # to the source paths.
-    plt.clf()
-    del geoms
-    gc.collect()
-    assert len(FeatureArtist._geometry_to_path_cache) == 0
+        # Check that the cache is empty again once we've dropped all references
+        # to the source paths.
+        plt.clf()
+        del geoms
+        gc.collect()
+        assert len(FeatureArtist._geometry_to_path_cache) == 0
 
-    plt.close()
+        plt.close()
 
 
 def test_contourf_transform_path_counting():
