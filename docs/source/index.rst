@@ -8,6 +8,11 @@
     matplotlib/advanced_plotting.rst
     matplotlib/geoaxes.rst
     matplotlib/introductory_examples/index.rst
+    projections/table.rst
+    projections/index.rst
+    tutorials/using_the_shapereader.rst
+    tutorials/plotting_shapefiles.rst
+    tutorials/index.rst
     
     
 
