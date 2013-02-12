@@ -223,11 +223,11 @@ cdef class CRS:
         * src_crs - instance of :class:`CRS` that represents the coordinate
                     system of ``x``, ``y`` and ``z``.
         * x - the x coordinates (array), in ``src_crs`` coordinates,
-              to transform.  May be 1 or 2 dimensions.
+              to transform.  May be 1 or 2 dimensional.
         * y - the y coordinates (array), in ``src_crs`` coordinates,
               to transform
         * z - (optional) the z coordinates (array), in ``src_crs``
-              coordinates, to transform.  Not applicable for projections.
+              coordinates, to transform.
 
         Returns:
            Array of shape ``x.shape + (3, )`` in this coordinate system.
@@ -247,13 +247,13 @@ cdef class CRS:
                 raise ValueError('x and y arrays must have the same length')
         else:
             if x.ndim > 2 or y.ndim > 2 or z.ndim > 2:
-                raise ValueError('x, y and z arrays must be 1 or 2'
-                                  'dimensional')
+                raise ValueError('x, y and z arrays must be 1 or 2 '
+                                 'dimensional')
             elif x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
                 x, y, z = x.flatten(), y.flatten(), z.flatten()
 
             if not x.shape[0] == y.shape[0] == z.shape[0]:
-                raise ValueError('x, y, and z arrays must have the same'
+                raise ValueError('x, y, and z arrays must have the same '
                                  'length')
 
         npts = x.shape[0]

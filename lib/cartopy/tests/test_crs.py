@@ -88,7 +88,7 @@ class TestCRS(unittest.TestCase):
         res = target_proj.transform_points(x=rlons, y=rlats,
                                            src_crs=src_proj)
 
-        unrotated_lon, unrotated_lat, unrotated_dat = res.transpose()
+        unrotated_lon, unrotated_lat, _ = res.transpose()
 
         # Solutions derived by proj4 direct.
         solx = numpy.array([[-16.42176094, -14.85892262],
@@ -109,7 +109,7 @@ class TestCRS(unittest.TestCase):
         res = target_proj.transform_points(x=rlons, y=rlats,
                                            src_crs=src_proj)
 
-        unrotated_lon, unrotated_lat, unrotated_dat = res.transpose()
+        unrotated_lon, unrotated_lat, _ = res.transpose()
 
         # Solutions derived by proj4 direct.
         solx = numpy.array([-16.42176094, -14.85892262,
