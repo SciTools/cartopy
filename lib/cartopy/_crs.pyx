@@ -23,6 +23,8 @@ The CRS class is the base-class for all projections defined in :mod:`cartopy.crs
 
 import numpy as np
 
+from cartopy.exceptions import UnhandledEpsgError
+
 cimport numpy as np
 
 from cython.operator cimport dereference as deref
@@ -167,6 +169,12 @@ cdef class CRS:
             if param_name in params:
                 keywords[keyword] = params[param_name]
         return Geodetic(**keywords)
+    
+    def as_wms_srs(self):
+        """
+        Return a string suitable for the 'srs' component of a WMS request.
+        """
+        raise UnhandledEpsgError("WMS srs not yet available for class {}".format(self.__class__))
 
     cpdef is_geodetic(self):
         return bool(pj_is_latlong(self.proj4))

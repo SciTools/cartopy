@@ -43,7 +43,7 @@ class GoogleTiles(object):
         self.crs = ccrs.Mercator()
         self.desired_tile_form = desired_tile_form
 
-    def image_for_domain(self, target_domain, target_z):
+    def image_for_domain(self, target_domain, target_z, srs=None, image_size=None):
         tiles = []
         for tile in self.find_images(target_domain, target_z):
             try:

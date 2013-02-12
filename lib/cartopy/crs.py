@@ -34,6 +34,22 @@ from cartopy._crs import CRS, Geocentric, Geodetic, PROJ4_RELEASE
 import cartopy.trace
 
 
+def from_epsg(epsg):
+    """
+    Return a :class:`Projection` from the given epsg string.
+    
+    Args:
+    
+        * epsg    -    An epsg string such as 'EPSG:4326'.
+                       Some other strings are also recognised, such as 'OSGB'.
+    
+    """
+    try:
+        return KNOWN_EPSG[epsg.upper()]
+    except:
+        raise cartopy.exceptions.UnhandledEpsgError("Unhandled epsg code {}".format(epsg))
+
+
 class RotatedGeodetic(CRS):
     """
     Defines a rotated latitude/longitude coordinate system with spherical
@@ -503,6 +519,9 @@ class PlateCarree(_CylindricalProjection):
         proj4_params = {'proj': 'eqc', 'lon_0': central_longitude,
                         'a': math.degrees(1)}
         super(PlateCarree, self).__init__(proj4_params, 180, 90)
+        
+    def as_wms_srs(self):
+        return "EPSG:4326"
 
     @property
     def threshold(self):
@@ -529,6 +548,9 @@ class OSGB(Projection):
                         'ellps': 'airy', 'datum': 'OSGB36',
                         'units': 'm', 'no_defs': ''}
         super(OSGB, self).__init__(proj4_params)
+        
+    def as_wms_srs(self):
+        return "EPSG:27700"
 
     @property
     def threshold(self):
@@ -890,3 +912,7 @@ def _find_gt(a, x):
         if v.distance > x:
             return v
     return a[0]
+
+
+KNOWN_EPSG = {"EPSG:4326" : PlateCarree(),
+              "EPSG:27700" : OSGB()}
