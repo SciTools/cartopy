@@ -187,6 +187,8 @@ cdef class CRS:
 
             (x, y) - in this coordinate system
 
+        .. seealso:: :meth:`transform_points`
+
         """
         cdef:
             double cx, cy
@@ -220,28 +222,39 @@ cdef class CRS:
 
         * src_crs - instance of :class:`CRS` that represents the coordinate
                     system of ``x``, ``y`` and ``z``.
-        * x - the x coordinates (array), in ``src_crs`` coordinates, to transform
-        * y - the y coordinates (array), in ``src_crs`` coordinates, to transform
-        * z - (optional) the z coordinates (array), in ``src_crs`` coordinates, to transform
+        * x - the x coordinates (array), in ``src_crs`` coordinates,
+              to transform.  May be 1 or 2 dimensional.
+        * y - the y coordinates (array), in ``src_crs`` coordinates,
+              to transform
+        * z - (optional) the z coordinates (array), in ``src_crs``
+              coordinates, to transform.
 
         Returns:
-
-            array of shape [npts, 3] in this coordinate system
+           Array of shape ``x.shape + (3, )`` in this coordinate system.
 
         """
         cdef np.ndarray[np.double_t, ndim=2] result
         
-
+        result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
+        
         if z is None:
-            if x.ndim != 1 or y.ndim != 1:
-                raise ValueError('x and y arrays must be one dimensional')
+            if x.ndim > 2 or y.ndim > 2:
+                raise ValueError('x and y arrays must be 1 or 2 dimensional')
+            elif x.ndim != 1 or y.ndim != 1:
+                x, y = x.flatten(), y.flatten()
+
             if x.shape[0] != y.shape[0]:
                 raise ValueError('x and y arrays must have the same length')
         else:
-            if x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
-                raise ValueError('x, y and z arrays must be one dimensional')
+            if x.ndim > 2 or y.ndim > 2 or z.ndim > 2:
+                raise ValueError('x, y and z arrays must be 1 or 2 '
+                                 'dimensional')
+            elif x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
+                x, y, z = x.flatten(), y.flatten(), z.flatten()
+
             if not x.shape[0] == y.shape[0] == z.shape[0]:
-                raise ValueError('x, y, and z arrays must have the same length')
+                raise ValueError('x, y, and z arrays must have the same '
+                                 'length')
 
         npts = x.shape[0]
 
@@ -266,6 +279,10 @@ cdef class CRS:
             result = np.rad2deg(result)
         #if status:
         #    raise Proj4Error()
+
+        if len(result_shape) > 2:
+            transpose_order = tuple(range(result.ndim)[::-1]) + (2, )
+            return result.reshape(result_shape).transpose(transpose_order)
 
         return result
 
