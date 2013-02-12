@@ -19,7 +19,7 @@ access to standard vector datasets.
 
 
 Helper functions for shapefile acquisition
--------------------------------------------
+------------------------------------------
 
 Cartopy provides an interface for access to frequently used data such as the
 `GSHHS <http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html>`_ dataset and from
@@ -54,16 +54,33 @@ by using the :func:`natural_earth` function:
                                           name='admin_0_countries')
 
 
-From here, we can make use of the :class:`Reader` to get the first country
-in the shapefile:
+By the nature of this shapfile from Natural Earth, it consists of a country
+for each field.  Similarly, there are shapefiles available that consists of
+boundaries, or prefectures etc.  Here, we can make use of the :class:`Reader`
+to get the first country in the shapefile:
 
 .. testcode:: countries
 
     reader = shpreader.Reader(shpfilename)
     countries = reader.records()
-    country = next(countries)
+    country = countries.next()
 
-We can get the country's attributes dictionary with the
+The :func:`~Reader.records` method returns a generator,
+which we can then succesively apply the next method to return successive
+records.  The instance of the :class:`~Reader` class also contains a
+:func:`~Reader.geometries` method which returns a generator for our
+gemoetries.  Geometry is associated with the individual records,
+however, if the metadata of the records is not neccessary to the user, then
+they can be accessed directly from this generator.
+
+.. note::
+    :func:`~Reader.records` is usefull to extract/filter based on the properties
+    of what the shape represents.
+
+    :func:`~Reader.geometries` is usefull to extract/filter based on the
+    properties of the shape.
+
+We now get a country's attributes dictionary through
 :data:`Record.attributes` attribute:
 
 .. doctest:: countries
@@ -80,10 +97,10 @@ We could now find the 5 least populated countries with:
 
     reader = shpreader.Reader(shpfilename)
 
-    # define a function which returns the population given the country
+    # Define a function which returns the population given the country.
     population = lambda country: country.attributes['pop_est']
 
-    # sort the countries by population and get the first 5
+    # Sort the countries by population and get the first 5.
     countries_by_pop = sorted(reader.records(), key=population)[:5]
 
 Which we can print with
@@ -94,6 +111,13 @@ Which we can print with
     ...            for country in countries_by_pop])
     'Western Sahara, French Southern and Antarctic Lands, Falkland Islands, Antarctica, Greenland'
 
+Extracting the records for these entries then follows the same logic:
+
+.. testcode:: countries
+
+    >>> extracted_countries = [country for country in countries_by_pop]
+
+See :doc:`plotting_shapefiles` for what we can do with these records/geometries.
 
 **Excercises**:
 
@@ -125,9 +149,13 @@ Which we can print with
 
         Democratic Republic of the Congo, Egypt, Ethiopia, Nigeria
 
- * **SHP.2**: Using the countries shapefile, find the most populated country grouped 
-   by the first letter of the "name_long".
-        Hint: :func:`itertools.groupby` can help with the grouping.
+ * **SHP.2**: Find the most populated country in each first letter group of
+        "name_long" according to the population attribute "pop_est" in the
+        shapefile.
+
+        Hint: :func:`itertools.groupby` can help with the grouping and
+        attributes["name_long"].
+
         Answer:
 
     .. testcode:: countries
@@ -143,10 +171,10 @@ Which we can print with
         population = lambda country: country.attributes['pop_est']
 
         # sort the countries so that the groups come out alphabetically
-        countries = sorted(reader.records(), key=first_letter)
+        sd_countries = sorted(reader.records(), key=first_letter)
 
         # group the countries by first letter
-        for letter, countries in itertools.groupby(countries, key=first_letter):
+        for letter, countries in itertools.groupby(sd_countries, key=first_letter):
             # print the letter and least populated country
             print letter, sorted(countries, key=population)[-1].attributes['name_long']
 
@@ -178,3 +206,49 @@ Which we can print with
             Y Yemen
             Z Zimbabwe
 
+ * **SHP.3**: Extract the records of interest from the shapefile corresponding
+        to the list of countries identified above.
+
+    .. testcode:: countries
+        :hide:
+
+        # extract the records of interest
+        extracted_countries = [
+            sorted(countries, key=population)[-1] for
+                letter, countries in itertools.groupby(sd_countries,
+                                                       key=first_letter)]
+
+        for record in extracted_countries:
+            # print type and long name of each entry int the list
+            print record.attributes['name_long'], type(record)
+
+    .. testoutput:: countries
+
+            Argentina <class 'cartopy.io.shapereader.Record'>
+            Brazil <class 'cartopy.io.shapereader.Record'>
+            China <class 'cartopy.io.shapereader.Record'>
+            Democratic Republic of the Congo <class 'cartopy.io.shapereader.Record'>
+            Ethiopia <class 'cartopy.io.shapereader.Record'>
+            France <class 'cartopy.io.shapereader.Record'>
+            Germany <class 'cartopy.io.shapereader.Record'>
+            Hungary <class 'cartopy.io.shapereader.Record'>
+            India <class 'cartopy.io.shapereader.Record'>
+            Japan <class 'cartopy.io.shapereader.Record'>
+            Kenya <class 'cartopy.io.shapereader.Record'>
+            Lao PDR <class 'cartopy.io.shapereader.Record'>
+            Mexico <class 'cartopy.io.shapereader.Record'>
+            Nigeria <class 'cartopy.io.shapereader.Record'>
+            Oman <class 'cartopy.io.shapereader.Record'>
+            Pakistan <class 'cartopy.io.shapereader.Record'>
+            Qatar <class 'cartopy.io.shapereader.Record'>
+            Russian Federation <class 'cartopy.io.shapereader.Record'>
+            South Africa <class 'cartopy.io.shapereader.Record'>
+            Turkey <class 'cartopy.io.shapereader.Record'>
+            United States <class 'cartopy.io.shapereader.Record'>
+            Vietnam <class 'cartopy.io.shapereader.Record'>
+            Western Sahara <class 'cartopy.io.shapereader.Record'>
+            Yemen <class 'cartopy.io.shapereader.Record'>
+            Zimbabwe <class 'cartopy.io.shapereader.Record'>
+
+Each record has an associated geometry object.
+For examples of plotting shapefiles, see :doc:`plotting_shapefiles`
