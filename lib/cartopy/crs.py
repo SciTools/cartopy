@@ -34,6 +34,9 @@ from cartopy._crs import CRS, Geocentric, Geodetic, PROJ4_RELEASE
 import cartopy.trace
 
 
+__document_these__ = ['CRS', 'Geocentric', 'Geodetic']
+
+
 class RotatedGeodetic(CRS):
     """
     Defines a rotated latitude/longitude coordinate system with spherical
