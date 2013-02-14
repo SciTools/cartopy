@@ -1,7 +1,7 @@
 .. _using_the_shapereader:
 
-Using the cartopy shapereader
-=============================
+Using the cartopy feature interface with matplotlib
+===================================================
 
 Cartopy provides an object oriented shapefile reader based on top of the 
 `pyshp <http://code.google.com/p/pyshp/>`_ module to provide easy, programmatic,
@@ -95,7 +95,7 @@ Which we can print with
     'Western Sahara, French Southern and Antarctic Lands, Falkland Islands, Antarctica, Greenland'
 
 
-**Excercises**:
+**Exercises**:
 
  * **SHP.1**: Repeat the last example to show the 4 most populated African countries in to the shapefile.
         Hint: Look at the possible attributes to find out which continent a country belongs.
@@ -126,7 +126,7 @@ Which we can print with
         Democratic Republic of the Congo, Egypt, Ethiopia, Nigeria
 
  * **SHP.2**: Using the countries shapefile, find the most populated country grouped 
-   by the first letter of the "name_long".
+        by the first letter of the "name_long".
         Hint: :func:`itertools.groupby` can help with the grouping.
         Answer:
 
