@@ -10,6 +10,7 @@ lib/cartopy/_crs.c
 lib/cartopy/_crs.so
 docs/build
 lib/cartopy/tests/mpl/output/
+docs/source/cartopy_outline.rst
 
 # some data files:
 lib/cartopy/data/SRTM3
