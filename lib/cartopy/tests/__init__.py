@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import functools
+import types
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import types
 
 
 def not_a_nose_fixture(function):
@@ -26,11 +27,11 @@ def not_a_nose_fixture(function):
     Provides a decorator to mark a function as not a nose fixture.
 
     """
+    @functools.wraps(function)
     def setup(app):
         if isinstance(app, types.ModuleType):
             return
         return function(app)
-    setup.__doc__ = function.__doc__
     return setup
 
 

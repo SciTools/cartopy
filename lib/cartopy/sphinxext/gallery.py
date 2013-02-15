@@ -19,7 +19,6 @@ import os
 import shutil
 import sys
 
-
 from cartopy.sphinxext.summarise_package import walk_module
 import cartopy.tests
 
@@ -36,7 +35,7 @@ def parent_module(module):
     .. note::
 
         Requires the __name__ attribute on the given module
-        to exist & be correct and the parent module to be importable.
+        to be correctly defined and the parent module to be importable.
 
     >>> import numpy.ma.core
     >>> from cartopy.sphinxext.gallery import parent_module
