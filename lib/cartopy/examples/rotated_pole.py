@@ -34,8 +34,6 @@ def main():
     ax.fill(x, y, transform=rotated_pole, color='coral', alpha=0.4)
     ax.gridlines()
 
-    plt.suptitle('The same box?')
-
     plt.show()
 
 

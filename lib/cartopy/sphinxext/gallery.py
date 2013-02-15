@@ -117,7 +117,12 @@ def examples_code(examples_mod_name,
         if not os.path.isdir(os.path.dirname(py_fname)):
             os.makedirs(os.path.dirname(py_fname))
 
-        shutil.copy(os.path.join(root_dir, fname), py_fname)
+        with open(os.path.join(root_dir, fname), 'r') as in_fh:
+            with open(py_fname, 'w') as out_fh:
+                for line in in_fh:
+                    if line.startswith('__tags__ = ['):
+                        continue
+                    out_fh.write(line)
 
         with open(rst_fname, 'w') as fh:
             fh.write(rst)
