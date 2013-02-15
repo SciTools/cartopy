@@ -367,7 +367,7 @@ class GeoAxes(matplotlib.axes.Axes):
         warnings.warn('This method has been deprecated.'
                       ' Please use `add_feature` instead.')
         kwargs.setdefault('edgecolor', 'face')
-        kwargs.setdefault('facecolor', cartopy.feature._COLOURS['land'])
+        kwargs.setdefault('facecolor', cartopy.feature.COLORS['land'])
         feature = cartopy.feature.NaturalEarthFeature(category, name,
                                                       resolution, **kwargs)
         return self.add_feature(feature)

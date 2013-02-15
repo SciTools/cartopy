@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
+import cartopy.feature as feature
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shp
 
-colours = {'water': (152/256., 183/256., 226/256.),
-           'land': (220/256., 220/256., 220/256.)}
 
 # Set up axes.
 ax = plt.axes(projection=ccrs.PlateCarree())
@@ -39,12 +38,12 @@ clip_population = [pop for pop in population if
                    lat_min < pop.attributes['latitude'] < lat_max and
                    lon_min < pop.attributes['longitude'] < lon_max]
 
-# Set background colour (water).
-ax.background_patch.set_facecolor(colours['water'])
+# Set background color (water).
+ax.background_patch.set_facecolor(feature.COLORS['water'])
 
 # Add features - countries and rivers.
 ax.add_geometries(countries, crs=src_crs, edgecolor='black',
-                  facecolor=colours['land'])
+                  facecolor=feature.COLORS['land'])
 ax.add_geometries(rivers, crs=src_crs, edgecolor='blue', facecolor='none',
                   linewidth=1.0, zorder=10)
 

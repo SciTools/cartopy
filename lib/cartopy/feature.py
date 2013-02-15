@@ -28,8 +28,10 @@ import shapely.geometry
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
 
-_COLOURS = {'land': np.array((240, 240, 220)) / 256.,
-            'water': np.array((152, 183, 226)) / 256.}
+#: Standardised colors for plotting.
+COLORS = {'land': np.array((240, 240, 220)) / 256.,
+          'land_alt1': np.array((220, 220, 220)) / 256.,
+          'water': np.array((152, 183, 226)) / 256.}
 
 
 _NATURAL_EARTH_GEOM_CACHE = {}
@@ -294,23 +296,23 @@ COASTLINE = NaturalEarthFeature('physical', 'coastline', '110m',
 
 LAKES = NaturalEarthFeature('physical', 'lakes', '110m',
                             edgecolor='face',
-                            facecolor=_COLOURS['water'])
+                            facecolor=COLORS['water'])
 """Small scale (1:110m) natural and artificial lakes."""
 
 
 LAND = NaturalEarthFeature('physical', 'land', '110m',
                            edgecolor='face',
-                           facecolor=_COLOURS['land'])
+                           facecolor=COLORS['land'])
 """Small scale (1:110m) land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
                             edgecolor='face',
-                            facecolor=_COLOURS['water'])
+                            facecolor=COLORS['water'])
 """Small scale (1:110m) ocean polygons."""
 
 
 RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
-                             edgecolor=_COLOURS['water'],
+                             edgecolor=COLORS['water'],
                              facecolor='none')
 """Small scale (1:110m) single-line drainages, including lake centerlines."""

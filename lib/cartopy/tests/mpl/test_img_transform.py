@@ -121,13 +121,13 @@ def test_regrid_image():
     ax = plt.subplot(gs[0], frameon=False, projection=target_proj)
     plt.imshow(new_array, origin='lower', extent=target_extent)
     ax.coastlines()
-    # Plot each colour slice (tests masking)
+    # Plot each color slice (tests masking)
     cmaps = {'red': 'Reds', 'green': 'Greens', 'blue': 'Blues'}
-    for i, colour in enumerate(['red', 'green', 'blue']):
+    for i, color in enumerate(['red', 'green', 'blue']):
         ax = plt.subplot(gs[i + 1], frameon=False, projection=target_proj)
-        ax.set_title(colour)
+        ax.set_title(color)
         plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
-                   cmap=cmaps[colour])
+                   cmap=cmaps[color])
         ax.coastlines()
 
     # Tighten up layout
