@@ -75,7 +75,7 @@ class Feature(object):
     @abstractmethod
     def geometries(self):
         """
-        Must be overriden to return an iterator of shapely geometries
+        Must be overridden to return an iterator of shapely geometries
         for this feature.
 
         """

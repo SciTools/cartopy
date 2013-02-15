@@ -1,21 +1,3 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
-#
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
-
-
 """
 This example demonstrates the way a box is warped when it is defined
 in a rotated pole coordinate system.
@@ -24,6 +6,8 @@ Try changing the ``box_top`` to ``44``, ``46`` and ``75`` to see the effect
 that including the pole in the polygon has.
 
 """
+
+__tags__ = ['Lines and polygons']
 
 import matplotlib.pyplot as plt
 
@@ -49,8 +33,6 @@ def main():
     ax.plot(x, y, marker='o', transform=rotated_pole)
     ax.fill(x, y, transform=rotated_pole, color='coral', alpha=0.4)
     ax.gridlines()
-
-    plt.suptitle('The same box?')
 
     plt.show()
 

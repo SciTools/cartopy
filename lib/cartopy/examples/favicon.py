@@ -1,8 +1,7 @@
-import cartopy
+__tags__ = ['Miscellanea']
+
 import cartopy.crs as ccrs
-import cartopy.mpl.patch as pt
 import matplotlib.pyplot as plt
-import matplotlib.path as mpath
 import numpy
 
 import matplotlib.textpath
@@ -23,19 +22,27 @@ def main():
     # points outside the boundary have 1:1 mappings in this projection
     im = ax.stock_img()
 
-    # Clip the image to the current background boundary. This will not
-    # be sufficient if zooming or saving
-    im.set_clip_path(ax.background_patch.get_path(),
-                     transform=ax.background_patch.get_transform())
+    def on_draw(event=None):
+        """
+        Hooks into matplotlib's event mechanism to define the clip path of the
+        background image.
+
+        """
+        # Clip the image to the current background boundary.
+        im.set_clip_path(ax.background_patch.get_path(),
+                         transform=ax.background_patch.get_transform())
+
+    # Register the on_draw method and call it once now.
+    plt.gcf().canvas.mpl_connect('draw_event', on_draw)
+    on_draw()
 
     # Generate a matplotlib path representing the character "C"
     fp = FontProperties(family='Arial', weight='bold')
-    xy = (-4.5e7, -3.7e7)
-    logo_path = matplotlib.textpath.TextPath(xy, 'C', size=1, prop=fp)
+    logo_path = matplotlib.textpath.TextPath((-4.5e7, -3.7e7),
+                                             'C', size=1, prop=fp)
 
-    # Scale the letters up to sensible X and Y sizes
-    XY = [123500000, 103250000]
-    logo_path._vertices *= numpy.array(XY)
+    # Scale the letter up to an appropriate X and Y scale
+    logo_path._vertices *= numpy.array([123500000, 103250000])
 
     # Add the path as a patch, drawing black outlines around the text
     patch = matplotlib.patches.PathPatch(logo_path, facecolor='white',

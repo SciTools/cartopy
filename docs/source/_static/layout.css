@@ -1,0 +1,6 @@
+div.body p { width: 65em; padding-right: 45px; }
+
+.gallery-images img { border: none;}
+.gallery-images p { display: inline;}
+
+.inline-paragraphs p {display: inline;}
