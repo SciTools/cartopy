@@ -3,15 +3,14 @@
 {%- block extrahead %}
 {{ super() }}
 <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-<link rel="stylesheet" href="_static/linewidth.css" type="text/css" />
+<link rel="stylesheet" href="_static/layout.css" type="text/css" />
 {% endblock %}
 
 
 {% block rootrellink %}
         <li><a href="{{ pathto('index') }}">home</a>|&nbsp;</li>
-        <!-- <li><a href="{{ pathto('examples/index') }}">examples</a>|&nbsp;</li>
-             <li><a href="{{ pathto('gallery') }}">gallery</a>|&nbsp;</li>
-        -->
+        <li><a href="{{ pathto('gallery') }}">gallery</a>|&nbsp;</li>
+        
 {% endblock %}
 
 

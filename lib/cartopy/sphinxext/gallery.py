@@ -21,6 +21,7 @@ import sys
 
 
 from cartopy.sphinxext.summarise_package import walk_module
+import cartopy.tests
 
 
 def parent_module(module):
@@ -143,7 +144,9 @@ def gallery_code(examples_mod_name):
             for tag in tags:
                 examples_by_tag.setdefault(tag, []).append((mod_name, mod))
 
-    result = ['Tags:\n',
+    result = ['Gallery',
+              '=======',
+              'Tags:\n',
               '.. container:: inline-paragraphs\n'
               ]
 
@@ -242,6 +245,7 @@ def gen_examples(app):
     examples_code(example_package_name, source_dir, 'examples')
 
 
+@cartopy.tests.not_a_nose_fixture
 def setup(app):
     app.connect('builder-inited', gen_gallery)
     app.connect('builder-inited', gen_examples)

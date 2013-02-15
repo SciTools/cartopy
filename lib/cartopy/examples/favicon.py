@@ -1,10 +1,7 @@
 __tags__ = ['Miscellanea']
 
-import cartopy
 import cartopy.crs as ccrs
-import cartopy.mpl.patch as pt
 import matplotlib.pyplot as plt
-import matplotlib.path as mpath
 import numpy
 
 import matplotlib.textpath
@@ -31,8 +28,7 @@ def main():
         background image.
 
         """
-        # Clip the image to the current background boundary. This will not
-        # be sufficient if zooming or saving
+        # Clip the image to the current background boundary.
         im.set_clip_path(ax.background_patch.get_path(),
                          transform=ax.background_patch.get_transform())
 
@@ -45,7 +41,7 @@ def main():
     logo_path = matplotlib.textpath.TextPath((-4.5e7, -3.7e7),
                                              'C', size=1, prop=fp)
 
-    # Scale the letter up to a sensible X and Y scale
+    # Scale the letter up to an appropriate X and Y scale
     logo_path._vertices *= numpy.array([123500000, 103250000])
 
     # Add the path as a patch, drawing black outlines around the text
