@@ -21,6 +21,9 @@ import os
 import sys
 
 
+import cartopy.tests
+
+
 def walk_module(mod_name, exclude_folders=None):
     """
     Recursively walks the given module name.
@@ -191,6 +194,7 @@ def gen_summary_rst(app):
             fh.write(content)
 
 
+@cartopy.tests.not_a_nose_fixture
 def setup(app):
     """
     Defined the Sphinx application interface for the summary generation.
