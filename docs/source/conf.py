@@ -193,6 +193,9 @@ html_show_sphinx = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'cartopydoc'
 
+html_context = {'rellinks': [('genindex', 'General Index', 'I', 'index'),
+                             ('cartopy_outline', 'Module outline', 'O', 'outline')]}
+
 
 # -- Options for LaTeX output --------------------------------------------------
 
