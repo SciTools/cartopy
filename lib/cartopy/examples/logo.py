@@ -1,3 +1,5 @@
+__tags__ = ['Miscellanea']
+
 import cartopy
 import cartopy.crs as ccrs
 import cartopy.mpl.patch as pt

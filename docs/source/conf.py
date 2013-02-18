@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -43,7 +43,10 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 
+extensions = [
+              'cartopy.sphinxext.summarise_package',
+              'cartopy.sphinxext.gallery',
+              'sphinx.ext.autodoc', 
               'sphinx.ext.doctest', 
               'sphinx.ext.intersphinx',
               'sphinx.ext.coverage', 
@@ -51,6 +54,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.extlinks',
               'matplotlib.sphinxext.plot_directive'
               ]
+
+import matplotlib
+matplotlib.use('Agg')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -320,4 +326,28 @@ extlinks = {'issues': ('https://github.com/SciTools/cartopy/issues?state=open&la
                       'issues labeled with ')}
 
 
-plot_formats = [('png', 80)]
+
+############ package summary extension ###########
+
+summarise_package_names = ['cartopy']
+summarise_package_exclude_directories = [['tests', 'examples', 'sphinxext']]
+summarise_package_fnames = ['cartopy_outline.rst']
+
+
+############ gallery/examples extension ###########
+
+#gallery_allowed_tags = None
+#gallery_tag_order = None
+gallery_name = 'gallery.rst'
+examples_package_name = 'cartopy.examples'
+
+
+############ plot directive ##############
+
+plot_html_show_formats = False
+plot_rcparams = {'figure.autolayout': True}
+plot_formats = (('thumb.png', 20),
+                'png',
+                'pdf'
+                )
+
