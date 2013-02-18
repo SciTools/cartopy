@@ -33,11 +33,11 @@ COLORS = {'land': np.array((240, 240, 220)) / 256.,
           'land_alt1': np.array((220, 220, 220)) / 256.,
           'water': np.array((152, 183, 226)) / 256.}
 """
-A dictionary of colors useful for drawing Features. 
+A dictionary of colors useful for drawing Features.
 
 The named keys in this dictionary represent the "type" of
 feature being plotted.
-  
+
 """
 
 
@@ -59,14 +59,14 @@ class Feature(object):
     methods for common drawing and filtering operations.
 
     Args:
-    
+
         * crs - the coordinate reference system of this Feature
 
     Kwargs:
         Keyword arguments to be used when drawing this feature.
 
     .. seealso::
-    
+
         To add features to the current matplotlib axes, see
         :func:`GeoAxes <cartopy.mpl.geoaxes.GeoAxes.add_feature>`.
 

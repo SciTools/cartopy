@@ -7,9 +7,10 @@
     matplotlib/intro.rst
     matplotlib/advanced_plotting.rst
     matplotlib/geoaxes.rst
+    matplotlib/feature_interface.rst
     tutorials/index.rst
-    projections/index.rst
-    tutorials/index.rst
+    projections/table.rst
+    tutorials/using_the_shapereader.rst
     examples/*.rst
     
     
