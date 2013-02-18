@@ -28,10 +28,17 @@ import shapely.geometry
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
 
-#: Standardised colors for plotting.
+
 COLORS = {'land': np.array((240, 240, 220)) / 256.,
           'land_alt1': np.array((220, 220, 220)) / 256.,
           'water': np.array((152, 183, 226)) / 256.}
+"""
+A dictionary of colors useful for drawing Features. 
+
+The named keys in this dictionary represent the "type" of
+feature being plotted.
+  
+"""
 
 
 _NATURAL_EARTH_GEOM_CACHE = {}
@@ -48,10 +55,22 @@ same projection.
 
 class Feature(object):
     """
-    The abstract base class for features.
+    Represents a collection of points, lines and polygons with convenience
+    methods for common drawing and filtering operations.
+
+    Args:
+    
+        * crs - the coordinate reference system of this Feature
+
+    Kwargs:
+        Keyword arguments to be used when drawing this feature.
+
+    .. seealso::
+    
+        To add features to the current matplotlib axes, see
+        :func:`GeoAxes <cartopy.mpl.geoaxes.GeoAxes.add_feature>`.
 
     """
-
     __metaclass__ = ABCMeta
 
     def __init__(self, crs, **kwargs):
@@ -66,8 +85,8 @@ class Feature(object):
     @property
     def kwargs(self):
         """
-        A dictionary of keyword arguments to be used when creating
-        the matplotlib artists for this feature.
+        The read-only dictionary of keyword arguments that are used when
+        creating the matplotlib artists for this feature.
 
         """
         return dict(self._kwargs)
@@ -75,8 +94,7 @@ class Feature(object):
     @abstractmethod
     def geometries(self):
         """
-        Must be overridden to return an iterator of shapely geometries
-        for this feature.
+        Returns an iterator of (shapely) geometries for this feature.
 
         """
         pass
@@ -155,11 +173,6 @@ class NaturalEarthFeature(Feature):
         self.scale = scale
 
     def geometries(self):
-        """
-        Returns the shapely geometries defined by this Natural
-        Earth dataset.
-
-        """
         key = (self.name, self.category, self.scale)
         if key not in _NATURAL_EARTH_GEOM_CACHE:
             path = shapereader.natural_earth(resolution=self.scale,
@@ -179,6 +192,19 @@ class GSHHSFeature(Feature):
 
     See http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
 
+    Args:
+
+    * scale:
+        The dataset scale. One of 'auto', 'coarse', 'low', 'intermediate',
+        'high, or 'full' (default is 'auto').
+    * levels:
+        A list of integers 1-4 corresponding to the desired GSHHS feature
+        levels to draw (default is [1] which corresponds to coastlines).
+
+    Kwargs:
+        Keyword arguments to be used when drawing the feature. Defaults
+        are edgecolor='black' and facecolor='none'.
+
     """
 
     _geometries_cache = {}
@@ -192,21 +218,6 @@ class GSHHSFeature(Feature):
 
     """
     def __init__(self, scale='auto', levels=None, **kwargs):
-        """
-        Args:
-
-        * scale:
-            The dataset scale. One of 'auto', 'coarse', 'low', 'intermediate',
-            'high, or 'full' (default is 'auto').
-        * levels:
-            A list of integers 1-4 corresponding to the desired GSHHS feature
-            levels to draw (default is [1] which corresponds to coastlines).
-
-        Kwargs:
-            Keyword arguments to be used when drawing the feature. Defaults
-            are edgecolor='black' and facecolor='none'.
-
-        """
         super(GSHHSFeature, self).__init__(cartopy.crs.PlateCarree(), **kwargs)
 
         if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
@@ -254,15 +265,9 @@ class GSHHSFeature(Feature):
         return scale
 
     def geometries(self):
-        """Returns an iterator of shapely geometries for the GSHHS dataset."""
         return self.intersecting_geometries(extent=None)
 
     def intersecting_geometries(self, extent):
-        """
-        Returns an iterator of shapely geometries for the GSHHS dataset
-        that intersect with the given extent.
-
-        """
         if self._scale == 'auto':
             scale = self._scale_from_extent(extent)
         else:

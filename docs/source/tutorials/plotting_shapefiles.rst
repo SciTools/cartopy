@@ -2,29 +2,33 @@
 
 The cartopy Feature interface with matplotlib
 =============================================
-Feature objects are collections of points, lines and polygons.
 
-To add features to the current axes, the reader is refered to the
-:func:`~cartopy.mpl.geoaxes.GeoAxes.add_feature` method of the
-:class:`~cartopy.mpl.geoaxes.GeoAxes` class.
 
 .. currentmodule:: cartopy.feature
 
 .. autoclass:: Feature
     :members:
     :undoc-members:
-.. autoclass:: ShapelyFeature
-    :members:
-    :undoc-members:
-.. autoclass:: NaturalEarthFeature
-    :members:
-    :undoc-members:
-.. autoclass:: GSHHSFeature
-    :members:
-    :undoc-members:
 
-Pre-defined features exist for the small-scale (1:110m)
-`Natural Earth <http://www.naturalearthdata.com>`_ datasets:
+
+---------
+
+Specific Feature subclasses have been defined for common functionality, such as accessing
+Natural Earth or GSHHS shapefiles.
+
+
+.. autoclass:: ShapelyFeature
+    
+.. autoclass:: NaturalEarthFeature
+    
+.. autoclass:: GSHHSFeature
+
+----------
+
+To simplify some very common cases, some pre-defined Features exist as :mod:`cartopy.feature`
+constants. The pre-defined Features are all large-scale (1:110m) 
+`Natural Earth <http://www.naturalearthdata.com>`_ datasets, and can be added with methods
+such as :func:`GeoAxes <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
 
 =======================================  ==================================================
 Name                                     Description
@@ -37,34 +41,36 @@ Name                                     Description
 .. py:data:: cartopy.feature.RIVERS      Single-line drainages, including lake centerlines.
 =======================================  ==================================================
 
-.. note:
+.. note::
+
     Any Natural Earth dataset can easily be used by creating an
-    instance of :class:`cartopy.feature.NaturalEarthFeature`.
+    instance of :class:`cartopy.feature.NaturalEarthFeature`. For
+    example::
+    
+        import cartopy.feature as cfeature
+        land_50m = cfeature.NaturalEarthFeature('physical', 'land', '50m',
+                                                edgecolor='face',
+                                                facecolor=cfeature.COLORS['land'])
 
 
-Example1: Plotting countries, rivers and cities using geometries directly
--------------------------------------------------------------------------
+A dictionary of some useful colors for drawing features also exists:
 
-.. literalinclude:: plot_shape1.py
+.. autodata:: COLORS
 
-.. plot:: tutorials/plot_shape1.py
+For a full list of names in this dictionary:
 
-.. note::
-    When adding a geometry with
-    :func:`~cartopy.mpl.geoaxes.GeoAxes.add_geometries` the coordinate
-    reference system of the supplied geometry must be supplied.
+    >>> import cartopy.feature
+    >>> sorted(cartopy.feature.COLORS.keys())
+    ['land', 'land_alt1', 'water']
+    
 
-Example2: Plotting countries, rivers and lakes using features
--------------------------------------------------------------
+------------
 
-.. literalinclude:: plot_shape2.py
 
-.. plot:: tutorials/plot_shape2.py
+Example of using the Feature class with the matplotlib interface
+----------------------------------------------------------------
 
-.. note::
-    Features can include matplotlib artist keywords for plotting, either
-    associated with the feature itself, or when they are added with the
-    :func:`~cartopy.mpl.geoaxes.GeoAxes.add_feature` method.
+.. literalinclude:: /examples/features.py
 
-.. seealso::
-   :doc:`../matplotlib/geoaxes`
+.. plot:: examples/features.py
+

@@ -7,9 +7,10 @@
     matplotlib/intro.rst
     matplotlib/advanced_plotting.rst
     matplotlib/geoaxes.rst
-    matplotlib/introductory_examples/index.rst
+    tutorials/index.rst
     projections/index.rst
     tutorials/index.rst
+    examples/*.rst
     
     
 Introduction
@@ -43,11 +44,9 @@ Build instructions for specific operating systems can be found in the
 Getting started
 ===============
 
-View the list of cartopy projections on the :doc:`projections/table`.
-
 To start using cartopy with matplotlib see the :doc:`matplotlib/intro` section.
 
-Short :doc:`step-by-step examples <matplotlib/introductory_examples/index>` are also available.
+View the list of cartopy projections on the :doc:`projections/table`.
 
 A set of tutorials are available on our :doc:`tutorials/index` section.
 
