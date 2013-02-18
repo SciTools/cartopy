@@ -68,21 +68,17 @@ There are many ways to get involved in the development of cartopy:
  * Report bugs to https://github.com/SciTools/cartopy/issues (please look to see if there are any outstanding
    bugs which cover the issue before making a new one).
  * Helping others with support questions on `stackoverflow <http://stackoverflow.com/questions/tagged/cartopy>`_. 
-
-..
  * Contribute to the documentation fixing typos, adding examples, explaining things more clearly, or even
    re-designing its layout/logos etc..
- * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bugs>`).
+ * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bug>`).
  * Contributing enhancements and new features 
    (:issues:`a wish list of features can also be found on github <wishlist>`).
                           
 If you or your organisation use cartopy, we would love to hear about it. 
 
-.. 
-    You could submit a pull request which updates
-    the :ref:`"who uses cartopy" <cartopy_users>` page or alternatively you can simply 
-    contact us via the cartopy mailing list (address TBD).
-
+Development discussion takes place on the `matplotlib-devel mailing list
+<http://matplotlib.1069221.n5.nabble.com/matplotlib-devel-f28077.html>`_ with all discussion
+subjects prefixed with ``cartopy: ``.
 
 
 
