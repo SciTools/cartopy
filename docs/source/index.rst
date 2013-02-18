@@ -79,7 +79,7 @@ If you or your organisation use cartopy, we would love to hear about it.
 
 Development discussion takes place on the `matplotlib-devel mailing list
 <http://matplotlib.1069221.n5.nabble.com/matplotlib-devel-f28077.html>`_ with all discussion
-subjects prefixed with ``cartopy :``.
+subjects prefixed with ``cartopy: ``.
 
 
 

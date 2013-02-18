@@ -2,7 +2,7 @@ What's new in Cartopy 0.6
 *************************
 
 :Release: 0.6.0
-:Date: 8 Feb 2013
+:Date: 19 Feb 2013
 
 * Patrick Peglar added the ability to draw ticks for some limited projections
   when using the :py:func:`~cartopy.mpl.geoaxes.GeoAxes.gridlines` method on an Axes.
@@ -15,11 +15,11 @@ What's new in Cartopy 0.6
 * Phil Elson :doc:`added a new example <examples/hurricane_katrina>` to show polygon analysis
   and visualisation with Shapely and Cartopy.
 
-* Edward Campbell added a new :py:class:`EuroPP` projection for UTM zone 32.
+* Edward Campbell added a new :py:class:`cartopy.crs.EuroPP` projection for UTM zone 32.
 
 * Andrew Dawson added a ``central_longitude`` keyword for the Stereographic family of projections.
 
-* Phil Elson added a :py:class:`~cartopy.io.shapereader.Downloader` class which allows
+* Phil Elson added a :py:class:`~cartopy.io.Downloader` class which allows
   automatic downloading of shapefiles (currently from Natural Earth and GSHHS).
   The extension requires no user action and can be configured via the :py:data:`cartopy.config` dictionary.
 
@@ -34,7 +34,7 @@ Development plans for Cartopy 0.7 and beyond
 
 * Continue identifying and implementing performance enhancements (particularly in contour drawing).
 
-* Extend the number of projection for which it is possible to draw tick marks.
+* Extend the number of projections for which it is possible to draw tick marks.
 
 
 -----------
