@@ -26,9 +26,9 @@ Natural Earth or GSHHS shapefiles.
 ----------
 
 To simplify some very common cases, some pre-defined Features exist as :mod:`cartopy.feature`
-constants. The pre-defined Features are all large-scale (1:110m) 
+constants. The pre-defined Features are all small-scale (1:110m) 
 `Natural Earth <http://www.naturalearthdata.com>`_ datasets, and can be added with methods
-such as :func:`GeoAxes <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
+such as :func:`GeoAxes.add_feature <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
 
 =======================================  ==================================================
 Name                                     Description
@@ -70,7 +70,7 @@ For a full list of names in this dictionary:
 Example of using the Feature class with the matplotlib interface
 ----------------------------------------------------------------
 
-.. literalinclude:: /examples/features.py
+.. literalinclude:: /examples/feature_creation.py
 
-.. plot:: examples/features.py
+.. plot:: examples/feature_creation.py
 

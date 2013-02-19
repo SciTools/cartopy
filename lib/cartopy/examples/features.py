@@ -1,28 +1,20 @@
 __tags__ = ['Lines and polygons']
-
+import cartopy
 import matplotlib.pyplot as plt
-
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 
 
 def main():
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.set_extent([80, 170, -45, 30])
 
-    # Put a background image on for nice sea rendering.
-    ax.stock_img()
+    ax = plt.axes(projection=cartopy.crs.PlateCarree())
 
-    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
-    states_provinces = cfeature.NaturalEarthFeature(
-        category='cultural',
-        name='admin_1_states_provinces_lines',
-        scale='50m',
-        facecolor='none', edgecolor='black')
+    ax.add_feature(cartopy.feature.LAND)
+    ax.add_feature(cartopy.feature.OCEAN)
+    ax.add_feature(cartopy.feature.COASTLINE)
+    ax.add_feature(cartopy.feature.BORDERS, linestyle=':')
+    ax.add_feature(cartopy.feature.LAKES, alpha=0.5)
+    ax.add_feature(cartopy.feature.RIVERS)
 
-    ax.add_feature(cfeature.LAND)
-    ax.add_feature(cfeature.COASTLINE)
-    ax.add_feature(states_provinces)
+    ax.set_extent([-20, 60, -40, 40])
 
     plt.show()
 
