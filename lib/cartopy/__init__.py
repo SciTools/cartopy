@@ -17,7 +17,7 @@
 
 
 __version__ = '0.6.x'
-
+__document_these__ = ['config']
 
 # Enable shapely performance enhancements
 import shapely.speedups

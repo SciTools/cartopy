@@ -2,16 +2,16 @@
     :hidden:
 
     whats_new.rst
-    who_uses_cartopy.rst
     building_from_source/index.rst
     matplotlib/intro.rst
     matplotlib/advanced_plotting.rst
     matplotlib/geoaxes.rst
-    matplotlib/introductory_examples/index.rst
-    projections/index.rst
-    tutorials/index.rst
-    
-    
+    tutorials/using_the_shapereader.rst
+    matplotlib/feature_interface.rst
+    projections/table.rst
+    examples/*.rst
+
+
 Introduction
 ============
 
@@ -43,13 +43,12 @@ Build instructions for specific operating systems can be found in the
 Getting started
 ===============
 
-View the list of cartopy projections on the :doc:`projections/table`.
-
 To start using cartopy with matplotlib see the :doc:`matplotlib/intro` section.
 
-Short :doc:`step-by-step examples <matplotlib/introductory_examples/index>` are also available.
+View the list of cartopy projections on the :doc:`projections/table`.
 
-A set of tutorials are available on our :doc:`tutorials/index` section.
+For shapefile interaction with cartopy see :doc:`tutorials/using_the_shapereader`
+and :doc:`matplotlib/feature_interface`.
 
 Also, check out our :doc:`what's new <whats_new>` page.
 

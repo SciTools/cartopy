@@ -8,7 +8,6 @@ that including the pole in the polygon has.
 """
 
 __tags__ = ['Lines and polygons']
-
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

@@ -79,6 +79,6 @@ Feature API
 
 A new features api is now available, see :doc:`tutorials/using_the_shapereader`.
 
-.. literalinclude:: features.py
+.. literalinclude:: /examples/features.py
 
-.. plot:: features.py
+.. plot:: examples/features.py

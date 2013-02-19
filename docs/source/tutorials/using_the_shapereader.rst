@@ -37,9 +37,6 @@ downloading the data from the internet). Currently the interfaces available are:
 Using the shapereader
 ---------------------
 
-
-
-
 We can acquire the countries dataset from Natural Earth found at
 http://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/
 by using the :func:`natural_earth` function:
@@ -98,8 +95,10 @@ Which we can print with
 **Exercises**:
 
  * **SHP.1**: Repeat the last example to show the 4 most populated African countries in to the shapefile.
-        Hint: Look at the possible attributes to find out which continent a country belongs.
-        Answer:
+
+   Hint: Look at the possible attributes to find out which continent a country belongs.
+
+   Answer:
 
     .. testcode:: countries
         :hide:
@@ -126,11 +125,13 @@ Which we can print with
         Democratic Republic of the Congo, Egypt, Ethiopia, Nigeria
 
  * **SHP.2**: Using the countries shapefile, find the most populated country grouped 
-        by the first letter of the "name_long".
-        Hint: :func:`itertools.groupby` can help with the grouping.
-        Answer:
+   by the first letter of the "name_long".
 
-    .. testcode:: countries
+   Hint: :func:`itertools.groupby` can help with the grouping.
+
+   Answer:
+
+   .. testcode:: countries
         :hide:
 
         import itertools
@@ -150,7 +151,7 @@ Which we can print with
             # print the letter and least populated country
             print letter, sorted(countries, key=population)[-1].attributes['name_long']
 
-    .. testoutput:: countries
+   .. testoutput:: countries
 
             A Argentina
             B Brazil

@@ -154,10 +154,13 @@ def gallery_code(examples_mod_name):
               '.. container:: inline-paragraphs\n'
               ]
 
-    for tag in examples_by_tag.keys():
+    examples_by_tag = sorted(examples_by_tag.iteritems(),
+                             key=lambda pair: pair[0])
+
+    for tag, _ in examples_by_tag:
         result.append('\t:ref:`gallery-tag-{}`\n'.format(tag))
 
-    for tag, mod_list in examples_by_tag.iteritems():
+    for tag, mod_list in examples_by_tag:
         result.extend(['.. _gallery-tag-{}:\n'.format(tag),
                        '{}'.format(tag),
                        '-' * len(tag) + '\n',
