@@ -127,7 +127,7 @@ class HeaderCheck(Command):
 
 setup(
     name='Cartopy',
-    version='0.6.x',
+    version='0.6.0',
     url='http://github.com/SciTools/cartopy',
     author='UK Met Office',
       
