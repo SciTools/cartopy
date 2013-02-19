@@ -2,16 +2,16 @@
     :hidden:
 
     whats_new.rst
-    who_uses_cartopy.rst
     building_from_source/index.rst
     matplotlib/intro.rst
     matplotlib/advanced_plotting.rst
     matplotlib/geoaxes.rst
-    matplotlib/introductory_examples/index.rst
-    projections/index.rst
-    tutorials/index.rst
-    
-    
+    tutorials/using_the_shapereader.rst
+    matplotlib/feature_interface.rst
+    projections/table.rst
+    examples/*.rst
+
+
 Introduction
 ============
 
@@ -43,13 +43,12 @@ Build instructions for specific operating systems can be found in the
 Getting started
 ===============
 
-View the list of cartopy projections on the :doc:`projections/table`.
-
 To start using cartopy with matplotlib see the :doc:`matplotlib/intro` section.
 
-Short :doc:`step-by-step examples <matplotlib/introductory_examples/index>` are also available.
+View the list of cartopy projections on the :doc:`projections/table`.
 
-A set of tutorials are available on our :doc:`tutorials/index` section.
+For shapefile interaction with cartopy see :doc:`tutorials/using_the_shapereader`
+and :doc:`matplotlib/feature_interface`.
 
 Also, check out our :doc:`what's new <whats_new>` page.
 
@@ -68,21 +67,17 @@ There are many ways to get involved in the development of cartopy:
  * Report bugs to https://github.com/SciTools/cartopy/issues (please look to see if there are any outstanding
    bugs which cover the issue before making a new one).
  * Helping others with support questions on `stackoverflow <http://stackoverflow.com/questions/tagged/cartopy>`_. 
-
-..
  * Contribute to the documentation fixing typos, adding examples, explaining things more clearly, or even
    re-designing its layout/logos etc..
- * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bugs>`).
+ * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bug>`).
  * Contributing enhancements and new features 
    (:issues:`a wish list of features can also be found on github <wishlist>`).
                           
 If you or your organisation use cartopy, we would love to hear about it. 
 
-.. 
-    You could submit a pull request which updates
-    the :ref:`"who uses cartopy" <cartopy_users>` page or alternatively you can simply 
-    contact us via the cartopy mailing list (address TBD).
-
+Development discussion takes place on the `matplotlib-devel mailing list
+<http://matplotlib.1069221.n5.nabble.com/matplotlib-devel-f28077.html>`_ with all discussion
+subjects prefixed with ``cartopy: ``.
 
 
 

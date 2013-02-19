@@ -193,6 +193,9 @@ html_show_sphinx = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'cartopydoc'
 
+html_context = {'rellinks': [('genindex', 'General Index', 'I', 'index'),
+                             ('cartopy_outline', 'Module outline', 'O', 'outline')]}
+
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -322,8 +325,10 @@ intersphinx_mapping = {'python': ('http://docs.python.org/2', None)}
 
 
 ############ extlinks extension ############
-extlinks = {'issues': ('https://github.com/SciTools/cartopy/issues?state=open&labels=%s',
-                      'issues labeled with ')}
+extlinks = {'issues': ('https://github.com/SciTools/cartopy/issues?milestone=&state=open&labels=%s',
+                      'issues labeled with '),
+            'issue': ('https://github.com/SciTools/cartopy/issues/%s', 'Issue #')
+            }
 
 
 

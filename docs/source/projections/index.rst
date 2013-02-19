@@ -1,4 +1,0 @@
-.. toctree::
-    :hidden:
-
-    *.rst
