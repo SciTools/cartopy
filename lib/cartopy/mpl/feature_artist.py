@@ -75,7 +75,10 @@ class FeatureArtist(matplotlib.artist.Artist):
         elif feature.kwargs.get('zorder') is not None:
             self.set_zorder(feature.kwargs['zorder'])
         else:
-            self.set_zorder(matplotlib.collections.PathCollection.zorder)
+            # The class attribute matplotlib.collections.PathCollection.zorder
+            # was removed after mpl v1.2.0, so the hard-coded value of 1 is
+            # used instead.
+            self.set_zorder(1)
 
         self._feature = feature
 
