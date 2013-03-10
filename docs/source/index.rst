@@ -38,7 +38,11 @@ Installation
 
 Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
-:ref:`building from source <building_from_source>` section.   
+:ref:`building from source <building_from_source>` section.
+
+Citing  Cartopy
+===============
+To cite Cartopy see the :doc:`citation` section.
 
 Getting started
 ===============
