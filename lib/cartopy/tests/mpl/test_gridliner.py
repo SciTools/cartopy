@@ -19,9 +19,12 @@ import unittest
 import warnings
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from nose.tools import assert_raises
 
 import cartopy.crs as ccrs
 from cartopy.tests.mpl import ImageTesting
+from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
 
 @ImageTesting(['gridliner1'])
@@ -84,50 +87,75 @@ def test_gridliner():
                         top=1 - delta, bottom=0 + delta)
 
 
-class TestRegrid(unittest.TestCase):
+@ImageTesting(['gridliner_labels'], tolerance=0)
+def test_grid_labels():
+    plt.figure(figsize=(8, 10))
 
-    @ImageTesting(['gridliner_labels'], tolerance=86)
-    def test_grid_labels(self):
-        plt.figure(figsize=(8, 10))
+    crs_pc = ccrs.PlateCarree()
+    crs_merc = ccrs.Mercator()
+    crs_osgb = ccrs.OSGB()
 
-        crs_pc = ccrs.PlateCarree()
-        crs_merc = ccrs.Mercator()
-        crs_osgb = ccrs.OSGB()
+    ax = plt.subplot(3, 2, 1, projection=crs_pc)
+    ax.coastlines()
+    ax.gridlines(draw_labels=True)
 
-        ax = plt.subplot(3, 2, 1, projection=crs_pc)
-        ax.coastlines()
+    # Check that adding labels to Mercator gridlines gives an error.
+    # (Currently can only label PlateCarree gridlines.)
+    ax = plt.subplot(3, 2, 2, 
+                     projection=ccrs.PlateCarree(central_longitude=180))
+    ax.coastlines()
+    with assert_raises(TypeError):
+        ax.gridlines(crs=crs_merc, draw_labels=True)
+
+    ax.set_title('Known bug')
+    gl = ax.gridlines(crs=crs_pc, draw_labels=True)
+    gl.xlabels_top = False
+    gl.ylabels_left = False
+    gl.xlines = False
+        
+    ax = plt.subplot(3, 2, 3, projection=crs_merc)
+    ax.coastlines()
+    ax.gridlines(draw_labels=True)
+
+    # Check that labelling the gridlines on an OSGB plot gives an error.
+    # (Currently can only draw these on PlateCarree or Mercator plots.)
+    ax = plt.subplot(3, 2, 4, projection=crs_osgb)
+    ax.coastlines()
+    with assert_raises(TypeError):
         ax.gridlines(draw_labels=True)
 
-        # Check that adding labels to Mercator gridlines gives an error.
-        # (Currently can only label PlateCarree gridlines.)
-        ax = plt.subplot(3, 2, 2, projection=crs_pc)
-        ax.coastlines()
-        with self.assertRaises(TypeError) as cm:
-            ax.gridlines(crs=crs_merc, draw_labels=True)
+    ax = plt.subplot(3, 2, 4, projection=crs_pc)
+    ax.coastlines()
+    gl = ax.gridlines(crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle='--')
+    gl.xlabels_bottom = True
+    gl.ylabels_right = True
+    gl.xlines = False
+    gl.xlocator = mticker.FixedLocator([-180, -45, 45, 180])
+    gl.xformatter = LONGITUDE_FORMATTER
+    gl.yformatter = LATITUDE_FORMATTER
+    gl.xlabel_style = {'size': 15, 'color': 'gray'}
+    gl.xlabel_style = {'color': 'red'}
+    
+    # trigger a draw at this point and check the appropriate artists are
+    # populated on the gridliner instance
+    plt.draw()
+    assert len(gl.xlabel_artists) == 4
+    assert len(gl.ylabel_artists) == 5
+    assert len(gl.ylabel_artists) == 5
+    assert len(gl.xline_artists) == 0
 
-        ax = plt.subplot(3, 2, 3, projection=crs_merc)
-        ax.coastlines()
-        ax.gridlines(draw_labels=True)
+    ax = plt.subplot(3, 2, 5, projection=crs_pc)
+    ax.set_extent([-20, 10.0, 45.0, 70.0])
+    ax.coastlines()
+    ax.gridlines(draw_labels=True)
 
-        # Check that labelling the gridlines on an OSGB plot gives an error.
-        # (Currently can only draw these on PlateCarree or Mercator plots.)
-        ax = plt.subplot(3, 2, 4, projection=crs_osgb)
-        ax.coastlines()
-        with self.assertRaises(TypeError) as cm:
-            ax.gridlines(draw_labels=True)
+    ax = plt.subplot(3, 2, 6, projection=crs_merc)
+    ax.set_extent([-20, 10.0, 45.0, 70.0], crs=crs_pc)
+    ax.coastlines()
+    ax.gridlines(draw_labels=True)
 
-        ax = plt.subplot(3, 2, 5, projection=crs_pc)
-        ax.set_extent([-20, 10.0, 45.0, 70.0])
-        ax.coastlines()
-        ax.gridlines(draw_labels=True)
-
-        ax = plt.subplot(3, 2, 6, projection=crs_merc)
-        ax.set_extent([-20, 10.0, 45.0, 70.0], crs=crs_pc)
-        ax.coastlines()
-        ax.gridlines(draw_labels=True)
-
-        # Increase margins between plots to stop them bumping into one another.
-        plt.subplots_adjust(wspace=0.25, hspace=0.25)
+    # Increase margins between plots to stop them bumping into one another.
+    plt.subplots_adjust(wspace=0.25, hspace=0.25)
 
 
 if __name__ == '__main__':

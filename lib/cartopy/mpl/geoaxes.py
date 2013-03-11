@@ -271,7 +271,7 @@ class GeoAxes(matplotlib.axes.Axes):
             self.ignore_existing_data_limits = True
 
         for gl in self._gridliners:
-            gl.do_gridlines(background_patch=self.background_patch)
+            gl._draw_gridliner(background_patch=self.background_patch)
         self._gridliners = []
 
         # XXX This interface needs a tidy up:

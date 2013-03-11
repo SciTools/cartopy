@@ -1,6 +1,14 @@
 Using cartopy with matplotlib
 =============================
 
+.. toctree::
+    :hidden:
+
+    advanced_plotting.rst
+    geoaxes.rst
+    gridliner.rst
+
+
 Beautifully simple maps
 -----------------------
 

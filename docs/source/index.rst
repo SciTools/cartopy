@@ -4,8 +4,6 @@
     whats_new.rst
     building_from_source/index.rst
     matplotlib/intro.rst
-    matplotlib/advanced_plotting.rst
-    matplotlib/geoaxes.rst
     tutorials/using_the_shapereader.rst
     matplotlib/feature_interface.rst
     projections/table.rst
