@@ -11,7 +11,7 @@ BibTeX entry
 
 For example::
 
- @Article{Cartopy,
+ @manual{Cartopy,
  author = {{Met Office}},
  title = {Cartopy: a cartographic python library with matplotlib support},
  year = {2010 - 2013},
