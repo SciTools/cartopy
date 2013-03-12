@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -31,24 +31,16 @@ degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 2, 3, 6, 15, 18])
 _DEGREE_SYMBOL = u'\u00B0'
 
 
-def _fix_lons(a):
+def _fix_lons(lons):
     """
-    Fix the given longitudes (in place if a is an array)
-    into the range ``[-180, 180]``.
+    Fix the given longitudes into the range ``[-180, 180]``.
 
     """
-    if not isinstance(a, numpy.ndarray):
-        a = numpy.array(a, ndmin=1)
-
-    # Shift the lons across by 180. They now represent (lon + 180)
-    a += 180
-    # Move the lons to >0.
-    a[a < 0] -= (a[a < 0] // 360) * 360
-    # Move the array to the region 0 to 360.
-    a[a > 360] -= (a[a > 360] // 360) * 360
-    # Shift the (lon + 180) back to longitudes.
-    a -= 180
-    return a
+    lons = numpy.array(lons, copy=False, ndmin=1)
+    fixed_lons = ((lons + 180) % 360) - 180
+    # Make the positive 180s positive again.
+    fixed_lons[(fixed_lons == -180) & (lons > 0)] *= -1
+    return fixed_lons
 
 
 def _lon_heimisphere(longitude):
@@ -97,13 +89,13 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
 
 class Gridliner(object):
     # NOTE: In future, one of these objects will be add-able to a GeoAxes (and
-    # maybe even a plain old mpl axes) and it will call the "do_gridlines"
+    # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
     # determination on zoom/pan.
     def __init__(self, axes, crs, draw_labels=False, collection_kwargs=None):
         """
         Object used by :function:`cartopy.mpl.geoaxes.Geoaxes.gridlines`
-        to add gridlines to a map.
+        to add gridlines and tick labels to a map.
 
         Args:
 
@@ -115,7 +107,8 @@ class Gridliner(object):
             the gridlines are drawn in.
 
         * draw_labels
-            Label the gridlines at the map edges.
+            Toggle whether to draw labels. For finer control, attributes of
+            :class:`Gridliner` may be modified individually.
 
         * collection_kwargs
             Dictionary controlling line properties, passed to
@@ -158,10 +151,12 @@ class Gridliner(object):
         #: Whether to draw the y gridlines.
         self.ylines = True
 
-        #: A dictionary passed through to ``ax.text`` on x label creation.
+        #: A dictionary passed through to ``ax.text`` on x label creation
+        #: for styling of the text labels.
         self.xlabel_style = {}
 
-        #: A dictionary passed through to ``ax.text`` on y label creation.
+        #: A dictionary passed through to ``ax.text`` on y label creation
+        #: for styling of the text labels.
         self.ylabel_style = {}
 
         self.crs = crs
@@ -170,12 +165,14 @@ class Gridliner(object):
         # be drawn. The same check will take place at draw time in case
         # public attributes are changed after instantiation.
         if draw_labels:
-            self._can_draw_ticks()
+            self._assert_can_draw_ticks()
 
         #: The number of interpolation points which are used to draw the
         #: gridlines.
         self.n_steps = 30
 
+        #: A dictionary passed through to
+        #: ``matplotlib.collections.LineCollection`` on grid line creation.
         self.collection_kwargs = collection_kwargs
 
         #: The x gridlines which were created at draw time.
@@ -297,7 +294,7 @@ class Gridliner(object):
         crs = self.crs
         if (isinstance(crs, Projection) and
                 isinstance(crs, _RectangularProjection) and
-                numpy.diff(x_lim) == 2 * crs._half_width):
+                abs(numpy.diff(x_lim)) == abs(numpy.diff(crs.x_limits))):
             x_gridline_points = x_gridline_points[:-1]
 
         collection_kwargs = self.collection_kwargs
@@ -346,7 +343,7 @@ class Gridliner(object):
         y_label_points = [y for y in y_ticks if y_lim[0] <= y <= y_lim[1]]
 
         if self.xlabels_bottom or self.xlabels_top:
-            self._can_draw_ticks()
+            self._assert_can_draw_ticks()
             self.xformatter.set_locs(x_label_points)
             for x in x_label_points:
                 if self.xlabels_bottom:
@@ -355,7 +352,7 @@ class Gridliner(object):
                     self._add_gridline_label(x, axis='x', upper_end=True)
 
         if self.ylabels_left or self.ylabels_right:
-            self._can_draw_ticks()
+            self._assert_can_draw_ticks()
             self.yformatter.set_locs(y_label_points)
             for y in y_label_points:
                 if self.ylabels_left:
@@ -363,7 +360,7 @@ class Gridliner(object):
                 if self.ylabels_right:
                     self._add_gridline_label(y, axis='y', upper_end=True)
 
-    def _can_draw_ticks(self):
+    def _assert_can_draw_ticks(self):
         """
         Check to see if ticks can be drawn. Either returns True or raises
         an exception.

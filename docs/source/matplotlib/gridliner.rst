@@ -19,8 +19,8 @@ used to determine draw time behaviour of the gridlines and labels.
 
     
     
-The following example makes use of many of the features of the Gridliner class to produce
-customized gridlines and tick labels:
+The following contrived example makes use of many of the features of the Gridliner
+class to produce customized gridlines and tick labels:
 
 .. plot::
     :include-source:

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -29,8 +29,6 @@ from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
 @ImageTesting(['gridliner1'])
 def test_gridliner():
-    desired_gridline_prj = [ccrs.PlateCarree(), ccrs.OSGB()]
-    projections = [ccrs.PlateCarree(), ccrs.OSGB(), ccrs.RotatedPole(37, 50)]
     ny, nx = 2, 4
 
     plt.figure(figsize=(10, 10))

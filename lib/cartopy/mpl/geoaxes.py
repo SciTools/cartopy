@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -216,14 +216,14 @@ class GeoAxes(matplotlib.axes.Axes):
     def __init__(self, *args, **kwargs):
         """
         Create a GeoAxes object using standard matplotlib
-        :class:`~matplotlib.axes.Axes` args and keywords.
+        :class:`~matplotlib.axes.Axes` args and kwargs.
 
         Kwargs:
 
             * map_projection - The target :class:`~cartopy.crs.Projection` of
                                this Axes object.
 
-        All other args and keywords are passed straight through to
+        All other args and keywords are passed through to
         :class:`matplotlib.axes.Axes`.
 
         """
