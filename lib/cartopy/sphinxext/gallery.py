@@ -42,7 +42,7 @@ def same_contents(fname, contents_str):
     """
     if os.path.exists(fname):
         with open(fname, 'r') as fh:
-            return ''.join(fh.readlines()) == contents_str
+            return fh.read() == contents_str
     return False
 
 
