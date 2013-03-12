@@ -734,16 +734,14 @@ class _WarpedRectangularProjection(Projection):
         geodetic_crs = self.as_geodetic()
         for lat in numpy.linspace(-90, 90, n):
             points.append(
-                self.transform_point(180 + central_longitude,
-                                     lat, geodetic_crs)
+                self.transform_point(geodetic_crs, 180 + central_longitude, lat)
             )
         for lat in numpy.linspace(90, -90, n):
             points.append(
-                self.transform_point(-180 + central_longitude,
-                                     lat, geodetic_crs)
+                self.transform_point(geodetic_crs, -180 + central_longitude, lat)
             )
         points.append(
-            self.transform_point(180 + central_longitude, -90, geodetic_crs))
+            self.transform_point(geodetic_crs, 180 + central_longitude, -90)
 
         self._boundary = sgeom.LineString(points[::-1])
 
@@ -814,43 +812,41 @@ class InterruptedGoodeHomolosine(Projection):
 
         # Right boundary
         for lat in numpy.linspace(-90, 90, n):
-            points.append(self.transform_point(180 + central_longitude,
-                                               lat, geodetic_crs))
+            points.append(self.transform_point(geodetic_crs, 180 + central_longitude, lat)
 
         # Top boundary
         interrupted_lons = (-40.0,)
         delta = 0.001
         for lon in interrupted_lons:
             for lat in numpy.linspace(90, 0, n):
-                points.append(self.transform_point(lon + delta +
+                points.append(self.transform_point(geodetic_crs, lon + delta +
                                                    central_longitude,
-                                                   lat, geodetic_crs))
+                                                   lat)
             for lat in numpy.linspace(0, 90, n):
-                points.append(self.transform_point(lon - delta +
+                points.append(self.transform_point(geodetic_crs, lon - delta +
                                                    central_longitude,
-                                                   lat, geodetic_crs))
+                                                   lat)
 
         # Left boundary
         for lat in numpy.linspace(90, -90, n):
-            points.append(self.transform_point(-180 + central_longitude,
-                                               lat, geodetic_crs))
+            points.append(self.transform_point(geodetic_crs, -180 + central_longitude,
+                                               lat)
 
         # Bottom boundary
         interrupted_lons = (-100.0, -20.0, 80.0)
         delta = 0.001
         for lon in interrupted_lons:
             for lat in numpy.linspace(-90, 0, n):
-                points.append(self.transform_point(lon - delta +
+                points.append(self.transform_point(geodetic_crs, lon - delta +
                                                    central_longitude,
-                                                   lat, geodetic_crs))
+                                                   lat))
             for lat in numpy.linspace(0, -90, n):
-                points.append(self.transform_point(lon + delta +
+                points.append(self.transform_point(geodetic_crs, lon + delta +
                                                    central_longitude,
-                                                   lat, geodetic_crs))
+                                                   lat))
 
         # Close loop
-        points.append(self.transform_point(180 + central_longitude, -90,
-                                           geodetic_crs))
+        points.append(self.transform_point(geodetic_crs, 180 + central_longitude, -90))
 
         self._boundary = sgeom.LineString(points[::-1])
 
