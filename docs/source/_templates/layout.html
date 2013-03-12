@@ -2,8 +2,12 @@
 
 {%- block extrahead %}
 {{ super() }}
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-<link rel="stylesheet" href="_static/layout.css" type="text/css" />
+
+     <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+     <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+     <link rel="stylesheet" href="{{ pathto('_static/layout.css', 1) }}" type="text/css" />
+     <script type="text/javascript" src="{{ pathto('_static/version_switch.js', 1) }}"></script>
 {% endblock %}
 
 
