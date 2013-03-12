@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -28,16 +28,74 @@ from cartopy.crs import Projection, _RectangularProjection
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 2, 3, 6, 15, 18])
 
+_DEGREE_SYMBOL = u'\u00B0'
+
+
+def _fix_lons(lons):
+    """
+    Fix the given longitudes into the range ``[-180, 180]``.
+
+    """
+    lons = numpy.array(lons, copy=False, ndmin=1)
+    fixed_lons = ((lons + 180) % 360) - 180
+    # Make the positive 180s positive again.
+    fixed_lons[(fixed_lons == -180) & (lons > 0)] *= -1
+    return fixed_lons
+
+
+def _lon_heimisphere(longitude):
+    """Return the hemisphere (E, W or '' for 0) for the given longitude."""
+    longitude = _fix_lons(longitude)
+    if longitude > 0:
+        hemisphere = 'E'
+    elif longitude < 0:
+        hemisphere = 'W'
+    else:
+        hemisphere = ''
+    return hemisphere
+
+
+def _lat_heimisphere(latitude):
+    """Return the hemisphere (N, S or '' for 0) for the given latitude."""
+    if latitude > 0:
+        hemisphere = 'N'
+    elif latitude < 0:
+        hemisphere = 'S'
+    else:
+        hemisphere = ''
+    return hemisphere
+
+
+def _east_west_formatted(longitude, num_format='g'):
+    fmt_string = u'{longitude:{num_format}}{degree}{hemisphere}'
+    return fmt_string.format(longitude=abs(longitude), num_format=num_format,
+                             hemisphere=_lon_heimisphere(longitude),
+                             degree=_DEGREE_SYMBOL)
+
+
+def _north_south_formatted(latitude, num_format='g'):
+    fmt_string = u'{latitude:{num_format}}{degree}{hemisphere}'
+    return fmt_string.format(latitude=abs(latitude), num_format=num_format,
+                             hemisphere=_lat_heimisphere(latitude),
+                             degree=_DEGREE_SYMBOL)
+
+#: A formatter which turns longitude values into nice longitudes such as 110W
+LONGITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
+                                            _east_west_formatted(v))
+#: A formatter which turns longitude values into nice longitudes such as 45S
+LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
+                                           _north_south_formatted(v))
+
 
 class Gridliner(object):
     # NOTE: In future, one of these objects will be add-able to a GeoAxes (and
-    # maybe even a plain old mpl axes) and it will call the "do_gridlines"
+    # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
     # determination on zoom/pan.
     def __init__(self, axes, crs, draw_labels=False, collection_kwargs=None):
         """
         Object used by :function:`cartopy.mpl.geoaxes.Geoaxes.gridlines`
-        to add gridlines to a map.
+        to add gridlines and tick labels to a map.
 
         Args:
 
@@ -49,7 +107,8 @@ class Gridliner(object):
             the gridlines are drawn in.
 
         * draw_labels
-            Label the gridlines at the map edges.
+            Toggle whether to draw labels. For finer control, attributes of
+            :class:`Gridliner` may be modified individually.
 
         * collection_kwargs
             Dictionary controlling line properties, passed to
@@ -57,24 +116,76 @@ class Gridliner(object):
 
         """
         self.axes = axes
-        # might not be desirable for certain projections (osgb for instance)
+
+        #: The :class:`~matplotlib.ticker.Locator` to use for the x
+        #: gridlines and labels.
         self.xlocator = degree_locator
+
+        #: The :class:`~matplotlib.ticker.Locator` to use for the y
+        #: gridlines and labels.
         self.ylocator = degree_locator
+
+        #: The :class:`~matplotlib.ticker.Formatter` to use for the x labels.
+        self.xformatter = mticker.ScalarFormatter()
+        self.xformatter.create_dummy_axis()
+
+        #: The :class:`~matplotlib.ticker.Formatter` to use for the y labels.
+        self.yformatter = mticker.ScalarFormatter()
+        self.yformatter.create_dummy_axis()
+
+        #: Whether to draw labels on the top of the map.
+        self.xlabels_top = draw_labels
+
+        #: Whether to draw labels on the bottom of the map.
+        self.xlabels_bottom = draw_labels
+
+        #: Whether to draw labels on the left hand side of the map.
+        self.ylabels_left = draw_labels
+
+        #: Whether to draw labels on the right hand side of the map.
+        self.ylabels_right = draw_labels
+
+        #: Whether to draw the x gridlines.
+        self.xlines = True
+
+        #: Whether to draw the y gridlines.
+        self.ylines = True
+
+        #: A dictionary passed through to ``ax.text`` on x label creation
+        #: for styling of the text labels.
+        self.xlabel_style = {}
+
+        #: A dictionary passed through to ``ax.text`` on y label creation
+        #: for styling of the text labels.
+        self.ylabel_style = {}
+
         self.crs = crs
+
+        # if the user specifies tick labels at this point, check if they can
+        # be drawn. The same check will take place at draw time in case
+        # public attributes are changed after instantiation.
         if draw_labels:
-            # Check labelling is supported, currently a limited set of options.
-            if not isinstance(crs, cartopy.crs.PlateCarree):
-                raise TypeError(
-                    'Cannot label {} gridlines.  Only PlateCarree gridlines '
-                    'are currently supported.'.format(crs.__class__.__name__))
-            if not isinstance(axes.projection,
-                              (cartopy.crs.PlateCarree, cartopy.crs.Mercator)):
-                raise TypeError(
-                    'Cannot label gridlines on a {} plot.  Only PlateCarree '
-                    'and Mercator plots are currently supported.'.format(
-                        axes.projection.__class__.__name__))
-        self.add_labels = draw_labels
+            self._assert_can_draw_ticks()
+
+        #: The number of interpolation points which are used to draw the
+        #: gridlines.
+        self.n_steps = 30
+
+        #: A dictionary passed through to
+        #: ``matplotlib.collections.LineCollection`` on grid line creation.
         self.collection_kwargs = collection_kwargs
+
+        #: The x gridlines which were created at draw time.
+        self.xline_artists = []
+
+        #: The y gridlines which were created at draw time.
+        self.yline_artists = []
+
+        #: The x labels which were created at draw time.
+        self.xlabel_artists = []
+
+        #: The y labels which were created at draw time.
+        self.ylabel_artists = []
 
     def _crs_transform(self):
         """
@@ -123,6 +234,8 @@ class Gridliner(object):
                     0.0,
                     shift_dist_points * (1.0 / 72),
                     self.axes.figure.dpi_scale_trans)
+            str_value = self.xformatter(value)
+            user_label_style = self.xlabel_style
         elif axis == 'y':
             y = value
             x = 1.0 if upper_end else 0.0
@@ -134,6 +247,8 @@ class Gridliner(object):
                     shift_dist_points * (1.0 / 72),
                     0.0,
                     self.axes.figure.dpi_scale_trans)
+            str_value = self.yformatter(value)
+            user_label_style = self.ylabel_style
         else:
             raise ValueError(
                 "Unknown axis, {!r}, must be either 'x' or 'y'".format(axis))
@@ -144,27 +259,31 @@ class Gridliner(object):
         label_transform = mtrans.blended_transform_factory(
             x_transform=tr_x, y_transform=tr_y)
 
+        label_style = {'verticalalignment': v_align,
+                       'horizontalalignment': h_align,
+                       }
+        label_style.update(user_label_style)
+
         # Create and add a Text artist with these properties
-        text_artist = mtext.Text(
-            x, y, '{:g}'.format(value),
-            clip_on=False,
-            verticalalignment=v_align,
-            horizontalalignment=h_align,
-            transform=label_transform)
+        text_artist = mtext.Text(x, y, str_value,
+                                 clip_on=False,
+                                 transform=label_transform, **label_style)
+        if axis == 'x':
+            self.xlabel_artists.append(text_artist)
+        elif axis == 'y':
+            self.ylabel_artists.append(text_artist)
         self.axes.add_artist(text_artist)
 
-    def do_gridlines(self, nx=None, ny=None, background_patch=None):
+    def _draw_gridliner(self, nx=None, ny=None, background_patch=None):
         """Create Artists for all visible elements and add to our Axes."""
-        x_lim, y_lim = self.get_domain(nx=nx, ny=ny,
-                                       background_patch=background_patch)
+        x_lim, y_lim = self._axes_domain(nx=nx, ny=ny,
+                                         background_patch=background_patch)
 
         transform = self._crs_transform()
 
         rc_params = matplotlib.rcParams
 
-        n_steps = 30
-
-        lines = []
+        n_steps = self.n_steps
 
         x_ticks = self.xlocator.tick_values(x_lim[0], x_lim[1])
         y_ticks = self.ylocator.tick_values(y_lim[0], y_lim[1])
@@ -175,15 +294,8 @@ class Gridliner(object):
         crs = self.crs
         if (isinstance(crs, Projection) and
                 isinstance(crs, _RectangularProjection) and
-                numpy.diff(x_lim) == 2 * crs._half_width):
+                abs(numpy.diff(x_lim)) == abs(numpy.diff(crs.x_limits))):
             x_gridline_points = x_gridline_points[:-1]
-
-        for x in x_gridline_points:
-            l = zip(numpy.zeros(n_steps) + x,
-                    numpy.linspace(min(y_ticks), max(y_ticks),
-                                   n_steps, endpoint=True)
-                    )
-            lines.append(l)
 
         collection_kwargs = self.collection_kwargs
         if collection_kwargs is None:
@@ -195,35 +307,79 @@ class Gridliner(object):
         collection_kwargs.setdefault('linestyle', rc_params['grid.linestyle'])
         collection_kwargs.setdefault('linewidth', rc_params['grid.linewidth'])
 
-        x_lc = mcollections.LineCollection(lines, **collection_kwargs)
-        self.axes.add_collection(x_lc, autolim=False)
+        if self.xlines:
+            lines = []
+            for x in x_gridline_points:
+                l = zip(numpy.zeros(n_steps) + x,
+                        numpy.linspace(min(y_ticks), max(y_ticks),
+                                       n_steps)
+                        )
+                lines.append(l)
 
-        lines = []
+            x_lc = mcollections.LineCollection(lines, **collection_kwargs)
+            self.xline_artists.append(x_lc)
+            self.axes.add_collection(x_lc, autolim=False)
 
-        for y in y_ticks:
-            l = zip(numpy.linspace(min(x_ticks), max(x_ticks), n_steps),
-                    numpy.zeros(n_steps) + y)
-            lines.append(l)
+        if self.ylines:
+            lines = []
+            for y in y_ticks:
+                l = zip(numpy.linspace(min(x_ticks), max(x_ticks), n_steps),
+                        numpy.zeros(n_steps) + y)
+                lines.append(l)
 
-        y_lc = mcollections.LineCollection(lines, **collection_kwargs)
-        self.axes.add_collection(y_lc, autolim=False)
+            y_lc = mcollections.LineCollection(lines, **collection_kwargs)
+            self.yline_artists.append(y_lc)
+            self.axes.add_collection(y_lc, autolim=False)
 
-        if self.add_labels:
-            # Trim outside-area points from the label coords.
-            # Tickers may round *up* the desired range to something tidy, not
-            # all of which is necessarily visible.  We must be stricter with
-            # our texts, as they are drawn *without clipping*.
-            x_label_points = [x for x in x_ticks if x_lim[0] <= x <= x_lim[1]]
-            y_label_points = [y for y in y_ticks if y_lim[0] <= y <= y_lim[1]]
+        #################
+        # Label drawing #
+        #################
 
-            # Add text labels at each end of every gridline.
-            for upper_end in (False, True):
-                for x in x_label_points:
-                    self._add_gridline_label(x, axis='x', upper_end=upper_end)
-                for y in y_label_points:
-                    self._add_gridline_label(y, axis='y', upper_end=upper_end)
+        # Trim outside-area points from the label coords.
+        # Tickers may round *up* the desired range to something tidy, not
+        # all of which is necessarily visible.  We must be stricter with
+        # our texts, as they are drawn *without clipping*.
+        x_label_points = [x for x in x_ticks if x_lim[0] <= x <= x_lim[1]]
+        y_label_points = [y for y in y_ticks if y_lim[0] <= y <= y_lim[1]]
 
-    def get_domain(self, nx=None, ny=None, background_patch=None):
+        if self.xlabels_bottom or self.xlabels_top:
+            self._assert_can_draw_ticks()
+            self.xformatter.set_locs(x_label_points)
+            for x in x_label_points:
+                if self.xlabels_bottom:
+                    self._add_gridline_label(x, axis='x', upper_end=False)
+                if self.xlabels_top:
+                    self._add_gridline_label(x, axis='x', upper_end=True)
+
+        if self.ylabels_left or self.ylabels_right:
+            self._assert_can_draw_ticks()
+            self.yformatter.set_locs(y_label_points)
+            for y in y_label_points:
+                if self.ylabels_left:
+                    self._add_gridline_label(y, axis='y', upper_end=False)
+                if self.ylabels_right:
+                    self._add_gridline_label(y, axis='y', upper_end=True)
+
+    def _assert_can_draw_ticks(self):
+        """
+        Check to see if ticks can be drawn. Either returns True or raises
+        an exception.
+
+        """
+        # Check labelling is supported, currently a limited set of options.
+        if not isinstance(self.crs, cartopy.crs.PlateCarree):
+            raise TypeError('Cannot label {crs.__class__.__name__} gridlines.'
+                            ' Only PlateCarree gridlines are currently '
+                            'supported.'.format(crs=self.crs))
+        if not isinstance(self.axes.projection,
+                          (cartopy.crs.PlateCarree, cartopy.crs.Mercator)):
+            raise TypeError('Cannot label gridlines on a '
+                            '{prj.__class__.__name__} plot.  Only PlateCarree'
+                            ' and Mercator plots are currently '
+                            'supported.'.format(prj=self.axes.projection))
+        return True
+
+    def _axes_domain(self, nx=None, ny=None, background_patch=None):
         """Returns x_range, y_range"""
         DEBUG = False
 
