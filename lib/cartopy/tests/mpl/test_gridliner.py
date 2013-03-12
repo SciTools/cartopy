@@ -85,7 +85,7 @@ def test_gridliner():
                         top=1 - delta, bottom=0 + delta)
 
 
-@ImageTesting(['gridliner_labels'], tolerance=0)
+@ImageTesting(['gridliner_labels'], tolerance=36)
 def test_grid_labels():
     plt.figure(figsize=(8, 10))
 
