@@ -101,7 +101,7 @@ def test_grid_labels():
 
     # Check that adding labels to Mercator gridlines gives an error.
     # (Currently can only label PlateCarree gridlines.)
-    ax = plt.subplot(3, 2, 2, 
+    ax = plt.subplot(3, 2, 2,
                      projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines()
     with assert_raises(TypeError):
@@ -112,7 +112,7 @@ def test_grid_labels():
     gl.xlabels_top = False
     gl.ylabels_left = False
     gl.xlines = False
-        
+
     ax = plt.subplot(3, 2, 3, projection=crs_merc)
     ax.coastlines()
     ax.gridlines(draw_labels=True)
@@ -126,7 +126,8 @@ def test_grid_labels():
 
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
     ax.coastlines()
-    gl = ax.gridlines(crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle='--')
+    gl = ax.gridlines(
+        crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle='--')
     gl.xlabels_bottom = True
     gl.ylabels_right = True
     gl.xlines = False
@@ -135,7 +136,7 @@ def test_grid_labels():
     gl.yformatter = LATITUDE_FORMATTER
     gl.xlabel_style = {'size': 15, 'color': 'gray'}
     gl.xlabel_style = {'color': 'red'}
-    
+
     # trigger a draw at this point and check the appropriate artists are
     # populated on the gridliner instance
     plt.draw()

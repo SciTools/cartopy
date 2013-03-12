@@ -33,14 +33,14 @@ _DEGREE_SYMBOL = u'\u00B0'
 
 def _fix_lons(a):
     """
-    Fix the given longitudes (in place if a is an array) 
+    Fix the given longitudes (in place if a is an array)
     into the range ``[-180, 180]``.
 
     """
     if not isinstance(a, numpy.ndarray):
         a = numpy.array(a, ndmin=1)
 
-    # Shift the lons across by 180. They now represent (lon + 180)  
+    # Shift the lons across by 180. They now represent (lon + 180)
     a += 180
     # Move the lons to >0.
     a[a < 0] -= (a[a < 0] // 360) * 360
@@ -84,14 +84,14 @@ def _east_west_formatted(longitude, num_format='g'):
 def _north_south_formatted(latitude, num_format='g'):
     fmt_string = u'{latitude:{num_format}}{degree}{hemisphere}'
     return fmt_string.format(latitude=abs(latitude), num_format=num_format,
-                             hemisphere=_lat_heimisphere(latitude), 
+                             hemisphere=_lat_heimisphere(latitude),
                              degree=_DEGREE_SYMBOL)
 
 #: A formatter which turns longitude values into nice longitudes such as 110W
-LONGITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos: 
+LONGITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                             _east_west_formatted(v))
 #: A formatter which turns longitude values into nice longitudes such as 45S
-LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos: 
+LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                            _north_south_formatted(v))
 
 
@@ -123,73 +123,72 @@ class Gridliner(object):
 
         """
         self.axes = axes
-        
-        #: The :class:`~matplotlib.ticker.Locator` to use for the x 
-        #: gridlines and labels. 
+
+        #: The :class:`~matplotlib.ticker.Locator` to use for the x
+        #: gridlines and labels.
         self.xlocator = degree_locator
-        
-        #: The :class:`~matplotlib.ticker.Locator` to use for the y 
-        #: gridlines and labels. 
+
+        #: The :class:`~matplotlib.ticker.Locator` to use for the y
+        #: gridlines and labels.
         self.ylocator = degree_locator
-        
+
         #: The :class:`~matplotlib.ticker.Formatter` to use for the x labels.
         self.xformatter = mticker.ScalarFormatter()
         self.xformatter.create_dummy_axis()
-        
+
         #: The :class:`~matplotlib.ticker.Formatter` to use for the y labels.
         self.yformatter = mticker.ScalarFormatter()
         self.yformatter.create_dummy_axis()
-        
+
         #: Whether to draw labels on the top of the map.
         self.xlabels_top = draw_labels
-        
+
         #: Whether to draw labels on the bottom of the map.
         self.xlabels_bottom = draw_labels
-                
+
         #: Whether to draw labels on the left hand side of the map.
         self.ylabels_left = draw_labels
-        
+
         #: Whether to draw labels on the right hand side of the map.
         self.ylabels_right = draw_labels
-        
+
         #: Whether to draw the x gridlines.
         self.xlines = True
-        
+
         #: Whether to draw the y gridlines.
         self.ylines = True
-        
-        #: A dictionary passed through to ``ax.text`` on x label creation. 
+
+        #: A dictionary passed through to ``ax.text`` on x label creation.
         self.xlabel_style = {}
-        
-        #: A dictionary passed through to ``ax.text`` on y label creation. 
+
+        #: A dictionary passed through to ``ax.text`` on y label creation.
         self.ylabel_style = {}
-        
+
         self.crs = crs
-        
+
         # if the user specifies tick labels at this point, check if they can
         # be drawn. The same check will take place at draw time in case
         # public attributes are changed after instantiation.
         if draw_labels:
             self._can_draw_ticks()
-        
-        #: The number of interpolation points which are used to draw the 
+
+        #: The number of interpolation points which are used to draw the
         #: gridlines.
         self.n_steps = 30
-        
+
         self.collection_kwargs = collection_kwargs
-        
+
         #: The x gridlines which were created at draw time.
         self.xline_artists = []
-        
+
         #: The y gridlines which were created at draw time.
         self.yline_artists = []
-        
+
         #: The x labels which were created at draw time.
         self.xlabel_artists = []
-        
+
         #: The y labels which were created at draw time.
         self.ylabel_artists = []
-        
 
     def _crs_transform(self):
         """
@@ -319,7 +318,7 @@ class Gridliner(object):
                                        n_steps)
                         )
                 lines.append(l)
-    
+
             x_lc = mcollections.LineCollection(lines, **collection_kwargs)
             self.xline_artists.append(x_lc)
             self.axes.add_collection(x_lc, autolim=False)
@@ -330,7 +329,7 @@ class Gridliner(object):
                 l = zip(numpy.linspace(min(x_ticks), max(x_ticks), n_steps),
                         numpy.zeros(n_steps) + y)
                 lines.append(l)
-    
+
             y_lc = mcollections.LineCollection(lines, **collection_kwargs)
             self.yline_artists.append(y_lc)
             self.axes.add_collection(y_lc, autolim=False)
@@ -354,7 +353,7 @@ class Gridliner(object):
                     self._add_gridline_label(x, axis='x', upper_end=False)
                 if self.xlabels_top:
                     self._add_gridline_label(x, axis='x', upper_end=True)
-                    
+
         if self.ylabels_left or self.ylabels_right:
             self._can_draw_ticks()
             self.yformatter.set_locs(y_label_points)
@@ -368,7 +367,7 @@ class Gridliner(object):
         """
         Check to see if ticks can be drawn. Either returns True or raises
         an exception.
-        
+
         """
         # Check labelling is supported, currently a limited set of options.
         if not isinstance(self.crs, cartopy.crs.PlateCarree):
