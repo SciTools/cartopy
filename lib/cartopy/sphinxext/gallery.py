@@ -15,12 +15,35 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import shutil
+import os.path
 import sys
 
 from cartopy.sphinxext.summarise_package import walk_module
 import cartopy.tests
+
+
+def out_of_date(original_fname, target_fname):
+    """
+    Checks to see if the ``target_fname`` exists, and if so, whether
+    the modification timestamp suggests that ``original_fname`` is newer
+    than ``target_fname``.
+
+    """
+    return (not os.path.exists(target_fname) or
+            os.path.getmtime(original_fname) > os.path.getmtime(target_fname))
+
+
+def same_contents(fname, contents_str):
+    """
+    Checks to see if the given fname contains the contents given by
+    ``contents_str``. The result could be used to determine if the
+    contents need to be written to the given fname.
+
+    """
+    if os.path.exists(fname):
+        with open(fname, 'r') as fh:
+            return fh.read() == contents_str
+    return False
 
 
 def parent_module(module):
@@ -117,15 +140,18 @@ def examples_code(examples_mod_name,
         if not os.path.isdir(os.path.dirname(py_fname)):
             os.makedirs(os.path.dirname(py_fname))
 
-        with open(os.path.join(root_dir, fname), 'r') as in_fh:
-            with open(py_fname, 'w') as out_fh:
-                for line in in_fh:
-                    if line.startswith('__tags__ = ['):
-                        continue
-                    out_fh.write(line)
+        if out_of_date(os.path.join(root_dir, fname), py_fname):
+            with open(os.path.join(root_dir, fname), 'r') as in_fh:
+                with open(py_fname, 'w') as out_fh:
+                    for line in in_fh:
+                        # Crudely remove the __tags__ line.
+                        if line.startswith('__tags__ = '):
+                            continue
+                        out_fh.write(line)
 
-        with open(rst_fname, 'w') as fh:
-            fh.write(rst)
+        if not same_contents(rst_fname, rst):
+            with open(rst_fname, 'w') as fh:
+                fh.write(rst)
 
 
 def gallery_code(examples_mod_name):
@@ -239,8 +265,10 @@ def gen_gallery(app):
     fname = os.path.join(outdir, fname)
 
     gallery_rst = gallery_code(example_package_name)
-    with open(fname, 'w') as fh:
-        fh.write(gallery_rst)
+
+    if not same_contents(fname, gallery_rst):
+        with open(fname, 'w') as fh:
+            fh.write(gallery_rst)
 
 
 def gen_examples(app):
