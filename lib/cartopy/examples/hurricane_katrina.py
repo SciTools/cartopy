@@ -36,9 +36,9 @@ def main():
     ax.set_xlim([-125, -66.5])
     ax.set_ylim([20, 50])
 
+    shapename = 'admin_1_states_provinces_lakes_shp'
     states_shp = shpreader.natural_earth(resolution='110m',
-                                         category='cultural',
-                                         name='admin_1_states_provinces_shp')
+                                         category='cultural', name=shapename)
 
     lons, lats = sample_data()
 
