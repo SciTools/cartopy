@@ -356,3 +356,7 @@ plot_formats = (('thumb.png', 20),
                 'pdf'
                 )
 
+
+############ autodoc config ##############
+
+autoclass_content = 'both'
