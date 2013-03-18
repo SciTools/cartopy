@@ -2,9 +2,9 @@
   'use strict';
 
   var all_versions = {
-    'latest': 'dev (0.7)',
-    'v0.6': '0.6',
+    'latest': '0.6',
     'v0.5': '0.5',
+    'v0.4': '0.4'
   };
 
   function build_select(current_version, current_release) {
