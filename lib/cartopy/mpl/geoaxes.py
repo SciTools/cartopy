@@ -790,6 +790,10 @@ class GeoAxes(matplotlib.axes.Axes):
         * draw_labels
             Label gridlines like axis ticks, around the edge.
 
+        Returns:
+
+            A :class:`cartopy.mpl.gridliner.Gridliner` instance.
+
         All other keywords control line properties.  These are passed through
         to :class:`matplotlib.collections.Collection`.
 
