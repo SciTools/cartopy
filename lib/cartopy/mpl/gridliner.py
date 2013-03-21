@@ -94,7 +94,7 @@ class Gridliner(object):
     # determination on zoom/pan.
     def __init__(self, axes, crs, draw_labels=False, collection_kwargs=None):
         """
-        Object used by :function:`cartopy.mpl.geoaxes.Geoaxes.gridlines`
+        Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
 
         Args:
