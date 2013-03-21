@@ -5,7 +5,8 @@
   'use strict';
 
   var all_versions = {
-    'latest': '0.7',
+    'latest': '0.8',
+    'v0.7': '0.7',
     'v0.6': '0.6',
     'v0.5': '0.5',
     'v0.4': '0.4'
