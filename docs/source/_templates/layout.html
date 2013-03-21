@@ -2,8 +2,13 @@
 
 {%- block extrahead %}
 {{ super() }}
-<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-<link rel="stylesheet" href="_static/layout.css" type="text/css" />
+
+     <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+     <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+     <link rel="stylesheet" href="{{ pathto('_static/layout.css', 1) }}" type="text/css" />
+     <!-- Point to the *latest* version switcher. This will allow the latest versions to appear on older documentation. -->
+     <script type="text/javascript" src="http://scitools.org.uk/cartopy/docs/latest/_static/version_switch.js"></script>
 {% endblock %}
 
 
