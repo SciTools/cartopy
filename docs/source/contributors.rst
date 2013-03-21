@@ -19,6 +19,10 @@ the package wouldn't be as rich or diverse as it is today:
  * Ed Campbell
  * Andrew Munslow
  * Damon McDougall
+ * Ian Edwards
+ * Carwyn Pelley
+ * Andrew Dawson
+ * Patrick Peglar
 
 
 Thank you!

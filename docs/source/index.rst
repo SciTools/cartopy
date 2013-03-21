@@ -38,10 +38,6 @@ Installation of cartopy can currently only be done from source.
 Build instructions for specific operating systems can be found in the 
 :ref:`building from source <building_from_source>` section.
 
-Citing  Cartopy
-===============
-To cite Cartopy see the :doc:`citation` section.
-
 Getting started
 ===============
 
@@ -79,7 +75,11 @@ If you or your organisation use cartopy, we would love to hear about it.
 
 Development discussion takes place on the `matplotlib-devel mailing list
 <http://matplotlib.1069221.n5.nabble.com/matplotlib-devel-f28077.html>`_ with all discussion
-subjects prefixed with ``cartopy: ``.
+subjects prefixed with "cartopy: ".
 
+
+Citing  Cartopy
+===============
+To cite Cartopy see the :doc:`citation` section.
 
 
