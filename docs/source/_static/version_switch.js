@@ -1,3 +1,6 @@
+// Copyright 2013 PSF. Licensed under the PYTHON SOFTWARE FOUNDATION LICENSE VERSION 2
+// File originates from the cpython source found in Doc/tools/sphinxext/static/version_switch.js
+
 (function() {
   'use strict';
 
