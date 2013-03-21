@@ -1,3 +1,17 @@
+What's new in Cartopy 0.7
+*************************
+
+:Release: 0.7.0
+:Date: 21 Mar 2013
+
+* Carwyn Pelley added support for 2D arrays of points to :meth:`cartopy.crs.CRS.transform_points`. (:pull:`192`)
+* Phil Elson added control for the gridlines and tick labels drawn with :meth:`cartopy.mpl.geoaxes.Geoaxes.gridlines`.
+* Various documentation enhancements have been added.
+
+This is a quick release which targets two very specific requirements. The goals outlined in the development plan at
+``v0.6`` still remain the primary target for ``v0.8`` and beyond.
+
+
 What's new in Cartopy 0.6
 *************************
 
