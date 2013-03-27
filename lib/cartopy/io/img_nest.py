@@ -21,7 +21,7 @@ import os
 import itertools
 import glob
 
-import numpy
+import numpy as np
 from PIL import Image
 from shapely.geometry import box
 
@@ -201,13 +201,13 @@ class NestedImageCollection(object):
             except IOError:
                 continue
 
-            img = numpy.array(img)
+            img = np.array(img)
 
-            x = numpy.linspace(extent[0], extent[1], img.shape[1],
-                               endpoint=False)
-            y = numpy.linspace(extent[2], extent[3], img.shape[0],
-                               endpoint=False)
-            tiles.append([numpy.array(img), x, y, origin])
+            x = np.linspace(extent[0], extent[1], img.shape[1],
+                            endpoint=False)
+            y = np.linspace(extent[2], extent[3], img.shape[0],
+                            endpoint=False)
+            tiles.append([np.array(img), x, y, origin])
 
         from cartopy.io.img_tiles import _merge_tiles
         img, extent, origin = _merge_tiles(tiles)

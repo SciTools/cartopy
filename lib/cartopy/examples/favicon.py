@@ -1,7 +1,7 @@
 __tags__ = ['Miscellanea']
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 import matplotlib.textpath
 import matplotlib.patches
@@ -41,7 +41,7 @@ def main():
                                              'C', size=1, prop=fp)
 
     # Scale the letter up to an appropriate X and Y scale
-    logo_path._vertices *= numpy.array([123500000, 103250000])
+    logo_path._vertices *= np.array([123500000, 103250000])
 
     # Add the path as a patch, drawing black outlines around the text
     patch = matplotlib.patches.PathPatch(logo_path, facecolor='white',

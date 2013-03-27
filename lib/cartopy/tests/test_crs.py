@@ -20,7 +20,7 @@ from io import BytesIO
 import pickle
 import unittest
 
-import numpy
+import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 
 
@@ -42,23 +42,23 @@ class TestCRS(unittest.TestCase):
         ll = ccrs.Geodetic()
 
         # results obtained by streetmap.co.uk.
-        lat, lon = numpy.array([50.462023, -3.478831], dtype=numpy.double)
-        east, north = numpy.array([295131, 63511], dtype=numpy.double)
+        lat, lon = np.array([50.462023, -3.478831], dtype=np.double)
+        east, north = np.array([295131, 63511], dtype=np.double)
 
         # note the handling of precision here...
-        assert_arr_almost_eq(numpy.array(osgb.transform_point(lon, lat, ll)),
-                             numpy.array([east, north]),
+        assert_arr_almost_eq(np.array(osgb.transform_point(lon, lat, ll)),
+                             np.array([east, north]),
                              1)
         assert_arr_almost_eq(ll.transform_point(east, north, osgb),
                              [lon, lat],
                              2)
 
         r_lon, r_lat = ll.transform_point(east, north, osgb)
-        r_inverted = numpy.array(osgb.transform_point(r_lon, r_lat, ll))
+        r_inverted = np.array(osgb.transform_point(r_lon, r_lat, ll))
         assert_arr_almost_eq(r_inverted, [east, north], 3)
 
         r_east, r_north = osgb.transform_point(lon, lat, ll)
-        r_inverted = numpy.array(ll.transform_point(r_east, r_north, osgb))
+        r_inverted = np.array(ll.transform_point(r_east, r_north, osgb))
         assert_arr_almost_eq(r_inverted, [lon, lat])
 
     def test_europp(self):
@@ -79,8 +79,8 @@ class TestCRS(unittest.TestCase):
         self.assertTrue('+y_0=1500000' in proj4_init)
 
     def test_transform_points_nD(self):
-        rlons = numpy.array([[350., 352.], [350., 352.]])
-        rlats = numpy.array([[-5., -0.], [-4., -1.]])
+        rlons = np.array([[350., 352.], [350., 352.]])
+        rlats = np.array([[-5., -0.], [-4., -1.]])
 
         src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0,
                                         pole_latitude=38.0)
@@ -91,17 +91,17 @@ class TestCRS(unittest.TestCase):
         unrotated_lon, unrotated_lat, _ = res.transpose()
 
         # Solutions derived by proj4 direct.
-        solx = numpy.array([[-16.42176094, -14.85892262],
-                            [-16.71055023, -14.58434624]])
-        soly = numpy.array([[46.00724251, 51.29188893],
-                            [46.98728486, 50.30706042]])
+        solx = np.array([[-16.42176094, -14.85892262],
+                         [-16.71055023, -14.58434624]])
+        soly = np.array([[46.00724251, 51.29188893],
+                         [46.98728486, 50.30706042]])
 
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
 
     def test_transform_points_1D(self):
-        rlons = numpy.array([350., 352., 354., 356.])
-        rlats = numpy.array([-5., -0., 5., 10.])
+        rlons = np.array([350., 352., 354., 356.])
+        rlats = np.array([-5., -0., 5., 10.])
 
         src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0,
                                         pole_latitude=38.0)
@@ -112,10 +112,10 @@ class TestCRS(unittest.TestCase):
         unrotated_lon, unrotated_lat, _ = res.transpose()
 
         # Solutions derived by proj4 direct.
-        solx = numpy.array([-16.42176094, -14.85892262,
-                            -12.88946157, -10.35078336])
-        soly = numpy.array([46.00724251, 51.29188893,
-                            56.55031485, 61.77015703])
+        solx = np.array([-16.42176094, -14.85892262,
+                         -12.88946157, -10.35078336])
+        soly = np.array([46.00724251, 51.29188893,
+                         56.55031485, 61.77015703])
 
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)

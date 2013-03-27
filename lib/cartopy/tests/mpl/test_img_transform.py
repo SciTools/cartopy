@@ -21,7 +21,7 @@ import unittest
 
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 from cartopy import config
 from cartopy.tests.mpl import ImageTesting
@@ -34,13 +34,13 @@ class TestRegrid(unittest.TestCase):
         # Source data
         source_nx = 100
         source_ny = 100
-        source_x = numpy.linspace(-180.0,
-                                  180.0,
-                                  source_nx).astype(numpy.float64)
-        source_y = numpy.linspace(-90, 90.0, source_ny).astype(numpy.float64)
-        source_x, source_y = numpy.meshgrid(source_x, source_y)
-        data = numpy.arange(source_nx * source_ny,
-                            dtype=numpy.int32).reshape(source_ny, source_nx)
+        source_x = np.linspace(-180.0,
+                               180.0,
+                               source_nx).astype(np.float64)
+        source_y = np.linspace(-90, 90.0, source_ny).astype(np.float64)
+        source_x, source_y = np.meshgrid(source_x, source_y)
+        data = np.arange(source_nx * source_ny,
+                         dtype=np.int32).reshape(source_ny, source_nx)
         source_cs = ccrs.Geodetic()
 
         # Target grid
@@ -64,22 +64,22 @@ class TestRegrid(unittest.TestCase):
         # Source data
         source_nx = 100
         source_ny = 100
-        source_x = numpy.linspace(-180.0, 180.0,
-                                  source_nx).astype(numpy.float64)
-        source_y = numpy.linspace(-90, 90.0,
-                                  source_ny).astype(numpy.float64)
-        source_x, source_y = numpy.meshgrid(source_x, source_y)
-        data = numpy.arange(source_nx * source_ny,
-                            dtype=numpy.int32).reshape(source_ny, source_nx)
+        source_x = np.linspace(-180.0, 180.0,
+                               source_nx).astype(np.float64)
+        source_y = np.linspace(-90, 90.0,
+                               source_ny).astype(np.float64)
+        source_x, source_y = np.meshgrid(source_x, source_y)
+        data = np.arange(source_nx * source_ny,
+                         dtype=np.int32).reshape(source_ny, source_nx)
         source_cs = ccrs.Geodetic()
 
         # Target grids (different shapes)
         target_x_shape = (23, 45)
         target_y_shape = (23, 44)
-        target_x = numpy.arange(reduce(operator.mul, target_x_shape),
-                                dtype=numpy.float64).reshape(target_x_shape)
-        target_y = numpy.arange(reduce(operator.mul, target_y_shape),
-                                dtype=numpy.float64).reshape(target_y_shape)
+        target_x = np.arange(reduce(operator.mul, target_x_shape),
+                             dtype=np.float64).reshape(target_x_shape)
+        target_y = np.arange(reduce(operator.mul, target_y_shape),
+                             dtype=np.float64).reshape(target_y_shape)
         target_proj = ccrs.PlateCarree()
 
         # Attempt regrid

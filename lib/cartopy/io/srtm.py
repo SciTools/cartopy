@@ -28,7 +28,7 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
 import json
 import os
 
-import numpy
+import numpy as np
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -51,8 +51,8 @@ def srtm_composite(lon_min, lat_min, nx, ny):
     # However, the interface works well.
 
     bottom_left_ll = (lon_min, lat_min)
-    shape = numpy.array([1201, 1201])
-    img = numpy.empty(shape * (nx, ny))
+    shape = np.array([1201, 1201])
+    img = np.empty(shape * (nx, ny))
 
     for i in range(nx):
         for j in range(ny):
@@ -76,7 +76,7 @@ def read_SRTM3(fh):
         zfh = ZipFile(fh, 'r')
         fh = zfh.open(os.path.basename(fname[:-4]), 'r')
 
-    elev = numpy.fromfile(fh, dtype=numpy.dtype('>i2'))
+    elev = np.fromfile(fh, dtype=np.dtype('>i2'))
     elev.shape = (1201, 1201)
 
     fname = os.path.basename(fname)
