@@ -4,7 +4,7 @@ import cartopy.crs as ccrs
 import cartopy.mpl.patch as pt
 import matplotlib.pyplot as plt
 import matplotlib.path as mpath
-import numpy
+import numpy as np
 
 
 import matplotlib.textpath
@@ -25,7 +25,7 @@ def main():
     logo_path = matplotlib.textpath.TextPath((-175, -35), 'cartopy',
                                              size=1, prop=fp)
     # scale the letters up to sensible longitude and latitude sizes
-    logo_path._vertices *= numpy.array([95, 160])
+    logo_path._vertices *= np.array([95, 160])
 
     # add a background image
     im = ax.stock_img()

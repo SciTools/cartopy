@@ -20,7 +20,7 @@ import matplotlib.collections as mcollections
 import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
-import numpy
+import numpy as np
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
@@ -36,7 +36,7 @@ def _fix_lons(lons):
     Fix the given longitudes into the range ``[-180, 180]``.
 
     """
-    lons = numpy.array(lons, copy=False, ndmin=1)
+    lons = np.array(lons, copy=False, ndmin=1)
     fixed_lons = ((lons + 180) % 360) - 180
     # Make the positive 180s positive again.
     fixed_lons[(fixed_lons == -180) & (lons > 0)] *= -1
@@ -294,7 +294,7 @@ class Gridliner(object):
         crs = self.crs
         if (isinstance(crs, Projection) and
                 isinstance(crs, _RectangularProjection) and
-                abs(numpy.diff(x_lim)) == abs(numpy.diff(crs.x_limits))):
+                abs(np.diff(x_lim)) == abs(np.diff(crs.x_limits))):
             x_gridline_points = x_gridline_points[:-1]
 
         collection_kwargs = self.collection_kwargs
@@ -310,9 +310,9 @@ class Gridliner(object):
         if self.xlines:
             lines = []
             for x in x_gridline_points:
-                l = zip(numpy.zeros(n_steps) + x,
-                        numpy.linspace(min(y_ticks), max(y_ticks),
-                                       n_steps)
+                l = zip(np.zeros(n_steps) + x,
+                        np.linspace(min(y_ticks), max(y_ticks),
+                                    n_steps)
                         )
                 lines.append(l)
 
@@ -323,8 +323,8 @@ class Gridliner(object):
         if self.ylines:
             lines = []
             for y in y_ticks:
-                l = zip(numpy.linspace(min(x_ticks), max(x_ticks), n_steps),
-                        numpy.zeros(n_steps) + y)
+                l = zip(np.linspace(min(x_ticks), max(x_ticks), n_steps),
+                        np.zeros(n_steps) + y)
                 lines.append(l)
 
             y_lc = mcollections.LineCollection(lines, **collection_kwargs)
@@ -390,20 +390,20 @@ class Gridliner(object):
 
         nx = nx or 30
         ny = ny or 30
-        x = numpy.linspace(1e-9, 1 - 1e-9, nx)
-        y = numpy.linspace(1e-9, 1 - 1e-9, ny)
-        x, y = numpy.meshgrid(x, y)
+        x = np.linspace(1e-9, 1 - 1e-9, nx)
+        y = np.linspace(1e-9, 1 - 1e-9, ny)
+        x, y = np.meshgrid(x, y)
 
-        coords = numpy.concatenate([x.flatten()[:, None],
-                                    y.flatten()[:, None]],
-                                   1)
+        coords = np.concatenate([x.flatten()[:, None],
+                                 y.flatten()[:, None]],
+                                1)
 
         in_data = desired_trans.transform(coords)
 
         ax_to_bkg_patch = self.axes.transAxes - \
             background_patch.get_transform()
 
-        ok = numpy.zeros(in_data.shape[:-1], dtype=numpy.bool)
+        ok = np.zeros(in_data.shape[:-1], dtype=np.bool)
         # XXX Vectorise contains_point
         for i, val in enumerate(in_data):
             # convert the coordinates of the data to the background
@@ -425,19 +425,19 @@ class Gridliner(object):
 #                         horizontalalignment='right')
 
         inside = in_data[ok, :]
-        x_range = numpy.nanmin(inside[:, 0]), numpy.nanmax(inside[:, 0])
-        y_range = numpy.nanmin(inside[:, 1]), numpy.nanmax(inside[:, 1])
+        x_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
+        y_range = np.nanmin(inside[:, 1]), np.nanmax(inside[:, 1])
 
         # XXX Cartopy specific thing. Perhaps make this bit a specialisation
         # in a subclass...
         crs = self.crs
         if isinstance(crs, Projection):
-            x_range = numpy.clip(x_range, *crs.x_limits)
-            y_range = numpy.clip(y_range, *crs.y_limits)
+            x_range = np.clip(x_range, *crs.x_limits)
+            y_range = np.clip(y_range, *crs.y_limits)
 
             # if the limit is >90 of the full x limit, then just use the full
             # x limit (this makes circular handling better)
-            prct = numpy.abs(numpy.diff(x_range) / numpy.diff(crs.x_limits))
+            prct = np.abs(np.diff(x_range) / np.diff(crs.x_limits))
             if prct > 0.9:
                 x_range = crs.x_limits
 

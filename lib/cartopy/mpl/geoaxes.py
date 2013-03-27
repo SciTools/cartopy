@@ -31,7 +31,7 @@ from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
-import numpy
+import numpy as np
 import shapely.geometry
 
 from cartopy import config
@@ -106,7 +106,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
         """
         prj = self.target_projection
-        if isinstance(xy, numpy.ndarray):
+        if isinstance(xy, np.ndarray):
             return prj.transform_points(self.source_projection,
                                         xy[:, 0], xy[:, 1])[:, 0:2]
         else:
@@ -160,16 +160,16 @@ class InterProjectionTransform(mtransforms.Transform):
             )
 
         if not transformed_geoms:
-            result = mpath.Path(numpy.empty([0, 2]))
+            result = mpath.Path(np.empty([0, 2]))
         else:
             paths = patch.geos_to_path(transformed_geoms)
             if not paths:
-                return mpath.Path(numpy.empty([0, 2]))
+                return mpath.Path(np.empty([0, 2]))
             points, codes = zip(*[patch.path_segments(path, curves=False,
                                                       simplify=False)
                                   for path in paths])
-            result = mpath.Path(numpy.concatenate(points, 0),
-                                numpy.concatenate(codes))
+            result = mpath.Path(np.concatenate(points, 0),
+                                np.concatenate(codes))
 
         # store the result in the cache for future performance boosts
         key = (self.source_projection, self.target_projection)
@@ -558,8 +558,8 @@ class GeoAxes(matplotlib.axes.Axes):
         # Project ticks if crs differs from axes' projection
         if crs is not None and crs != self.projection:
             proj_xyz = self.projection.transform_points(crs,
-                                                        numpy.asarray(ticks),
-                                                        numpy.zeros(len(ticks))
+                                                        np.asarray(ticks),
+                                                        np.zeros(len(ticks))
                                                         )
             xticks = proj_xyz[..., 0]
         else:
@@ -608,8 +608,8 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is not None and crs != self.projection:
             prj = self.projection
             proj_xyz = prj.transform_points(crs,
-                                            numpy.zeros(len(ticks)),
-                                            numpy.asarray(ticks))
+                                            np.zeros(len(ticks)),
+                                            np.asarray(ticks))
             yticks = proj_xyz[..., 1]
         else:
             yticks = ticks
@@ -620,14 +620,14 @@ class GeoAxes(matplotlib.axes.Axes):
 #        # radius is in meters
 #        geod = self.projection.as_geodetic()
 #
-#        az = numpy.linspace(0, 360, npts)
-#        lats = numpy.zeros(npts) + lat_0
-#        lons = numpy.zeros(npts) + lon_0
-#        distances = numpy.zeros(npts) + radius
+#        az = np.linspace(0, 360, npts)
+#        lats = np.zeros(npts) + lat_0
+#        lons = np.zeros(npts) + lon_0
+#        distances = np.zeros(npts) + radius
 #
 #        lons, lats, _reverse_az = geod.fwd(lons, lats, az, distances,
 #                                           radians=False)
-#        ll = numpy.concatenate([lons[:, None], lats[:, None]], 1)
+#        ll = np.concatenate([lons[:, None], lats[:, None]], 1)
 #        from matplotlib.patches import Polygon
 #        poly = Polygon(ll, transform=cartopy.prj.PlateCarree(), **kwargs)
 #        self.add_patch(poly)
@@ -750,14 +750,14 @@ class GeoAxes(matplotlib.axes.Axes):
             # as a workaround to a matplotlib limitation, turn any images
             # which are RGB with a mask into RGBA images with an alpha
             # channel.
-            if (isinstance(img, numpy.ma.MaskedArray) and
+            if (isinstance(img, np.ma.MaskedArray) and
                     img.shape[2:3] == (3, ) and
                     img.mask is not False):
                 old_img = img
-                img = numpy.zeros(img.shape[:2] + (4, ))
+                img = np.zeros(img.shape[:2] + (4, ))
                 img[:, :, 0:3] = old_img
                 # put an alpha channel in if the image was masked
-                img[:, :, 3] = ~ numpy.any(old_img.mask, axis=2)
+                img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
 
             result = matplotlib.axes.Axes.imshow(self, img, *args,
                                                  extent=extent, **kwargs)
@@ -1074,23 +1074,23 @@ class GeoAxes(matplotlib.axes.Axes):
 
                 # compute the vertical line angles of the pcolor in
                 # transformed coordinates
-                with numpy.errstate(invalid='ignore'):
-                    horizontal_vert_angles = numpy.arctan2(
-                        numpy.diff(transformed_pts[..., 0], axis=1),
-                        numpy.diff(transformed_pts[..., 1], axis=1)
+                with np.errstate(invalid='ignore'):
+                    horizontal_vert_angles = np.arctan2(
+                        np.diff(transformed_pts[..., 0], axis=1),
+                        np.diff(transformed_pts[..., 1], axis=1)
                     )
 
                 # if the change in angle is greater than 90 degrees (absolute),
                 # then mark it for masking later on.
-                dx_horizontal = numpy.diff(horizontal_vert_angles)
-                to_mask = ((numpy.abs(dx_horizontal) > numpy.pi / 2) |
-                           numpy.isnan(dx_horizontal))
+                dx_horizontal = np.diff(horizontal_vert_angles)
+                to_mask = ((np.abs(dx_horizontal) > np.pi / 2) |
+                           np.isnan(dx_horizontal))
 
-                if numpy.any(to_mask):
+                if np.any(to_mask):
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
                     # a shape of (Ny, Nx-2) and pts has a shape of (Ny*Nx, 2)
 
-                    mask = numpy.zeros(C.shape, dtype=numpy.bool)
+                    mask = np.zeros(C.shape, dtype=np.bool)
 
                     # mask out the neighbouring cells if there was a cell
                     # found with an angle change of more than pi/2 . NB.
@@ -1111,10 +1111,10 @@ class GeoAxes(matplotlib.axes.Axes):
                         dmask = mask
 
                     # print 'Ratio of masked data: ',
-                    # print numpy.sum(mask) / float(numpy.product(mask.shape))
+                    # print np.sum(mask) / float(np.product(mask.shape))
 
                     # create the masked array to be used with this pcolormesh
-                    pcolormesh_data = numpy.ma.array(C, mask=mask)
+                    pcolormesh_data = np.ma.array(C, mask=mask)
 
                     collection.set_array(pcolormesh_data.ravel())
 
@@ -1356,8 +1356,8 @@ class SimpleClippedTransform(mtransforms.Transform):
         """
         new_vals = self.pre_clip_transform.transform(values)
         x, y = new_vals[:, 0:1], new_vals[:, 1:2]
-        numpy.clip(x, self.x_clips[0], self.x_clips[1], x)
-        numpy.clip(y, self.y_clips[0], self.y_clips[1], y)
+        np.clip(x, self.x_clips[0], self.x_clips[1], x)
+        np.clip(y, self.y_clips[0], self.y_clips[1], y)
         # XXX support ma's?
         return self.post_clip_transform.transform(new_vals)
 

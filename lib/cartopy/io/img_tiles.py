@@ -25,7 +25,7 @@ Tile generation is explicitly not yet implemented.
 
 import PIL.Image as Image
 import shapely.geometry
-import numpy
+import numpy as np
 
 import cartopy.crs as ccrs
 
@@ -51,9 +51,9 @@ class GoogleTiles(object):
             except IOError:
                 continue
             print tile, extent
-            img = numpy.array(img)
-            x = numpy.linspace(extent[0], extent[1], img.shape[1])
-            y = numpy.linspace(extent[2], extent[3], img.shape[0])
+            img = np.array(img)
+            x = np.linspace(extent[0], extent[1], img.shape[1])
+            y = np.linspace(extent[2], extent[3], img.shape[0])
             tiles.append([img, x, y, origin])
 
         img, extent, origin = _merge_tiles(tiles)
@@ -108,8 +108,8 @@ class GoogleTiles(object):
         box_w = 360. / n
 
         result = prj.transform_points(ccrs.PlateCarree(),
-                                      numpy.array([0., 0]),
-                                      numpy.array(lat_extent_at_z0))
+                                      np.array([0., 0]),
+                                      np.array(lat_extent_at_z0))
         y1, y0 = result[:, 1]
         # compute the box height in native coordinates for this zoom level
         box_h = (y1 - y0) / n
@@ -117,8 +117,8 @@ class GoogleTiles(object):
         # compute the native x & native y extents of the box
     #    x_lower, x_upper = x0 + x*box_w, x0 + (x+1)*box_w
     #    y_lower, y_upper = y0 + y*box_h, y0 + (y+1)*box_h
-        n_xs = x0 + (x + numpy.arange(0, 2, dtype=numpy.float64)) * box_w
-        n_ys = y0 + (y + numpy.arange(0, 2, dtype=numpy.float64)) * box_h
+        n_xs = x0 + (x + np.arange(0, 2, dtype=np.float64)) * box_w
+        n_ys = y0 + (y + np.arange(0, 2, dtype=np.float64)) * box_h
 
         if not bottom_up:
             # n.b. assumes that the projection is symmetric
@@ -146,8 +146,8 @@ class GoogleTiles(object):
 
         pc = ccrs.PlateCarree()
         result = pc.transform_points(prj,
-                                     x_lim.astype(numpy.float64),
-                                     y_lim.astype(numpy.float64))
+                                     x_lim.astype(np.float64),
+                                     y_lim.astype(np.float64))
         x_lim = result[:, 0]
         y_lim = result[:, 1]
 
@@ -325,11 +325,11 @@ def _merge_tiles(tiles):
     ys = sorted(ys)
 
     other_len = tiles[0][0].shape[2:]
-    img = numpy.zeros((len(ys), len(xs)) + other_len, dtype=numpy.uint8) - 1
+    img = np.zeros((len(ys), len(xs)) + other_len, dtype=np.uint8) - 1
 
     for tile_img, x, y, origin in tiles:
         y_first, y_last = y[0], y[-1]
-        yi0, yi1 = numpy.where((y_first == ys) | (y_last == ys))[0]
+        yi0, yi1 = np.where((y_first == ys) | (y_last == ys))[0]
         if origin == 'upper':
             yi0 = tile_img.shape[0] - yi0 - 1
             yi1 = tile_img.shape[0] - yi1 - 1
@@ -342,7 +342,7 @@ def _merge_tiles(tiles):
             stop += step
         y_slice = slice(start, stop, step)
 
-        xi0, xi1 = numpy.where((x[0] == xs) | (x[-1] == xs))[0]
+        xi0, xi1 = np.where((x[0] == xs) | (x[-1] == xs))[0]
 
         start, stop, step = xi0, xi1, 1 if xi0 < xi1 else -1
 

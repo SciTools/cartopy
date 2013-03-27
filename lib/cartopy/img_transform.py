@@ -21,7 +21,7 @@ transformations.
 """
 
 import matplotlib.image
-import numpy
+import numpy as np
 import scipy.spatial
 
 import cartopy.crs as ccrs
@@ -75,17 +75,17 @@ def mesh_projection(projection, nx, ny,
 
     # Calculate evenly spaced sample points spanning the
     # extent - excluding endpoint.
-    x, xstep = numpy.linspace(x_lower, x_upper, nx, retstep=True,
-                              endpoint=False)
-    y, ystep = numpy.linspace(y_lower, y_upper, ny, retstep=True,
-                              endpoint=False)
+    x, xstep = np.linspace(x_lower, x_upper, nx, retstep=True,
+                           endpoint=False)
+    y, ystep = np.linspace(y_lower, y_upper, ny, retstep=True,
+                           endpoint=False)
 
     # Offset the sample points to be within the extent range.
     x += 0.5 * xstep
     y += 0.5 * ystep
 
     # Generate the x-direction and y-direction meshgrids.
-    x, y = numpy.meshgrid(x, y)
+    x, y = np.meshgrid(x, y)
     return x, y, [x_lower, x_upper, y_lower, y_upper]
 
 
@@ -248,26 +248,26 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     kdtree = scipy.spatial.cKDTree(xyz)
     distances, indices = kdtree.query(target_xyz, k=1)
-    mask = numpy.isinf(distances)
+    mask = np.isinf(distances)
 
     desired_ny, desired_nx = target_x_points.shape
     if array.ndim == 2:
         # Handle missing neighbours using a masked array
-        if numpy.any(mask):
-            indices = numpy.where(numpy.logical_not(mask), indices, 0)
-            array_1d = numpy.ma.array(array.reshape(-1)[indices], mask=mask)
+        if np.any(mask):
+            indices = np.where(np.logical_not(mask), indices, 0)
+            array_1d = np.ma.array(array.reshape(-1)[indices], mask=mask)
         else:
             array_1d = array.reshape(-1)[indices]
 
         new_array = array_1d.reshape(desired_ny, desired_nx)
     elif array.ndim == 3:
         # Handle missing neighbours using a masked array
-        if numpy.any(mask):
-            indices = numpy.where(numpy.logical_not(mask), indices, 0)
+        if np.any(mask):
+            indices = np.where(np.logical_not(mask), indices, 0)
             array_2d = array.reshape(-1, array.shape[-1])[indices]
-            mask, array_2d = numpy.broadcast_arrays(
+            mask, array_2d = np.broadcast_arrays(
                 mask.reshape(-1, 1), array_2d)
-            array_2d = numpy.ma.array(array_2d, mask=mask)
+            array_2d = np.ma.array(array_2d, mask=mask)
         else:
             array_2d = array.reshape(-1, array.shape[-1])[indices]
 
@@ -292,27 +292,27 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                                         desired_nx)
     FRACTIONAL_OFFSET_THRESHOLD = 0.1  # data has moved by 10% of the map
 
-    x_extent = numpy.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
-    y_extent = numpy.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
+    x_extent = np.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
+    y_extent = np.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
 
-    non_self_inverse_points = (numpy.abs(target_x_points - back_to_target_x) /
+    non_self_inverse_points = (np.abs(target_x_points - back_to_target_x) /
                                x_extent) > FRACTIONAL_OFFSET_THRESHOLD
-    if numpy.any(non_self_inverse_points):
-        if numpy.ma.isMaskedArray(new_array):
+    if np.any(non_self_inverse_points):
+        if np.ma.isMaskedArray(new_array):
             new_array.mask[non_self_inverse_points] = True
         else:
-            new_array = numpy.ma.array(new_array, mask=True)
+            new_array = np.ma.array(new_array, mask=True)
             new_array.mask[...] = False
             if new_array.ndim == 3:
                 for i in range(new_array.shape[2]):
                     new_array.mask[:, :, i] = non_self_inverse_points
             else:
                 new_array.mask[...] = non_self_inverse_points
-    non_self_inverse_points = (numpy.abs(target_y_points - back_to_target_y) /
+    non_self_inverse_points = (np.abs(target_y_points - back_to_target_y) /
                                y_extent) > FRACTIONAL_OFFSET_THRESHOLD
-    if numpy.any(non_self_inverse_points):
-        if numpy.ma.isMaskedArray(new_array):
+    if np.any(non_self_inverse_points):
+        if np.ma.isMaskedArray(new_array):
             new_array.mask[non_self_inverse_points] = True
         else:
-            new_array = numpy.ma.array(new_array, mask=non_self_inverse_points)
+            new_array = np.ma.array(new_array, mask=non_self_inverse_points)
     return new_array

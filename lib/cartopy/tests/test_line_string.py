@@ -20,7 +20,7 @@ import itertools
 import time
 import unittest
 
-import numpy
+import numpy as np
 from shapely import geometry
 
 import cartopy.crs as ccrs
@@ -191,7 +191,7 @@ class TestBisect(unittest.TestCase):
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(coord)),
+                self.assertFalse(any(np.isnan(coord)),
                                  'Unexpected NaN in projected coords.')
 
     def test_nan_end(self):
@@ -203,7 +203,7 @@ class TestBisect(unittest.TestCase):
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(coord)),
+                self.assertFalse(any(np.isnan(coord)),
                                  'Unexpected NaN in projected coords.')
 
 
@@ -216,7 +216,7 @@ class TestMisc(unittest.TestCase):
         #show(projection, multi_line_string)
         for line_string in multi_line_string:
             for coord in line_string.coords:
-                self.assertFalse(any(numpy.isnan(coord)),
+                self.assertFalse(any(np.isnan(coord)),
                                  'Unexpected NaN in projected coords.')
 
     def test_something(self):
@@ -259,8 +259,8 @@ class TestSymmetry(unittest.TestCase):
         self.assertEqual(len(multi_line_string2), 1)
         coords = multi_line_string[0].coords
         coords2 = multi_line_string2[0].coords
-        numpy.testing.assert_allclose(coords, coords2[::-1],
-                                      err_msg='Asymmetric curve generation')
+        np.testing.assert_allclose(coords, coords2[::-1],
+                                   err_msg='Asymmetric curve generation')
 
 
 if __name__ == '__main__':
