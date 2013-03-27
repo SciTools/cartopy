@@ -28,7 +28,7 @@ import fnmatch
 import os
 
 from Cython.Distutils import build_ext
-import numpy
+import numpy as np
 
 
 def file_walk_relative(top, remove=''):
@@ -159,7 +159,7 @@ setup(
                   language='c++',
                   ),
         Extension('cartopy._crs', ['lib/cartopy/_crs.pyx'],
-                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy', numpy.get_include()],
+                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy', np.get_include()],
                   libraries=['proj'],
                   library_dirs=[get_config_var('LIBDIR')],
                   runtime_library_dirs=[get_config_var('LIBDIR')],

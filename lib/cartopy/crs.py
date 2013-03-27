@@ -25,7 +25,7 @@ from abc import ABCMeta, abstractproperty
 import math
 import warnings
 
-import numpy
+import numpy as np
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
 from shapely.prepared import prep
@@ -198,9 +198,9 @@ class Projection(CRS):
                 modified = False
                 j = 0
                 while j < len(line_strings):
-                    if i != j and numpy.allclose(line_strings[i].coords[0],
-                                                 line_strings[j].coords[-1],
-                                                 atol=self.threshold):
+                    if i != j and np.allclose(line_strings[i].coords[0],
+                                              line_strings[j].coords[-1],
+                                              atol=self.threshold):
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
                         combo = sgeom.LineString(last_coords + first_coords)
@@ -221,8 +221,8 @@ class Projection(CRS):
         # 3) Check for a single resulting ring.
         if (len(multi_line_string) == 1 and
                 len(multi_line_string[0].coords) > 3 and
-                numpy.allclose(multi_line_string[0].coords[0],
-                               multi_line_string[0].coords[-1])):
+                np.allclose(multi_line_string[0].coords[0],
+                            multi_line_string[0].coords[-1])):
             result_geometry = LinearRing(multi_line_string[0].coords[:-1])
         else:
             result_geometry = multi_line_string
@@ -732,12 +732,12 @@ class _WarpedRectangularProjection(Projection):
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
-        for lat in numpy.linspace(-90, 90, n):
+        for lat in np.linspace(-90, 90, n):
             points.append(
                 self.transform_point(180 + central_longitude,
                                      lat, geodetic_crs)
             )
-        for lat in numpy.linspace(90, -90, n):
+        for lat in np.linspace(90, -90, n):
             points.append(
                 self.transform_point(-180 + central_longitude,
                                      lat, geodetic_crs)
@@ -813,7 +813,7 @@ class InterruptedGoodeHomolosine(Projection):
         geodetic_crs = self.as_geodetic()
 
         # Right boundary
-        for lat in numpy.linspace(-90, 90, n):
+        for lat in np.linspace(-90, 90, n):
             points.append(self.transform_point(180 + central_longitude,
                                                lat, geodetic_crs))
 
@@ -821,17 +821,17 @@ class InterruptedGoodeHomolosine(Projection):
         interrupted_lons = (-40.0,)
         delta = 0.001
         for lon in interrupted_lons:
-            for lat in numpy.linspace(90, 0, n):
+            for lat in np.linspace(90, 0, n):
                 points.append(self.transform_point(lon + delta +
                                                    central_longitude,
                                                    lat, geodetic_crs))
-            for lat in numpy.linspace(0, 90, n):
+            for lat in np.linspace(0, 90, n):
                 points.append(self.transform_point(lon - delta +
                                                    central_longitude,
                                                    lat, geodetic_crs))
 
         # Left boundary
-        for lat in numpy.linspace(90, -90, n):
+        for lat in np.linspace(90, -90, n):
             points.append(self.transform_point(-180 + central_longitude,
                                                lat, geodetic_crs))
 
@@ -839,11 +839,11 @@ class InterruptedGoodeHomolosine(Projection):
         interrupted_lons = (-100.0, -20.0, 80.0)
         delta = 0.001
         for lon in interrupted_lons:
-            for lat in numpy.linspace(-90, 0, n):
+            for lat in np.linspace(-90, 0, n):
                 points.append(self.transform_point(lon - delta +
                                                    central_longitude,
                                                    lat, geodetic_crs))
-            for lat in numpy.linspace(0, -90, n):
+            for lat in np.linspace(0, -90, n):
                 points.append(self.transform_point(lon + delta +
                                                    central_longitude,
                                                    lat, geodetic_crs))

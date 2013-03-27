@@ -18,7 +18,7 @@
 
 import unittest
 
-import numpy
+import numpy as np
 import shapely.geometry as sgeom
 
 
@@ -135,7 +135,7 @@ class TestQuality(unittest.TestCase):
         # they mess up the linear extrapolation to the boundary.
 
         # Make sure there aren't any repeated points.
-        xy = numpy.array(self.multi_polygon[0].exterior.coords)
+        xy = np.array(self.multi_polygon[0].exterior.coords)
         same = (xy[1:] == xy[:-1]).all(axis=1)
         self.assertFalse(any(same), 'Repeated points in projected geometry.')
 
@@ -145,19 +145,19 @@ class TestQuality(unittest.TestCase):
         # from the boundary.
 
         # Identify all the contiguous sets of non-boundary points.
-        xy = numpy.array(self.multi_polygon[0].exterior.coords)
-        boundary = numpy.logical_or(xy[:, 1] == 90, xy[:, 1] == -90)
+        xy = np.array(self.multi_polygon[0].exterior.coords)
+        boundary = np.logical_or(xy[:, 1] == 90, xy[:, 1] == -90)
         regions = (boundary[1:] != boundary[:-1]).cumsum()
-        regions = numpy.insert(regions, 0, 0)
+        regions = np.insert(regions, 0, 0)
 
         # For each region, check if the number of increasing steps is roughly
         # equal to the number of decreasing steps.
         for i in range(boundary[0], regions.max(), 2):
-            indices = numpy.where(regions == i)
+            indices = np.where(regions == i)
             x = xy[indices, 0]
-            delta = numpy.diff(x)
-            num_incr = numpy.count_nonzero(delta > 0)
-            num_decr = numpy.count_nonzero(delta < 0)
+            delta = np.diff(x)
+            num_incr = np.count_nonzero(delta > 0)
+            num_decr = np.count_nonzero(delta < 0)
             self.assertLess(abs(num_incr - num_decr), 3,
                             'Too much asymmetry.')
 
@@ -208,7 +208,7 @@ class TestWrap(PolygonTests):
 
 def ring(minx, miny, maxx, maxy, ccw):
     box = sgeom.box(minx, miny, maxx, maxy, ccw)
-    return numpy.array(box.exterior.coords)
+    return np.array(box.exterior.coords)
 
 
 class TestHoles(PolygonTests):
