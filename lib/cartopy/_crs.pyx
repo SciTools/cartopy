@@ -273,16 +273,15 @@ cdef class CRS:
 
         # call proj.4. The result array is modified in place.
         status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
-                              &result[0, 0], &result[0, 1], &result[0, 2]);
-                              
+                              &result[0, 0], &result[0, 1], &result[0, 2])
+
         if self.is_geodetic():
             result = np.rad2deg(result)
         #if status:
         #    raise Proj4Error()
 
         if len(result_shape) > 2:
-            transpose_order = tuple(range(result.ndim)[::-1]) + (2, )
-            return result.reshape(result_shape).transpose(transpose_order)
+            return result.reshape(result_shape)
 
         return result
 
