@@ -79,23 +79,22 @@ class TestCRS(unittest.TestCase):
         self.assertTrue('+y_0=1500000' in proj4_init)
 
     def test_transform_points_nD(self):
-        rlons = np.array([[350., 352.], [350., 352.]])
-        rlats = np.array([[-5., -0.], [-4., -1.]])
+        rlons = np.array([[350., 352., 354.], [350., 352., 354.]])
+        rlats = np.array([[-5., -0., 1.], [-4., -1., 0.]])
 
         src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0,
                                         pole_latitude=38.0)
         target_proj = ccrs.Geodetic()
         res = target_proj.transform_points(x=rlons, y=rlats,
                                            src_crs=src_proj)
-
-        unrotated_lon, unrotated_lat, _ = res.transpose()
+        unrotated_lon = res[..., 0]
+        unrotated_lat = res[..., 1]
 
         # Solutions derived by proj4 direct.
-        solx = np.array([[-16.42176094, -14.85892262],
-                         [-16.71055023, -14.58434624]])
-        soly = np.array([[46.00724251, 51.29188893],
-                         [46.98728486, 50.30706042]])
-
+        solx = np.array([[-16.42176094, -14.85892262, -11.90627520],
+                         [-16.71055023, -14.58434624, -11.68799988]])
+        soly = np.array([[46.00724251, 51.29188893, 52.59101488],
+                         [46.98728486, 50.30706042, 51.60004528]])
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
 
@@ -108,8 +107,8 @@ class TestCRS(unittest.TestCase):
         target_proj = ccrs.Geodetic()
         res = target_proj.transform_points(x=rlons, y=rlats,
                                            src_crs=src_proj)
-
-        unrotated_lon, unrotated_lat, _ = res.transpose()
+        unrotated_lon = res[..., 0]
+        unrotated_lat = res[..., 1]
 
         # Solutions derived by proj4 direct.
         solx = np.array([-16.42176094, -14.85892262,
