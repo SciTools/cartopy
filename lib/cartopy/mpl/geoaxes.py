@@ -163,8 +163,8 @@ class InterProjectionTransform(mtransforms.Transform):
             x_lim = verts[:, 0].min(), verts[:, 0].max()
             y_lim = verts[:, 1].min(), verts[:, 1].max()
 
-            potential = (src.y_limits[0] < y_lim[0] and
-                         src.y_limits[1] > y_lim[1])
+            potential = (src.y_limits[0] <= y_lim[0] and
+                         src.y_limits[1] >= y_lim[1])
 
             try:
                 bboxes, proj_offset = target._bbox_and_offset(src)
@@ -173,12 +173,13 @@ class InterProjectionTransform(mtransforms.Transform):
 
             if potential:
                 for poly in bboxes:
-                    # Handle data in the range 0 to 360 as well as data in
-                    # the range -180 to 180
-                    for i in [0, 1]:
+                    # Arbitrarily choose the number of moduli to look
+                    # above and below the -180->180 range. If we don't look
+                    # far enough, the slower transformation will kick in. 
+                    for i in [-1, 0, 1, 2]:
                         offset = mod * i - proj_offset
-                        if ((poly[0] + offset) < x_lim[0]
-                                and (poly[1] + offset) > x_lim[1]):
+                        if ((poly[0] + offset) <= x_lim[0]
+                                and (poly[1] + offset) >= x_lim[1]):
                             new_verts = src_path.vertices + [[-offset, 0]]
                             return mpath.Path(new_verts, src_path.codes)
 
