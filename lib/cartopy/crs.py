@@ -511,6 +511,46 @@ class PlateCarree(_CylindricalProjection):
     def threshold(self):
         return 0.5
 
+    def _bbox_and_offset(self, other_plate_carree):
+        """
+        Returns the two bounding boxes which are ...
+
+        in pc_proj1's coordinate system
+
+        """
+        if not isinstance(other_plate_carree, PlateCarree):
+            raise TypeError('pc_proj2 must be a PlateCaree instance.')
+
+        self_params = self.proj4_params.copy()
+        other_params = other_plate_carree.proj4_params.copy()
+        self_params.pop('lon_0'), other_params.pop('lon_0')
+        if self_params != other_params:
+            raise ValueError('All proj4 params (other than lon_0) of '
+                             '"other_plate_carree" must be equal to '
+                             'those of self.')
+
+        central_lon_0 = self.proj4_params['lon_0']
+        central_lon_1 = other_plate_carree.proj4_params['lon_0']
+
+        central_lon_0_offset = central_lon_1 - central_lon_0
+
+        lon_lower_bound_0 = self.x_limits[0]
+        lon_lower_bound_1 = (other_plate_carree.x_limits[0] +
+                             central_lon_0_offset)
+
+        if lon_lower_bound_1 < self.x_limits[0]:
+            lon_lower_bound_1 += np.diff(self.x_limits)[0]
+
+        lon_lower_bound_0, lon_lower_bound_1 = sorted(
+            [lon_lower_bound_0, lon_lower_bound_1])
+
+        bbox = [[lon_lower_bound_0, lon_lower_bound_1],
+                [lon_lower_bound_1, lon_lower_bound_0]]
+
+        bbox[1][1] += np.diff(self.x_limits)[0]
+
+        return bbox, central_lon_0_offset
+
 
 class TransverseMercator(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
