@@ -1,3 +1,12 @@
+What's new in Cartopy 0.8
+*************************
+
+:Release: 0.8.0
+:Data: ?? ??? 2013
+
+* Bill Little added support for the OSNI projection and enhanced the image nest capability. (:pull:`263`)
+
+
 What's new in Cartopy 0.7
 *************************
 
