@@ -26,7 +26,6 @@ import weakref
 
 import matplotlib
 import matplotlib.axes
-import matplotlib.collections as mcollections
 from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
@@ -139,52 +138,15 @@ class InterProjectionTransform(mtransforms.Transform):
             if result is not None:
                 return result
 
-        bypass = self.source_projection == self.target_projection
-        if bypass:
-            projection = self.source_projection
-            if isinstance(projection, ccrs._CylindricalProjection):
-                x = src_path.vertices[:, 0]
-                y = src_path.vertices[:, 1]
-                x_limits = projection.x_limits
-                y_limits = projection.y_limits
-                bypass = (x.min() >= x_limits[0] and x.max() <= x_limits[1]
-                          and y.min() > y_limits[0] and y.max() < y_limits[1])
-
-        # Optimise the PlateCarree -> PlateCarree case where no
-        # wrapping or interpolation needs to take place.
-        elif isinstance(self.source_projection, ccrs.PlateCarree) and \
-                isinstance(self.target_projection, ccrs.PlateCarree):
-
-            src = self.source_projection
-            target = self.target_projection
-            mod = np.diff(target.x_limits)[0]
-
-            verts = src_path.vertices
-            x_lim = verts[:, 0].min(), verts[:, 0].max()
-            y_lim = verts[:, 1].min(), verts[:, 1].max()
-
-            potential = (src.y_limits[0] <= y_lim[0] and
-                         src.y_limits[1] >= y_lim[1])
-
-            try:
-                bboxes, proj_offset = target._bbox_and_offset(src)
-            except (ValueError, TypeError):
-                potential = False
-
-            if potential:
-                for poly in bboxes:
-                    # Arbitrarily choose the number of moduli to look
-                    # above and below the -180->180 range. If we don't look
-                    # far enough, the slower transformation will kick in. 
-                    for i in [-1, 0, 1, 2]:
-                        offset = mod * i - proj_offset
-                        if ((poly[0] + offset) <= x_lim[0]
-                                and (poly[1] + offset) >= x_lim[1]):
-                            new_verts = src_path.vertices + [[-offset, 0]]
-                            return mpath.Path(new_verts, src_path.codes)
-
-        if bypass:
-            return src_path
+        # Allow the vertices to be quickly transformed, if
+        # quick_vertices_transform allows it.
+        new_vertices = self.target_projection.quick_vertices_transform(
+            src_path.vertices, self.source_projection)
+        if new_vertices is not None:
+            if new_vertices is src_path.vertices:
+                return src_path
+            else:
+                return mpath.Path(new_vertices, src_path.codes)
 
         if src_path.vertices.shape == (1, 2):
             return mpath.Path(self.transform(src_path.vertices))

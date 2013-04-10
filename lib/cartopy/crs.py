@@ -466,6 +466,31 @@ class Projection(CRS):
             multi_poly = sgeom.MultiPolygon()
         return multi_poly
 
+    def quick_vertices_transform(self, vertices, src_crs):
+        """
+        Where possible, return a vertices array transformed to this CRS from
+        the given vertices array of shape ``(n, 2)`` and the source CRS.
+
+        .. important::
+
+            This method may return None to indicate that the vertices cannot
+            be transformed quickly, and a more complex geometry transformation
+            is required (see :meth:`cartopy.crs.Projection.project_geometry`).
+
+        """
+        return_value = None
+
+        if self == src_crs:
+            x = vertices[:, 0]
+            y = vertices[:, 1]
+            x_limits = self.x_limits
+            y_limits = self.y_limits
+            if (x.min() >= x_limits[0] and x.max() <= x_limits[1]
+                    and y.min() >= y_limits[0] and y.max() <= y_limits[1]):
+                return_value = vertices
+
+        return return_value
+
 
 class _RectangularProjection(Projection):
     """
@@ -513,9 +538,20 @@ class PlateCarree(_CylindricalProjection):
 
     def _bbox_and_offset(self, other_plate_carree):
         """
-        Returns the two bounding boxes which are ...
+        Returns a pair of (xmin, xmax) pairs and an offset which can be used
+        for identification of whether data in ``other_plate_carree`` needs
+        to be transformed to wrap appropriately.
 
-        in pc_proj1's coordinate system
+        >>> import cartopy.crs as ccrs
+        >>> src = ccrs.PlateCarree(central_longitude=10)
+        >>> bboxes, offset = ccrs.PlateCarree()._bbox_and_offset(src)
+        >>> print bboxes
+        [[-180, -170.0], [-170.0, 180]]
+        >>> print offset
+        10.0
+
+        The returned values are longitudes in ``other_plate_carree``'s
+        coordinate system.
 
         """
         if not isinstance(other_plate_carree, PlateCarree):
@@ -550,6 +586,42 @@ class PlateCarree(_CylindricalProjection):
         bbox[1][1] += np.diff(self.x_limits)[0]
 
         return bbox, central_lon_0_offset
+
+    def quick_vertices_transform(self, vertices, src_crs):
+        return_value = super(PlateCarree,
+                             self).quick_vertices_transform(vertices, src_crs)
+
+        # Optimise the PlateCarree -> PlateCarree case where no
+        # wrapping or interpolation needs to take place.
+        if return_value is None and isinstance(src_crs, PlateCarree):
+            mod = np.diff(src_crs.x_limits)[0]
+
+            x_lim = vertices[:, 0].min(), vertices[:, 0].max()
+            y_lim = vertices[:, 1].min(), vertices[:, 1].max()
+
+            potential = (self.y_limits[0] <= y_lim[0] and
+                         self.y_limits[1] >= y_lim[1])
+
+            try:
+                bboxes, proj_offset = self._bbox_and_offset(src_crs)
+            except (ValueError, TypeError):
+                potential = False
+
+            if potential:
+                for poly in bboxes:
+                    # Arbitrarily choose the number of moduli to look
+                    # above and below the -180->180 range. If data is beyond
+                    # this range, we're not going to transform it quickly.
+                    for i in [-1, 0, 1, 2]:
+                        offset = mod * i - proj_offset
+                        if ((poly[0] + offset) <= x_lim[0]
+                                and (poly[1] + offset) >= x_lim[1]):
+                            return_value = vertices + [[-offset, 0]]
+                            break
+                    if return_value is not None:
+                        break
+
+        return return_value
 
 
 class TransverseMercator(_RectangularProjection):
