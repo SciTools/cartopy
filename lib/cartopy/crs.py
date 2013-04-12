@@ -555,7 +555,9 @@ class PlateCarree(_CylindricalProjection):
 
         """
         if not isinstance(other_plate_carree, PlateCarree):
-            raise TypeError('pc_proj2 must be a PlateCaree instance.')
+            raise TypeError('`other_plate_carree` must be a '
+                            'PlateCarree instance. Got {}.'
+                            ''.format(other_plate_carree.__class__.__name__))
 
         self_params = self.proj4_params.copy()
         other_params = other_plate_carree.proj4_params.copy()
@@ -565,14 +567,13 @@ class PlateCarree(_CylindricalProjection):
                              '"other_plate_carree" must be equal to '
                              'those of self.')
 
-        central_lon_0 = self.proj4_params['lon_0']
-        central_lon_1 = other_plate_carree.proj4_params['lon_0']
+        self_lon_0 = self.proj4_params['lon_0']
+        other_lon_0 = other_plate_carree.proj4_params['lon_0']
 
-        central_lon_0_offset = central_lon_1 - central_lon_0
+        lon_0_offset = other_lon_0 - self_lon_0
 
         lon_lower_bound_0 = self.x_limits[0]
-        lon_lower_bound_1 = (other_plate_carree.x_limits[0] +
-                             central_lon_0_offset)
+        lon_lower_bound_1 = (other_plate_carree.x_limits[0] + lon_0_offset)
 
         if lon_lower_bound_1 < self.x_limits[0]:
             lon_lower_bound_1 += np.diff(self.x_limits)[0]
@@ -585,7 +586,7 @@ class PlateCarree(_CylindricalProjection):
 
         bbox[1][1] += np.diff(self.x_limits)[0]
 
-        return bbox, central_lon_0_offset
+        return bbox, lon_0_offset
 
     def quick_vertices_transform(self, vertices, src_crs):
         return_value = super(PlateCarree,

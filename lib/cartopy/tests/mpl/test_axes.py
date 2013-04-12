@@ -70,10 +70,16 @@ def test_transform_PlateCarree_shortcut():
 
     with counter:
         trans.transform_path(pth1)
-        trans.transform_path(pth2)
-        trans.transform_path(pth3)
+        # pth1 should allow a short-cut.
+        assert_equal(counter.count, 0)
 
-    assert_equal(counter.count, 2)
+    with counter:
+        trans.transform_path(pth2)
+        assert_equal(counter.count, 1)
+
+    with counter:
+        trans.transform_path(pth3)
+        assert_equal(counter.count, 2)
 
 
 if __name__ == '__main__':

@@ -152,7 +152,6 @@ def test_PlateCarree_shortcut():
         target = ccrs.PlateCarree(central_longitude=t_lon0)
 
         bbox, offset = src._bbox_and_offset(target)
-        print s_lon0, t_lon0, bbox, offset
 
         assert_equal(offset, expected_offset)
         assert_equal(bbox, expected_bboxes)
