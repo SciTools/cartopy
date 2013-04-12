@@ -26,13 +26,12 @@ import weakref
 
 import matplotlib
 import matplotlib.axes
-import matplotlib.collections as mcollections
 from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
 import numpy as np
-import shapely.geometry
+import shapely.geometry as sgeom
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -139,15 +138,15 @@ class InterProjectionTransform(mtransforms.Transform):
             if result is not None:
                 return result
 
-        bypass = self.source_projection == self.target_projection
-        if bypass:
-            projection = self.source_projection
-            if isinstance(projection, ccrs._CylindricalProjection):
-                x = src_path.vertices[:, 0]
-                x_limits = projection.x_limits
-                bypass = x.min() >= x_limits[0] and x.max() <= x_limits[1]
-        if bypass:
-            return src_path
+        # Allow the vertices to be quickly transformed, if
+        # quick_vertices_transform allows it.
+        new_vertices = self.target_projection.quick_vertices_transform(
+            src_path.vertices, self.source_projection)
+        if new_vertices is not None:
+            if new_vertices is src_path.vertices:
+                return src_path
+            else:
+                return mpath.Path(new_vertices, src_path.codes)
 
         if src_path.vertices.shape == (1, 2):
             return mpath.Path(self.transform(src_path.vertices))
@@ -440,9 +439,9 @@ class GeoAxes(matplotlib.axes.Axes):
             x1, x2 = self.projection.x_limits
             y1, y2 = self.projection.y_limits
 
-        domain_in_src_proj = shapely.geometry.Polygon([[x1, y1], [x2, y1],
-                                                       [x2, y2], [x1, y2],
-                                                       [x1, y1]])
+        domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
+                                            [x2, y2], [x1, y2],
+                                            [x1, y1]])
 
         # Determine target projection based on requested CRS.
         if crs is None:
@@ -466,7 +465,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                  ' coordinate system {!r}'.format(crs))
 
         # Calculate intersection with boundary and project if necesary.
-        boundary_poly = shapely.geometry.Polygon(self.projection.boundary)
+        boundary_poly = sgeom.Polygon(self.projection.boundary)
         if proj != self.projection:
             # Erode boundary by threshold to avoid transform issues.
             # This is a workaround for numerical issues at the boundary.
@@ -493,9 +492,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = shapely.geometry.LineString([[x1, y1], [x2, y1],
-                                                     [x2, y2], [x1, y2],
-                                                     [x1, y1]])
+        domain_in_crs = sgeom.LineString([[x1, y1], [x2, y1],
+                                          [x2, y2], [x1, y2],
+                                          [x1, y1]])
 
         r = self.projection.project_geometry(domain_in_crs, crs)
         x1, y1, x2, y2 = r.bounds
@@ -615,56 +614,6 @@ class GeoAxes(matplotlib.axes.Axes):
             yticks = ticks
 
         return super(GeoAxes, self).set_yticks(yticks, minor)
-
-#    def geod_circle_meters(self, lon_0, lat_0, radius, npts=80, **kwargs):
-#        # radius is in meters
-#        geod = self.projection.as_geodetic()
-#
-#        az = np.linspace(0, 360, npts)
-#        lats = np.zeros(npts) + lat_0
-#        lons = np.zeros(npts) + lon_0
-#        distances = np.zeros(npts) + radius
-#
-#        lons, lats, _reverse_az = geod.fwd(lons, lats, az, distances,
-#                                           radians=False)
-#        ll = np.concatenate([lons[:, None], lats[:, None]], 1)
-#        from matplotlib.patches import Polygon
-#        poly = Polygon(ll, transform=cartopy.prj.PlateCarree(), **kwargs)
-#        self.add_patch(poly)
-#        return poly
-#
-#    def gshhs_line(self, outline_color='k', domain=None,
-#                   resolution='low', **kwargs):
-#        # domain is a shapely geometry (Polygon or MultiPolygon)
-#        import cartopy.gshhs as gshhs
-##        import cartopy.spherical as spherical
-#        from matplotlib.collections import PatchCollection, LineCollection
-#
-#        paths = []
-#
-#        projection = self.projection
-#
-#        if domain is None:
-#            domain = self.map_domain(ccrs.PlateCarree())
-#
-#        for points in gshhs.read_gshhc(gshhs.fnames[resolution],
-#                                       poly=False, domain=domain):
-#            paths.extend(patch.geos_to_path(
-#                                        shapely.geometry.LineString(points))
-#                         )
-#
-##            slinestring = shapely.geometry.LineString(points)
-##            projected = projection.project_geometry(slinestring)
-##            paths.extend(patch.geos_to_path(projected))
-#
-#        collection = PatchCollection([mpatches.PathPatch(pth)
-#                                      for pth in paths],
-#                             edgecolor=outline_color, facecolor='none',
-#                             transform=ccrs.PlateCarree(),
-#                             **kwargs
-#                             )
-#
-#        self.add_collection(collection, autolim=False)
 
     def stock_img(self, name='ne_shaded'):
         """

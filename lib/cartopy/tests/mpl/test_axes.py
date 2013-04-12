@@ -17,10 +17,16 @@
 
 import unittest
 
+
+import matplotlib.path as mpath
 import matplotlib.pyplot as plt
+from nose.tools import assert_equal
 import numpy as np
 
+
 import cartopy.crs as ccrs
+from cartopy.mpl.geoaxes import InterProjectionTransform
+from .test_caching import CallCounter
 
 
 class TestNoSpherical(unittest.TestCase):
@@ -49,5 +55,33 @@ class TestNoSpherical(unittest.TestCase):
             self.ax.pcolormesh(self.data, transform=ccrs.Geodetic())
 
 
+def test_transform_PlateCarree_shortcut():
+    src = ccrs.PlateCarree(central_longitude=0)
+    target = ccrs.PlateCarree(central_longitude=180)
+
+    # of the 3 paths, 2 of them cannot be short-cutted.
+    pth1 = mpath.Path([[0.5, 0], [10, 10]])
+    pth2 = mpath.Path([[0.5, 91], [10, 10]])
+    pth3 = mpath.Path([[-0.5, 0], [10, 10]])
+
+    trans = InterProjectionTransform(src, target)
+
+    counter = CallCounter(target, 'project_geometry')
+
+    with counter:
+        trans.transform_path(pth1)
+        # pth1 should allow a short-cut.
+        assert_equal(counter.count, 0)
+
+    with counter:
+        trans.transform_path(pth2)
+        assert_equal(counter.count, 1)
+
+    with counter:
+        trans.transform_path(pth3)
+        assert_equal(counter.count, 2)
+
+
 if __name__ == '__main__':
-    unittest.main()
+    import nose
+    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

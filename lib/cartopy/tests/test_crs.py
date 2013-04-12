@@ -22,6 +22,7 @@ import unittest
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
+from nose.tools import assert_equal
 
 
 import cartopy.crs as ccrs
@@ -127,6 +128,32 @@ def test_pickle():
     fh.seek(0)
     pc = pickle.load(fh)
     assert pc == ccrs.PlateCarree()
+
+
+def test_PlateCarree_shortcut():
+    central_lons = [[0, 0], [0, 180], [0, 10], [10, 0], [-180, 180], [
+        180, -180]]
+
+    target = [([[-180, -180], [-180, 180]], 0),
+              ([[-180, 0], [0, 180]], 180),
+              ([[-180, -170], [-170, 180]], 10),
+              ([[-180, 170], [170, 180]], -10),
+              ([[-180, 180], [180, 180]], 360),
+              ([[-180, -180], [-180, 180]], -360),
+              ]
+
+    assert len(target) == len(central_lons)
+
+    for expected, (s_lon0, t_lon0) in zip(target, central_lons):
+        expected_bboxes, expected_offset = expected
+
+        src = ccrs.PlateCarree(central_longitude=s_lon0)
+        target = ccrs.PlateCarree(central_longitude=t_lon0)
+
+        bbox, offset = src._bbox_and_offset(target)
+
+        assert_equal(offset, expected_offset)
+        assert_equal(bbox, expected_bboxes)
 
 
 if __name__ == '__main__':
