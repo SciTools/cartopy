@@ -553,20 +553,12 @@ class PlateCarree(_CylindricalProjection):
         The returned values are longitudes in ``other_plate_carree``'s
         coordinate system.
 
+        .. important::
+
+            The two CRSs must be identical in every way, other than their
+            central longitudes. No checking of this is done.
+
         """
-        if not isinstance(other_plate_carree, PlateCarree):
-            raise TypeError('`other_plate_carree` must be a '
-                            'PlateCarree instance. Got {}.'
-                            ''.format(other_plate_carree.__class__.__name__))
-
-        self_params = self.proj4_params.copy()
-        other_params = other_plate_carree.proj4_params.copy()
-        self_params.pop('lon_0'), other_params.pop('lon_0')
-        if self_params != other_params:
-            raise ValueError('All proj4 params (other than lon_0) of '
-                             '"other_plate_carree" must be equal to '
-                             'those of self.')
-
         self_lon_0 = self.proj4_params['lon_0']
         other_lon_0 = other_plate_carree.proj4_params['lon_0']
 
@@ -595,20 +587,21 @@ class PlateCarree(_CylindricalProjection):
         # Optimise the PlateCarree -> PlateCarree case where no
         # wrapping or interpolation needs to take place.
         if return_value is None and isinstance(src_crs, PlateCarree):
-            mod = np.diff(src_crs.x_limits)[0]
+            self_params = self.proj4_params.copy()
+            src_params = src_crs.proj4_params.copy()
+            self_params.pop('lon_0'), src_params.pop('lon_0')
 
-            x_lim = vertices[:, 0].min(), vertices[:, 0].max()
-            y_lim = vertices[:, 1].min(), vertices[:, 1].max()
+            xs, ys = vertices[:, 0], vertices[:, 1]
 
-            potential = (self.y_limits[0] <= y_lim[0] and
-                         self.y_limits[1] >= y_lim[1])
-
-            try:
-                bboxes, proj_offset = self._bbox_and_offset(src_crs)
-            except (ValueError, TypeError):
-                potential = False
+            potential = (self_params == src_params and
+                         self.y_limits[0] <= ys.min() and
+                         self.y_limits[1] >= ys.max())
 
             if potential:
+                mod = np.diff(src_crs.x_limits)[0]
+                bboxes, proj_offset = self._bbox_and_offset(src_crs)
+                x_lim = xs.min(), xs.max()
+                y_lim = ys.min(), ys.max()
                 for poly in bboxes:
                     # Arbitrarily choose the number of moduli to look
                     # above and below the -180->180 range. If data is beyond
