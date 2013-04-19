@@ -1266,6 +1266,42 @@ class InterruptedGoodeHomolosine(Projection):
         return self._y_limits
 
 
+class Geostationary(Projection):
+    def __init__(self, central_longitude=0.0, satellite_height=35785831,
+                 false_easting=0, false_northing=0, globe=None):
+        if globe is None:
+            globe = Globe()
+        proj4_params = {'proj': 'geos', 'lon_0': central_longitude,
+                        'lat_0': 0, 'h': satellite_height, 'x_0': false_easting,
+                        'y_0': false_northing, 'units': 'm', 'no_defs': ''}
+        super(Geostationary, self).__init__(proj4_params)
+        # The maximum extent will be invalidated when the satellite
+        # height is not set to the default value.
+        # TODO: Determine this value automatically.
+        self._max = 5.43e6
+        center_point = sgeom.Point(false_easting, false_northing)
+        self._boundary = center_point.buffer(self._max).exterior
+        self._xlim = self._boundary.bounds[::2]
+        self._ylim = self._boundary.bounds[1::2]
+        self._threshold = np.diff(self._xlim)[0] * 0.02
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @property
+    def x_limits(self):
+        return self._xlim
+
+    @property
+    def y_limits(self):
+        return self._ylim
+
+
 class _Thing(object):
     def __init__(self, distance, kind, data):
         self.distance = distance
