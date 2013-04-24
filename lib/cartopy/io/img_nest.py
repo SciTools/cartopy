@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -22,7 +22,7 @@ import itertools
 import os.path
 
 import numpy as np
-from PIL import Image
+import PIL.Image
 from shapely.geometry import box
 
 
@@ -71,6 +71,11 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         self._bbox = None
 
     def bbox(self):
+        """
+        Return a :class:`~shapely.geometry.polygon.Polygon` instance for
+        this image's extents.
+
+        """
         if self._bbox is None:
             x0, x1, y0, y1 = self.extent
             self._bbox = box(x0, y0, x1, y1)
@@ -79,7 +84,8 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
     @staticmethod
     def world_files(fname):
         """
-        Determine world filename combinations.
+        Determine potential world filename combinations, without checking
+        their existence.
 
         For example, a '*.tif' file may have one of the following
         popular conventions for world file extensions "*.tifw' or
@@ -88,13 +94,25 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         Args:
 
         * fname:
-            Name of the file to world file combinations
+            Name of the file for which to get all the possible world
+            filename combinations
 
         Returns:
-            A list of world filename combinations.
+            A list of possible world filename combinations.
+
+        Examples:
+
+        >>> from cartopy.io.img_nest import Img
+        >>> Img.world_files('img.png')
+        ['img.pngw', 'img.pgw', 'img.PNGW', 'img.PGW']
+        >>> Img.world_files('/path/to/img.TIF')[0:2]
+        ['/path/to/img.tifw', '/path/to/img.tfw']
+        >>> Img.world_files('/path/to/img/with_no_extension')[0]
+        '/path/to/img/with_no_extension.w'
 
         """
         froot, fext = os.path.splitext(fname)
+        # If there was no extension to the filename.
         if froot == fname:
             result = ['{}.{}'.format(fname, 'w'),
                       '{}.{}'.format(fname, 'W')]
@@ -108,6 +126,46 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                 fext_types.extend([ext.upper() for ext in fext_types])
                 result = ['{}.{}'.format(froot, ext) for ext in fext_types]
         return result
+
+    def __array__(self):
+        return np.array(PIL.Image.open(self.filename))
+
+    @classmethod
+    def from_world_file(cls, img_fname, world_fname):
+        """
+        Return an Img instance from the given image filename and
+        worldfile filename.
+
+        """
+        im = PIL.Image.open(img_fname, 'r')
+        with open(world_fname) as world_fh:
+            extent, pix_size = cls.world_file_extent(world_fh, im.size)
+        return cls(img_fname, extent, 'lower', pix_size)
+
+    @staticmethod
+    def world_file_extent(worldfile_handle, im_shape):
+        """
+        Return the extent ``(x0, x1, y0, y1)`` and pixel size
+        ``(x_width, y_width)`` as defined in the given worldfile file handle
+        and associated image shape ``(x, y)``.
+
+        """
+        lines = worldfile_handle.readlines()
+
+        pix_size = (float(lines[0]), float(lines[3]))
+        pix_rotation = [float(lines[1]), float(lines[2])]
+        if not pix_rotation == [0., 0.]:
+            raise ValueError('Rotated pixels in world files is not currently '
+                             'supported.')
+        ul_corner = [float(lines[4]), float(lines[5])]
+
+        min_x, max_x = [ul_corner[0] - pix_size[0]/2.,
+                        ul_corner[0] + pix_size[0]*im_shape[0] -
+                        pix_size[0]/2.]
+        min_y, max_y = [ul_corner[1] - pix_size[1]/2.,
+                        ul_corner[1] + pix_size[1]*im_shape[1] -
+                        pix_size[1]/2.]
+        return (min_x, max_x, min_y, max_y), pix_size
 
 
 class ImageCollection(object):
@@ -135,7 +193,8 @@ class ImageCollection(object):
         self.crs = crs
         self.images = images or []
 
-    def scan_dir_for_imgs(self, directory, glob_pattern='*.tif'):
+    def scan_dir_for_imgs(self, directory, glob_pattern='*.tif',
+                          img_class=Img):
         """
         Search the given directory for the associated world files
         of the image files.
@@ -168,32 +227,7 @@ class ImageCollection(object):
                 msg = 'Image file {!r} has no associated world file'
                 raise ValueError(msg.format(img))
 
-            lines = open(fworld).readlines()
-            pix_size = [float(lines[0]), float(lines[3])]
-            pix_rotation = [float(lines[1]), float(lines[2])]
-            assert pix_rotation == [0., 0.], ('Rotated pixels not currently '
-                                              'supported. Image: %s' % img)
-            ul_corner = [float(lines[4]), float(lines[5])]
-
-            im = Image.open(img, 'r')
-            shape = im.size
-            min_x, max_x = sorted([ul_corner[0] - pix_size[0] / 2.,
-                                   ul_corner[0] + pix_size[0] * shape[0]
-                                   - pix_size[0] / 2.])
-            min_y, max_y = sorted([ul_corner[1] - pix_size[1] / 2.,
-                                   ul_corner[1] + pix_size[1] * shape[1]
-                                   - pix_size[1] / 2.])
-            extent = (min_x, max_x, min_y, max_y)
-            self.images.append(Img(img, self._extent_finalize(
-                extent, img), 'lower', tuple(pix_size)))
-
-    def _extent_finalize(self, extent, filename):
-        """
-        The final extent of an image is passed through this method. This
-        is a good place to implement rounding or some other processing.
-
-        """
-        return extent
+            self.images.append(img_class.from_world_file(img, fworld))
 
 
 class NestedImageCollection(object):
@@ -240,9 +274,6 @@ class NestedImageCollection(object):
         maps (collection name, image) to a list of children
         (collection name, image).
         """
-
-        tiles = {}
-
         if _ancestry is not None:
             self._ancestry = _ancestry
         else:
@@ -424,14 +455,14 @@ class NestedImageCollection(object):
 
         """
         img = collection_image[1]
-        img_data = Image.open(img.filename)
+        img_data = PIL.Image.open(img.filename)
         img_data = img_data.convert(self.desired_tile_form)
         return img_data, img.extent, img.origin
 
     @classmethod
     def from_configuration(cls, name, crs, name_dir_pairs,
                            glob_pattern='*.tif',
-                           img_collection_cls=ImageCollection):
+                           img_class=Img):
         """
         Creates a :class:`~cartopy.io.img_nest.NestedImageCollection` instance
         given the list of image collection name and directory path pairs.
@@ -447,8 +478,7 @@ class NestedImageCollection(object):
                     ]
             r = NestedImageCollection.from_configuration('os',
                                                          ccrs.OSGB(),
-                                                         files,
-                                                         )
+                                                         files)
 
         .. important::
             The list of image collection name and directory path pairs must be
@@ -483,8 +513,9 @@ class NestedImageCollection(object):
         """
         collections = []
         for collection_name, collection_dir in name_dir_pairs:
-            collection = img_collection_cls(collection_name, crs)
+            collection = ImageCollection(collection_name, crs)
             collection.scan_dir_for_imgs(collection_dir,
-                                         glob_pattern=glob_pattern)
+                                         glob_pattern=glob_pattern,
+                                         img_class=img_class)
             collections.append(collection)
         return cls(name, crs, collections)
