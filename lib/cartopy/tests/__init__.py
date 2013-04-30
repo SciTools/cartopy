@@ -15,11 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import contextlib
 import functools
+import tempfile
+import shutil
 import types
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+
+
+@contextlib.contextmanager
+def temp_dir(suffix=None):
+    if suffix is None:
+        suffix = ''
+    dname = tempfile.mkdtemp(suffix=suffix)
+    try:
+        yield dname
+    finally:
+        shutil.rmtree(dname)
 
 
 def not_a_nose_fixture(function):

@@ -658,6 +658,36 @@ class OSGB(Projection):
         return (0, 13e5)
 
 
+class OSNI(Projection):
+    def __init__(self):
+        proj4_params = {'proj': 'tmerc', 'lat_0': 53.5, 'lon_0': -8,
+                        'k': 1.000035, 'x_0': 200000, 'y_0': 250000,
+                        'a': 6377340.189, 'b': 6356034.447938534,
+                        'units': 'm', 'no_defs': ''}
+        super(OSNI, self).__init__(proj4_params)
+
+    @property
+    def threshold(self):
+        return 1e4
+
+    @property
+    def boundary(self):
+        x0, x1 = self.x_limits
+        w = x1 - x0
+        y0, y1 = self.y_limits
+        h = y1 - y0
+        # XXX Should this be a LinearRing?
+        return sgeom.LineString([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
+
+    @property
+    def x_limits(self):
+        return (18814.9667, 386062.3293)
+
+    @property
+    def y_limits(self):
+        return (11764.8481, 464720.9559)
+
+
 class EuroPP(Projection):
     """
     UTM Zone 32 projection for EuroPP domain.
