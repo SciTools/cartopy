@@ -20,11 +20,9 @@ import unittest
 
 import numpy as np
 import shapely.geometry as sgeom
-from matplotlib.path import Path
 
 
 import cartopy.crs as ccrs
-import cartopy.mpl.patch as cmpath
 
 
 class TestBoundary(unittest.TestCase):
@@ -70,57 +68,6 @@ class TestBoundary(unittest.TestCase):
             polygon = sgeom.Polygon(coords)
             multi_polygon = projection.project_geometry(polygon)
             self.assertEqual(len(multi_polygon), expected_polys)
-
-    def test_at_boundary(self):
-        # Check that a polygon is not split and recombined incorrectly
-        # as a result of being on the boundary, determined by tolerance.
-
-        # Exterior geometry
-        exterior = np.array(
-            [[177.5, -79.912],
-             [178.333, -79.946],
-             [181.666, -83.494],
-             [180.833, -83.570],
-             [180., -83.620],
-             [178.438, -83.333],
-             [178.333, -83.312],
-             [177.956, -83.888],
-             [180.,  -84.086],
-             [180.833, -84.318],
-             [183., -86.],
-             [183., -78.],
-             [177.5, -79.912]])
-        code_ext = np.ones(len(exterior))*2
-        code_ext[0] = 1
-
-        # Interior geometry
-        interior = np.array(
-            [[179.166, -83.963],
-             [179.166, -83.782],
-             [180., -83.802],
-             [180.833, -83.724],
-             [180.833, -84.110],
-             [180., -83.952],
-             [179.166, -83.963]])
-        code_int = np.ones(len(interior))*2
-        code_int[0] = 1
-
-        verts = np.vstack((exterior, interior))
-        codes = np.hstack((code_ext, code_int))
-
-        path = Path(verts, codes)
-
-        src = ccrs.PlateCarree()
-        tgt = ccrs.PlateCarree()
-
-        geoms = cmpath.path_to_geos(path)[0]
-
-        # Equal qrea test
-        poly = tgt.project_geometry(geoms, src)
-        self.assertAlmostEqual(poly.area, 20.810435218908584)
-
-        # Number of polygons
-        self.assertEqual(len(poly), 3)
 
 
 class TestMisc(unittest.TestCase):
