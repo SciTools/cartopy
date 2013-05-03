@@ -19,6 +19,7 @@
 import unittest
 
 from shapely import geometry
+import numpy as np
 
 import cartopy.crs as ccrs
 
@@ -163,6 +164,38 @@ class TestMisc(unittest.TestCase):
         linear_ring = geometry.polygon.LinearRing(coords[::-1])
         result = target_proj.project_geometry(linear_ring, src_proj)
         self.assertEqual(len(result), 1)
+
+    def test_at_boundary(self):
+        # Check that a polygon is split and recombined correctly
+        # as a result of being on the boundary, determined by tolerance.
+
+        exterior = np.array(
+            [[177.5, -79.912],
+             [178.333, -79.946],
+             [181.666, -83.494],
+             [180.833, -83.570],
+             [180., -83.620],
+             [178.438, -83.333],
+             [178.333, -83.312],
+             [177.956, -83.888],
+             [180.,  -84.086],
+             [180.833, -84.318],
+             [183., -86.],
+             [183., -78.],
+             [177.5, -79.912]])
+        tring = geometry.polygon.LinearRing(exterior)
+
+        tcrs = ccrs.PlateCarree()
+        scrs = ccrs.PlateCarree()
+
+        r = tcrs._project_linear_ring(tring, scrs)
+
+        # Number of linearstrings
+        self.assertEqual(len(r), 4)
+
+        # Test area of smallest Polygon that contains all the points in the
+        # geometry.
+        self.assertAlmostEqual(r.convex_hull.area, 2347.75619258)
 
 
 if __name__ == '__main__':
