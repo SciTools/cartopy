@@ -361,6 +361,7 @@ class Projection(CRS):
                                    t.data[1] != 'last')
             edge_things = filter(filter_fn, edge_things)
 
+            added_linestring = set()
             while True:
                 # Find the distance of the last point
                 d_last = boundary_distance(line_string.coords[-1])
@@ -396,6 +397,15 @@ class Projection(CRS):
                         coords_to_append = coords_to_append[::-1]
                     line_string = sgeom.LineString((list(line_string.coords) +
                                                     coords_to_append))
+
+                    # Catch getting stuck in an infinite loop by checking that
+                    # linestring only added once
+                    if j not in added_linestring:
+                        added_linestring.add(j)
+                    else:
+                        raise RuntimeError('Unidentified problem with '
+                                           'geometry, linestring being '
+                                           're-added')
 
         # filter out any non-valid linear rings
         done = filter(lambda linear_ring: len(linear_ring.coords) > 2, done)
