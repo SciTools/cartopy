@@ -191,6 +191,11 @@ class Projection(CRS):
             #   jkl41abc
             # 2) The cut ends of segments are too close to reliably
             # place into an order along the boundary.
+
+            # Threshold for whether a point is close enough to be the same
+            # point as another.
+            threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
+
             line_strings = list(multi_line_string)
             any_modified = False
             i = 0
@@ -200,7 +205,7 @@ class Projection(CRS):
                 while j < len(line_strings):
                     if i != j and np.allclose(line_strings[i].coords[0],
                                               line_strings[j].coords[-1],
-                                              atol=self.threshold):
+                                              atol=threshold):
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
                         combo = sgeom.LineString(last_coords + first_coords)
