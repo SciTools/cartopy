@@ -492,12 +492,29 @@ class GeoAxes(matplotlib.axes.Axes):
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = sgeom.LineString([[x1, y1], [x2, y1],
-                                          [x2, y2], [x1, y2],
-                                          [x1, y1]])
+        domain_in_crs = sgeom.polygon.Polygon([[x1, y1], [x2, y1],
+                                                          [x2, y2], [x1, y2],
+                                                          [x1, y1]])
 
-        r = self.projection.project_geometry(domain_in_crs, crs)
-        x1, y1, x2, y2 = r.bounds
+        projected = None
+
+        # Sometimes numerical issues cause the projected vertices of the
+        # requested extents to appear outside the projection domain.
+        # This results in an empty geometry, which has an empty `bounds`
+        # tuple, which causes an unpack error.
+        # This workaround avoids using the projection when the requested
+        # extents are obviously the same as the projection domain.
+        try_workaround = ((crs is None and
+                           isinstance(self.projection, ccrs.PlateCarree)) or
+                          crs == self.projection)
+        if try_workaround:
+            boundary = self.projection.boundary
+            if boundary.symmetric_difference(domain_in_crs.boundary).is_empty:
+                projected = boundary
+
+        if projected is None:
+            projected = self.projection.project_geometry(domain_in_crs, crs)
+        x1, y1, x2, y2 = projected.bounds
         self.set_xlim([x1, x2])
         self.set_ylim([y1, y2])
 
