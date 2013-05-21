@@ -18,7 +18,7 @@
 from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 import cartopy.crs as ccrs
 
@@ -57,6 +57,25 @@ def test_extents():
                               np.array([[-17.17698577, 48.21879707],
                                         [5.68924381, 60.54218893]])
                               )
+
+
+def test_domain_extents():
+    # Setting the extent to global or the domain limits.
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.set_extent((-180, 180, -90, 90))
+    assert_array_equal(ax.viewLim.get_points(), [[-180, -90], [180, 90]])
+    ax.set_extent((-180, 180, -90, 90), ccrs.PlateCarree())
+    assert_array_equal(ax.viewLim.get_points(), [[-180, -90], [180, 90]])
+
+    ax = plt.axes(projection=ccrs.PlateCarree(90))
+    ax.set_extent((-180, 180, -90, 90))
+    assert_array_equal(ax.viewLim.get_points(), [[-180, -90], [180, 90]])
+    ax.set_extent((-180, 180, -90, 90), ccrs.PlateCarree(90))
+    assert_array_equal(ax.viewLim.get_points(), [[-180, -90], [180, 90]])
+
+    ax = plt.axes(projection=ccrs.OSGB())
+    ax.set_extent((0, 7e5, 0, 13e5), ccrs.OSGB())
+    assert_array_equal(ax.viewLim.get_points(), [[0, 0], [7e5, 13e5]])
 
 
 def test_update_lim():
