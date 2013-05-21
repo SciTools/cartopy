@@ -171,7 +171,7 @@ cdef class CRS:
     cpdef is_geodetic(self):
         return bool(pj_is_latlong(self.proj4))
 
-    def transform_point(self, double x, double y, CRS src_crs not None):
+    def transform_point(self, CRS src_crs not None, double x, double y):
         """
         Transform the given float64 coordinate pair, in the given source
         coordinate system (``src_crs``), to this coordinate system.
