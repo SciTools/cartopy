@@ -4,3 +4,5 @@ div.body p { width: 65em; padding-right: 45px; }
 .gallery-images p { display: inline;}
 
 .inline-paragraphs p {display: inline;}
+
+.highlight {background: none;}
