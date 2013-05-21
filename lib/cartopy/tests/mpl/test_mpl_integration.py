@@ -267,7 +267,7 @@ def test_pcolormesh_global_with_wrap3():
     data = data[:-1, :-1]
     data = np.ma.masked_greater(data, 2.6)
 
-    ax = plt.subplot(211, projection=ccrs.PlateCarree(-45))
+    ax = plt.subplot(311, projection=ccrs.PlateCarree(-45))
     c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
@@ -275,7 +275,12 @@ def test_pcolormesh_global_with_wrap3():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(212, projection=ccrs.PlateCarree(-1.87499952))
+    ax = plt.subplot(312, projection=ccrs.PlateCarree(-1.87499952))
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    ax = plt.subplot(313, projection=ccrs.Robinson(-2))
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
