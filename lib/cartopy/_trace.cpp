@@ -24,6 +24,12 @@
 
 #include "_trace.h"
 
+#ifdef _MSC_VER
+#include <float.h>
+#define isnan _isnan
+#define isfinite _finite
+#endif
+
 
 Interpolator::~Interpolator(){}
 
@@ -89,7 +95,7 @@ void SphericalInterpolator::set_line(const Point &start, const Point &end)
     m_start = start;
     m_end = end;
 
-    if (start.x != end.x or start.y != end.y)
+    if (start.x != end.x || start.y != end.y)
     {
         double lon, lat;
         double t, x, y;
@@ -407,7 +413,7 @@ bool straightAndDomain(double t_start, const Point &p_start,
         }
         else
         {
-            valid = 0.0 < along and along < 1.0;
+            valid = 0.0 < along && along < 1.0;
             if (valid)
             {
                 double separation;
@@ -497,7 +503,7 @@ void bisect(double t_start, const Point &p_start, const Point &p_end,
         }
         else
         {
-            valid = (!isfinite(p_current.x)) or (!isfinite(p_current.y));
+            valid = (!isfinite(p_current.x)) || (!isfinite(p_current.y));
         }
 #ifdef DEBUG
         std::cerr << "   => valid: " << valid << std::endl;
