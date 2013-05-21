@@ -492,9 +492,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = sgeom.polygon.Polygon([[x1, y1], [x2, y1],
-                                                          [x2, y2], [x1, y2],
-                                                          [x1, y1]])
+        domain_in_crs = sgeom.polygon.LineString([[x1, y1], [x2, y1],
+                                                  [x2, y2], [x1, y2],
+                                                  [x1, y1]])
 
         projected = None
 
@@ -509,7 +509,7 @@ class GeoAxes(matplotlib.axes.Axes):
                           crs == self.projection)
         if try_workaround:
             boundary = self.projection.boundary
-            if boundary.symmetric_difference(domain_in_crs.boundary).is_empty:
+            if boundary.equals(domain_in_crs):
                 projected = boundary
 
         if projected is None:
