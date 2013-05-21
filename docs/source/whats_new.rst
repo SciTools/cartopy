@@ -7,6 +7,8 @@ What's new in Cartopy 0.8
 * Phil Elson added a major performance improvement when plotting data from PlateCarree onto a
   PlateCarree map. (:pull:`260`)
 
+* Bill Little added support for the OSNI projection and enhanced the image nest capability. (:pull:`263`)
+
 
 What's new in Cartopy 0.7
 *************************

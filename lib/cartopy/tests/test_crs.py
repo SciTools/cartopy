@@ -38,6 +38,22 @@ class TestCRS(unittest.TestCase):
 
         self.assertEqual(ccrs.Geodetic(), ccrs.Geodetic())
 
+    def test_osni(self):
+        osni = ccrs.OSNI()
+        ll = ccrs.Geodetic()
+
+        # results obtained by nearby.org.uk.
+        lat, lon = np.array([54.5622169298669, -5.54159863617957],
+                            dtype=np.double)
+        east, north = np.array([359000, 371000], dtype=np.double)
+
+        assert_arr_almost_eq(osni.transform_point(lon, lat, ll),
+                             np.array([east, north]),
+                             -1)
+        assert_arr_almost_eq(ll.transform_point(east, north, osni),
+                             np.array([lon, lat]),
+                             3)
+
     def test_osgb(self):
         osgb = ccrs.OSGB()
         ll = ccrs.Geodetic()
