@@ -155,7 +155,7 @@ def test_contourf_transform_path_counting():
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom.
-    msg = ('The given geometry was transfomed too many times (expected: %s; '
+    msg = ('The given geometry was transformed too many times (expected: %s; '
            'got %s) - the caching is not working.'
            '' % (n_geom, path_to_geos_counter.count))
     assert path_to_geos_counter.count == n_geom, msg
