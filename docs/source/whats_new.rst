@@ -9,6 +9,9 @@ What's new in Cartopy 0.8
 
 * Bill Little added support for the OSNI projection and enhanced the image nest capability. (:pull:`263`)
 
+* Byron Blay and Richard Hattersley added a :class:`cartopy.crs.Globe` class to encapsulate ellipsoid/datum information for CRSs and
+  extended support for globe handling in many projections, including Stereographic.
+
 
 What's new in Cartopy 0.7
 *************************

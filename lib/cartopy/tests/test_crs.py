@@ -136,6 +136,22 @@ class TestCRS(unittest.TestCase):
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
 
+    def test_globe(self):
+        # Ensure the globe affects output.
+        rugby_globe = ccrs.Globe(semimajor_axis=9000000,
+                                 semiminor_axis=1000000)
+        footy_globe = ccrs.Globe(semimajor_axis=1000000,
+                                 semiminor_axis=1000000)
+
+        rugby_moll = ccrs.Mollweide(globe=rugby_globe)
+        footy_moll = ccrs.Mollweide(globe=footy_globe)
+
+        rugby_pt = rugby_moll.transform_point(10, 10, ccrs.Geodetic())
+        footy_pt = footy_moll.transform_point(10, 10, ccrs.Geodetic())
+
+        assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
+        assert_arr_almost_eq(footy_pt, (155657, 193479), decimal=0)
+
 
 def test_pickle():
     # check that we can pickle a simple CRS

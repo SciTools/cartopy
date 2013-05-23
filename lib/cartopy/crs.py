@@ -30,11 +30,11 @@ import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
 from shapely.prepared import prep
 
-from cartopy._crs import CRS, Geocentric, Geodetic, PROJ4_RELEASE
+from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_RELEASE
 import cartopy.trace
 
 
-__document_these__ = ['CRS', 'Geocentric', 'Geodetic']
+__document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
 
 
 class RotatedGeodetic(CRS):
@@ -45,8 +45,7 @@ class RotatedGeodetic(CRS):
     Coordinates are measured in degrees.
 
     """
-    def __init__(self, pole_longitude, pole_latitude, ellipse='WGS84',
-                 datum='WGS84'):
+    def __init__(self, pole_longitude, pole_latitude, globe=None):
         """
         Create a RotatedGeodetic CRS.
 
@@ -57,16 +56,16 @@ class RotatedGeodetic(CRS):
 
         Kwargs:
 
-            * ellipse      - Ellipsoid definition.
-            * datum        - Datum definition.
+            * globe - An optional :class:`cartopy.crs.Globe`.
+                      Defaults to a "WGS84" datum.
 
         """
         proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
                         'o_lat_p': pole_latitude,
                         'lon_0': 180 + pole_longitude,
-                        'to_meter': math.radians(1), 'ellps': ellipse,
-                        'datum': datum}
-        super(RotatedGeodetic, self).__init__(proj4_params)
+                        'to_meter': math.radians(1)}
+        globe = globe or Globe('WGS84')
+        super(RotatedGeodetic, self).__init__(proj4_params, globe=globe)
 
 
 class Projection(CRS):
@@ -513,10 +512,10 @@ class _RectangularProjection(Projection):
     is symmetric about the origin.
 
     """
-    def __init__(self, proj4_params, half_width, half_height):
+    def __init__(self, proj4_params, half_width, half_height, globe=None):
         self._half_width = half_width
         self._half_height = half_height
-        super(_RectangularProjection, self).__init__(proj4_params)
+        super(_RectangularProjection, self).__init__(proj4_params, globe=globe)
 
     @property
     def boundary(self):
@@ -543,9 +542,9 @@ class _CylindricalProjection(_RectangularProjection):
 
 class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'eqc', 'lon_0': central_longitude,
-                        'a': math.degrees(1)}
-        super(PlateCarree, self).__init__(proj4_params, 180, 90)
+        proj4_params = {'proj': 'eqc', 'lon_0': central_longitude}
+        globe = Globe(semimajor_axis=math.degrees(1))
+        super(PlateCarree, self).__init__(proj4_params, 180, 90, globe=globe)
 
     @property
     def threshold(self):
@@ -635,9 +634,10 @@ class PlateCarree(_CylindricalProjection):
 
 class TransverseMercator(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'tmerc', 'lon_0':
-                        central_longitude, 'a': math.degrees(1)}
-        super(TransverseMercator, self).__init__(proj4_params, 180, 90)
+        proj4_params = {'proj': 'tmerc', 'lon_0': central_longitude}
+        globe = Globe(semimajor_axis=math.degrees(1))
+        super(TransverseMercator, self).__init__(proj4_params, 180, 90,
+                                                 globe=globe)
 
     @property
     def threshold(self):
@@ -650,9 +650,9 @@ class OSGB(Projection):
     def __init__(self):
         proj4_params = {'proj': 'tmerc', 'lat_0': 49, 'lon_0': -2,
                         'k': 0.9996012717, 'x_0': 400000, 'y_0': -100000,
-                        'ellps': 'airy', 'datum': 'OSGB36',
                         'units': 'm', 'no_defs': ''}
-        super(OSGB, self).__init__(proj4_params)
+        globe = Globe(datum='OSGB36', ellipse='airy')
+        super(OSGB, self).__init__(proj4_params, globe=globe)
 
     @property
     def threshold(self):
@@ -677,9 +677,10 @@ class OSNI(Projection):
     def __init__(self):
         proj4_params = {'proj': 'tmerc', 'lat_0': 53.5, 'lon_0': -8,
                         'k': 1.000035, 'x_0': 200000, 'y_0': 250000,
-                        'a': 6377340.189, 'b': 6356034.447938534,
                         'units': 'm', 'no_defs': ''}
-        super(OSNI, self).__init__(proj4_params)
+        globe = Globe(semimajor_axis=6377340.189,
+                      semiminor_axis=6356034.447938534)
+        super(OSNI, self).__init__(proj4_params, globe=globe)
 
     @property
     def threshold(self):
@@ -716,11 +717,10 @@ class EuroPP(Projection):
                         'k': 0.9996,
                         'x_0': 1750000, 'y_0': 1500000,
                         'zone': 32,
-                        'ellps': 'intl',
                         'units': 'm',
-                        'towgs84': '-87,-98,-121',
                         'no_defs': ''}
-        super(EuroPP, self).__init__(proj4_params)
+        globe = Globe(ellipse='intl', towgs84='-87,-98,-121')
+        super(EuroPP, self).__init__(proj4_params, globe=globe)
 
     @property
     def boundary(self):
@@ -743,9 +743,9 @@ class EuroPP(Projection):
 
 class Mercator(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'merc', 'lon_0': central_longitude,
-                        'a': math.degrees(1)}
-        super(Mercator, self).__init__(proj4_params, 180, 180)
+        proj4_params = {'proj': 'merc', 'lon_0': central_longitude}
+        globe = Globe(semimajor_axis=math.degrees(1))
+        super(Mercator, self).__init__(proj4_params, 180, 180, globe=globe)
 
     @property
     def threshold(self):
@@ -754,10 +754,10 @@ class Mercator(_RectangularProjection):
 
 class LambertCylindrical(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'cea', 'lon_0': central_longitude,
-                        'a': math.degrees(1)}
+        proj4_params = {'proj': 'cea', 'lon_0': central_longitude}
+        globe = Globe(semimajor_axis=math.degrees(1))
         super(LambertCylindrical, self).__init__(proj4_params, 180,
-                                                 math.degrees(1))
+                                                 math.degrees(1), globe=globe)
 
     @property
     def threshold(self):
@@ -766,10 +766,10 @@ class LambertCylindrical(_RectangularProjection):
 
 class Miller(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'mill', 'lon_0': central_longitude,
-                        'a': math.degrees(1)}
+        proj4_params = {'proj': 'mill', 'lon_0': central_longitude}
+        globe = Globe(semimajor_axis=math.degrees(1))
         # XXX How can we derive the vertical limit of 131.98?
-        super(Miller, self).__init__(proj4_params, 180, 131.98)
+        super(Miller, self).__init__(proj4_params, 180, 131.98, globe=globe)
 
     @property
     def threshold(self):
@@ -777,13 +777,13 @@ class Miller(_RectangularProjection):
 
 
 class RotatedPole(_CylindricalProjection):
-    def __init__(self, pole_longitude=0.0, pole_latitude=90.0):
+    def __init__(self, pole_longitude=0.0, pole_latitude=90.0, globe=None):
         proj4_params = {'proj': 'ob_tran', 'o_proj': 'latlon', 'o_lon_p': 0,
                         'o_lat_p': pole_latitude,
                         'lon_0': 180 + pole_longitude,
                         'to_meter': math.radians(1)
                         }
-        super(RotatedPole, self).__init__(proj4_params, 180, 90)
+        super(RotatedPole, self).__init__(proj4_params, 180, 90, globe=globe)
 
     @property
     def threshold(self):
@@ -791,9 +791,9 @@ class RotatedPole(_CylindricalProjection):
 
 
 class Gnomonic(Projection):
-    def __init__(self, central_latitude=0.0):
+    def __init__(self, central_latitude=0.0, globe=None):
         proj4_params = {'proj': 'gnom', 'lat_0': central_latitude}
-        super(Gnomonic, self).__init__(proj4_params)
+        super(Gnomonic, self).__init__(proj4_params, globe=globe)
         self._max = 5e7
 
     @property
@@ -814,10 +814,15 @@ class Gnomonic(Projection):
 
 
 class Stereographic(Projection):
-    def __init__(self, central_latitude=0.0, central_longitude=0.0):
-        proj4_params = {'proj': 'stere', 'lat_0': central_latitude,
-                        'lon_0': central_longitude}
-        super(Stereographic, self).__init__(proj4_params)
+    def __init__(self, central_latitude=0.0, central_longitude=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 true_scale_latitude=None, globe=None):
+        proj4_params = {'proj': 'stere',
+                        'lat_0': central_latitude, 'lon_0': central_longitude,
+                        'x_0': false_easting, 'y_0': false_northing}
+        if true_scale_latitude:
+            proj4_params['lat_ts'] = true_scale_latitude
+        super(Stereographic, self).__init__(proj4_params, globe=globe)
         self._max = 5e7
 
     @property
@@ -838,24 +843,25 @@ class Stereographic(Projection):
 
 
 class NorthPolarStereo(Stereographic):
-    def __init__(self, central_longitude=0.0):
+    def __init__(self, central_longitude=0.0, globe=None):
         super(NorthPolarStereo, self).__init__(
             central_latitude=90,
-            central_longitude=central_longitude)
+            central_longitude=central_longitude, globe=globe)
 
 
 class SouthPolarStereo(Stereographic):
-    def __init__(self, central_longitude=0.0):
+    def __init__(self, central_longitude=0.0, globe=None):
         super(SouthPolarStereo, self).__init__(
             central_latitude=-90,
-            central_longitude=central_longitude)
+            central_longitude=central_longitude, globe=globe)
 
 
 class Orthographic(Projection):
-    def __init__(self, central_longitude=0.0, central_latitude=0.0):
+    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+                 globe=None):
         proj4_params = {'proj': 'ortho', 'lon_0':
                         central_longitude, 'lat_0': central_latitude}
-        super(Orthographic, self).__init__(proj4_params)
+        super(Orthographic, self).__init__(proj4_params, globe=globe)
         self._max = 6.4e6
 
     @property
@@ -876,8 +882,9 @@ class Orthographic(Projection):
 
 
 class _WarpedRectangularProjection(Projection):
-    def __init__(self, proj4_params, central_longitude):
-        super(_WarpedRectangularProjection, self).__init__(proj4_params)
+    def __init__(self, proj4_params, central_longitude, globe=None):
+        super(_WarpedRectangularProjection, self).__init__(proj4_params,
+                                                           globe=globe)
 
         # Obtain boundary points
         points = []
@@ -917,9 +924,10 @@ class _WarpedRectangularProjection(Projection):
 
 
 class Mollweide(_WarpedRectangularProjection):
-    def __init__(self, central_longitude=0):
+    def __init__(self, central_longitude=0, globe=None):
         proj4_params = {'proj': 'moll', 'lon_0': central_longitude}
-        super(Mollweide, self).__init__(proj4_params, central_longitude)
+        super(Mollweide, self).__init__(proj4_params, central_longitude,
+                                        globe=globe)
 
     @property
     def threshold(self):
@@ -927,7 +935,7 @@ class Mollweide(_WarpedRectangularProjection):
 
 
 class Robinson(_WarpedRectangularProjection):
-    def __init__(self, central_longitude=0):
+    def __init__(self, central_longitude=0, globe=None):
         # Warn when using Robinson with proj4 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://trac.osgeo.org/proj/ticket/113).
@@ -946,7 +954,8 @@ class Robinson(_WarpedRectangularProjection):
                           'with caution.')
 
         proj4_params = {'proj': 'robin', 'lon_0': central_longitude}
-        super(Robinson, self).__init__(proj4_params, central_longitude)
+        super(Robinson, self).__init__(proj4_params, central_longitude,
+                                       globe=globe)
 
     @property
     def threshold(self):
@@ -1006,9 +1015,10 @@ class Robinson(_WarpedRectangularProjection):
 
 
 class InterruptedGoodeHomolosine(Projection):
-    def __init__(self, central_longitude=0):
+    def __init__(self, central_longitude=0, globe=None):
         proj4_params = {'proj': 'igh', 'lon_0': central_longitude}
-        super(InterruptedGoodeHomolosine, self).__init__(proj4_params)
+        super(InterruptedGoodeHomolosine, self).__init__(proj4_params,
+                                                         globe=globe)
 
         # Obtain boundary points
         points = []
