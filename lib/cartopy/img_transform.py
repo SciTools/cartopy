@@ -251,7 +251,13 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     mask = np.isinf(distances)
 
     desired_ny, desired_nx = target_x_points.shape
-    if array.ndim == 2:
+    if array.ndim == 1:
+        if np.any(mask):
+            array_1d = np.ma.array(array[indices], mask=mask)
+        else:
+            array_1d = array[indices]
+        new_array = array_1d.reshape(desired_ny, desired_nx)
+    elif array.ndim == 2:
         # Handle missing neighbours using a masked array
         if np.any(mask):
             indices = np.where(np.logical_not(mask), indices, 0)
@@ -274,7 +280,7 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         new_array = array_2d.reshape(desired_ny, desired_nx, array.shape[-1])
     else:
         raise ValueError(
-            'Expected array.ndim to be 2 or 3, got {}'.format(array.ndim))
+            'Expected array.ndim to be 1, 2 or 3, got {}'.format(array.ndim))
 
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.
