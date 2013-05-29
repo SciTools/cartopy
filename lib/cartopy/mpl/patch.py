@@ -25,10 +25,10 @@ and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
    http://toblerity.github.com/shapely/manual.html#geometric-objects
 
 """
-
 import numpy as np
 import matplotlib.path
 from matplotlib.path import Path
+import shapely
 from shapely.geometry.collection import GeometryCollection
 from shapely.geometry.linestring import LineString
 from shapely.geometry.point import Point
@@ -130,7 +130,7 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
     return vertices[:-1, :], codes[:-1]
 
 
-def path_to_geos(path):
+def path_to_geos(path, force_ccw=False):
     """
     Creates a list of Shapely geometric objects from a
     :class:`matplotlib.path.Path`.
@@ -139,6 +139,12 @@ def path_to_geos(path):
 
     * path
         A :class:`matplotlib.path.Path` instance.
+
+    Kwargs:
+
+    * force_ccw
+        Boolean flag determining whether the path can be inverted to enforce
+        ccw.
 
     Returns:
         A list of :class:`shapely.geometry.polygon.Polygon`,
@@ -166,7 +172,6 @@ def path_to_geos(path):
         # XXX A path can be given which does not end with close poly, in that
         # situation, we have to guess?
         # XXX Implement a point
-
         if (path_verts.shape[0] > 2 and
                 (path_codes[-1] == Path.CLOSEPOLY or
                  all(path_verts[0, :] == path_verts[-1, :]))):
@@ -198,6 +203,11 @@ def path_to_geos(path):
             geom = Polygon(external_geom.exterior, internal_polys)
         else:
             geom = external_geom
+
+        # Correctly orientate the polygon (ccw)
+        if force_ccw and not geom.exterior.is_ccw:
+            geom = shapely.geometry.polygon.orient(geom)
+
         geom_collection.append(geom)
 
     # If the geom_collection only contains LineStrings combine them
