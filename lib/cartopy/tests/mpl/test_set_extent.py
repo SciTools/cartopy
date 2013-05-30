@@ -59,6 +59,7 @@ def test_extents():
                               )
 
 
+@cleanup
 def test_domain_extents():
     # Setting the extent to global or the domain limits.
     ax = plt.axes(projection=ccrs.PlateCarree())
