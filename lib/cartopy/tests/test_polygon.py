@@ -20,6 +20,7 @@ import unittest
 
 import numpy as np
 import shapely.geometry as sgeom
+import shapely.wkt
 
 
 import cartopy.crs as ccrs
@@ -87,7 +88,7 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(len(multi_polygon), 1)
         self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
 
-    def test_infinite_loop(self):
+    def test_former_infloop_case(self):
         # test a polygon which used to get stuck in an infinite loop
         # see https://github.com/SciTools/cartopy/issues/60
         coords = [(260.625, 68.90383337092122), (360.0, 79.8556091996901),
@@ -102,6 +103,43 @@ class TestMisc(unittest.TestCase):
         multi_polygon = target_projection.project_geometry(geom, source_crs)
         # check the result is non-empty
         self.assertFalse(multi_polygon.is_empty)
+
+    def test_catch_infinite_loop(self):
+        # Known bug resulting in an infinite loop occurring, ensure exception
+        # is raised.  If this multilinestring does not result in an inf. loop
+        # (raised exception), then you've fixed a bug and this test can be
+        # updated.
+        mstring1 = shapely.wkt.loads(
+            'MULTILINESTRING ('
+            '(-179.9999990464349651 -80.2000000000000171, '
+            '-179.5000000001111005 -80.2000000000000171, '
+            '-179.5000000001111005 -79.9000000000000199, '
+            '-179.9999995232739138 -79.9499999523163041, '
+            '-179.8000000001110550 -80.0000000000000000, '
+            '-179.8000000001110550 -80.0999999999999943, '
+            '-179.9999999047436177 -80.0999999999999943), '
+            '(179.9999995231628702 -79.9499999523163041, '
+            '179.5000000000000000 -79.9000000000000199, '
+            '179.5000000000000000 -80.0000000000000000, '
+            '179.9999995231628702 -80.0499999523162842, '
+            '179.5000000000000000 -80.0999999999999943, '
+            '179.5000000000000000 -80.2000000000000171, '
+            '179.9999990463256836 -80.2000000000000171))')
+        mstring2 = shapely.wkt.loads(
+            'MULTILINESTRING ('
+            '(179.9999996185302678 -79.9999999904632659, '
+            '179.5999999999999943 -79.9899999999999949, '
+            '179.5999999999999943 -79.9399999999999977, '
+            '179.9999996185302678 -79.9599999809265114), '
+            '(-179.9999999047436177 -79.9600000000000080, '
+            '-179.9000000001110777 -79.9600000000000080, '
+            '-179.9000000001110777 -80.0000000000000000, '
+            '-179.9999999047436177 -80.0000000000000000))')
+        multi_line_strings = [mstring1, mstring2]
+
+        src = ccrs.PlateCarree()
+        with self.assertRaises(RuntimeError):
+            src._attach_lines_to_boundary(multi_line_strings, True)
 
     def test_3pt_poly(self):
         projection = ccrs.OSGB()
