@@ -942,6 +942,58 @@ class Robinson(_WarpedRectangularProjection):
     def threshold(self):
         return 1e4
 
+    def transform_point(self, x, y, src_crs):
+        """
+        Capture and handle any input NaNs, else invoke parent function,
+        :meth:`_WarpedRectangularProjection.transform_point`.
+
+        Needed because input NaNs can trigger a fatal error in the underlying
+        implementation of the Robinson projection.
+
+        .. note::
+
+            Although the original can in fact translate (nan, lat) into
+            (nan, y-value), this patched version doesn't support that.
+
+        """
+        if np.isnan(x) or np.isnan(y):
+            result = (np.nan, np.nan)
+        else:
+            result = super(Robinson, self).transform_point(x, y, src_crs)
+        return result
+
+    def transform_points(self, src_crs, x, y, z=None):
+        """
+        Capture and handle NaNs in input points -- else as parent function,
+        :meth:`_WarpedRectangularProjection.transform_points`.
+
+        Needed because input NaNs can trigger a fatal error in the underlying
+        implementation of the Robinson projection.
+
+        .. note::
+
+            Although the original can in fact translate (nan, lat) into
+            (nan, y-value), this patched version doesn't support that.
+            Instead, we invalidate any of the points that contain a NaN.
+
+        """
+        input_point_nans = np.isnan(x) | np.isnan(y)
+        if z is not None:
+            input_point_nans |= np.isnan(z)
+        handle_nans = np.any(input_point_nans)
+        if handle_nans:
+            # Remove NaN points from input data to avoid the error.
+            x[input_point_nans] = 0.0
+            y[input_point_nans] = 0.0
+            if z is not None:
+                z[input_point_nans] = 0.0
+        result = super(Robinson, self).transform_points(src_crs, x, y, z)
+        if handle_nans:
+            # Result always has shape (N, 3).
+            # Blank out each (whole) point where we had a NaN in the input.
+            result[input_point_nans] = np.nan
+        return result
+
 
 class InterruptedGoodeHomolosine(Projection):
     def __init__(self, central_longitude=0):
