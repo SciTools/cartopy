@@ -23,16 +23,16 @@ import cartopy.crs as ccrs
 
 def test_griding_data():
     target_prj = ccrs.PlateCarree()
-    import numpy
     # create 3 data points
-    lats = np.array([45,  20, -45], dtype=np.float64)
-    lons = numpy.array([-90, 90,   0], dtype=numpy.float64)
-    data = numpy.array([1,    2,   3], dtype=numpy.float64)
+    lats = np.array([45, 20, -45])
+    lons = np.array([-90, 90, 0])
+    data = np.array([1, 2, 3])
     data_trans = ccrs.Geodetic()
 
     target_x, target_y, extent = img_trans.mesh_projection(target_prj, 8, 4)
 
-    image = img_trans.regrid(data, lons, lats, data_trans, target_prj, target_x, target_y)
+    image = img_trans.regrid(data, lons, lats, data_trans, target_prj,
+                             target_x, target_y)
 
     # The expected image. n.b. on a map the data is reversed in the y axis.
     expected = np.array([[3., 3., 3., 3., 3., 3., 3., 3.],
