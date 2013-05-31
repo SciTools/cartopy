@@ -152,11 +152,17 @@ class InterProjectionTransform(mtransforms.Transform):
             return mpath.Path(self.transform(src_path.vertices))
 
         transformed_geoms = []
-        for geom in patch.path_to_geos(src_path):
-            transformed_geoms.append(
-                self.target_projection.project_geometry(geom,
-                                                        self.source_projection)
-            )
+        # Check whether this transform has the "force_path_ccw" attribute set.
+        # This is a cartopy extension to the Transform API to allow finer
+        # control of Path orientation handling (Path ordering is not important
+        # in matplotlib, but is in Cartopy).
+        geoms = patch.path_to_geos(src_path,
+                                   getattr(self, 'force_path_ccw', False))
+
+        for geom in geoms:
+            proj_geom = self.target_projection.project_geometry(
+                geom, self.source_projection)
+            transformed_geoms.append(proj_geom)
 
         if not transformed_geoms:
             result = mpath.Path(np.empty([0, 2]))
@@ -872,9 +878,17 @@ class GeoAxes(matplotlib.axes.Axes):
                              ' Spherical contouring is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
         if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t._as_mpl_transform(self)
+            kwargs['transform'] = t = t._as_mpl_transform(self)
         else:
             kwargs['transform'] = t
+
+        # Set flag to indicate correcting orientation of paths if not ccw
+        if isinstance(t, mtransforms.Transform):
+            for sub_trans, _ in t._iter_break_from_left_to_right():
+                if isinstance(sub_trans, InterProjectionTransform):
+                    if not hasattr(sub_trans, 'force_path_ccw'):
+                        sub_trans.force_path_ccw = True
+
         return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
