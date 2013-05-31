@@ -50,7 +50,6 @@ class GoogleTiles(object):
                 img, extent, origin = self.get_image(tile)
             except IOError:
                 continue
-            print tile, extent
             img = np.array(img)
             x = np.linspace(extent[0], extent[1], img.shape[1])
             y = np.linspace(extent[2], extent[3], img.shape[0])
