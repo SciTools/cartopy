@@ -61,23 +61,78 @@ class Proj4Error(Exception):
         Exception.__init__(self, msg)
 
 
+class Globe(object):
+    """
+    Defines an ellipsoid and, optionally, how to relate it to the real world.
+
+    """
+    def __init__(self, datum=None, ellipse='WGS84',
+                 semimajor_axis=None, semiminor_axis=None,
+                 flattening=None, inverse_flattening=None, towgs84=None):
+        """
+        Keywords:
+        
+            * datum - Proj4 "datum" definiton. Default to no datum.
+            
+            * ellipse - Proj4 "ellps" definiton. Default to 'WGS84'.
+            
+            * semimajor_axis - Semimajor axis of the spheroid / ellipsoid.
+            
+            * semiminor_axis - Semiminor axis of the ellipsoid.
+            
+            * flattening - Flattening of the ellipsoid.
+            
+            * inverse_flattening - Inverse flattening of the ellipsoid.
+            
+            * towgs84 - Passed through to the Proj4 definition.
+        
+        """
+        self.datum = datum
+        self.ellipse = ellipse
+        self.semimajor_axis = semimajor_axis
+        self.semiminor_axis = semiminor_axis
+        self.flattening = flattening
+        self.inverse_flattening = inverse_flattening
+        self.towgs84 = towgs84
+        
+    def to_proj4_params(self):
+        """Create a dictionary which represents this globe in proj4 params."""
+        proj4_params = {'ellps': self.ellipse, 'datum': self.datum,
+                        'a': self.semimajor_axis, 'b': self.semiminor_axis, 
+                        'f': self.flattening, 'rf': self.inverse_flattening,        
+                        'towgs84': self.towgs84}
+        proj4_params = dict([(k,v) for k, v in proj4_params.items()
+                             if v is not None])
+        return proj4_params
+
+
 cdef class CRS:
     """
     Defines a Coordinate Reference System using proj.4.
 
     """
-    def __init__(self, proj4_params):
+    def __init__(self, proj4_params, globe=None):
         """
         Args:
 
-            * proj4_params - a dictionary of proj4 valid parameters
+            * proj4_params - A dictionary of proj4 valid parameters
                              required to define the desired CRS.
 
+        Kwargs:
+
+            * globe - An optional :class:`~cartopy.crs.Globe`.
+                      If omitted, a default instance is created.
+                             
+        Note:
+        
+            The contents of proj4_params take precedence over the
+            params describing the globe.
+
         """
-        self.proj4_params = dict(proj4_params)
-        # Use WGS84 ellipse if one is not specified in proj4_params
-        if 'ellps' not in self.proj4_params:
-            self.proj4_params['ellps'] = 'WGS84'
+        self.globe = globe or Globe()
+        self.proj4_params = self.globe.to_proj4_params()
+        self.proj4_params.update(proj4_params)
+        
         init_items = ['+{}={}'.format(k, v) for
                       k, v in self.proj4_params.iteritems()]
         self.proj4_init = ' '.join(sorted(init_items))
@@ -148,12 +203,7 @@ cdef class CRS:
         CRS.
 
         """
-        params = self.proj4_params
-        keywords = {}
-        for param_name, keyword in {'ellps': 'ellipse', 'datum': 'datum'}.iteritems():
-            if param_name in params:
-                keywords[keyword] = params[param_name]
-        return Geocentric(**keywords)
+        return Geocentric(self.globe)
 
     def as_geodetic(self):
         """
@@ -161,12 +211,7 @@ cdef class CRS:
         CRS.
 
         """
-        params = self.proj4_params
-        keywords = {}
-        for param_name, keyword in {'ellps': 'ellipse', 'datum': 'datum'}.iteritems():
-            if param_name in params:
-                keywords[keyword] = params[param_name]
-        return Geodetic(**keywords)
+        return Geodetic(self.globe)
 
     cpdef is_geodetic(self):
         return bool(pj_is_latlong(self.proj4))
@@ -292,19 +337,18 @@ class Geodetic(CRS):
     geographical distance and coordinates are measured in degrees.
 
     """
-    # XXX Providing a default datum is bad. Providing the ellipse on its own is sufficient to define the ellipse, 
-    # and in some cases, can overwrite the desired, well defined ellipse.
-    def __init__(self, ellipse='WGS84', datum='WGS84'):
+    def __init__(self, globe=None):
         """
         Kwargs:
-        
-            * ellipse - a proj.4 ellipsoid definition, default is 'WGS84'.
-            * datum - a proj.4 datum definition, default is 'WGS84'.
-        
+
+            * globe - A :class:`cartopy.crs.Globe`.
+                      Defaults to a "WGS84" datum.
+
         """
-        proj4_params = {'proj': 'lonlat', 'ellps': ellipse, 'datum': datum}
-        super(Geodetic, self).__init__(proj4_params)        
-        
+        proj4_params = {'proj': 'lonlat'}
+        globe = globe or Globe('WGS84')
+        super(Geodetic, self).__init__(proj4_params, globe)
+
     # XXX Implement fwd such as Basemap's Geod. Would be used in the tissot example.
     # Could come from http://geographiclib.sourceforge.net
       
@@ -313,15 +357,16 @@ class Geocentric(CRS):
     """
     Defines a Geocentric coordinate system, where x, y, z are Cartesian
     coordinates from the center of the Earth.
-    
+
     """
-    def __init__(self, ellipse='WGS84', datum='WGS84'):
+    def __init__(self, globe=None):
         """
         Kwargs:
 
-            * ellipse - a proj.4 ellipsoid definition, default is 'WGS84'.
-            * datum - a proj.4 datum definition, default is 'WGS84'.
+            * globe - A :class:`cartopy.crs.Globe`.
+                      Defaults to a "WGS84" datum.
 
         """
-        proj4_params = {'proj': 'geocent', 'ellps': ellipse, 'datum': datum}
-        super(Geocentric, self).__init__(proj4_params)
+        proj4_params = {'proj': 'geocent'}
+        globe = globe or Globe('WGS84')
+        super(Geocentric, self).__init__(proj4_params, globe)
