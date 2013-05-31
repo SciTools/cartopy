@@ -341,8 +341,6 @@ class Geodetic(CRS):
     """
     def __init__(self, globe=None):
         """
-        __init__(ellipse='WGS84', datum='WGS84')
-
         Kwargs:
 
             * globe - A :class:`cartopy.crs.Globe`.
@@ -365,8 +363,6 @@ class Geocentric(CRS):
     """
     def __init__(self, globe=None):
         """
-        __init__(ellipse='WGS84', datum='WGS84')
-
         Kwargs:
 
             * globe - A :class:`cartopy.crs.Globe`.

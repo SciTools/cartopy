@@ -23,9 +23,3 @@ The dependencies, with the minimum tested version, of cartopy |version| are:
 See https://github.com/SciTools/cartopy/issues/46 and https://github.com/SciTools/cartopy/issues/48 for
 basic install instructions
 
-.. toctree::
-    :glob:
-    :maxdepth: 1
-
-    remove_this_prefix_*.rst
-
