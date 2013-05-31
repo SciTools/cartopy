@@ -23,7 +23,7 @@ import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 from nose.tools import assert_equal
-
+import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 
@@ -151,6 +151,22 @@ class TestCRS(unittest.TestCase):
 
         assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
         assert_arr_almost_eq(footy_pt, (155657, 193479), decimal=0)
+
+    def test_project_point(self):
+        point = sgeom.Point([0, 45])
+        multi_point = sgeom.MultiPoint([point, sgeom.Point([180, 45])])
+
+        pc = ccrs.PlateCarree()
+        pc_rotated = ccrs.PlateCarree(central_longitude=180)
+
+        result = pc_rotated.project_geometry(point, pc)
+        assert_arr_almost_eq(result.xy, [[-180.], [45.]])
+
+        result = pc_rotated.project_geometry(multi_point, pc)
+        self.assertIsInstance(result, sgeom.MultiPoint)
+        self.assertEqual(len(result), 2)
+        assert_arr_almost_eq(result[0].xy, [[-180.], [45.]])
+        assert_arr_almost_eq(result[1].xy, [[0], [45.]])
 
 
 def test_pickle():

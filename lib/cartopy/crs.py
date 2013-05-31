@@ -77,9 +77,11 @@ class Projection(CRS):
     __metaclass__ = ABCMeta
 
     _method_map = {
+        'Point': '_project_point',
         'LineString': '_project_line_string',
         'LinearRing': '_project_linear_ring',
         'Polygon': '_project_polygon',
+        'MultiPoint': '_project_multipoint',
         'MultiLineString': '_project_multiline',
         'MultiPolygon': '_project_multipolygon',
     }
@@ -163,6 +165,9 @@ class Projection(CRS):
                              'type {!r}'.format(geom_type))
         return getattr(self, method_name)(geometry, src_crs)
 
+    def _project_point(self, point, src_crs):
+        return sgeom.Point(*self.transform_point(point.x, point.y, src_crs))
+
     def _project_line_string(self, geometry, src_crs):
         return cartopy.trace.project_linear(geometry, src_crs, self)
 
@@ -232,6 +237,15 @@ class Projection(CRS):
             result_geometry = multi_line_string
 
         return result_geometry
+
+    def _project_multipoint(self, geometry, src_crs):
+        geoms = []
+        for geom in geometry.geoms:
+            geoms.append(self._project_point(geom, src_crs))
+        if geoms:
+            return sgeom.MultiPoint(geoms)
+        else:
+            return sgeom.MultiPoint()
 
     def _project_multiline(self, geometry, src_crs):
         geoms = []
