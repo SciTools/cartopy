@@ -1032,8 +1032,10 @@ class GeoAxes(matplotlib.axes.Axes):
         # Handle a possible wrap around for rectangular projections.
         t = kwargs.get('transform', None)
         if isinstance(t, ccrs.CRS):
-            if isinstance(t, ccrs._RectangularProjection) and \
-                    isinstance(self.projection, ccrs._RectangularProjection):
+            wrap_proj_types = (ccrs._RectangularProjection,
+                               ccrs._WarpedRectangularProjection)
+            if isinstance(t, wrap_proj_types) and \
+                    isinstance(self.projection, wrap_proj_types):
 
                 C = C.reshape((Ny - 1, Nx - 1))
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
