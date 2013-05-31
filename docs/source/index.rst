@@ -43,7 +43,7 @@ Getting started
 
 To start using cartopy with matplotlib see the :doc:`matplotlib/intro` section.
 
-View the list of cartopy projections on the :doc:`projections/table`.
+View the list of cartopy projections on the :doc:`crs/projections`.
 
 For shapefile interaction with cartopy see :doc:`tutorials/using_the_shapereader`
 and :doc:`matplotlib/feature_interface`.
