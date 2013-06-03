@@ -71,21 +71,21 @@ class Globe(object):
                  flattening=None, inverse_flattening=None, towgs84=None):
         """
         Keywords:
-        
+
             * datum - Proj4 "datum" definiton. Default to no datum.
-            
+
             * ellipse - Proj4 "ellps" definiton. Default to 'WGS84'.
-            
+
             * semimajor_axis - Semimajor axis of the spheroid / ellipsoid.
-            
+
             * semiminor_axis - Semiminor axis of the ellipsoid.
-            
+
             * flattening - Flattening of the ellipsoid.
-            
+
             * inverse_flattening - Inverse flattening of the ellipsoid.
-            
+
             * towgs84 - Passed through to the Proj4 definition.
-        
+
         """
         self.datum = datum
         self.ellipse = ellipse
@@ -94,12 +94,12 @@ class Globe(object):
         self.flattening = flattening
         self.inverse_flattening = inverse_flattening
         self.towgs84 = towgs84
-        
+
     def to_proj4_params(self):
         """Create a dictionary which represents this globe in proj4 params."""
         proj4_params = {'ellps': self.ellipse, 'datum': self.datum,
-                        'a': self.semimajor_axis, 'b': self.semiminor_axis, 
-                        'f': self.flattening, 'rf': self.inverse_flattening,        
+                        'a': self.semimajor_axis, 'b': self.semiminor_axis,
+                        'f': self.flattening, 'rf': self.inverse_flattening,
                         'towgs84': self.towgs84}
         proj4_params = dict([(k,v) for k, v in proj4_params.items()
                              if v is not None])
@@ -122,9 +122,9 @@ cdef class CRS:
 
             * globe - An optional :class:`~cartopy.crs.Globe`.
                       If omitted, a default instance is created.
-                             
+
         Note:
-        
+
             The contents of proj4_params take precedence over the
             params describing the globe.
 
@@ -132,7 +132,7 @@ cdef class CRS:
         self.globe = globe or Globe()
         self.proj4_params = self.globe.to_proj4_params()
         self.proj4_params.update(proj4_params)
-        
+
         init_items = ['+{}={}'.format(k, v) for
                       k, v in self.proj4_params.iteritems()]
         self.proj4_init = ' '.join(sorted(init_items))
@@ -160,18 +160,18 @@ cdef class CRS:
         added via __getstate__ and __setstate__.
         """
         return self.__class__, tuple()
-    
+
     def __getstate__(self):
         """Returns the full state of this instance for reconstruction in ``__setstate__``."""
         return {'proj4_params': self.proj4_params}
-    
+
     def __setstate__(self, state):
         """
         Takes the dictionary created by ``__getstate__`` and passes it through to the
         class's __init__ method.
         """
         self.__init__(self, **state)
-    
+
     # TODO
     #def __str__
     #def _geod(self): # to return the pyproj.Geod
@@ -255,9 +255,9 @@ cdef class CRS:
             cy *= RAD_TO_DEG
         return (cx, cy)
 
-    def transform_points(self, CRS src_crs not None, 
-                                np.ndarray x not None, 
-                                np.ndarray y not None, 
+    def transform_points(self, CRS src_crs not None,
+                                np.ndarray x not None,
+                                np.ndarray y not None,
                                 np.ndarray z=None):
         """
         transform_points(src_crs, x, y[, z])
@@ -281,9 +281,9 @@ cdef class CRS:
 
         """
         cdef np.ndarray[np.double_t, ndim=2] result
-        
+
         result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
-        
+
         if z is None:
             if x.ndim > 2 or y.ndim > 2:
                 raise ValueError('x and y arrays must be 1 or 2 dimensional')
@@ -353,7 +353,7 @@ class Geodetic(CRS):
 
     # XXX Implement fwd such as Basemap's Geod. Would be used in the tissot example.
     # Could come from http://geographiclib.sourceforge.net
-      
+
 
 class Geocentric(CRS):
     """

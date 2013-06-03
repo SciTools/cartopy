@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>. 
+# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 This module pulls together _trace.cpp, proj.4, GEOS and _crs.pyx to implement a function
@@ -100,7 +100,7 @@ def project_linear(geometry not None, CRS src_crs not None,
     * dest_projection:
         The cartopy.crs.Projection defining the projection for the
         resulting projected line.
-    
+
     """
     cdef:
         double threshold = dest_projection.threshold
