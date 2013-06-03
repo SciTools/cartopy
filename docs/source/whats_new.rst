@@ -7,6 +7,10 @@ What's new in Cartopy 0.8
 * Phil Elson added a major performance improvement when plotting data from PlateCarree onto a
   PlateCarree map. (:pull:`260`)
 
+* :class:`cartopy.io.img_nest.Img` has been extended to include a
+  :func:`cartopy.io.img_nest.Img.from_world_file` static method for
+  easier loading of georeferenced images.
+
 * Bill Little added support for the OSNI projection and enhanced the image nest capability. (:pull:`263`)
 
 * Byron Blay and Richard Hattersley added a :class:`cartopy.crs.Globe` class to encapsulate ellipsoid/datum information for CRSs and
