@@ -185,6 +185,7 @@ class RoundedImg(cimg_nest.Img):
         extent, pix_size = cimg_nest.Img.world_file_extent(*args, **kwargs)
         # round the extent
         extent = tuple(round(v, 8) for v in extent)
+        pix_size = tuple(round(v, 8) for v in pix_size)
         return extent, pix_size
 
 
@@ -193,15 +194,13 @@ def test_find_images():
     z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
     img_fname = os.path.join(z2_dir, 'x_2_y_1.png')
     world_file_fname = os.path.join(z2_dir, 'x_2_y_1.pgw')
-    img = cimg_nest.Img.from_world_file(img_fname, world_file_fname)
+    img = RoundedImg.from_world_file(img_fname, world_file_fname)
 
     assert_equal(img.filename, img_fname)
-    assert_equal(tuple(round(v, 8) for v in img.extent),
-                 (0.0, 90.0, 89.51370048, -0.0))
+    assert_equal(img.extent, (0.0, 90.0, 89.51370048, -0.0))
     assert_equal(img.origin, 'lower')
     assert_array_equal(img, np.array(PIL.Image.open(img.filename)))
-    assert_equal(tuple(round(v, 8) for v in img.pixel_size),
-                 (0.3515625, -0.34966289))
+    assert_equal(img.pixel_size, (0.3515625, -0.34966289))
 
 
 def gen_nest():

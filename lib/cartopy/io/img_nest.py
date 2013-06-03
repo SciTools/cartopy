@@ -95,7 +95,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
 
         * fname:
             Name of the file for which to get all the possible world
-            filename combinations
+            filename combinations.
 
         Returns:
             A list of possible world filename combinations.
@@ -137,7 +137,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         worldfile filename.
 
         """
-        im = PIL.Image.open(img_fname, 'r')
+        im = PIL.Image.open(img_fname)
         with open(world_fname) as world_fh:
             extent, pix_size = cls.world_file_extent(world_fh, im.size)
         return cls(img_fname, extent, 'lower', pix_size)
@@ -151,20 +151,22 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
 
         """
         lines = worldfile_handle.readlines()
+        if len(lines) != 6:
+            raise ValueError('Only world files with 6 lines are supported.')
 
         pix_size = (float(lines[0]), float(lines[3]))
-        pix_rotation = [float(lines[1]), float(lines[2])]
-        if not pix_rotation == [0., 0.]:
+        pix_rotation = (float(lines[1]), float(lines[2]))
+        if pix_rotation != (0., 0.):
             raise ValueError('Rotated pixels in world files is not currently '
                              'supported.')
-        ul_corner = [float(lines[4]), float(lines[5])]
+        ul_corner = (float(lines[4]), float(lines[5]))
 
-        min_x, max_x = [ul_corner[0] - pix_size[0]/2.,
+        min_x, max_x = (ul_corner[0] - pix_size[0]/2.,
                         ul_corner[0] + pix_size[0]*im_shape[0] -
-                        pix_size[0]/2.]
-        min_y, max_y = [ul_corner[1] - pix_size[1]/2.,
+                        pix_size[0]/2.)
+        min_y, max_y = (ul_corner[1] - pix_size[1]/2.,
                         ul_corner[1] + pix_size[1]*im_shape[1] -
-                        pix_size[1]/2.]
+                        pix_size[1]/2.)
         return (min_x, max_x, min_y, max_y), pix_size
 
 
@@ -210,6 +212,9 @@ class ImageCollection(object):
             The image filename glob pattern to search with.
             Defaults to '*.tif'.
 
+        * img_class
+            The class used to construct each image in the Collection.
+
         .. note::
             Does not recursively search sub-directories.
 
@@ -218,7 +223,7 @@ class ImageCollection(object):
 
         for img in imgs:
             dirname, fname = os.path.split(img)
-            worlds = Img.world_files(fname)
+            worlds = img_class.world_files(fname)
             for fworld in worlds:
                 fworld = os.path.join(dirname, fworld)
                 if os.path.exists(fworld):
@@ -503,9 +508,8 @@ class NestedImageCollection(object):
             The image collection filename glob pattern.
             Defaults to '*.tif'.
 
-        * img_collection_cls:
-            The class of image collection to nest.
-            Defaults to :class:`~cartopy.io.img_nest.ImageCollection`.
+        * img_class:
+            The class of images created in the image collection.
 
         Returns:
             A :class:`~cartopy.io.img_nest.NestedImageCollection` instance.
