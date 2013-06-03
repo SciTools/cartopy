@@ -1,23 +1,20 @@
-What's new in Cartopy 0.8
+What's new in cartopy 0.8
 *************************
 
 :Release: 0.8.0
-:Date: unreleased
+:Date: 3 June 2013
 
-* Phil Elson added a major performance improvement when plotting data from PlateCarree onto a
-  PlateCarree map. (:pull:`260`)
-
+* Bill Little added support for the OSNI projection and enhanced the image nest capability. (:pull:`263`)
 * :class:`cartopy.io.img_nest.Img` has been extended to include a
   :func:`cartopy.io.img_nest.Img.from_world_file` static method for
   easier loading of georeferenced images.
+* Phil Elson added a major performance improvement when plotting data from PlateCarree onto a
+  PlateCarree map. (:pull:`260`)
+* Byron Blay and Richard Hattersley added a :class:`cartopy.crs.Globe` class to encapsulate ellipsoid and optionally
+  datum information for CRSs. Globe handling in many projections, including Stereographic, has been added.
 
-* Bill Little added support for the OSNI projection and enhanced the image nest capability. (:pull:`263`)
 
-* Byron Blay and Richard Hattersley added a :class:`cartopy.crs.Globe` class to encapsulate ellipsoid/datum information for CRSs and
-  extended support for globe handling in many projections, including Stereographic.
-
-
-What's new in Cartopy 0.7
+What's new in cartopy 0.7
 *************************
 
 :Release: 0.7.0
@@ -32,7 +29,7 @@ This is a quick release which targets two very specific requirements. The goals 
 ``v0.6`` still remain the primary target for ``v0.8`` and beyond.
 
 
-What's new in Cartopy 0.6
+What's new in cartopy 0.6
 *************************
 
 :Release: 0.6.0
@@ -47,7 +44,7 @@ What's new in Cartopy 0.6
 * Ian Edwards :doc:`added a new example <examples/favicon>` to create a favicon for cartopy.
 
 * Phil Elson :doc:`added a new example <examples/hurricane_katrina>` to show polygon analysis
-  and visualisation with Shapely and Cartopy.
+  and visualisation with Shapely and cartopy.
 
 * Edward Campbell added a new :py:class:`cartopy.crs.EuroPP` projection for UTM zone 32.
 
@@ -58,7 +55,7 @@ What's new in Cartopy 0.6
   The extension requires no user action and can be configured via the :py:data:`cartopy.config` dictionary.
 
 
-Development plans for Cartopy 0.7 and beyond
+Development plans for cartopy 0.7 and beyond
 ============================================
 
 * Improve the projection definitions to support better control over datum definitions
@@ -74,16 +71,16 @@ Development plans for Cartopy 0.7 and beyond
 -----------
 
 
-What's new in Cartopy 0.5
+What's new in cartopy 0.5
 *************************
 
 :Release: 0.5.0
 :Date: 7 Dec 2012
 
-This document explains the new/changed features of Cartopy in version 0.5.
+This document explains the new/changed features of cartopy in version 0.5.
 
-Release 0.5 of Cartopy continues the work to expand the feature-set of
-Cartopy to encompass common operations, and provide performance
+Release 0.5 of cartopy continues the work to expand the feature-set of
+cartopy to encompass common operations, and provide performance
 improvements.
 
 
