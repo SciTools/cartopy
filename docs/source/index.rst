@@ -66,19 +66,19 @@ Getting involved
 Cartopy was originally developed at the UK Met Office to allow scientists to visualise 
 their data on maps quickly, easily and most importantly, accurately. 
 Cartopy has been made freely available under the terms of the
-`GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_, is suitable to be used in a variety
+`GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_. It is suitable to be used in a variety
 of scientific fields and has an :doc:`active development community <contributors>`.
 
-There are many ways help with the development of cartopy:
+There are many ways to get involved in the development of cartopy:
 
- * If you write a paper which makes use of cartopy, consider :doc:`citing <citation>` it.
+ * If you write a paper which makes use of cartopy, please consider :doc:`citing <citation>` it.
  * Report bugs to https://github.com/SciTools/cartopy/issues (please look to see if there are any outstanding
    bugs which cover the issue before making a new one).
- * Helping others with support questions on `stackoverflow <http://stackoverflow.com/questions/tagged/cartopy>`_. 
+ * Help others with support questions on `stackoverflow <http://stackoverflow.com/questions/tagged/cartopy>`_. 
  * Contribute to the documentation fixing typos, adding examples, explaining things more clearly, or even
    re-designing its layout/logos etc..
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bug>`).
- * Contributing enhancements and new features 
+ * Contribute enhancements and new features 
    (:issues:`a wish list of features can also be found on github <wishlist>`).
 
 Development discussion takes place on the `matplotlib-devel mailing list

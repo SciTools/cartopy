@@ -13,7 +13,7 @@ For example::
 
  @manual{Cartopy,
  author = {{Met Office}},
- title = {cartopy: a cartographic python library with matplotlib support},
+ title = {Cartopy: a cartographic python library with matplotlib support},
  year = {2010 - 2013},
  address = {Exeter, Devon },
  url = {http://scitools.org.uk/cartopy}
@@ -28,7 +28,7 @@ ProductName. Version. ReleaseDate. Publisher. Location. DOIorURL. DownloadDate.
 
 For example::
 
- cartopy. V0.6. 19-Feb-2013. Met Office. UK. http://github.com/SciTools/cartopy/archive/v0.6.0.tar.gz
+ Cartopy. V0.6. 19-Feb-2013. Met Office. UK. http://github.com/SciTools/cartopy/archive/v0.6.0.tar.gz
 
 
 ********************
@@ -39,7 +39,7 @@ ProductName. Publisher. URL. CheckoutDate. RepositorySpecificCheckoutInformation
 
 For example::
 
- cartopy. Met Office. git@github.com:SciTools/cartopy.git 06-03-2013
+ Cartopy. Met Office. git@github.com:SciTools/cartopy.git 06-03-2013
 
 .. _How to cite and describe software: http://software.ac.uk/so-exactly-what-software-did-you-use
 

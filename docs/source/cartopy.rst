@@ -11,7 +11,7 @@ The top level cartopy module contains the :attr:`~cartopy.config` dictionary whi
 
     The config dictionary stores global configuration values for cartopy.
 
-    In the first instance, the config is defined in ``cartopy/__init__``. It
+    In the first instance, the config is defined in ``cartopy/__init__.py``. It
     is possible to provide site wide customisations by including a
     ``siteconfig.py`` file along with the cartopy source code. ``siteconfig.py``
     should contain a function called ``update_config`` which takes the config
