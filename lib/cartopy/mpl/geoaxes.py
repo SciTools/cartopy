@@ -1069,6 +1069,11 @@ class GeoAxes(matplotlib.axes.Axes):
                            np.isnan(dx_horizontal))
 
                 if np.any(to_mask):
+                    if collection.get_cmap()._rgba_bad[3] != 0.0:
+                        warnings.warn("The colormap's 'bad' has been set, but "
+                                      "in order to wrap pcolormesh across the "
+                                      "map it must be fully transparent.")
+
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
                     # a shape of (Ny, Nx-2) and pts has a shape of (Ny*Nx, 2)
 
