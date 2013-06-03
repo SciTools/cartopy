@@ -29,7 +29,7 @@ and then adding some coastlines to the axes:
 
 
 A list of the available projections to be used with matplotlib can be 
-found on the :doc:`../projections/table` page.
+found on the :ref:`cartopy_projections` page.
 
 The line ``plt.axes(projection=ccrs.PlateCarree())`` sets up a 
 :class:`~cartopy.mpl.geoaxes.GeoAxes` instance
@@ -53,9 +53,8 @@ image to the map:
     plt.show()
 
 
-At this point, have a go at picking your own projection and creating a map with an image underlay
-with coastlines over the top (the order that you run the methods is important if no ``zorder``
-keyword is provided).
+At this point, have a go at :ref:`picking your own projection <cartopy_projections>` and creating a map
+with an image underlay with coastlines over the top.
 
 
 Adding data to the map
@@ -65,7 +64,7 @@ Once you have the map just the way you want it, data can be added to it in exact
 with normal matplotlib axes. By default, the coordinate system of any data added to a GeoAxes is 
 the same as the coordinate system of the GeoAxes itself, to control which coordinate system 
 that the given data is in, you can add the ``transform`` keyword with an appropriate 
-:mod:`cartopy.crs.CRS` instance:
+:class:`cartopy.crs.CRS` instance:
 
 
 .. plot::

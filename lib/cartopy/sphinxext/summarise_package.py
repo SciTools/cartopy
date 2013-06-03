@@ -55,6 +55,10 @@ def walk_module(mod_name, exclude_folders=None):
             del folders[:]
             continue
 
+        # Sort by filename and folder name.
+        files.sort()
+        folders.sort()
+
         is_py_src = lambda fname: fname.endswith(
             '.py') or fname.endswith('.so')
         files = filter(is_py_src, files)
@@ -133,11 +137,13 @@ def main(package_name, exclude_folders=None):
 
         result += '\n'
         result += '.. currentmodule:: {}\n'.format(mod) + '\n'
-        result += '.. csv-table::\n' + '\n'
+
+        mod_objects = objects_to_document(mod)
+        if mod_objects:
+            result += '.. csv-table::\n' + '\n'
 
         table_elements = itertools.cycle(('\n\t', ) + (', ', ) * 3)
-        for table_elem, (obj_name, _) in zip(table_elements,
-                                             objects_to_document(mod)):
+        for table_elem, (obj_name, _) in zip(table_elements, mod_objects):
             result += '{}:py:obj:`{}`'.format(table_elem, obj_name)
 
         result += '\n'

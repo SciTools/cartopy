@@ -24,7 +24,7 @@ import cartopy.crs as ccrs
 
 
 def find_projections():
-    for obj_name, o in vars(ccrs).iteritems():
+    for obj_name, o in vars(ccrs).copy().iteritems():
 #        o = getattr(ccrs, obj_name)
         if (isinstance(o, type) and issubclass(o, ccrs.Projection) and
             not obj_name.startswith('_') and obj_name not in ['Projection']):
@@ -40,6 +40,17 @@ def projection_rst(projection_cls):
 SPECIAL_CASES = {ccrs.PlateCarree: ['PlateCarree()', 'PlateCarree(central_longitude=180)'],
                  ccrs.RotatedPole: ['RotatedPole(pole_longitude=177.5, pole_latitude=37.5)'],
                  }
+
+
+COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
+                        ccrs.OSGB: '50m',
+                        ccrs.EuroPP: '50m'}
+
+PRJ_SORT_ORDER = {'PlateCarree': 1, 'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
+                  'TransverseMercator': 2, 'LambertCylindrical': 2,
+                  'Stereographic': 2, 'Miller': 2,
+                  'Orthographic': 2, 'InterruptedGoodeHomolosine': 3,
+                  'RotatedPole': 3, 'OSGB': 4}
 
 
 groups = [('cylindrical', [ccrs.PlateCarree, ccrs.Mercator, ccrs.TransverseMercator,
@@ -58,14 +69,15 @@ all_projections_in_groups = list(itertools.chain.from_iterable([g[1] for g in gr
 
 if __name__ == '__main__':
     fname = os.path.join(os.path.dirname(__file__), 'source',
-                         'projections', 'table.rst')
+                         'crs', 'projections.rst')
     table = open(fname, 'w')
 
+    table.write('.. _cartopy_projections:\n\n')
     table.write('Cartopy projection list\n')
     table.write('=======================\n\n\n')
 
-
-    for prj in find_projections():
+    prj_class_sorter = lambda cls: (PRJ_SORT_ORDER.get(cls.__name__, []), cls.__name__)
+    for prj in sorted(find_projections(), key=prj_class_sorter):
         name = prj.__name__
 #        print prj in SPECIAL_CASES, prj in all_projections_in_groups, prj
 
@@ -78,7 +90,7 @@ if __name__ == '__main__':
         table.write(name + '\n')
         table.write('-' * len(name) + '\n\n')
 
-        table.write(':class:`~cartopy.crs.%s`\n' % name)
+        table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
 #        table.write('Ipsum lorum....')
 
@@ -94,13 +106,12 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(%s, 3))
-    delta = 0.125
-    ax = plt.axes([0+delta, 0+delta, 1-delta, 1-delta], projection=ccrs.%s)
-    #ax.set_global()
-    ax.coastlines()
+    plt.figure(figsize=({width}, 3))
+    ax = plt.axes(projection=ccrs.{proj_constructor})
+    ax.coastlines(resolution={coastline_resolution!r})
     ax.gridlines()
 
-\n""" % (width, instance_creation_code)
+\n""".format(width=width, proj_constructor=instance_creation_code,
+             coastline_resolution=COASTLINE_RESOLUTION.get(prj, '110m'))
 
             table.write(code)
