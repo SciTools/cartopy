@@ -46,10 +46,10 @@ import sys, os
 extensions = [
               'cartopy.sphinxext.summarise_package',
               'cartopy.sphinxext.gallery',
-              'sphinx.ext.autodoc', 
-              'sphinx.ext.doctest', 
+              'sphinx.ext.autodoc',
+              'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
-              'sphinx.ext.coverage', 
+              'sphinx.ext.coverage',
               'sphinx.ext.viewcode',
               'sphinx.ext.extlinks',
               'matplotlib.sphinxext.plot_directive'
