@@ -34,8 +34,8 @@ all projections in the :ref:`cartopy_projections`.
 There are a few non-:class:`~cartopy.crs.Projection` subclasses. These represent
 coordinate reference systems which are 3 dimensional and could not be drawn directly on a piece of paper.
 
-.. autoclass:: cartopy.crs.Geodetic(ellipse='WGS84', datum='WGS84')
+.. autoclass:: cartopy.crs.Geodetic(globe=None)
 
-.. autoclass:: cartopy.crs.Geocentric(ellipse='WGS84', datum='WGS84')
+.. autoclass:: cartopy.crs.Geocentric(globe=None)
 
 .. autoclass:: cartopy.crs.RotatedGeodetic
