@@ -393,7 +393,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Returns:
             * A :class:`cartopy.mpl.feature_artist.FeatureArtist`
-            instance responsible for drawing the feature.
+              instance responsible for drawing the feature.
 
         """
         # Instantiate an artist to draw the feature and add it to the axes.
@@ -416,7 +416,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Returns:
              * A :class:`cartopy.mpl.feature_artist.FeatureArtist`
-             instance responsible for drawing the geometries.
+               instance responsible for drawing the geometries.
 
         """
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)

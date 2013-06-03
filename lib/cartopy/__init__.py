@@ -43,12 +43,12 @@ config = {'pre_existing_data_dir': '',
 """
 The config dictionary stores global configuration values for cartopy.
 
-In the first instance, the config is defined in ``cartopy/__init__``. From
-there, it is possible to provide site wide customisations by including a
-``siteconfig.py`` file, along with the cartopy source code, which contains
-a function ``update_config`` which takes the config dictionary instance as its
-first and only argument (from where it is possible to update the dictionary
-howsoever desired).
+In the first instance, the config is defined in ``cartopy/__init__.py``. It
+is possible to provide site wide customisations by including a
+``siteconfig.py`` file along with the cartopy source code. ``siteconfig.py``
+should contain a function called ``update_config`` which takes the config
+dictionary instance as its first and only argument (from where it is
+possible to update the dictionary howsoever desired).
 
 For users without write permission to the cartopy source directory, a package
 called ``cartopy_userconfig`` should be made importable (consider putting it
@@ -80,7 +80,7 @@ Keys in the config dictionary:
                      documentation and an example see
                      :func:`cartopy.io.Downloader.from_config`.
 
-"""
+"""  # n.b. docstring changes should be propagated to docs/source/cartopy.rst
 
 del _data_dir
 del _writable_dir

@@ -218,6 +218,8 @@ cdef class CRS:
 
     def transform_point(self, double x, double y, CRS src_crs not None):
         """
+        transform_point(x, y, src_crs)
+
         Transform the given float64 coordinate pair, in the given source
         coordinate system (``src_crs``), to this coordinate system.
 
@@ -231,8 +233,6 @@ cdef class CRS:
         Returns:
 
             (x, y) - in this coordinate system
-
-        .. seealso:: :meth:`transform_points`
 
         """
         cdef:
@@ -260,6 +260,8 @@ cdef class CRS:
                                 np.ndarray y not None, 
                                 np.ndarray z=None):
         """
+        transform_points(src_crs, x, y[, z])
+
         Transform the given coordinates, in the given source
         coordinate system (``src_crs``), to this coordinate system.
 

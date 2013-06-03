@@ -1,8 +1,7 @@
-.. _cartopy_developer_interfaces:
+.. _cartopy_feature_interface:
 
-The cartopy Feature interface with matplotlib
-=============================================
-
+The cartopy Feature interface
+=============================
 
 .. currentmodule:: cartopy.feature
 

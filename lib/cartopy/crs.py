@@ -725,8 +725,8 @@ class EuroPP(Projection):
     @property
     def boundary(self):
         w, h = 3.19e6, 3.8e6
-        return shapely.geometry.LineString([(0, 0), (0, h), (w, h),
-                                            (w, 0), (0, 0)])
+        return sgeom.LineString([(0, 0), (0, h), (w, h),
+                                 (w, 0), (0, 0)])
 
     @property
     def x_limits(self):

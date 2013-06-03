@@ -1,9 +1,9 @@
 .. _Citing_Cartopy:
 
-Citing Cartopy
+Citing cartopy
 ==============
 
-If Cartopy played an important part in your research then please add us to your reference list by using one of the recommendations below.
+If cartopy played an important part in your research then please add us to your reference list by using one of the recommendations below.
 
 ************
 BibTeX entry 
@@ -39,7 +39,7 @@ ProductName. Publisher. URL. CheckoutDate. RepositorySpecificCheckoutInformation
 
 For example::
 
- Cartopy. Met Office. git@github.com:SciTools/cartopy.git 06-03-2013 
+ Cartopy. Met Office. git@github.com:SciTools/cartopy.git 06-03-2013
 
 .. _How to cite and describe software: http://software.ac.uk/so-exactly-what-software-did-you-use
 
