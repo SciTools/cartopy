@@ -130,6 +130,18 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
     return vertices[:-1, :], codes[:-1]
 
 
+# Matplotlib v1.3+ deprecates the use of matplotlib.path.cleanup_path. Instead
+# there is a method on a Path instance to simplify this.
+if hasattr(matplotlib.path.Path, 'cleaned'):
+    _path_segments_doc = path_segments.__doc__
+
+    def path_segments(path, **kwargs):
+        pth = path.cleaned(**kwargs)
+        return pth.vertices[:-1, :], pth.codes[:-1]
+
+    path_segments.__doc__ = _path_segments_doc
+
+
 def path_to_geos(path, force_ccw=False):
     """
     Creates a list of Shapely geometric objects from a
