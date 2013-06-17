@@ -746,27 +746,25 @@ class EuroPP(Projection):
         return 1e4
 
 
-class Mercator(_RectangularProjection):
-    def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'merc', 'lon_0': central_longitude}
-        globe = Globe(semimajor_axis=math.degrees(1))
-        super(Mercator, self).__init__(proj4_params, 180, 180, globe=globe)
+class Mercator(Projection):
+    def __init__(self, central_longitude=0.0,
+                 min_latitude=-80.0, max_latitude=84.0,
+                 globe=None):
 
-    @property
-    def threshold(self):
-        return 0.5
-
-
-#+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs 
-class WorldMercator(Projection):
-    def __init__(self, central_longitude=0.0):
         proj4_params = {'proj': 'merc',
                         'lon_0': central_longitude,
                         'k': 1,
                         'units': 'm',
                         'no_defs': ''}
-        globe = Globe(semimajor_axis=math.degrees(1))
-        super(WorldMercator, self).__init__(proj4_params, globe=globe)
+        if globe is None:
+            globe = Globe('WGS84')
+        super(Mercator, self).__init__(proj4_params, globe=globe)
+
+        # Calculate limits.
+        limits = self.transform_points(PlateCarree(),
+                                       np.zeros(2),
+                                       np.array([min_latitude, max_latitude]))
+        self._ylimits = tuple(limits[..., 1])
 
     @property
     def threshold(self):
@@ -775,19 +773,18 @@ class WorldMercator(Projection):
     @property
     def boundary(self):
         x0, x1 = self.x_limits
-        w = x1 - x0
         y0, y1 = self.y_limits
-        h = y1 - y0
-        # XXX Should this be a LinearRing?
-        return sgeom.LineString([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
+        return sgeom.LineString([(x0, y0), (x0, y1),
+                                 (x1, y1), (x1, y0),
+                                 (x0, y0)])
 
     @property
     def x_limits(self):
-        return (-20037508.342, 20037508.3428)
+        return (-20037508.3428, 20037508.3428)
 
     @property
     def y_limits(self):
-        return (-15496570.7397, 18764656.2314)
+        return self._ylimits
 
 
 class LambertCylindrical(_RectangularProjection):
