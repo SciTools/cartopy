@@ -757,6 +757,39 @@ class Mercator(_RectangularProjection):
         return 0.5
 
 
+#+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs 
+class WorldMercator(Projection):
+    def __init__(self, central_longitude=0.0):
+        proj4_params = {'proj': 'merc',
+                        'lon_0': central_longitude,
+                        'k': 1,
+                        'units': 'm',
+                        'no_defs': ''}
+        globe = Globe(semimajor_axis=math.degrees(1))
+        super(WorldMercator, self).__init__(proj4_params, globe=globe)
+
+    @property
+    def threshold(self):
+        return 0.5
+
+    @property
+    def boundary(self):
+        x0, x1 = self.x_limits
+        w = x1 - x0
+        y0, y1 = self.y_limits
+        h = y1 - y0
+        # XXX Should this be a LinearRing?
+        return sgeom.LineString([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
+
+    @property
+    def x_limits(self):
+        return (-20037508.342, 20037508.3428)
+
+    @property
+    def y_limits(self):
+        return (-15496570.7397, 18764656.2314)
+
+
 class LambertCylindrical(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = {'proj': 'cea', 'lon_0': central_longitude}
