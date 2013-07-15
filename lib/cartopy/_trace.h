@@ -1,5 +1,5 @@
 /*
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -43,9 +43,9 @@ class Interpolator
 {
     public:
     virtual ~Interpolator();
-    virtual void set_line(Point &start, Point &end);
+    virtual void set_line(const Point &start, const Point &end);
     virtual Point interpolate(double t)=0;
-    virtual Point project(Point &point)=0;
+    virtual Point project(const Point &point)=0;
 
     protected:
     Point m_start, m_end;
@@ -57,7 +57,7 @@ class CartesianInterpolator : public Interpolator
     public:
     CartesianInterpolator(projPJ src_proj, projPJ dest_proj);
     Point interpolate(double t);
-    Point project(Point &point);
+    Point project(const Point &point);
 
     private:
     projPJ m_src_proj, m_dest_proj;
@@ -69,9 +69,9 @@ class SphericalInterpolator : public Interpolator
     public:
     // XXX Move the constructor and members up to the superclass?
     SphericalInterpolator(projPJ src_proj, projPJ dest_proj);
-    void set_line(Point &start, Point &end);
+    void set_line(const Point &start, const Point &end);
     Point interpolate(double t);
-    Point project(Point &point);
+    Point project(const Point &point);
 
     private:
     projPJ m_src_proj, m_dest_proj;
