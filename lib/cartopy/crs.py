@@ -784,7 +784,7 @@ class LambertConformal(Projection):
 
     """
 
-    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+    def __init__(self, central_longitude=-96.0, central_latitude=39.0,
                  false_easting=0.0, false_northing=0.0,
                  secant_latitudes=(33, 45), globe=None, cutoff=-30):
         """
