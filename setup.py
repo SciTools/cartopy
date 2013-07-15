@@ -152,18 +152,17 @@ setup(
     # requires proj4 headers
     ext_modules=[
         Extension('cartopy.trace', ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
-                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy'],
+                  include_dirs=[get_config_var('INCLUDEDIR')],
                   libraries=['geos_c', 'proj'],
                   library_dirs=[get_config_var('LIBDIR')],
                   runtime_library_dirs=[get_config_var('LIBDIR')],
                   language='c++',
                   ),
         Extension('cartopy._crs', ['lib/cartopy/_crs.pyx'],
-                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy', np.get_include()],
+                  include_dirs=[get_config_var('INCLUDEDIR'), np.get_include()],
                   libraries=['proj'],
                   library_dirs=[get_config_var('LIBDIR')],
                   runtime_library_dirs=[get_config_var('LIBDIR')],
-                  #language='c++',
                   ),
     ],
 

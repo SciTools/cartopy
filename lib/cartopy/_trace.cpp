@@ -17,14 +17,12 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include <iostream>
 #include <list>
+#include <math.h>
 #include <vector>
 
-#include <math.h>
-
-#include <_trace.h>
+#include "_trace.h"
 
 
 void Interpolator::set_line(Point &start, Point &end)
@@ -160,7 +158,7 @@ Point SphericalInterpolator::interpolate(double t)
         z = m_start3.z * c + m_perp3.z * s;
 
         lat = asin(y);
-        if isnan(lat)
+        if(isnan(lat))
         {
             lat = y > 0.0 ? 90.0 : -90.0;
         }
@@ -402,7 +400,7 @@ bool straightAndDomain(double t_start, Point &p_start,
         GEOSGeometry *g_mid = GEOSGeom_createPoint_r(handle, coords);
 
         double along = GEOSProjectNormalized_r(handle, g_segment, g_mid);
-        if (isnan(along))
+        if(isnan(along))
         {
             valid = true;
         }
