@@ -25,6 +25,8 @@
 #include "_trace.h"
 
 
+Interpolator::~Interpolator(){}
+
 void Interpolator::set_line(Point &start, Point &end)
 {
     m_start = start;

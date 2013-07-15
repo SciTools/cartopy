@@ -42,6 +42,7 @@ typedef struct {
 class Interpolator
 {
     public:
+    virtual ~Interpolator();
     virtual void set_line(Point &start, Point &end);
     virtual Point interpolate(double t)=0;
     virtual Point project(Point &point)=0;
