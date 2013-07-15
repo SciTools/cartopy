@@ -121,8 +121,8 @@ def test_shapefile_transform_cache():
     # n_calls * n_geom, but should now be just n_geom.
     assert counter.count == n_geom, ('The given geometry was transformed too '
                                      'many times (expected: %s; got %s) - the'
-                                     ' caching is not working.'.format(n_geom,
-                                     n_geom, counter.count))
+                                     ' caching is not working.'
+                                     ''.format(n_geom, n_geom, counter.count))
 
     # Check the cache has an entry for each geometry.
     assert len(FeatureArtist._geometry_to_path_cache) == n_geom
