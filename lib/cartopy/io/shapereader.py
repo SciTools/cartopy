@@ -391,8 +391,8 @@ class GSHHSShpDownloader(Downloader):
         """
         for ext in ['.shp', '.dbf', '.shx']:
             yield (os.path.join('GSHHS_shp', '{scale}',
-                                'GSHHS_{scale}_L{level}{extension}').format(
-                                    extension=ext, **format_dict))
+                                'GSHHS_{scale}_L{level}{extension}'
+                                ).format(extension=ext, **format_dict))
 
     def aqcuire_all_resources(self, format_dict):
         import cStringIO as StringIO
