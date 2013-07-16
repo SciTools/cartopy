@@ -1,5 +1,5 @@
 /*
-# (C) British Crown Copyright 2010 - 2012, Met Office
+# (C) British Crown Copyright 2010 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,17 +17,17 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include <iostream>
 #include <list>
+#include <math.h>
 #include <vector>
 
-#include <math.h>
-
-#include <_trace.h>
+#include "_trace.h"
 
 
-void Interpolator::set_line(Point &start, Point &end)
+Interpolator::~Interpolator(){}
+
+void Interpolator::set_line(const Point &start, const Point &end)
 {
     m_start = start;
     m_end = end;
@@ -48,7 +48,7 @@ Point CartesianInterpolator::interpolate(double t)
     return project(xy);
 }
 
-Point CartesianInterpolator::project(Point &src_xy)
+Point CartesianInterpolator::project(const Point &src_xy)
 {
     Point dest_xy;
     projLP xy;
@@ -84,7 +84,7 @@ SphericalInterpolator::SphericalInterpolator(projPJ src_proj, projPJ dest_proj)
     m_dest_proj = dest_proj;
 }
 
-void SphericalInterpolator::set_line(Point &start, Point &end)
+void SphericalInterpolator::set_line(const Point &start, const Point &end)
 {
     m_start = start;
     m_end = end;
@@ -160,7 +160,7 @@ Point SphericalInterpolator::interpolate(double t)
         z = m_start3.z * c + m_perp3.z * s;
 
         lat = asin(y);
-        if isnan(lat)
+        if(isnan(lat))
         {
             lat = y > 0.0 ? 90.0 : -90.0;
         }
@@ -177,7 +177,7 @@ Point SphericalInterpolator::interpolate(double t)
     return project(lonlat);
 }
 
-Point SphericalInterpolator::project(Point &lonlat)
+Point SphericalInterpolator::project(const Point &lonlat)
 {
     Point xy;
     projLP dest;
@@ -221,8 +221,8 @@ class LineAccumulator
     public:
     LineAccumulator();
     void new_line();
-    void add_point(Point &point);
-    void add_point_if_empty(Point &point);
+    void add_point(const Point &point);
+    void add_point_if_empty(const Point &point);
     GEOSGeometry *as_geom(GEOSContextHandle_t handle);
 
     private:
@@ -241,16 +241,16 @@ void LineAccumulator::new_line()
     m_lines.push_back(line);
 }
 
-void LineAccumulator::add_point(Point &point)
+void LineAccumulator::add_point(const Point &point)
 {
     //std::cerr << "ADD POINT: " << point.x << ", " << point.y << std::endl;
     m_lines.back().push_back(point);
 }
 
-void LineAccumulator::add_point_if_empty(Point &point)
+void LineAccumulator::add_point_if_empty(const Point &point)
 {
     //std::cerr << "ADD POINT IF EMPTY " << m_lines.back().size() << std::endl;
-    if (m_lines.back().size() == 0)
+    if (m_lines.back().empty())
     {
         add_point(point);
     }
@@ -269,9 +269,6 @@ bool close(double a, double b)
 
 GEOSGeometry *LineAccumulator::as_geom(GEOSContextHandle_t handle)
 {
-    std::vector<GEOSGeometry *> geoms;
-    std::list<Line>::iterator ilines;
-
     m_lines.remove_if(degenerate_line);
 
     if(m_lines.size() > 1)
@@ -290,9 +287,11 @@ GEOSGeometry *LineAccumulator::as_geom(GEOSContextHandle_t handle)
         }
     }
 
+    std::vector<GEOSGeometry *> geoms;
+    std::list<Line>::const_iterator ilines;
     for(ilines = m_lines.begin(); ilines != m_lines.end(); ++ilines)
     {
-        std::list<Point>::iterator ipoints;
+        std::list<Point>::const_iterator ipoints;
         int i;
 
         GEOSCoordSequence *coords = GEOSCoordSeq_create_r(handle, (*ilines).size(), 2);
@@ -305,7 +304,7 @@ GEOSGeometry *LineAccumulator::as_geom(GEOSContextHandle_t handle)
     }
 
     GEOSGeometry *geom;
-    if(geoms.size() == 0)
+    if(geoms.empty())
     {
         geom = GEOSGeom_createEmptyCollection_r(handle, GEOS_MULTILINESTRING);
     }
@@ -323,7 +322,7 @@ enum State {
     POINT_NAN
 };
 
-State get_state(Point &point, const GEOSPreparedGeometry *gp_domain,
+State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
                 GEOSContextHandle_t handle)
 {
     State state;
@@ -359,8 +358,8 @@ State get_state(Point &point, const GEOSPreparedGeometry *gp_domain,
  * gp_domain: Prepared polygon of target map domain.
  * inside: Whether the start point is within the map domain.
  */
-bool straightAndDomain(double t_start, Point &p_start,
-                       double t_end, Point &p_end,
+bool straightAndDomain(double t_start, const Point &p_start,
+                       double t_end, const Point &p_end,
                        Interpolator *interpolator, double threshold,
                        GEOSContextHandle_t handle,
                        const GEOSPreparedGeometry *gp_domain,
@@ -402,7 +401,7 @@ bool straightAndDomain(double t_start, Point &p_start,
         GEOSGeometry *g_mid = GEOSGeom_createPoint_r(handle, coords);
 
         double along = GEOSProjectNormalized_r(handle, g_segment, g_mid);
-        if (isnan(along))
+        if(isnan(along))
         {
             valid = true;
         }
@@ -453,7 +452,7 @@ bool straightAndDomain(double t_start, Point &p_start,
     return valid;
 }
 
-void bisect(double t_start, Point &p_start, Point &p_end,
+void bisect(double t_start, const Point &p_start, const Point &p_end,
             GEOSContextHandle_t handle,
             const GEOSPreparedGeometry *gp_domain,
             State &state, Interpolator *interpolator, double threshold,
