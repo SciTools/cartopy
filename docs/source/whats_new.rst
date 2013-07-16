@@ -1,3 +1,12 @@
+What's new in cartopy 0.9
+*************************
+
+:Release: 0.9.x-dev
+:Date: Not yet released
+
+* Added support for the Lambert Conformal projection. (:pull:`292`)
+
+
 What's new in cartopy 0.8
 *************************
 

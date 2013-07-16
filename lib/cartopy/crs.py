@@ -778,6 +778,91 @@ class LambertCylindrical(_RectangularProjection):
         return 0.5
 
 
+class LambertConformal(Projection):
+    """
+    A Lambert Conformal conic projection.
+
+    """
+
+    def __init__(self, central_longitude=-96.0, central_latitude=39.0,
+                 false_easting=0.0, false_northing=0.0,
+                 secant_latitudes=(33, 45), globe=None, cutoff=-30):
+        """
+        Kwargs:
+
+            * central_longitude - The central longitude. Defaults to 0.
+            * central_latitude - The central latitude. Defaults to 0.
+            * false_easting - X offset from planar origin in metres.
+                              Defaults to 0.
+            * false_northing - Y offset from planar origin in metres.
+                               Defaults to 0.
+            * secant_latitudes - The two latitudes of secant intersection.
+                                 Defaults to (33, 45).
+            * globe - A :class:`cartopy.crs.Globe`.
+                      If omitted, a default globe is created.
+            * cutoff - Latitude of map cutoff.
+                       The map extends to infinity opposite the central pole
+                       so we must cut off the map drawing before then.
+                       A value of 0 will draw half the globe. Defaults to -30.
+
+        """
+        proj4_params = {'proj': 'lcc',
+                        'lon_0': central_longitude, 'lat_0': central_latitude,
+                        'x_0': false_easting, 'y_0': false_northing}
+        if secant_latitudes is not None:
+            proj4_params['lat_1'] = secant_latitudes[0]
+            proj4_params['lat_2'] = secant_latitudes[1]
+        super(LambertConformal, self).__init__(proj4_params, globe=globe)
+
+        # are we north or south polar?
+        if abs(secant_latitudes[0]) > abs(secant_latitudes[1]):
+            poliest_sec = secant_latitudes[0]
+        else:
+            poliest_sec = secant_latitudes[1]
+        plat = 90 if poliest_sec > 0 else -90
+
+        # bounds
+        self.cutoff = cutoff
+        n = 91
+        lons = [0]
+        lats = [plat]
+        lons.extend(np.linspace(central_longitude - 180 + 0.001,
+                                central_longitude + 180 - 0.001, n))
+        lats.extend(np.array([cutoff] * n))
+        lons.append(0)
+        lats.append(plat)
+
+        points = self.transform_points(PlateCarree(),
+                                       np.array(lons), np.array(lats))
+
+        self._boundary = sgeom.LineString(points)
+        bounds = self._boundary.bounds
+        self._x_limits = bounds[0], bounds[2]
+        self._y_limits = bounds[1], bounds[3]
+
+    def __eq__(self, other):
+        same = super(LambertConformal, self).__eq__(other)
+        if isinstance(other, LambertConformal) and hasattr(other, "cutoff"):
+            same = same and self.cutoff == other.cutoff
+        return same
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return 1e5
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
 class Miller(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = {'proj': 'mill', 'lon_0': central_longitude}
