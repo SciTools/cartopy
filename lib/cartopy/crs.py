@@ -21,6 +21,8 @@ The crs module defines Coordinate Reference Systems and the transformations
 between them.
 
 """
+from __future__ import print_function
+
 from abc import ABCMeta, abstractproperty
 import math
 import warnings
@@ -29,6 +31,7 @@ import numpy as np
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
 from shapely.prepared import prep
+import six
 
 from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_RELEASE
 import cartopy.trace
@@ -68,7 +71,7 @@ class RotatedGeodetic(CRS):
         super(RotatedGeodetic, self).__init__(proj4_params, globe=globe)
 
 
-class Projection(CRS, metaclass=ABCMeta):
+class Projection(six.with_metaclass(ABCMeta, CRS)):
     """
     Defines a projected coordinate system with flat topology and Euclidean
     distance.
@@ -411,7 +414,8 @@ class Projection(CRS, metaclass=ABCMeta):
                                            're-added')
 
         # filter out any non-valid linear rings
-        done = [linear_ring for linear_ring in done if len(linear_ring.coords) > 2]
+        done = [linear_ring for linear_ring in done if
+                len(linear_ring.coords) > 2]
 
         # XXX Is the last point in each ring actually the same as the first?
         linear_rings = [LinearRing(line) for line in done]

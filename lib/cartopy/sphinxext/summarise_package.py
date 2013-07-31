@@ -20,6 +20,7 @@ import itertools
 import os
 import sys
 import warnings
+import six
 
 import cartopy.tests
 
@@ -164,7 +165,7 @@ def gen_summary_rst(app):
     exclude_dirs = app.config.summarise_package_exclude_directories
     fnames = app.config.summarise_package_fnames
 
-    if isinstance(package_names, str):
+    if isinstance(package_names, six.string_types):
         package_names = [package_names]
 
     if package_names is None:
@@ -182,14 +183,15 @@ def gen_summary_rst(app):
             raise exception
 
         for exclude_dirs_individual in exclude_dirs:
-            if isinstance(exclude_dirs_individual, str):
+            if isinstance(exclude_dirs_individual, six.string_types):
                 raise exception
 
     if fnames is None:
         fnames = ['outline_of_{}.rst'.format(package_name)
                   for package_name in package_names]
     else:
-        if isinstance(fnames, str) or len(fnames) != len(package_names):
+        if isinstance(fnames, six.string_types) or \
+                len(fnames) != len(package_names):
             raise TypeError('Please provide a list of filenames for each of '
                             'the packages which are to be summarised.')
 

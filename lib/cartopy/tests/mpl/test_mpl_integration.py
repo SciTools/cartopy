@@ -21,6 +21,7 @@ import warnings
 from nose.tools import assert_equal
 import numpy as np
 import matplotlib.pyplot as plt
+import six
 
 import cartopy.crs as ccrs
 
@@ -168,19 +169,19 @@ def test_cursor_values():
     x, y = np.array([-969100.]), np.array([-4457000.])
     r = ax.format_coord(x, y)
     assert_equal(r.encode('ascii', 'ignore'),
-                 '-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)')
+                 six.b('-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)'))
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     x, y = np.array([-181.5]), np.array([50.])
     r = ax.format_coord(x, y)
     assert_equal(r.encode('ascii', 'ignore'),
-                 '-181.5, 50 (50.000000N, 178.500000E)')
+                 six.b('-181.5, 50 (50.000000N, 178.500000E)'))
 
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2]), np.array([2363093.4])
     r = ax.format_coord(x, y)
     assert_equal(r.encode('ascii', 'ignore'),
-                 '1.606e+07, 2.363e+06 (22.095524N, 173.709136E)')
+                 six.b('1.606e+07, 2.363e+06 (22.095524N, 173.709136E)'))
 
     plt.close()
 

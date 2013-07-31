@@ -22,6 +22,7 @@ import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 from matplotlib.path import Path
 import shapely.geometry
+import six
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist
@@ -152,7 +153,9 @@ def test_contourf_transform_path_counting():
         x, y, z = sample_data((30, 60))
         cs = plt.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
         n_geom = sum([len(c.get_paths()) for c in cs.collections])
-        del cs, c
+        del cs
+        if not six.PY3:
+            del c
         plt.draw()
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
