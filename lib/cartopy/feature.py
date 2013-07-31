@@ -53,7 +53,7 @@ same projection.
 """
 
 
-class Feature(object):
+class Feature(object, metaclass=ABCMeta):
     """
     Represents a collection of points, lines and polygons with convenience
     methods for common drawing and filtering operations.
@@ -71,7 +71,6 @@ class Feature(object):
         :func:`GeoAxes <cartopy.mpl.geoaxes.GeoAxes.add_feature>`.
 
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self, crs, **kwargs):
         self._crs = crs

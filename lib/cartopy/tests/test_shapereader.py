@@ -72,7 +72,7 @@ class TestLakes(unittest.TestCase):
         lake_record = records[14]
         self.assertEqual(lake_record.attributes.get('name'),
                          'Lago de\rNicaragua')
-        self.assertEqual(lake_record.attributes.keys(),
+        self.assertEqual(list(lake_record.attributes.keys()),
                          ['admin', 'featurecla', 'scalerank',
                           'name_alt', 'name'])
         lake = lake_record.geometry
@@ -81,7 +81,7 @@ class TestLakes(unittest.TestCase):
     def test_bounds(self):
         # tests that a file which has a record with a bbox can
         # use the bbox without first creating the geometry
-        record = self.reader.records().next()
+        record = next(self.reader.records())
         self.assertEqual(record._geometry, False, ('The geometry was loaded '
                                                    'before it was needed.'))
         self.assertEqual(len(record._bounds), 4)

@@ -34,7 +34,7 @@ LAND_PATH = shapereader.natural_earth(name='land')
 
 def _arrows(projection, geometry):
     coords = list(geometry.coords)
-    for i, xyxy in enumerate(zip(coords[:-1], coords[1:])):
+    for i, xyxy in enumerate(list(zip(coords[:-1], coords[1:]))):
         if i % 11 == 0:
             start, end = xyxy
             dx = end[0] - start[0]
@@ -59,7 +59,7 @@ def _arrows(projection, geometry):
 def draw_line_string(projection, line_string, color='black', linestyle='-'):
     multi_line_string = projection.project_geometry(line_string)
     for line_string in multi_line_string:
-        plt.plot(*zip(*line_string.coords),
+        plt.plot(*list(zip(*line_string.coords)),
                  marker='', color=color, linestyle=linestyle)
         #_arrows(projection, line_string)
 
@@ -148,14 +148,14 @@ def test(projections):
                 for p in c.get_paths():
                 #for j, p in enumerate(c.get_paths()[1:2]):
                     xy = [segment[0] for segment in p.iter_segments()]
-                    xy = filter(lambda xy: xy[1] > -90, xy)
+                    xy = [xy for xy in xy if xy[1] > -90]
                     polygon = sgeom.Polygon(xy)
                     #polygon = sgeom.Polygon(xy[53:56])
                     draw_polygon(projection, polygon,
                                  color=c.get_facecolor()[0])
 
         if 'boundary' in bits:
-            plt.plot(*zip(*projection.boundary.coords), marker='')
+            plt.plot(*list(zip(*projection.boundary.coords)), marker='')
 
         if 'line' in bits:
             draw_line_string(projection, orig_line_string, color='red')
@@ -165,22 +165,22 @@ def test(projections):
         if 'grid' in bits:
             # Grid lines
             step = 15
-            lons = range(0, 360, step)
+            lons = list(range(0, 360, step))
             for lon in lons:
                 line_string = sgeom.LineString(
                     [(lon, -75), (lon, 0), (lon, 75)])
                 draw_line_string(projection, line_string, linestyle=':')
             lons = lons + [lons[0]]
-            lats = range(-90 + step, 90, step)
+            lats = list(range(-90 + step, 90, step))
             for lat in lats:
                 line_string = sgeom.LineString([(lon, lat) for lon in lons])
                 draw_line_string(projection, line_string, linestyle=':')
 
         if 'coastline' in bits:
             reader = shapereader.Reader(COASTLINE_PATH)
-            print 'Reading coastline ...'
+            print('Reading coastline ...')
             all_geometries = list(reader.geometries())
-            print '   ... done.'
+            print('   ... done.')
             geometries = []
             geometries += all_geometries
             #geometries += all_geometries[48:52] # Aus & Taz
@@ -191,8 +191,8 @@ def test(projections):
                     try:
                         draw_line_string(projection, line_string)
                     except ValueError:
-                        print i
-                        print geometry
+                        print(i)
+                        print(geometry)
                         raise
                 import sys
                 sys.stdout.write('.')
@@ -224,9 +224,9 @@ def test(projections):
 
         if 'continents' in bits:
             reader = shapereader.Reader(LAND_PATH)
-            print 'Reading continents ...'
+            print('Reading continents ...')
             all_geometries = list(reader.geometries())
-            print '   ... done.'
+            print('   ... done.')
             geometries = []
             geometries += all_geometries
 
@@ -247,9 +247,8 @@ def test(projections):
 
             for i, multi_polygon in enumerate(geometries):
                 for polygon in multi_polygon:
-                    polygon = sgeom.Polygon(filter(
-                        lambda xy: xy[1] > -90, polygon.exterior.coords))
-                    draw_polygon(projection, polygon, color=colors.next())
+                    polygon = sgeom.Polygon([xy for xy in polygon.exterior.coords if xy[1] > -90])
+                    draw_polygon(projection, polygon, color=next(colors))
                     #draw_line_string(projection, polygon)
                 import sys
                 sys.stdout.write('.')
@@ -290,7 +289,7 @@ if __name__ == '__main__':
         plt.ion()
         while True:
             for lon in range(0, 360, 10):
-                print lon
+                print(lon)
                 projections = [
                     ccrs.PlateCarree(lon),
                     ccrs.NorthPolarStereo(),

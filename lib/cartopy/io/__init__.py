@@ -23,7 +23,7 @@ various data formats.
 
 import os
 import string
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import warnings
 
 from cartopy import config
@@ -49,7 +49,7 @@ def fh_getter(fh, mode='r', needs_filename=False):
     if mode != 'r':
         raise ValueError('Only mode "r" currently supported.')
 
-    if isinstance(fh, basestring):
+    if isinstance(fh, str):
         filename = fh
         fh = open(fh, mode)
     elif isinstance(fh, tuple):
@@ -253,7 +253,7 @@ class Downloader(object):
 
         """
         warnings.warn('Downloading: {}'.format(url), DownloadWarning)
-        return urllib2.urlopen(url)
+        return urllib.request.urlopen(url)
 
     @staticmethod
     def from_config(specification, config_dict=None):

@@ -180,7 +180,7 @@ def gallery_code(examples_mod_name):
               '.. container:: inline-paragraphs\n'
               ]
 
-    examples_by_tag = sorted(examples_by_tag.iteritems(),
+    examples_by_tag = sorted(iter(examples_by_tag.items()),
                              key=lambda pair: pair[0])
 
     for tag, _ in examples_by_tag:
