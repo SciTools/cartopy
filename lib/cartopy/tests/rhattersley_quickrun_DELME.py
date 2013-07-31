@@ -148,7 +148,7 @@ def test(projections):
                 for p in c.get_paths():
                 #for j, p in enumerate(c.get_paths()[1:2]):
                     xy = [segment[0] for segment in p.iter_segments()]
-                    xy = [xy for xy in xy if xy[1] > -90]
+                    xy = [coords for coords in xy if coords[1] > -90]
                     polygon = sgeom.Polygon(xy)
                     #polygon = sgeom.Polygon(xy[53:56])
                     draw_polygon(projection, polygon,
@@ -247,7 +247,8 @@ def test(projections):
 
             for i, multi_polygon in enumerate(geometries):
                 for polygon in multi_polygon:
-                    polygon = sgeom.Polygon([xy for xy in polygon.exterior.coords if xy[1] > -90])
+                    pts = [xy for xy in polygon.exterior.coords if xy[1] > -90]
+                    polygon = sgeom.Polygon(pts)
                     draw_polygon(projection, polygon, color=next(colors))
                     #draw_line_string(projection, polygon)
                 import sys

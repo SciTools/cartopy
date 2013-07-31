@@ -26,6 +26,7 @@ Tile generation is explicitly not yet implemented.
 import PIL.Image as Image
 import shapely.geometry
 import numpy as np
+import six
 
 import cartopy.crs as ccrs
 
@@ -170,13 +171,15 @@ class GoogleTiles(object):
         return url
 
     def get_image(self, tile):
-        import io  # *much* faster than StringIO
-        import urllib.request, urllib.parse, urllib.error
+        if six.PY3:
+            from urllib.request import urlopen
+        else:
+            from urllib2 import urlopen
 
         url = self._image_url(tile)
 
-        fh = urllib.request.urlopen(url)
-        im_data = io.StringIO(fh.read())
+        fh = urlopen(url)
+        im_data = six.BytesIO(fh.read())
         fh.close()
         img = Image.open(im_data)
 
@@ -254,7 +257,8 @@ class QuadtreeTiles(GoogleTiles):
     def quadkey_to_tms(self, quadkey, google=False):
         # algorithm ported from
         # http://msdn.microsoft.com/en-us/library/bb259689.aspx
-        assert isinstance(quadkey, str), 'quadkey must be a string'
+        assert isinstance(quadkey, six.string_types), \
+            'quadkey must be a string'
 
         x = y = 0
         z = len(quadkey)

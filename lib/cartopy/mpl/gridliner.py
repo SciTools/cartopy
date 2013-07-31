@@ -21,6 +21,7 @@ import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
+import six
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
@@ -28,7 +29,7 @@ from cartopy.crs import Projection, _RectangularProjection
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 2, 3, 6, 15, 18])
 
-_DEGREE_SYMBOL = '\u00B0'
+_DEGREE_SYMBOL = u'\u00B0'
 
 
 def _fix_lons(lons):
@@ -67,14 +68,14 @@ def _lat_heimisphere(latitude):
 
 
 def _east_west_formatted(longitude, num_format='g'):
-    fmt_string = '{longitude:{num_format}}{degree}{hemisphere}'
+    fmt_string = u'{longitude:{num_format}}{degree}{hemisphere}'
     return fmt_string.format(longitude=abs(longitude), num_format=num_format,
                              hemisphere=_lon_heimisphere(longitude),
                              degree=_DEGREE_SYMBOL)
 
 
 def _north_south_formatted(latitude, num_format='g'):
-    fmt_string = '{latitude:{num_format}}{degree}{hemisphere}'
+    fmt_string = u'{latitude:{num_format}}{degree}{hemisphere}'
     return fmt_string.format(latitude=abs(latitude), num_format=num_format,
                              hemisphere=_lat_heimisphere(latitude),
                              degree=_DEGREE_SYMBOL)
@@ -311,9 +312,7 @@ class Gridliner(object):
             lines = []
             for x in x_gridline_points:
                 l = list(zip(np.zeros(n_steps) + x,
-                        np.linspace(min(y_ticks), max(y_ticks),
-                                    n_steps)
-                        ))
+                         np.linspace(min(y_ticks), max(y_ticks), n_steps)))
                 lines.append(l)
 
             x_lc = mcollections.LineCollection(lines, **collection_kwargs)
@@ -324,7 +323,7 @@ class Gridliner(object):
             lines = []
             for y in y_ticks:
                 l = list(zip(np.linspace(min(x_ticks), max(x_ticks), n_steps),
-                        np.zeros(n_steps) + y))
+                             np.zeros(n_steps) + y))
                 lines.append(l)
 
             y_lc = mcollections.LineCollection(lines, **collection_kwargs)

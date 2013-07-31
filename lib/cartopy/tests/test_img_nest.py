@@ -14,10 +14,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import division
 
 import io
-import pickle as pickle
+import pickle
 import os
 
 from nose.tools import assert_equal, assert_in, assert_true
@@ -138,13 +138,13 @@ def test_intersect():
 
         # Check the image ancestry.
         zoom_levels = ['dummy-z-0', 'dummy-z-1']
-        assert_equal(sorted(k[0] for k in list(nic._ancestry.keys())),
+        assert_equal(sorted(k[0] for k in nic._ancestry.keys()),
                      zoom_levels)
 
         expected = [('dummy-z-0', ['p1.tif']),
                     ('dummy-z-1', ['p2-3.tif', 'p2-4.tif', 'p2-5.tif'])]
         for zoom, image_names in expected:
-            key = [k for k in list(nic._ancestry.keys()) if k[0] == zoom][0]
+            key = [k for k in nic._ancestry.keys() if k[0] == zoom][0]
             ancestry = nic._ancestry[key]
             fnames = sorted([os.path.basename(item[1].filename)
                              for item in ancestry])
@@ -253,7 +253,7 @@ def test_nest():
 
     z0_key = ('aerial z0 test', z0.images[0])
 
-    assert_true(z0_key in list(nest_z0_z1._ancestry.keys()))
+    assert_true(z0_key in nest_z0_z1._ancestry.keys())
     assert_equal(len(nest_z0_z1._ancestry), 1)
 
     # check that it has figured out that all the z1 images are children of
@@ -274,7 +274,7 @@ def test_nest():
     nest_from_config = gen_nest()
     # check that the the images in the nest from configuration are the
     # same as those created by hand.
-    for name in list(nest_z0_z1._collections_by_name.keys()):
+    for name in nest_z0_z1._collections_by_name.keys():
         for img in nest_z0_z1._collections_by_name[name].images:
             collection = nest_from_config._collections_by_name[name]
             assert_in(img, collection.images)

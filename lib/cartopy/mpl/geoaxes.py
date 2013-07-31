@@ -172,8 +172,8 @@ class InterProjectionTransform(mtransforms.Transform):
             if not paths:
                 return mpath.Path(np.empty([0, 2]))
             points, codes = list(zip(*[patch.path_segments(path, curves=False,
-                                                      simplify=False)
-                                  for path in paths]))
+                                                           simplify=False)
+                                       for path in paths]))
             result = mpath.Path(np.concatenate(points, 0),
                                 np.concatenate(codes))
 
@@ -323,7 +323,7 @@ class GeoAxes(matplotlib.axes.Axes):
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'
 
-        return '%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat),
+        return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat),
                                                          ns, abs(lon), ew)
 
     def coastlines(self, resolution='110m', color='black', **kwargs):

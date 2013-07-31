@@ -24,6 +24,8 @@ For detail on how to use this tool, execute it with the `-h` option:
     python download.py -h
 
 """
+from __future__ import print_function
+
 import argparse
 
 from cartopy.feature import Feature, GSHHSFeature, NaturalEarthFeature

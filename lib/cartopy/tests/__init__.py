@@ -60,17 +60,20 @@ def show(projection, geometry):
                                            lw=0, alpha=0.2)
                 plt.gca().add_patch(patch)
             line_string = polygon.exterior
-            plt.plot(*list(zip(*line_string.coords)), marker='+', linestyle='-')
+            plt.plot(*list(zip(*line_string.coords)),
+                     marker='+', linestyle='-')
     elif geometry.type == 'MultiPolygon':
         multi_polygon = geometry
         for polygon in multi_polygon:
             line_string = polygon.exterior
-            plt.plot(*list(zip(*line_string.coords)), marker='+', linestyle='-')
+            plt.plot(*list(zip(*line_string.coords)),
+                     marker='+', linestyle='-')
 
     elif geometry.type == 'MultiLineString':
         multi_line_string = geometry
         for line_string in multi_line_string:
-            plt.plot(*list(zip(*line_string.coords)), marker='+', linestyle='-')
+            plt.plot(*list(zip(*line_string.coords)),
+                     marker='+', linestyle='-')
 
     elif geometry.type == 'LinearRing':
         plt.plot(*list(zip(*geometry.coords)), marker='+', linestyle='-')

@@ -24,6 +24,7 @@ import os.path
 
 import numpy as np
 import shapely.geometry
+import six
 
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
@@ -53,7 +54,7 @@ same projection.
 """
 
 
-class Feature(object, metaclass=ABCMeta):
+class Feature(six.with_metaclass(ABCMeta)):
     """
     Represents a collection of points, lines and polygons with convenience
     methods for common drawing and filtering operations.

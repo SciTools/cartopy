@@ -22,6 +22,7 @@ The CRS class is the base-class for all projections defined in :mod:`cartopy.crs
 """
 
 import numpy as np
+import six
 
 cimport numpy as np
 
@@ -43,7 +44,11 @@ cdef extern from "proj_api.h":
 
 cdef double NAN = float('nan')
 
+
 PROJ4_RELEASE = pj_get_release()
+if six.PY3:
+    PROJ4_RELEASE = PROJ4_RELEASE.decode()
+
 
 class Proj4Error(Exception):
     """
@@ -136,7 +141,8 @@ cdef class CRS:
         init_items = ['+{}={}'.format(k, v) for
                       k, v in self.proj4_params.iteritems()]
         self.proj4_init = ' '.join(sorted(init_items))
-        self.proj4 = pj_init_plus(self.proj4_init)
+        proj4_init_bytes = six.b(self.proj4_init)
+        self.proj4 = pj_init_plus(proj4_init_bytes)
         if not self.proj4:
             raise Proj4Error()
 

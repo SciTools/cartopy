@@ -46,6 +46,7 @@ import os
 
 from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
 import shapefile
+import six
 
 from cartopy.io import Downloader
 from cartopy import config
@@ -223,7 +224,7 @@ class Reader(object):
         field_names = [field[0] for field in fields]
         for i in range(self._reader.numRecords):
             shape_record = self._reader.shapeRecord(i)
-            attributes = dict(list(zip(field_names, shape_record.record)))
+            attributes = dict(zip(field_names, shape_record.record))
             yield Record(shape_record.shape, geometry_factory, attributes,
                          fields)
 
@@ -288,7 +289,6 @@ class NEShpDownloader(Downloader):
         :meth:`zip_file_contents` to the target path.
 
         """
-        import io as StringIO
         from zipfile import ZipFile
 
         target_dir = os.path.dirname(target_path)
@@ -299,7 +299,7 @@ class NEShpDownloader(Downloader):
 
         shapefile_online = self._urlopen(url)
 
-        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
             ext = os.path.splitext(member_path)[1]
@@ -395,13 +395,12 @@ class GSHHSShpDownloader(Downloader):
                                 ).format(extension=ext, **format_dict))
 
     def aqcuire_all_resources(self, format_dict):
-        import io as StringIO
         from zipfile import ZipFile
 
         # Download archive.
         url = self.url(format_dict)
         shapefile_online = self._urlopen(url)
-        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 
         # Iterate through all scales and levels and extract relevant files.
