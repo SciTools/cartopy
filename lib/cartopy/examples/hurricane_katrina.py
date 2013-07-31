@@ -51,7 +51,7 @@ def main():
               'of Hurricane Katrina (2005)')
 
     # turn the lons and lats into a shapely LineString
-    track = sgeom.LineString(zip(lons, lats))
+    track = sgeom.LineString(list(zip(lons, lats)))
 
     # buffer the linestring by two degrees (note: this is a non-physical
     # distance)

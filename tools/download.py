@@ -101,7 +101,7 @@ if __name__ == '__main__':
     def group_name(string):
         if string not in FEATURE_DEFN_GROUPS:
             msg = '{!r} is not a valid feature group (choose from {!s})'
-            msg = msg.format(string, FEATURE_DEFN_GROUPS.keys())
+            msg = msg.format(string, list(FEATURE_DEFN_GROUPS.keys()))
             raise argparse.ArgumentTypeError(msg)
         return string
 
@@ -116,9 +116,9 @@ if __name__ == '__main__':
                         help='show the list of valid feature group names')
     args = parser.parse_args()
     if args.show:
-        print 'Feature group names:'
+        print('Feature group names:')
         for name in sorted(FEATURE_DEFN_GROUPS.keys()):
-            print '   ', name
+            print('   ', name)
     elif not args.group_names:
        parser.error('Please supply one or more feature group names.')
     download_features(args.group_names, args.hold)
