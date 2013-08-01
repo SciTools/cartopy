@@ -24,6 +24,7 @@ import os.path
 import numpy as np
 import PIL.Image
 from shapely.geometry import box
+from six.moves import zip
 
 
 _img_class_attrs = ['filename', 'extent', 'origin', 'pixel_size']
