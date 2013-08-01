@@ -768,7 +768,7 @@ class Mercator(Projection):
 
     @property
     def threshold(self):
-        return 0.5
+        return 1e4
 
     @property
     def boundary(self):

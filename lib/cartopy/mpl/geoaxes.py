@@ -571,7 +571,8 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if not isinstance(self.projection, (ccrs._RectangularProjection,
                                             ccrs._CylindricalProjection,
-                                            ccrs.OSGB)):
+                                            ccrs.OSGB,
+                                            ccrs.Mercator)):
             raise RuntimeError('Cannot set xticks for not-cylindrical '
                                'coordinate systems.')
 
@@ -620,7 +621,8 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if not isinstance(self.projection, (ccrs._RectangularProjection,
                                             ccrs._CylindricalProjection,
-                                            ccrs.OSGB)):
+                                            ccrs.OSGB,
+                                            ccrs.Mercator)):
             raise RuntimeError('Cannot set yticks for non-cylindrical '
                                'coordinate systems.')
 
