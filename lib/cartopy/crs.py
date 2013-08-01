@@ -86,15 +86,6 @@ class Projection(CRS):
         'MultiPolygon': '_project_multipolygon',
     }
 
-    def __eq__(self, other):
-        # XXX handle params that have been set to the default value on one,
-        # but not the other?
-        return (isinstance(self, type(other)) and
-                self.proj4_params == other.proj4_params)
-
-    def __ne__(self, other):
-        return not self == other
-
     @abstractproperty
     def boundary(self):
         pass
@@ -841,10 +832,13 @@ class LambertConformal(Projection):
         self._y_limits = bounds[1], bounds[3]
 
     def __eq__(self, other):
-        same = super(LambertConformal, self).__eq__(other)
-        if isinstance(other, LambertConformal) and hasattr(other, "cutoff"):
-            same = same and self.cutoff == other.cutoff
-        return same
+        res = super(LambertConformal, self).__eq__(other)
+        if hasattr(other, "cutoff"):
+            res = res and self.cutoff == other.cutoff
+        return res
+
+    def __hash__(self):
+        return hash((self.proj4_init, self.cutoff))
 
     @property
     def boundary(self):

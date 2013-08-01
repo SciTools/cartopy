@@ -153,6 +153,10 @@ cdef class CRS:
                 result = self.proj4_init != other.proj4_init
         return result
 
+    def __hash__(self):
+        """Hashes the CRS based on its proj4_init string."""
+        return hash(self.proj4_init)
+
     def __reduce__(self):
         """
         Implements the __reduce__ API so that unpickling produces a stateless
@@ -175,10 +179,6 @@ cdef class CRS:
     # TODO
     #def __str__
     #def _geod(self): # to return the pyproj.Geod
-
-    def __hash__(self):
-        """Hashes the CRS based on its class and proj4_init string."""
-        return hash((type(self), self.proj4_init))
 
     def _as_mpl_transform(self, axes=None):
         """
