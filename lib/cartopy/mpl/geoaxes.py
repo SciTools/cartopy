@@ -25,6 +25,7 @@ import warnings
 import weakref
 
 import matplotlib
+import matplotlib.artist
 import matplotlib.axes
 from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
@@ -258,7 +259,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # XXX TODO: Needs working on
         self.img_factories.append([factory, args, kwargs])
 
-    @matplotlib.axes.allow_rasterization
+    @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
         """
         Extends the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
