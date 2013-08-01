@@ -34,7 +34,7 @@ class TestCRS(unittest.TestCase):
         north = ccrs.NorthPolarStereo()
         self.assertEqual(stereo, north)
         self.assertFalse(stereo != north)
-        self.assertNotEqual(hash(stereo), hash(north))
+        self.assertEqual(hash(stereo), hash(north))
 
         self.assertEqual(ccrs.Geodetic(), ccrs.Geodetic())
 
