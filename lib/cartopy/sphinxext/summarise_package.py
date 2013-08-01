@@ -70,7 +70,7 @@ def walk_module(mod_name, exclude_folders=None):
             if relpath == '.':
                 relpath = ''
 
-            for sub_mod in [_f for _f in relpath.split(os.path.sep) if _f]:
+            for sub_mod in [f for f in relpath.split(os.path.sep) if f]:
                 sub_mod_name += '.' + sub_mod
 
             if fname != '__init__.py':
