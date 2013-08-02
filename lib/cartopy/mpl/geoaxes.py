@@ -571,7 +571,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if not isinstance(self.projection, (ccrs._RectangularProjection,
                                             ccrs._CylindricalProjection,
-                                            ccrs.OSGB)):
+                                            ccrs.TransverseMercator)):
             raise RuntimeError('Cannot set xticks for not-cylindrical '
                                'coordinate systems.')
 
@@ -620,7 +620,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if not isinstance(self.projection, (ccrs._RectangularProjection,
                                             ccrs._CylindricalProjection,
-                                            ccrs.OSGB)):
+                                            ccrs.TransverseMercator)):
             raise RuntimeError('Cannot set yticks for non-cylindrical '
                                'coordinate systems.')
 
@@ -1048,7 +1048,8 @@ class GeoAxes(matplotlib.axes.Axes):
         t = kwargs.get('transform', None)
         if isinstance(t, ccrs.CRS):
             wrap_proj_types = (ccrs._RectangularProjection,
-                               ccrs._WarpedRectangularProjection)
+                               ccrs._WarpedRectangularProjection,
+                               ccrs.TransverseMercator)
             if isinstance(t, wrap_proj_types) and \
                     isinstance(self.projection, wrap_proj_types):
 
