@@ -1050,7 +1050,8 @@ class GeoAxes(matplotlib.axes.Axes):
         t = kwargs.get('transform', None)
         if isinstance(t, ccrs.CRS):
             wrap_proj_types = (ccrs._RectangularProjection,
-                               ccrs._WarpedRectangularProjection)
+                               ccrs._WarpedRectangularProjection,
+                               ccrs.Mercator)
             if isinstance(t, wrap_proj_types) and \
                     isinstance(self.projection, wrap_proj_types):
 
