@@ -768,7 +768,8 @@ class Mercator(Projection):
 
     @property
     def threshold(self):
-        return 1e4
+        #return 0.5 # This one causes lots of test problems - it's too small?
+        return 1e4 
 
     @property
     def boundary(self):
