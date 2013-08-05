@@ -102,12 +102,14 @@ class GoogleTiles(object):
         assert 0 <= y <= (n - 1), ("Tile's y index is out of range. Upper "
                                    "limit %s. Got %s" % (n, y))
 
-        x0 = -180.
+        x0_u = -180.
+        x0, _ = prj.transform_point(x0_u, 0., ccrs.PlateCarree())
         # compute the box height in native coordinates for this zoom level
-        box_w = 360. / n
+        box_w_u = 360. / n
+        box_w, _ = prj.transform_point(box_w_u, 0., ccrs.PlateCarree())
 
         result = prj.transform_points(ccrs.PlateCarree(),
-                                      np.array([0., 0]),
+                                      np.array([0., 0.]),
                                       np.array(lat_extent_at_z0))
         y1, y0 = result[:, 1]
         # compute the box height in native coordinates for this zoom level
@@ -164,9 +166,9 @@ class GoogleTiles(object):
                'Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')'
                '|Zoom%20' + str(tile[2]) + '||||||______________________'
                '______')
-#        print url
-#        url = ('http://mts0.google.com/vt/lyrs=m@177000000&hl=en&src=api&'
-#               'x=%s&y=%s&z=%s&s=G' % tile)
+#         url = ('http://mts0.google.com/vt/lyrs=m@177000000&hl=en&src=api&'
+#                'x=%s&y=%s&z=%s&s=G' % tile)
+#         print url
         return url
 
     def get_image(self, tile):
