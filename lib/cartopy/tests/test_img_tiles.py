@@ -17,7 +17,7 @@
 
 from nose.tools import assert_equal, assert_raises
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
-import shapely.geometry
+import shapely.geometry as sgeom
 
 import cartopy.io.img_tiles as cimgt
 
@@ -26,11 +26,11 @@ def test_google_wts():
     gt = cimgt.GoogleTiles()
 
     extent = [-15, 0.1, 50, 60]
-    target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
-                                              [extent[2], extent[1]],
-                                              [extent[2], extent[3]],
-                                              [extent[0], extent[3]],
-                                              [extent[0], extent[1]]])
+    target_domain = sgeom.Polygon([[extent[0], extent[1]],
+                                   [extent[2], extent[1]],
+                                   [extent[2], extent[3]],
+                                   [extent[0], extent[3]],
+                                   [extent[0], extent[1]]])
 
     with assert_raises(AssertionError):
         list(gt.find_images(target_domain, -1))
@@ -62,15 +62,24 @@ def test_google_wts():
                       -44.75685024))  # <- zoom 4, contains cape town.
 
 
+def test_tile_find_images():
+    gt = cimgt.GoogleTiles()
+    # test the find_images method on a Tile instance.
+    target_domain = sgeom.box(-10, 60, 10, 70)
+
+    assert_equal([(7, 4, 4), (7, 5, 4), (8, 4, 4), (8, 5, 4)],
+                 list(gt.find_images(target_domain, 4)))
+
+
 def test_quadtree_wts():
     qt = cimgt.QuadtreeTiles()
 
     extent = [-15, 0.1, 50, 60]
-    target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
-                                              [extent[2], extent[1]],
-                                              [extent[2], extent[3]],
-                                              [extent[0], extent[3]],
-                                              [extent[0], extent[1]]])
+    target_domain = sgeom.Polygon([[extent[0], extent[1]],
+                                   [extent[2], extent[1]],
+                                   [extent[2], extent[3]],
+                                   [extent[0], extent[3]],
+                                   [extent[0], extent[1]]])
 
     with assert_raises(ValueError):
         list(qt.find_images(target_domain, 0))

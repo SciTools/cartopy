@@ -24,7 +24,7 @@ Tile generation is explicitly not yet implemented.
 """
 
 import PIL.Image as Image
-import shapely.geometry
+import shapely.geometry as sgeom
 import numpy as np
 
 import cartopy.crs as ccrs
@@ -66,7 +66,8 @@ class GoogleTiles(object):
                                                              '>=0.')
 
         # recursively drill down to the images at the target zoom
-        domain = self.tiledomain(start_tile)
+        x0, x1, y0, y1 = self._tileextent(start_tile)
+        domain = sgeom.box(x0, y0, x1, y1)
         if domain.intersects(target_domain):
             if start_tile[2] == target_z:
                     yield start_tile
@@ -89,9 +90,9 @@ class GoogleTiles(object):
 
     @staticmethod
     def tile_bbox(prj, x, y, z, lat_extent_at_z0=(-85., 85.),
-                  bottom_up=True, native=True):
+                  bottom_up=True):
         """
-        Returns the x0, x1, y0, y1 bounding box for the given x, y, z
+        Returns the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
         tile position.
 
         NOTE: This interface is highly liable to change in the future.
@@ -123,40 +124,15 @@ class GoogleTiles(object):
             # n.b. assumes that the projection is symmetric
             n_ys = -1 * n_ys[::-1]
 
-        if native:
-            return n_xs, n_ys
-        else:
-            b_xs, b_ys = prj.unproject_points(n_xs, n_ys)
-
-            return b_xs, b_ys
+        return n_xs, n_ys
 
     def tileextent(self, x_y_z):
+        """Returns extent tuple in MercatorCoords ``(x0, x1, y0, y1)``."""
         x, y, z = x_y_z
-        # this was a copy from tiledomain
-        prj = ccrs.Mercator()
-        x_lim, y_lim = self.tile_bbox(prj, x, y, z, bottom_up=True)
-
+        x_lim, y_lim = self.tile_bbox(ccrs.Mercator(), x, y, z, bottom_up=True)
         return tuple(x_lim) + tuple(y_lim)
 
-    def tiledomain(self, x_y_z):
-        x, y, z = x_y_z
-        prj = ccrs.Mercator()
-        x_lim, y_lim = self.tile_bbox(prj, x, y, z, bottom_up=True)
-
-        pc = ccrs.PlateCarree()
-        result = pc.transform_points(prj,
-                                     x_lim.astype(np.float64),
-                                     y_lim.astype(np.float64))
-        x_lim = result[:, 0]
-        y_lim = result[:, 1]
-
-        domain = shapely.geometry.Polygon([[x_lim[0], y_lim[0]],
-                                           [x_lim[1], y_lim[0]],
-                                           [x_lim[1], y_lim[1]],
-                                           [x_lim[0], y_lim[1]],
-                                           [x_lim[0], y_lim[0]]])
-
-        return domain
+    _tileextent = tileextent
 
     def _image_url(self, tile):
         url = ('http://chart.apis.google.com/chart?chst=d_text_outline&'
@@ -301,7 +277,6 @@ class QuadtreeTiles(GoogleTiles):
             start_tiles = [start_tile]
 
         for start_tile in start_tiles:
-            st = start_tile
             start_tile = self.quadkey_to_tms(start_tile, google=True)
             for tile in GoogleTiles.find_images(self, target_domain, target_z,
                                                 start_tile=start_tile):
