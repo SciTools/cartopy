@@ -347,6 +347,7 @@ class MBTiles(GoogleTiles):
         import sqlite3
 
         x, y, z = tile
+        y = (1 << z) - y - 1
         sql_select = ('select zoom_level, tile_column, tile_row, tile_data' +
             ' from tiles')
         sql_where = 'where zoom_level=%s and tile_column=%s and tile_row=%s;' \
