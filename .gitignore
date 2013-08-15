@@ -16,7 +16,6 @@ docs/source/gallery.rst
 
 # some data files:
 lib/cartopy/data/SRTM3
-lib/cartopy/data/wmts
 lib/cartopy/data/gshhs
 lib/cartopy/data/shapefiles
 
