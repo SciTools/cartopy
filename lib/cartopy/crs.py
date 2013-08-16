@@ -691,7 +691,6 @@ class TransverseMercator(Projection):
 
 class OSGB(TransverseMercator):
     def __init__(self):
-        globe = Globe(datum='OSGB36', ellipse='airy')
         super(OSGB, self).__init__(central_longitude=-2, central_latitude=49,
                                    scale_factor=0.9996012717,
                                    false_easting=400000,

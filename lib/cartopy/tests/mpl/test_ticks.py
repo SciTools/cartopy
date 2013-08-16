@@ -108,12 +108,16 @@ def test_set_xyticks():
     projections = (ccrs.PlateCarree(),
                    ccrs.Mercator(),
                    ccrs.TransverseMercator())
+    x = -3.275024
+    y = 50.753998
     for i, prj in enumerate(projections, 1):
         ax = fig.add_subplot(3, 1, i, projection=prj)
         ax.set_extent([-12.5, 4, 49, 60], ccrs.Geodetic())
         ax.coastlines('110m')
-        ax.set_xticks([-3.275024], crs=ccrs.Geodetic())
-        ax.set_yticks([50.753998], crs=ccrs.Geodetic())
+        p, q = prj.transform_point(x, y, ccrs.Geodetic())
+        ax.set_xticks([p])
+        ax.set_yticks([q])
+
 
 if __name__ == '__main__':
     import nose
