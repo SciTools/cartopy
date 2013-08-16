@@ -637,27 +637,36 @@ class PlateCarree(_CylindricalProjection):
         return return_value
 
 
-class TransverseMercator(_RectangularProjection):
-    def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'tmerc', 'lon_0': central_longitude}
-        globe = Globe(semimajor_axis=math.degrees(1))
-        super(TransverseMercator, self).__init__(proj4_params, 180, 90,
-                                                 globe=globe)
+class TransverseMercator(Projection):
+    """
+    A Transverse Mercator projection.
 
-    @property
-    def threshold(self):
-        return 0.5
+    """
+    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 scale_factor=1.0, globe=None):
+        """
+        Kwargs:
 
+            * central_longitude - The true longitude of the central meridian in
+                                  degrees. Defaults to 0.
+            * central_latitude - The true latitude of the planar origin in
+                                 degrees. Defaults to 0.
+            * false_easting - X offset from the planar origin in metres.
+                              Defaults to 0.
+            * false_northing - Y offset from the planar origin in metres.
+                               Defaults to 0.
+            * scale_factor - Scale factor at the central meridian. Defaults
+                             to 1.
+            * globe - An instance of :class:`cartopy.crs.Globe`. If omitted, a
+                      default globe is created.
 
-# XXX Could become a subclass of TransverseMercator if it exposed enough
-# parameters?
-class OSGB(Projection):
-    def __init__(self):
-        proj4_params = {'proj': 'tmerc', 'lat_0': 49, 'lon_0': -2,
-                        'k': 0.9996012717, 'x_0': 400000, 'y_0': -100000,
+        """
+        proj4_params = {'proj': 'tmerc', 'lon_0': central_longitude,
+                        'lat_0': central_latitude, 'k': scale_factor,
+                        'x_0': false_easting, 'y_0': false_northing,
                         'units': 'm', 'no_defs': ''}
-        globe = Globe(datum='OSGB36', ellipse='airy')
-        super(OSGB, self).__init__(proj4_params, globe=globe)
+        super(TransverseMercator, self).__init__(proj4_params, globe=globe)
 
     @property
     def threshold(self):
@@ -665,8 +674,33 @@ class OSGB(Projection):
 
     @property
     def boundary(self):
-        # XXX Should this be a LinearRing?
-        w, h = 7e5, 13e5
+        x0, x1 = self.x_limits
+        y0, y1 = self.y_limits
+        return sgeom.LineString([(x0, y0), (x0, y1),
+                                 (x1, y1), (x1, y0),
+                                 (x0, y0)])
+
+    @property
+    def x_limits(self):
+        return (-2e7, 2e7)
+
+    @property
+    def y_limits(self):
+        return (-1e7, 1e7)
+
+
+class OSGB(TransverseMercator):
+    def __init__(self):
+        super(OSGB, self).__init__(central_longitude=-2, central_latitude=49,
+                                   scale_factor=0.9996012717,
+                                   false_easting=400000,
+                                   false_northing=-100000,
+                                   globe=Globe(datum='OSGB36', ellipse='airy'))
+
+    @property
+    def boundary(self):
+        w = self.x_limits[1] - self.x_limits[0]
+        h = self.y_limits[1] - self.y_limits[0]
         return sgeom.LineString([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
 
     @property
@@ -678,26 +712,21 @@ class OSGB(Projection):
         return (0, 13e5)
 
 
-class OSNI(Projection):
+class OSNI(TransverseMercator):
     def __init__(self):
-        proj4_params = {'proj': 'tmerc', 'lat_0': 53.5, 'lon_0': -8,
-                        'k': 1.000035, 'x_0': 200000, 'y_0': 250000,
-                        'units': 'm', 'no_defs': ''}
         globe = Globe(semimajor_axis=6377340.189,
                       semiminor_axis=6356034.447938534)
-        super(OSNI, self).__init__(proj4_params, globe=globe)
-
-    @property
-    def threshold(self):
-        return 1e4
+        super(OSNI, self).__init__(central_longitude=-8,
+                                   central_latitude=53.5,
+                                   scale_factor=1.000035,
+                                   false_easting=200000,
+                                   false_northing=250000,
+                                   globe=globe)
 
     @property
     def boundary(self):
-        x0, x1 = self.x_limits
-        w = x1 - x0
-        y0, y1 = self.y_limits
-        h = y1 - y0
-        # XXX Should this be a LinearRing?
+        w = self.x_limits[1] - self.x_limits[0]
+        h = self.y_limits[1] - self.y_limits[0]
         return sgeom.LineString([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
 
     @property

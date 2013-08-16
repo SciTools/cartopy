@@ -558,10 +558,8 @@ class GeoAxes(matplotlib.axes.Axes):
                     coordinate system of the provided tick values. If no
                     coordinate system is specified then the values are assumed
                     to be in the coordinate system of the projection.
-
-        .. note::
-
-            This method is limited to cylindrical projections.
+                    Only transformations from one rectangular coordinate system
+                    to another rectangular coordinate system are supported.
 
         .. note::
 
@@ -569,24 +567,22 @@ class GeoAxes(matplotlib.axes.Axes):
             to support other map projections.
 
         """
-        if not isinstance(self.projection, (ccrs._RectangularProjection,
-                                            ccrs._CylindricalProjection,
-                                            ccrs.OSGB)):
-            raise RuntimeError('Cannot set xticks for not-cylindrical '
-                               'coordinate systems.')
-
-        # Switch on drawing of x axis
-        self.xaxis.set_visible(True)
-
         # Project ticks if crs differs from axes' projection
         if crs is not None and crs != self.projection:
+            if not isinstance(crs, ccrs._RectangularProjection) or \
+                    not isinstance(self.projection,
+                                   ccrs._RectangularProjection):
+                raise RuntimeError('Cannot handle non-rectangular coordinate '
+                                   'systems.')
             proj_xyz = self.projection.transform_points(crs,
                                                         np.asarray(ticks),
-                                                        np.zeros(len(ticks))
-                                                        )
+                                                        np.zeros(len(ticks)))
             xticks = proj_xyz[..., 0]
         else:
             xticks = ticks
+
+        # Switch on drawing of x axis
+        self.xaxis.set_visible(True)
 
         return super(GeoAxes, self).set_xticks(xticks, minor)
 
@@ -607,10 +603,8 @@ class GeoAxes(matplotlib.axes.Axes):
                     coordinate system of the provided tick values. If no
                     coordinate system is specified then the values are assumed
                     to be in the coordinate system of the projection.
-
-        .. note::
-
-            This method is limited to cylindrical projections.
+                    Only transformations from one rectangular coordinate system
+                    to another rectangular coordinate system are supported.
 
         .. note::
 
@@ -618,24 +612,22 @@ class GeoAxes(matplotlib.axes.Axes):
             to support other map projections.
 
         """
-        if not isinstance(self.projection, (ccrs._RectangularProjection,
-                                            ccrs._CylindricalProjection,
-                                            ccrs.OSGB)):
-            raise RuntimeError('Cannot set yticks for non-cylindrical '
-                               'coordinate systems.')
-
-        # Switch on drawing of y axis
-        self.yaxis.set_visible(True)
-
         # Project ticks if crs differs from axes' projection
         if crs is not None and crs != self.projection:
-            prj = self.projection
-            proj_xyz = prj.transform_points(crs,
-                                            np.zeros(len(ticks)),
-                                            np.asarray(ticks))
+            if not isinstance(crs, ccrs._RectangularProjection) or \
+                    not isinstance(self.projection,
+                                   ccrs._RectangularProjection):
+                raise RuntimeError('Cannot handle non-rectangular coordinate '
+                                   'systems.')
+            proj_xyz = self.projection.transform_points(crs,
+                                                        np.zeros(len(ticks)),
+                                                        np.asarray(ticks))
             yticks = proj_xyz[..., 1]
         else:
             yticks = ticks
+
+        # Switch on drawing of y axis
+        self.yaxis.set_visible(True)
 
         return super(GeoAxes, self).set_yticks(yticks, minor)
 
