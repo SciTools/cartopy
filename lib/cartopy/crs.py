@@ -747,6 +747,16 @@ class EuroPP(Projection):
 
 
 class Mercator(Projection):
+    '''
+    The Mercator projection for Cartopy.
+
+    ..Note:
+      This projection is only defined for -80.0 <= lat <= 84.0. As such, if a
+      dataset with lats outside of this range is projected with it then data
+      will flow outside of the map extent. This may be circumvented using
+      :func: ax.set_global().
+
+    '''
     def __init__(self, central_longitude=0.0,
                  min_latitude=-80.0, max_latitude=84.0,
                  globe=None):
