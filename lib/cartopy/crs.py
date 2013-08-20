@@ -775,15 +775,70 @@ class EuroPP(Projection):
         return 1e4
 
 
-class Mercator(_RectangularProjection):
-    def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'merc', 'lon_0': central_longitude}
-        globe = Globe(semimajor_axis=math.degrees(1))
-        super(Mercator, self).__init__(proj4_params, 180, 180, globe=globe)
+class Mercator(Projection):
+    """
+    A Mercator projection.
+
+    """
+
+    def __init__(self, central_longitude=0.0,
+                 min_latitude=-80.0, max_latitude=84.0,
+                 globe=None):
+        """
+        Kwargs:
+
+            * central_longitude - the central longitude. Defaults to 0.
+            * min_latitude - the maximum southerly extent of the projection.
+                             Defaults to -80 degrees.
+            * max_latitude - the maximum northerly extent of the projection.
+                             Defaults to 84 degrees.
+            * globe - A :class:`cartopy.crs.Globe`.
+                      If omitted, a default globe is created.
+
+        """
+        proj4_params = {'proj': 'merc',
+                        'lon_0': central_longitude,
+                        'k': 1,
+                        'units': 'm'}
+        super(Mercator, self).__init__(proj4_params, globe=globe)
+
+        # Calculate limits.
+        limits = self.transform_points(PlateCarree(),
+                                       np.array([-180., 180.]),
+                                       np.array([min_latitude, max_latitude]))
+        self._xlimits = tuple(limits[..., 0])
+        self._ylimits = tuple(limits[..., 1])
+        self._threshold = np.diff(self.x_limits)[0] / 720
+
+    def __eq__(self, other):
+        res = super(Mercator, self).__eq__(other)
+        if hasattr(other, "_ylimits") and hasattr(other, "_xlimits"):
+            res = res and self._ylimits == other._ylimits and \
+                self._xlimits == other._xlimits
+        return res
+
+    def __hash__(self):
+        return hash((self.proj4_init, self._xlimits, self._ylimits))
 
     @property
     def threshold(self):
-        return 0.5
+        return self._threshold
+
+    @property
+    def boundary(self):
+        x0, x1 = self.x_limits
+        y0, y1 = self.y_limits
+        return sgeom.LineString([(x0, y0), (x0, y1),
+                                 (x1, y1), (x1, y0),
+                                 (x0, y0)])
+
+    @property
+    def x_limits(self):
+        return self._xlimits
+
+    @property
+    def y_limits(self):
+        return self._ylimits
 
 
 class LambertCylindrical(_RectangularProjection):
