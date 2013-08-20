@@ -197,10 +197,10 @@ def test_find_images():
     img = RoundedImg.from_world_file(img_fname, world_file_fname)
 
     assert_equal(img.filename, img_fname)
-    assert_equal(img.extent, (0.0, 90.0, 89.51370048, -0.0))
+    assert_equal(img.extent, (0.0, 90.0, 9964619.55667165, -1.315e-05))
     assert_equal(img.origin, 'lower')
     assert_array_equal(img, np.array(PIL.Image.open(img.filename)))
-    assert_equal(img.pixel_size, (0.3515625, -0.34966289))
+    assert_equal(img.pixel_size, (0.3515625, -38924.2951433))
 
 
 def gen_nest():

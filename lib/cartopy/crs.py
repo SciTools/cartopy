@@ -746,15 +746,55 @@ class EuroPP(Projection):
         return 1e4
 
 
-class Mercator(_RectangularProjection):
-    def __init__(self, central_longitude=0.0):
-        proj4_params = {'proj': 'merc', 'lon_0': central_longitude}
-        globe = Globe(semimajor_axis=math.degrees(1))
-        super(Mercator, self).__init__(proj4_params, 180, 180, globe=globe)
+class Mercator(Projection):
+    '''
+    The Mercator projection for Cartopy.
+
+    ..Note:
+      This projection is only defined for -80.0 <= lat <= 84.0. As such, if a
+      dataset with lats outside of this range is projected with it then data
+      will flow outside of the map extent. This may be circumvented using
+      :func: ax.set_global().
+
+    '''
+    def __init__(self, central_longitude=0.0,
+                 min_latitude=-80.0, max_latitude=84.0,
+                 globe=None):
+
+        proj4_params = {'proj': 'merc',
+                        'lon_0': central_longitude,
+                        'k': 1,
+                        'units': 'm',
+                        'no_defs': ''}
+        if globe is None:
+            globe = Globe('WGS84')
+        super(Mercator, self).__init__(proj4_params, globe=globe)
+
+        # Calculate limits.
+        limits = self.transform_points(PlateCarree(),
+                                       np.zeros(2),
+                                       np.array([min_latitude, max_latitude]))
+        self._ylimits = tuple(limits[..., 1])
 
     @property
     def threshold(self):
-        return 0.5
+        return 1e4
+
+    @property
+    def boundary(self):
+        x0, x1 = self.x_limits
+        y0, y1 = self.y_limits
+        return sgeom.LineString([(x0, y0), (x0, y1),
+                                 (x1, y1), (x1, y0),
+                                 (x0, y0)])
+
+    @property
+    def x_limits(self):
+        return (-20037508.3428, 20037508.3428)
+
+    @property
+    def y_limits(self):
+        return self._ylimits
 
 
 class LambertCylindrical(_RectangularProjection):
