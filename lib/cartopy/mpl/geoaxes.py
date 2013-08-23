@@ -1109,17 +1109,19 @@ class GeoAxes(matplotlib.axes.Axes):
                         pcolor_data.mask = pcolor_data.mask | C_mask
 
                     pts = pts.reshape((Ny, Nx, 2))
-                    pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
-                                             pcolor_data, **kwargs)
-                    pcolor_col.set_cmap(cmap)
-                    pcolor_col.set_norm(norm)
-                    pcolor_col.set_clim(vmin, vmax)
-                    # scale the data according to the *original* data
-                    pcolor_col.norm.autoscale_None(C)
+                    if np.any(~pcolor_data.mask):
+                        pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
+                                                 pcolor_data, **kwargs)
+                        pcolor_col.set_cmap(cmap)
+                        pcolor_col.set_norm(norm)
+                        pcolor_col.set_clim(vmin, vmax)
+                        # scale the data according to the *original* data
+                        pcolor_col.norm.autoscale_None(C)
 
-                    # put the pcolor_col on the pcolormesh collection so that
-                    # if really necessary, users can do things post this method
-                    collection._wrapped_collection_fix = pcolor_col
+                        # put the pcolor_col on the pcolormesh collection so
+                        # that if really necessary, users can do things post
+                        # this method
+                        collection._wrapped_collection_fix = pcolor_col
 
         return collection
 
