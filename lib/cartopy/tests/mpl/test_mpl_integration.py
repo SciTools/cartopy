@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+
+import math
 import warnings
 
 from nose.tools import assert_equal
@@ -130,7 +132,9 @@ def test_multiple_projections():
                    ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
                    ccrs.OSGB(),
                    ccrs.TransverseMercator(),
-                   ccrs.Mercator(),
+                   ccrs.Mercator(
+                       globe=ccrs.Globe(semimajor_axis=math.degrees(1)),
+                       min_latitude=-85., max_latitude=85.),
                    ccrs.LambertCylindrical(),
                    ccrs.Miller(),
                    ccrs.Gnomonic(),

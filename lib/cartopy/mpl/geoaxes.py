@@ -569,9 +569,11 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Project ticks if crs differs from axes' projection
         if crs is not None and crs != self.projection:
-            if not isinstance(crs, ccrs._RectangularProjection) or \
+            if not isinstance(crs, (ccrs._RectangularProjection,
+                                    ccrs.Mercator)) or \
                     not isinstance(self.projection,
-                                   ccrs._RectangularProjection):
+                                   (ccrs._RectangularProjection,
+                                    ccrs.Mercator)):
                 raise RuntimeError('Cannot handle non-rectangular coordinate '
                                    'systems.')
             proj_xyz = self.projection.transform_points(crs,
@@ -614,9 +616,11 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Project ticks if crs differs from axes' projection
         if crs is not None and crs != self.projection:
-            if not isinstance(crs, ccrs._RectangularProjection) or \
+            if not isinstance(crs, (ccrs._RectangularProjection,
+                                    ccrs.Mercator)) or \
                     not isinstance(self.projection,
-                                   ccrs._RectangularProjection):
+                                   (ccrs._RectangularProjection,
+                                    ccrs.Mercator)):
                 raise RuntimeError('Cannot handle non-rectangular coordinate '
                                    'systems.')
             proj_xyz = self.projection.transform_points(crs,
