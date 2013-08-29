@@ -23,6 +23,8 @@ Tile generation is explicitly not yet implemented.
 
 """
 
+import math
+
 import PIL.Image as Image
 import shapely.geometry as sgeom
 import numpy as np
@@ -40,7 +42,9 @@ class GoogleTiles(object):
     def __init__(self, desired_tile_form='RGB'):
         # XXX consider fixing the CRS???
         self.imgs = []
-        self.crs = ccrs.Mercator()
+        self.crs = ccrs.Mercator(
+            min_latitude=-85., max_latitude=85.,
+            globe=ccrs.Globe(semimajor_axis=math.degrees(1)))
         self.desired_tile_form = desired_tile_form
 
     def image_for_domain(self, target_domain, target_z):
@@ -129,7 +133,7 @@ class GoogleTiles(object):
     def tileextent(self, x_y_z):
         """Returns extent tuple in MercatorCoords ``(x0, x1, y0, y1)``."""
         x, y, z = x_y_z
-        x_lim, y_lim = self.tile_bbox(ccrs.Mercator(), x, y, z, bottom_up=True)
+        x_lim, y_lim = self.tile_bbox(self.crs, x, y, z, bottom_up=True)
         return tuple(x_lim) + tuple(y_lim)
 
     _tileextent = tileextent

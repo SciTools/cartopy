@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import math
+
 from nose.tools import assert_equal, assert_raises
 import numpy as np
 import matplotlib.pyplot as plt
@@ -101,7 +103,10 @@ def test_image_merge():
         images_to_merge.append([img, x, y, origin])
 
     img, extent, origin = cimgt._merge_tiles(images_to_merge)
-    ax = plt.axes(projection=ccrs.Mercator())
+    ax = plt.axes(projection=ccrs.Mercator(
+        min_latitude=-85.,
+        max_latitude=85.,
+        globe=ccrs.Globe(semimajor_axis=math.degrees(1))))
     ax.set_global()
     ax.coastlines()
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
