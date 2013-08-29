@@ -24,7 +24,7 @@ import cartopy.crs as ccrs
 
 
 def find_projections():
-    for obj_name, o in vars(ccrs).copy().iteritems():
+    for obj_name, o in vars(ccrs).copy().items():
 #        o = getattr(ccrs, obj_name)
         if (isinstance(o, type) and issubclass(o, ccrs.Projection) and
             not obj_name.startswith('_') and obj_name not in ['Projection']):
@@ -34,7 +34,7 @@ def find_projections():
 
 def projection_rst(projection_cls):
     name = projection_cls.__name__
-    print name
+    print(name)
 
 
 SPECIAL_CASES = {ccrs.PlateCarree: ['PlateCarree()', 'PlateCarree(central_longitude=180)'],

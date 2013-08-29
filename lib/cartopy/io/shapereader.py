@@ -46,6 +46,7 @@ import os
 
 from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
 import shapefile
+import six
 
 from cartopy.io import Downloader
 from cartopy import config
@@ -63,7 +64,7 @@ def _create_polyline(shape):
         return MultiLineString()
 
     parts = list(shape.parts) + [None]
-    bounds = zip(parts[:-1], parts[1:])
+    bounds = list(zip(parts[:-1], parts[1:]))
     lines = [shape.points[slice(lower, upper)] for lower, upper in bounds]
     return MultiLineString(lines)
 
@@ -75,7 +76,7 @@ def _create_polygon(shape):
     # Partition the shapefile rings into outer rings/polygons (clockwise) and
     # inner rings/holes (anti-clockwise).
     parts = list(shape.parts) + [None]
-    bounds = zip(parts[:-1], parts[1:])
+    bounds = list(zip(parts[:-1], parts[1:]))
     outer_polygons_and_holes = []
     inner_polygons = []
     for lower, upper in bounds:
@@ -208,7 +209,7 @@ class Reader(object):
 
         """
         geometry_factory = self._geometry_factory
-        for i in xrange(self._reader.numRecords):
+        for i in range(self._reader.numRecords):
             shape = self._reader.shape(i)
             yield _make_geometry(geometry_factory, shape)
 
@@ -221,7 +222,7 @@ class Reader(object):
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
         field_names = [field[0] for field in fields]
-        for i in xrange(self._reader.numRecords):
+        for i in range(self._reader.numRecords):
             shape_record = self._reader.shapeRecord(i)
             attributes = dict(zip(field_names, shape_record.record))
             yield Record(shape_record.shape, geometry_factory, attributes,
@@ -288,7 +289,6 @@ class NEShpDownloader(Downloader):
         :meth:`zip_file_contents` to the target path.
 
         """
-        import cStringIO as StringIO
         from zipfile import ZipFile
 
         target_dir = os.path.dirname(target_path)
@@ -299,7 +299,7 @@ class NEShpDownloader(Downloader):
 
         shapefile_online = self._urlopen(url)
 
-        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
             ext = os.path.splitext(member_path)[1]
@@ -395,13 +395,12 @@ class GSHHSShpDownloader(Downloader):
                                 ).format(extension=ext, **format_dict))
 
     def aqcuire_all_resources(self, format_dict):
-        import cStringIO as StringIO
         from zipfile import ZipFile
 
         # Download archive.
         url = self.url(format_dict)
         shapefile_online = self._urlopen(url)
-        zfh = ZipFile(StringIO.StringIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 
         # Iterate through all scales and levels and extract relevant files.

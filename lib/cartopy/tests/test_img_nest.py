@@ -17,7 +17,6 @@
 from __future__ import division
 
 import io
-import cPickle as pickle
 import os
 
 from nose.tools import assert_equal, assert_in, assert_true
@@ -25,6 +24,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 import PIL.Image
 import shapely.geometry as sgeom
+from six.moves import cPickle as pickle
 
 from cartopy import config
 import cartopy.crs as ccrs

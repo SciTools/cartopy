@@ -21,6 +21,8 @@ The crs module defines Coordinate Reference Systems and the transformations
 between them.
 
 """
+from __future__ import print_function
+
 from abc import ABCMeta, abstractproperty
 import math
 import warnings
@@ -29,6 +31,7 @@ import numpy as np
 import shapely.geometry as sgeom
 from shapely.geometry.polygon import LinearRing
 from shapely.prepared import prep
+import six
 
 from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_RELEASE
 import cartopy.trace
@@ -68,13 +71,12 @@ class RotatedGeodetic(CRS):
         super(RotatedGeodetic, self).__init__(proj4_params, globe=globe)
 
 
-class Projection(CRS):
+class Projection(six.with_metaclass(ABCMeta, CRS)):
     """
     Defines a projected coordinate system with flat topology and Euclidean
     distance.
 
     """
-    __metaclass__ = ABCMeta
 
     _method_map = {
         'Point': '_project_point',
@@ -345,10 +347,10 @@ class Projection(CRS):
         edge_things.sort(key=lambda thing: (thing.distance, thing.kind))
         debug = 0
         if debug:
-            print
-            print 'Edge things'
+            print()
+            print('Edge things')
             for thing in edge_things:
-                print '   ', thing
+                print('   ', thing)
 
         to_do = {i: line_string for i, line_string in enumerate(line_strings)}
         done = []
@@ -358,25 +360,25 @@ class Projection(CRS):
                 import sys
                 sys.stdout.write('+')
                 sys.stdout.flush()
-                print
-                print 'Processing: %s, %s' % (i, line_string)
+                print()
+                print('Processing: %s, %s' % (i, line_string))
             filter_fn = lambda t: (t.kind or
                                    t.data[0] != i or
                                    t.data[1] != 'last')
-            edge_things = filter(filter_fn, edge_things)
+            edge_things = list(filter(filter_fn, edge_things))
 
             added_linestring = set()
             while True:
                 # Find the distance of the last point
                 d_last = boundary_distance(line_string.coords[-1])
                 if debug:
-                    print '   d_last:', d_last
+                    print('   d_last:', d_last)
                 next_thing = _find_gt(edge_things, d_last)
                 if debug:
-                    print '   next_thing:', next_thing
+                    print('   next_thing:', next_thing)
                 if next_thing.kind:
                     if debug:
-                        print '   adding boundary point'
+                        print('   adding boundary point')
                     boundary_point = next_thing.data
                     combined_coords = (list(line_string.coords) +
                                        [(boundary_point.x, boundary_point.y)])
@@ -385,12 +387,12 @@ class Projection(CRS):
                     #edge_things.remove(next_thing)
                 elif next_thing.data[0] == i:
                     if debug:
-                        print '   close loop'
+                        print('   close loop')
                     done.append(line_string)
                     break
                 else:
                     if debug:
-                        print '   adding line'
+                        print('   adding line')
                     j = next_thing.data[0]
                     line_to_append = line_strings[j]
                     # XXX pelson: I think this if statement can be removed
@@ -412,13 +414,14 @@ class Projection(CRS):
                                            're-added')
 
         # filter out any non-valid linear rings
-        done = filter(lambda linear_ring: len(linear_ring.coords) > 2, done)
+        done = [linear_ring for linear_ring in done if
+                len(linear_ring.coords) > 2]
 
         # XXX Is the last point in each ring actually the same as the first?
         linear_rings = [LinearRing(line) for line in done]
 
         if debug:
-            print '   DONE'
+            print('   DONE')
 
         return linear_rings
 

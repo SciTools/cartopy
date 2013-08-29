@@ -21,6 +21,7 @@ import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 from shapely.geometry import MultiPolygon, Polygon
+import six
 
 import cartopy.io.shapereader as shp
 
@@ -72,16 +73,16 @@ class TestLakes(unittest.TestCase):
         lake_record = records[14]
         self.assertEqual(lake_record.attributes.get('name'),
                          'Lago de\rNicaragua')
-        self.assertEqual(lake_record.attributes.keys(),
-                         ['admin', 'featurecla', 'scalerank',
-                          'name_alt', 'name'])
+        self.assertEqual(sorted(lake_record.attributes.keys()),
+                         sorted(['admin', 'featurecla', 'scalerank',
+                                 'name_alt', 'name']))
         lake = lake_record.geometry
         self._assert_geometry(lake)
 
     def test_bounds(self):
         # tests that a file which has a record with a bbox can
         # use the bbox without first creating the geometry
-        record = self.reader.records().next()
+        record = next(self.reader.records())
         self.assertEqual(record._geometry, False, ('The geometry was loaded '
                                                    'before it was needed.'))
         self.assertEqual(len(record._bounds), 4)
@@ -123,7 +124,7 @@ class TestRivers(unittest.TestCase):
         self.assertEqual(
             river_record.attributes,
             {'featurecla': 'River', 'scalerank': 2, 'name': 'Peace',
-             'name_alt': ' ' * 254})
+             'name_alt': six.b(' ' * 254)})
         river = river_record.geometry
         self._assert_geometry(river)
 

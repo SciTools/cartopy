@@ -15,6 +15,7 @@ The dependencies, with the minimum tested version, of cartopy |version| are:
  * matplotlib - 1.2.0rc2
  * pep8 - 1.3.3 (for testing)
  * nose - 1.2.1 (for testing)
+ * six - 1.3.0 (for Python 2 and 3 compatibility)
 
 
 ..

@@ -104,9 +104,9 @@ class HeaderCheck(Command):
 
         for pattern in self.exclude_patterns:
             exclude = lambda path: not fnmatch.fnmatch(path, pattern)
-            check_paths = filter(exclude, check_paths)
+            check_paths = list(filter(exclude, check_paths))
 
-        bad_paths = filter(self._header_bad, check_paths)
+        bad_paths = list(filter(self._header_bad, check_paths))
         if bad_paths:
             raise MissingHeaderError(bad_paths)
 

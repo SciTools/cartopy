@@ -21,6 +21,7 @@ import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
+import six
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
@@ -310,10 +311,8 @@ class Gridliner(object):
         if self.xlines:
             lines = []
             for x in x_gridline_points:
-                l = zip(np.zeros(n_steps) + x,
-                        np.linspace(min(y_ticks), max(y_ticks),
-                                    n_steps)
-                        )
+                l = list(zip(np.zeros(n_steps) + x,
+                         np.linspace(min(y_ticks), max(y_ticks), n_steps)))
                 lines.append(l)
 
             x_lc = mcollections.LineCollection(lines, **collection_kwargs)
@@ -323,8 +322,8 @@ class Gridliner(object):
         if self.ylines:
             lines = []
             for y in y_ticks:
-                l = zip(np.linspace(min(x_ticks), max(x_ticks), n_steps),
-                        np.zeros(n_steps) + y)
+                l = list(zip(np.linspace(min(x_ticks), max(x_ticks), n_steps),
+                             np.zeros(n_steps) + y))
                 lines.append(l)
 
             y_lc = mcollections.LineCollection(lines, **collection_kwargs)
