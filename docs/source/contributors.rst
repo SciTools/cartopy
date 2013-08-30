@@ -23,6 +23,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Carwyn Pelley
  * Andrew Dawson
  * Patrick Peglar
+ * Christoph Gohlke
 
 
 Thank you!
