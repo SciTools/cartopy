@@ -803,7 +803,7 @@ class Mercator(Projection):
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
         # Calculate limits.
-        limits = self.transform_points(PlateCarree(),
+        limits = self.transform_points(Geodetic(),
                                        np.array([-180., 180.]),
                                        np.array([min_latitude, max_latitude]))
         self._xlimits = tuple(limits[..., 0])
