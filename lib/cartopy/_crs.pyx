@@ -68,7 +68,8 @@ class Globe(object):
     """
     def __init__(self, datum=None, ellipse='WGS84',
                  semimajor_axis=None, semiminor_axis=None,
-                 flattening=None, inverse_flattening=None, towgs84=None):
+                 flattening=None, inverse_flattening=None, towgs84=None,
+                 nadgrids=None):
         """
         Keywords:
 
@@ -85,6 +86,8 @@ class Globe(object):
             * inverse_flattening - Inverse flattening of the ellipsoid.
 
             * towgs84 - Passed through to the Proj4 definition.
+            
+            * nadgrids - Passed through to the Proj4 definition.
 
         """
         self.datum = datum
@@ -94,16 +97,15 @@ class Globe(object):
         self.flattening = flattening
         self.inverse_flattening = inverse_flattening
         self.towgs84 = towgs84
+        self.nadgrids = nadgrids
 
     def to_proj4_params(self):
         """Create a dictionary which represents this globe in proj4 params."""
         proj4_params = {'ellps': self.ellipse, 'datum': self.datum,
                         'a': self.semimajor_axis, 'b': self.semiminor_axis,
                         'f': self.flattening, 'rf': self.inverse_flattening,
-                        'towgs84': self.towgs84}
-        proj4_params = dict([(k,v) for k, v in proj4_params.items()
-                             if v is not None])
-        return proj4_params
+                        'towgs84': self.towgs84, 'nadgrids': self.nadgrids}
+        return {k: v for k, v in proj4_params.items() if v is not None}
 
 
 cdef class CRS:
@@ -135,7 +137,7 @@ cdef class CRS:
 
         init_items = ['+{}={}'.format(k, v) for
                       k, v in self.proj4_params.iteritems()]
-        self.proj4_init = ' '.join(sorted(init_items))
+        self.proj4_init = ' '.join(sorted(init_items)) + ' +no_defs'
         self.proj4 = pj_init_plus(self.proj4_init)
         if not self.proj4:
             raise Proj4Error()

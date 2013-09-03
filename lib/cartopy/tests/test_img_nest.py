@@ -19,10 +19,12 @@ from __future__ import division
 import io
 import cPickle as pickle
 import os
+import shutil
+import warnings
 
 from nose.tools import assert_equal, assert_in, assert_true
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_array_almost_equal
 import PIL.Image
 import shapely.geometry as sgeom
 
@@ -33,8 +35,14 @@ import cartopy.io.img_nest as cimg_nest
 import cartopy.tests as tests
 
 
-_TEST_DATA_DIR = os.path.join(config["repo_data_dir"],
+#: An integer version which should be increased if the test data needs
+#: to change in some way.
+_TEST_DATA_VERSION = 1
+_TEST_DATA_DIR = os.path.join(config["data_dir"],
                               'wmts', 'aerial')
+#: A global to determine whether the test data has already been made available
+#: in this session.
+_TEST_DATA_AVAILABLE = False
 
 
 def _save_world(fname, args):
@@ -184,52 +192,22 @@ class RoundedImg(cimg_nest.Img):
         """
         extent, pix_size = cimg_nest.Img.world_file_extent(*args, **kwargs)
         # round the extent
-        extent = tuple(round(v, 8) for v in extent)
-        pix_size = tuple(round(v, 8) for v in pix_size)
+        extent = tuple(round(v, 4) for v in extent)
+        pix_size = tuple(round(v, 4) for v in pix_size)
         return extent, pix_size
 
 
-def test_find_images():
-    gen_test_data()
-    z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
-    img_fname = os.path.join(z2_dir, 'x_2_y_1.png')
-    world_file_fname = os.path.join(z2_dir, 'x_2_y_1.pgw')
-    img = RoundedImg.from_world_file(img_fname, world_file_fname)
-
-    assert_equal(img.filename, img_fname)
-    assert_equal(img.extent, (0.0, 90.0, 89.51370048, -0.0))
-    assert_equal(img.origin, 'lower')
-    assert_array_equal(img, np.array(PIL.Image.open(img.filename)))
-    assert_equal(img.pixel_size, (0.3515625, -0.34966289))
-
-
-def gen_nest():
-    gen_test_data()
-    from_config = cimg_nest.NestedImageCollection.from_configuration
-
-    files = [['aerial z0 test', os.path.join(_TEST_DATA_DIR, 'z_0')],
-             ['aerial z1 test', os.path.join(_TEST_DATA_DIR, 'z_1')],
-             ]
-
-    nest_z0_z1 = from_config('aerial test',
-                             ccrs.Mercator(),
-                             files,
-                             glob_pattern='*.png',
-                             img_class=RoundedImg,
-                             )
-    return nest_z0_z1
-
-
 def test_nest():
-    z0 = cimg_nest.ImageCollection('aerial z0 test', ccrs.Mercator())
+    crs = cimgt.GoogleTiles().crs
+    z0 = cimg_nest.ImageCollection('aerial z0 test', crs)
     z0.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_0'),
                          glob_pattern='*.png', img_class=RoundedImg)
 
-    z1 = cimg_nest.ImageCollection('aerial z1 test', ccrs.Mercator())
+    z1 = cimg_nest.ImageCollection('aerial z1 test', crs)
     z1.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_1'),
                          glob_pattern='*.png', img_class=RoundedImg)
 
-    z2 = cimg_nest.ImageCollection('aerial z2 test', ccrs.Mercator())
+    z2 = cimg_nest.ImageCollection('aerial z2 test', crs)
     z2.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_2'),
                          glob_pattern='*.png', img_class=RoundedImg)
 
@@ -244,12 +222,10 @@ def test_nest():
                           '{!s}'.format(img, z0.images[0], img.extent,
                                         z0.images[0].extent))
     nest_z0_z1 = cimg_nest.NestedImageCollection('aerial test',
-                                                 ccrs.Mercator(),
+                                                 crs,
                                                  [z0, z1])
 
-    nest = cimg_nest.NestedImageCollection('aerial test',
-                                           ccrs.Mercator(),
-                                           [z0, z1, z2])
+    nest = cimg_nest.NestedImageCollection('aerial test', crs, [z0, z1, z2])
 
     z0_key = ('aerial z0 test', z0.images[0])
 
@@ -291,7 +267,12 @@ def test_nest():
                  nest_z0_z1_from_pickle._ancestry)
 
 
-def gen_test_data():
+def requires_wmts_data(function):
+    """
+    A decorator which ensures that the WMTS data is available for
+    use in testing.
+
+    """
     aerial = cimgt.MapQuestOpenAerial()
 
     # get web tiles upto 3 zoom levels deep
@@ -302,12 +283,32 @@ def gen_test_data():
         for sub_tile in aerial.subtiles(tile):
             tiles.append(sub_tile)
 
-    data_dir = os.path.join(_TEST_DATA_DIR, 'z_{}', 'x_{}_y_{}.png')
+    fname_template = os.path.join(_TEST_DATA_DIR, 'z_{}', 'x_{}_y_{}.png')
 
-    # download the tiles
+    if not os.path.isdir(_TEST_DATA_DIR):
+        os.makedirs(_TEST_DATA_DIR)
+
+    data_version_fname = os.path.join(_TEST_DATA_DIR, 'version.txt')
+
+    test_data_version = None
+    try:
+        with open(data_version_fname, 'r') as fh:
+            test_data_version = int(fh.read().strip())
+    except IOError:
+        pass
+    finally:
+        if test_data_version != _TEST_DATA_VERSION:
+            warnings.warn('WMTS test data is out of date, regenerating at '
+                          '{}.'.format(_TEST_DATA_DIR))
+            shutil.rmtree(_TEST_DATA_DIR)
+            os.makedirs(_TEST_DATA_DIR)
+            with open(data_version_fname, 'w') as fh:
+                fh.write(str(_TEST_DATA_VERSION))
+
+    # Download the tiles.
     for tile in tiles:
         x, y, z = tile
-        fname = data_dir.format(z, x, y)
+        fname = fname_template.format(z, x, y)
         if not os.path.exists(fname):
             if not os.path.isdir(os.path.dirname(fname)):
                 os.makedirs(os.path.dirname(fname))
@@ -333,6 +334,44 @@ def gen_test_data():
                         }
             _save_world(pgw_fname, pgw_keys)
             img.save(fname)
+
+    global _TEST_DATA_AVAILABLE
+    _TEST_DATA_AVAILABLE = True
+
+    return function
+
+
+@requires_wmts_data
+def test_find_images():
+    z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
+    img_fname = os.path.join(z2_dir, 'x_2_y_0.png')
+    world_file_fname = os.path.join(z2_dir, 'x_2_y_0.pgw')
+    img = RoundedImg.from_world_file(img_fname, world_file_fname)
+
+    assert_equal(img.filename, img_fname)
+    assert_array_almost_equal(img.extent,
+                              (0., 10018754.17139462,
+                               10018754.17139462, 20037508.342789244),
+                              decimal=4)
+    assert_equal(img.origin, 'lower')
+    assert_array_equal(img, np.array(PIL.Image.open(img.filename)))
+    assert_equal(img.pixel_size, (39135.7585, 39135.7585))
+
+
+@requires_wmts_data
+def gen_nest():
+    from_config = cimg_nest.NestedImageCollection.from_configuration
+
+    files = [['aerial z0 test', os.path.join(_TEST_DATA_DIR, 'z_0')],
+             ['aerial z1 test', os.path.join(_TEST_DATA_DIR, 'z_1')],
+             ]
+
+    crs = cimgt.GoogleTiles().crs
+
+    nest_z0_z1 = from_config('aerial test',
+                             crs, files, glob_pattern='*.png',
+                             img_class=RoundedImg)
+    return nest_z0_z1
 
 
 if __name__ == '__main__':
