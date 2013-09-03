@@ -38,8 +38,9 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
+from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
-import cartopy.mpl.patch as patch
+import cartopy.mpl.patch as cpatch
 
 
 assert matplotlib.__version__ >= '1.2', ('Cartopy can only work with '
@@ -157,8 +158,8 @@ class InterProjectionTransform(mtransforms.Transform):
         # This is a cartopy extension to the Transform API to allow finer
         # control of Path orientation handling (Path ordering is not important
         # in matplotlib, but is in Cartopy).
-        geoms = patch.path_to_geos(src_path,
-                                   getattr(self, 'force_path_ccw', False))
+        geoms = cpatch.path_to_geos(src_path,
+                                    getattr(self, 'force_path_ccw', False))
 
         for geom in geoms:
             proj_geom = self.target_projection.project_geometry(
@@ -168,11 +169,11 @@ class InterProjectionTransform(mtransforms.Transform):
         if not transformed_geoms:
             result = mpath.Path(np.empty([0, 2]))
         else:
-            paths = patch.geos_to_path(transformed_geoms)
+            paths = cpatch.geos_to_path(transformed_geoms)
             if not paths:
                 return mpath.Path(np.empty([0, 2]))
-            points, codes = zip(*[patch.path_segments(path, curves=False,
-                                                      simplify=False)
+            points, codes = zip(*[cpatch.path_segments(path, curves=False,
+                                                       simplify=False)
                                   for path in paths])
             result = mpath.Path(np.concatenate(points, 0),
                                 np.concatenate(codes))
@@ -234,6 +235,14 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         self.projection = kwargs.pop('map_projection')
+        """The :class:`cartopy.crs.Projection` of this GeoAxes."""
+
+        self.outline_patch = None
+        """The patch that provides the line bordering the projection."""
+
+        self.background_patch = None
+        """The patch that provides the filled background of the projection."""
+
         super(GeoAxes, self).__init__(*args, **kwargs)
         self._gridliners = []
         self.img_factories = []
@@ -269,6 +278,12 @@ class GeoAxes(matplotlib.axes.Axes):
         been set.
 
         """
+        if self.outline_patch.reclip or self.background_patch.reclip:
+            clipped_path = clip_path(self.outline_patch.orig_path,
+                                     self.viewLim)
+            self.outline_patch._path = clipped_path
+            self.background_patch._path = clipped_path
+
         # if no data has been added, and no extents set, then make the
         # map global
         if self.ignore_existing_data_limits and \
@@ -788,49 +803,60 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _boundary(self):
         """
-        Adds the map's boundary.
+        Adds the map's boundary to this GeoAxes, attaching the appropriate
+        artists to :data:`.outline_patch` and :data:`.background_patch`.
 
-        Note:
+        .. note::
 
-            The boundary is not the axes.patch, which provides rectilinear
-            clipping for all of the map's artists.
+            The boundary is not the ``axes.patch``. ``axes.patch``
+            is made invisible by this method - its only remaining
+            purpose is to provide a rectilinear clip patch for
+            all Axes artists.
 
-        The axes.patch will have its visibility set to False inside
-        GeoAxes.gca()
         """
-        import cartopy.mpl.patch as p
-        path, = p.geos_to_path(self.projection.boundary)
+        path, = cpatch.geos_to_path(self.projection.boundary)
 
-#        from matplotlib.collections import PatchCollection
+        # Get the outline path in terms of self.transData
+        proj_to_data = self.projection._as_mpl_transform(self) - self.transData
+        tp = proj_to_data.transform_path(path)
 
-        sct = SimpleClippedTransform(self.transScale + self.transLimits,
-                                     self.transAxes)
+        outline_patch = mpatches.PathPatch(tp,
+                                           facecolor='none', edgecolor='k',
+                                           zorder=2.5, clip_on=False,
+                                           transform=self.transData)
 
-        # XXX Should be exactly one path...
-        collection = mpatches.PathPatch(path,
-                                        facecolor='none', edgecolor='k',
-                                        zorder=1000,
-                                        # transform=self.transData,
-                                        transform=sct, clip_on=False,
-                                        )
-        self.outline_patch = collection
-        # XXX autolim = False
-        self.add_patch(collection)
+        background_patch = mpatches.PathPatch(tp,
+                                              facecolor='w', edgecolor='none',
+                                              zorder=-1, clip_on=False,
+                                              transform=self.transData)
 
-        # put a color patch for background color
-        # XXX Should be exactly one path...
-        collection = mpatches.PathPatch(path,
-                                        facecolor='w', edgecolor='none',
-                                        zorder=-1, transform=sct,
-                                        clip_on=False,
-                                        )
-        self.background_patch = collection
-        # XXX autolim = False
-        self.add_patch(collection)
+        # Attach the original path to the patches. This will be used each time
+        # a new clipped path is calculated.
+        outline_patch.orig_path = tp
+        background_patch.orig_path = tp
 
+        # Attach a "reclip" attribute, which determines if the patch's path is
+        # reclipped before drawing. A callback is used to change the "reclip"
+        # state.
+        outline_patch.reclip = False
+        background_patch.reclip = False
+
+        # Add the patches to the axes, and also make them available as
+        # attributes.
+        self.add_patch(outline_patch)
+        self.outline_patch = outline_patch
+        self.add_patch(background_patch)
+        self.background_patch = background_patch
+
+        # Attach callback events for when the xlim or ylim are changed. This
+        # is what triggers the patches to be re-clipped at draw time.
+        self.callbacks.connect('xlim_changed', _trigger_patch_reclip)
+        self.callbacks.connect('ylim_changed', _trigger_patch_reclip)
+
+        # Hide the old "background" patch. It is not used by GeoAxes.
         self.patch.set_facecolor((1, 1, 1, 0))
         self.patch.set_edgecolor((0.5, 0.5, 0.5))
-        self.patch.set_linewidth(0.0)
+        self.patch.set_visible(False)
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contour(self, *args, **kwargs):
@@ -1294,63 +1320,13 @@ class GeoAxes(matplotlib.axes.Axes):
         return collection
 
 
-class SimpleClippedTransform(mtransforms.Transform):
+def _trigger_patch_reclip(event):
     """
-    Transforms the values using a pre transform, clips them, then post
-    transforms them.
-
-    This transform should not be widely used, but is useful for transforming
-    a background patch and clipping the patch to a desired extent.
+    Defines an event callback for a GeoAxes which forces the outline and
+    background patches to be re-clipped next time they are drawn.
 
     """
-    input_dims = 2
-    output_dims = 2
-    has_inverse = True
-
-    def __init__(self, pre_clip_transform, post_clip_transform,
-                 xclip=(0, 1), yclip=(0, 1)):
-        """
-        Create the transform.
-
-        Args:
-
-            * pre_clip_transform - A :class:`matplotlib.transforms.Transform`.
-            * post_clip_transform - A :class:`matplotlib.transforms.Transform`.
-            * xclip - Defaults to (0,1).
-            * yclip - Defaults to (0,1).
-
-        """
-        mtransforms.Transform.__init__(self)
-        self.pre_clip_transform = pre_clip_transform
-        self.post_clip_transform = post_clip_transform
-
-        self.x_clips = xclip
-        self.y_clips = yclip
-
-    def transform_non_affine(self, values):
-        """
-        Transforms from source to target coordinates.
-
-        Args:
-
-            * value - An (n,2) array of points in source coordinates.
-
-        Returns:
-
-            * An (n,2) array of transformed points in target coordinates.
-
-        """
-        new_vals = self.pre_clip_transform.transform(values)
-        x, y = new_vals[:, 0:1], new_vals[:, 1:2]
-        np.clip(x, self.x_clips[0], self.x_clips[1], x)
-        np.clip(y, self.y_clips[0], self.y_clips[1], y)
-        # XXX support ma's?
-        return self.post_clip_transform.transform(new_vals)
-
-    def inverted(self):
-        """
-        Return a matplotlib :class:`~matplotlib.transforms.Transform` from
-        target to source coordinates.
-
-        """
-        return (self.pre_clip_transform + self.post_clip_transform).inverted()
+    axes = event.axes
+    # trigger the outline and background patches to be re-clipped
+    axes.outline_patch.reclip = True
+    axes.background_patch.reclip = True
