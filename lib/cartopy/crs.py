@@ -64,7 +64,6 @@ class RotatedGeodetic(CRS):
                         'o_lat_p': pole_latitude,
                         'lon_0': 180 + pole_longitude,
                         'to_meter': math.radians(1)}
-        globe = globe or Globe('WGS84')
         super(RotatedGeodetic, self).__init__(proj4_params, globe=globe)
 
 
@@ -665,7 +664,7 @@ class TransverseMercator(Projection):
         proj4_params = {'proj': 'tmerc', 'lon_0': central_longitude,
                         'lat_0': central_latitude, 'k': scale_factor,
                         'x_0': false_easting, 'y_0': false_northing,
-                        'units': 'm', 'no_defs': ''}
+                        'units': 'm'}
         super(TransverseMercator, self).__init__(proj4_params, globe=globe)
 
     @property
@@ -751,8 +750,7 @@ class EuroPP(Projection):
                         'k': 0.9996,
                         'x_0': 1750000, 'y_0': 1500000,
                         'zone': 32,
-                        'units': 'm',
-                        'no_defs': ''}
+                        'units': 'm'}
         globe = Globe(ellipse='intl', towgs84='-87,-98,-121')
         super(EuroPP, self).__init__(proj4_params, globe=globe)
 
@@ -1269,18 +1267,29 @@ class InterruptedGoodeHomolosine(Projection):
 class Geostationary(Projection):
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None):
-        if globe is None:
-            globe = Globe()
         proj4_params = {'proj': 'geos', 'lon_0': central_longitude,
-                        'lat_0': 0, 'h': satellite_height, 'x_0': false_easting,
-                        'y_0': false_northing, 'units': 'm', 'no_defs': ''}
-        super(Geostationary, self).__init__(proj4_params)
-        # The maximum extent will be invalidated when the satellite
-        # height is not set to the default value.
-        # TODO: Determine this value automatically.
-        self._max = 5.43e6
-        center_point = sgeom.Point(false_easting, false_northing)
-        self._boundary = center_point.buffer(self._max).exterior
+                        'lat_0': 0, 'h': satellite_height,
+                        'x_0': false_easting, 'y_0': false_northing,
+                        'units': 'm'}
+        super(Geostationary, self).__init__(proj4_params, globe=globe)
+
+        def ellipse(semimajor=2, semiminor=1, easting=0, northing=0, n=200):
+            t = np.linspace(0, 2 * np.pi, n)
+            coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
+            coords += ([easting], [northing])
+            return coords
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        b = np.float(self.globe.semiminor_axis or 6378137.0)
+        h = np.float(satellite_height)
+        max_x = h * math.atan(a / (a + h))
+        max_y = h * math.atan(b / (b + h))
+
+        coords = ellipse(max_x, max_y,
+                         false_easting, false_northing, 60)
+        coords = tuple(tuple(pair) for pair in coords.T)
+        self._boundary = sgeom.polygon.LinearRing(coords)
         self._xlim = self._boundary.bounds[::2]
         self._ylim = self._boundary.bounds[1::2]
         self._threshold = np.diff(self._xlim)[0] * 0.02
