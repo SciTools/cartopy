@@ -21,6 +21,7 @@ When a matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.
 
 """
+import collections
 import warnings
 import weakref
 
@@ -664,10 +665,8 @@ class GeoAxes(matplotlib.axes.Axes):
             fname = os.path.join(config["repo_data_dir"],
                                  'raster', 'natural_earth',
                                  '50-natural-earth-1-downsampled.png')
-            img_origin = 'lower'
-            img = imread(fname)
-            img = img[::-1]
-            return self.imshow(img, origin=img_origin, transform=source_proj,
+            return self.imshow(imread(fname)[::-1, ...], origin='lower',
+                               transform=source_proj,
                                extent=[-180, 180, -90, 90])
         else:
             raise ValueError('Unknown stock image %r.' % name)
@@ -676,29 +675,37 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
 
-        Extra kwargs:
+        Parameters
+        ----------
 
-            transform - a :class:`~cartopy.crs.Projection`.
-
-            regrid_shape - default is (750, 375). But may be changed to "auto"
-                           in the future...
-
-            extent = (left, right, bottom, top) - transform coordinates for
-                                                  the extent of the source
-                                                  image.
-
-            target_extent = (left, right, bottom, top) - native coordinates
-                                                         for the extent of
-                                                         the desired image.
-
-            origin - default is changed to 'lower'
-
-            update_datalim - flag whether the image should affect the data
-                             limits (default: True)
+        transform : :class:`~cartopy.crs.Projection` or matplotlib transform
+            The coordinate system in which the given image is rectangular.
+        regrid_shape : int or pair of ints
+            The shape of the desired image if it needs to be transformed.
+            If a single integer is given then that will be used as the minimum
+            length dimension, while the other dimension will be scaled up
+            according to the target extent's aspect ratio. The default is for
+            the minimum dimension of a transformed image to have length 750,
+            so for an image being transformed into a global PlateCarree
+            projection the resulting transformed image would have a shape of
+            ``(750, 1500)``.
+        extent : tuple
+            The corner coordinates of the image in the form
+            ``(left, right, bottom, top)``. The coordinates should be in the
+            coordinate system passed to the transform keyword.
+        target_extent : tuple
+            The corner coordinate of the desired image in the form
+            ``(left, right, bottom, top)``. The coordinates should be in the
+            coordinate system passed to the transform keyword.
+        origin : {'lower', 'upper'}
+            The origin of the vertical pixels. See
+            :func:`matplotlib.pyplot.imshow` for further details. Default
+            is ``'lower'``.
+        update_datalim : bool
+            Whether the image should affect the data limits. Default to True.
 
         """
         transform = kwargs.pop('transform', None)
-        regrid_shape = kwargs.pop('regrid_shape', (750, 375))
         update_datalim = kwargs.pop('update_datalim', True)
 
         kwargs.setdefault('origin', 'lower')
@@ -716,14 +723,24 @@ class GeoAxes(matplotlib.axes.Axes):
             result = matplotlib.axes.Axes.imshow(self, img, *args, **kwargs)
         else:
             extent = kwargs.pop('extent', None)
+            img = np.asanyarray(img)
 
             if not isinstance(transform, ccrs.Projection):
                 raise ValueError('Expected a projection subclass. Cannot '
                                  'handle a %s in imshow.' % type(transform))
 
-            warp_array = cartopy.img_transform.warp_array
             target_extent = self.get_extent(self.projection)
-            # XXX adaptive resolution depending on incoming img?
+            regrid_shape = kwargs.pop('regrid_shape', 750)
+            if not isinstance(regrid_shape, collections.Sequence):
+                target_size = int(regrid_shape)
+                x_range, y_range = np.diff(target_extent)[::2]
+                desired_aspect = x_range / y_range
+                if x_range >= y_range:
+                    regrid_shape = (target_size * desired_aspect, target_size)
+                else:
+                    regrid_shape = (target_size, target_size / desired_aspect)
+
+            warp_array = cartopy.img_transform.warp_array
             img, extent = warp_array(img,
                                      source_proj=transform,
                                      source_extent=extent,
@@ -731,17 +748,20 @@ class GeoAxes(matplotlib.axes.Axes):
                                      target_res=regrid_shape,
                                      target_extent=target_extent,
                                      )
-            # as a workaround to a matplotlib limitation, turn any images
+
+            # As a workaround to a matplotlib limitation, turn any images
             # which are RGB with a mask into RGBA images with an alpha
             # channel.
             if (isinstance(img, np.ma.MaskedArray) and
                     img.shape[2:3] == (3, ) and
                     img.mask is not False):
                 old_img = img
-                img = np.zeros(img.shape[:2] + (4, ))
+                img = np.zeros(img.shape[:2] + (4, ), dtype=img.dtype)
                 img[:, :, 0:3] = old_img
-                # put an alpha channel in if the image was masked
+                # Put an alpha channel in if the image was masked.
                 img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
+                if img.dtype.kind == 'u':
+                    img[:, :, 3] *= 255
 
             result = matplotlib.axes.Axes.imshow(self, img, *args,
                                                  extent=extent, **kwargs)
