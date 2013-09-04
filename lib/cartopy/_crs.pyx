@@ -21,6 +21,8 @@ The CRS class is the base-class for all projections defined in :mod:`cartopy.crs
 
 """
 
+from collections import OrderedDict
+
 import numpy as np
 
 cimport numpy as np
@@ -68,8 +70,8 @@ class Globe(object):
     """
     def __init__(self, datum=None, ellipse='WGS84',
                  semimajor_axis=None, semiminor_axis=None,
-                 flattening=None, inverse_flattening=None, towgs84=None,
-                 nadgrids=None):
+                 flattening=None, inverse_flattening=None,
+                 towgs84=None, nadgrids=None):
         """
         Keywords:
 
@@ -100,12 +102,16 @@ class Globe(object):
         self.nadgrids = nadgrids
 
     def to_proj4_params(self):
-        """Create a dictionary which represents this globe in proj4 params."""
-        proj4_params = {'ellps': self.ellipse, 'datum': self.datum,
-                        'a': self.semimajor_axis, 'b': self.semiminor_axis,
-                        'f': self.flattening, 'rf': self.inverse_flattening,
-                        'towgs84': self.towgs84, 'nadgrids': self.nadgrids}
-        return {k: v for k, v in proj4_params.items() if v is not None}
+        """
+        Create an OrderedDict of key value pairs which represents this globe
+        in terms of proj4 params.
+
+        """
+        proj4_params = (['datum', self.datum], ['ellps', self.ellipse],
+                        ['a', self.semimajor_axis], ['b', self.semiminor_axis],
+                        ['f', self.flattening], ['rf', self.inverse_flattening],
+                        ['towgs84', self.towgs84], ['nadgrids', self.nadgrids])
+        return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
 
 cdef class CRS:
@@ -115,20 +121,16 @@ cdef class CRS:
     """
     def __init__(self, proj4_params, globe=None):
         """
-        Args:
-
-            * proj4_params - A dictionary of proj4 valid parameters
-                             required to define the desired CRS.
-
-        Kwargs:
-
-            * globe - An optional :class:`~cartopy.crs.Globe`.
-                      If omitted, a default instance is created.
-
-        Note:
-
-            The contents of proj4_params take precedence over the
-            params describing the globe.
+        Parameters
+        ----------
+        proj4_params : iterable of key-value pairs
+            The proj4 parameters required to define the desired CRS.
+            The parameters should not describe the desired elliptic model,
+            instead create an appropriate Globe instance. The ``proj4_params``
+            parameters will override any parameters that the Globe defines.
+        globe : :class:`~cartopy.crs.Globe` instance, optional
+            If omitted, the default Globe instance will be created.
+            See :class:`~cartopy.crs.Globe` for details.
 
         """
         self.globe = globe or Globe()
@@ -136,8 +138,8 @@ cdef class CRS:
         self.proj4_params.update(proj4_params)
 
         init_items = ['+{}={}'.format(k, v) for
-                      k, v in self.proj4_params.iteritems()]
-        self.proj4_init = ' '.join(sorted(init_items)) + ' +no_defs'
+                      k, v in self.proj4_params.items()]
+        self.proj4_init = ' '.join(init_items) + ' +no_defs'
         self.proj4 = pj_init_plus(self.proj4_init)
         if not self.proj4:
             raise Proj4Error()
@@ -349,8 +351,8 @@ class Geodetic(CRS):
                       Defaults to a "WGS84" datum.
 
         """
-        proj4_params = {'proj': 'lonlat'}
-        globe = globe or Globe('WGS84')
+        proj4_params = [('proj', 'lonlat')]
+        globe = globe or Globe(datum='WGS84')
         super(Geodetic, self).__init__(proj4_params, globe)
 
     # XXX Implement fwd such as Basemap's Geod. Would be used in the tissot example.
@@ -371,6 +373,6 @@ class Geocentric(CRS):
                       Defaults to a "WGS84" datum.
 
         """
-        proj4_params = {'proj': 'geocent'}
-        globe = globe or Globe('WGS84')
+        proj4_params = [('proj', 'geocent')]
+        globe = globe or Globe(datum='WGS84')
         super(Geocentric, self).__init__(proj4_params, globe)

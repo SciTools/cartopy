@@ -23,9 +23,7 @@ import warnings
 import weakref
 
 import matplotlib.artist
-import matplotlib.cbook
 import matplotlib.collections
-import matplotlib.lines
 
 import cartopy.mpl.patch
 
