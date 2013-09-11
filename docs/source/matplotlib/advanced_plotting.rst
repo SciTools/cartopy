@@ -123,8 +123,8 @@ Images
     ax.coastlines(resolution='50m', color='black', linewidth=1)
 
     # mark a known place to help us geo-locate ourselves
-    ax.plot(-117.1625, 32.715, 'bo', markersize=7)
-    ax.text(-117, 33, 'San Diego')
+    ax.plot(-117.1625, 32.715, 'bo', markersize=7, transform=ccrs.Geodetic())
+    ax.text(-117, 33, 'San Diego', transform=ccrs.Geodetic())
 
     plt.show()
 
