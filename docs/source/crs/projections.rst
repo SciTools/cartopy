@@ -42,7 +42,7 @@ LambertConformal
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(6.7920892811, 3))
+    plt.figure(figsize=(4.28969332205, 3))
     ax = plt.axes(projection=ccrs.LambertConformal())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -74,7 +74,7 @@ Mercator
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(3.50907018473, 3))
     ax = plt.axes(projection=ccrs.Mercator())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -170,7 +170,7 @@ TransverseMercator
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(6, 3))
+    plt.figure(figsize=(6.0, 3))
     ax = plt.axes(projection=ccrs.TransverseMercator())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -237,6 +237,22 @@ EuroPP
     plt.figure(figsize=(2.51842105263, 3))
     ax = plt.axes(projection=ccrs.EuroPP())
     ax.coastlines(resolution='50m')
+    ax.gridlines()
+
+
+Geostationary
+-------------
+
+.. autoclass:: cartopy.crs.Geostationary
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(2.99893683337, 3))
+    ax = plt.axes(projection=ccrs.Geostationary())
+    ax.coastlines(resolution='110m')
     ax.gridlines()
 
 
