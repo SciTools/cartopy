@@ -41,6 +41,7 @@ geometry representation of shapely:
     <class 'shapely.geometry.point.Point'>
 
 """
+import glob
 import itertools
 import os
 
@@ -394,7 +395,7 @@ class GSHHSShpDownloader(Downloader):
                                 'GSHHS_{scale}_L{level}{extension}'
                                 ).format(extension=ext, **format_dict))
 
-    def aqcuire_all_resources(self, format_dict):
+    def acquire_all_resources(self, format_dict):
         import cStringIO as StringIO
         from zipfile import ZipFile
 
@@ -429,12 +430,25 @@ class GSHHSShpDownloader(Downloader):
         Downloads the zip file and extracts the files listed in
         :meth:`zip_file_contents` to the target path.
 
+        .. note:
+
+            Because some of the GSHSS data is available with the cartopy
+            repository, scales of "l" or "c" will not be downloaded if they
+            exist in the ``cartopy.config['repo_data_dir']`` directory.
+
         """
-        self.aqcuire_all_resources(format_dict)
+        repo_fname_pattern = os.path.join(config['repo_data_dir'],
+                                          'shapefiles', 'gshhs', '{scale}',
+                                          'GSHHS_{scale}_L?.shp')
+        repo_fname_pattern = repo_fname_pattern.format(**format_dict)
+        repo_fnames = glob.glob(repo_fname_pattern)
+        if repo_fnames:
+            assert len(repo_fnames) == 1, '>1 repo files found for GSHHS'
+            return repo_fnames[0]
+        self.acquire_all_resources(format_dict)
         if not os.path.exists(target_path):
             raise RuntimeError('Failed to download and extract GSHHS '
                                'shapefile to {!r}.'.format(target_path))
-
         return target_path
 
     @staticmethod
