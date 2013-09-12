@@ -16,7 +16,7 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-__version__ = '0.9.x'
+__version__ = '0.9.0'
 __document_these__ = ['config']
 
 # Enable shapely performance enhancements
