@@ -22,6 +22,7 @@ The CRS class is the base-class for all projections defined in :mod:`cartopy.crs
 """
 
 from collections import OrderedDict
+import warnings
 
 import numpy as np
 
@@ -335,6 +336,122 @@ cdef class CRS:
             return result.reshape(result_shape)
 
         return result
+
+    def transform_vectors(self, src_crs, x, y, u, v):
+        """
+        transform_vectors(src_crs, x, y, u, v)
+
+        Transform the given vector components, with coordinates in the
+        given source coordinate system (``src_crs``), to this coordinate
+        system. The vector components must be given relative to the
+        source coordinate system (grid eastward and grid northward).
+
+        Args:
+
+        * src_crs:
+            The :class:`CRS` that represents the coordinate system the
+            vectors are defined in.
+        * x, y:
+            The x and y coordinates, in the source CRS coordinates,
+            where the vector components are located. May be 1 or 2
+            dimensional, but must have matching shapes.
+        * u, v:
+            The grid eastward and grid northward components of the
+            vector field respectively. Their shape must match the shape
+            of the x and y coordinates.
+
+        Returns:
+
+        * ut, vt:
+            The transformed vector components.
+
+        .. note::
+
+           The algorithm used to transform vectors is an approximation
+           rather than an exact transform, but the accuracy should be
+           good enough for visualization purposes.
+
+        """
+        if not (x.shape == y.shape == u.shape == v.shape):
+            raise ValueError('x, y, u and v arrays must be the same shape')
+        if x.ndim not in (1, 2):
+            raise ValueError('x, y, u and v must be 1 or 2 dimensional')
+        # Transform the coordinates to the target projection.
+        proj_xyz = self.transform_points(src_crs, x, y)
+        target_x, target_y = proj_xyz[..., 0], proj_xyz[..., 1]
+        # Rotate the input vectors to the projection.
+        #
+        # 1: Find the magnitude and direction of the input vectors.
+        vector_magnitudes = (u**2 + v**2)**0.5
+        vector_angles = np.arctan2(v, u)
+        # 2: Find a point in the direction of the original vector that is
+        #    a small distance away from the base point of the vector (near
+        #    the poles the point may have to be in the opposite direction
+        #    to be valid).
+        factor = 360000.
+        delta = (src_crs.x_limits[1] - src_crs.x_limits[0]) / factor
+        x_perturbations = delta * np.cos(vector_angles)
+        y_perturbations = delta * np.sin(vector_angles)
+        # 3: Handle points that are invalid. These come from picking a new
+        #    point that is outside the domain of the CRS. The first step is
+        #    to apply the native transform to the input coordinates to make
+        #    sure they are in the appropriate range. Then detect all the
+        #    coordinates where the perturbation takes the point out of the
+        #    valid x-domain and fix them. After that do the same for points
+        #    that are outside the valid y-domain, which may reintroduce some
+        #    points outside of the valid x-domain
+        proj_xyz = src_crs.transform_points(src_crs, x, y)
+        source_x, source_y = proj_xyz[..., 0], proj_xyz[..., 1]
+        #    Detect all the coordinates where the perturbation takes the point
+        #    outside of the valid x-domain, and reverse the direction of the
+        #    perturbation to fix this.
+        eps = 1e-9
+        invalid_x = np.logical_or(
+            source_x + x_perturbations < src_crs.x_limits[0]-eps,
+            source_x + x_perturbations > src_crs.x_limits[1]+eps)
+        if invalid_x.any():
+            x_perturbations[invalid_x] *= -1
+            y_perturbations[invalid_x] *= -1
+        #    Do the same for coordinates where the perturbation takes the point
+        #    outside of the valid y-domain. This may reintroduce some points
+        #    that will be outside the x-domain when the perturbation is
+        #    applied.
+        invalid_y = np.logical_or(
+            source_y + y_perturbations < src_crs.y_limits[0]-eps,
+            source_y + y_perturbations > src_crs.y_limits[1]+eps)
+        if invalid_y.any():
+            x_perturbations[invalid_y] *= -1
+            y_perturbations[invalid_y] *= -1
+        #    Keep track of the points where the perturbation direction was
+        #    reversed.
+        reversed_vectors = np.logical_xor(invalid_x, invalid_y)
+        #    See if there were any points where we cannot reverse the direction
+        #    of the perturbation to get the perturbed point within the valid
+        #    domain of the projection, and issue a warning if there are.
+        problem_points = np.logical_or(
+            source_x + x_perturbations < src_crs.x_limits[0]-eps,
+            source_x + x_perturbations > src_crs.x_limits[1]+eps)
+        if problem_points.any():
+            warnings.warn('Some vectors at source domain corners '
+                          'may not have been transformed correctly')
+        # 4: Transform this set of points to the projection coordinates and
+        #    find the angle between the base point and the perturbed point
+        #    in the projection coordinates (reversing the direction at any
+        #    points where the original was reversed in step 3).
+        proj_xyz = self.transform_points(src_crs,
+                                         source_x + x_perturbations,
+                                         source_y + y_perturbations)
+        target_x_perturbed = proj_xyz[..., 0]
+        target_y_perturbed = proj_xyz[..., 1]
+        projected_angles = np.arctan2(target_y_perturbed - target_y,
+                                      target_x_perturbed - target_x)
+        if reversed_vectors.any():
+            projected_angles[reversed_vectors] += np.pi
+        # 5: Form the projected vector components, preserving the magnitude
+        #    of the original vectors.
+        projected_u = vector_magnitudes * np.cos(projected_angles)
+        projected_v = vector_magnitudes * np.sin(projected_angles)
+        return projected_u, projected_v
 
 
 class Geodetic(CRS):
