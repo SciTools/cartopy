@@ -1339,6 +1339,38 @@ class GeoAxes(matplotlib.axes.Axes):
         self.add_collection(collection)
         return collection
 
+    def quiver(self, x, y, u, v, *args, **kwargs):
+        """
+        Plot a 2-D field of arrows.
+
+        See :func:`matplotlib.pyplot.quiver` for details on arguments
+        and keyword arguments.
+
+        .. note::
+
+           The vector components must be defined as grid eastward and
+           grid northward.
+
+        """
+        t = kwargs.get('transform', None)
+        if t is None:
+            t = self.projection
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
+            raise ValueError('invalid transform:'
+                             ' Spherical quiver is not supported - '
+                             ' consider using PlateCarree/RotatedPole.')
+        if isinstance(t, ccrs.Projection):
+            kwargs['transform'] = t._as_mpl_transform(self)
+        else:
+            kwargs['transform'] = t
+        if t != self.projection:
+            # Transform the vectors if the projection is not the same as the
+            # data transform.
+            if x.ndim == 1 and y.ndim == 1:
+                x, y = np.meshgrid(x, y)
+            u, v = self.projection.transform_vectors(t, x, y, u, v)
+        return matplotlib.axes.Axes.quiver(self, x, y, u, v, *args, **kwargs)
+
 
 def _trigger_patch_reclip(event):
     """
