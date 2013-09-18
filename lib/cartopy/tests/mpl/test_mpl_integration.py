@@ -373,6 +373,28 @@ def test_quiver_rotated_pole():
     ax.quiver(x, y, u, v, mag, transform=rp)
 
 
+@ImageTesting(['barbs_plate_carree'])
+def test_barbs():
+    x = np.arange(-60, 45, 5)
+    y = np.arange(30, 75, 5)
+    x2d, y2d = np.meshgrid(x, y)
+    u = 40 * np.cos(np.deg2rad(y2d))
+    v = 40 * np.cos(2. * np.deg2rad(x2d))
+    mag = (u**2 + v**2)**.5
+    plot_extent = [-60, 40, 30, 70]
+    plt.figure(figsize=(6, 6))
+    # plot on native projection
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, length=4, linewidth=.25)
+    # plot on a different projection
+    ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
