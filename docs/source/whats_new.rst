@@ -1,3 +1,14 @@
+What's new in cartopy 0.10
+**************************
+
+:Release: 0.10.0
+:Date:
+
+* Andrew Dawson added the ability to transform vector fields between
+  different coordinate reference systems, and thus the ability to plot
+  vector fields on arbitrary map projections.
+
+
 What's new in cartopy 0.9
 *************************
 

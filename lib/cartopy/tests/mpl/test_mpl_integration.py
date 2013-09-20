@@ -327,6 +327,74 @@ def test_pcolormesh_limited_area_wrap():
     ax.coastlines()
 
 
+@ImageTesting(['quiver_plate_carree'])
+def test_quiver_plate_carree():
+    x = np.arange(-60, 42.5, 2.5)
+    y = np.arange(30, 72.5, 2.5)
+    x2d, y2d = np.meshgrid(x, y)
+    u = np.cos(np.deg2rad(y2d))
+    v = np.cos(2. * np.deg2rad(x2d))
+    mag = (u**2 + v**2)**.5
+    plot_extent = [-60, 40, 30, 70]
+    plt.figure(figsize=(6, 6))
+    # plot on native projection
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.quiver(x, y, u, v, mag)
+    # plot on a different projection
+    ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree())
+
+
+@ImageTesting(['quiver_rotated_pole'])
+def test_quiver_rotated_pole():
+    nx, ny = 22, 36
+    x = np.linspace(311.91998291, 391.11999512, nx, endpoint=True)
+    y = np.linspace(-23.59000015, 24.81000137, ny, endpoint=True)
+    x2d, y2d = np.meshgrid(x, y)
+    u = np.cos(np.deg2rad(y2d))
+    v = -2. * np.cos(2. * np.deg2rad(y2d)) * np.sin(np.deg2rad(x2d))
+    mag = (u**2 + v**2)**.5
+    rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
+    plot_extent = [x[0], x[-1], y[0], y[-1]]
+    # plot on native projection
+    plt.figure(figsize=(6, 6))
+    ax = plt.subplot(211, projection=rp)
+    ax.set_extent(plot_extent, crs=rp)
+    ax.coastlines()
+    ax.quiver(x, y, u, v, mag)
+    # plot on different projection
+    ax = plt.subplot(212, projection=ccrs.PlateCarree())
+    ax.set_extent(plot_extent, crs=rp)
+    ax.coastlines()
+    ax.quiver(x, y, u, v, mag, transform=rp)
+
+
+@ImageTesting(['barbs_plate_carree'])
+def test_barbs():
+    x = np.arange(-60, 45, 5)
+    y = np.arange(30, 75, 5)
+    x2d, y2d = np.meshgrid(x, y)
+    u = 40 * np.cos(np.deg2rad(y2d))
+    v = 40 * np.cos(2. * np.deg2rad(x2d))
+    mag = (u**2 + v**2)**.5
+    plot_extent = [-60, 40, 30, 70]
+    plt.figure(figsize=(6, 6))
+    # plot on native projection
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, length=4, linewidth=.25)
+    # plot on a different projection
+    ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
