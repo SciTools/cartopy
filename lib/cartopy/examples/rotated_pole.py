@@ -20,6 +20,7 @@ def main():
     x, y = [-44, -44, 45, 45, -44], [-45, box_top, box_top, -45, -45]
 
     ax = plt.subplot(211, projection=rotated_pole)
+    ax.set_global()
     ax.stock_img()
     ax.coastlines()
     ax.plot(x, y, marker='o', transform=rotated_pole)
@@ -27,6 +28,7 @@ def main():
     ax.gridlines()
 
     ax = plt.subplot(212, projection=ccrs.PlateCarree())
+    ax.set_global()
     ax.stock_img()
     ax.coastlines()
     ax.plot(x, y, marker='o', transform=rotated_pole)

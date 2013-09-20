@@ -33,7 +33,7 @@ def test_polygon_interiors():
 
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global()  # XXX could be the default???
+    ax.set_global()
 
     pth = Path([[0, -45], [60, -45], [60, 45], [0, 45], [0, 45],
                 [10, -20], [10, 20], [40, 20], [40, -20], [10, 20]],

@@ -1,24 +1,19 @@
 __tags__ = ['Miscellanea']
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import numpy as np
-
 import matplotlib.textpath
 import matplotlib.patches
 from matplotlib.font_manager import FontProperties
+import numpy as np
 
 
 def main():
-
     plt.figure(figsize=[8, 8])
     ax = plt.axes(projection=ccrs.SouthPolarStereo())
 
     ax.coastlines()
     ax.gridlines()
 
-    # Add a background image. Note: unlike the Robinson projection, the
-    # background image spills outside the boundary due to the fact that
-    # points outside the boundary have 1:1 mappings in this projection
     im = ax.stock_img()
 
     def on_draw(event=None):
@@ -35,19 +30,20 @@ def main():
     plt.gcf().canvas.mpl_connect('draw_event', on_draw)
     on_draw()
 
-    # Generate a matplotlib path representing the character "C"
+    # Generate a matplotlib path representing the character "C".
     fp = FontProperties(family='Arial', weight='bold')
     logo_path = matplotlib.textpath.TextPath((-4.5e7, -3.7e7),
                                              'C', size=1, prop=fp)
 
-    # Scale the letter up to an appropriate X and Y scale
+    # Scale the letter up to an appropriate X and Y scale.
     logo_path._vertices *= np.array([123500000, 103250000])
 
-    # Add the path as a patch, drawing black outlines around the text
+    # Add the path as a patch, drawing black outlines around the text.
     patch = matplotlib.patches.PathPatch(logo_path, facecolor='white',
                                          edgecolor='black', linewidth=10,
                                          transform=ccrs.SouthPolarStereo())
-    ax.add_patch(patch)
+    with ax.held_limits():
+        ax.add_patch(patch)
 
     plt.show()
 

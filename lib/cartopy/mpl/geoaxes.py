@@ -22,10 +22,10 @@ plot results from source coordinates to the GeoAxes' target projection.
 
 """
 import collections
+import contextlib
 import warnings
 import weakref
 
-import matplotlib
 import matplotlib.artist
 import matplotlib.axes
 from matplotlib.image import imread
@@ -251,6 +251,15 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
+    def _set_lim_and_transforms(self):
+        matplotlib.axes.Axes._set_lim_and_transforms(self)
+
+        # Start off with a "global" map. This will get auto scaled to the
+        # data's range, if any is added.
+        if self.viewLim == mtransforms.Bbox.unit():
+            self.viewLim.intervalx = self.projection.x_limits
+            self.viewLim.intervaly = self.projection.y_limits
+
     def add_image(self, factory, *args, **kwargs):
         """
         Adds an image "factory" to the Axes.
@@ -271,6 +280,19 @@ class GeoAxes(matplotlib.axes.Axes):
         # XXX TODO: Needs working on
         self.img_factories.append([factory, args, kwargs])
 
+    @contextlib.contextmanager
+    def held_limits(self):
+        """
+        Hold the view and data limits for the life of this context manager.
+        """
+        data_lim = self.dataLim.frozen().get_points()
+        view_lim = self.viewLim.frozen().get_points()
+        orig_update_datalim = self.ignore_existing_data_limits
+        yield
+        self.dataLim.set_points(data_lim)
+        self.viewLim.set_points(view_lim)
+        self.ignore_existing_data_limits = orig_update_datalim
+
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
         """
@@ -281,18 +303,16 @@ class GeoAxes(matplotlib.axes.Axes):
         been set.
 
         """
+        # If data has been added (i.e. autoscale hasn't been turned off)
+        # then we should autoscale the view.
+        if self.get_autoscale_on():
+            self.autoscale_view()
+
         if self.outline_patch.reclip or self.background_patch.reclip:
             clipped_path = clip_path(self.outline_patch.orig_path,
                                      self.viewLim)
             self.outline_patch._path = clipped_path
             self.background_patch._path = clipped_path
-
-        # if no data has been added, and no extents set, then make the
-        # map global
-        if self.ignore_existing_data_limits and \
-                self._autoscaleXon and self._autoscaleYon:
-            self.set_global()
-            self.ignore_existing_data_limits = True
 
         for gl in self._gridliners:
             gl._draw_gridliner(background_patch=self.background_patch)
@@ -653,12 +673,18 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return super(GeoAxes, self).set_yticks(yticks, minor)
 
-    def stock_img(self, name='ne_shaded'):
+    def stock_img(self, name='ne_shaded', update_datalim=False):
         """
         Add a standard image to the map.
 
         Currently, the only (and default) option is a downsampled version of
         the Natural Earth shaded relief raster.
+
+        Parameters
+        ----------
+        update_datalim : bool
+            Whether the act of adding the stock image updates the Axes'
+            dataLim. Default is False.
 
         """
         if name == 'ne_shaded':
@@ -667,9 +693,10 @@ class GeoAxes(matplotlib.axes.Axes):
             fname = os.path.join(config["repo_data_dir"],
                                  'raster', 'natural_earth',
                                  '50-natural-earth-1-downsampled.png')
-            return self.imshow(imread(fname)[::-1, ...], origin='lower',
+            return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
-                               extent=[-180, 180, -90, 90])
+                               extent=[-180, 180, -90, 90],
+                               update_datalim=update_datalim)
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
@@ -734,6 +761,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if not update_datalim:
             data_lim = self.dataLim.frozen().get_points()
             view_lim = self.viewLim.frozen().get_points()
+            orig_update_datalim = self.ignore_existing_data_limits
 
         if transform is None or transform == self.transData or same_projection:
             if isinstance(transform, ccrs.Projection):
@@ -794,6 +822,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if not update_datalim:
             self.dataLim.set_points(data_lim)
             self.viewLim.set_points(view_lim)
+            self.ignore_existing_data_limits = orig_update_datalim
 
         return result
 
