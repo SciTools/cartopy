@@ -31,10 +31,10 @@ def sample_data():
 
 
 def main():
-    ax = plt.axes([0.01, 0.01, 0.98, 0.98], projection=ccrs.PlateCarree())
+    ax = plt.axes([0, 0, 1, 1],
+                  projection=ccrs.LambertConformal())
 
-    ax.set_xlim([-125, -66.5])
-    ax.set_ylim([20, 50])
+    ax.set_extent([-125, -66.5, 20, 50], ccrs.Geodetic())
 
     shapename = 'admin_1_states_provinces_lakes_shp'
     states_shp = shpreader.natural_earth(resolution='110m',
@@ -82,7 +82,7 @@ def main():
     labels = ['State directly intersects\nwith track',
               'State is within \n2 degrees of track']
     plt.legend([direct_hit, within_2_deg], labels,
-               loc=3, fancybox=True)
+               loc='lower left', bbox_to_anchor=(0.025, -0.1), fancybox=True)
 
     plt.show()
 
