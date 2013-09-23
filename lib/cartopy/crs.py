@@ -822,6 +822,9 @@ class Mercator(Projection):
                 self._xlimits == other._xlimits
         return res
 
+    def __ne__(self, other):
+        return not self == other
+
     def __hash__(self):
         return hash((self.proj4_init, self._xlimits, self._ylimits))
 
@@ -927,6 +930,9 @@ class LambertConformal(Projection):
         if hasattr(other, "cutoff"):
             res = res and self.cutoff == other.cutoff
         return res
+
+    def __ne__(self, other):
+        return not self == other
 
     def __hash__(self):
         return hash((self.proj4_init, self.cutoff))
