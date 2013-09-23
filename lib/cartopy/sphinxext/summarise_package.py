@@ -19,7 +19,7 @@ import inspect
 import itertools
 import os
 import sys
-
+import warnings
 
 import cartopy.tests
 
@@ -87,7 +87,11 @@ def objects_to_document(module_name):
     (e.g. ``cartopy.io```)
 
     """
-    __import__(module_name)
+    try:
+        __import__(module_name)
+    except ImportError:
+        warnings.warn('Failed to document {}'.format(module_name))
+        return []
     module = sys.modules[module_name]
     elems = dir(module)
 
