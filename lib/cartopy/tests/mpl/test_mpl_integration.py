@@ -430,6 +430,42 @@ def test_barbs():
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)
 
 
+@ImageTesting(['barbs_regrid'])
+def test_barbs_regrid():
+    x = np.arange(-60, 42.5, 2.5)
+    y = np.arange(30, 72.5, 2.5)
+    x2d, y2d = np.meshgrid(x, y)
+    u = 40 * np.cos(np.deg2rad(y2d))
+    v = 40 * np.cos(2. * np.deg2rad(x2d))
+    mag = (u**2 + v**2)**.5
+    plot_extent = [-60, 40, 30, 70]
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, mag, transform=ccrs.PlateCarree(),
+             length=4, linewidth=.4, regrid_shape=20)
+
+
+@ImageTesting(['barbs_regrid_with_extent'])
+def test_barbs_regrid_with_extent():
+    x = np.arange(-60, 42.5, 2.5)
+    y = np.arange(30, 72.5, 2.5)
+    x2d, y2d = np.meshgrid(x, y)
+    u = 40 * np.cos(np.deg2rad(y2d))
+    v = 40 * np.cos(2. * np.deg2rad(x2d))
+    mag = (u**2 + v**2)**.5
+    plot_extent = [-60, 40, 30, 70]
+    target_extent = [-3e6, 2e6, -6e6, -2.5e6]
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, mag, transform=ccrs.PlateCarree(),
+             length=4, linewidth=.25, regrid_shape=10,
+             target_extent=target_extent)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
