@@ -8,6 +8,12 @@ What's new in cartopy 0.10
   different coordinate reference systems, and thus the ability to plot
   vector fields on arbitrary map projections.
 
+* Andrew Dawson added the ability to plot vectors on a regular grid in
+  projection space, allowing for much nicer presentation of vectors on
+  projections where the spacing of the vectors would normally vary quite
+  a lot (e.g., vectors at equally spaced latitude/longitude plotted on
+  a North Polar stereographic projection).
+
 
 What's new in cartopy 0.9
 *************************

@@ -42,6 +42,7 @@ import cartopy.img_transform
 from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
+from cartopy.vector_transform import vector_scalar_to_grid
 
 
 assert matplotlib.__version__ >= '1.2', ('Cartopy can only work with '
@@ -671,6 +672,22 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
+    def _regrid_shape_aspect(self, regrid_shape, target_extent):
+        """
+        Helper for setting regridding shape which is used in several
+        plotting methods.
+
+        """
+        if not isinstance(regrid_shape, collections.Sequence):
+            target_size = int(regrid_shape)
+            x_range, y_range = np.diff(target_extent)[::2]
+            desired_aspect = x_range / y_range
+            if x_range >= y_range:
+                regrid_shape = (target_size * desired_aspect, target_size)
+            else:
+                regrid_shape = (target_size, target_size / desired_aspect)
+        return regrid_shape
+
     def imshow(self, img, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
@@ -731,14 +748,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
             target_extent = self.get_extent(self.projection)
             regrid_shape = kwargs.pop('regrid_shape', 750)
-            if not isinstance(regrid_shape, collections.Sequence):
-                target_size = int(regrid_shape)
-                x_range, y_range = np.diff(target_extent)[::2]
-                desired_aspect = x_range / y_range
-                if x_range >= y_range:
-                    regrid_shape = (target_size * desired_aspect, target_size)
-                else:
-                    regrid_shape = (target_size, target_size / desired_aspect)
+            regrid_shape = self._regrid_shape_aspect(regrid_shape,
+                                                     target_extent)
 
             warp_array = cartopy.img_transform.warp_array
             img, extent = warp_array(img,
@@ -1343,8 +1354,28 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Plot a 2-D field of arrows.
 
+        Extra Kwargs:
+
+        * transform: :class:`cartopy.crs.Projection` or matplotlib transform
+            The coordinate system in which the vectors are defined.
+
+        * regrid_shape: int or 2-tuple of ints
+            If given, specifies that the points where the arrows are
+            located will be interpolated onto a regular grid in
+            projection space. If a single integer is given then that
+            will be used as the minimum grid length dimension, while the
+            other dimension will be scaled up according to the target
+            extent's aspect ratio. If a pair of ints are given they
+            determine the grid length in the x and y directions
+            respectively.
+
+        * target_extent: 4-tuple
+            If given, specifies the extent in the target CRS that the
+            regular grid defined by *regrid_shape* will have. Defaults
+            to the current extent of the map projection.
+
         See :func:`matplotlib.pyplot.quiver` for details on arguments
-        and keyword arguments.
+        and other keyword arguments.
 
         .. note::
 
@@ -1363,7 +1394,26 @@ class GeoAxes(matplotlib.axes.Axes):
             kwargs['transform'] = t._as_mpl_transform(self)
         else:
             kwargs['transform'] = t
-        if t != self.projection:
+        regrid_shape = kwargs.pop('regrid_shape', None)
+        target_extent = kwargs.pop('target_extent',
+                                   self.get_extent(self.projection))
+        if regrid_shape is not None:
+            # If regridding is required then we'll be handling transforms
+            # manually and plotting in native coordinates.
+            regrid_shape = self._regrid_shape_aspect(regrid_shape,
+                                                     target_extent)
+            if args:
+                # Interpolate color array as well as vector components.
+                x, y, u, v, c = vector_scalar_to_grid(
+                    t, self.projection, regrid_shape, x, y, u, v, args[0],
+                    target_extent=target_extent)
+                args = (c,) + args[1:]
+            else:
+                x, y, u, v = vector_scalar_to_grid(
+                    t, self.projection, regrid_shape, x, y, u, v,
+                    target_extent=target_extent)
+            kwargs.pop('transform', None)
+        elif t != self.projection:
             # Transform the vectors if the projection is not the same as the
             # data transform.
             if x.ndim == 1 and y.ndim == 1:
@@ -1374,6 +1424,26 @@ class GeoAxes(matplotlib.axes.Axes):
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
         Plot a 2-D field of barbs.
+
+        Extra Kwargs:
+
+        * transform: :class:`cartopy.crs.Projection` or matplotlib transform
+            The coordinate system in which the vectors are defined.
+
+        * regrid_shape: int or 2-tuple of ints
+            If given, specifies that the points where the arrows are
+            located will be interpolated onto a regular grid in
+            projection space. If a single integer is given then that
+            will be used as the minimum grid length dimension, while the
+            other dimension will be scaled up according to the target
+            extent's aspect ratio. If a pair of ints are given they
+            determine the grid length in the x and y directions
+            respectively.
+
+        * target_extent: 4-tuple
+            If given, specifies the extent in the target CRS that the
+            regular grid defined by *regrid_shape* will have. Defaults
+            to the current extent of the map projection.
 
         See :func:`matplotlib.pyplot.barbs` for details on arguments
         and keyword arguments.
@@ -1395,7 +1465,26 @@ class GeoAxes(matplotlib.axes.Axes):
             kwargs['transform'] = t._as_mpl_transform(self)
         else:
             kwargs['transform'] = t
-        if t != self.projection:
+        regrid_shape = kwargs.pop('regrid_shape', None)
+        target_extent = kwargs.pop('target_extent',
+                                   self.get_extent(self.projection))
+        if regrid_shape is not None:
+            # If regridding is required then we'll be handling transforms
+            # manually and plotting in native coordinates.
+            regrid_shape = self._regrid_shape_aspect(regrid_shape,
+                                                     target_extent)
+            if args:
+                # Interpolate color array as well as vector components.
+                x, y, u, v, c = vector_scalar_to_grid(
+                    t, self.projection, regrid_shape, x, y, u, v, args[0],
+                    target_extent=target_extent)
+                args = (c,) + args[1:]
+            else:
+                x, y, u, v = vector_scalar_to_grid(
+                    t, self.projection, regrid_shape, x, y, u, v,
+                    target_extent=target_extent)
+            kwargs.pop('transform', None)
+        elif t != self.projection:
             # Transform the vectors if the projection is not the same as the
             # data transform.
             if x.ndim == 1 and y.ndim == 1:
