@@ -33,6 +33,7 @@ import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
 import numpy as np
+import numpy.ma as ma
 import shapely.geometry as sgeom
 
 from cartopy import config
@@ -1491,6 +1492,74 @@ class GeoAxes(matplotlib.axes.Axes):
                 x, y = np.meshgrid(x, y)
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.barbs(self, x, y, u, v, *args, **kwargs)
+
+    def streamplot(self, x, y, u, v, **kwargs):
+        """
+        Draws streamlines of a vector flow.
+
+        Extra Kwargs:
+
+        * transform: :class:`cartopy.crs.Projection` or matplotlib transform
+            The coordinate system in which the vector field is defined.
+
+        See :func:`matplotlib.pyplot.streamplot` for details on arguments
+        and keyword arguments.
+
+        .. note::
+
+           The vector components must be defined as grid eastward and
+           grid northward.
+
+        """
+        t = kwargs.pop('transform', None)
+        if t is None:
+            t = self.projection
+        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
+            raise ValueError('invalid transform:'
+                             ' Spherical streamplot is not supported - '
+                             ' consider using PlateCarree/RotatedPole.')
+        # Regridding is required for streamplot, it must have an evenly spaced
+        # grid to work correctly. Choose our destination grid based on the
+        # density keyword. The grid need not be bigger than the grid used by
+        # the streamplot integrator.
+        density = kwargs.get('density', 1)
+        if np.isscalar(density):
+            regrid_shape = [int(30 * density)] * 2
+        else:
+            regrid_shape = [int(25 * d) for d in density]
+        # The color and linewidth keyword arguments can be arrays so they will
+        # need to be gridded also.
+        c = kwargs.get('color', None)
+        l = kwargs.get('linewidth', None)
+        scalars = []
+        color_array = isinstance(c, np.ndarray)
+        linewidth_array = isinstance(l, np.ndarray)
+        if color_array:
+            scalars.append(c)
+        if linewidth_array:
+            scalars.append(l)
+        # Do the regridding including any scalar fields.
+        target_extent = self.get_extent(self.projection)
+        gridded = vector_scalar_to_grid(t, self.projection, regrid_shape,
+                                        x, y, u, v, *scalars,
+                                        target_extent=target_extent)
+        x, y, u, v = gridded[:4]
+        # If scalar fields were regridded then replace the appropriate keyword
+        # arguments with the gridded arrays.
+        scalars = list(gridded[4:])
+        if linewidth_array:
+            kwargs['linewidth'] = scalars.pop()
+        if color_array:
+            kwargs['color'] = ma.masked_invalid(scalars.pop())
+        with warnings.catch_warnings():
+            # The workaround for nan values in streamplot colors gives rise to
+            # a warning which is not at all important so it is hidden from the
+            # user to avoid confusion.
+            message = 'Warning: converting a masked element to nan.'
+            warnings.filterwarnings('ignore', message=message,
+                                    category=UserWarning)
+            sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
+        return sp
 
 
 def _trigger_patch_reclip(event):

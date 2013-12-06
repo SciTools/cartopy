@@ -466,6 +466,23 @@ def test_barbs_regrid_with_extent():
              target_extent=target_extent)
 
 
+@ImageTesting(['streamplot'])
+def test_streamplot():
+    x = np.arange(-60, 42.5, 2.5)
+    y = np.arange(30, 72.5, 2.5)
+    x2d, y2d = np.meshgrid(x, y)
+    u = np.cos(np.deg2rad(y2d))
+    v = np.cos(2. * np.deg2rad(x2d))
+    mag = (u**2 + v**2)**.5
+    plot_extent = [-60, 40, 30, 70]
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
+                  density=(1.5, 2), color=mag, linewidth=2*mag)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
