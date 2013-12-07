@@ -742,6 +742,12 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             extent = kwargs.pop('extent', None)
             img = np.asanyarray(img)
+            if kwargs['origin'] == 'upper':
+                # It is implicitly assumed by the regridding operation that the
+                # origin of the image is 'lower', so simply adjust for that
+                # here.
+                img = img[::-1]
+                kwargs['origin'] = 'lower'
 
             if not isinstance(transform, ccrs.Projection):
                 raise ValueError('Expected a projection subclass. Cannot '
