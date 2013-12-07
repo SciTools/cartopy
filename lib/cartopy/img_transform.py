@@ -321,4 +321,25 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
             new_array.mask[non_self_inverse_points] = True
         else:
             new_array = np.ma.array(new_array, mask=non_self_inverse_points)
+    # Transform the target points to the source projection and mask any points
+    # that fall outside the original source domain.
+    target_in_source_xyz = source_cs.transform_points(
+        target_proj, target_x_points, target_y_points)
+    target_in_source_x = target_in_source_xyz[..., 0]
+    target_in_source_y = target_in_source_xyz[..., 1]
+    outside_source_domain = ((target_in_source_x < source_x_coords.min()) |
+                             (target_in_source_x > source_x_coords.max()) |
+                             (target_in_source_y < source_y_coords.min()) |
+                             (target_in_source_y > source_y_coords.max()))
+    if np.ma.isMaskedArray(new_array):
+        if np.any(outside_source_domain):
+            new_array.mask[outside_source_domain] = True
+    else:
+        new_array = np.ma.array(new_array, mask=True)
+        new_array.mask[...] = False
+        if new_array.ndim == 3:
+            for i in range(new_array.shape[2]):
+                new_array.mask[:, :, i] = outside_source_domain
+        else:
+            new_array.mask[...] = outside_source_domain
     return new_array
