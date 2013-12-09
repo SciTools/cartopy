@@ -35,6 +35,8 @@ import cartopy.tests.test_img_tiles as ctest_tiles
 NATURAL_EARTH_IMG = os.path.join(config["repo_data_dir"],
                                  'raster', 'natural_earth',
                                  '50-natural-earth-1-downsampled.png')
+REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
+                            'Miriam.A2012270.2050.2km.jpg')
 
 
 @ImageTesting(['web_tiles'], tolerance=12)
@@ -131,6 +133,18 @@ def test_imshow():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.imshow(img, origin='upper', transform=source_proj,
               extent=[-180, 180, -90, 90])
+
+
+@ImageTesting(['imshow_regional_projected'])
+def test_imshow_projected():
+    source_proj = ccrs.PlateCarree()
+    img_extent = (-120.67660000000001, -106.32104523100001,
+                  13.2301484511245, 30.766899999999502)
+    img = plt.imread(REGIONAL_IMG)
+    ax = plt.axes(projection=ccrs.LambertConformal())
+    ax.set_extent(img_extent, crs=source_proj)
+    ax.coastlines(resolution='50m')
+    ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
 @ImageTesting(['imshow_natural_earth_ortho'])
