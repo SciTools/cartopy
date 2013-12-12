@@ -322,7 +322,7 @@ class TestHoles(PolygonTests):
         self._assert_bounds(polygon.bounds, -5.0e7, -5.0e7, 5.0e7, 5.0e7, 1e6)
         self._assert_bounds(polygon.interiors[0].bounds,
                             - 1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
-        self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
+        self.assertAlmostEqual(polygon.area, 7.30e15, delta=1e13)
 
     def test_inverted_poly_removed_hole(self):
         proj = ccrs.NorthPolarStereo(globe=ccrs.Globe(ellipse='WGS84'))
@@ -338,7 +338,7 @@ class TestHoles(PolygonTests):
         self._assert_bounds(polygon.bounds, -5.0e7, -5.0e7, 5.0e7, 5.0e7, 1e6)
         self._assert_bounds(polygon.interiors[0].bounds,
                             - 1.2e7, -1.2e7, 1.2e7, 1.2e7, 1e6)
-        self.assertAlmostEqual(polygon.area, 7.38e15, delta=1e13)
+        self.assertAlmostEqual(polygon.area, 7.34e15, delta=1e13)
 
     def test_multiple_interiors(self):
         exterior = ring(0, 0, 12, 12, True)
