@@ -1036,7 +1036,7 @@ class Stereographic(Projection):
                              false_easting, false_northing, 90)
             coords = tuple(tuple(pair) for pair in coords.T)
             self._boundary = sgeom.polygon.LinearRing(coords)
-        self._threshold = np.diff(self._x_limits)[0] * 0.01
+        self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
     def boundary(self):
