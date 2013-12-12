@@ -1108,7 +1108,8 @@ class GeoAxes(matplotlib.axes.Axes):
         t = kwargs.get('transform', None)
         if isinstance(t, ccrs.CRS):
             wrap_proj_types = (ccrs._RectangularProjection,
-                               ccrs._WarpedRectangularProjection)
+                               ccrs._WarpedRectangularProjection,
+                               ccrs.InterruptedGoodeHomolosine)
             if isinstance(t, wrap_proj_types) and \
                     isinstance(self.projection, wrap_proj_types):
 
@@ -1178,8 +1179,14 @@ class GeoAxes(matplotlib.axes.Axes):
 
                     pts = pts.reshape((Ny, Nx, 2))
                     if np.any(~pcolor_data.mask):
+                        # plot with slightly lower zorder to avoid odd issue
+                        # where the main plot is obscured
+                        zorder = collection.zorder - .1
+                        kwargs.pop('zorder', None)
                         pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
-                                                 pcolor_data, **kwargs)
+                                                 pcolor_data, zorder=zorder,
+                                                 **kwargs)
+
                         pcolor_col.set_cmap(cmap)
                         pcolor_col.set_norm(norm)
                         pcolor_col.set_clim(vmin, vmax)
@@ -1190,6 +1197,10 @@ class GeoAxes(matplotlib.axes.Axes):
                         # that if really necessary, users can do things post
                         # this method
                         collection._wrapped_collection_fix = pcolor_col
+
+            # Clip the QuadMesh to the projection boundary, which is required
+            # to keep the shading inside the projection bounds.
+            collection.set_clip_path(self.outline_patch)
 
         return collection
 
