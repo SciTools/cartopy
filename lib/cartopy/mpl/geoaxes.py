@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2013, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -765,6 +765,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                      target_proj=self.projection,
                                      target_res=regrid_shape,
                                      target_extent=target_extent,
+                                     mask_extrapolated=True,
                                      )
 
             # As a workaround to a matplotlib limitation, turn any images
