@@ -79,7 +79,7 @@ class ImageTesting(object):
                           'issue.')
         else:
             image_output_directory = os.path.join(os.getcwd(),
-                                              'cartopy_test_output')
+                                                  'cartopy_test_output')
 
     def __init__(self, img_names, tolerance=1e-3):
         self.img_names = img_names
