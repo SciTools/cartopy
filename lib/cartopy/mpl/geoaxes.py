@@ -256,9 +256,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # Start off with a "global" map. This will get auto scaled to the
         # data's range, if any is added.
-        if self.viewLim == mtransforms.Bbox.unit():
-            self.viewLim.intervalx = self.projection.x_limits
-            self.viewLim.intervaly = self.projection.y_limits
+        self.dataLim.intervalx = self.projection.x_limits
+        self.dataLim.intervaly = self.projection.y_limits
 
     def add_image(self, factory, *args, **kwargs):
         """
@@ -296,12 +295,14 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         data_lim = self.dataLim.frozen().get_points()
         view_lim = self.viewLim.frozen().get_points()
-        orig_update_datalim = self.ignore_existing_data_limits
+        other = (self.ignore_existing_data_limits,
+                 self._autoscaleXon, self._autoscaleYon)
         yield
         if hold:
             self.dataLim.set_points(data_lim)
             self.viewLim.set_points(view_lim)
-            self.ignore_existing_data_limits = orig_update_datalim
+            (self.ignore_existing_data_limits,
+                self._autoscaleXon, self._autoscaleYon) = other
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
@@ -354,9 +355,8 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view(tight=True)
         self.set_aspect('equal')
 
-        pre_bounary = self.ignore_existing_data_limits
-        self._boundary()
-        self.ignore_existing_data_limits = pre_bounary
+        with self.hold_limits():
+            self._boundary()
 
         # XXX consider a margin - but only when the map is not global...
         # self._xmargin = 0.15
@@ -487,12 +487,10 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _get_extent_geom(self, crs=None):
         # Perform the calculations for get_extent(), which just repackages it.
-        x1, x2 = self.get_xlim()
-        y1, y2 = self.get_ylim()
-
-        if x1 == 0 and y1 == 0 and x2 == 1 and y2 == 1:
-            x1, x2 = self.projection.x_limits
-            y1, y2 = self.projection.y_limits
+        with self.hold_limits():
+            if self.get_autoscale_on():
+                self.autoscale_view()
+            [x1, y1], [x2, y2] = self.viewLim.get_points()
 
         domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
                                             [x2, y2], [x1, y2],
@@ -683,7 +681,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return super(GeoAxes, self).set_yticks(yticks, minor)
 
-    def stock_img(self, name='ne_shaded', update_datalim=False):
+    def stock_img(self, name='ne_shaded'):
         """
         Add a standard image to the map.
 
@@ -698,10 +696,9 @@ class GeoAxes(matplotlib.axes.Axes):
                                  'raster', 'natural_earth',
                                  '50-natural-earth-1-downsampled.png')
 
-            with self.hold_limits(not update_datalim):
-                return self.imshow(imread(fname), origin='upper',
-                                   transform=source_proj,
-                                   extent=[-180, 180, -90, 90])
+            return self.imshow(imread(fname), origin='upper',
+                               transform=source_proj,
+                               extent=[-180, 180, -90, 90])
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
@@ -786,7 +783,6 @@ class GeoAxes(matplotlib.axes.Axes):
             regrid_shape = kwargs.pop('regrid_shape', 750)
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
-
             warp_array = cartopy.img_transform.warp_array
             img, extent = warp_array(img,
                                      source_proj=transform,
@@ -819,7 +815,6 @@ class GeoAxes(matplotlib.axes.Axes):
 #        if result.get_clip_path() in [None, self.patch]:
 #            # image does not already have clipping set, clip to axes patch
 #            result.set_clip_path(self.outline_patch)
-
         return result
 
     def gridlines(self, crs=None, draw_labels=False, **kwargs):
