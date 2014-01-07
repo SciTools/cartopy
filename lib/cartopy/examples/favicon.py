@@ -11,6 +11,7 @@ def main():
     plt.figure(figsize=[8, 8])
     ax = plt.axes(projection=ccrs.SouthPolarStereo())
 
+    ax.set_global()
     ax.coastlines()
     ax.gridlines()
 
@@ -42,9 +43,7 @@ def main():
     patch = matplotlib.patches.PathPatch(logo_path, facecolor='white',
                                          edgecolor='black', linewidth=10,
                                          transform=ccrs.SouthPolarStereo())
-    with ax.held_limits():
-        ax.add_patch(patch)
-
+    ax.add_patch(patch)
     plt.show()
 
 

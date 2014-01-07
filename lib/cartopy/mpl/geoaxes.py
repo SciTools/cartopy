@@ -281,17 +281,27 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories.append([factory, args, kwargs])
 
     @contextlib.contextmanager
-    def held_limits(self):
+    def hold_limits(self, hold=True):
         """
-        Hold the view and data limits for the life of this context manager.
+        Keep track of the original view and data limits for the life of this
+        context manager, optionally reverting any changes back to the original
+        values after the manager exits.
+
+        Parameters
+        ----------
+        hold : bool (default True)
+            Whether to revert the data and view limits after the context
+            manager exits.
+
         """
         data_lim = self.dataLim.frozen().get_points()
         view_lim = self.viewLim.frozen().get_points()
         orig_update_datalim = self.ignore_existing_data_limits
         yield
-        self.dataLim.set_points(data_lim)
-        self.viewLim.set_points(view_lim)
-        self.ignore_existing_data_limits = orig_update_datalim
+        if hold:
+            self.dataLim.set_points(data_lim)
+            self.viewLim.set_points(view_lim)
+            self.ignore_existing_data_limits = orig_update_datalim
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
@@ -680,12 +690,6 @@ class GeoAxes(matplotlib.axes.Axes):
         Currently, the only (and default) option is a downsampled version of
         the Natural Earth shaded relief raster.
 
-        Parameters
-        ----------
-        update_datalim : bool
-            Whether the act of adding the stock image updates the Axes'
-            dataLim. Default is False.
-
         """
         if name == 'ne_shaded':
             import os
@@ -693,10 +697,11 @@ class GeoAxes(matplotlib.axes.Axes):
             fname = os.path.join(config["repo_data_dir"],
                                  'raster', 'natural_earth',
                                  '50-natural-earth-1-downsampled.png')
-            return self.imshow(imread(fname), origin='upper',
-                               transform=source_proj,
-                               extent=[-180, 180, -90, 90],
-                               update_datalim=update_datalim)
+
+            with self.hold_limits(not update_datalim):
+                return self.imshow(imread(fname), origin='upper',
+                                   transform=source_proj,
+                                   extent=[-180, 180, -90, 90])
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
@@ -746,22 +751,18 @@ class GeoAxes(matplotlib.axes.Axes):
             The origin of the vertical pixels. See
             :func:`matplotlib.pyplot.imshow` for further details. Default
             is ``'lower'``.
-        update_datalim : bool
-            Whether the image should affect the data limits. Default to True.
 
         """
         transform = kwargs.pop('transform', None)
-        update_datalim = kwargs.pop('update_datalim', True)
+        if 'update_datalim' in kwargs:
+            raise ValueError('The update_datalim keyword has been removed in '
+                             'imshow. To hold the data and view limits see '
+                             'GeoAxes.hold_limits.')
 
         kwargs.setdefault('origin', 'lower')
 
         same_projection = (isinstance(transform, ccrs.Projection) and
                            self.projection == transform)
-
-        if not update_datalim:
-            data_lim = self.dataLim.frozen().get_points()
-            view_lim = self.viewLim.frozen().get_points()
-            orig_update_datalim = self.ignore_existing_data_limits
 
         if transform is None or transform == self.transData or same_projection:
             if isinstance(transform, ccrs.Projection):
@@ -818,11 +819,6 @@ class GeoAxes(matplotlib.axes.Axes):
 #        if result.get_clip_path() in [None, self.patch]:
 #            # image does not already have clipping set, clip to axes patch
 #            result.set_clip_path(self.outline_patch)
-
-        if not update_datalim:
-            self.dataLim.set_points(data_lim)
-            self.viewLim.set_points(view_lim)
-            self.ignore_existing_data_limits = orig_update_datalim
 
         return result
 
