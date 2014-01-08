@@ -11,7 +11,6 @@ def main():
     plt.figure(figsize=[12, 6])
     ax = plt.axes(projection=ccrs.Robinson())
 
-    ax.set_global()
     ax.coastlines()
     ax.gridlines()
 

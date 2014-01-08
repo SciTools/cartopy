@@ -75,7 +75,6 @@ that the given data is in, you can add the ``transform`` keyword with an appropr
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.stock_img()
-    ax.set_global()
 
     ny_lon, ny_lat = -75, 43
     delhi_lon, delhi_lat = 77.23, 28.61

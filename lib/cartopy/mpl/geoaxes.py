@@ -297,12 +297,14 @@ class GeoAxes(matplotlib.axes.Axes):
         view_lim = self.viewLim.frozen().get_points()
         other = (self.ignore_existing_data_limits,
                  self._autoscaleXon, self._autoscaleYon)
-        yield
-        if hold:
-            self.dataLim.set_points(data_lim)
-            self.viewLim.set_points(view_lim)
-            (self.ignore_existing_data_limits,
-                self._autoscaleXon, self._autoscaleYon) = other
+        try:
+            yield
+        finally:
+            if hold:
+                self.dataLim.set_points(data_lim)
+                self.viewLim.set_points(view_lim)
+                (self.ignore_existing_data_limits,
+                    self._autoscaleXon, self._autoscaleYon) = other
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):

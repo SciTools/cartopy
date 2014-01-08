@@ -11,7 +11,6 @@ def main():
     plt.figure(figsize=[8, 8])
     ax = plt.axes(projection=ccrs.SouthPolarStereo())
 
-    ax.set_global()
     ax.coastlines()
     ax.gridlines()
 
