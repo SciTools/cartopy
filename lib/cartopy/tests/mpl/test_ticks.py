@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -48,7 +48,7 @@ def _format_lon(val, i):
         return '%.0fW' % abs(val)
 
 
-@ImageTesting(['xticks_no_transform'])
+@ImageTesting(['xticks_no_transform'], tolerance=0.12)
 def test_set_xticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -58,7 +58,7 @@ def test_set_xticks_no_transform():
     ax.set_xticks([-135, -45, 45, 135], minor=True)
 
 
-@ImageTesting(['xticks_cylindrical'])
+@ImageTesting(['xticks_cylindrical'], tolerance=0.12)
 def test_set_xticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
@@ -79,7 +79,7 @@ def test_set_xticks_non_cylindrical():
         ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.Geodetic())
 
 
-@ImageTesting(['yticks_no_transform'])
+@ImageTesting(['yticks_no_transform'], tolerance=0.125)
 def test_set_yticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -89,7 +89,7 @@ def test_set_yticks_no_transform():
     ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
 
 
-@ImageTesting(['yticks_cylindrical'])
+@ImageTesting(['yticks_cylindrical'], tolerance=0.12)
 def test_set_yticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
@@ -110,7 +110,7 @@ def test_set_yticks_non_cylindrical():
         ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
 
 
-@ImageTesting(['xyticks'])
+@ImageTesting(['xyticks'], tolerance=0.17)
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),

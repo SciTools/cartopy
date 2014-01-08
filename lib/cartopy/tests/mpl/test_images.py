@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2013, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -39,7 +39,7 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
                             'Miriam.A2012270.2050.2km.jpg')
 
 
-@ImageTesting(['web_tiles'], tolerance=12)
+@ImageTesting(['web_tiles'])
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
@@ -47,41 +47,42 @@ def test_web_tiles():
                                               [extent[2], extent[3]],
                                               [extent[0], extent[3]],
                                               [extent[0], extent[1]]])
+    map_prj = cimgt.GoogleTiles().crs
 
-    ax = plt.subplot(3, 2, 1, projection=ccrs.Mercator())
+    ax = plt.subplot(3, 2, 1, projection=map_prj)
     gt = cimgt.GoogleTiles()
     gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT,
                                      gt)
     img, extent, origin = gt.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
+    ax.imshow(np.array(img), extent=extent, transform=gt.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(3, 2, 2, projection=ccrs.Mercator())
+    ax = plt.subplot(3, 2, 2, projection=map_prj)
     qt = cimgt.QuadtreeTiles()
     img, extent, origin = qt.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
+    ax.imshow(np.array(img), extent=extent, transform=qt.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(3, 2, 3, projection=ccrs.Mercator())
+    ax = plt.subplot(3, 2, 3, projection=map_prj)
     mq_osm = cimgt.MapQuestOSM()
     img, extent, origin = mq_osm.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
+    ax.imshow(np.array(img), extent=extent, transform=mq_osm.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines()
 
-    ax = plt.subplot(3, 2, 4, projection=ccrs.Mercator())
+    ax = plt.subplot(3, 2, 4, projection=map_prj)
     mq_oa = cimgt.MapQuestOpenAerial()
     img, extent, origin = mq_oa.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
+    ax.imshow(np.array(img), extent=extent, transform=mq_oa.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines()
 
-    ax = plt.subplot(3, 2, 5, projection=ccrs.Mercator())
+    ax = plt.subplot(3, 2, 5, projection=map_prj)
     osm = cimgt.OSM()
     img, extent, origin = osm.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=ccrs.Mercator(),
+    ax.imshow(np.array(img), extent=extent, transform=osm.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines()
 
@@ -91,8 +92,9 @@ def test_image_nest():
     nest_z0_z1 = ctest_nest.gen_nest()
 
     ax = plt.axes(projection=ccrs.Mercator())
-    ax.set_xlim(-45, 45)
-    ax.set_ylim(-45, 90)
+    shper_globe = ccrs.Globe(semimajor_axis=np.rad2deg(1))
+    spher_merc = ccrs.Mercator(globe=shper_globe)
+    ax.set_extent([-45, 45, -45, 90], spher_merc)
     ax.coastlines()
     ax.add_image(nest_z0_z1, 'aerial z1 test')
 
@@ -123,7 +125,7 @@ def test_image_merge():
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
 
-@ImageTesting(['imshow_natural_earth_ortho'])
+@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.45)
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
@@ -153,7 +155,7 @@ def test_stock_img():
     ax.stock_img()
 
 
-@ImageTesting(['imshow_natural_earth_ortho'])
+@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.44)
 def test_pil_Image():
     img = PIL.Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()
