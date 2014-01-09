@@ -125,6 +125,8 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                 fext_types = [fext + 'w', fext[0] + fext[-1] + 'w']
                 fext_types.extend([ext.upper() for ext in fext_types])
                 result = ['{}.{}'.format(froot, ext) for ext in fext_types]
+                result.extend(['{}.{}'.format(froot.upper(), ext)
+                               for ext in fext_types])
         return result
 
     def __array__(self):
