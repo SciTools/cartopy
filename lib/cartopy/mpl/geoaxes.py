@@ -22,10 +22,10 @@ plot results from source coordinates to the GeoAxes' target projection.
 
 """
 import collections
+import contextlib
 import warnings
 import weakref
 
-import matplotlib
 import matplotlib.artist
 import matplotlib.axes
 from matplotlib.image import imread
@@ -251,6 +251,14 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
+    def _set_lim_and_transforms(self):
+        matplotlib.axes.Axes._set_lim_and_transforms(self)
+
+        # Start off with a "global" map. This will get auto scaled to the
+        # data's range, if any is added.
+        self.dataLim.intervalx = self.projection.x_limits
+        self.dataLim.intervaly = self.projection.y_limits
+
     def add_image(self, factory, *args, **kwargs):
         """
         Adds an image "factory" to the Axes.
@@ -271,6 +279,33 @@ class GeoAxes(matplotlib.axes.Axes):
         # XXX TODO: Needs working on
         self.img_factories.append([factory, args, kwargs])
 
+    @contextlib.contextmanager
+    def hold_limits(self, hold=True):
+        """
+        Keep track of the original view and data limits for the life of this
+        context manager, optionally reverting any changes back to the original
+        values after the manager exits.
+
+        Parameters
+        ----------
+        hold : bool (default True)
+            Whether to revert the data and view limits after the context
+            manager exits.
+
+        """
+        data_lim = self.dataLim.frozen().get_points()
+        view_lim = self.viewLim.frozen().get_points()
+        other = (self.ignore_existing_data_limits,
+                 self._autoscaleXon, self._autoscaleYon)
+        try:
+            yield
+        finally:
+            if hold:
+                self.dataLim.set_points(data_lim)
+                self.viewLim.set_points(view_lim)
+                (self.ignore_existing_data_limits,
+                    self._autoscaleXon, self._autoscaleYon) = other
+
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
         """
@@ -281,18 +316,16 @@ class GeoAxes(matplotlib.axes.Axes):
         been set.
 
         """
+        # If data has been added (i.e. autoscale hasn't been turned off)
+        # then we should autoscale the view.
+        if self.get_autoscale_on():
+            self.autoscale_view()
+
         if self.outline_patch.reclip or self.background_patch.reclip:
             clipped_path = clip_path(self.outline_patch.orig_path,
                                      self.viewLim)
             self.outline_patch._path = clipped_path
             self.background_patch._path = clipped_path
-
-        # if no data has been added, and no extents set, then make the
-        # map global
-        if self.ignore_existing_data_limits and \
-                self._autoscaleXon and self._autoscaleYon:
-            self.set_global()
-            self.ignore_existing_data_limits = True
 
         for gl in self._gridliners:
             gl._draw_gridliner(background_patch=self.background_patch)
@@ -324,9 +357,8 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view(tight=True)
         self.set_aspect('equal')
 
-        pre_bounary = self.ignore_existing_data_limits
-        self._boundary()
-        self.ignore_existing_data_limits = pre_bounary
+        with self.hold_limits():
+            self._boundary()
 
         # XXX consider a margin - but only when the map is not global...
         # self._xmargin = 0.15
@@ -457,12 +489,10 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _get_extent_geom(self, crs=None):
         # Perform the calculations for get_extent(), which just repackages it.
-        x1, x2 = self.get_xlim()
-        y1, y2 = self.get_ylim()
-
-        if x1 == 0 and y1 == 0 and x2 == 1 and y2 == 1:
-            x1, x2 = self.projection.x_limits
-            y1, y2 = self.projection.y_limits
+        with self.hold_limits():
+            if self.get_autoscale_on():
+                self.autoscale_view()
+            [x1, y1], [x2, y2] = self.viewLim.get_points()
 
         domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
                                             [x2, y2], [x1, y2],
@@ -667,7 +697,8 @@ class GeoAxes(matplotlib.axes.Axes):
             fname = os.path.join(config["repo_data_dir"],
                                  'raster', 'natural_earth',
                                  '50-natural-earth-1-downsampled.png')
-            return self.imshow(imread(fname)[::-1, ...], origin='lower',
+
+            return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90])
         else:
@@ -719,21 +750,18 @@ class GeoAxes(matplotlib.axes.Axes):
             The origin of the vertical pixels. See
             :func:`matplotlib.pyplot.imshow` for further details. Default
             is ``'lower'``.
-        update_datalim : bool
-            Whether the image should affect the data limits. Default to True.
 
         """
         transform = kwargs.pop('transform', None)
-        update_datalim = kwargs.pop('update_datalim', True)
+        if 'update_datalim' in kwargs:
+            raise ValueError('The update_datalim keyword has been removed in '
+                             'imshow. To hold the data and view limits see '
+                             'GeoAxes.hold_limits.')
 
         kwargs.setdefault('origin', 'lower')
 
         same_projection = (isinstance(transform, ccrs.Projection) and
                            self.projection == transform)
-
-        if not update_datalim:
-            data_lim = self.dataLim.frozen().get_points()
-            view_lim = self.viewLim.frozen().get_points()
 
         if transform is None or transform == self.transData or same_projection:
             if isinstance(transform, ccrs.Projection):
@@ -757,7 +785,6 @@ class GeoAxes(matplotlib.axes.Axes):
             regrid_shape = kwargs.pop('regrid_shape', 750)
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
-
             warp_array = cartopy.img_transform.warp_array
             img, extent = warp_array(img,
                                      source_proj=transform,
@@ -791,11 +818,6 @@ class GeoAxes(matplotlib.axes.Axes):
 #        if result.get_clip_path() in [None, self.patch]:
 #            # image does not already have clipping set, clip to axes patch
 #            result.set_clip_path(self.outline_patch)
-
-        if not update_datalim:
-            self.dataLim.set_points(data_lim)
-            self.viewLim.set_points(view_lim)
-
         return result
 
     def gridlines(self, crs=None, draw_labels=False, **kwargs):

@@ -1,19 +1,13 @@
 __tags__ = ['Miscellanea']
-import cartopy
 import cartopy.crs as ccrs
-import cartopy.mpl.patch as pt
 import matplotlib.pyplot as plt
-import matplotlib.path as mpath
-import numpy as np
-
-
 import matplotlib.textpath
 import matplotlib.patches
 from matplotlib.font_manager import FontProperties
+import numpy as np
 
 
 def main():
-
     plt.figure(figsize=[12, 6])
     ax = plt.axes(projection=ccrs.Robinson())
 
