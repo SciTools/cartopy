@@ -134,5 +134,11 @@ Images
 Vector plotting
 ---------------
 
-.. plot:: matplotlib/vector_plotting.py
-   :include-source:
+.. plot:: examples/barbs.py
+    :include-source:
+
+.. plot:: examples/arrows.py
+    :include-source:
+
+.. plot:: examples/streamplot.py
+    :include-source:

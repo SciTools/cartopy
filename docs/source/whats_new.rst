@@ -9,19 +9,18 @@ What's new in cartopy 0.10
   vector fields on arbitrary map projections.
   See :meth:`cartopy.crs.CRS.transform_vectors`.
 
-  New GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` allows the
-  plotting of a 2-D field of arrows.
+  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` allows the
+  plotting of arrows.
 
-  New GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs` allows the
+  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs` allows the
   plotting of wind barbs.
 
-  New GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.streamplot` allows
-  access to matplotlibs :func:`~matplotlib.pyplot.streamplot` function which
-  draws streamlines of a vector flow.  Likely applications include ocean
-  currents.
+  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.streamplot` allows
+  access to matplotlib's :func:`~matplotlib.pyplot.streamplot` function which
+  draws streamlines of a vector flow.
 
-.. plot:: matplotlib/vector_plotting.py
-    :width: 500px
+.. plot:: examples/barbs.py
+    :width: 300pt
 
 See :ref:`vector_plotting`
 
