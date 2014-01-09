@@ -129,8 +129,10 @@ Images
     plt.show()
 
 
+.. _vector_plotting:
+
 Vector plotting
 ---------------
 
-Currently the vector plotting is still in development. For anything other than non-native vector plotting,
-consider using Basemap instead.
+.. plot:: matplotlib/vector_plotting.py
+   :include-source:
