@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -20,7 +20,6 @@ transformations.
 
 """
 
-import matplotlib.image
 import numpy as np
 import scipy.spatial
 
@@ -120,7 +119,8 @@ def warp_img(fname, target_proj, source_proj=None, target_res=(400, 200)):
 
 
 def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
-               source_extent=None, target_extent=None):
+               source_extent=None, target_extent=None,
+               mask_extrapolated=False):
     """
     Regrid the data array from the source projection to the target projection.
 
@@ -152,6 +152,13 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
     * target_extent:
         The (x-lower, x-upper, y-lower, y-upper) extent in native
         target projection coordinates.
+
+    Kwargs:
+
+    * mask_extrapolated:
+        Assume that the source coordinate is rectilinear and so mask the
+        resulting target grid values which lie outside the source grid
+        domain.
 
     Returns:
         A tuple of the regridded :class:`numpy.ndarray` in the target
@@ -189,12 +196,31 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
 
     array = regrid(array, source_native_xy[0], source_native_xy[1],
                    source_proj, target_proj,
-                   target_native_x, target_native_y)
+                   target_native_x, target_native_y,
+                   mask_extrapolated)
     return array, extent
 
 
+def _determine_bounds(x_coords, y_coords, source_cs):
+    # Returns bounds corresponding to one or two rectangles depending on
+    # transormation between ranges.
+    bounds = dict(x=[])
+    if (((hasattr(source_cs, 'is_geodetic') and
+            source_cs.is_geodetic()) or
+            isinstance(source_cs, ccrs.PlateCarree)) and x_coords.max() > 180):
+        if x_coords.min() < 180:
+            bounds['x'].append([x_coords.min(), 180])
+            bounds['x'].append([-180, x_coords.max() - 360])
+        else:
+            bounds['x'].append([x_coords.min() - 180, x_coords.max() - 180])
+    else:
+        bounds['x'].append([x_coords.min(), x_coords.max()])
+    bounds['y'] = [y_coords.min(), y_coords.max()]
+    return bounds
+
+
 def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
-           target_x_points, target_y_points):
+           target_x_points, target_y_points, mask_extrapolated=False):
     """
     Regrid the data array from the source projection to the target projection.
 
@@ -225,6 +251,12 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     * target_y_points:
         A 2-dimensional target projection :class:`numpy.ndarray` of
         y-direction sample points.
+
+    Kwargs:
+
+    * mask_extrapolated:
+        Assume that the source coordinate is rectilinear and so mask the
+        resulting target grid values which lie outside the source grid domain.
 
     Returns:
         The data array regridded in the target projection.
@@ -305,41 +337,47 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                x_extent) > FRACTIONAL_OFFSET_THRESHOLD
     if np.any(non_self_inverse_points):
         if np.ma.isMaskedArray(new_array):
-            new_array.mask[non_self_inverse_points] = True
+            new_array[non_self_inverse_points] = np.ma.masked
         else:
-            new_array = np.ma.array(new_array, mask=True)
-            new_array.mask[...] = False
+            new_array = np.ma.array(new_array, mask=False)
             if new_array.ndim == 3:
                 for i in range(new_array.shape[2]):
-                    new_array.mask[:, :, i] = non_self_inverse_points
+                    new_array[non_self_inverse_points, i] = np.ma.masked
             else:
-                new_array.mask[...] = non_self_inverse_points
+                new_array[non_self_inverse_points] = np.ma.masked
     non_self_inverse_points = (np.abs(target_y_points - back_to_target_y) /
                                y_extent) > FRACTIONAL_OFFSET_THRESHOLD
     if np.any(non_self_inverse_points):
         if np.ma.isMaskedArray(new_array):
-            new_array.mask[non_self_inverse_points] = True
+            new_array[non_self_inverse_points] = np.ma.masked
         else:
             new_array = np.ma.array(new_array, mask=non_self_inverse_points)
+
     # Transform the target points to the source projection and mask any points
     # that fall outside the original source domain.
-    target_in_source_xyz = source_cs.transform_points(
-        target_proj, target_x_points, target_y_points)
-    target_in_source_x = target_in_source_xyz[..., 0]
-    target_in_source_y = target_in_source_xyz[..., 1]
-    outside_source_domain = ((target_in_source_x < source_x_coords.min()) |
-                             (target_in_source_x > source_x_coords.max()) |
-                             (target_in_source_y < source_y_coords.min()) |
-                             (target_in_source_y > source_y_coords.max()))
-    if np.ma.isMaskedArray(new_array):
-        if np.any(outside_source_domain):
-            new_array.mask[outside_source_domain] = True
-    else:
-        new_array = np.ma.array(new_array, mask=True)
-        new_array.mask[...] = False
-        if new_array.ndim == 3:
-            for i in range(new_array.shape[2]):
-                new_array.mask[:, :, i] = outside_source_domain
+    if mask_extrapolated:
+        target_in_source_xyz = source_cs.transform_points(
+            target_proj, target_x_points, target_y_points)
+        target_in_source_x = target_in_source_xyz[..., 0]
+        target_in_source_y = target_in_source_xyz[..., 1]
+
+        bounds = _determine_bounds(source_x_coords, source_y_coords, source_cs)
+        outside_source_domain = ((target_in_source_y > bounds['y'][1]) |
+                                 (target_in_source_y < bounds['y'][0]))
+        tmp_inside = np.zeros_like(outside_source_domain)
+        for bound_x in bounds['x']:
+            tmp_inside = tmp_inside | ((target_in_source_x < bound_x[1]) &
+                                       (target_in_source_x > bound_x[0]))
+        outside_source_domain = outside_source_domain | ~tmp_inside
+
+        if np.ma.isMaskedArray(new_array):
+            if np.any(outside_source_domain):
+                new_array[outside_source_domain] = np.ma.masked
         else:
-            new_array.mask[...] = outside_source_domain
+            new_array = np.ma.array(new_array, mask=False)
+            if new_array.ndim == 3:
+                for i in range(new_array.shape[2]):
+                    new_array[outside_source_domain, i] = np.ma.masked
+            else:
+                new_array[outside_source_domain] = np.ma.masked
     return new_array
