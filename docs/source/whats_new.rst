@@ -7,6 +7,22 @@ What's new in cartopy 0.10
 * Andrew Dawson added the ability to transform vector fields between
   different coordinate reference systems, and thus the ability to plot
   vector fields on arbitrary map projections.
+  See :meth:`cartopy.crs.CRS.transform_vectors`.
+
+  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` allows the
+  plotting of arrows.
+
+  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs` allows the
+  plotting of wind barbs.
+
+  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.streamplot` allows
+  access to matplotlib's :func:`~matplotlib.pyplot.streamplot` function which
+  draws streamlines of a vector flow.
+
+.. plot:: examples/barbs.py
+    :width: 300pt
+
+See :ref:`vector_plotting`
 
 * Andrew Dawson added the ability to plot vectors on a regular grid in
   projection space, allowing for much nicer presentation of vectors on
