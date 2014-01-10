@@ -203,18 +203,22 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
 
 def _determine_bounds(x_coords, y_coords, source_cs):
     # Returns bounds corresponding to one or two rectangles depending on
-    # transormation between ranges.
+    # transformation between ranges.
     bounds = dict(x=[])
+    half_px = abs(np.diff(x_coords[:2])).max() / 2.
+
     if (((hasattr(source_cs, 'is_geodetic') and
             source_cs.is_geodetic()) or
             isinstance(source_cs, ccrs.PlateCarree)) and x_coords.max() > 180):
         if x_coords.min() < 180:
-            bounds['x'].append([x_coords.min(), 180])
-            bounds['x'].append([-180, x_coords.max() - 360])
+            bounds['x'].append([x_coords.min() - half_px, 180])
+            bounds['x'].append([-180, x_coords.max() - 360 + half_px])
         else:
-            bounds['x'].append([x_coords.min() - 180, x_coords.max() - 180])
+            bounds['x'].append([x_coords.min() - 180 - half_px,
+                                x_coords.max() - 180 + half_px])
     else:
-        bounds['x'].append([x_coords.min(), x_coords.max()])
+        bounds['x'].append([x_coords.min() - half_px, x_coords.max() + half_px])
+    
     bounds['y'] = [y_coords.min(), y_coords.max()]
     return bounds
 
@@ -362,12 +366,13 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         target_in_source_y = target_in_source_xyz[..., 1]
 
         bounds = _determine_bounds(source_x_coords, source_y_coords, source_cs)
-        outside_source_domain = ((target_in_source_y > bounds['y'][1]) |
-                                 (target_in_source_y < bounds['y'][0]))
+        outside_source_domain = ((target_in_source_y >= bounds['y'][1]) |
+                                 (target_in_source_y <= bounds['y'][0]))
+
         tmp_inside = np.zeros_like(outside_source_domain)
         for bound_x in bounds['x']:
-            tmp_inside = tmp_inside | ((target_in_source_x < bound_x[1]) &
-                                       (target_in_source_x > bound_x[0]))
+            tmp_inside = tmp_inside | ((target_in_source_x <= bound_x[1]) &
+                                       (target_in_source_x >= bound_x[0]))
         outside_source_domain = outside_source_domain | ~tmp_inside
 
         if np.ma.isMaskedArray(new_array):

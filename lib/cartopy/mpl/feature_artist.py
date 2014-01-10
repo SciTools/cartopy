@@ -130,4 +130,5 @@ class FeatureArtist(matplotlib.artist.Artist):
                                                   transform=transform,
                                                   **final_kwargs)
         c.set_clip_path(ax.patch)
+        c.set_figure(ax.figure)
         return c.draw(renderer)

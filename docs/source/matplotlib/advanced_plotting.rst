@@ -134,11 +134,23 @@ Images
 Vector plotting
 ---------------
 
-.. plot:: examples/barbs.py
-    :include-source:
+Cartopy comes with powerful vector field plotting functionality. There are 3 distinct options for
+visualising vector fields:
+:meth:`quivers <cartopy.mpl.geoaxes.GeoAxes.quiver>` (:ref:`example <examples-arrows>`),
+:meth:`barbs <cartopy.mpl.geoaxes.GeoAxes.barbs>` (:ref:`example <examples-barbs>`) and
+:meth:`streamplots <cartopy.mpl.geoaxes.GeoAxes.streamplot>` (:ref:`example <examples-streamplot>`)
+each with their own benefits for displaying certain vector field forms.
 
+.. literalinclude:: /examples/arrows.py
 .. plot:: examples/arrows.py
-    :include-source:
 
-.. plot:: examples/streamplot.py
-    :include-source:
+Since both :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` and :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs`
+are visualisations which draw every vector supplied, there is an additional option to "regrid" the
+vector field into a regular grid on the target projection (done via
+:func:`cartopy.vector_transform.vector_scalar_to_grid`). This is enabled with the ``regird_shape``
+keyword and can have a massive impact on the effectiveness of the visualisation:  
+
+
+.. literalinclude:: /examples/regridding_arrows.py
+
+.. plot:: examples/regridding_arrows.py

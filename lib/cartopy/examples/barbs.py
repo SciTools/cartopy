@@ -1,37 +1,20 @@
+__tags__ = ['Vector data']
 import matplotlib.pyplot as plt
-import numpy as np
 
 import cartopy.crs as ccrs
-
-
-def gen_data():
-    # Generate some data
-    x = np.arange(-60, 45, 5)
-    y = np.arange(30, 80, 5)
-
-    x2d, y2d = np.meshgrid(x, y)
-    u = 40 * np.cos(np.deg2rad(y2d))
-    v = 40 * np.cos(2. * np.deg2rad(x2d))
-    mag = (u**2 + v**2)**.5
-    return dict(x=x, y=y, u=u, v=v, magnitude=mag)
+from cartopy.examples.arrows import sample_data
 
 
 def main():
-    # Get some data with x, y, u, v, components
-    wind = gen_data()
-
-    # Setup our figure
-    plot_extent = [-60, 20, 30, 80]
-
-    # Barb plots
     ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
-    ax.barbs(wind['x'], wind['y'], wind['u'], wind['v'], length=6,
-             linewidth=.5)
+    ax.set_extent([-90, 75, 10, 60])
     ax.stock_img()
-    plt.title('Wind barbs, native PlateCarree projection')
+    ax.coastlines()
 
+    x, y, u, v, vector_crs = sample_data(shape=(10, 14))
+    ax.barbs(x, y, u, v, length=5, sizes=dict(emptybarb=0.25, spacing=0.2, height=0.5),
+             linewidth=0.95, transform=vector_crs)
+    
     plt.show()
 
 

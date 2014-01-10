@@ -181,7 +181,8 @@ def gallery_code(examples_mod_name):
               ]
 
     examples_by_tag = sorted(examples_by_tag.iteritems(),
-                             key=lambda pair: pair[0])
+                             key=lambda pair: (pair[0] == 'Miscellanea',
+                                               pair[0]))
 
     for tag, _ in examples_by_tag:
         result.append('\t:ref:`gallery-tag-{}`\n'.format(tag))
