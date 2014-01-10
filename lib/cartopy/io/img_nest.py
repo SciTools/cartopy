@@ -89,7 +89,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
 
         For example, a '*.tif' file may have one of the following
         popular conventions for world file extensions "*.tifw' or
-        '*.tfw'.
+        '*.tfw'. Also caters for upper case basename combinations.
 
         Args:
 
@@ -103,7 +103,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         Examples:
 
         >>> from cartopy.io.img_nest import Img
-        >>> Img.world_files('img.png')
+        >>> Img.world_files('img.png')[0:4]
         ['img.pngw', 'img.pgw', 'img.PNGW', 'img.PGW']
         >>> Img.world_files('/path/to/img.TIF')[0:2]
         ['/path/to/img.tifw', '/path/to/img.tfw']
@@ -125,8 +125,16 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                 fext_types = [fext + 'w', fext[0] + fext[-1] + 'w']
                 fext_types.extend([ext.upper() for ext in fext_types])
                 result = ['{}.{}'.format(froot, ext) for ext in fext_types]
-                result.extend(['{}.{}'.format(froot.upper(), ext)
-                               for ext in fext_types])
+
+        def _upper_basename(name):
+            dirname, basename = os.path.dirname(name), os.path.basename(name)
+            base, ext = os.path.splitext(basename)
+            result = base.upper() + ext
+            if dirname:
+                result = os.path.join(dirname, result)
+            return result
+
+        result.extend(map(_upper_basename, result))
         return result
 
     def __array__(self):
