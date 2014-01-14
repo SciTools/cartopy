@@ -24,7 +24,7 @@ def sample_data(shape=(20, 30)):
     scale = 1e7
     x = np.linspace(-scale, scale, shape[1])
     y = np.linspace(-scale, scale, shape[0])
-    
+
     x2d, y2d = np.meshgrid(x, y)
     u = 10 * np.cos(2 * x2d / scale + 3 * y2d / scale)
     v = 20 * np.cos(6 * x2d / scale)

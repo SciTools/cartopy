@@ -18,7 +18,7 @@ def sample_data(shape=(20, 30)):
 
     x = np.linspace(311.9, 391.1, shape[1])
     y = np.linspace(-23.6, 24.8, shape[0])
-    
+
     x2d, y2d = np.meshgrid(x, y)
     u = 10 * (2 * np.cos(2 * np.deg2rad(x2d) + 3 * np.deg2rad(y2d + 30)) ** 2)
     v = 20 * np.cos(6 * np.deg2rad(x2d))
@@ -31,11 +31,11 @@ def main():
 
     ax.add_feature(cartopy.feature.OCEAN, zorder=0)
     ax.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='black')
-    
+
     ax.set_global()
     ax.gridlines()
 
-    x, y, u, v, vector_crs = sample_data()    
+    x, y, u, v, vector_crs = sample_data()
     ax.quiver(x, y, u, v, transform=vector_crs)
 
     plt.show()

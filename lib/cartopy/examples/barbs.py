@@ -12,9 +12,10 @@ def main():
     ax.coastlines()
 
     x, y, u, v, vector_crs = sample_data(shape=(10, 14))
-    ax.barbs(x, y, u, v, length=5, sizes=dict(emptybarb=0.25, spacing=0.2, height=0.5),
+    ax.barbs(x, y, u, v, length=5,
+             sizes=dict(emptybarb=0.25, spacing=0.2, height=0.5),
              linewidth=0.95, transform=vector_crs)
-    
+
     plt.show()
 
 
