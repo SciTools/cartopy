@@ -1206,6 +1206,7 @@ class GeoAxes(matplotlib.axes.Axes):
                         # where the main plot is obscured
                         zorder = collection.zorder - .1
                         kwargs.pop('zorder', None)
+                        kwargs.setdefault('snap', False)
                         pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
                                                  pcolor_data, zorder=zorder,
                                                  **kwargs)
