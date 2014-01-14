@@ -217,8 +217,9 @@ def _determine_bounds(x_coords, y_coords, source_cs):
             bounds['x'].append([x_coords.min() - 180 - half_px,
                                 x_coords.max() - 180 + half_px])
     else:
-        bounds['x'].append([x_coords.min() - half_px, x_coords.max() + half_px])
-    
+        bounds['x'].append([x_coords.min() - half_px,
+                            x_coords.max() + half_px])
+
     bounds['y'] = [y_coords.min(), y_coords.max()]
     return bounds
 
@@ -366,6 +367,7 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         target_in_source_y = target_in_source_xyz[..., 1]
 
         bounds = _determine_bounds(source_x_coords, source_y_coords, source_cs)
+
         outside_source_domain = ((target_in_source_y >= bounds['y'][1]) |
                                  (target_in_source_y <= bounds['y'][0]))
 

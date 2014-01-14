@@ -26,8 +26,8 @@ def test_griding_data_std_range():
     # [-180, 180].
     target_prj = ccrs.PlateCarree()
     # create 3 data points
-    lats = np.array([45, 20, -45])
-    lons = np.array([-90, 90, 0])
+    lats = np.array([65, 10, -45])
+    lons = np.array([-90, 0, 90])
     data = np.array([1, 2, 3])
     data_trans = ccrs.Geodetic()
 
@@ -38,18 +38,18 @@ def test_griding_data_std_range():
                              mask_extrapolated=True)
 
     # The expected image. n.b. on a map the data is reversed in the y axis.
-    expected = np.array([[3., 3., 3., 3., 3., 3., 3., 3.],
-                         [1., 1., 3., 3., 3., 2., 2., 2.],
-                         [1., 1., 1., 1., 2., 2., 2., 2.],
-                         [1., 1., 1., 1., 1., 2., 2., 1.]], dtype=np.float64)
+    expected = np.array([[3, 3, 3, 3, 3, 3, 3, 3],
+                         [3, 1, 2, 2, 2, 3, 3, 3],
+                         [1, 1, 1, 2, 2, 2, 3, 1],
+                         [1, 1, 1, 1, 1, 1, 1, 1]], dtype=np.float64)
 
     expected_mask = np.array(
         [[True, True, True, True, True, True, True, True],
-         [True, True, False, False, False, False, True, True],
-         [True, True, False, False, False, False, True, True],
+         [True, False, False, False, False, False, False, True],
+         [True, False, False, False, False, False, False, True],
          [True, True, True, True, True, True, True, True]])
 
-    assert_array_equal([-180,  180,  -90,   90], extent)
+    assert_array_equal([-180, 180, -90, 90], extent)
     assert_array_equal(expected, image)
     assert_array_equal(expected_mask, image.mask)
 
@@ -59,8 +59,8 @@ def test_griding_data_outside_projection():
     # than [-180, 180].
     target_prj = ccrs.PlateCarree()
     # create 3 data points
-    lats = np.array([45, 20, -45])
-    lons = np.array([60, 180, 300])
+    lats = np.array([65, 10, -45])
+    lons = np.array([120, 180, 240])
     data = np.array([1, 2, 3])
     data_trans = ccrs.Geodetic()
 
@@ -73,17 +73,17 @@ def test_griding_data_outside_projection():
     # The expected image. n.b. on a map the data is reversed in the y axis.
     expected = np.array(
         [[3, 3, 3, 3, 3, 3, 3, 3],
-         [2, 3, 3, 3, 3, 1, 2, 2],
+         [3, 3, 3, 3, 3, 1, 2, 2],
          [2, 2, 3, 1, 1, 1, 1, 2],
-         [2, 2, 1, 1, 1, 1, 1, 2]], dtype=np.float64)
+         [1, 1, 1, 1, 1, 1, 1, 1]], dtype=np.float64)
 
     expected_mask = np.array(
         [[True, True, True, True, True, True, True, True],
-         [False, False, False, True, True, False, False, False],
-         [False, False, False, True, True, False, False, False],
+         [False, False, True, True, True, True, False, False],
+         [False, False, True, True, True, True, False, False],
          [True, True, True, True, True, True, True, True]])
 
-    assert_array_equal([-180,  180,  -90,   90], extent)
+    assert_array_equal([-180, 180, -90, 90], extent)
     assert_array_equal(expected, image)
     assert_array_equal(expected_mask, image.mask)
 

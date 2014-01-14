@@ -1,8 +1,6 @@
 More advanced mapping with cartopy and matplotlib
 =================================================
 
-
-
 From the outset, cartopy's purpose has been to simplify and improve the quality of
 mapping visualisations available for scientific data. Thanks to the simplicity of the cartopy
 interface, in many cases the hardest part of producing such visualisations is getting
@@ -147,7 +145,7 @@ each with their own benefits for displaying certain vector field forms.
 Since both :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` and :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs`
 are visualisations which draw every vector supplied, there is an additional option to "regrid" the
 vector field into a regular grid on the target projection (done via
-:func:`cartopy.vector_transform.vector_scalar_to_grid`). This is enabled with the ``regird_shape``
+:func:`cartopy.vector_transform.vector_scalar_to_grid`). This is enabled with the ``regrid_shape``
 keyword and can have a massive impact on the effectiveness of the visualisation:  
 
 
