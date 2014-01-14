@@ -251,14 +251,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
-    def _set_lim_and_transforms(self):
-        matplotlib.axes.Axes._set_lim_and_transforms(self)
-
-        # Start off with a "global" map. This will get auto scaled to the
-        # data's range, if any is added.
-        self.dataLim.intervalx = self.projection.x_limits
-        self.dataLim.intervaly = self.projection.y_limits
-
     def add_image(self, factory, *args, **kwargs):
         """
         Adds an image "factory" to the Axes.
@@ -318,7 +310,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # If data has been added (i.e. autoscale hasn't been turned off)
         # then we should autoscale the view.
-        if self.get_autoscale_on():
+        if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
         if self.outline_patch.reclip or self.background_patch.reclip:
@@ -354,7 +346,8 @@ class GeoAxes(matplotlib.axes.Axes):
         result = matplotlib.axes.Axes.cla(self)
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
-        self.autoscale_view(tight=True)
+        # Enable tight autoscaling.
+        self._tight = True
         self.set_aspect('equal')
 
         with self.hold_limits():
@@ -363,6 +356,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # XXX consider a margin - but only when the map is not global...
         # self._xmargin = 0.15
         # self._ymargin = 0.15
+
+        self.dataLim.intervalx = self.projection.x_limits
+        self.dataLim.intervaly = self.projection.y_limits
 
         return result
 
@@ -919,7 +915,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.patch.set_edgecolor((0.5, 0.5, 0.5))
         self.patch.set_visible(False)
 
-    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contour(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contour'.
@@ -930,7 +925,6 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         t = kwargs.get('transform', None)
-        # Keep this bit - even at mpl v1.2
         if t is None:
             t = self.projection
         if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
@@ -941,9 +935,10 @@ class GeoAxes(matplotlib.axes.Axes):
             kwargs['transform'] = t._as_mpl_transform(self)
         else:
             kwargs['transform'] = t
-        return matplotlib.axes.Axes.contour(self, *args, **kwargs)
+        result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
+        self.autoscale_view()
+        return result
 
-    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def contourf(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf'.
@@ -954,7 +949,6 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         t = kwargs.get('transform', None)
-        # Keep this bit - even at mpl v1.2
         if t is None:
             t = self.projection
         if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
@@ -973,9 +967,10 @@ class GeoAxes(matplotlib.axes.Axes):
                     if not hasattr(sub_trans, 'force_path_ccw'):
                         sub_trans.force_path_ccw = True
 
-        return matplotlib.axes.Axes.contourf(self, *args, **kwargs)
+        result = matplotlib.axes.Axes.contourf(self, *args, **kwargs)
+        self.autoscale_view()
+        return result
 
-    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def scatter(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter'.
@@ -1001,7 +996,9 @@ class GeoAxes(matplotlib.axes.Axes):
                              'geodetic, consider using the cyllindrical form '
                              '(PlateCarree or RotatedPole).')
 
-        return matplotlib.axes.Axes.scatter(self, *args, **kwargs)
+        result = matplotlib.axes.Axes.scatter(self, *args, **kwargs)
+        self.autoscale_view()
+        return result
 
     def pcolormesh(self, *args, **kwargs):
         """
@@ -1020,7 +1017,9 @@ class GeoAxes(matplotlib.axes.Axes):
                              ' Spherical pcolormesh is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
         kwargs.setdefault('transform', t)
-        return self._pcolormesh_patched(*args, **kwargs)
+        result = self._pcolormesh_patched(*args, **kwargs)
+        self.autoscale_view()
+        return result
 
     # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def _pcolormesh_patched(self, *args, **kwargs):
@@ -1245,152 +1244,9 @@ class GeoAxes(matplotlib.axes.Axes):
                              ' Spherical pcolor is not supported - '
                              ' consider using PlateCarree/RotatedPole.')
         kwargs.setdefault('transform', t)
-        return self._pcolor_patched(*args, **kwargs)
-
-    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
-    def _pcolor_patched(self, *args, **kwargs):
-        """
-        A temporary, modified duplicate of :func:`~matplotlib.pyplot.pcolor'.
-
-        This function contains a workaround for a matplotlib issue
-        and will be removed once the issue has been resolved.
-        https://github.com/matplotlib/matplotlib/pull/1314
-
-        """
-        import warnings
-        import numpy as np
-        import numpy.ma as ma
-        import matplotlib as mpl
-        import matplotlib.cbook as cbook
-        import matplotlib.colors as mcolors
-        import matplotlib.cm as cm
-        from matplotlib import docstring
-        import matplotlib.transforms as transforms
-        import matplotlib.artist as artist
-        from matplotlib.artist import allow_rasterization
-        import matplotlib.backend_bases as backend_bases
-        import matplotlib.path as mpath
-        import matplotlib.mlab as mlab
-        import matplotlib.collections as mcoll
-
-        if not self._hold:
-            self.cla()
-
-        alpha = kwargs.pop('alpha', None)
-        norm = kwargs.pop('norm', None)
-        cmap = kwargs.pop('cmap', None)
-        vmin = kwargs.pop('vmin', None)
-        vmax = kwargs.pop('vmax', None)
-        shading = kwargs.pop('shading', 'flat')
-
-        X, Y, C = self._pcolorargs('pcolor', *args)
-        Ny, Nx = X.shape
-
-        # convert to MA, if necessary.
-        C = ma.asarray(C)
-        X = ma.asarray(X)
-        Y = ma.asarray(Y)
-        mask = ma.getmaskarray(X) + ma.getmaskarray(Y)
-        xymask = mask[0:-1, 0:-1] + mask[1:, 1:] + mask[0:-1, 1:] + \
-            mask[1:, 0:-1]
-        # don't plot if C or any of the surrounding vertices are masked.
-        mask = ma.getmaskarray(C)[0:Ny - 1, 0:Nx - 1] + xymask
-
-        newaxis = np.newaxis
-        compress = np.compress
-
-        ravelmask = (mask == 0).ravel()
-        X1 = compress(ravelmask, ma.filled(X[0:-1, 0:-1]).ravel())
-        Y1 = compress(ravelmask, ma.filled(Y[0:-1, 0:-1]).ravel())
-        X2 = compress(ravelmask, ma.filled(X[1:, 0:-1]).ravel())
-        Y2 = compress(ravelmask, ma.filled(Y[1:, 0:-1]).ravel())
-        X3 = compress(ravelmask, ma.filled(X[1:, 1:]).ravel())
-        Y3 = compress(ravelmask, ma.filled(Y[1:, 1:]).ravel())
-        X4 = compress(ravelmask, ma.filled(X[0:-1, 1:]).ravel())
-        Y4 = compress(ravelmask, ma.filled(Y[0:-1, 1:]).ravel())
-        npoly = len(X1)
-
-        xy = np.concatenate((X1[:, newaxis], Y1[:, newaxis],
-                             X2[:, newaxis], Y2[:, newaxis],
-                             X3[:, newaxis], Y3[:, newaxis],
-                             X4[:, newaxis], Y4[:, newaxis],
-                             X1[:, newaxis], Y1[:, newaxis]),
-                            axis=1)
-        verts = xy.reshape((npoly, 5, 2))
-
-        C = compress(ravelmask, ma.filled(C[0:Ny - 1, 0:Nx - 1]).ravel())
-
-        linewidths = (0.25,)
-        if 'linewidth' in kwargs:
-            kwargs['linewidths'] = kwargs.pop('linewidth')
-        kwargs.setdefault('linewidths', linewidths)
-
-        if shading == 'faceted':
-            edgecolors = 'k',
-        else:
-            edgecolors = 'none'
-        if 'edgecolor' in kwargs:
-            kwargs['edgecolors'] = kwargs.pop('edgecolor')
-        ec = kwargs.setdefault('edgecolors', edgecolors)
-
-        # aa setting will default via collections to patch.antialiased
-        # unless the boundary is not stroked, in which case the
-        # default will be False; with unstroked boundaries, aa
-        # makes artifacts that are often disturbing.
-        if 'antialiased' in kwargs:
-            kwargs['antialiaseds'] = kwargs.pop('antialiased')
-        if 'antialiaseds' not in kwargs and ec.lower() == "none":
-                kwargs['antialiaseds'] = False
-
-        collection = mcoll.PolyCollection(verts, **kwargs)
-
-        collection.set_alpha(alpha)
-        collection.set_array(C)
-        if norm is not None:
-            assert(isinstance(norm, mcolors.Normalize))
-        collection.set_cmap(cmap)
-        collection.set_norm(norm)
-        collection.set_clim(vmin, vmax)
-        collection.autoscale_None()
-        self.grid(False)
-
-        x = X.compressed()
-        y = Y.compressed()
-
-        ########################
-        # PATCH FOR MPL 1.2.0rc2
-
-        # Transform from native to data coordinates?
-        t = collection._transform
-        if (not isinstance(t, mtransforms.Transform) and
-                hasattr(t, '_as_mpl_transform')):
-            t = t._as_mpl_transform(self.axes)
-
-        if t and any(t.contains_branch_seperately(self.transData)):
-            trans_to_data = t - self.transData
-            pts = np.vstack([x, y]).T.astype(np.float)
-            transformed_pts = trans_to_data.transform(pts)
-            x = transformed_pts[..., 0]
-            y = transformed_pts[..., 1]
-
-            # XXX Not a mpl 1.2 thing...
-            no_inf = (x != np.inf) & (y != np.inf)
-            x = x[no_inf]
-            y = y[no_inf]
-
-        # END OF PATCH
-        ##############
-
-        minx = np.amin(x)
-        maxx = np.amax(x)
-        miny = np.amin(y)
-        maxy = np.amax(y)
-
-        corners = (minx, miny), (maxx, maxy)
-        self.update_datalim(corners)
+        result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
         self.autoscale_view()
-        self.add_collection(collection)
-        return collection
+        return result
 
     def quiver(self, x, y, u, v, *args, **kwargs):
         """
