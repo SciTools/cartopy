@@ -4,31 +4,32 @@ What's new in cartopy 0.10
 :Release: 0.10.0
 :Date:
 
-* Andrew Dawson added the ability to transform vector fields between
-  different coordinate reference systems, and thus the ability to plot
-  vector fields on arbitrary map projections.
-  See :meth:`cartopy.crs.CRS.transform_vectors`.
+We are very pleased to announce that Andrew Dawson was added to the cartopy
+core development team. In this release Andrew has single-handedly
+implemented comprehensive vector transformation and visualisation
+capabilities, including: 
 
-  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` allows the
-  plotting of arrows.
+* The ability to transform vector fields between different coordinate
+  reference systems via the :meth:`~cartopy.crs.CRS.transform_vectors`
+  CRS method.
 
-  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs` allows the
-  plotting of wind barbs.
+* :meth:`GeoAxes.quiver <cartopy.mpl.geoaxes.GeoAxes.quiver>` and
+  :meth:`GeoAxes.barbs <cartopy.mpl.geoaxes.GeoAxes.barbs>` for arrow and
+  barb plotting. More information is available at :ref:`vector_plotting`.
 
-  A new GeoAxes method :meth:`~cartopy.mpl.geoaxes.GeoAxes.streamplot` allows
-  access to matplotlib's :func:`~matplotlib.pyplot.streamplot` function which
-  draws streamlines of a vector flow.
+* A regridding function for "regularising" a vector field in the target
+  coordinate system. See also
+  :func:`cartopy.vector_transform.vector_scalar_to_grid`. Both
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` and
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs` accept the ``regrid_shape``
+  keyword to trigger this behaviour automatically. 
+  
+* :meth:`GeoAxes.streamplot <cartopy.mpl.geoaxes.GeoAxes.streamplot>` adds
+  the ability to draw streamlines in any projection from a vector field in
+  any other projection.
 
 .. plot:: examples/barbs.py
     :width: 300pt
-
-See :ref:`vector_plotting`
-
-* Andrew Dawson added the ability to plot vectors on a regular grid in
-  projection space, allowing for much nicer presentation of vectors on
-  projections where the spacing of the vectors would normally vary quite
-  a lot (e.g., vectors at equally spaced latitude/longitude plotted on
-  a North Polar stereographic projection).
 
 
 What's new in cartopy 0.9

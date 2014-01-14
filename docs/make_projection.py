@@ -85,7 +85,8 @@ if __name__ == '__main__':
 
         aspect = (np.diff(prj().x_limits) / np.diff(prj().y_limits))[0]
         width = 3 * aspect
-
+        if width == int(width):
+            width = int(width)
 
         table.write(name + '\n')
         table.write('-' * len(name) + '\n\n')
