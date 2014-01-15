@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import tempfile
+
 from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
 import numpy as np
@@ -124,6 +126,39 @@ def test_limits_pcolor():
     plt.pcolormesh(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
     plt.close()
+
+
+def test_view_lim_autoscaling():
+    x = np.linspace(0.12910209, 0.42141822)
+    y = np.linspace(0.03739792, 0.33029076)
+    x, y = np.meshgrid(x, y)
+    ax = plt.axes(projection=ccrs.RotatedPole(37.5, 357.5))
+
+    plt.scatter(x, y, x * y, transform=ccrs.PlateCarree())
+
+    expected = np.array([[86.12433701, 52.51570463],
+                         [86.69696603, 52.86372057]])
+
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected)
+    plt.draw()
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected)
+    ax.relim()
+    ax.autoscale_view(tight=False)
+    expected_non_tight = np.array([[86, 52.45], [86.8, 52.9]])
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
+                              expected_non_tight)
+
+
+def test_view_lim_default_global():
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    # The view lim should be the default unit bbox until it is drawn.
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
+                              [[0, 0], [1, 1]])
+    with tempfile.TemporaryFile() as tmp:
+        plt.savefig(tmp)
+    expected = np.array([[-180, -90], [180, 90]])
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
+                              expected)
 
 
 if __name__ == '__main__':
