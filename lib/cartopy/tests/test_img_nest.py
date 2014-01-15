@@ -45,6 +45,37 @@ _TEST_DATA_DIR = os.path.join(config["data_dir"],
 _TEST_DATA_AVAILABLE = False
 
 
+def test_world_files():
+    func = cimg_nest.Img.world_files
+    fname = 'one'
+    expected = ['one.w', 'one.W', 'ONE.w', 'ONE.W']
+    assert_equal(func(fname), expected)
+
+    fname = 'one.png'
+    expected = ['one.pngw', 'one.pgw', 'one.PNGW', 'one.PGW',
+                'ONE.pngw', 'ONE.pgw', 'ONE.PNGW', 'ONE.PGW']
+    assert_equal(func(fname), expected)
+
+    fname = '/one.png'
+    expected = ['/one.pngw', '/one.pgw', '/one.PNGW', '/one.PGW',
+                '/ONE.pngw', '/ONE.pgw', '/ONE.PNGW', '/ONE.PGW']
+    assert_equal(func(fname), expected)
+
+    fname = '/one/two.png'
+    expected = ['/one/two.pngw', '/one/two.pgw',
+                '/one/two.PNGW', '/one/two.PGW',
+                '/one/TWO.pngw', '/one/TWO.pgw',
+                '/one/TWO.PNGW', '/one/TWO.PGW']
+    assert_equal(func(fname), expected)
+
+    fname = '/one/two/THREE.png'
+    expected = ['/one/two/THREE.pngw', '/one/two/THREE.pgw',
+                '/one/two/THREE.PNGW', '/one/two/THREE.PGW',
+                '/one/two/three.pngw', '/one/two/three.pgw',
+                '/one/two/three.PNGW', '/one/two/three.PGW']
+    assert_equal(func(fname), expected)
+
+
 def _save_world(fname, args):
     _world = ('{x_pix_size}\n'
               '{y_rotation}\n'
