@@ -88,8 +88,14 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         their existence.
 
         For example, a '*.tif' file may have one of the following
-        popular conventions for world file extensions "*.tifw' or
-        '*.tfw'. Also caters for upper case basename combinations.
+        popular conventions for world file extensions '*.tifw',
+        '*.tfw', '*.TIFW' or '*.TFW'.
+
+        Given the possible world file extensions, the upper case basename
+        combinations are also generated. For example, the file 'map.tif'
+        will generate the following world file variations, 'map.tifw',
+        'map.tfw', 'map.TIFW', 'map.TFW', 'MAP.tifw', 'MAP.tfw', 'MAP.TIFW'
+        and 'MAP.TFW'.
 
         Args:
 
@@ -103,9 +109,9 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         Examples:
 
         >>> from cartopy.io.img_nest import Img
-        >>> Img.world_files('img.png')[0:4]
-        ['img.pngw', 'img.pgw', 'img.PNGW', 'img.PGW']
-        >>> Img.world_files('/path/to/img.TIF')[0:2]
+        >>> Img.world_files('img.png')[:6]
+        ['img.pngw', 'img.pgw', 'img.PNGW', 'img.PGW', 'IMG.pngw', 'IMG.pgw']
+        >>> Img.world_files('/path/to/img.TIF')[:2]
         ['/path/to/img.tifw', '/path/to/img.tfw']
         >>> Img.world_files('/path/to/img/with_no_extension')[0]
         '/path/to/img/with_no_extension.w'
@@ -126,15 +132,18 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                 fext_types.extend([ext.upper() for ext in fext_types])
                 result = ['{}.{}'.format(froot, ext) for ext in fext_types]
 
-        def _upper_basename(name):
+        def _convert_basename(name):
             dirname, basename = os.path.dirname(name), os.path.basename(name)
             base, ext = os.path.splitext(basename)
-            result = base.upper() + ext
+            if base == base.upper():
+                result = base.lower() + ext
+            else:
+                result = base.upper() + ext
             if dirname:
                 result = os.path.join(dirname, result)
             return result
 
-        result.extend(map(_upper_basename, result))
+        result.extend(map(_convert_basename, result))
         return result
 
     def __array__(self):
