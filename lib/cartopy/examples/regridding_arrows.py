@@ -1,4 +1,7 @@
 """
+Regridding vectors with quiver
+------------------------------
+
 This example demonstrates the regridding functionality in quiver (there exists
 equivalent functionality in :meth:`cartopy.mpl.geoaxes.GeoAxes.barbs`).
 
