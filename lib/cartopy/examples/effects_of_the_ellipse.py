@@ -1,4 +1,7 @@
 """
+The effect of badly referencing an ellipse
+------------------------------------------
+
 This example demonstrates the effect of referencing your data to an incorrect
 ellipse.
 

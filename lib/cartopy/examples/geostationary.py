@@ -1,4 +1,7 @@
 """
+Reprojecting images from a Geostationary projection
+---------------------------------------------------
+
 This example demonstrates Cartopy's ability to project images into the desired
 projection on-the-fly. The image itself is retrieved from a URL and is loaded
 directly into memory without storing it intermediately into a file. It

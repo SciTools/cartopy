@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+Map tile acquisition
+--------------------
+
 Demonstrates cartopy's ability to draw map tiles which are downloaded on
 demand from the MapQuest tile server. Internally these tiles are then combined
 into a single image and displayed in the cartopy GeoAxes.
