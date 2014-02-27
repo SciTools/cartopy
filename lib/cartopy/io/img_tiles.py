@@ -54,6 +54,14 @@ class GoogleTiles(object):
             raise ValueError(msg)
         self.style = style
 
+        # The 'satellite' and 'terrain' styles require pillow with a jpeg
+        # decoder.
+        if self.style in ["satellite", "terrain"] and \
+                not hasattr(Image.core, "jpeg_decoder") or \
+                not Image.core.jpeg_decoder:
+            msg = "The '%s' style requires pillow with jpeg decoding support."
+            raise ValueError(msg % self.style)
+
         self.imgs = []
         self.crs = ccrs.Mercator(min_latitude=-85.0511287798066,
                                  max_latitude=85.0511287798066,
