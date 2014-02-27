@@ -34,6 +34,8 @@ from cartopy import config
 import cartopy.crs as ccrs
 from cartopy.io import fh_getter, Downloader
 
+from osgeo import gdal
+from osgeo import gdal_array
 
 def srtm(lon, lat):
     """
@@ -44,6 +46,31 @@ def srtm(lon, lat):
         raise ValueError('No srtm tile found for those coordinates.')
     return read_SRTM3(fname)
 
+
+def shade_srtm(img, azimuth, altitude):
+    azimuth = float(azimuth)*np.pi/180.
+    altitude = float(altitude)*np.pi/180.
+    x, y = np.gradient(img)
+    slope = np.pi/2. - np.arctan(np.sqrt(x*x + y*y))
+    # -x here because of pixel orders in the SRTM tile
+    aspect = np.arctan2(-x, y)
+    shaded = np.sin(altitude) * np.sin(slope)\
+        + np.cos(altitude) * np.cos(slope)\
+        * np.cos((azimuth - np.pi/2.) - aspect)
+    return shaded
+
+def fill_srtm(elev, max_distance=200):
+    src_ds = gdal_array.OpenArray(elev)
+    srcband = src_ds.GetRasterBand(1)
+    dstband = srcband
+    maskband = srcband
+    smoothing_iterations = 0
+    options = []
+    result = gdal.FillNodata(dstband, maskband,
+                                    max_distance, smoothing_iterations, options,
+                                    callback=None)
+    elev = dstband.ReadAsArray()
+    return elev
 
 def srtm_composite(lon_min, lat_min, nx, ny):
 
