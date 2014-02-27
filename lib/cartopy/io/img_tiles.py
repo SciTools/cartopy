@@ -48,6 +48,7 @@ class GoogleTiles(object):
         # Only streets are partly transparent tiles that can be overlayed over
         # the satellite map to create the known hybrid style from google.
         styles = ["street", "satellite", "terrain", "only_streets"]
+        style = style.lower()
         if style not in styles:
             msg = "Invalid style '%s'. Valid styles: %s" % \
                 (style, ", ".join(styles))
