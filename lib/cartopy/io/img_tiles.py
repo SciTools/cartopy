@@ -38,7 +38,31 @@ class GoogleTiles(object):
     A "tile" in this class refers to the coordinates (x, y, z).
 
     """
-    def __init__(self, desired_tile_form='RGB'):
+    def __init__(self, desired_tile_form='RGB', style="street"):
+        """
+        :param desired_tile_form:
+        :param style: The style for the Google Maps tiles. One of 'street',
+            'satellite', 'terrain', and 'only_streets'.
+            Defaults to 'street'.
+        """
+        # Only streets are partly transparent tiles that can be overlayed over
+        # the satellite map to create the known hybrid style from google.
+        styles = ["street", "satellite", "terrain", "only_streets"]
+        style = style.lower()
+        if style not in styles:
+            msg = "Invalid style '%s'. Valid styles: %s" % \
+                (style, ", ".join(styles))
+            raise ValueError(msg)
+        self.style = style
+
+        # The 'satellite' and 'terrain' styles require pillow with a jpeg
+        # decoder.
+        if self.style in ["satellite", "terrain"] and \
+                not hasattr(Image.core, "jpeg_decoder") or \
+                not Image.core.jpeg_decoder:
+            msg = "The '%s' style requires pillow with jpeg decoding support."
+            raise ValueError(msg % self.style)
+
         self.imgs = []
         self.crs = ccrs.Mercator(min_latitude=-85.0511287798066,
                                  max_latitude=85.0511287798066,
@@ -143,8 +167,17 @@ class GoogleTiles(object):
     _tileextent = tileextent
 
     def _image_url(self, tile):
-        url = ('http://mts0.google.com/vt/lyrs=m@177000000&hl=en&src=api&'
-               'x=%s&y=%s&z=%s&s=G' % tile)
+        style_dict = {
+            "street": "m",
+            "satellite": "s",
+            "terrain": "t",
+            "only_streets": "h"}
+        url = ('http://mts0.google.com/vt/lyrs={style}@177000000&hl=en&'
+               'src=api&x={tile_x}&y={tile_y}&z={tile_z}&s=G'.format(
+                   style=style_dict[self.style],
+                   tile_x=tile[0],
+                   tile_y=tile[1],
+                   tile_z=tile[2]))
         return url
 
     def get_image(self, tile):

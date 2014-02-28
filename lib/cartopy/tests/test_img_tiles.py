@@ -50,6 +50,47 @@ def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
     return url
 
 
+def test_google_tile_styles():
+    """
+    Tests that settings the Google Maps tile style works as expected.
+
+    This is essentially just assures information is properly propagated through
+    the class structure.
+    """
+    reference_url = ("http://mts0.google.com/vt/lyrs={style}@177000000&hl=en"
+                     "&src=api&x=1&y=2&z=3&s=G")
+    tile = ["1", "2", "3"]
+
+    # Default is street.
+    gt = cimgt.GoogleTiles()
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="m"), url)
+
+    # Street
+    gt = cimgt.GoogleTiles(style="street")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="m"), url)
+
+    # Satellite
+    gt = cimgt.GoogleTiles(style="satellite")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="s"), url)
+
+    # Terrain
+    gt = cimgt.GoogleTiles(style="terrain")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="t"), url)
+
+    # Streets only
+    gt = cimgt.GoogleTiles(style="only_streets")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="h"), url)
+
+    # Exception is raised if unknown style is passed.
+    with assert_raises(ValueError):
+        cimgt.GoogleTiles(style="random_style")
+
+
 def test_google_wts():
     gt = cimgt.GoogleTiles()
 

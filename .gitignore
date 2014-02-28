@@ -35,3 +35,6 @@ lib/cartopy/siteconfig.py
 
 # Operating system files
 \.DS_Store
+
+# Egg that gets created with 'pip install -v -e .'
+lib/Cartopy.egg-info/
