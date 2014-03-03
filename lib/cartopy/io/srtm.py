@@ -119,9 +119,12 @@ def srtm_composite(lon_min, lat_min, nx, ny):
             x_img_slice = slice(i * shape[0], (i + 1) * shape[0])
             y_img_slice = slice(j * shape[1], (j + 1) * shape[1])
 
-            tile_img, crs, extent = srtm(bottom_left_ll[0] + j,
+            try:
+               tile_img, crs, extent = srtm(bottom_left_ll[0] + j,
                                          bottom_left_ll[1] + i)
-            img[x_img_slice, y_img_slice] = tile_img
+               img[x_img_slice, y_img_slice] = tile_img
+            except:
+               pass
 
     extent = (bottom_left_ll[0], bottom_left_ll[0] + ny,
               bottom_left_ll[1], bottom_left_ll[1] + nx)
