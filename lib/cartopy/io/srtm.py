@@ -80,9 +80,9 @@ def fill_gaps(elevation, max_distance=200):
 
     :type elevation: numpy.ndarray
     :param elevation: SRTM elevation data (in meters)
-    :type max_distance: float
-    :param max_distance: maximal distance (km) between a missing point and the
-        nearest valid point.
+    :type max_distance: int
+    :param max_distance: maximal distance (in pixels) between a missing point
+    and the nearest valid point.
 
     :rtype: numpy.ndarray
     :return: SRTM elevation data with filled gaps..
