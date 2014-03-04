@@ -1,4 +1,7 @@
 """
+Rotated pole boxes
+------------------
+
 This example demonstrates the way a box is warped when it is defined
 in a rotated pole coordinate system.
 

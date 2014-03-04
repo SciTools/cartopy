@@ -16,7 +16,6 @@ docs/source/gallery.rst
 
 # some data files:
 lib/cartopy/data/SRTM3
-lib/cartopy/data/wmts
 lib/cartopy/data/gshhs
 lib/cartopy/data/shapefiles
 
@@ -36,3 +35,6 @@ lib/cartopy/siteconfig.py
 
 # Operating system files
 \.DS_Store
+
+# Egg that gets created with 'pip install -v -e .'
+lib/Cartopy.egg-info/

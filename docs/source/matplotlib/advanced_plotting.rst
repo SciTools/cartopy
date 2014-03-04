@@ -1,8 +1,6 @@
 More advanced mapping with cartopy and matplotlib
 =================================================
 
-
-
 From the outset, cartopy's purpose has been to simplify and improve the quality of
 mapping visualisations available for scientific data. Thanks to the simplicity of the cartopy
 interface, in many cases the hardest part of producing such visualisations is getting
@@ -123,14 +121,34 @@ Images
     ax.coastlines(resolution='50m', color='black', linewidth=1)
 
     # mark a known place to help us geo-locate ourselves
-    ax.plot(-117.1625, 32.715, 'bo', markersize=7)
-    ax.text(-117, 33, 'San Diego')
+    ax.plot(-117.1625, 32.715, 'bo', markersize=7, transform=ccrs.Geodetic())
+    ax.text(-117, 33, 'San Diego', transform=ccrs.Geodetic())
 
     plt.show()
 
 
+.. _vector_plotting:
+
 Vector plotting
 ---------------
 
-Currently the vector plotting is still in development. For anything other than non-native vector plotting,
-consider using Basemap instead.
+Cartopy comes with powerful vector field plotting functionality. There are 3 distinct options for
+visualising vector fields:
+:meth:`quivers <cartopy.mpl.geoaxes.GeoAxes.quiver>` (:ref:`example <examples-arrows>`),
+:meth:`barbs <cartopy.mpl.geoaxes.GeoAxes.barbs>` (:ref:`example <examples-barbs>`) and
+:meth:`streamplots <cartopy.mpl.geoaxes.GeoAxes.streamplot>` (:ref:`example <examples-streamplot>`)
+each with their own benefits for displaying certain vector field forms.
+
+.. literalinclude:: /examples/arrows.py
+.. plot:: examples/arrows.py
+
+Since both :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` and :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs`
+are visualisations which draw every vector supplied, there is an additional option to "regrid" the
+vector field into a regular grid on the target projection (done via
+:func:`cartopy.vector_transform.vector_scalar_to_grid`). This is enabled with the ``regrid_shape``
+keyword and can have a massive impact on the effectiveness of the visualisation:  
+
+
+.. literalinclude:: /examples/regridding_arrows.py
+
+.. plot:: examples/regridding_arrows.py

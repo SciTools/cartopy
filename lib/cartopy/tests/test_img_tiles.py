@@ -15,22 +15,88 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import types
+
 from nose.tools import assert_equal, assert_raises
+import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
 import shapely.geometry as sgeom
 
+import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
+
+
+#: Maps Google tile coordinates to native mercator coordinates as defined
+#: by http://goo.gl/pgJi.
+KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
+                             -20037508.342789244, 20037508.342789244),
+                 (2, 0, 2): (0., 10018754.17139462,
+                             10018754.17139462, 20037508.342789244),
+                 (0, 2, 2): (-20037508.342789244, -10018754.171394622,
+                             -10018754.171394622, 0),
+                 (2, 2, 2): (0, 10018754.17139462,
+                             -10018754.171394622, 0),
+                 (8, 9, 4): (0, 2504688.542848654,
+                             -5009377.085697312, -2504688.542848654),
+                 }
+
+
+def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
+    url = ('http://chart.apis.google.com/chart?chst=d_text_outline&'
+           'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
+           'Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')'
+           '|Zoom%20' + str(tile[2]) + '||||||______________________'
+           '______')
+    return url
+
+
+def test_google_tile_styles():
+    """
+    Tests that settings the Google Maps tile style works as expected.
+
+    This is essentially just assures information is properly propagated through
+    the class structure.
+    """
+    reference_url = ("http://mts0.google.com/vt/lyrs={style}@177000000&hl=en"
+                     "&src=api&x=1&y=2&z=3&s=G")
+    tile = ["1", "2", "3"]
+
+    # Default is street.
+    gt = cimgt.GoogleTiles()
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="m"), url)
+
+    # Street
+    gt = cimgt.GoogleTiles(style="street")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="m"), url)
+
+    # Satellite
+    gt = cimgt.GoogleTiles(style="satellite")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="s"), url)
+
+    # Terrain
+    gt = cimgt.GoogleTiles(style="terrain")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="t"), url)
+
+    # Streets only
+    gt = cimgt.GoogleTiles(style="only_streets")
+    url = gt._image_url(tile)
+    assert_equal(reference_url.format(style="h"), url)
+
+    # Exception is raised if unknown style is passed.
+    with assert_raises(ValueError):
+        cimgt.GoogleTiles(style="random_style")
 
 
 def test_google_wts():
     gt = cimgt.GoogleTiles()
 
-    extent = [-15, 0.1, 50, 60]
-    target_domain = sgeom.Polygon([[extent[0], extent[1]],
-                                   [extent[2], extent[1]],
-                                   [extent[2], extent[3]],
-                                   [extent[0], extent[3]],
-                                   [extent[0], extent[1]]])
+    ll_target_domain = sgeom.box(-15, 50, 0, 60)
+    multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
+    target_domain = multi_poly.geoms[0]
 
     with assert_raises(AssertionError):
         list(gt.find_images(target_domain, -1))
@@ -47,39 +113,56 @@ def test_google_wts():
     with assert_raises(AssertionError):
         gt.tileextent((0, 1, 0))
 
-    assert_arr_almost(gt.tileextent((0, 0, 0)),
-                      (-180.0, 180.0,
-                       179.02740096396502, -179.02740096396491))
-    assert_arr_almost(gt.tileextent((2, 0, 2)),
-                      (0.0, 90.0, 179.02740096396502, 89.513700481982539))
-    assert_arr_almost(gt.tileextent((0, 2, 2)),
-                      (-180.0, -90.0,
-                       5.6843418860808015e-14, -89.513700481982426))
-    assert_arr_almost(gt.tileextent((2, 2, 2)),
-                      (0.0, 90.0,
-                       5.6843418860808015e-14, -89.513700481982426))
-    assert_arr_almost(gt.tileextent((8, 9, 4)), (0.0, 22.5, -22.37842512,
-                      -44.75685024))  # <- zoom 4, contains cape town.
+    assert_arr_almost(gt.tileextent((0, 0, 0)), KNOWN_EXTENTS[(0, 0, 0)])
+    assert_arr_almost(gt.tileextent((2, 0, 2)), KNOWN_EXTENTS[(2, 0, 2)])
+    assert_arr_almost(gt.tileextent((0, 2, 2)), KNOWN_EXTENTS[(0, 2, 2)])
+    assert_arr_almost(gt.tileextent((2, 2, 2)), KNOWN_EXTENTS[(2, 2, 2)])
+    assert_arr_almost(gt.tileextent((8, 9, 4)), KNOWN_EXTENTS[(8, 9, 4)])
+
+
+def test_tile_bbox_y0_at_south_pole():
+    tms = cimgt.MapQuestOpenAerial()
+
+    # Check the y0_at_north_pole keywords returns the appropriate bounds.
+    assert_arr_almost(tms.tile_bbox(8, 6, 4, y0_at_north_pole=False),
+                      np.array(KNOWN_EXTENTS[(8, 9, 4)]).reshape([2, 2]))
 
 
 def test_tile_find_images():
     gt = cimgt.GoogleTiles()
-    # test the find_images method on a Tile instance.
-    target_domain = sgeom.box(-10, 60, 10, 70)
+    # Test the find_images method on a GoogleTiles instance.
+    ll_target_domain = sgeom.box(-10, 50, 10, 60)
+    multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
+    target_domain = multi_poly.geoms[0]
 
     assert_equal([(7, 4, 4), (7, 5, 4), (8, 4, 4), (8, 5, 4)],
                  list(gt.find_images(target_domain, 4)))
 
 
+def test_image_for_domain():
+    gt = cimgt.GoogleTiles()
+    gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
+
+    ll_target_domain = sgeom.box(-10, 50, 10, 60)
+    multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
+    target_domain = multi_poly.geoms[0]
+
+    _, extent, _ = gt.image_for_domain(target_domain, 6)
+
+    ll_extent = ccrs.Geodetic().transform_points(gt.crs,
+                                                 np.array(extent[:2]),
+                                                 np.array(extent[2:]))
+    assert_arr_almost(ll_extent[:, :2],
+                      [[-11.25, 48.92249926],
+                       [11.25, 61.60639637]])
+
+
 def test_quadtree_wts():
     qt = cimgt.QuadtreeTiles()
 
-    extent = [-15, 0.1, 50, 60]
-    target_domain = sgeom.Polygon([[extent[0], extent[1]],
-                                   [extent[2], extent[1]],
-                                   [extent[2], extent[3]],
-                                   [extent[0], extent[3]],
-                                   [extent[0], extent[1]]])
+    ll_target_domain = sgeom.box(-15, 50, 0, 60)
+    multi_poly = qt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
+    target_domain = multi_poly.geoms[0]
 
     with assert_raises(ValueError):
         list(qt.find_images(target_domain, 0))
@@ -99,18 +182,17 @@ def test_quadtree_wts():
     with assert_raises(ValueError):
         qt.tileextent('4')
 
-    assert_arr_almost(qt.tileextent(''),
-                      (-180.0, 180.0, 179.02740096, -179.02740096))
+    assert_arr_almost(qt.tileextent(''), KNOWN_EXTENTS[(0, 0, 0)])
     assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
-                      (0.0, 90.0, 179.02740096, 89.51370048))
+                      KNOWN_EXTENTS[(2, 0, 2)])
     assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((0, 2, 2), google=True)),
-                      (-180.0, -90.0, 5.68434189e-14, -8.95137005e+01))
-    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((0, 1, 2), google=True)),
-                      (-180.0, -90.0, 8.95137005e+01, 5.68434189e-14))
+                      KNOWN_EXTENTS[(0, 2, 2)])
+    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
+                      KNOWN_EXTENTS[(2, 0, 2)])
     assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 2, 2), google=True)),
-                      (0.0, 90.0, 5.68434189e-14, -8.95137005e+01))
+                      KNOWN_EXTENTS[(2, 2, 2)])
     assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((8, 9, 4), google=True)),
-                      (0.0, 22.5, -22.37842512, -44.75685024))
+                      KNOWN_EXTENTS[(8, 9, 4)])
 
 
 if __name__ == '__main__':

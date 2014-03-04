@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2013, Met Office
 #
 # This file is part of cartopy.
 #
@@ -15,78 +15,51 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-
-import unittest
-
-import matplotlib.pyplot as plt
+from numpy.testing import assert_array_almost_equal
+from nose.tools import assert_equal, assert_not_equal, assert_true
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import ImageTesting
 
 
-class TestLambertConformal(unittest.TestCase):
+def test_defaults():
+    crs = ccrs.LambertConformal()
+    assert_equal(crs.proj4_init, ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
+                                  '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
+                                  '+lat_2=45 +no_defs'))
 
-    @ImageTesting(['lambert_conformal_default'])
-    def test_default(self):
-        ax = plt.axes(projection=ccrs.LambertConformal())
-        ax.coastlines(resolution='110m')
-        ax.gridlines()
 
-    @ImageTesting(['lambert_conformal_cutoff'])
-    def test_lambert_conformal_cutoff(self):
-        ax = plt.axes(projection=ccrs.LambertConformal(cutoff=-80))
-        ax.coastlines(resolution='110m')
-        ax.gridlines()
+def test_default_with_cutoff():
+    crs = ccrs.LambertConformal(cutoff=-80)
+    crs2 = ccrs.LambertConformal(cutoff=-80)
+    default = ccrs.LambertConformal()
 
-    @ImageTesting(['lambert_conformal_inspire'])
-    def test_lambert_inspire(self):
-        # EPSG Projection 3034 - ETRS89 / ETRS-LCC
-        # TODO: 1) Find a reference image.
-        # TODO: 2) Get +ellps=GRS80 into the proj4 string somehow.
-        #          We currently use WGS84, which is not correct.
-        epsg3034 = ccrs.LambertConformal(central_longitude=10,
-                                         secant_latitudes=(35, 65),
-                                         central_latitude=52,
-                                         false_easting=4000000,
-                                         false_northing=2800000)
+    assert_equal(crs.proj4_init, ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
+                                  '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
+                                  '+lat_2=45 +no_defs'))
 
-        expects = ["+lat_0=52", " +lat_1=35", "+lat_2=65", "+lon_0=10",
-                   "+proj=lcc", "+x_0=4000000", "+y_0=2800000"]  # +ellps=GRS80
-        for i in expects:
-            self.assert_(i in epsg3034.proj4_init, "expected {}".format(i))
+    # Check the behaviour of !=, == and (not ==) for the different cutoffs.
+    assert_equal(crs, crs2)
+    assert_true(crs != default)
+    assert_not_equal(crs, default)
 
-        ax = plt.axes(projection=epsg3034)
-        ax.coastlines(resolution='110m')
-        ax.gridlines()
+    assert_not_equal(hash(crs), hash(default))
+    assert_equal(hash(crs), hash(crs2))
 
-    @ImageTesting(['lambert_conformal_south'])
-    def test_lambert_south(self):
-        # Reference image: http://www.icsm.gov.au/mapping/map_projections.html
-        ax = plt.axes(
-            projection=ccrs.LambertConformal(central_longitude=140,
-                                             secant_latitudes=(-30, -60,),
-                                             cutoff=65))
-        ax.coastlines(resolution='110m')
-        ax.gridlines()
+    assert_array_almost_equal(crs.y_limits,
+                              (-49788019.81822971, 30793476.084826108))
 
-    @ImageTesting(['lambert_conformal_oz'])
-    def test_lambert_oz(self):
-        # Reference image: http://www.icsm.gov.au/mapping/map_projections.html
-        ax = plt.axes(
-            projection=ccrs.LambertConformal(central_longitude=140,
-                                             secant_latitudes=(-18, -36,),
-                                             cutoff=65))
-        ax.set_extent((90, 190, -45, 0))
-        ax.coastlines(resolution='110m')
-        ax.gridlines()
 
-    @ImageTesting(['lambert_conformal_tangental'])
-    def test_lambert_tangental(self):
-        ax = plt.axes(
-            projection=ccrs.LambertConformal(central_longitude=0,
-                                             secant_latitudes=(45, 45)))
-        ax.coastlines(resolution='110m')
-        ax.gridlines()
+def test_specific_lambert():
+    # This projection comes from EPSG Projection 3034 - ETRS89 / ETRS-LCC.
+    crs = ccrs.LambertConformal(central_longitude=10,
+                                secant_latitudes=(35, 65),
+                                central_latitude=52,
+                                false_easting=4000000,
+                                false_northing=2800000,
+                                globe=ccrs.Globe(ellipse='GRS80'))
+    assert_equal(crs.proj4_init, ('+ellps=GRS80 +proj=lcc +lon_0=10 '
+                                  '+lat_0=52 +x_0=4000000 +y_0=2800000 '
+                                  '+lat_1=35 +lat_2=65 +no_defs'))
 
 
 if __name__ == '__main__':

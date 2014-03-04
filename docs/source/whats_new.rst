@@ -1,10 +1,73 @@
+What's new in cartopy 0.10
+**************************
+
+:Release: 0.10.0
+:Date:
+
+We are very pleased to announce that Andrew Dawson was added to the cartopy
+core development team. In this release Andrew has single-handedly
+implemented comprehensive vector transformation and visualisation
+capabilities, including: 
+
+* The ability to transform vector fields between different coordinate
+  reference systems via the :meth:`~cartopy.crs.CRS.transform_vectors`
+  CRS method.
+
+* :meth:`GeoAxes.quiver <cartopy.mpl.geoaxes.GeoAxes.quiver>` and
+  :meth:`GeoAxes.barbs <cartopy.mpl.geoaxes.GeoAxes.barbs>` for arrow and
+  barb plotting. More information is available at :ref:`vector_plotting`.
+
+* A regridding function for "regularising" a vector field in the target
+  coordinate system. See also
+  :func:`cartopy.vector_transform.vector_scalar_to_grid`. Both
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` and
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs` accept the ``regrid_shape``
+  keyword to trigger this behaviour automatically. 
+  
+* :meth:`GeoAxes.streamplot <cartopy.mpl.geoaxes.GeoAxes.streamplot>` adds
+  the ability to draw streamlines in any projection from a vector field in
+  any other projection.
+
+.. plot:: examples/barbs.py
+    :width: 300pt
+
+
 What's new in cartopy 0.9
 *************************
 
-:Release: 0.9.x-dev
-:Date: Not yet released
+:Release: 0.9.0
+:Date: 12 September 2013
 
-* Added support for the Lambert Conformal projection. (:pull:`292`)
+* We are very pleased to announce that Bill Little was added to the cartopy
+  core development team. Bill has made some excellent contributions to cartopy,
+  and `his presentation at EuroScipy'13 on
+  "Iris & Cartopy" <https://www.euroscipy.org/schedule/presentation/35/>`_
+  was voted best talk of the conference.
+* Other talks and tutorials during this release cycle include Phil Elson's `talk at SciPy'13
+  (with video) <http://conference.scipy.org/scipy2013/presentation_detail.php?id=132>`_,
+  `Thomas Lecocq's tutorial at EuroSciPy <https://www.euroscipy.org/schedule/presentation/27/>`_
+  and a forthcoming `talk at FOSS4G <http://2013.foss4g.org/conf/programme/presentations/29/>`_.
+* Christoph Gohlke updated cartopy to support Windows 7.
+* The Plate Carree projection was updated to fully handle arbitrary globe definitions.
+* Peter Killick updated the Mercator class' default globe to WGS84. His refactor paved the way
+  for some follow on work to fully implement the Google Spherical Mercator (EPSG:3857) projection.
+
+    |image_eyja_volcano|_
+
+    .. |image_eyja_volcano| image:: examples/eyja_volcano_01_00.thumb.png
+
+    .. _image_eyja_volcano: examples/eyja_volcano.html
+
+* The TransverseMercator class saw a tidy up to include several common arguments (:issue:`ticket <309>`)
+* Bill Little added the Geostationary projection to allow geolocation of satellite imagery.
+  
+    |image_geostationary|_
+
+    .. |image_geostationary| image:: examples/geostationary_01_00.thumb.png
+
+    .. _image_geostationary: examples/geostationary.html
+
+* Byron Blay added the :class:`Lambert conformal conic projection <cartopy.crs.LambertConformal>`.
 
 
 What's new in cartopy 0.8

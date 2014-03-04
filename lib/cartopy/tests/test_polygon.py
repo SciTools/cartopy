@@ -325,7 +325,7 @@ class TestHoles(PolygonTests):
         self.assertAlmostEqual(polygon.area, 7.30e15, delta=1e13)
 
     def test_inverted_poly_removed_hole(self):
-        proj = ccrs.NorthPolarStereo()
+        proj = ccrs.NorthPolarStereo(globe=ccrs.Globe(ellipse='WGS84'))
         poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
                              [[(-135, -75), (-45, -75),
                                (45, -75), (135, -75)]])

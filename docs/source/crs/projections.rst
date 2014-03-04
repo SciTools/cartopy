@@ -42,7 +42,7 @@ LambertConformal
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(6.7920892811, 3))
+    plt.figure(figsize=(4.28969332205, 3))
     ax = plt.axes(projection=ccrs.LambertConformal())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -74,7 +74,7 @@ Mercator
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(3.50907018473, 3))
     ax = plt.axes(projection=ccrs.Mercator())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -106,7 +106,7 @@ Mollweide
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(6.0, 3))
+    plt.figure(figsize=(6, 3))
     ax = plt.axes(projection=ccrs.Mollweide())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -122,7 +122,7 @@ Orthographic
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3.0, 3))
+    plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -154,7 +154,7 @@ Stereographic
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3.0, 3))
+    plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.Stereographic())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -240,6 +240,22 @@ EuroPP
     ax.gridlines()
 
 
+Geostationary
+-------------
+
+.. autoclass:: cartopy.crs.Geostationary
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(2.99893683337, 3))
+    ax = plt.axes(projection=ccrs.Geostationary())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
 Gnomonic
 --------
 
@@ -250,7 +266,7 @@ Gnomonic
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3.0, 3))
+    plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.Gnomonic())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -266,7 +282,7 @@ NorthPolarStereo
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3.0, 3))
+    plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -298,7 +314,7 @@ SouthPolarStereo
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3.0, 3))
+    plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.SouthPolarStereo())
     ax.coastlines(resolution='110m')
     ax.gridlines()

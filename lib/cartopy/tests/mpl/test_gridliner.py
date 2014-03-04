@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2013, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -85,7 +85,9 @@ def test_gridliner():
                         top=1 - delta, bottom=0 + delta)
 
 
-@ImageTesting(['gridliner_labels'], tolerance=36)
+# The tolerance on this test is particularly high because of the high number
+# of text objects. A new testing stratergy is needed for this kind of test.
+@ImageTesting(['gridliner_labels'], tolerance=2.6)
 def test_grid_labels():
     plt.figure(figsize=(8, 10))
 

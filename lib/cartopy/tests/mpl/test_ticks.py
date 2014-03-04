@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+
+import math
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
@@ -33,12 +35,12 @@ def _format_lat(val, i):
 
 
 def _format_lon(val, i):
-    # Apply periodic boundary conditions
+    # Apply periodic boundary conditions, with an almost equal test on 180 lon.
     while val > 180:
         val -= 360
     while val < -180:
         val += 360
-    if val == -180 or val == 180 or val == 0:
+    if abs(abs(val) - 180.) <= 1e-06 or val == 0:
         return '%.0f' % abs(val)
     elif val > 0:
         return '%.0fE' % val
@@ -46,7 +48,7 @@ def _format_lon(val, i):
         return '%.0fW' % abs(val)
 
 
-@ImageTesting(['xticks_no_transform'])
+@ImageTesting(['xticks_no_transform'], tolerance=0.12)
 def test_set_xticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -56,9 +58,12 @@ def test_set_xticks_no_transform():
     ax.set_xticks([-135, -45, 45, 135], minor=True)
 
 
-@ImageTesting(['xticks_cylindrical'])
+@ImageTesting(['xticks_cylindrical'], tolerance=0.12)
 def test_set_xticks_cylindrical():
-    ax = plt.axes(projection=ccrs.Mercator())
+    ax = plt.axes(projection=ccrs.Mercator(
+                  min_latitude=-85.,
+                  max_latitude=85.,
+                  globe=ccrs.Globe(semimajor_axis=math.degrees(1))))
     ax.coastlines('110m')
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
     ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
@@ -74,7 +79,7 @@ def test_set_xticks_non_cylindrical():
         ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.Geodetic())
 
 
-@ImageTesting(['yticks_no_transform'])
+@ImageTesting(['yticks_no_transform'], tolerance=0.125)
 def test_set_yticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -84,9 +89,12 @@ def test_set_yticks_no_transform():
     ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
 
 
-@ImageTesting(['yticks_cylindrical'])
+@ImageTesting(['yticks_cylindrical'], tolerance=0.12)
 def test_set_yticks_cylindrical():
-    ax = plt.axes(projection=ccrs.Mercator())
+    ax = plt.axes(projection=ccrs.Mercator(
+                  min_latitude=-85.,
+                  max_latitude=85.,
+                  globe=ccrs.Globe(semimajor_axis=math.degrees(1))))
     ax.coastlines('110m')
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
     ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
@@ -102,11 +110,12 @@ def test_set_yticks_non_cylindrical():
         ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
 
 
-@ImageTesting(['xyticks'])
+@ImageTesting(['xyticks'], tolerance=0.17)
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),
-                   ccrs.Mercator(),
+                   ccrs.Mercator(globe=ccrs.Globe(
+                       semimajor_axis=math.degrees(1))),
                    ccrs.TransverseMercator())
     x = -3.275024
     y = 50.753998

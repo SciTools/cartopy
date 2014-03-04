@@ -22,6 +22,7 @@ Implements image tile identification and fetching from various sources.
 Tile generation is explicitly not yet implemented.
 
 """
+from __future__ import division
 
 import PIL.Image as Image
 import shapely.geometry as sgeom
@@ -37,10 +38,38 @@ class GoogleTiles(object):
     A "tile" in this class refers to the coordinates (x, y, z).
 
     """
-    def __init__(self, desired_tile_form='RGB'):
-        # XXX consider fixing the CRS???
+    def __init__(self, desired_tile_form='RGB', style="street"):
+        """
+        :param desired_tile_form:
+        :param style: The style for the Google Maps tiles. One of 'street',
+            'satellite', 'terrain', and 'only_streets'.
+            Defaults to 'street'.
+        """
+        # Only streets are partly transparent tiles that can be overlayed over
+        # the satellite map to create the known hybrid style from google.
+        styles = ["street", "satellite", "terrain", "only_streets"]
+        style = style.lower()
+        if style not in styles:
+            msg = "Invalid style '%s'. Valid styles: %s" % \
+                (style, ", ".join(styles))
+            raise ValueError(msg)
+        self.style = style
+
+        # The 'satellite' and 'terrain' styles require pillow with a jpeg
+        # decoder.
+        if self.style in ["satellite", "terrain"] and \
+                not hasattr(Image.core, "jpeg_decoder") or \
+                not Image.core.jpeg_decoder:
+            msg = "The '%s' style requires pillow with jpeg decoding support."
+            raise ValueError(msg % self.style)
+
         self.imgs = []
-        self.crs = ccrs.Mercator()
+        self.crs = ccrs.Mercator(min_latitude=-85.0511287798066,
+                                 max_latitude=85.0511287798066,
+                                 globe=ccrs.Globe(ellipse=None,
+                                                  semimajor_axis=6378137,
+                                                  semiminor_axis=6378137,
+                                                  nadgrids='@null'))
         self.desired_tile_form = desired_tile_form
 
     def image_for_domain(self, target_domain, target_z):
@@ -65,7 +94,7 @@ class GoogleTiles(object):
                                                              'be an integer '
                                                              '>=0.')
 
-        # recursively drill down to the images at the target zoom
+        # Recursively drill down to the images at the target zoom.
         x0, x1, y0, y1 = self._tileextent(start_tile)
         domain = sgeom.box(x0, y0, x1, y1)
         if domain.intersects(target_domain):
@@ -81,21 +110,30 @@ class GoogleTiles(object):
 
     def subtiles(self, x_y_z):
         x, y, z = x_y_z
-        # google tile specific (i.e. up->down)
+        # Google tile specific (i.e. up->down).
         for xi in range(0, 2):
             for yi in range(0, 2):
                 yield x * 2 + xi, y * 2 + yi, z + 1
 
     _subtiles = subtiles
 
-    @staticmethod
-    def tile_bbox(prj, x, y, z, lat_extent_at_z0=(-85., 85.),
-                  bottom_up=True):
+    def tile_bbox(self, x, y, z, y0_at_north_pole=True):
         """
         Returns the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
         tile position.
 
-        NOTE: This interface is highly liable to change in the future.
+        Parameters
+        ----------
+        x, y, z : int
+            The x, y, z tile coordinates in the Google tile numbering system
+            (with y=0 being at the north pole), unless `y0_at_north_pole` is
+            set to ``False``, in which case `y` is in the TMS numbering system
+            (with y=0 being at the south pole).
+        y0_at_north_pole : bool
+            Whether the numbering of the y coordinate starts at the north
+            pole (as is the convention for Google tiles), or the south
+            pole (as is the convention for TMS).
+
         """
         n = 2 ** z
         assert 0 <= x <= (n - 1), ("Tile's x index is out of range. Upper "
@@ -103,46 +141,43 @@ class GoogleTiles(object):
         assert 0 <= y <= (n - 1), ("Tile's y index is out of range. Upper "
                                    "limit %s. Got %s" % (n, y))
 
-        x0 = -180.
-        # compute the box height in native coordinates for this zoom level
-        box_w = 360. / n
+        x0, x1 = self.crs.x_limits
+        y0, y1 = self.crs.y_limits
 
-        result = prj.transform_points(ccrs.PlateCarree(),
-                                      np.array([0., 0]),
-                                      np.array(lat_extent_at_z0))
-        y1, y0 = result[:, 1]
-        # compute the box height in native coordinates for this zoom level
+        # Compute the box height and width in native coordinates
+        # for this zoom level.
         box_h = (y1 - y0) / n
+        box_w = (x1 - x0) / n
 
-        # compute the native x & native y extents of the box
-    #    x_lower, x_upper = x0 + x*box_w, x0 + (x+1)*box_w
-    #    y_lower, y_upper = y0 + y*box_h, y0 + (y+1)*box_h
+        # Compute the native x & y extents of the tile.
         n_xs = x0 + (x + np.arange(0, 2, dtype=np.float64)) * box_w
         n_ys = y0 + (y + np.arange(0, 2, dtype=np.float64)) * box_h
 
-        if not bottom_up:
-            # n.b. assumes that the projection is symmetric
+        if y0_at_north_pole:
             n_ys = -1 * n_ys[::-1]
 
         return n_xs, n_ys
 
     def tileextent(self, x_y_z):
-        """Returns extent tuple in MercatorCoords ``(x0, x1, y0, y1)``."""
+        """Returns extent tuple ``(x0,x1,y0,y1)`` in Mercator coordinates."""
         x, y, z = x_y_z
-        x_lim, y_lim = self.tile_bbox(ccrs.Mercator(), x, y, z, bottom_up=True)
+        x_lim, y_lim = self.tile_bbox(x, y, z, y0_at_north_pole=True)
         return tuple(x_lim) + tuple(y_lim)
 
     _tileextent = tileextent
 
     def _image_url(self, tile):
-        url = ('http://chart.apis.google.com/chart?chst=d_text_outline&'
-               'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
-               'Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')'
-               '|Zoom%20' + str(tile[2]) + '||||||______________________'
-               '______')
-#        print url
-#        url = ('http://mts0.google.com/vt/lyrs=m@177000000&hl=en&src=api&'
-#               'x=%s&y=%s&z=%s&s=G' % tile)
+        style_dict = {
+            "street": "m",
+            "satellite": "s",
+            "terrain": "t",
+            "only_streets": "h"}
+        url = ('http://mts0.google.com/vt/lyrs={style}@177000000&hl=en&'
+               'src=api&x={tile_x}&y={tile_y}&z={tile_z}&s=G'.format(
+                   style=style_dict[self.style],
+                   tile_x=tile[0],
+                   tile_y=tile[1],
+                   tile_z=tile[2]))
         return url
 
     def get_image(self, tile):
@@ -201,13 +236,8 @@ class QuadtreeTiles(GoogleTiles):
     """
     def _image_url(self, tile):
         url = ('http://ecn.dynamic.t1.tiles.virtualearth.net/comp/'
-               'CompositionHandler/' + str(tile) + '?mkt=en-'
-               'gb&it=A,G,L&shading=hill&n=z')
-        url = ('http://chart.apis.google.com/chart?chst=d_text_outline&'
-               'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b'
-               '||||Quadkey:%20%20(' + str(tile) + ')||||||____________'
-               '________________')
-
+               'CompositionHandler/{tile}?mkt=en-'
+               'gb&it=A,G,L&shading=hill&n=z'.format(tile=tile))
         return url
 
     def tms_to_quadkey(self, tms, google=False):

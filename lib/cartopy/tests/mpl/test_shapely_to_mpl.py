@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -33,7 +33,7 @@ def test_polygon_interiors():
 
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
     ax.coastlines()
-    ax.set_global()  # XXX could be the default???
+    ax.set_global()
 
     pth = Path([[0, -45], [60, -45], [60, 45], [0, 45], [0, 45],
                 [10, -20], [10, 20], [40, 20], [40, -20], [10, 20]],
@@ -88,7 +88,7 @@ def test_null_geometry():
     assert len(geoms) == 0
 
 
-@ImageTesting(['contour_with_interiors'])
+@ImageTesting(['contour_with_interiors'], tolerance=0.3)
 def test_contour_interiors():
     ############### produces a polygon with multiple holes:
     nx, ny = 10, 10

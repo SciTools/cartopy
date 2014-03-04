@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,9 +23,7 @@ import warnings
 import weakref
 
 import matplotlib.artist
-import matplotlib.cbook
 import matplotlib.collections
-import matplotlib.lines
 
 import cartopy.mpl.patch
 
@@ -132,4 +130,5 @@ class FeatureArtist(matplotlib.artist.Artist):
                                                   transform=transform,
                                                   **final_kwargs)
         c.set_clip_path(ax.patch)
+        c.set_figure(ax.figure)
         return c.draw(renderer)

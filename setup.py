@@ -26,9 +26,20 @@ from distutils.sysconfig import get_config_var
 from distutils.util import convert_path
 import fnmatch
 import os
+import sys
 
 from Cython.Distutils import build_ext
 import numpy as np
+
+
+if sys.platform.startswith('win'):
+    def get_config_var(name):
+        return '.'
+    geos = 'geos'
+    extra_extension_args = {}
+else:
+    geos = 'geos_c'
+    extra_extension_args = dict(runtime_library_dirs=[get_config_var('LIBDIR')])
 
 
 def file_walk_relative(top, remove=''):
@@ -127,7 +138,7 @@ class HeaderCheck(Command):
 
 setup(
     name='Cartopy',
-    version='0.9.x',
+    version='0.11.x',
     url='http://github.com/SciTools/cartopy',
     author='UK Met Office',
 
@@ -152,17 +163,17 @@ setup(
     # requires proj4 headers
     ext_modules=[
         Extension('cartopy.trace', ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
-                  include_dirs=[get_config_var('INCLUDEDIR')],
-                  libraries=['geos_c', 'proj'],
+                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy'],
+                  libraries=[geos, 'proj'],
                   library_dirs=[get_config_var('LIBDIR')],
-                  runtime_library_dirs=[get_config_var('LIBDIR')],
                   language='c++',
+                  **extra_extension_args
                   ),
         Extension('cartopy._crs', ['lib/cartopy/_crs.pyx'],
                   include_dirs=[get_config_var('INCLUDEDIR'), np.get_include()],
                   libraries=['proj'],
                   library_dirs=[get_config_var('LIBDIR')],
-                  runtime_library_dirs=[get_config_var('LIBDIR')],
+                  **extra_extension_args
                   ),
     ],
 
