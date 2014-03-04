@@ -91,7 +91,6 @@ def fill_gaps(elevation, max_distance=10):
     try:
         from osgeo import gdal
         from osgeo import gdal_array
-        import ttt
     except:
         warnings.warn("Module gdal is required to complete this task,\
                       returning original elevation data")
