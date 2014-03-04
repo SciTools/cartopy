@@ -1,3 +1,14 @@
+What's new in cartopy 0.11
+**************************
+
+Thomas Lecocq added functionality to :mod:`cartopy.io.srtm` allowing intelligent
+filling of missing elevation data, as well as a function to compute elevation
+shading for relief style mapping. An example has been added which uses both of
+these functions to produce a grayscale shaded relief map:
+
+.. plot:: examples/srtm_shading.py
+   :width: 300pt
+
 What's new in cartopy 0.10
 **************************
 
@@ -30,10 +41,6 @@ capabilities, including:
 
 .. plot:: examples/barbs.py
     :width: 300pt
-
-* The SRTM IO got some new features: :func:`cartopy.io.srtm.add_shading` adds
-  shades on SRTM elevation maps. :func:`cartopy.io.srtm.fill_gaps` might be
-  needed if SRTM has gaps, but requires `gdal` to be installed.
 
 What's new in cartopy 0.9
 *************************

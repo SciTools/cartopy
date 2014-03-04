@@ -34,7 +34,6 @@ from cartopy import config
 import cartopy.crs as ccrs
 from cartopy.io import fh_getter, Downloader
 
-import warnings
 
 def srtm(lon, lat):
     """
@@ -88,13 +87,9 @@ def fill_gaps(elevation, max_distance=10):
     :rtype: numpy.ndarray
     :return: SRTM elevation data with filled gaps..
     """
-    try:
-        from osgeo import gdal
-        from osgeo import gdal_array
-    except:
-        warnings.warn("Module gdal is required to complete this task,\
-                      returning original elevation data")
-        return elevation
+    # Lazily import osgeo - it is only an optional dependency for cartopy.
+    from osgeo import gdal
+    from osgeo import gdal_array
 
     src_ds = gdal_array.OpenArray(elevation)
     srcband = src_ds.GetRasterBand(1)
