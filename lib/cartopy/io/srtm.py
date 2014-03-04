@@ -38,6 +38,7 @@ from cartopy.io import fh_getter, Downloader
 def srtm(lon, lat):
     """
     Return (elevation, crs, extent) for the given longitude latitude.
+    Elevation is in meters.
     """
     fname = SRTM3_retrieve(lon, lat)
     if fname is None:
@@ -50,11 +51,11 @@ def add_shading(elevation, azimuth, altitude):
     of the sun.
 
     :type elevation: numpy.ndarray
-    :param elevation: SRTM elevation data
+    :param elevation: SRTM elevation data (in meters)
     :type azimuth: float
-    :param azimuth: azimuth of the Sun in degrees
+    :param azimuth: azimuth of the Sun (in degrees)
     :type altitude: float
-    :param altitude: altitude of the Sun in degrees
+    :param altitude: altitude of the Sun (in degrees)
 
     :rtype: numpy.ndarray
     :return: shaded SRTM relief map.
@@ -78,20 +79,17 @@ def fill_gaps(elevation, max_distance=200):
     This function requires osgeo/gdal to work.
 
     :type elevation: numpy.ndarray
-    :param elevation: SRTM elevation data
+    :param elevation: SRTM elevation data (in meters)
     :type max_distance: float
-    :param max_distance: maximal distance between a missing point and the
+    :param max_distance: maximal distance (km) between a missing point and the
         nearest valid point.
 
     :rtype: numpy.ndarray
     :return: SRTM elevation data with filled gaps..
     """
 
-    try:
-        from osgeo import gdal
-        from osgeo import gdal_array
-    except ImportError:
-        raise
+    from osgeo import gdal
+    from osgeo import gdal_array
 
     src_ds = gdal_array.OpenArray(elevation)
     srcband = src_ds.GetRasterBand(1)

@@ -3,7 +3,7 @@ This example illustrates the automatic download of
 STRM data, gap filling (using gdal) and adding shading
 to create a so-called "Shaded Relief SRTM"
 
-Contributed by: Thomas Lecocq
+Contributed by: Thomas Lecocq (http://geophysique.be)
 """
 
 import cartopy.crs as ccrs
