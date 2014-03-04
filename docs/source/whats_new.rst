@@ -31,6 +31,9 @@ capabilities, including:
 .. plot:: examples/barbs.py
     :width: 300pt
 
+* The SRTM IO got some new features: :func:`cartopy.io.srtm.add_shading` adds
+  shades on SRTM elevation maps. :func:`cartopy.io.srtm.fill_gaps` might be
+  needed if SRTM has gaps, but requires `gdal` to be installed.
 
 What's new in cartopy 0.9
 *************************
