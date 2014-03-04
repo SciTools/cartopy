@@ -60,8 +60,8 @@ def add_shading(elevation, azimuth, altitude):
     :rtype: numpy.ndarray
     :return: shaded SRTM relief map.
     """
-    azimuth = float(azimuth)*np.pi/180.
-    altitude = float(altitude)*np.pi/180.
+    azimuth = np.deg2rad(azimuth)
+    altitude = np.deg2rad(altitude)
     x, y = np.gradient(elevation)
     slope = np.pi/2. - np.arctan(np.sqrt(x*x + y*y))
     # -x here because of pixel orders in the SRTM tile
@@ -72,7 +72,7 @@ def add_shading(elevation, azimuth, altitude):
     return shaded
 
 
-def fill_gaps(elevation, max_distance=200):
+def fill_gaps(elevation, max_distance=10):
     """Fills gaps in SRTM elevation data for which the distance from
     missing pixel to nearest existing one is smaller than `max_distance`.
 
@@ -82,7 +82,7 @@ def fill_gaps(elevation, max_distance=200):
     :param elevation: SRTM elevation data (in meters)
     :type max_distance: int
     :param max_distance: maximal distance (in pixels) between a missing point
-    and the nearest valid point.
+    and the nearest valid one.
 
     :rtype: numpy.ndarray
     :return: SRTM elevation data with filled gaps..

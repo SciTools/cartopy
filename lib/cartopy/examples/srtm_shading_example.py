@@ -17,11 +17,11 @@ ax = plt.subplot(111, projection=ccrs.PlateCarree())
 elev, crs, extent = srtm.srtm_composite(12, 47, 1, 1)
 
 # Fill the gaps present in the elevation data
-elev_filled = srtm.fill_gaps(elev, 200.0)
+elev_filled = srtm.fill_gaps(elev, 15)
 
-# Add shading simulating the Sun at midday (South) 
-# and with a low angle (30 degrees above horizon)
-shaded = srtm.add_shading(elev_filled, 180.0, 30.0)
+# Add shading simulating the Sun at 10am (South-East)
+# and with a low angle (15 degrees above horizon)
+shaded = srtm.add_shading(elev_filled, 135.0, 15.0)
 
 # The plot the result :
 plt.imshow(shaded, extent=extent, transform=crs,
