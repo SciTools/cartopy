@@ -1,0 +1,115 @@
+Installing Cartopy currently requires you to build it from source. The 
+latest release is available from https://github.com/SciTools/Cartopy.
+
+Once you have satisfied the requirements detailed below, 
+extract the Cartopy source package, cd to the new directory, and enter::
+
+  python setup.py install
+
+
+In-place build - an alternative for developers
+==============================================
+We strongly encourage people to contribute to Cartopy and for this type of 
+development activity an in-place build can be useful. Once you've cloned 
+the Cartopy git repository you can perform an in-place build by entering::
+
+  python setup.py build_ext --inplace
+
+
+Build requirements
+==================
+These are external packages which you will need to install before
+installing Cartopy. 
+
+Many of these packages are available in Linux package managers
+such as aptitude and yum. For example, it may be possible to install 
+Numpy using::
+
+  apt-get install python-numpy
+
+If you are installing dependencies with a package manager on Linux, 
+you may need to install the development packages (look for a "-dev" 
+postfix) in addition to the core packages.  
+
+python 2.7 or later (http://www.python.org/)
+    Cartopy requires Python 2.7 or later, but is not currently compatible with Python 3.
+
+numpy 1.6 or later (http://numpy.scipy.org/)
+    Python package for scientific computing including a powerful N-dimensional array object.
+
+Cython 0.15.1 or later (https://pypi.python.org/pypi/Cython/)
+
+
+Runtime requirements
+====================
+These are external packages you will need to install to access significant Cartopy functionality.
+
+python 2.7 or later (http://www.python.org/)
+    Cartopy requires Python 2.7 or later, but is not currently compatible with Python 3.
+
+numpy 1.6 or later (http://numpy.scipy.org/)
+    Python package for scientific computing including a powerful N-dimensional array object.
+
+shapely 1.2.14* (https://github.com/Toblerity/Shapely)
+    Python package for the manipulation and analysis of planar geometric objects.
+
+pyshp 1.1.4 or later (https://pypi.python.org/pypi/pyshp)
+    Pure Python read/write support for ESRI Shapefile format.
+
+PROJ.4 4.8.0 or later (http://trac.osgeo.org/proj/)
+    Cartographic Projections library.
+
+Optional
+--------
+These are optional packages which you may want to install to enable
+additional Cartopy functionality.
+
+matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
+    Python package for 2D plotting.  This package is required for any graphical capability.
+
+Pillow 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
+    Popular fork of PythonImagingLibrary.
+
+  or
+
+PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
+    Python package for image processing.
+
+scipy 0.10 or later (http://www.scipy.org/)
+    Python package for scientific computing.
+
+Test
+----
+These packages are required for the full Cartopy test suite to run.
+
+mock 1.0.1 (http://pypi.python.org/pypi/mock/)
+    Python mocking and patching package for testing. Note that this package
+    is only required to support the Cartopy unit tests.
+
+nose 1.2.1 or later (http://nose.readthedocs.org/en/latest/)
+    Python package for software testing.
+
+pep8 1.3.3 or later (https://pypi.python.org/pypi/pep8) 
+    Python package for software testing.
+
+ 
+* Those packages have been tested with a specific build.
+
+Packaged distributions
+======================
+`Conda (Anaconda), an OS agnostic package manager
+<http://conda.pydata.org/miniconda.html>`_
+
+`Homebrew OS X package manager
+<http://brew.sh/>`_
+
+`Enthought Canopy
+<https://www.enthought.com/products/canopy/>`_
+
+`Python (x, y)
+<http://code.google.com/p/pythonxy/>`_ which tends to be updated a bit more frequently.
+
+`Christoph Gohlke's
+<http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ windows binaries
+
+`Installation recipies <https://github.com/SciTools/installation-recipes>`_ for numerous operating systems are maintained by the community.

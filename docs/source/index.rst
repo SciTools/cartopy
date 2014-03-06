@@ -2,7 +2,7 @@
     :hidden:
 
     whats_new.rst
-    building_from_source/index.rst
+    installing.rst
     citation.rst
     cartopy_outline.rst
 
@@ -32,7 +32,7 @@ Installation
 
 Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
-:ref:`building from source <building_from_source>` section.
+:ref:`installation <installing>` section.
 
 
 Getting started
