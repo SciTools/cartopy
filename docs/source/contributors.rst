@@ -24,6 +24,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Andrew Dawson
  * Patrick Peglar
  * Christoph Gohlke
+ * Thomas Lecocq
 
 
 Thank you!

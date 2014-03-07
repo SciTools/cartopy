@@ -38,11 +38,70 @@ from cartopy.io import fh_getter, Downloader
 def srtm(lon, lat):
     """
     Return (elevation, crs, extent) for the given longitude latitude.
+    Elevation is in meters.
     """
     fname = SRTM3_retrieve(lon, lat)
     if fname is None:
         raise ValueError('No srtm tile found for those coordinates.')
     return read_SRTM3(fname)
+
+
+def add_shading(elevation, azimuth, altitude):
+    """Adds shading to SRTM elevation data, using azimuth and altitude
+    of the sun.
+
+    :type elevation: numpy.ndarray
+    :param elevation: SRTM elevation data (in meters)
+    :type azimuth: float
+    :param azimuth: azimuth of the Sun (in degrees)
+    :type altitude: float
+    :param altitude: altitude of the Sun (in degrees)
+
+    :rtype: numpy.ndarray
+    :return: shaded SRTM relief map.
+    """
+    azimuth = np.deg2rad(azimuth)
+    altitude = np.deg2rad(altitude)
+    x, y = np.gradient(elevation)
+    slope = np.pi/2. - np.arctan(np.sqrt(x*x + y*y))
+    # -x here because of pixel orders in the SRTM tile
+    aspect = np.arctan2(-x, y)
+    shaded = np.sin(altitude) * np.sin(slope)\
+        + np.cos(altitude) * np.cos(slope)\
+        * np.cos((azimuth - np.pi/2.) - aspect)
+    return shaded
+
+
+def fill_gaps(elevation, max_distance=10):
+    """Fills gaps in SRTM elevation data for which the distance from
+    missing pixel to nearest existing one is smaller than `max_distance`.
+
+    This function requires osgeo/gdal to work.
+
+    :type elevation: numpy.ndarray
+    :param elevation: SRTM elevation data (in meters)
+    :type max_distance: int
+    :param max_distance: maximal distance (in pixels) between a missing point
+    and the nearest valid one.
+
+    :rtype: numpy.ndarray
+    :return: SRTM elevation data with filled gaps..
+    """
+    # Lazily import osgeo - it is only an optional dependency for cartopy.
+    from osgeo import gdal
+    from osgeo import gdal_array
+
+    src_ds = gdal_array.OpenArray(elevation)
+    srcband = src_ds.GetRasterBand(1)
+    dstband = srcband
+    maskband = srcband
+    smoothing_iterations = 0
+    options = []
+    gdal.FillNodata(dstband, maskband,
+                    max_distance, smoothing_iterations, options,
+                    callback=None)
+    elevation = dstband.ReadAsArray()
+    return elevation
 
 
 def srtm_composite(lon_min, lat_min, nx, ny):
