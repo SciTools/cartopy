@@ -138,8 +138,12 @@ cdef class CRS:
         self.proj4_params = self.globe.to_proj4_params()
         self.proj4_params.update(proj4_params)
 
-        init_items = ['+{}={}'.format(k, v) for
-                      k, v in self.proj4_params.items()]
+        init_items = []
+        for k, v in self.proj4_params.items():
+            if v is not None:
+                init_items.append('+{}={}'.format(k, v))
+            else:
+                init_items.append('+{}'.format(k))
         self.proj4_init = ' '.join(init_items) + ' +no_defs'
         self.proj4 = pj_init_plus(self.proj4_init)
         if not self.proj4:

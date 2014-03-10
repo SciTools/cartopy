@@ -82,18 +82,10 @@ class TestCRS(unittest.TestCase):
         europp = ccrs.EuroPP()
         proj4_init = europp.proj4_init
         # Transverse Mercator, UTM zone 32,
-        self.assertTrue('+proj=tmerc' in proj4_init)
+        self.assertTrue('+proj=utm' in proj4_init)
         self.assertTrue('+zone=32' in proj4_init)
         # International 1924 ellipsoid.
         self.assertTrue('+ellps=intl' in proj4_init)
-        # Scale factor on central meridian
-        self.assertTrue('+k=0.9996' in proj4_init)
-        # True origin Standard latitude and longitude
-        self.assertTrue('+lat_0=50' in proj4_init)
-        self.assertTrue('+lon_0=9' in proj4_init)
-        # Map co-ordinates of true origin (metres)
-        self.assertTrue('+x_0=1750000' in proj4_init)
-        self.assertTrue('+y_0=1500000' in proj4_init)
 
     def test_transform_points_nD(self):
         rlons = np.array([[350., 352., 354.], [350., 352., 354.]])
@@ -167,6 +159,27 @@ class TestCRS(unittest.TestCase):
         self.assertEqual(len(result), 2)
         assert_arr_almost_eq(result[0].xy, [[-180.], [45.]])
         assert_arr_almost_eq(result[1].xy, [[0], [45.]])
+
+    def test_utm(self):
+        utm30n = ccrs.UTM(30)
+        ll = ccrs.Geodetic()
+        lat, lon = np.array([51.5, -3.0], dtype=np.double)
+        east, north = np.array([500000, 5705429.2], dtype=np.double)
+        assert_arr_almost_eq(utm30n.transform_point(lon, lat, ll),
+                             [east, north],
+                             decimal=1)
+        assert_arr_almost_eq(ll.transform_point(east, north, utm30n),
+                             [lon, lat],
+                             decimal=1)
+        utm38s = ccrs.UTM(38, southern_hemisphere=True)
+        lat, lon = np.array([-18.92, 47.5], dtype=np.double)
+        east, north = np.array([763316.7, 7906160.8], dtype=np.double)
+        assert_arr_almost_eq(utm38s.transform_point(lon, lat, ll),
+                             [east, north],
+                             decimal=1)
+        assert_arr_almost_eq(ll.transform_point(east, north, utm38s),
+                             [lon, lat],
+                             decimal=1)
 
 
 def test_pickle():
