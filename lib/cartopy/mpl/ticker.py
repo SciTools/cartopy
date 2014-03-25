@@ -21,7 +21,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
 
 
-class _GeoFormatter(Formatter):
+class GeoFormatter(Formatter):
     """Base class for formatting ticks on geographical axes."""
 
     def __init__(self, degree_symbol=u'\u00B0', number_format='g'):
@@ -106,7 +106,7 @@ class _GeoFormatter(Formatter):
         raise NotImplementedError("A subclass must implement this method.")
 
 
-class LatitudeFormatter(_GeoFormatter):
+class LatitudeFormatter(GeoFormatter):
     """Tick formatter for latitude axes."""
 
     def make_transform_args(self, value, source_crs):
@@ -125,7 +125,7 @@ class LatitudeFormatter(_GeoFormatter):
         return hemisphere
 
 
-class LongitudeFormatter(_GeoFormatter):
+class LongitudeFormatter(GeoFormatter):
     """Tick formatter for longitude axes."""
 
     def __init__(self,
