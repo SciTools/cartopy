@@ -744,7 +744,57 @@ class OSNI(TransverseMercator):
         return (11764.8481, 464720.9559)
 
 
-class EuroPP(Projection):
+class UTM(Projection):
+    """
+    Universal Transverse Mercator projection.
+
+    """
+    def __init__(self, zone, southern_hemisphere=False, globe=None):
+        """
+        Kwargs:
+
+            * zone - the numeric zone of the UTM required.
+
+            * globe - An instance of :class:`cartopy.crs.Globe`. If omitted, a
+                      default globe is created.
+
+            * southern_hemisphere - set to True if the zone is in the southern
+                                    hemisphere, defaults to False.
+
+        """
+        proj4_params = [('proj', 'utm'),
+                        ('units', 'm'),
+                        ('zone', zone)]
+        if southern_hemisphere:
+            proj4_params.append(('south', None))
+        super(UTM, self).__init__(proj4_params, globe=globe)
+
+    @property
+    def boundary(self):
+        x0, x1 = self.x_limits
+        y0, y1 = self.y_limits
+        return sgeom.LineString([(x0, y0), (x0, y1),
+                                 (x1, y1), (x1, y0),
+                                 (x0, y0)])
+
+    @property
+    def threshold(self):
+        return 1e2
+
+    @property
+    def x_limits(self):
+        easting = 5e5
+        # allow 50% overflow
+        return (0 - easting/2, 2 * easting + easting/2)
+
+    @property
+    def y_limits(self):
+        northing = 1e7
+        # allow 50% overflow
+        return (0 - northing, 2 * northing + northing/2)
+
+
+class EuroPP(UTM):
     """
     UTM Zone 32 projection for EuroPP domain.
 
@@ -752,32 +802,8 @@ class EuroPP(Projection):
 
     """
     def __init__(self):
-        proj4_params = [('proj', 'tmerc'),
-                        ('lat_0', 50), ('lon_0', 9),
-                        ('k', 0.9996),
-                        ('x_0', 1750000), ('y_0', 1500000),
-                        ('zone', 32),
-                        ('units', 'm')]
-        globe = Globe(ellipse='intl', towgs84='-87,-98,-121')
-        super(EuroPP, self).__init__(proj4_params, globe=globe)
-
-    @property
-    def boundary(self):
-        w, h = 3.19e6, 3.8e6
-        return sgeom.LineString([(0, 0), (0, h), (w, h),
-                                 (w, 0), (0, 0)])
-
-    @property
-    def x_limits(self):
-        return (0, 3.19e6)
-
-    @property
-    def y_limits(self):
-        return (0, 3.8e6)
-
-    @property
-    def threshold(self):
-        return 1e4
+        globe = Globe(ellipse='intl')
+        super(EuroPP, self).__init__(32, globe=globe)
 
 
 class Mercator(Projection):
