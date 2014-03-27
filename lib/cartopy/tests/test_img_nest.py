@@ -297,6 +297,12 @@ def test_nest():
     assert_equal(nest_z0_z1._ancestry,
                  nest_z0_z1_from_pickle._ancestry)
 
+    # Check that __getattr__ for Img is working correctly.
+    target = sgeom.box(0, 0, 10000, 10000)
+    gen = nest_z0_z1.find_images(target, 'aerial z0 test')
+    img = gen.next()[1]  # Generator returns tuple: (z, Img)
+    assert_equal(hasattr(img, '_bbox'), True)
+
 
 def requires_wmts_data(function):
     """

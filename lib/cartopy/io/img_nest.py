@@ -70,6 +70,16 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         """
         self._bbox = None
 
+    def __getstate__(self):
+        """
+        Force the state of the instance to equal it's __dict__ method.
+
+        When pickling, this ensures that any new attributes introduced to the
+        class are included in the pickled object.
+
+        """
+        return self.__dict__
+
     def bbox(self):
         """
         Return a :class:`~shapely.geometry.polygon.Polygon` instance for
