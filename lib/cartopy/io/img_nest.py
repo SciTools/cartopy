@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2013, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -69,6 +69,14 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
 
         """
         self._bbox = None
+
+    def __getstate__(self):
+        """
+        Override the default to ensure when pickling that any new attributes
+        introduced are included in the pickled object.
+
+        """
+        return self.__dict__
 
     def bbox(self):
         """
