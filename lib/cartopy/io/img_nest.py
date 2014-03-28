@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2013, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -72,10 +72,8 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
 
     def __getstate__(self):
         """
-        Force the state of the instance to equal it's __dict__ method.
-
-        When pickling, this ensures that any new attributes introduced to the
-        class are included in the pickled object.
+        Override the default to ensure when pickling that any new attributes
+        introduced are included in the pickled object.
 
         """
         return self.__dict__

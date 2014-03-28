@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2013, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -297,11 +297,14 @@ def test_nest():
     assert_equal(nest_z0_z1._ancestry,
                  nest_z0_z1_from_pickle._ancestry)
 
-    # Check that __getattr__ for Img is working correctly.
-    target = sgeom.box(0, 0, 10000, 10000)
-    gen = nest_z0_z1.find_images(target, 'aerial z0 test')
-    img = gen.next()[1]  # Generator returns tuple: (z, Img)
-    assert_equal(hasattr(img, '_bbox'), True)
+
+def test_img_pickle_round_trip():
+    """Check that __getstate__ for Img instances is working correctly."""
+
+    img = cimg_nest.Img('imaginary file', (0, 1, 2, 3), 'lower', (1, 2))
+    img_from_pickle = pickle.loads(pickle.dumps(img))
+    assert_equal(img, img_from_pickle)
+    assert_equal(hasattr(img_from_pickle, '_bbox'), True)
 
 
 def requires_wmts_data(function):
