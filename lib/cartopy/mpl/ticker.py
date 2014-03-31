@@ -21,7 +21,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
 
 
-class GeoFormatter(Formatter):
+class _PlateCarreeFormatter(Formatter):
     """Base class for formatting ticks on geographical axes."""
 
     def __init__(self, degree_symbol=u'\u00B0', number_format='g'):
@@ -56,8 +56,7 @@ class GeoFormatter(Formatter):
             raise TypeError("This formatter cannot be used with "
                             "non-rectangular projections.")
         target = ccrs.PlateCarree()
-        projected_value = self.extract_transform_result(
-            target.transform_point(*self.make_transform_args(value, source)))
+        projected_value = self._apply_transform(value, target, source)
         # Round the transformed values to the nearest 0.1 degree for display
         # purposes (transforms can introduce minor rounding errors that make
         # the tick values look bad).
@@ -74,22 +73,11 @@ class GeoFormatter(Formatter):
                                  degree=self._degree_symbol,
                                  hemisphere=hemisphere)
 
-    def make_transform_args(self, value, source_crs):
+    def _apply_transform(self, value, target_proj, source_crs):
         """
-        Given a single coordinate value and a source `CRS` returns a
-        3-tuple of arguments suitable for use by `CRS.transform_point`.
-
-        Must be over-ridden by the derived class.
-
-        """
-        raise NotImplementedError("A subclass must implement this method.")
-
-    def extract_transform_result(self, transform_result):
-        """
-        Given a 2-tuple returned from `CRS.transform_point` returns the
-        required element.
-
-        Must be over-ridden by the derived class.
+        Given a single value, a target projection and a source CRS,
+        transforms the value from the source CRS to the target
+        projection, returning a single value.
 
         """
         raise NotImplementedError("A subclass must implement this method.")
@@ -106,14 +94,11 @@ class GeoFormatter(Formatter):
         raise NotImplementedError("A subclass must implement this method.")
 
 
-class LatitudeFormatter(GeoFormatter):
+class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
 
-    def make_transform_args(self, value, source_crs):
-        return (0, value, source_crs)
-
-    def extract_transform_result(self, transform_result):
-        return transform_result[1]
+    def _apply_transform(self, value, target_proj, source_crs):
+        return target_proj.transform_point(0, value, source_crs)[1]
 
     def hemisphere(self, value, value_source_crs):
         if value > 0:
@@ -125,7 +110,7 @@ class LatitudeFormatter(GeoFormatter):
         return hemisphere
 
 
-class LongitudeFormatter(GeoFormatter):
+class LongitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for longitude axes."""
 
     def __init__(self,
@@ -164,11 +149,8 @@ class LongitudeFormatter(GeoFormatter):
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
 
-    def make_transform_args(self, value, source_crs):
-        return (value, 0, source_crs)
-
-    def extract_transform_result(self, transform_result):
-        return transform_result[0]
+    def _apply_transform(self, value, target_proj, source_crs):
+        return target_proj.transform_point(value, 0, source_crs)[0]
 
     def hemisphere(self, value, value_source_crs):
         # Perform basic hemisphere detection.
