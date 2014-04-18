@@ -737,8 +737,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                    transparent=True
                                    )
 
-        # wms_image = Image.open(cStringIO.StringIO(wms_image.read()))
-        wms_image = Image.open(wms_image)
+        wms_image = Image.open(cStringIO.StringIO(wms_image.read()))
         source_proj = self.projection
 
         return self.imshow(wms_image, origin='upper',
