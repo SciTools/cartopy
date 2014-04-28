@@ -223,7 +223,14 @@ class OSM(GoogleTiles):
         x, y, z = tile
         url = 'http://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
         return url
-
+        
+class StamenTerrain(GoogleTiles):
+    # http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+    # http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+    def _image_url(self, tile):
+        x, y, z = tile
+        url = 'http://tile.stamen.com/terrain-background/%s/%s/%s.png' % (z, x, y)
+        return url
 
 class QuadtreeTiles(GoogleTiles):
     """
