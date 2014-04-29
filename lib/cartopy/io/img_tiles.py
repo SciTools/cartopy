@@ -223,8 +223,8 @@ class OSM(GoogleTiles):
         x, y, z = tile
         url = 'http://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
         return url
- 
- 
+
+
 class StamenTerrain(GoogleTiles):
     """
     Terrain tiles defined for the continental United States, and include land
