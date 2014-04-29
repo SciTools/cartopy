@@ -223,15 +223,33 @@ class OSM(GoogleTiles):
         x, y, z = tile
         url = 'http://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
         return url
-        
+ 
+ 
 class StamenTerrain(GoogleTiles):
-    # http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-    # http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+    '''
+    Terrain tiles defined for the continental United States, and include land 
+    color and shaded hills. The land colors are a custom palette developed by 
+    Gem Spear for the National Atlas 1km land cover data set, which defines 
+    twenty-four land classifications including five kinds of forest, 
+    combinations of shrubs, grasses and crops, and a few tundras and wetlands. 
+    The colors are at their highest contrast when fully zoomed-out to the 
+    whole U.S., and they slowly fade out to pale off-white as you zoom in to 
+    leave room for foreground data and break up the weirdness of large areas 
+    of flat, dark green.
+    
+    Additional info: 
+    http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+    http://maps.stamen.com/#terrain/12/37.6902/-122.3600
+    http://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services 
+    https://github.com/migurski/DEM-Tools    
+    '''
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://tile.stamen.com/terrain-background/%s/%s/%s.png' % (z, x, y)
+        url = 'http://tile.stamen.com/terrain-background/%s/%s/%s.png' % (
+            z, x, y)
         return url
 
+        
 class QuadtreeTiles(GoogleTiles):
     """
     Implements web tile retrieval using the Microsoft WTS quadkey coordinate

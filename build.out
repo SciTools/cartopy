@@ -1,0 +1,4 @@
+running build
+running build_py
+running build_ext
+cythoning lib/cartopy/trace.pyx to lib/cartopy\trace.cpp
