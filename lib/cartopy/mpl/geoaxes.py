@@ -1561,6 +1561,12 @@ class GeoAxes(matplotlib.axes.Axes):
                                 projection parameters.
 
         """
+        if not (hasattr(wmts, 'tilematrixsets') and
+                hasattr(wmts, 'contents') and
+                hasattr(wmts, 'gettile')):
+            import owslib.wmts
+            wmts = owslib.wmts.WebMapTileService(wmts)
+
         if extent is None:
             extent = self.get_extent()
 
