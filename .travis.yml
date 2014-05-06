@@ -25,7 +25,7 @@ install:
   - ./.travis_no_output sudo apt-get update
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose pyshp mock
-  - ./.travis_no_output sudo /usr/bin/pip install pep8==1.4.5
+  - ./.travis_no_output sudo /usr/bin/pip install pep8==1.4.5 owslib
   # its always version 2 currently
   - if [[ $TRAVIS_PYTHON_VERSION == '2.'* ]]; then ./.travis_no_output sudo /usr/bin/pip install --use-mirrors PIL; fi
   # install cartopy in the .local directory (in lieu of using virtual env...)
