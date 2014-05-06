@@ -23,9 +23,12 @@ plot results from source coordinates to the GeoAxes' target projection.
 """
 import collections
 import contextlib
+import math
+import io
 import warnings
 import weakref
 
+import PIL.Image
 import matplotlib.artist
 import matplotlib.axes
 from matplotlib.image import imread
@@ -61,6 +64,20 @@ Provides a significant performance boost for contours which, at
 matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
 """
+
+
+# Standard pixel size of 0.28 mm as defined by WMTS.
+METERS_PER_PIXEL = 0.28e-3
+
+_WGS84_METERS_PER_UNIT = 2 * math.pi * 6378137 / 360
+
+METERS_PER_UNIT = {
+    'urn:ogc:def:crs:OGC:1.3:CRS84': _WGS84_METERS_PER_UNIT,
+}
+
+_URN_TO_CRS = {
+    'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
+}
 
 
 # XXX call this InterCRSTransform
@@ -1457,6 +1474,126 @@ class GeoAxes(matplotlib.axes.Axes):
                                     category=UserWarning)
             sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
         return sp
+
+    def _add_wmts_images(self, wmts, layer_name, tile_matrix_set, extent,
+                         max_pixel_span):
+        """
+        Add images from the specified WMTS layer and matrix set to cover
+        the specified extent at an appropriate resolution.
+
+        The zoom level (aka. tile matrix) is chosen to give the lowest
+        possible resolution which still provides the requested quality.
+        If insufficient resolution is available, the highest available
+        resolution is used.
+
+        Args:
+
+            * wmts - The owslib.wmts.WebMapTileService providing the tiles.
+            * layer_name - The name of the layer to use.
+            * tile_matrix_set - A owslib.wmts.TileMatrixSet relevant to
+                                the layer.
+            * extent - Tuple of (left, right, bottom, top) in Axes coordinates.
+            * max_pixel_span - Preferred maximum pixel width or height
+                               in Axes coordinates.
+
+        """
+        min_x, max_x, min_y, max_y = extent
+
+        # Get the tile matrices in order of increasing resolution.
+        tile_matrices = sorted(tile_matrix_set.tilematrix.values(),
+                               key=lambda tm: tm.scaledenominator,
+                               reverse=True)
+
+        # Find which tile matrix has the appropriate resolution.
+        meters_per_unit = METERS_PER_UNIT[tile_matrix_set.crs]
+        max_scale = max_pixel_span * meters_per_unit / METERS_PER_PIXEL
+        ok_tile_matrices = filter(lambda tm: tm.scaledenominator <= max_scale,
+                                  tile_matrices)
+        if ok_tile_matrices:
+            tile_matrix = ok_tile_matrices[0]
+        else:
+            tile_matrix = tile_matrices[-1]
+
+        # Determine which tiles are required to cover the requested extent.
+        pixel_span = tile_matrix.scaledenominator * (
+            METERS_PER_PIXEL / meters_per_unit)
+        tile_span_x = tile_matrix.tilewidth * pixel_span
+        tile_span_y = tile_matrix.tileheight * pixel_span
+
+        matrix_min_x, matrix_max_y = tile_matrix.topleftcorner
+        epsilon = 1e-6
+        min_col = int((min_x - matrix_min_x) / tile_span_x + epsilon)
+        max_col = int((max_x - matrix_min_x) / tile_span_x - epsilon)
+        min_row = int((matrix_max_y - max_y) / tile_span_y + epsilon)
+        max_row = int((matrix_max_y - min_y) / tile_span_y - epsilon)
+
+        for row in range(min_row, max_row + 1):
+            for column in range(min_col, max_col + 1):
+                tile = wmts.gettile(layer=layer_name,
+                                    tilematrix=tile_matrix.identifier,
+                                    row=row, column=column)
+                img = PIL.Image.open(io.BytesIO(tile.read()))
+                min_img_x = matrix_min_x + tile_span_x * column
+                max_img_y = matrix_max_y - tile_span_y * row
+                img_extent = (min_img_x, min_img_x + tile_span_x,
+                              max_img_y - tile_span_y, max_img_y)
+                img_origin = 'upper'
+                self.imshow(img, extent=img_extent, origin=img_origin)
+
+    def add_wmts(self, wmts, layer_name, extent=None, matrix_set_name=None):
+        """
+        Add images from the specified WMTS layer to cover the current or
+        specified extent.
+
+        This function requires owslib to work.
+
+        Args:
+
+            * wmts - The URL of the WMTS, or an
+                     owslib.wmts.WebMapTileService instance.
+            * layer_name - The name of the layer to use.
+
+        Kwargs:
+
+            * extent - Optional tuple of (left, right, bottom, top) in
+                       Axes coordinates. Defaults to the current extent
+                       of the Axes.
+            * matrix_set_name - Optional matrix set name. Defaults to
+                                a matrix set which matches the current
+                                projection parameters.
+
+        """
+        if not (hasattr(wmts, 'tilematrixsets') and
+                hasattr(wmts, 'contents') and
+                hasattr(wmts, 'gettile')):
+            import owslib.wmts
+            wmts = owslib.wmts.WebMapTileService(wmts)
+
+        if extent is None:
+            extent = self.get_extent()
+
+        if matrix_set_name is None:
+            tile_matrix_set_names = wmts.contents[layer_name].tilematrixsets
+            for tile_matrix_set_name in tile_matrix_set_names:
+                tile_matrix_set = wmts.tilematrixsets[tile_matrix_set_name]
+                crs_urn = tile_matrix_set.crs
+                if crs_urn in _URN_TO_CRS:
+                    tms_crs = _URN_TO_CRS[crs_urn]
+                    if tms_crs == self.projection:
+                        matrix_set_name = tile_matrix_set_name
+                        break
+            if matrix_set_name is None:
+                raise ValueError('Unable to determine appropriate tile'
+                                 ' matrix name.')
+
+        window_extent = self.get_window_extent()
+        max_pixel_span = min((extent[1] - extent[0]) / window_extent.width,
+                             (extent[3] - extent[2]) / window_extent.height)
+
+        with self.hold_limits():
+            self._add_wmts_images(wmts, layer_name,
+                                  wmts.tilematrixsets[matrix_set_name],
+                                  extent, max_pixel_span)
 
 
 def _trigger_patch_reclip(event):
