@@ -1545,6 +1545,8 @@ class GeoAxes(matplotlib.axes.Axes):
         Add images from the specified WMTS layer to cover the current or
         specified extent.
 
+        This function requires owslib to work.
+
         Args:
 
             * wmts - The URL of the WMTS, or an
