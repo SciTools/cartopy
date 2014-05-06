@@ -25,7 +25,7 @@ import shapely.geometry
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist
-from cartopy.mpl.web_service import WMTSArtist
+from cartopy.mpl.ogc_artist import WMTSArtist
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
