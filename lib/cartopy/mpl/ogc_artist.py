@@ -98,7 +98,7 @@ class WMTSArtist(matplotlib.artist.Artist):
         self._wmts = wmts
         self._layer_name = layer_name
         self._matrix_set_name = matrix_set_name
-        self._pil_image_open = PIL.Image.open
+        self._pil_image = PIL.Image
 
     def set_axes(self, axes):
         """
@@ -208,23 +208,35 @@ class WMTSArtist(matplotlib.artist.Artist):
         image_cache = self._shared_image_cache.setdefault(wmts, {}) \
             .setdefault((layer_name, tile_matrix_id), {})
 
-        ax = self.get_axes()
+        # To avoid nasty seams between the individual tiles, we
+        # accummulate the tile images into a single image.
+        big_img = None
+        n_rows = 1 + max_row - min_row
+        n_cols = 1 + max_col - min_col
         for row in range(min_row, max_row + 1):
-            for column in range(min_col, max_col + 1):
+            for col in range(min_col, max_col + 1):
                 # Get the tile's Image from the cache if possible.
-                img_key = (row, column)
+                img_key = (row, col)
                 img = image_cache.get(img_key)
                 if img is None:
                     tile = wmts.gettile(layer=layer_name,
                                         tilematrix=tile_matrix_id,
-                                        row=row, column=column)
-                    img = self._pil_image_open(io.BytesIO(tile.read()))
+                                        row=row, column=col)
+                    img = self._pil_image.open(io.BytesIO(tile.read()))
                     image_cache[img_key] = img
+                if big_img is None:
+                    size = (img.size[0] * n_cols, img.size[1] * n_rows)
+                    big_img = self._pil_image.new('RGB', size, None)
+                top = (row - min_row) * tile_matrix.tileheight
+                left = (col - min_col) * tile_matrix.tilewidth
+                big_img.paste(img, (left, top))
 
-                min_img_x = matrix_min_x + tile_span_x * column
-                max_img_y = matrix_max_y - tile_span_y * row
-                img_extent = (min_img_x, min_img_x + tile_span_x,
-                              max_img_y - tile_span_y, max_img_y)
-                img_artist = AxesImage(ax, extent=img_extent, origin='upper')
-                img_artist.set_data(img)
-                img_artist.draw(renderer)
+        # Draw the combined image.
+        ax = self.get_axes()
+        min_img_x = matrix_min_x + tile_span_x * min_col
+        max_img_y = matrix_max_y - tile_span_y * min_row
+        img_extent = (min_img_x, min_img_x + n_cols * tile_span_x,
+                      max_img_y - n_rows * tile_span_y, max_img_y)
+        img_artist = AxesImage(ax, extent=img_extent, origin='upper')
+        img_artist.set_data(big_img)
+        img_artist.draw(renderer)
