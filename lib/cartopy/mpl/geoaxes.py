@@ -1463,7 +1463,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the specified WMTS layer to the axes.
 
-        This function requires owslib to work.
+        This function requires owslib and PIL to work.
 
         Args:
 

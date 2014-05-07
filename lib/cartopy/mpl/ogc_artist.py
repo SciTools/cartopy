@@ -24,7 +24,6 @@ import math
 import weakref
 
 from matplotlib.image import AxesImage
-import PIL.Image
 import matplotlib.artist
 
 import cartopy.crs as ccrs
@@ -49,7 +48,7 @@ class WMTSArtist(matplotlib.artist.Artist):
     A subclass of :class:`~matplotlib.artist.Artist` capable of
     drawing a WMTS layer.
 
-    Requires owslib to work.
+    Requires owslib and PIL to work.
 
     """
 
@@ -85,12 +84,21 @@ class WMTSArtist(matplotlib.artist.Artist):
         if not (hasattr(wmts, 'tilematrixsets') and
                 hasattr(wmts, 'contents') and
                 hasattr(wmts, 'gettile')):
-            import owslib.wmts
+            try:
+                import owslib.wmts
+            except ImportError:
+                raise ImportError('OWSLib is required for showing WMTS layers')
             wmts = owslib.wmts.WebMapTileService(wmts)
+
+        try:
+            import PIL.Image
+        except ImportError:
+            raise ImportError('PIL is required for showing WMTS layers')
 
         self._wmts = wmts
         self._layer_name = layer_name
         self._matrix_set_name = matrix_set_name
+        self._pil_image_open = PIL.Image.open
 
     def set_axes(self, axes):
         """
@@ -210,7 +218,7 @@ class WMTSArtist(matplotlib.artist.Artist):
                     tile = wmts.gettile(layer=layer_name,
                                         tilematrix=tile_matrix_id,
                                         row=row, column=column)
-                    img = PIL.Image.open(io.BytesIO(tile.read()))
+                    img = self._pil_image_open(io.BytesIO(tile.read()))
                     image_cache[img_key] = img
 
                 min_img_x = matrix_min_x + tile_span_x * column
