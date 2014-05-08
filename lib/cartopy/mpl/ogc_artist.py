@@ -143,14 +143,12 @@ class WMTSArtist(matplotlib.artist.Artist):
             return
 
         ax = self.get_axes()
-        extent = ax.get_extent()
         window_extent = ax.get_window_extent()
-        max_pixel_span = min((extent[1] - extent[0]) / window_extent.width,
-                             (extent[3] - extent[2]) / window_extent.height)
-
+        max_pixel_span = min(ax.viewLim.width / window_extent.width,
+                             ax.viewLim.height / window_extent.height)
         self._add_wmts_images(self._wmts, self._layer_name,
                               self._wmts.tilematrixsets[self._matrix_set_name],
-                              extent, max_pixel_span, renderer)
+                              ax.get_extent(), max_pixel_span, renderer)
 
     def _add_wmts_images(self, wmts, layer_name, tile_matrix_set, extent,
                          max_pixel_span, renderer):
@@ -250,4 +248,5 @@ class WMTSArtist(matplotlib.artist.Artist):
                       max_img_y - n_rows * tile_span_y, max_img_y)
         img_artist = AxesImage(ax, extent=img_extent, origin='upper')
         img_artist.set_data(big_img)
+        img_artist.set_clip_path(ax.outline_patch)
         img_artist.draw(renderer)
