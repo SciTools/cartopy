@@ -197,12 +197,23 @@ class WMTSArtist(matplotlib.artist.Artist):
         tile_span_x = tile_matrix.tilewidth * pixel_span
         tile_span_y = tile_matrix.tileheight * pixel_span
 
+        # Convert the requested extent from CRS coordinates to tile
+        # indices. See annex H of the WMTS v1.0.0 spec.
+        # NB. The epsilons get rid of any tiles which only just
+        # (i.e. one part in a million) intrude into the requested
+        # extent. Since these wouldn't be visible anyway there's nothing
+        # to be gained by spending the time downloading them.
         matrix_min_x, matrix_max_y = tile_matrix.topleftcorner
         epsilon = 1e-6
         min_col = int((min_x - matrix_min_x) / tile_span_x + epsilon)
         max_col = int((max_x - matrix_min_x) / tile_span_x - epsilon)
         min_row = int((matrix_max_y - max_y) / tile_span_y + epsilon)
         max_row = int((matrix_max_y - min_y) / tile_span_y - epsilon)
+        # Clamp to the limits of the tile matrix.
+        min_col = max(min_col, 0)
+        max_col = min(max_col, tile_matrix.matrixwidth - 1)
+        min_row = max(min_row, 0)
+        max_row = min(max_row, tile_matrix.matrixheight - 1)
 
         tile_matrix_id = tile_matrix.identifier
         image_cache = self._shared_image_cache.setdefault(wmts, {}) \
