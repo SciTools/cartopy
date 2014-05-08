@@ -16,6 +16,7 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 import gc
 
+from owslib.wmts import WebMapTileService
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
@@ -24,6 +25,7 @@ import shapely.geometry
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist
+from cartopy.mpl.ogc_artist import WMTSArtist
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
@@ -170,6 +172,39 @@ def test_contourf_transform_path_counting():
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size
 
     plt.close()
+
+
+def test_wmts_tile_caching():
+    ax = plt.axes(projection=ccrs.PlateCarree())
+
+    WMTSArtist._shared_image_cache.clear()
+    assert len(WMTSArtist._shared_image_cache) == 0
+
+    url = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
+    wmts = WebMapTileService(url)
+    layer_name = 'MODIS_Terra_CorrectedReflectance_TrueColor'
+
+    gettile_counter = CallCounter(wmts, 'gettile')
+    with gettile_counter:
+        ax.add_wmts(wmts, layer_name)
+        plt.draw()
+
+    n_tiles = 2
+    assert gettile_counter.count == n_tiles, ('Too many tile requests - '
+                                              'expected {}, got {}.'.format(
+                                                  n_tiles,
+                                                  gettile_counter.count)
+                                              )
+    gc.collect()
+    assert len(WMTSArtist._shared_image_cache) == 1
+    assert len(WMTSArtist._shared_image_cache[wmts]) == 1
+    tiles_key = (layer_name, '0')
+    assert len(WMTSArtist._shared_image_cache[wmts][tiles_key]) == n_tiles
+
+    plt.clf()
+    del wmts, gettile_counter
+    gc.collect()
+    assert len(WMTSArtist._shared_image_cache) == 0
 
 
 if __name__ == '__main__':

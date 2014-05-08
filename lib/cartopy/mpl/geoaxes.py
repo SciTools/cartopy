@@ -43,6 +43,7 @@ import cartopy.img_transform
 from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
+import cartopy.mpl.ogc_artist as ogc_artist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
@@ -1457,6 +1458,29 @@ class GeoAxes(matplotlib.axes.Axes):
                                     category=UserWarning)
             sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
         return sp
+
+    def add_wmts(self, wmts, layer_name, matrix_set_name=None):
+        """
+        Add the specified WMTS layer to the axes.
+
+        This function requires owslib and PIL to work.
+
+        Args:
+
+            * wmts - The URL of the WMTS, or an
+                     owslib.wmts.WebMapTileService instance.
+            * layer_name - The name of the layer to use.
+
+        Kwargs:
+
+            * matrix_set_name - Optional matrix set name. Defaults to
+                                a matrix set which matches the current
+                                projection parameters.
+
+        """
+        # Instantiate an artist to draw the WMTS and add it to the axes.
+        artist = ogc_artist.WMTSArtist(wmts, layer_name, matrix_set_name)
+        return self.add_artist(artist)
 
 
 def _trigger_patch_reclip(event):
