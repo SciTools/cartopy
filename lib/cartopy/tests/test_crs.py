@@ -23,6 +23,10 @@ import unittest
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 from nose.tools import assert_equal
+try:
+    import pyepsg
+except ImportError:
+    pyepsg = None
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
@@ -54,8 +58,7 @@ class TestCRS(unittest.TestCase):
                              np.array([lon, lat]),
                              3)
 
-    def test_osgb(self):
-        osgb = ccrs.OSGB()
+    def _check_osgb(self, osgb):
         ll = ccrs.Geodetic()
 
         # results obtained by streetmap.co.uk.
@@ -77,6 +80,20 @@ class TestCRS(unittest.TestCase):
         r_east, r_north = osgb.transform_point(lon, lat, ll)
         r_inverted = np.array(ll.transform_point(r_east, r_north, osgb))
         assert_arr_almost_eq(r_inverted, [lon, lat])
+
+    def test_osgb(self):
+        self._check_osgb(ccrs.OSGB())
+
+    @unittest.skipIf(pyepsg is None, 'requires pyepsg')
+    def test_epsg(self):
+        uk = ccrs.epsg(27700)
+        self.assertEqual(uk.epsg_code, 27700)
+        self.assertEqual(uk.x_limits, (-83948.465999040171,
+                                       675634.89881823619))
+        self.assertEqual(uk.y_limits, (-2994.0109472532495,
+                                       1241785.8617898584))
+        self.assertEqual(uk.threshold, 7595.8336481727638)
+        self._check_osgb(uk)
 
     def test_europp(self):
         europp = ccrs.EuroPP()
