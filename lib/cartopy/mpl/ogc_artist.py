@@ -83,24 +83,27 @@ class WMTSArtist(matplotlib.artist.Artist):
         """
         super(WMTSArtist, self).__init__()
 
-        if not (hasattr(wmts, 'tilematrixsets') and
-                hasattr(wmts, 'contents') and
-                hasattr(wmts, 'gettile')):
-            try:
-                import owslib.wmts
-            except ImportError:
-                raise ImportError('OWSLib is required for showing WMTS layers')
-            wmts = owslib.wmts.WebMapTileService(wmts)
+        try:
+            import owslib.util
+            import owslib.wmts
+        except ImportError:
+            raise ImportError('OWSLib is required for showing WMTS layers')
 
         try:
             import PIL.Image
         except ImportError:
             raise ImportError('PIL is required for showing WMTS layers')
 
+        if not (hasattr(wmts, 'tilematrixsets') and
+                hasattr(wmts, 'contents') and
+                hasattr(wmts, 'gettile')):
+            wmts = owslib.wmts.WebMapTileService(wmts)
+
         self._wmts = wmts
         self._layer_name = layer_name
         self._matrix_set_name = matrix_set_name
         self._pil_image = PIL.Image
+        self._ServiceException = owslib.util.ServiceException
 
     def set_axes(self, axes):
         """
@@ -230,26 +233,33 @@ class WMTSArtist(matplotlib.artist.Artist):
                 img_key = (row, col)
                 img = image_cache.get(img_key)
                 if img is None:
-                    tile = wmts.gettile(layer=layer_name,
-                                        tilematrixset=self._matrix_set_name,
-                                        tilematrix=tile_matrix_id,
-                                        row=row, column=col)
+                    try:
+                        tile = wmts.gettile(
+                            layer=layer_name,
+                            tilematrixset=self._matrix_set_name,
+                            tilematrix=tile_matrix_id,
+                            row=row, column=col)
+                    except self._ServiceException as e:
+                        if 'TileOutOfRange' in e.message:
+                            continue
+                        raise e
                     img = self._pil_image.open(io.BytesIO(tile.read()))
                     image_cache[img_key] = img
                 if big_img is None:
                     size = (img.size[0] * n_cols, img.size[1] * n_rows)
-                    big_img = self._pil_image.new('RGB', size, None)
+                    big_img = self._pil_image.new('RGBA', size, None)
                 top = (row - min_row) * tile_matrix.tileheight
                 left = (col - min_col) * tile_matrix.tilewidth
                 big_img.paste(img, (left, top))
 
         # Draw the combined image.
-        ax = self.get_axes()
-        min_img_x = matrix_min_x + tile_span_x * min_col
-        max_img_y = matrix_max_y - tile_span_y * min_row
-        img_extent = (min_img_x, min_img_x + n_cols * tile_span_x,
-                      max_img_y - n_rows * tile_span_y, max_img_y)
-        img_artist = AxesImage(ax, extent=img_extent, origin='upper')
-        img_artist.set_data(big_img)
-        img_artist.set_clip_path(ax.outline_patch)
-        img_artist.draw(renderer)
+        if big_img is not None:
+            ax = self.get_axes()
+            min_img_x = matrix_min_x + tile_span_x * min_col
+            max_img_y = matrix_max_y - tile_span_y * min_row
+            img_extent = (min_img_x, min_img_x + n_cols * tile_span_x,
+                          max_img_y - n_rows * tile_span_y, max_img_y)
+            img_artist = AxesImage(ax, extent=img_extent, origin='upper')
+            img_artist.set_data(big_img)
+            img_artist.set_clip_path(ax.outline_patch)
+            img_artist.draw(renderer)
