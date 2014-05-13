@@ -27,6 +27,7 @@ from matplotlib.image import AxesImage
 import matplotlib.artist
 
 import cartopy.crs as ccrs
+import cartopy.io.img_tiles
 
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
@@ -35,10 +36,13 @@ METERS_PER_PIXEL = 0.28e-3
 _WGS84_METERS_PER_UNIT = 2 * math.pi * 6378137 / 360
 
 METERS_PER_UNIT = {
+    'urn:ogc:def:crs:EPSG::900913': 1,
     'urn:ogc:def:crs:OGC:1.3:CRS84': _WGS84_METERS_PER_UNIT,
 }
 
+_GOOGLE_CRS = cartopy.io.img_tiles.GoogleTiles().crs
 _URN_TO_CRS = {
+    'urn:ogc:def:crs:EPSG::900913': _GOOGLE_CRS,
     'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
 }
 
