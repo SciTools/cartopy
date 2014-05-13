@@ -64,12 +64,7 @@ class GoogleTiles(object):
             raise ValueError(msg % self.style)
 
         self.imgs = []
-        self.crs = ccrs.Mercator(min_latitude=-85.0511287798066,
-                                 max_latitude=85.0511287798066,
-                                 globe=ccrs.Globe(ellipse=None,
-                                                  semimajor_axis=6378137,
-                                                  semiminor_axis=6378137,
-                                                  nadgrids='@null'))
+        self.crs = ccrs.GOOGLE_MERCATOR
         self.desired_tile_form = desired_tile_form
 
     def image_for_domain(self, target_domain, target_z):

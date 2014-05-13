@@ -875,6 +875,14 @@ class Mercator(Projection):
         return self._ylimits
 
 
+GOOGLE_MERCATOR = Mercator(min_latitude=-85.0511287798066,
+                           max_latitude=85.0511287798066,
+                           globe=Globe(ellipse=None,
+                                       semimajor_axis=6378137,
+                                       semiminor_axis=6378137,
+                                       nadgrids='@null'))
+
+
 class LambertCylindrical(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = [('proj', 'cea'), ('lon_0', central_longitude)]
