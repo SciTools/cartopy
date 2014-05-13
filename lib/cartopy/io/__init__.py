@@ -313,3 +313,56 @@ class Downloader(object):
                              'dictionary for {}'.format(specification))
 
         return result_downloader
+
+
+class RasterFetcher(object):
+    """
+    Defines the cartopy raster fetching interface.
+
+    A :class:`RasterFetcher` instance is able to fetch an image and associated
+    extent (in the form ``img_array, (min_x, max_x, min_y, max_y)``) through
+    its :meth:`~RasterFetcher.fetch_raster` method.
+
+    As a result, further interfacing classes, such as
+    :class:`cartopy.mpl.slippery_image_artist.SlipperyImageArtist`, can then
+    make use of the interface for functionality such as interactive image
+    retrieval with pan and zoom functionality.
+
+    """
+    def __init__(self):
+        self._projection = None
+
+    def update_projection(self, projection):
+        """
+        Define this RasterFetcher's projection.
+
+        This is the point at which assertions of ability to request data
+        in this projection should be made.
+
+        """
+        self._projection = projection
+
+    def fetch_raster(self, extent, target_resolution):
+        """
+        Return the image and its extent given some constraining information. 
+
+        Parameters
+        ----------
+        extent : iterable of length 4
+            The extent of the requested image in projected coordinates. The
+            resulting image may not be defined exactly by these extents, and
+            so the extent of the resulting image is also returned. The extents
+            must be defined in the form ``(min_x, max_x, min_y, max_y)``.
+        target_resolution : iterable of length 2
+            The desired resolution of the image. 
+
+        Returns
+        -------
+        img : array like object (e.g. PIL.Image.Image)
+            The representative image.
+        extent : iterable of length 4
+            The extent of the returned array in the form
+            ``(min_x, max_x, min_y, max_y)``.
+
+        """
+        pass

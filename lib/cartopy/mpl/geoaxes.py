@@ -23,7 +23,6 @@ plot results from source coordinates to the GeoAxes' target projection.
 """
 import collections
 import contextlib
-import cStringIO
 import warnings
 import weakref
 
@@ -45,6 +44,7 @@ from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 import cartopy.mpl.ogc_artist as ogc_artist
+from cartopy.mpl.slippery_image_artist import SlipperyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
@@ -702,48 +702,27 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
-    def add_wms(self, service, layer):
+    def add_raster(self, raster_fetcher, **slippy_image_kwargs):
         """
-        Add imagery from an OGC Web Mab Service (WMS) to the map.
-
-        Args:
-
-            * service - An OWSLib WebMapService instance
-            * layer - The desired layer (must be available from service)
+        Add the given raster source to the GeoAxes.
+        
+        Parameters
+        ----------
+        raster_getter : :class:`cartopy.io.RasterFetcher` like instance
+            ``raster_fetcher`` may be any object which implements the
+            RasterFetcher interface, including instances of objects such as
+            :class:`~cartopy.io.ogc_clients.WMSFetcher`. Note that image
+            retrievals are done at draw time, not at creation time.
 
         """
-        try:
-            from owslib.wms import WebMapService
-        except ImportError:
-            raise ImportError('OWSLib module is required for add_wms method')
+        artist = SlipperyImageArtist(self, raster_fetcher,
+                                     **slippy_image_kwargs)
+        # Add the artist to Axes.images, rather than the generic
+        # Axes.artists (i.e via add_artist).
+        artist.set_axes(self)
+        self.images.append(artist)
 
-        try:
-            from PIL import Image
-        except ImportError:
-            raise ImportError('PIL module is required for add_wms method')
-
-        if not isinstance(service, WebMapService):
-            raise ValueError("'service' is not a recognised"
-                             " OWSLlib WebMapService instance")
-
-        min_x, max_x, min_y, max_y = self.get_extent()
-
-        # TODO: use gdal to lookup axes EPSG code and pass to the wms request
-        wms_image = service.getmap(layers=[layer],
-                                   styles=[''],
-                                   srs='EPSG:4326',
-                                   bbox=(min_x, min_y, max_x, max_y),
-                                   size=(256, 256),
-                                   format='image/png',
-                                   transparent=True
-                                   )
-
-        wms_image = Image.open(cStringIO.StringIO(wms_image.read()))
-        source_proj = self.projection
-
-        return self.imshow(wms_image, origin='upper',
-                           transform=source_proj,
-                           extent=[min_x, max_x, min_y, max_y])
+        return artist
 
     def _regrid_shape_aspect(self, regrid_shape, target_extent):
         """
@@ -1525,6 +1504,24 @@ class GeoAxes(matplotlib.axes.Axes):
         # Instantiate an artist to draw the WMTS and add it to the axes.
         artist = ogc_artist.WMTSArtist(wmts, layer_name, matrix_set_name)
         return self.add_artist(artist)
+    
+    def add_wms(self, wms, layer, **kwargs):
+        """
+        Add the specified WMS layer to the axes.
+        
+        Parameters
+        ----------
+        wms : string or :class:`owslib.wms.WebMapService` instance
+            The web map service URL or owslib WMS instance to use.
+        layer : string or iterable of string
+            The name of the layer(s) to use.
+        
+        All other keywords are passed through to the construction of the
+        image artist.
+
+        """
+        from cartopy.io.ogc_clients import WMSFetcher
+        self.add_raster(WMSFetcher(wms, layer), **kwargs)
 
 
 def _trigger_patch_reclip(event):

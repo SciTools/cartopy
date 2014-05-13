@@ -206,6 +206,8 @@ def test_wmts_tile_caching():
     gc.collect()
     assert len(WMTSArtist._shared_image_cache) == 0
 
+    plt.close()
+
 
 if __name__ == '__main__':
     import nose
