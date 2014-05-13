@@ -231,6 +231,7 @@ class WMTSArtist(matplotlib.artist.Artist):
                 img = image_cache.get(img_key)
                 if img is None:
                     tile = wmts.gettile(layer=layer_name,
+                                        tilematrixset=self._matrix_set_name,
                                         tilematrix=tile_matrix_id,
                                         row=row, column=col)
                     img = self._pil_image.open(io.BytesIO(tile.read()))
