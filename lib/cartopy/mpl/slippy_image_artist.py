@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 """
-Defines the SlipperyImageArtist class, which interfaces with
+Defines the SlippyImageArtist class, which interfaces with
 :class:`cartopy.io.RasterFetcher` instances at draw time, for interactive
 dragging and zooming of raster data.
 
@@ -24,7 +24,7 @@ from matplotlib.image import AxesImage
 import matplotlib.artist
 
 
-class SlipperyImageArtist(AxesImage):
+class SlippyImageArtist(AxesImage):
 
     """
     A subclass of :class:`~matplotlib.image.AxesImage` which provides an
@@ -36,12 +36,13 @@ class SlipperyImageArtist(AxesImage):
     """
     def __init__(self, ax, raster_getter, **kwargs):
         self._raster_getter = raster_getter
-        super(SlipperyImageArtist, self).__init__(ax, **kwargs)
+        if raster_getter.projection != ax.projection:
+            raise ValueError('The {!r} raster is in a different projection '
+                             'to the axes and cannot be drawn with the '
+                             'SlippyImageArtist.'.format(raster_getter))
 
-    def set_axes(self, axes):
-        self._raster_getter.update_projection(axes.projection)
-        # img_artist.set_clip_path(ax.outline_patch) ?????
-        super(SlipperyImageArtist, self).set_axes(axes)
+        super(SlippyImageArtist, self).__init__(ax, **kwargs)
+        self.set_clip_path(ax.outline_patch)
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
@@ -57,4 +58,4 @@ class SlipperyImageArtist(AxesImage):
         self.set_array(img)
         self.set_extent(extent)
 
-        super(SlipperyImageArtist, self).draw(renderer, *args, **kwargs)
+        super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)

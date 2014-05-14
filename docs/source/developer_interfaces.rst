@@ -47,27 +47,27 @@ Raster fetcher
 The abstraction between retrieval and visualisation of raster data means
 that the :class:`cartopy.io.RasterFetcher` class exists to retrieve an image
 (given sufficient context of projection, extent, resolution etc.) while in the
-matplotlib interface the :class:`cartopy.mpl.slippery_image_artist.SlipperyImageArtist`
+matplotlib interface the :class:`cartopy.mpl.slippy_image_artist.SlippyImageArtist`
 class feeds the appropriate information to the :class:`~cartopy.io.RasterFetcher`
 and visualises it on a map. The orchestration in matplotlib is made more convenient
 to the user of a :class:`~cartopy.mpl.geoaxes.GeoAxes` through the
 :class:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method. Anything which exposes
-``update_projection`` and ``fetch_raster`` methods in the form described
-in :class:`~cartopy.io.RasterFetcher` can be used as a slippery maps source in this way.
+the ``fetch_raster`` method in the form described
+in :class:`~cartopy.io.RasterFetcher` can be used as a slippy maps source in this way.
 
 .. currentmodule:: cartopy.io
 
 .. autoclass:: cartopy.io.RasterFetcher
     :members:
 
-.. currentmodule:: cartopy.mpl.slippery_image_artist
+.. currentmodule:: cartopy.mpl.slippy_image_artist
 
-The :class:`SlipperyImageArtist` class
+The :class:`SlippyImageArtist` class
 provides panning and zooming of image sources which are able to
 re-retrieve data (such as that from a web service) for efficient and
-interactive visualisation. Generally the SlipperyImageArtist is a developer's
+interactive visualisation. Generally the SlippyImageArtist is a developer's
 interface, with users often creating a
-:class:`SlipperyImageArtist` instance through
+:class:`SlippyImageArtist` instance through
 the GeoAxes' :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method.
 
-.. autoclass:: SlipperyImageArtist
+.. autoclass:: SlippyImageArtist

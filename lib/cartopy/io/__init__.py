@@ -324,27 +324,14 @@ class RasterFetcher(object):
     its :meth:`~RasterFetcher.fetch_raster` method.
 
     As a result, further interfacing classes, such as
-    :class:`cartopy.mpl.slippery_image_artist.SlipperyImageArtist`, can then
+    :class:`cartopy.mpl.slippy_image_artist.SlippyImageArtist`, can then
     make use of the interface for functionality such as interactive image
     retrieval with pan and zoom functionality.
 
     """
-    def __init__(self):
-        self._projection = None
-
-    def update_projection(self, projection):
-        """
-        Define this RasterFetcher's projection.
-
-        This is the point at which assertions of ability to request data
-        in this projection should be made.
-
-        """
-        self._projection = projection
-
     def fetch_raster(self, extent, target_resolution):
         """
-        Return the image and its extent given some constraining information. 
+        Return the image and its extent given some constraining information.
 
         Parameters
         ----------
@@ -354,7 +341,7 @@ class RasterFetcher(object):
             so the extent of the resulting image is also returned. The extents
             must be defined in the form ``(min_x, max_x, min_y, max_y)``.
         target_resolution : iterable of length 2
-            The desired resolution of the image. 
+            The desired resolution of the image.
 
         Returns
         -------

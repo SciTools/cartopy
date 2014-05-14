@@ -44,7 +44,7 @@ from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 import cartopy.mpl.ogc_artist as ogc_artist
-from cartopy.mpl.slippery_image_artist import SlipperyImageArtist
+from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
@@ -270,8 +270,22 @@ class GeoAxes(matplotlib.axes.Axes):
         :class:`cartopy.io.image_tiles.GoogleTiles`.
 
         """
-        # XXX TODO: Needs working on
-        self.img_factories.append([factory, args, kwargs])
+        if hasattr(factory, 'image_for_domain'):
+            # XXX TODO: Needs deprecating.
+            self.img_factories.append([factory, args, kwargs])
+        else:
+            # Args and kwargs not allowed.
+            assert not bool(args) and not bool(kwargs)
+            image = factory
+            try:
+                super(GeoAxes, self).add_image(image)
+            except AttributeError:
+                # If add_image method doesn't exist (only available from
+                # v1.4 onwards) we implement it ourselves.
+                self._set_artist_props(image)
+                self.images.append(image)
+                image._remove_method = lambda h: self.images.remove(h)
+            return image
 
     @contextlib.contextmanager
     def hold_limits(self, hold=True):
@@ -705,24 +719,20 @@ class GeoAxes(matplotlib.axes.Axes):
     def add_raster(self, raster_fetcher, **slippy_image_kwargs):
         """
         Add the given raster source to the GeoAxes.
-        
+
         Parameters
         ----------
-        raster_getter : :class:`cartopy.io.RasterFetcher` like instance
+        raster_fetcher : :class:`cartopy.io.RasterFetcher` like instance
             ``raster_fetcher`` may be any object which implements the
             RasterFetcher interface, including instances of objects such as
             :class:`~cartopy.io.ogc_clients.WMSFetcher`. Note that image
             retrievals are done at draw time, not at creation time.
 
         """
-        artist = SlipperyImageArtist(self, raster_fetcher,
-                                     **slippy_image_kwargs)
-        # Add the artist to Axes.images, rather than the generic
-        # Axes.artists (i.e via add_artist).
-        artist.set_axes(self)
-        self.images.append(artist)
-
-        return artist
+        img = SlippyImageArtist(self, raster_fetcher,
+                                **slippy_image_kwargs)
+        self.add_image(img)
+        return img
 
     def _regrid_shape_aspect(self, regrid_shape, target_extent):
         """
@@ -1504,24 +1514,30 @@ class GeoAxes(matplotlib.axes.Axes):
         # Instantiate an artist to draw the WMTS and add it to the axes.
         artist = ogc_artist.WMTSArtist(wmts, layer_name, matrix_set_name)
         return self.add_artist(artist)
-    
-    def add_wms(self, wms, layer, **kwargs):
+
+    def add_wms(self, wms, layer, wms_kwargs=None, **kwargs):
         """
         Add the specified WMS layer to the axes.
-        
+
         Parameters
         ----------
         wms : string or :class:`owslib.wms.WebMapService` instance
             The web map service URL or owslib WMS instance to use.
         layer : string or iterable of string
             The name of the layer(s) to use.
-        
+        wms_kwargs : dict or None
+            Passed through to the :class:`~cartopy.io.ogc_clients.WMSFetcher`
+            constructor's ``getmap_extra_kwargs`` for defining getmap time
+            keyword arguments.
+
         All other keywords are passed through to the construction of the
         image artist.
 
         """
         from cartopy.io.ogc_clients import WMSFetcher
-        self.add_raster(WMSFetcher(wms, layer), **kwargs)
+        wms = WMSFetcher(wms, layer, self.projection,
+                         getmap_extra_kwargs=wms_kwargs)
+        self.add_raster(wms, **kwargs)
 
 
 def _trigger_patch_reclip(event):

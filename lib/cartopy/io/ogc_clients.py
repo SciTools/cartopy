@@ -54,7 +54,7 @@ class WMSFetcher(RasterFetcher):
         map retrievals.
 
     """
-    def __init__(self, service, layers, getmap_extra_kwargs=None):
+    def __init__(self, service, layers, projection, getmap_extra_kwargs=None):
         """
         Parameters
         ----------
@@ -63,6 +63,8 @@ class WMSFetcher(RasterFetcher):
             to retrieve the image.
         layers : string or list of strings
             The name(s) of layers to use from the WMS service.
+        projection : :class:`cartopy.crs.Projection` instance
+            The projection of the resulting images.
         getmap_extra_kwargs : dict or None
             Extra keywords to pass through to the service's getmap method.
             If None, a dictionary with ``{'transparent': True}`` will
@@ -78,13 +80,12 @@ class WMSFetcher(RasterFetcher):
         if getmap_extra_kwargs is None:
             getmap_extra_kwargs = {'transparent': True}
 
+        if len(layers) == 0:
+            raise ValueError('One or more layers must be defined.')
         for layer in layers:
             if layer not in service.contents:
                 raise ValueError('The {} layer does not exist in '
                                  'this service.'.format(layer))
-        else:
-            if len(layers) == 0:
-                raise ValueError('More than one layer must be defined.')
 
         #: The OWSLib WebMapService instance.
         self.service = service
@@ -94,11 +95,6 @@ class WMSFetcher(RasterFetcher):
 
         #: Extra kwargs passed through to the service's getmap request.
         self.getmap_extra_kwargs = getmap_extra_kwargs
-        
-        super(WMSFetcher, self).__init__()
-
-    def update_projection(self, projection):
-        self._srs = self._projection = None
 
         srs = _CRS_TO_OGC_SRC.get(projection)
         if srs is None:
@@ -111,12 +107,9 @@ class WMSFetcher(RasterFetcher):
                                  '{!r} WMS layer.'.format(srs, layer))
 
         self._srs = srs
-        super(WMSFetcher, self).update_projection(projection)
+        self.projection = projection
 
     def fetch_raster(self, extent, target_resolution):
-        if self._projection is None:
-            raise ValueError('Unable to fetch a raster for an unknown '
-                             'projection.')
         service = self.service
         min_x, max_x, min_y, max_y = extent
 
