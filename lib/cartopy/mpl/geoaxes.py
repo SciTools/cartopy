@@ -23,6 +23,7 @@ plot results from source coordinates to the GeoAxes' target projection.
 """
 import collections
 import contextlib
+import cStringIO
 import warnings
 import weakref
 
@@ -700,6 +701,49 @@ class GeoAxes(matplotlib.axes.Axes):
                                extent=[-180, 180, -90, 90])
         else:
             raise ValueError('Unknown stock image %r.' % name)
+
+    def add_wms(self, service, layer):
+        """
+        Add imagery from an OGC Web Mab Service (WMS) to the map.
+
+        Args:
+
+            * service - An OWSLib WebMapService instance
+            * layer - The desired layer (must be available from service)
+
+        """
+        try:
+            from owslib.wms import WebMapService
+        except ImportError:
+            raise ImportError('OWSLib module is required for add_wms method')
+
+        try:
+            from PIL import Image
+        except ImportError:
+            raise ImportError('PIL module is required for add_wms method')
+
+        if not isinstance(service, WebMapService):
+            raise ValueError("'service' is not a recognised"
+                             " OWSLlib WebMapService instance")
+
+        min_x, max_x, min_y, max_y = self.get_extent()
+
+        # TODO: use gdal to lookup axes EPSG code and pass to the wms request
+        wms_image = service.getmap(layers=[layer],
+                                   styles=[''],
+                                   srs='EPSG:4326',
+                                   bbox=(min_x, min_y, max_x, max_y),
+                                   size=(256, 256),
+                                   format='image/png',
+                                   transparent=True
+                                   )
+
+        wms_image = Image.open(cStringIO.StringIO(wms_image.read()))
+        source_proj = self.projection
+
+        return self.imshow(wms_image, origin='upper',
+                           transform=source_proj,
+                           extent=[min_x, max_x, min_y, max_y])
 
     def _regrid_shape_aspect(self, regrid_shape, target_extent):
         """
