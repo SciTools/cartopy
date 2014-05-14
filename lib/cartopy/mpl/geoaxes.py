@@ -476,7 +476,7 @@ class GeoAxes(matplotlib.axes.Axes):
         system.
 
         If no crs is given, the returned extents' coordinate system will be
-        assumed to be the Geodetic version of this axes' projection.
+        the CRS of this Axes.
 
         """
         p = self._get_extent_geom(crs)
