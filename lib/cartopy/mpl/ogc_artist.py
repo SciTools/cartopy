@@ -247,7 +247,7 @@ class WMTSArtist(matplotlib.artist.Artist):
                     image_cache[img_key] = img
                 if big_img is None:
                     size = (img.size[0] * n_cols, img.size[1] * n_rows)
-                    big_img = self._pil_image.new('RGBA', size, None)
+                    big_img = self._pil_image.new('RGBA', size, (0, 0, 0, 0))
                 top = (row - min_row) * tile_matrix.tileheight
                 left = (col - min_col) * tile_matrix.tilewidth
                 big_img.paste(img, (left, top))
