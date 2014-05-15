@@ -23,61 +23,63 @@ import cartopy.crs as ccrs
 import numpy as np
 
 
-class test_WMSFetcher(unittest.TestCase):
+class test_WMSRasterSource(unittest.TestCase):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
     layer = 'basic'
     layers = ['basic', 'ocean']
     projection = ccrs.PlateCarree()
-    WMSFetcher_instance = ogc.WMSFetcher(URI, layer, projection)
 
     def test_string_service(self):
-        fetcher = ogc.WMSFetcher(self.URI, self.layer, self.projection)
+        fetcher = ogc.WMSRasterSource(self.URI, self.layer, self.projection)
         self.assertIsInstance(fetcher.service, WebMapService)
         self.assertIsInstance(fetcher.layers, list)
         self.assertEqual(fetcher.layers, [self.layer])
 
     def test_wms_service_instance(self):
         service = WebMapService(self.URI)
-        fetcher = ogc.WMSFetcher(service, self.layer, self.projection)
+        fetcher = ogc.WMSRasterSource(service, self.layer)
         self.assertIs(fetcher.service, service)
 
     def test_multiple_layers(self):
-        fetcher = ogc.WMSFetcher(self.URI, self.layers, self.projection)
+        fetcher = ogc.WMSRasterSource(self.URI, self.layers)
         self.assertEqual(fetcher.layers, self.layers)
 
     def test_no_layers(self):
         msg = 'One or more layers must be defined.'
         with self.assertRaisesRegexp(ValueError, msg):
-            ogc.WMSFetcher(self.URI, [], self.projection)
+            ogc.WMSRasterSource(self.URI, [])
 
     def test_extra_kwargs_empty(self):
-        fetcher = ogc.WMSFetcher(self.URI, self.layer, self.projection,
-                                 getmap_extra_kwargs={})
+        fetcher = ogc.WMSRasterSource(self.URI, self.layer,
+                                      getmap_extra_kwargs={})
         self.assertEqual(fetcher.getmap_extra_kwargs, {})
 
     def test_extra_kwargs_None(self):
-        fetcher = ogc.WMSFetcher(self.URI, self.layer, self.projection,
-                                 getmap_extra_kwargs=None)
+        fetcher = ogc.WMSRasterSource(self.URI, self.layer,
+                                      getmap_extra_kwargs=None)
         self.assertEqual(fetcher.getmap_extra_kwargs, {'transparent': True})
 
     def test_extra_kwargs_non_empty(self):
         kwargs = {'another': 'kwarg'}
-        fetcher = ogc.WMSFetcher(self.URI, self.layer, self.projection,
-                                 getmap_extra_kwargs=kwargs)
+        fetcher = ogc.WMSRasterSource(self.URI, self.layer,
+                                      getmap_extra_kwargs=kwargs)
         self.assertEqual(fetcher.getmap_extra_kwargs, kwargs)
 
-    def test_projection_attribute(self):
-        self.assertIs(self.WMSFetcher_instance.projection, self.projection)
+    def test_supported_projection(self):
+        source = ogc.WMSRasterSource(self.URI, self.layer)
+        source.validate_projection(self.projection)
 
     def test_unsupported_projection(self):
+        source = ogc.WMSRasterSource(self.URI, self.layer)
         msg = 'was not convertible to a suitable WMS SRS.'
         with self.assertRaisesRegexp(ValueError, msg):
-            ogc.WMSFetcher(self.URI, self.layer, ccrs.Miller())
+            source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
-        wms = self.WMSFetcher_instance
+        source = ogc.WMSRasterSource(self.URI, self.layer)
         extent = [-10, 10, 40, 60]
-        img, extent_out = wms.fetch_raster(extent, (30, 30))
+        img, extent_out = source.fetch_raster(self.projection, extent,
+                                              (30, 30))
         img = np.array(img)
         self.assertEqual(img.shape, (30, 30, 4))
         # No transparency in this image.

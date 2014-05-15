@@ -140,7 +140,7 @@ class WMSRasterSource(RasterSource):
         service = self.service
         min_x, max_x, min_y, max_y = extent
         wms_image = service.getmap(layers=self.layers,
-                                   srs=self._srs_from_projection(projection),
+                                   srs=self._srs(projection),
                                    bbox=(min_x, min_y, max_x, max_y),
                                    size=target_resolution, format='image/png',
                                    **self.getmap_extra_kwargs)

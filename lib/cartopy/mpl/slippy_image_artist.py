@@ -16,7 +16,7 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 """
 Defines the SlippyImageArtist class, which interfaces with
-:class:`cartopy.io.RasterFetcher` instances at draw time, for interactive
+:class:`cartopy.io.RasterSource` instances at draw time, for interactive
 dragging and zooming of raster data.
 
 """
