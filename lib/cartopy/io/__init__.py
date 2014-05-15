@@ -340,7 +340,7 @@ class RasterSource(object):
             The desired projection of the image.
 
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def fetch_raster(self, projection, extent, target_resolution):
         """
@@ -370,4 +370,4 @@ class RasterSource(object):
         .. note:: Return (None, None) to indicate an invisible result.
 
         """
-        raise NotImplementedError
+        raise NotImplementedError()
