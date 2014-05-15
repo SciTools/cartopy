@@ -70,7 +70,7 @@ class test_WMSFetcher(unittest.TestCase):
         self.assertIs(self.WMSFetcher_instance.projection, self.projection)
 
     def test_unsupported_projection(self):
-        msg = 'was not convertible to a suitable WMS SRC.'
+        msg = 'was not convertible to a suitable WMS SRS.'
         with self.assertRaisesRegexp(ValueError, msg):
             ogc.WMSFetcher(self.URI, self.layer, ccrs.Miller())
 

@@ -31,7 +31,7 @@ import cartopy.crs as ccrs
 
 
 # Hardcode some known EPSG codes for now.
-_CRS_TO_OGC_SRC = {ccrs.PlateCarree(): 'EPSG:4326'
+_CRS_TO_OGC_SRS = {ccrs.PlateCarree(): 'EPSG:4326'
                    }
 
 
@@ -96,10 +96,10 @@ class WMSFetcher(RasterFetcher):
         #: Extra kwargs passed through to the service's getmap request.
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
-        srs = _CRS_TO_OGC_SRC.get(projection)
+        srs = _CRS_TO_OGC_SRS.get(projection)
         if srs is None:
             raise ValueError('The projection {!r} was not convertible to a '
-                             'suitable WMS SRC.'.format(projection))
+                             'suitable WMS SRS.'.format(projection))
 
         for layer in self.layers:
             if srs not in self.service.contents[layer].crsOptions:
