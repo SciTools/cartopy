@@ -19,7 +19,7 @@ Implements RasterSource classes which can retrieve imagery from web services
 such as WMS and WMTS.
 
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import io
 import math
@@ -211,7 +211,7 @@ class WMTSRasterSource(RasterSource):
                     wmts.tilematrixsets[name].crs for name in
                     layer.tilematrixsets))
                 msg = 'Unable to find tile matrix for projection.'
-                msg += '\n    Projection: ' + str(axes.projection)
+                msg += '\n    Projection: ' + str(projection)
                 msg += '\n    Available tile CRS URNs:'
                 msg += '\n        ' + '\n        '.join(available_urns)
                 raise ValueError(msg)

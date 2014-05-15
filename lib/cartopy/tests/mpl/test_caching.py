@@ -25,7 +25,7 @@ import shapely.geometry
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist
-from cartopy.mpl.ogc_artist import WMTSArtist
+from cartopy.io.ogc_clients import WMTSRasterSource
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
@@ -175,20 +175,21 @@ def test_contourf_transform_path_counting():
 
 
 def test_wmts_tile_caching():
-    ax = plt.axes(projection=ccrs.PlateCarree())
-
-    WMTSArtist._shared_image_cache.clear()
-    assert len(WMTSArtist._shared_image_cache) == 0
+    WMTSRasterSource._shared_image_cache.clear()
+    assert len(WMTSRasterSource._shared_image_cache) == 0
 
     url = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     wmts = WebMapTileService(url)
     layer_name = 'MODIS_Terra_CorrectedReflectance_TrueColor'
 
-    gettile_counter = CallCounter(wmts, 'gettile')
-    with gettile_counter:
-        ax.add_wmts(wmts, layer_name)
-        plt.draw()
+    source = WMTSRasterSource(wmts, layer_name)
 
+    gettile_counter = CallCounter(wmts, 'gettile')
+    crs = ccrs.PlateCarree()
+    extent = (-180, 180, -90, 90)
+    resolution = (20, 10)
+    with gettile_counter:
+        source.fetch_raster(crs, extent, resolution)
     n_tiles = 2
     assert gettile_counter.count == n_tiles, ('Too many tile requests - '
                                               'expected {}, got {}.'.format(
@@ -196,17 +197,30 @@ def test_wmts_tile_caching():
                                                   gettile_counter.count)
                                               )
     gc.collect()
-    assert len(WMTSArtist._shared_image_cache) == 1
-    assert len(WMTSArtist._shared_image_cache[wmts]) == 1
+    assert len(WMTSRasterSource._shared_image_cache) == 1
+    assert len(WMTSRasterSource._shared_image_cache[wmts]) == 1
     tiles_key = (layer_name, '0')
-    assert len(WMTSArtist._shared_image_cache[wmts][tiles_key]) == n_tiles
+    assert len(WMTSRasterSource._shared_image_cache[wmts][tiles_key]) == n_tiles
 
-    plt.clf()
-    del wmts, gettile_counter
+    # Second time around we shouldn't request any more tiles so the
+    # call count will stay the same.
+    with gettile_counter:
+        source.fetch_raster(crs, extent, resolution)
+    assert gettile_counter.count == n_tiles, ('Too many tile requests - '
+                                              'expected {}, got {}.'.format(
+                                                  n_tiles,
+                                                  gettile_counter.count)
+                                              )
     gc.collect()
-    assert len(WMTSArtist._shared_image_cache) == 0
+    assert len(WMTSRasterSource._shared_image_cache) == 1
+    assert len(WMTSRasterSource._shared_image_cache[wmts]) == 1
+    tiles_key = (layer_name, '0')
+    assert len(WMTSRasterSource._shared_image_cache[wmts][tiles_key]) == n_tiles
 
-    plt.close()
+    # Once there are no live references the weak-ref cache should clear.
+    del source, wmts, gettile_counter
+    gc.collect()
+    assert len(WMTSRasterSource._shared_image_cache) == 0
 
 
 if __name__ == '__main__':
