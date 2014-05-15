@@ -34,13 +34,8 @@ class SlippyImageArtist(AxesImage):
     Kwargs are passed to the AxesImage constructor.
 
     """
-    def __init__(self, ax, raster_getter, **kwargs):
-        self._raster_getter = raster_getter
-        if raster_getter.projection != ax.projection:
-            raise ValueError('The {!r} raster is in a different projection '
-                             'to the axes and cannot be drawn with the '
-                             'SlippyImageArtist.'.format(raster_getter))
-
+    def __init__(self, ax, raster_source, **kwargs):
+        self.raster_source = raster_source
         super(SlippyImageArtist, self).__init__(ax, **kwargs)
         self.set_clip_path(ax.outline_patch)
 
@@ -52,10 +47,13 @@ class SlippyImageArtist(AxesImage):
         ax = self.get_axes()
         window_extent = ax.get_window_extent()
         [x1, y1], [x2, y2] = ax.viewLim.get_points()
-        img, extent = self._raster_getter.fetch_raster(
-            extent=[x1, x2, y1, y2],
+        img, extent = self.raster_source.fetch_raster(
+            ax.projection, extent=[x1, x2, y1, y2],
             target_resolution=(window_extent.width, window_extent.height))
+        if img is None or extent is None:
+            return
         self.set_array(img)
-        self.set_extent(extent)
+        with ax.hold_limits():
+            self.set_extent(extent)
 
         super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)

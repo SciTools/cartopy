@@ -315,13 +315,13 @@ class Downloader(object):
         return result_downloader
 
 
-class RasterFetcher(object):
+class RasterSource(object):
     """
     Defines the cartopy raster fetching interface.
 
-    A :class:`RasterFetcher` instance is able to fetch an image and associated
+    A :class:`RasterSource` instance is able to supply an image and associated
     extent (in the form ``img_array, (min_x, max_x, min_y, max_y)``) through
-    its :meth:`~RasterFetcher.fetch_raster` method.
+    its :meth:`~RasterSource.fetch_raster` method.
 
     As a result, further interfacing classes, such as
     :class:`cartopy.mpl.slippy_image_artist.SlippyImageArtist`, can then
@@ -329,19 +329,35 @@ class RasterFetcher(object):
     retrieval with pan and zoom functionality.
 
     """
-    def fetch_raster(self, extent, target_resolution):
+    def validate_projection(self, projection):
+        """
+        Return whether this raster source can provide images in the
+        specified projection.
+
+        Parameters
+        ----------
+        projection : :class:`cartopy.crs.Projection`
+            The desired projection of the image.
+
+        """
+        raise NotImplementedError
+
+    def fetch_raster(self, projection, extent, target_resolution):
         """
         Return the image and its extent given some constraining information.
 
         Parameters
         ----------
+        projection : :class:`cartopy.crs.Projection`
+            The desired projection of the image.
         extent : iterable of length 4
             The extent of the requested image in projected coordinates. The
             resulting image may not be defined exactly by these extents, and
             so the extent of the resulting image is also returned. The extents
             must be defined in the form ``(min_x, max_x, min_y, max_y)``.
         target_resolution : iterable of length 2
-            The desired resolution of the image.
+            The desired resolution of the image as ``(width, height)`
+            in pixels.
 
         Returns
         -------
@@ -351,5 +367,7 @@ class RasterFetcher(object):
             The extent of the returned array in the form
             ``(min_x, max_x, min_y, max_y)``.
 
+        .. note:: Return (None, None) to indicate an invisible result.
+
         """
-        pass
+        raise NotImplementedError
