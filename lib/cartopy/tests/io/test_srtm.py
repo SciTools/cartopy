@@ -14,12 +14,12 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import absolute_import
 
 import warnings
 
-import cartopy.io
 import cartopy.io.srtm
-from cartopy.tests.test_io import download_to_temp
+from cartopy.tests.io.test_downloaders import download_to_temp
 
 
 def test_srtm3_retrieve():

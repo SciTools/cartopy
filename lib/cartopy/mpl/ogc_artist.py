@@ -223,7 +223,7 @@ class WMTSArtist(matplotlib.artist.Artist):
             .setdefault((layer_name, tile_matrix_id), {})
 
         # To avoid nasty seams between the individual tiles, we
-        # accummulate the tile images into a single image.
+        # accumulate the tile images into a single image.
         big_img = None
         n_rows = 1 + max_row - min_row
         n_cols = 1 + max_col - min_col
