@@ -175,8 +175,9 @@ def test_contourf_transform_path_counting():
 
 
 def test_wmts_tile_caching():
-    WMTSRasterSource._shared_image_cache.clear()
-    assert len(WMTSRasterSource._shared_image_cache) == 0
+    image_cache = WMTSRasterSource._shared_image_cache
+    image_cache.clear()
+    assert len(image_cache) == 0
 
     url = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     wmts = WebMapTileService(url)
@@ -197,10 +198,10 @@ def test_wmts_tile_caching():
                                                   gettile_counter.count)
                                               )
     gc.collect()
-    assert len(WMTSRasterSource._shared_image_cache) == 1
-    assert len(WMTSRasterSource._shared_image_cache[wmts]) == 1
+    assert len(image_cache) == 1
+    assert len(image_cache[wmts]) == 1
     tiles_key = (layer_name, '0')
-    assert len(WMTSRasterSource._shared_image_cache[wmts][tiles_key]) == n_tiles
+    assert len(image_cache[wmts][tiles_key]) == n_tiles
 
     # Second time around we shouldn't request any more tiles so the
     # call count will stay the same.
@@ -212,15 +213,15 @@ def test_wmts_tile_caching():
                                                   gettile_counter.count)
                                               )
     gc.collect()
-    assert len(WMTSRasterSource._shared_image_cache) == 1
-    assert len(WMTSRasterSource._shared_image_cache[wmts]) == 1
+    assert len(image_cache) == 1
+    assert len(image_cache[wmts]) == 1
     tiles_key = (layer_name, '0')
-    assert len(WMTSRasterSource._shared_image_cache[wmts][tiles_key]) == n_tiles
+    assert len(image_cache[wmts][tiles_key]) == n_tiles
 
     # Once there are no live references the weak-ref cache should clear.
     del source, wmts, gettile_counter
     gc.collect()
-    assert len(WMTSRasterSource._shared_image_cache) == 0
+    assert len(image_cache) == 0
 
 
 if __name__ == '__main__':

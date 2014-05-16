@@ -52,18 +52,18 @@ class test_WMSRasterSource(unittest.TestCase):
 
     def test_extra_kwargs_empty(self):
         source = ogc.WMSRasterSource(self.URI, self.layer,
-                                      getmap_extra_kwargs={})
+                                     getmap_extra_kwargs={})
         self.assertEqual(source.getmap_extra_kwargs, {})
 
     def test_extra_kwargs_None(self):
         source = ogc.WMSRasterSource(self.URI, self.layer,
-                                      getmap_extra_kwargs=None)
+                                     getmap_extra_kwargs=None)
         self.assertEqual(source.getmap_extra_kwargs, {'transparent': True})
 
     def test_extra_kwargs_non_empty(self):
         kwargs = {'another': 'kwarg'}
         source = ogc.WMSRasterSource(self.URI, self.layer,
-                                      getmap_extra_kwargs=kwargs)
+                                     getmap_extra_kwargs=kwargs)
         self.assertEqual(source.getmap_extra_kwargs, kwargs)
 
     def test_supported_projection(self):
