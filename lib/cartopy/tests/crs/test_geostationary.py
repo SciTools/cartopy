@@ -34,8 +34,8 @@ class TestGeostationary(unittest.TestCase):
 
     def test_default(self):
         geos = ccrs.Geostationary()
-        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0', 'lon_0=0.0',
-                    'no_defs', 'proj=geos', 'units=m', 'x_0=0', 'y_0=0']
+        expected = ['+ellps=WGS84', 'h=35785831.0', 'lat_0=0', 'lon_0=0.0',
+                    'no_defs', 'proj=geos', 'units=m', 'x_0=0.0', 'y_0=0.0']
         self.check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
@@ -49,7 +49,7 @@ class TestGeostationary(unittest.TestCase):
         geos = ccrs.Geostationary(satellite_height=50000,
                                   globe=globe)
         expected = ['+a=10000', 'b=5000', 'h=50000', 'lat_0=0', 'lon_0=0.0',
-                    'no_defs', 'proj=geos', 'units=m', 'x_0=0', 'y_0=0']
+                    'no_defs', 'proj=geos', 'units=m', 'x_0=0.0', 'y_0=0.0']
         self.check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
@@ -59,7 +59,7 @@ class TestGeostationary(unittest.TestCase):
     def test_eastings(self):
         geos = ccrs.Geostationary(false_easting=5000000,
                                   false_northing=-125000,)
-        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0', 'lon_0=0.0',
+        expected = ['+ellps=WGS84', 'h=35785831.0', 'lat_0=0', 'lon_0=0.0',
                     'no_defs', 'proj=geos', 'units=m', 'x_0=5000000',
                     'y_0=-125000']
         self.check_proj4_params(geos, expected)
