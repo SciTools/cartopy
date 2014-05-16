@@ -128,7 +128,5 @@ class test_WMTSRasterSource(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
-    exit()
     import nose
     nose.runmodule(argv=['-sv', '--with-doctest'], exit=False)

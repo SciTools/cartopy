@@ -116,11 +116,11 @@ class WMSRasterSource(RasterSource):
         #: Extra kwargs passed through to the service's getmap request.
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
-        self._srs_map = {}
+        self._srs_for_projection_id = {}
 
     def _srs(self, projection):
         key = id(projection)
-        srs = self._srs_map.get(key)
+        srs = self._srs_for_projection_id.get(key)
         if srs is None:
             srs = _CRS_TO_OGC_SRS.get(projection)
             if srs is None:
@@ -130,7 +130,7 @@ class WMSRasterSource(RasterSource):
                 if srs not in self.service.contents[layer].crsOptions:
                     raise ValueError('The SRS {} is not a valid SRS for the '
                                      '{!r} WMS layer.'.format(srs, layer))
-            self._srs_map[key] = srs
+            self._srs_for_projection_id[key] = srs
         return srs
 
     def validate_projection(self, projection):
