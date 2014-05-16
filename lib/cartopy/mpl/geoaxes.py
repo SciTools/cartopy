@@ -43,7 +43,6 @@ import cartopy.img_transform
 from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
-import cartopy.mpl.ogc_artist as ogc_artist
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
@@ -716,22 +715,26 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
-    def add_raster(self, raster_fetcher, **slippy_image_kwargs):
+    def add_raster(self, raster_source, **slippy_image_kwargs):
         """
         Add the given raster source to the GeoAxes.
 
         Parameters
         ----------
-        raster_fetcher : :class:`cartopy.io.RasterFetcher` like instance
-            ``raster_fetcher`` may be any object which implements the
-            RasterFetcher interface, including instances of objects such as
-            :class:`~cartopy.io.ogc_clients.WMSFetcher`. Note that image
+        raster_source : :class:`cartopy.io.RasterSource` like instance
+            ``raster_source`` may be any object which implements the
+            RasterSource interface, including instances of objects such as
+            :class:`~cartopy.io.ogc_clients.WMSRasterSource` and
+            :class:`~cartopy.io.ogc_clients.WMTSRasterSource`. Note that image
             retrievals are done at draw time, not at creation time.
 
         """
-        img = SlippyImageArtist(self, raster_fetcher,
-                                **slippy_image_kwargs)
-        self.add_image(img)
+        # Allow a fail-fast error if the raster source cannot provide
+        # images in the current projection.
+        raster_source.validate_projection(self.projection)
+        img = SlippyImageArtist(self, raster_source, **slippy_image_kwargs)
+        with self.hold_limits():
+            self.add_image(img)
         return img
 
     def _regrid_shape_aspect(self, regrid_shape, target_extent):
@@ -1492,7 +1495,7 @@ class GeoAxes(matplotlib.axes.Axes):
             sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
         return sp
 
-    def add_wmts(self, wmts, layer_name, matrix_set_name=None):
+    def add_wmts(self, wmts, layer_name, **kwargs):
         """
         Add the specified WMTS layer to the axes.
 
@@ -1504,40 +1507,41 @@ class GeoAxes(matplotlib.axes.Axes):
                      owslib.wmts.WebMapTileService instance.
             * layer_name - The name of the layer to use.
 
-        Kwargs:
-
-            * matrix_set_name - Optional matrix set name. Defaults to
-                                a matrix set which matches the current
-                                projection parameters.
+        All other keywords are passed through to the construction of the
+        image artist. See :meth:`~matplotlib.axes.Axes.imshow()` for
+        more details.
 
         """
-        # Instantiate an artist to draw the WMTS and add it to the axes.
-        artist = ogc_artist.WMTSArtist(wmts, layer_name, matrix_set_name)
-        return self.add_artist(artist)
+        from cartopy.io.ogc_clients import WMTSRasterSource
+        wmts = WMTSRasterSource(wmts, layer_name)
+        return self.add_raster(wmts, **kwargs)
 
-    def add_wms(self, wms, layer, wms_kwargs=None, **kwargs):
+    def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):
         """
         Add the specified WMS layer to the axes.
+
+        This function requires owslib and PIL to work.
 
         Parameters
         ----------
         wms : string or :class:`owslib.wms.WebMapService` instance
             The web map service URL or owslib WMS instance to use.
-        layer : string or iterable of string
+        layers : string or iterable of string
             The name of the layer(s) to use.
         wms_kwargs : dict or None
-            Passed through to the :class:`~cartopy.io.ogc_clients.WMSFetcher`
+            Passed through to the
+            :class:`~cartopy.io.ogc_clients.WMSRasterSource`
             constructor's ``getmap_extra_kwargs`` for defining getmap time
             keyword arguments.
 
         All other keywords are passed through to the construction of the
-        image artist.
+        image artist. See :meth:`~matplotlib.axes.Axes.imshow()` for
+        more details.
 
         """
-        from cartopy.io.ogc_clients import WMSFetcher
-        wms = WMSFetcher(wms, layer, self.projection,
-                         getmap_extra_kwargs=wms_kwargs)
-        self.add_raster(wms, **kwargs)
+        from cartopy.io.ogc_clients import WMSRasterSource
+        wms = WMSRasterSource(wms, layers, getmap_extra_kwargs=wms_kwargs)
+        return self.add_raster(wms, **kwargs)
 
 
 def _trigger_patch_reclip(event):

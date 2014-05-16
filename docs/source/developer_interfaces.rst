@@ -41,23 +41,26 @@ reference:
    * :class:`cartopy.io.srtm.SRTM3Downloader`
 
 
-Raster fetcher
---------------
+Raster images
+-------------
 
 The abstraction between retrieval and visualisation of raster data means
-that the :class:`cartopy.io.RasterFetcher` class exists to retrieve an image
+that the :class:`cartopy.io.RasterSource` class exists to retrieve an image
 (given sufficient context of projection, extent, resolution etc.) while in the
-matplotlib interface the :class:`cartopy.mpl.slippy_image_artist.SlippyImageArtist`
-class feeds the appropriate information to the :class:`~cartopy.io.RasterFetcher`
-and visualises it on a map. The orchestration in matplotlib is made more convenient
+matplotlib interface the
+:class:`cartopy.mpl.slippy_image_artist.SlippyImageArtist`
+class feeds the appropriate information to the
+:class:`~cartopy.io.RasterSource` and visualises it on a map.
+The orchestration in matplotlib is made more convenient
 to the user of a :class:`~cartopy.mpl.geoaxes.GeoAxes` through the
 :class:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method. Anything which exposes
-the ``fetch_raster`` method in the form described
-in :class:`~cartopy.io.RasterFetcher` can be used as a slippy maps source in this way.
+the ``validate_projection`` and ``fetch_raster`` methods in the form described
+in :class:`~cartopy.io.RasterSource` can be used as a slippy maps source in
+this way.
 
 .. currentmodule:: cartopy.io
 
-.. autoclass:: cartopy.io.RasterFetcher
+.. autoclass:: cartopy.io.RasterSource
     :members:
 
 .. currentmodule:: cartopy.mpl.slippy_image_artist
