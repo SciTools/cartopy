@@ -1343,8 +1343,8 @@ class InterruptedGoodeHomolosine(Projection):
 
 
 class Geostationary(Projection):
-    def __init__(self, central_longitude=0.0, satellite_height=35785831,
-                 false_easting=0, false_northing=0, globe=None):
+    def __init__(self, central_longitude=0.0, satellite_height=35785831.0,
+                 false_easting=0.0, false_northing=0.0, globe=None):
         proj4_params = [('proj', 'geos'), ('lon_0', central_longitude),
                         ('lat_0', 0), ('h', satellite_height),
                         ('x_0', false_easting), ('y_0', false_northing),
