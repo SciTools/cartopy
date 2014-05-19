@@ -343,7 +343,7 @@ class WMTSRasterSource(RasterSource):
                     image_cache[img_key] = img
                 if big_img is None:
                     size = (img.size[0] * n_cols, img.size[1] * n_rows)
-                    big_img = PIL.Image.new('RGBA', size, (255, 0, 0, 255))
+                    big_img = PIL.Image.new('RGBA', size, (255, 255, 255, 255))
                 top = (row - min_row) * tile_matrix.tileheight
                 left = (col - min_col) * tile_matrix.tilewidth
                 big_img.paste(img, (left, top))
