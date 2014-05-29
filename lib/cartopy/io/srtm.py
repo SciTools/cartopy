@@ -133,7 +133,7 @@ def read_SRTM3(fh):
     fh, fname = fh_getter(fh, needs_filename=True)
     if fname.endswith('.zip'):
         from zipfile import ZipFile
-        zfh = ZipFile(fh, 'r')
+        zfh = ZipFile(fh, 'rb')
         fh = zfh.open(os.path.basename(fname[:-4]), 'r')
 
     elev = np.fromfile(fh, dtype=np.dtype('>i2'))
