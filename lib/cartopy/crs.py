@@ -573,9 +573,9 @@ class PlateCarree(_CylindricalProjection):
         >>> import cartopy.crs as ccrs
         >>> src = ccrs.PlateCarree(central_longitude=10)
         >>> bboxes, offset = ccrs.PlateCarree()._bbox_and_offset(src)
-        >>> print bboxes
+        >>> print(bboxes)
         [[-180.0, -170.0], [-170.0, 180.0]]
-        >>> print offset
+        >>> print(offset)
         10.0
 
         The returned values are longitudes in ``other_plate_carree``'s
