@@ -26,18 +26,8 @@ class _PlateCarreeFormatter(Formatter):
 
     def __init__(self, degree_symbol=u'\u00B0', number_format='g'):
         """
-        Create a formatter for geographical axis values.
-
-        Kwargs:
-
-        * degree_symbol (string):
-            The character(s) used to represent the degree symbol in the
-            tick labels. Defaults to u'\u00B0' which is the unicode
-            degree symbol. Can be an empty string if no degree symbol is
-            desired.
-
-        * number_format (string):
-            Format string to represent the tick values. Defaults to 'g'.
+        Base class for simpler implementation of specialised formatters
+        for latitude and longitude axes.
 
         """
         self._degree_symbol = degree_symbol
@@ -66,7 +56,7 @@ class _PlateCarreeFormatter(Formatter):
         return self._format_value(projected_value, value)
 
     def _format_value(self, value, original_value):
-        hemisphere = self.hemisphere(value, original_value)
+        hemisphere = self._hemisphere(value, original_value)
         fmt_string = u'{value:{number_format}}{degree}{hemisphere}'
         return fmt_string.format(value=abs(value),
                                  number_format=self._number_format,
@@ -82,7 +72,7 @@ class _PlateCarreeFormatter(Formatter):
         """
         raise NotImplementedError("A subclass must implement this method.")
 
-    def hemisphere(self, value, value_source_crs):
+    def _hemisphere(self, value, value_source_crs):
         """
         Given both a tick value in the Plate Carree projection and the
         same value in the source CRS returns a string indicating the
@@ -96,11 +86,34 @@ class _PlateCarreeFormatter(Formatter):
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
+    def __init__(self, degree_symbol=u'\u00B0', number_format='g'):
+        """
+        Tick formatter for a latitude axis.
+
+        .. note::
+
+           A formatter can only be used for one axis. A new formatter
+           must be created for every axis that needs formatted labels.
+
+        Kwargs:
+
+        * degree_symbol (string):
+            The character(s) used to represent the degree symbol in the
+            tick labels. Defaults to u'\u00B0' which is the unicode
+            degree symbol. Can be an empty string if no degree symbol is
+            desired.
+
+        * number_format (string):
+            Format string to represent the tick values. Defaults to 'g'.
+
+        """
+        super(LatitudeFormatter, self).__init__(degree_symbol=degree_symbol,
+                                                number_format=number_format)
 
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
 
-    def hemisphere(self, value, value_source_crs):
+    def _hemisphere(self, value, value_source_crs):
         if value > 0:
             hemisphere = 'N'
         elif value < 0:
@@ -111,7 +124,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
 
 
 class LongitudeFormatter(_PlateCarreeFormatter):
-    """Tick formatter for longitude axes."""
+    """Tick formatter for a longitude axis."""
 
     def __init__(self,
                  zero_direction_label=False,
@@ -120,6 +133,11 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  number_format='g'):
         """
         Create a formatter for longitude values.
+
+        .. note::
+
+           A formatter can only be used for one axis. A new formatter
+           must be created for every axis that needs formatted labels.
 
         Kwargs:
 
@@ -152,7 +170,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(value, 0, source_crs)[0]
 
-    def hemisphere(self, value, value_source_crs):
+    def _hemisphere(self, value, value_source_crs):
         # Perform basic hemisphere detection.
         if value < 0:
             hemisphere = 'W'
