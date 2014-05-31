@@ -52,7 +52,7 @@ def walk_module(mod_name, exclude_folders=None):
                 pass
 
         # only allow python packages
-        if not '__init__.py' in files:
+        if '__init__.py' not in files:
             del folders[:]
             continue
 
