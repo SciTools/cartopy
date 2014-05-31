@@ -29,15 +29,15 @@ geometry representation of shapely:
     >>> len(reader)
     3
     >>> records = list(reader.records())
-    >>> print type(records[0])
+    >>> print(type(records[0]))
     <class 'cartopy.io.shapereader.Record'>
-    >>> print records[0].attributes.keys()
+    >>> print(records[0].attributes.keys())
     ['comment', 'scalerank', 'region', 'name', 'subregion', 'lat_y', \
 'featurecla', 'long_x', 'name_alt']
-    >>> print records[0].attributes['name']
+    >>> print(records[0].attributes['name'])
     Niagara Falls
     >>> geoms = list(reader.geometries())
-    >>> print type(geoms[0])
+    >>> print(type(geoms[0]))
     <class 'shapely.geometry.point.Point'>
 
 """
@@ -324,7 +324,7 @@ class NEShpDownloader(Downloader):
         To find the path template of the NEShpDownloader:
 
             >>> ne_dnldr = NEShpDownloader.default_downloader()
-            >>> print ne_dnldr.target_path_template
+            >>> print(ne_dnldr.target_path_template)
             {config[data_dir]}/shapefiles/natural_earth/{category}/\
 {resolution}_{name}.shp
 
@@ -462,7 +462,7 @@ class GSHHSShpDownloader(Downloader):
         To find the path template of the GSHHSShpDownloader:
 
             >>> gshhs_dnldr = GSHHSShpDownloader.default_downloader()
-            >>> print gshhs_dnldr.target_path_template
+            >>> print(gshhs_dnldr.target_path_template)
             {config[data_dir]}/shapefiles/gshhs/{scale}/\
 GSHHS_{scale}_L{level}.shp
 

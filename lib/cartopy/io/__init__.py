@@ -290,9 +290,9 @@ class Downloader(object):
         >>> config = {('level_1', 'level_2'): dnldr}
         >>> d1 = Downloader.from_config(('level_1', 'level_2', 'level_3'),
         ...                             config_dict=config)
-        >>> print d1.url_template
+        >>> print(d1.url_template)
         http://example.com/{name}
-        >>> print d1.url({'name': 'item_name'})
+        >>> print(d1.url({'name': 'item_name'}))
         http://example.com/item_name
 
         """
