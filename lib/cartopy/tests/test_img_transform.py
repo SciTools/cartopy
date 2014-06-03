@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+from nose.tools import assert_raises_regexp
+
 import numpy as np
 from numpy.testing import assert_array_equal
 
@@ -86,6 +88,23 @@ def test_griding_data_outside_projection():
     assert_array_equal([-180, 180, -90, 90], extent)
     assert_array_equal(expected, image)
     assert_array_equal(expected_mask, image.mask)
+
+
+def test_grid2points():
+    target_prj = ccrs.PlateCarree()
+
+    # create 3 data points
+    lons, lats, extent = img_trans.mesh_projection(target_prj, 5, 5)
+    data = np.arange(lons.size).reshape(lons.shape)
+    data_trans = ccrs.Geodetic()
+
+    # grid the target projection to get a good sample of the data
+    target_x, target_y = np.linspace(-180, 180, 10), np.linspace(-90, 90, 10)
+
+    msg = 'Currently, only a 2-dimensional target "grid" is supported'
+    with assert_raises_regexp(AssertionError, msg):
+        img_trans.regrid(data, lons, lats, data_trans, target_prj, target_x,
+                         target_y)
 
 
 if __name__ == '__main__':

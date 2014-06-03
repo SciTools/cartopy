@@ -21,7 +21,7 @@ transformations.
 """
 
 import numpy as np
-import scipy.spatial
+from scipy.spatial import cKDTree as KDTree
 
 import cartopy.crs as ccrs
 
@@ -267,7 +267,6 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         The data array regridded in the target projection.
 
     """
-
     # n.b. source_cs is actually a projection (the coord system of the
     # source coordinates), but not necessarily the native projection of
     # the source array (i.e. you can provide a warped image with lat lon
@@ -283,41 +282,35 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                            target_x_points.flatten(),
                                            target_y_points.flatten())
 
-    kdtree = scipy.spatial.cKDTree(xyz)
+    kdtree = KDTree(xyz)
     distances, indices = kdtree.query(target_xyz, k=1)
     mask = np.isinf(distances)
 
-    desired_ny, desired_nx = target_x_points.shape
-    if array.ndim == 1:
-        if np.any(mask):
-            array_1d = np.ma.array(array[indices], mask=mask)
-        else:
-            array_1d = array[indices]
-        new_array = array_1d.reshape(desired_ny, desired_nx)
-    elif array.ndim == 2:
-        # Handle missing neighbours using a masked array
-        if np.any(mask):
-            indices = np.where(np.logical_not(mask), indices, 0)
-            array_1d = np.ma.array(array.reshape(-1)[indices], mask=mask)
-        else:
-            array_1d = array.reshape(-1)[indices]
+    # Allow broadcast of nearest neighbour extract accross additional
+    # dimensions.
+    desired_shape = target_x_points.shape
+    assert target_x_points.ndim == 2, \
+        'Currently, only a 2-dimensional target "grid" is supported'
 
-        new_array = array_1d.reshape(desired_ny, desired_nx)
+    if array.ndim in (1, 2):
+        new_array = np.ma.array(array.flatten()[indices].reshape(
+            desired_shape), mask=mask)
     elif array.ndim == 3:
         # Handle missing neighbours using a masked array
-        if np.any(mask):
-            indices = np.where(np.logical_not(mask), indices, 0)
-            array_2d = array.reshape(-1, array.shape[-1])[indices]
-            mask, array_2d = np.broadcast_arrays(
-                mask.reshape(-1, 1), array_2d)
-            array_2d = np.ma.array(array_2d, mask=mask)
-        else:
-            array_2d = array.reshape(-1, array.shape[-1])[indices]
+        indices = np.where(np.logical_not(mask), indices, 0)
+        array_2d = array.reshape(-1, array.shape[-1])[indices]
+        mask, array_2d = np.broadcast_arrays(
+            mask.reshape(-1, 1), array_2d)
+        array_2d = np.ma.array(array_2d, mask=mask)
 
-        new_array = array_2d.reshape(desired_ny, desired_nx, array.shape[-1])
+        new_array = array_2d.reshape(desired_shape, array.shape[-1])
     else:
-        raise ValueError(
-            'Expected array.ndim to be 1, 2 or 3, got {}'.format(array.ndim))
+        msg = 'Expected array.ndim to be 1, 2 or 3, got {}'
+        raise ValueError(msg.format(array.ndim))
+
+    # Remove memory used by mask if all False
+    if not np.any(new_array.mask):
+        new_array = np.ma.array(new_array.data)
 
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.
@@ -329,10 +322,8 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     back_to_target_xyz = target_proj.transform_points(source_cs,
                                                       source_desired_xyz[:, 0],
                                                       source_desired_xyz[:, 1])
-    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny,
-                                                        desired_nx)
-    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny,
-                                                        desired_nx)
+    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_shape)
+    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_shape)
     FRACTIONAL_OFFSET_THRESHOLD = 0.1  # data has moved by 10% of the map
 
     x_extent = np.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
