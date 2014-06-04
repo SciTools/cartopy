@@ -19,6 +19,7 @@ This module contains generic functionality to support Cartopy image
 transformations.
 
 """
+import warnings
 
 import numpy as np
 from scipy.spatial import cKDTree as KDTree
@@ -201,29 +202,6 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
     return array, extent
 
 
-def _determine_bounds(x_coords, y_coords, source_cs):
-    # Returns bounds corresponding to one or two rectangles depending on
-    # transformation between ranges.
-    bounds = dict(x=[])
-    half_px = abs(np.diff(x_coords[:2])).max() / 2.
-
-    if (((hasattr(source_cs, 'is_geodetic') and
-            source_cs.is_geodetic()) or
-            isinstance(source_cs, ccrs.PlateCarree)) and x_coords.max() > 180):
-        if x_coords.min() < 180:
-            bounds['x'].append([x_coords.min() - half_px, 180])
-            bounds['x'].append([-180, x_coords.max() - 360 + half_px])
-        else:
-            bounds['x'].append([x_coords.min() - 180 - half_px,
-                                x_coords.max() - 180 + half_px])
-    else:
-        bounds['x'].append([x_coords.min() - half_px,
-                            x_coords.max() + half_px])
-
-    bounds['y'] = [y_coords.min(), y_coords.max()]
-    return bounds
-
-
 def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
            target_x_points, target_y_points, mask_extrapolated=False):
     """
@@ -261,103 +239,214 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     * mask_extrapolated:
         Assume that the source coordinate is rectilinear and so mask the
-        resulting target grid values which lie outside the source grid domain.
+        resulting target grid values which lie outside the source grid
+        domain.
 
     Returns:
         The data array regridded in the target projection.
 
+    .. warning::
+
+        regrid function is marked as deprecated, please make use of the \
+Regrid class
+
+        Example:
+        regridder = Regrid(array, source_x_coords, source_y_coords, source_cs)
+        regridded = regridder(target_proj, target_x_points, target_y_points, \
+mask_extrapolated=mask_extrapolated)
+
     """
-    # n.b. source_cs is actually a projection (the coord system of the
-    # source coordinates), but not necessarily the native projection of
-    # the source array (i.e. you can provide a warped image with lat lon
-    # coordinates).
 
-    #XXX NB. target_x and target_y must currently be rectangular (i.e.
-    # be a 2d np array)
-    geo_cent = source_cs.as_geocentric()
-    xyz = geo_cent.transform_points(source_cs,
-                                    source_x_coords.flatten(),
-                                    source_y_coords.flatten())
-    target_xyz = geo_cent.transform_points(target_proj,
-                                           target_x_points.flatten(),
-                                           target_y_points.flatten())
+    msg = """regrid function is marked as deprecated, please make use of the \
+    Regrid class
 
-    kdtree = KDTree(xyz)
-    distances, indices = kdtree.query(target_xyz, k=1)
-    mask = np.isinf(distances)
+    Example:
+    regridder = Regrid(array, source_x_coords, source_y_coords, source_cs)
+    regridded = regridder(target_proj, target_x_points, target_y_points, \
+    mask_extrapolated=mask_extrapolated)
+    """
+    warnings.warn(msg, DeprecationWarning)
+    res_regrid = Regrid(array, source_x_coords, source_y_coords, source_cs)
+    return res_regrid(target_proj, target_x_points, target_y_points,
+                      mask_extrapolated=mask_extrapolated)
 
-    # Allow broadcast of nearest neighbour extract accross additional
-    # dimensions.
-    desired_shape = target_x_points.shape
-    assert target_x_points.ndim == 2, \
-        'Currently, only a 2-dimensional target "grid" is supported'
 
-    if array.ndim in (1, 2):
-        new_array = np.ma.array(array.flatten()[indices].reshape(
-            desired_shape), mask=mask)
-    elif array.ndim == 3:
-        # Handle missing neighbours using a masked array
-        indices = np.where(np.logical_not(mask), indices, 0)
-        array_2d = array.reshape(-1, array.shape[-1])[indices]
-        mask, array_2d = np.broadcast_arrays(
-            mask.reshape(-1, 1), array_2d)
-        array_2d = np.ma.array(array_2d, mask=mask)
+class Regrid(object):
+    """
+    Nearest-neighbour regridder for regridding the data from its source
+    projection to a specified target projection.
+    """
+    def __init__(self, array, source_x_coords, source_y_coords, source_cs):
+        """
+        Instantiate a Nearest-neighbour regridder utiliting the provided
+        source data.
 
-        new_array = array_2d.reshape(desired_shape, array.shape[-1])
-    else:
-        msg = 'Expected array.ndim to be 1, 2 or 3, got {}'
-        raise ValueError(msg.format(array.ndim))
+        Args:
 
-    # Remove memory used by mask if all False
-    if not np.any(new_array.mask):
-        new_array = np.ma.array(new_array.data)
+        * array:
+            The :class:`numpy.ndarray` of data to be regridded to the
+            target projection.
 
-    # Do double transform to clip points that do not map back and forth
-    # to the same point to within a fixed fractional offset.
-    # XXX THIS ONLY NEEDS TO BE DONE FOR (PSEUDO-)CYLINDRICAL PROJECTIONS
-    # (OR ANY OTHERS WHICH HAVE THE CONCEPT OF WRAPPING)
-    source_desired_xyz = source_cs.transform_points(target_proj,
-                                                    target_x_points.flatten(),
-                                                    target_y_points.flatten())
-    back_to_target_xyz = target_proj.transform_points(source_cs,
-                                                      source_desired_xyz[:, 0],
-                                                      source_desired_xyz[:, 1])
-    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_shape)
-    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_shape)
-    FRACTIONAL_OFFSET_THRESHOLD = 0.1  # data has moved by 10% of the map
+        * source_x_coords:
+            A 2-dimensional source projection :class:`numpy.ndarray` of
+            x-direction sample points.
 
-    x_extent = np.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
-    y_extent = np.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
+        * source_y_coords:
+            A 2-dimensional source projection :class:`numpy.ndarray` of
+            y-direction sample points.
 
-    non_self_inverse_points = (np.abs(target_x_points - back_to_target_x) /
-                               x_extent) > FRACTIONAL_OFFSET_THRESHOLD
-    if np.any(non_self_inverse_points):
-        if np.ma.isMaskedArray(new_array):
-            new_array[non_self_inverse_points] = np.ma.masked
+        * source_cs:
+            The source :class:`~cartopy.crs.Projection` instance.
+
+        Returns:
+            Nearest-neighbour regridder for the given source data and
+            coordinates describing this source.
+
+        """
+        # n.b. source_cs is actually a projection (the coord system of the
+        # source coordinates), but not necessarily the native projection of
+        # the source array (i.e. you can provide a warped image with lat lon
+        # coordinates).
+
+        #XXX NB. target_x and target_y must currently be rectangular (i.e.
+        # be a 2d np array)
+        self.source_cs = source_cs
+        self.array = array
+        self.source_x_coords = source_x_coords
+        self.source_y_coords = source_y_coords
+        self.geo_cent = self.source_cs.as_geocentric()
+
+        xyz = self.geo_cent.transform_points(
+            self.source_cs, self.source_x_coords.flatten(),
+            self.source_y_coords.flatten())
+        self.kdtree = KDTree(xyz)
+
+    def __call__(self, target_proj, target_x_points, target_y_points,
+                 mask_extrapolated=False):
+        """
+        Regrid the data array from the source projection to the target
+        projection.
+
+        Args:
+
+        * target_cs:
+            The target :class:`~cartopy.crs.Projection` instance.
+
+        * target_x_points:
+            A 2-dimensional target projection :class:`numpy.ndarray` of
+            x-direction sample points.
+
+        * target_y_points:
+            A 2-dimensional target projection :class:`numpy.ndarray` of
+            y-direction sample points.
+
+        Kwargs:
+
+        * mask_extrapolated:
+            Assume that the source coordinate is rectilinear and so mask the
+            resulting target grid values which lie outside the source grid
+            domain.
+
+        Returns:
+            The data array regridded in the target projection.
+
+        """
+        target_xyz = self.geo_cent.transform_points(
+            target_proj, target_x_points.flatten(), target_y_points.flatten())
+
+        distances, indices = self.kdtree.query(target_xyz, k=1)
+        mask = np.isinf(distances)
+
+        new_array = self._broadcast_index(mask, indices, target_x_points,
+                                          target_y_points)
+        new_array = self._geographic_point_correction(
+            new_array, target_proj, target_x_points, target_y_points)
+        if mask_extrapolated:
+            new_array = self._mask_points_outside_src_domain(
+                new_array, target_proj, target_x_points, target_y_points)
+        return new_array
+
+    def _broadcast_index(self, mask, indices, target_x_points,
+                         target_y_points):
+        # Allow broadcast of nearest neighbour extract accross additional
+        # dimensions.
+        desired_shape = target_x_points.shape
+        assert target_x_points.ndim == 2, \
+            'Currently, only a 2-dimensional target "grid" is supported'
+        if self.array.ndim in (1, 2):
+            new_array = np.ma.array(self.array.flatten()[indices].reshape(
+                desired_shape), mask=mask)
+        elif self.array.ndim == 3:
+            # Handle missing neighbours using a masked array
+            indices = np.where(np.logical_not(mask), indices, 0)
+            array_2d = self.array.reshape(-1, self.array.shape[-1])[indices]
+            mask, array_2d = np.broadcast_arrays(
+                mask.reshape(-1, 1), array_2d)
+            array_2d = np.ma.array(array_2d, mask=mask)
+            new_array = array_2d.reshape(desired_shape +
+                                         tuple([self.array.shape[-1]]))
         else:
-            new_array = np.ma.array(new_array, mask=False)
-            if new_array.ndim == 3:
-                for i in range(new_array.shape[2]):
-                    new_array[non_self_inverse_points, i] = np.ma.masked
-            else:
+            msg = 'Expected array.ndim to be 1, 2 or 3, got {}'
+            raise ValueError(msg.format(self.array.ndim))
+
+        # Remove memory used by mask if all False
+        # There is a bug in the code elsewhere that means we cannot simply
+        # make this a masked array with mask=False.
+        if not np.any(new_array.mask):
+            new_array = new_array.data
+        return new_array
+
+    def _geographic_point_correction(self, new_array, target_proj,
+                                     target_x_points, target_y_points):
+        # Do double transform to clip points that do not map back and forth
+        # to the same point to within a fixed fractional offset.
+        # XXX THIS ONLY NEEDS TO BE DONE FOR (PSEUDO-)CYLINDRICAL PROJECTIONS
+        # (OR ANY OTHERS WHICH HAVE THE CONCEPT OF WRAPPING)
+        desired_shape = target_x_points.shape
+        source_desired_xyz = self.source_cs.transform_points(
+            target_proj, target_x_points.flatten(), target_y_points.flatten())
+        back_to_target_xyz = target_proj.transform_points(
+            self.source_cs, source_desired_xyz[:, 0], source_desired_xyz[:, 1])
+        back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_shape)
+        back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_shape)
+        FRACTIONAL_OFFSET_THRESHOLD = 0.1  # data has moved by 10% of the map
+
+        x_extent = np.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
+        y_extent = np.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
+
+        non_self_inverse_points = (np.abs(target_x_points - back_to_target_x) /
+                                   x_extent) > FRACTIONAL_OFFSET_THRESHOLD
+        if np.any(non_self_inverse_points):
+            if np.ma.isMaskedArray(new_array):
                 new_array[non_self_inverse_points] = np.ma.masked
-    non_self_inverse_points = (np.abs(target_y_points - back_to_target_y) /
-                               y_extent) > FRACTIONAL_OFFSET_THRESHOLD
-    if np.any(non_self_inverse_points):
-        if np.ma.isMaskedArray(new_array):
-            new_array[non_self_inverse_points] = np.ma.masked
-        else:
-            new_array = np.ma.array(new_array, mask=non_self_inverse_points)
+            else:
+                new_array = np.ma.array(new_array, mask=False)
+                if new_array.ndim == 3:
+                    for i in range(new_array.shape[2]):
+                        new_array[non_self_inverse_points, i] = np.ma.masked
+                else:
+                    new_array[non_self_inverse_points] = np.ma.masked
+        non_self_inverse_points = (np.abs(target_y_points - back_to_target_y) /
+                                   y_extent) > FRACTIONAL_OFFSET_THRESHOLD
+        if np.any(non_self_inverse_points):
+            if np.ma.isMaskedArray(new_array):
+                new_array[non_self_inverse_points] = np.ma.masked
+            else:
+                new_array = np.ma.array(new_array,
+                                        mask=non_self_inverse_points)
+        return new_array
 
-    # Transform the target points to the source projection and mask any points
-    # that fall outside the original source domain.
-    if mask_extrapolated:
-        target_in_source_xyz = source_cs.transform_points(
+    def _mask_points_outside_src_domain(self, new_array, target_proj,
+                                        target_x_points, target_y_points):
+        # Transform the target points to the source projection and mask any
+        # points that fall outside the original source domain.
+        target_in_source_xyz = self.source_cs.transform_points(
             target_proj, target_x_points, target_y_points)
         target_in_source_x = target_in_source_xyz[..., 0]
         target_in_source_y = target_in_source_xyz[..., 1]
 
-        bounds = _determine_bounds(source_x_coords, source_y_coords, source_cs)
+        bounds = self._determine_bounds(
+            self.source_x_coords, self.source_y_coords, self.source_cs)
 
         outside_source_domain = ((target_in_source_y >= bounds['y'][1]) |
                                  (target_in_source_y <= bounds['y'][0]))
@@ -378,4 +467,27 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                     new_array[outside_source_domain, i] = np.ma.masked
             else:
                 new_array[outside_source_domain] = np.ma.masked
-    return new_array
+        return new_array
+
+    def _determine_bounds(self, x_coords, y_coords, source_cs):
+        # Returns bounds corresponding to one or two rectangles depending on
+        # transformation between ranges.
+        bounds = dict(x=[])
+        half_px = abs(np.diff(x_coords[:2])).max() / 2.
+
+        condition_1 = (hasattr(source_cs, 'is_geodetic') and
+                       source_cs.is_geodetic())
+        condition_2 = isinstance(source_cs, ccrs.PlateCarree)
+        if (condition_1 or condition_2) and x_coords.max() > 180:
+            if x_coords.min() < 180:
+                bounds['x'].append([x_coords.min() - half_px, 180])
+                bounds['x'].append([-180, x_coords.max() - 360 + half_px])
+            else:
+                bounds['x'].append([x_coords.min() - 180 - half_px,
+                                    x_coords.max() - 180 + half_px])
+        else:
+            bounds['x'].append([x_coords.min() - half_px,
+                                x_coords.max() + half_px])
+
+        bounds['y'] = [y_coords.min(), y_coords.max()]
+        return bounds
