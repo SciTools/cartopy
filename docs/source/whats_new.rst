@@ -1,3 +1,25 @@
+What's new in cartopy 0.12
+**************************
+
+:Release: 0.12.0
+:Date:
+
+* A new SRTM3 RasterSource has been implemented allowing interactive pan/zoom
+  of 3 arc-second elevation data from the Shuttle Radar Topography Mission.
+
+Deprecations
+------------
+* The SRTM module has been re-factored for simplicity and to take advantage
+  of the new :ref:`raster source interface <raster-source-interface>`. Some
+  methods have therefore been deprecated and will be removed in future
+  releases. The function :func:`cartopy.io.srtm.srtm` has been replaced with
+  the :meth:`cartopy.io.srtm.SRTM3Source.single_tile` method. Similarly,
+  :func:`cartopy.io.srtm.srtm_composite` and
+  :func:`cartopy.io.srtm.SRTM3_retrieve` have been replaced with the
+  :meth:`cartopy.io.srtm.SRTM3Source.combined` and
+  :meth:`cartopy.io.srtm.SRTM3Source.srtm_fname` methods respectively.
+
+
 What's new in cartopy 0.11
 **************************
 

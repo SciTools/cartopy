@@ -383,3 +383,55 @@ class RasterSource(object):
 
         """
         raise NotImplementedError()
+
+
+class RasterSourceContainer(RasterSource):
+    """
+    A container which simply calls the appropriate methods on the
+    contained :class:`RasterSource`.
+
+    """
+    def __init__(self, contained_source):
+        """
+        Parameters
+        ----------
+        contained_source : :class:`RasterSource` instance.
+            The source of the raster that this container is wrapping.
+        """
+        self._source = contained_source
+
+    def fetch_raster(self, projection, extent, target_resolution):
+        return self._source.fetch_raster(projection, extent,
+                                         target_resolution)
+
+    def validate_projection(self, projection):
+        return self._source.validate_projection(projection)
+
+
+class PostprocessedRasterSource(RasterSourceContainer):
+    """
+    A :class:`RasterSource` which wraps another, an then applies a
+    post-processing step on the raster fetched from the contained source.
+
+    """
+    def __init__(self, contained_source, img_post_process):
+        """
+        Parameters
+        ----------
+        contained_source : :class:`RasterSource` instance.
+            The source of the raster that this container is wrapping.
+        img_post_process : callable
+            Called after each `fetch_raster` call which yields a non-None
+            image result. The callable must accept the image/array from the
+            contained fetch_raster as its only argument, and must return an
+            array representing the same extent as its input.
+        """
+        super(PostprocessedRasterSource, self).__init__(contained_source)
+        self._post_fetch_fn = img_post_process
+
+    def fetch_raster(self, *args, **kwargs):
+        fetch_raster = super(PostprocessedRasterSource, self).fetch_raster
+        img, extent = fetch_raster(*args, **kwargs)
+        if img is not None:
+            img = self._post_fetch_fn(img)
+        return img, extent

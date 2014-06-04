@@ -2,32 +2,43 @@ __tags__ = ['Scalar data']
 """
 This example illustrates the automatic download of
 STRM data, gap filling (using gdal) and adding shading
-to create a so-called "Shaded Relief SRTM"
+to create a so-called "Shaded Relief SRTM".
 
-Contributed by: Thomas Lecocq (http://geophysique.be)
+Originally contributed by Thomas Lecocq (http://geophysique.be).
+
 """
-
 import cartopy.crs as ccrs
 from cartopy.io import srtm
 import matplotlib.pyplot as plt
+
+from cartopy.io import PostprocessedRasterSource
+from cartopy.io.srtm import SRTM3Source
+
+
+def fill_and_shade(elevations):
+    """
+    Given an array of elevations, fill any holes in the data and add a
+    relief (shadows) to give a realistic 3d appearance.
+
+    """
+    elevations = srtm.fill_gaps(elevations, max_distance=15)
+    img = srtm.add_shading(elevations, azimuth=135, altitude=15)
+    return img
 
 
 def main():
     ax = plt.axes(projection=ccrs.PlateCarree())
 
-    # Get the 1x1 degree SRTM tile for 12E, 47N
-    elev, crs, extent = srtm.srtm_composite(12, 47, 1, 1)
+    # Define a raster source which uses the SRTM3 data and applies the
+    # fill_and_shade function when the data is retrieved.
+    shaded_srtm = PostprocessedRasterSource(SRTM3Source(), fill_and_shade)
 
-    # Fill the gaps present in the elevation data
-    elev_filled = srtm.fill_gaps(elev, 15)
+    # Add the shaded SRTM source to our map with a grayscale colormap.
+    ax.add_raster(shaded_srtm, cmap='Greys')
 
-    # Add shading simulating the Sun at 10am (South-East)
-    # and with a low angle (15 degrees above horizon)
-    shaded = srtm.add_shading(elev_filled, 135.0, 15.0)
-
-    # The plot the result :
-    plt.imshow(shaded, extent=extent, transform=crs,
-               cmap='Greys', origin='lower')
+    # This data is high resolution, so pick a small area which has some
+    # interesting orography.
+    ax.set_extent([12, 13, 47, 48])
 
     plt.title("SRTM Shaded Relief Map")
 
