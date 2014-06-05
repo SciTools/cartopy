@@ -337,6 +337,10 @@ class Regrid(object):
     def source_y_coords(self):
         return self._source_y_coords
 
+    @property
+    def kdtree(self):
+        return self._kdtree
+
     def __call__(self, target_proj, target_x_points, target_y_points,
                  mask_extrapolated=False):
         """
@@ -371,7 +375,7 @@ class Regrid(object):
         target_xyz = geo_cent.transform_points(
             target_proj, target_x_points.flatten(), target_y_points.flatten())
 
-        distances, indices = self._kdtree.query(target_xyz, k=1)
+        distances, indices = self.kdtree.query(target_xyz, k=1)
         mask = np.isinf(distances)
 
         new_array = self._broadcast_index(mask, indices, target_x_points,
@@ -385,8 +389,6 @@ class Regrid(object):
 
     def _broadcast_index(self, mask, indices, target_x_points,
                          target_y_points):
-        # Allow broadcast of nearest neighbour extract accross additional
-        # dimensions.
         desired_shape = target_x_points.shape
         assert target_x_points.ndim == 2, \
             'Currently, only a 2-dimensional target "grid" is supported'
