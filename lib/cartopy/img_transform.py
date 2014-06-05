@@ -310,16 +310,32 @@ class Regrid(object):
 
         #XXX NB. target_x and target_y must currently be rectangular (i.e.
         # be a 2d np array)
-        self.source_cs = source_cs
-        self.array = array
-        self.source_x_coords = source_x_coords
-        self.source_y_coords = source_y_coords
-        self.geo_cent = self.source_cs.as_geocentric()
+        self._source_cs = source_cs
+        self._array = array
+        self._source_x_coords = source_x_coords
+        self._source_y_coords = source_y_coords
+        geo_cent = self.source_cs.as_geocentric()
 
-        xyz = self.geo_cent.transform_points(
+        xyz = geo_cent.transform_points(
             self.source_cs, self.source_x_coords.flatten(),
             self.source_y_coords.flatten())
-        self.kdtree = KDTree(xyz)
+        self._kdtree = KDTree(xyz)
+
+    @property
+    def source_cs(self):
+        return self._source_cs
+
+    @property
+    def array(self):
+        return self._array
+
+    @property
+    def source_x_coords(self):
+        return self._source_x_coords
+
+    @property
+    def source_y_coords(self):
+        return self._source_y_coords
 
     def __call__(self, target_proj, target_x_points, target_y_points,
                  mask_extrapolated=False):
@@ -351,10 +367,11 @@ class Regrid(object):
             The data array regridded in the target projection.
 
         """
-        target_xyz = self.geo_cent.transform_points(
+        geo_cent = self.source_cs.as_geocentric()
+        target_xyz = geo_cent.transform_points(
             target_proj, target_x_points.flatten(), target_y_points.flatten())
 
-        distances, indices = self.kdtree.query(target_xyz, k=1)
+        distances, indices = self._kdtree.query(target_xyz, k=1)
         mask = np.isinf(distances)
 
         new_array = self._broadcast_index(mask, indices, target_x_points,
