@@ -24,7 +24,8 @@ from cartopy.mpl.geoaxes import GeoAxes
 class _PlateCarreeFormatter(Formatter):
     """Base class for formatting ticks on geographical axes."""
 
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g'):
+    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+                 transform_precision=1e-8):
         """
         Base class for simpler implementation of specialised formatters
         for latitude and longitude axes.
@@ -32,6 +33,7 @@ class _PlateCarreeFormatter(Formatter):
         """
         self._degree_symbol = degree_symbol
         self._number_format = number_format
+        self._transform_precision = transform_precision
 
     def __call__(self, value, pos=None):
         if not isinstance(self.axis.axes, GeoAxes):
@@ -47,10 +49,11 @@ class _PlateCarreeFormatter(Formatter):
                             "non-rectangular projections.")
         target = ccrs.PlateCarree()
         projected_value = self._apply_transform(value, target, source)
-        # Round the transformed values to the nearest 0.1 degree for display
-        # purposes (transforms can introduce minor rounding errors that make
-        # the tick values look bad).
-        projected_value = round(10 * projected_value) / 10
+        # Round the transformed value using a given precision for display
+        # purposes. Transforms can introduce minor rounding errors that make
+        # the tick values look bad, these need to be accounted for.
+        f = 1. / self._transform_precision
+        projected_value = round(f * projected_value) / f
         # Return the formatted values, the formatter has both the re-projected
         # tick value and the original axis value available to it.
         return self._format_value(projected_value, value)
@@ -86,7 +89,8 @@ class _PlateCarreeFormatter(Formatter):
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g'):
+    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+                 transform_precision=1e-8):
         """
         Tick formatter for a latitude axis.
 
@@ -106,9 +110,17 @@ class LatitudeFormatter(_PlateCarreeFormatter):
         * number_format (string):
             Format string to represent the tick values. Defaults to 'g'.
 
+        * transform_precision (float):
+            Sets the precision (in degrees) to which transformed tick
+            values are rounded. The default is 1e-7, and should be
+            suitable for most use cases. To control the appearance of
+            tick labels use the *number_format* keyword.
+
         """
-        super(LatitudeFormatter, self).__init__(degree_symbol=degree_symbol,
-                                                number_format=number_format)
+        super(LatitudeFormatter, self).__init__(
+            degree_symbol=degree_symbol,
+            number_format=number_format,
+            transform_precision=transform_precision)
 
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
@@ -130,7 +142,8 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  zero_direction_label=False,
                  dateline_direction_label=False,
                  degree_symbol=u'\u00B0',
-                 number_format='g'):
+                 number_format='g',
+                 transform_precision=1e-8):
         """
         Create a formatter for longitude values.
 
@@ -161,9 +174,17 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             Format string to represent the longitude values. Defaults to
             'g'.
 
+        * transform_precision (float):
+            Sets the precision (in degrees) to which transformed tick
+            values are rounded. The default is 1e-7, and should be
+            suitable for most use cases. To control the appearance of
+            tick labels use the *number_format* keyword.
+
         """
-        super(LongitudeFormatter, self).__init__(degree_symbol=degree_symbol,
-                                                 number_format=number_format)
+        super(LongitudeFormatter, self).__init__(
+            degree_symbol=degree_symbol,
+            number_format=number_format,
+            transform_precision=transform_precision)
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
 

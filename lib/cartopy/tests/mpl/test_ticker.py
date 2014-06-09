@@ -98,6 +98,17 @@ def test_LatitudeFormatter_mercator():
     assert_equal(result, expected)
 
 
+def test_LatitudeFormatter_small_numbers():
+    formatter = LatitudeFormatter(number_format='.7f')
+    p = ccrs.PlateCarree()
+    formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
+    test_ticks = [40.1275150, 40.1275152, 40.1275154]
+    result = [formatter(tick) for tick in test_ticks]
+    expected = [u'40.1275150\u00B0N', u'40.1275152\u00B0N',
+                u'40.1275154\u00B0N']
+    assert_equal(result, expected)
+
+
 def test_LongitudeFormatter_central_longitude_0():
     formatter = LongitudeFormatter(dateline_direction_label=True)
     p = ccrs.PlateCarree()
@@ -165,4 +176,27 @@ def test_LongitudeFormatter_mercator():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'180\u00B0W', u'120\u00B0W', u'60\u00B0W', u'0\u00B0',
                 u'60\u00B0E', u'120\u00B0E', u'180\u00B0E']
+    assert_equal(result, expected)
+
+
+def test_LongitudeFormatter_small_numbers_0():
+    formatter = LongitudeFormatter(number_format='.7f')
+    p = ccrs.PlateCarree(central_longitude=0)
+    formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
+    test_ticks = [-17.1142343, -17.1142340, -17.1142337]
+    result = [formatter(tick) for tick in test_ticks]
+    expected = [u'17.1142343\u00B0W', u'17.1142340\u00B0W',
+                u'17.1142337\u00B0W']
+    assert_equal(result, expected)
+
+
+def test_LongitudeFormatter_small_numbers_180():
+    formatter = LongitudeFormatter(zero_direction_label=True,
+                                   number_format='.7f')
+    p = ccrs.PlateCarree(central_longitude=180)
+    formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
+    test_ticks = [-17.1142343, -17.1142340, -17.1142337]
+    result = [formatter(tick) for tick in test_ticks]
+    expected = [u'162.8857657\u00B0E', u'162.8857660\u00B0E',
+                u'162.8857663\u00B0E']
     assert_equal(result, expected)
