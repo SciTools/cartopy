@@ -123,6 +123,27 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
 
+        Examples:
+
+        Label latitudes from -90 to 90 on a Plate Carree projection::
+
+            ax = plt.axes(projection=PlateCarree())
+            ax.set_global()
+            ax.set_yticks([-90, -60, -30, 0, 30, 60, 90],
+                          crs=ccrs.PlateCarree())
+            lat_formatter = LatitudeFormatter()
+            ax.yaxis.set_major_formatter(lat_formatter)
+
+        Label latitudes from -80 to 80 on a Mercator projection, this
+        time omitting the degree symbol::
+
+            ax = plt.axes(projection=Mercator())
+            ax.set_global()
+            ax.set_yticks([-90, -60, -30, 0, 30, 60, 90],
+                          crs=ccrs.PlateCarree())
+            lat_formatter = LatitudeFormatter(degree_symbol='')
+            ax.yaxis.set_major_formatter(lat_formatter)
+
         """
         super(LatitudeFormatter, self).__init__(
             degree_symbol=degree_symbol,
@@ -189,6 +210,28 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
+
+        Examples:
+
+        Label longitudes from -180 to 180 on a Plate Carree projection
+        with a central longitude of 0::
+
+            ax = plt.axes(projection=PlateCarree())
+            ax.set_global()
+            ax.set_xticks([-180, -120, -60, 0, 60, 120, 180],
+                          crs=ccrs.PlateCarree())
+            lon_formatter = LongitudeFormatter()
+            ax.xaxis.set_major_formatter(lon_formatter)
+
+        Label longitudes from 0 to 360 on a Plate Carree projection
+        with a central longitude of 180::
+
+            ax = plt.axes(projection=PlateCarree(central_longitude=180))
+            ax.set_global()
+            ax.set_xticks([0, 60, 120, 180, 240, 300, 360],
+                          crs=ccrs.PlateCarree())
+            ont_formatter = LongitudeFormatter()
+            ax.xaxis.set_major_formatter(lon_formatter)
 
         """
         super(LongitudeFormatter, self).__init__(
