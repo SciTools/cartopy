@@ -22,7 +22,11 @@ from cartopy.mpl.geoaxes import GeoAxes
 
 
 class _PlateCarreeFormatter(Formatter):
-    """Base class for formatting ticks on geographical axes."""
+    """
+    Base class for formatting ticks on geographical axes using a
+    rectangular projection (e.g. Plate Carree, Mercator).
+
+    """
 
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
                  transform_precision=1e-8):
@@ -94,6 +98,9 @@ class LatitudeFormatter(_PlateCarreeFormatter):
         """
         Tick formatter for a latitude axis.
 
+        The axis must be part of an axes defined on a rectangular
+        projection (e.g. Plate Carree, Mercator).
+
         .. note::
 
            A formatter can only be used for one axis. A new formatter
@@ -146,6 +153,9 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  transform_precision=1e-8):
         """
         Create a formatter for longitude values.
+
+        The axis must be part of an axes defined on a rectangular
+        projection (e.g. Plate Carree, Mercator).
 
         .. note::
 
