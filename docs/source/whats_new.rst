@@ -51,6 +51,13 @@ What's new in cartopy 0.11
   :func:`~cartopy.util.add_cyclic_point` to add a cyclic point to an array and
   optionally to a corresponding 1D coordinate.
 
+* Andrew Dawson added formatters for producing longitude/latitude tick labels for
+  rectangular projections. The formatters are customizable and can be used to produce
+  nice tick labels in a variety of styles:
+
+.. plot:: examples/tick_labels.py
+   :width: 300pt:
+
 What's new in cartopy 0.10
 **************************
 
