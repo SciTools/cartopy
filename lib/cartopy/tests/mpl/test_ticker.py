@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 from mock import Mock
-from nose.tools import raises, assert_equal
+from nose.tools import assert_equal, assert_raises_regexp
 from matplotlib.axes import Axes
 
 import cartopy.crs as ccrs
@@ -23,32 +23,36 @@ from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 
-@raises(TypeError)
 def test_LatitudeFormatter_bad_axes():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
-    formatter(0)
+    message = 'This formatter can only be used with cartopy axes.'
+    with assert_raises_regexp(TypeError, message):
+        formatter(0)
 
 
-@raises(TypeError)
 def test_LatitudeFormatter_bad_projection():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
-    formatter(0)
+    message = 'This formatter cannot be used with non-rectangular projections.'
+    with assert_raises_regexp(TypeError, message):
+        formatter(0)
 
 
-@raises(TypeError)
 def test_LongitudeFormatter_bad_axes():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
-    formatter(0)
+    message = 'This formatter can only be used with cartopy axes.'
+    with assert_raises_regexp(TypeError, message):
+        formatter(0)
 
 
-@raises(TypeError)
 def test_LongitudeFormatter_bad_projection():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
-    formatter(0)
+    message = 'This formatter cannot be used with non-rectangular projections.'
+    with assert_raises_regexp(TypeError, message):
+        formatter(0)
 
 
 def test_LatitudeFormatter():
