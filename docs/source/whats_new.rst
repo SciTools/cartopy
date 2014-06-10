@@ -58,6 +58,7 @@ What's new in cartopy 0.11
 .. plot:: examples/tick_labels.py
    :width: 300pt:
 
+
 What's new in cartopy 0.10
 **************************
 
