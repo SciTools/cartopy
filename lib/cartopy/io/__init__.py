@@ -23,8 +23,14 @@ various data formats.
 
 import os
 import string
-import urllib2
 import warnings
+
+import six
+
+if six.PY3:
+    from urllib.request import urlopen
+else:
+    from urllib2 import urlopen
 
 from cartopy import config
 
@@ -49,7 +55,7 @@ def fh_getter(fh, mode='r', needs_filename=False):
     if mode != 'r':
         raise ValueError('Only mode "r" currently supported.')
 
-    if isinstance(fh, basestring):
+    if isinstance(fh, six.string_types):
         filename = fh
         fh = open(fh, mode)
     elif isinstance(fh, tuple):
@@ -253,7 +259,7 @@ class Downloader(object):
 
         """
         warnings.warn('Downloading: {}'.format(url), DownloadWarning)
-        return urllib2.urlopen(url)
+        return urlopen(url)
 
     @staticmethod
     def from_config(specification, config_dict=None):
@@ -284,9 +290,9 @@ class Downloader(object):
         >>> config = {('level_1', 'level_2'): dnldr}
         >>> d1 = Downloader.from_config(('level_1', 'level_2', 'level_3'),
         ...                             config_dict=config)
-        >>> print d1.url_template
+        >>> print(d1.url_template)
         http://example.com/{name}
-        >>> print d1.url({'name': 'item_name'})
+        >>> print(d1.url({'name': 'item_name'}))
         http://example.com/item_name
 
         """

@@ -61,7 +61,7 @@ def add_cyclic_point(data, coord=None, axis=-1):
     >>> import numpy as np
     >>> data = np.ones([5, 6]) * np.arange(6)
     >>> cyclic_data = add_cyclic_point(data)
-    >>> print cyclic_data
+    >>> print(cyclic_data)
     [[ 0.  1.  2.  3.  4.  5.  0.]
      [ 0.  1.  2.  3.  4.  5.  0.]
      [ 0.  1.  2.  3.  4.  5.  0.]
@@ -72,13 +72,13 @@ def add_cyclic_point(data, coord=None, axis=-1):
 
     >>> lons = np.arange(0, 360, 60)
     >>> cyclic_data, cyclic_lons = add_cyclic_point(data, coord=lons)
-    >>> print cyclic_data
+    >>> print(cyclic_data)
     [[ 0.  1.  2.  3.  4.  5.  0.]
      [ 0.  1.  2.  3.  4.  5.  0.]
      [ 0.  1.  2.  3.  4.  5.  0.]
      [ 0.  1.  2.  3.  4.  5.  0.]
      [ 0.  1.  2.  3.  4.  5.  0.]]
-    >>> print cyclic_lons
+    >>> print(cyclic_lons)
     [  0  60 120 180 240 300 360]
 
     """

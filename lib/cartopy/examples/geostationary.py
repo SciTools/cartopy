@@ -12,7 +12,10 @@ into a global Miller map.
 
 """
 __tags__ = ["Scalar data"]
-import urllib2
+try:
+    from urllib2 import urlopen
+except ImportError:
+    from urllib.request import urlopen
 from io import BytesIO
 
 import cartopy.crs as ccrs

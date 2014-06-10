@@ -24,6 +24,7 @@ import os.path
 import numpy as np
 import PIL.Image
 from shapely.geometry import box
+from six.moves import zip
 
 
 _img_class_attrs = ['filename', 'extent', 'origin', 'pixel_size']
@@ -309,8 +310,8 @@ class NestedImageCollection(object):
         if _ancestry is not None:
             self._ancestry = _ancestry
         else:
-            parent_wth_children = itertools.izip(self._collections,
-                                                 self._collections[1:])
+            parent_wth_children = zip(self._collections,
+                                      self._collections[1:])
             for parent_collection, collection in parent_wth_children:
                 for parent_image in parent_collection.images:
                     for image in collection.images:

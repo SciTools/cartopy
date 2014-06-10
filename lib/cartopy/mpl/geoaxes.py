@@ -176,9 +176,10 @@ class InterProjectionTransform(mtransforms.Transform):
             paths = cpatch.geos_to_path(transformed_geoms)
             if not paths:
                 return mpath.Path(np.empty([0, 2]))
-            points, codes = zip(*[cpatch.path_segments(path, curves=False,
-                                                       simplify=False)
-                                  for path in paths])
+            points, codes = list(zip(*[cpatch.path_segments(path,
+                                                            curves=False,
+                                                            simplify=False)
+                                       for path in paths]))
             result = mpath.Path(np.concatenate(points, 0),
                                 np.concatenate(codes))
 
@@ -891,7 +892,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                                        locations=locations,
                                                        offset=offset,
                                                        units=units)
-        for spine in spines.itervalues():
+        for spine in spines.values():
             spine.set_visible(False)
         return spines
 

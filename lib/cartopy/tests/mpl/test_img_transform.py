@@ -27,6 +27,7 @@ from cartopy import config
 from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
+from functools import reduce
 
 
 class TestRegrid(unittest.TestCase):

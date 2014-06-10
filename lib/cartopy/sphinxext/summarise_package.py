@@ -20,6 +20,7 @@ import itertools
 import os
 import sys
 import warnings
+import six
 
 import cartopy.tests
 
@@ -51,7 +52,7 @@ def walk_module(mod_name, exclude_folders=None):
                 pass
 
         # only allow python packages
-        if not '__init__.py' in files:
+        if '__init__.py' not in files:
             del folders[:]
             continue
 
@@ -61,7 +62,7 @@ def walk_module(mod_name, exclude_folders=None):
 
         is_py_src = lambda fname: fname.endswith(
             '.py') or fname.endswith('.so')
-        files = filter(is_py_src, files)
+        files = list(filter(is_py_src, files))
 
         for fname in files:
             sub_mod_name = mod_name
@@ -69,7 +70,7 @@ def walk_module(mod_name, exclude_folders=None):
             if relpath == '.':
                 relpath = ''
 
-            for sub_mod in filter(None, relpath.split(os.path.sep)):
+            for sub_mod in [f for f in relpath.split(os.path.sep) if f]:
                 sub_mod_name += '.' + sub_mod
 
             if fname != '__init__.py':
@@ -106,7 +107,7 @@ def objects_to_document(module_name):
         is_from_this_module = lambda x: (
             getattr(x[1], '__module__', '') == module_name)
 
-        document_these = filter(is_from_this_module, document_these)
+        document_these = list(filter(is_from_this_module, document_these))
         document_these = sorted(document_these,
                                 key=lambda x: (type(x[1]),
                                                not x[0].isupper(),
@@ -164,7 +165,7 @@ def gen_summary_rst(app):
     exclude_dirs = app.config.summarise_package_exclude_directories
     fnames = app.config.summarise_package_fnames
 
-    if isinstance(package_names, basestring):
+    if isinstance(package_names, six.string_types):
         package_names = [package_names]
 
     if package_names is None:
@@ -182,14 +183,15 @@ def gen_summary_rst(app):
             raise exception
 
         for exclude_dirs_individual in exclude_dirs:
-            if isinstance(exclude_dirs_individual, basestring):
+            if isinstance(exclude_dirs_individual, six.string_types):
                 raise exception
 
     if fnames is None:
         fnames = ['outline_of_{}.rst'.format(package_name)
                   for package_name in package_names]
     else:
-        if isinstance(fnames, basestring) or len(fnames) != len(package_names):
+        if isinstance(fnames, six.string_types) or \
+                len(fnames) != len(package_names):
             raise TypeError('Please provide a list of filenames for each of '
                             'the packages which are to be summarised.')
 

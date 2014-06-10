@@ -29,6 +29,7 @@ import json
 import os
 
 import numpy as np
+import six
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -132,7 +133,7 @@ def read_SRTM3(fh):
     fh, fname = fh_getter(fh, needs_filename=True)
     if fname.endswith('.zip'):
         from zipfile import ZipFile
-        zfh = ZipFile(fh, 'r')
+        zfh = ZipFile(fh, 'rb')
         fh = zfh.open(os.path.basename(fname[:-4]), 'r')
 
     elev = np.fromfile(fh, dtype=np.dtype('>i2'))
@@ -194,7 +195,6 @@ class SRTM3Downloader(Downloader):
         return url
 
     def acquire_resource(self, target_path, format_dict):
-        import cStringIO as StringIO
         from zipfile import ZipFile
 
         target_dir = os.path.dirname(target_path)
@@ -204,7 +204,7 @@ class SRTM3Downloader(Downloader):
         url = self.url(format_dict)
 
         srtm_online = self._urlopen(url)
-        zfh = ZipFile(StringIO.StringIO(srtm_online.read()), 'r')
+        zfh = ZipFile(six.BytesIO(srtm_online.read()), 'r')
 
         zip_member_path = u'{y}{x}.hgt'.format(**format_dict)
         member = zfh.getinfo(zip_member_path)
@@ -235,7 +235,10 @@ class SRTM3Downloader(Downloader):
         """
         # lazy imports. In most situations, these are not
         # dependencies of cartopy.
-        import urllib
+        if six.PY3:
+            from urllib.request import urlopen
+        else:
+            from urllib2 import urlopen
         from BeautifulSoup import BeautifulSoup
 
         files = {}
@@ -244,7 +247,7 @@ class SRTM3Downloader(Downloader):
                           'North_America', 'South_America']:
 
             url = "http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/%s" % continent
-            f = urllib.urlopen(url)
+            f = urlopen(url)
             html = f.read()
             soup = BeautifulSoup(html)
 

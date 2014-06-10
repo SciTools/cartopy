@@ -17,7 +17,6 @@
 from __future__ import division, absolute_import
 
 import io
-import cPickle as pickle
 import os
 import shutil
 import warnings
@@ -27,6 +26,7 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 import PIL.Image
 import shapely.geometry as sgeom
+from six.moves import cPickle as pickle
 
 from cartopy import config
 import cartopy.crs as ccrs
