@@ -352,7 +352,7 @@ examples_package_name = 'cartopy.examples'
 ############ plot directive ##############
 
 plot_html_show_formats = False
-plot_rcparams = {'figure.autolayout': True}
+#plot_rcparams = {'figure.autolayout': True}
 plot_formats = (('thumb.png', 20),
                 'png',
                 'pdf'

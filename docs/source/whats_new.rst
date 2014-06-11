@@ -38,7 +38,7 @@ What's new in cartopy 0.11
 
 * Support for the :class:`~cartopy.crs.UTM` projection was added by Mark Hedley.
 
-* Andrew Dawson has added the new convenience utility function
+* Andrew Dawson has added a new convenience utility function
   :func:`~cartopy.util.add_cyclic_point` to add a cyclic point to an array and
   optionally to a corresponding 1D coordinate.
 
