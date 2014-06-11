@@ -1,19 +1,52 @@
 What's new in cartopy 0.11
 **************************
 
-Thomas Lecocq added functionality to :mod:`cartopy.io.srtm` allowing intelligent
-filling of missing elevation data, as well as a function to compute elevation
-shading for relief style mapping. An example has been added which uses both of
-these functions to produce a grayscale shaded relief map:
+:Release: 0.11.0
+:Date:
+
+
+* Phil Elson added :class:`~cartopy.io.ogc_clients.WMSRasterSource` which
+  provides interactive pan and zoom OGC web services support for a Web Map
+  Service (WMS) aware axes. This capability may be added to an axes via the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wms` method. Generic interactive
+  slippy map panning and zooming capability is managed through the new
+  :class:`~cartopy.mpl.slippy_image_artist.SlippyImageArtist` and use of the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method.
+
+* :class:`~cartopy.io.ogc_clients.WMTSRasterSource` was added by Richard
+  Hattersley to provide interactive pan and zoom OGC web services support for
+  a Web Map Tile Service (WMTS) aware axes, which is available through the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method. This includes support
+  for the Google Mercator projection and efficient WTMS tile caching. This new
+  capability determines how to match up the available tiles projections
+  with the target projection and chooses the zoom level to best match the pixel
+  density in the rendered image.
+
+* Thomas Lecocq added functionality to :mod:`cartopy.io.srtm` allowing
+  intelligent filling of missing elevation data, as well as a function to
+  compute elevation shading for relief style mapping. An example has been added
+  which uses both of these functions to produce a grayscale shaded relief map:
 
 .. plot:: examples/srtm_shading.py
    :width: 300pt
+
+* Lion Krischer extended the capability of
+  :class:`~cartopy.io.img_tiles.GoogleTiles` to allow support for **street**,
+  **satellite**, **terrain** and **street_only** style Google Map tiles.
+
+* Nat Wilson's contribution brought us a major step closer to Python 3 compatibility.
+
+* Support for the :class:`~cartopy.crs.UTM` projection was added by Mark Hedley.
+
+* Andrew Dawson has added the new convenience utility function
+  :func:`~cartopy.util.add_cyclic_point` to add a cyclic point to an array and
+  optionally to a corresponding 1D coordinate.
 
 What's new in cartopy 0.10
 **************************
 
 :Release: 0.10.0
-:Date:
+:Date: 17 January 2014
 
 We are very pleased to announce that Andrew Dawson was added to the cartopy
 core development team. In this release Andrew has single-handedly
