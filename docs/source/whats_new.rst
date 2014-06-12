@@ -5,6 +5,12 @@ What's new in cartopy 0.11
 :Date:
 
 
+* Richard Hattersley added :func:`~cartopy.crs.epsg` support for generating
+  a Cartopy projection at run-time based on the EPSG code of a projected
+  coordinate system. This mechanism utilises http://epsg.io/ as a coordinate
+  system resource and employs EPSG request caching using
+  `pyepsg <https://github.com/rhattersley/pyepsg>`_
+
 * Phil Elson added :class:`~cartopy.io.ogc_clients.WMSRasterSource` which
   provides interactive pan and zoom OGC web services support for a Web Map
   Service (WMS) aware axes. This capability may be added to an axes via the
