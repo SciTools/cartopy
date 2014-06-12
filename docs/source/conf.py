@@ -358,6 +358,10 @@ examples_package_name = 'cartopy.examples'
 
 plot_html_show_formats = False
 #plot_rcparams = {'figure.autolayout': True}
+plot_rcparams = {'figure.subplot.bottom': 0.04,
+                 'figure.subplot.top': 0.96,
+                 'figure.subplot.left': 0.04,
+                 'figure.subplot.right': 0.96}
 plot_formats = (('thumb.png', 20),
                 'png',
                 'pdf'
