@@ -1411,3 +1411,20 @@ def _find_gt(a, x):
         if v.distance > x:
             return v
     return a[0]
+
+
+def epsg(code):
+    """
+    Return the projection which corresponds to the given EPSG code.
+
+    The EPSG code must correspond to a "projected coordinate system",
+    so EPSG codes such as 4326 (WGS-84) which define a "geodetic coordinate
+    system" will not work.
+
+    .. note::
+        The conversion is performed by querying http://epsg.io/ so a
+        live internet connection is required.
+
+    """
+    import cartopy._epsg
+    return cartopy._epsg._EPSGProjection(code)

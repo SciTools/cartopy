@@ -24,8 +24,9 @@ install:
   - yes | ./.travis_no_output sudo add-apt-repository ppa:ubuntugis/ubuntugis-unstable
   - ./.travis_no_output sudo apt-get update
   - ./.travis_no_output sudo apt-get install libgeos-dev libproj-dev
-  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose pyshp mock
-  - ./.travis_no_output sudo /usr/bin/pip install pep8==1.4.5 owslib six
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors shapely nose
+  - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pyshp mock
+  - ./.travis_no_output sudo /usr/bin/pip install pep8==1.4.5 owslib six pyepsg
   # its always version 2 currently
   - ./.travis_no_output sudo /usr/bin/pip install --use-mirrors pillow
   # install cartopy in the .local directory (in lieu of using virtual env...)
