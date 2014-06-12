@@ -8,6 +8,7 @@ PlateCarree
 -----------
 
 .. autoclass:: cartopy.crs.PlateCarree
+    :noindex:
 
 .. plot::
 
@@ -36,6 +37,7 @@ LambertConformal
 ----------------
 
 .. autoclass:: cartopy.crs.LambertConformal
+    :noindex:
 
 .. plot::
 
@@ -52,6 +54,7 @@ LambertCylindrical
 ------------------
 
 .. autoclass:: cartopy.crs.LambertCylindrical
+    :noindex:
 
 .. plot::
 
@@ -68,6 +71,7 @@ Mercator
 --------
 
 .. autoclass:: cartopy.crs.Mercator
+    :noindex:
 
 .. plot::
 
@@ -84,6 +88,7 @@ Miller
 ------
 
 .. autoclass:: cartopy.crs.Miller
+    :noindex:   
 
 .. plot::
 
@@ -100,6 +105,7 @@ Mollweide
 ---------
 
 .. autoclass:: cartopy.crs.Mollweide
+    :noindex:
 
 .. plot::
 
@@ -116,6 +122,7 @@ Orthographic
 ------------
 
 .. autoclass:: cartopy.crs.Orthographic
+    :noindex:
 
 .. plot::
 
@@ -132,6 +139,7 @@ Robinson
 --------
 
 .. autoclass:: cartopy.crs.Robinson
+    :noindex:
 
 .. plot::
 
@@ -148,6 +156,7 @@ Stereographic
 -------------
 
 .. autoclass:: cartopy.crs.Stereographic
+    :noindex:
 
 .. plot::
 
@@ -164,6 +173,7 @@ TransverseMercator
 ------------------
 
 .. autoclass:: cartopy.crs.TransverseMercator
+    :noindex:
 
 .. plot::
 
@@ -180,6 +190,7 @@ InterruptedGoodeHomolosine
 --------------------------
 
 .. autoclass:: cartopy.crs.InterruptedGoodeHomolosine
+    :noindex:
 
 .. plot::
 
@@ -196,6 +207,7 @@ RotatedPole
 -----------
 
 .. autoclass:: cartopy.crs.RotatedPole
+    :noindex:
 
 .. plot::
 
@@ -212,6 +224,7 @@ OSGB
 ----
 
 .. autoclass:: cartopy.crs.OSGB
+    :noindex:
 
 .. plot::
 
@@ -228,6 +241,7 @@ EuroPP
 ------
 
 .. autoclass:: cartopy.crs.EuroPP
+    :noindex:
 
 .. plot::
 
@@ -244,6 +258,7 @@ Geostationary
 -------------
 
 .. autoclass:: cartopy.crs.Geostationary
+    :noindex:
 
 .. plot::
 
@@ -260,6 +275,7 @@ Gnomonic
 --------
 
 .. autoclass:: cartopy.crs.Gnomonic
+    :noindex:
 
 .. plot::
 
@@ -276,6 +292,7 @@ NorthPolarStereo
 ----------------
 
 .. autoclass:: cartopy.crs.NorthPolarStereo
+    :noindex:
 
 .. plot::
 
@@ -292,6 +309,7 @@ OSNI
 ----
 
 .. autoclass:: cartopy.crs.OSNI
+    :noindex:
 
 .. plot::
 
@@ -308,6 +326,7 @@ SouthPolarStereo
 ----------------
 
 .. autoclass:: cartopy.crs.SouthPolarStereo
+    :noindex:
 
 .. plot::
 

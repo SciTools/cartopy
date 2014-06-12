@@ -294,9 +294,9 @@ class GeoAxes(matplotlib.axes.Axes):
         context manager, optionally reverting any changes back to the original
         values after the manager exits.
 
-        Parameters
-        ----------
-        hold : bool (default True)
+        Kwargs:
+
+        * hold : bool (default True)
             Whether to revert the data and view limits after the context
             manager exits.
 
@@ -720,9 +720,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the given raster source to the GeoAxes.
 
-        Parameters
-        ----------
-        raster_source : :class:`cartopy.io.RasterSource` like instance
+        Args:
+
+        * raster_source : :class:`cartopy.io.RasterSource` like instance
             ``raster_source`` may be any object which implements the
             RasterSource interface, including instances of objects such as
             :class:`~cartopy.io.ogc_clients.WMSRasterSource` and
@@ -758,12 +758,11 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
 
-        Parameters
-        ----------
+        Kwargs:
 
-        transform : :class:`~cartopy.crs.Projection` or matplotlib transform
+        * transform : :class:`~cartopy.crs.Projection` or matplotlib transform
             The coordinate system in which the given image is rectangular.
-        regrid_shape : int or pair of ints
+        * regrid_shape : int or pair of ints
             The shape of the desired image if it needs to be transformed.
             If a single integer is given then that will be used as the minimum
             length dimension, while the other dimension will be scaled up
@@ -772,15 +771,15 @@ class GeoAxes(matplotlib.axes.Axes):
             so for an image being transformed into a global PlateCarree
             projection the resulting transformed image would have a shape of
             ``(750, 1500)``.
-        extent : tuple
+        * extent : tuple
             The corner coordinates of the image in the form
             ``(left, right, bottom, top)``. The coordinates should be in the
             coordinate system passed to the transform keyword.
-        target_extent : tuple
+        * target_extent : tuple
             The corner coordinate of the desired image in the form
             ``(left, right, bottom, top)``. The coordinates should be in the
             coordinate system passed to the transform keyword.
-        origin : {'lower', 'upper'}
+        * origin : {'lower', 'upper'}
             The origin of the vertical pixels. See
             :func:`matplotlib.pyplot.imshow` for further details. Default
             is ``'lower'``.
@@ -1523,13 +1522,16 @@ class GeoAxes(matplotlib.axes.Axes):
 
         This function requires owslib and PIL to work.
 
-        Parameters
-        ----------
-        wms : string or :class:`owslib.wms.WebMapService` instance
+        Args:
+
+        * wms : string or :class:`owslib.wms.WebMapService` instance
             The web map service URL or owslib WMS instance to use.
-        layers : string or iterable of string
+        * layers : string or iterable of string
             The name of the layer(s) to use.
-        wms_kwargs : dict or None
+
+        Kwargs:
+
+        * wms_kwargs : dict or None
             Passed through to the
             :class:`~cartopy.io.ogc_clients.WMSRasterSource`
             constructor's ``getmap_extra_kwargs`` for defining getmap time
