@@ -34,7 +34,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.append(os.path.abspath('sphinxext'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -52,11 +52,16 @@ extensions = [
               'sphinx.ext.coverage',
               'sphinx.ext.viewcode',
               'sphinx.ext.extlinks',
-              'matplotlib.sphinxext.plot_directive'
+              'matplotlib.sphinxext.plot_directive',
+
+              'generate_package_rst',
               ]
 
 import matplotlib
 matplotlib.use('Agg')
+
+# List of packages to document.
+autopackage_name = ['cartopy']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -96,7 +101,7 @@ release = cartopy.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['sphinxext']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -116,7 +121,7 @@ exclude_patterns = []
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['cartopy']
 
 
 # -- Options for HTML output ---------------------------------------------------

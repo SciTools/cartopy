@@ -16,6 +16,7 @@ used to determine draw time behaviour of the gridlines and labels.
 .. autoclass:: cartopy.mpl.gridliner.Gridliner
     :members:
     :undoc-members:
+    :noindex:
 
     
     

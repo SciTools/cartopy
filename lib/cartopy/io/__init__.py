@@ -108,7 +108,7 @@ class Downloader(object):
                                    exist when calling :meth:`Downloader.path`
                                    it will be downloaded to this location.
 
-        Kwargs:
+    Kwargs:
 
         ``pre_downloaded_path_template`` - The template of a full path of a
                                            file which has been downloaded
@@ -340,9 +340,9 @@ class RasterSource(object):
         Return whether this raster source can provide images in the
         specified projection.
 
-        Parameters
-        ----------
-        projection : :class:`cartopy.crs.Projection`
+        Args:
+
+        * projection : :class:`cartopy.crs.Projection`
             The desired projection of the image.
 
         """
@@ -352,24 +352,24 @@ class RasterSource(object):
         """
         Return the image and its extent given some constraining information.
 
-        Parameters
-        ----------
-        projection : :class:`cartopy.crs.Projection`
+        Args:
+
+        * projection : :class:`cartopy.crs.Projection`
             The desired projection of the image.
-        extent : iterable of length 4
+        * extent : iterable of length 4
             The extent of the requested image in projected coordinates. The
             resulting image may not be defined exactly by these extents, and
             so the extent of the resulting image is also returned. The extents
             must be defined in the form ``(min_x, max_x, min_y, max_y)``.
-        target_resolution : iterable of length 2
+        * target_resolution : iterable of length 2
             The desired resolution of the image as ``(width, height)`
             in pixels.
 
-        Returns
-        -------
-        img : array like object (e.g. PIL.Image.Image)
+        Returns:
+
+        * img : array like object (e.g. PIL.Image.Image)
             The representative image.
-        extent : iterable of length 4
+        * extent : iterable of length 4
             The extent of the returned array in the form
             ``(min_x, max_x, min_y, max_y)``.
 
