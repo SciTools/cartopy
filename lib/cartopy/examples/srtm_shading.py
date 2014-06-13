@@ -31,7 +31,7 @@ def main():
 
     plt.title("SRTM Shaded Relief Map")
 
-    gl = ax.gridlines(draw_labels=True,)
+    gl = ax.gridlines(draw_labels=True)
     gl.xlabels_top = False
     gl.ylabels_left = False
 
