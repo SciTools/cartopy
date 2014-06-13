@@ -13,7 +13,6 @@ lib/cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
 docs/source/examples
 docs/source/gallery.rst
-docs/source/cartopy
 
 # some data files:
 lib/cartopy/data/SRTM3

@@ -12,12 +12,10 @@ access to standard vector datasets.
 .. autoclass:: Reader
     :members:
     :undoc-members:
-    :noindex:
 
 .. autoclass:: Record
     :members:
     :undoc-members:
-    :noindex:
 
 
 Helper functions for shapefile acquisition

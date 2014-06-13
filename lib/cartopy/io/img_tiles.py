@@ -118,17 +118,14 @@ class GoogleTiles(object):
         Returns the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
         tile position.
 
-        Args:
-
-        * x, y, z : int
+        Parameters
+        ----------
+        x, y, z : int
             The x, y, z tile coordinates in the Google tile numbering system
             (with y=0 being at the north pole), unless `y0_at_north_pole` is
             set to ``False``, in which case `y` is in the TMS numbering system
             (with y=0 being at the south pole).
-
-        Kwargs:
-
-        * y0_at_north_pole : bool
+        y0_at_north_pole : bool
             Whether the numbering of the y coordinate starts at the north
             pole (as is the convention for Google tiles), or the south
             pole (as is the convention for TMS).

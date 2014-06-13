@@ -78,17 +78,14 @@ class WMSRasterSource(RasterSource):
 
     def __init__(self, service, layers, getmap_extra_kwargs=None):
         """
-        Args:
-
-        * service : string or WebMapService instance
+        Parameters
+        ----------
+        service : string or WebMapService instance
             The WebMapService instance, or URL of a WMS service, from whence
             to retrieve the image.
-        * layers : string or list of strings
+        layers : string or list of strings
             The name(s) of layers to use from the WMS service.
-
-        Kwargs:
-
-        * getmap_extra_kwargs : dict or None
+        getmap_extra_kwargs : dict or None
             Extra keywords to pass through to the service's getmap method.
             If None, a dictionary with ``{'transparent': True}`` will
             be defined.

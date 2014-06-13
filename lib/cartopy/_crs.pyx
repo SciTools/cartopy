@@ -127,17 +127,14 @@ cdef class CRS:
     """
     def __init__(self, proj4_params, globe=None):
         """
-        Args:
-
-        * proj4_params : iterable of key-value pairs
+        Parameters
+        ----------
+        proj4_params : iterable of key-value pairs
             The proj4 parameters required to define the desired CRS.
             The parameters should not describe the desired elliptic model,
             instead create an appropriate Globe instance. The ``proj4_params``
             parameters will override any parameters that the Globe defines.
-
-        Kwargs:
-
-        * globe : :class:`~cartopy.crs.Globe` instance, optional
+        globe : :class:`~cartopy.crs.Globe` instance, optional
             If omitted, the default Globe instance will be created.
             See :class:`~cartopy.crs.Globe` for details.
 

@@ -29,7 +29,6 @@ all projections in the :ref:`cartopy_projections`.
 
 .. autoclass:: cartopy.crs.Projection
     :members:
-    :noindex:
 
 
 There are a few non-:class:`~cartopy.crs.Projection` subclasses. These represent
@@ -40,4 +39,3 @@ coordinate reference systems which are 3 dimensional and could not be drawn dire
 .. autoclass:: cartopy.crs.Geocentric(globe=None)
 
 .. autoclass:: cartopy.crs.RotatedGeodetic
-    :noindex:

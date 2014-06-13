@@ -12,4 +12,3 @@ submitted back to the matplotlib project).
     :members:
     :exclude-members: cla, contour, contourf, draw, format_coord, imshow, pcolor, pcolormesh, scatter
     :undoc-members:
-    :noindex:
