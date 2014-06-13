@@ -28,6 +28,9 @@ What's new in cartopy 0.11
   with the target projection and chooses the zoom level to best match the pixel
   density in the rendered image.
 
+.. plot:: examples/wmts.py
+    :width: 300pt
+
 * Thomas Lecocq added functionality to :mod:`cartopy.io.srtm` allowing
   intelligent filling of missing elevation data, as well as a function to
   compute elevation shading for relief style mapping. An example has been added
