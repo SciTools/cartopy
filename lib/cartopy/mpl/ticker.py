@@ -28,6 +28,8 @@ class _PlateCarreeFormatter(Formatter):
 
     """
 
+    _target_projection = ccrs.PlateCarree()
+
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
                  transform_precision=1e-8):
         """
@@ -51,8 +53,8 @@ class _PlateCarreeFormatter(Formatter):
                                    ccrs.Mercator)):
             raise TypeError("This formatter cannot be used with "
                             "non-rectangular projections.")
-        target = ccrs.PlateCarree()
-        projected_value = self._apply_transform(value, target, source)
+        projected_value = self._apply_transform(value, self._target_projection,
+                                                source)
         # Round the transformed value using a given precision for display
         # purposes. Transforms can introduce minor rounding errors that make
         # the tick values look bad, these need to be accounted for.
