@@ -18,7 +18,7 @@ from __future__ import absolute_import
 
 import cartopy.io.ogc_clients as ogc
 from owslib.wms import WebMapService
-from owslib.wmts import WebMapTileService
+from owslib.wmts import ContentMetadata, WebMapTileService
 import unittest
 import cartopy.crs as ccrs
 import numpy as np
@@ -96,8 +96,8 @@ class test_WMTSRasterSource(unittest.TestCase):
     def test_string_service(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         self.assertIsInstance(source.wmts, WebMapTileService)
-        self.assertIsInstance(source.layer_name, basestring)
-        self.assertEqual(source.layer_name, self.layer_name)
+        self.assertIsInstance(source.layer, ContentMetadata)
+        self.assertEqual(source.layer.name, self.layer_name)
 
     def test_wmts_service_instance(self):
         service = WebMapTileService(self.URI)

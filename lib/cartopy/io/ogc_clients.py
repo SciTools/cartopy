@@ -184,11 +184,17 @@ class WMTSRasterSource(RasterSource):
                 hasattr(wmts, 'gettile')):
             wmts = owslib.wmts.WebMapTileService(wmts)
 
+        try:
+            layer = wmts.contents[layer_name]
+        except KeyError:
+            raise ValueError('Invalid layer name {!r} for WMTS at {!r}'.format(
+                layer_name, wmts.url))
+
         #: The OWSLib WebMapTileService instance.
         self.wmts = wmts
 
-        #: The name of the layer to fetch.
-        self.layer_name = layer_name
+        #: The layer to fetch.
+        self.layer = layer
 
         self._matrix_set_name_map = {}
 
@@ -197,8 +203,11 @@ class WMTSRasterSource(RasterSource):
         matrix_set_name = self._matrix_set_name_map.get(key)
         if matrix_set_name is None:
             wmts = self.wmts
-            layer = wmts.contents[self.layer_name]
-            for tile_matrix_set_name in layer.tilematrixsets:
+            if hasattr(self.layer, 'tilematrixsetlinks'):
+                matrix_set_names = self.layer.tilematrixsetlinks.keys()
+            else:
+                matrix_set_names = self.layer.tilematrixsets
+            for tile_matrix_set_name in matrix_set_names:
                 tile_matrix_set = wmts.tilematrixsets[tile_matrix_set_name]
                 crs_urn = tile_matrix_set.crs
                 if crs_urn in _URN_TO_CRS:
@@ -209,7 +218,7 @@ class WMTSRasterSource(RasterSource):
             if matrix_set_name is None:
                 available_urns = sorted(set(
                     wmts.tilematrixsets[name].crs for name in
-                    layer.tilematrixsets))
+                    matrix_set_names))
                 msg = 'Unable to find tile matrix for projection.'
                 msg += '\n    Projection: ' + str(projection)
                 msg += '\n    Available tile CRS URNs:'
@@ -227,9 +236,9 @@ class WMTSRasterSource(RasterSource):
         width, height = target_resolution
         max_pixel_span = min((max_x - min_x) / width,
                              (max_y - min_y) / height)
-        image, extent = self._wmts_images(
-            self.wmts, self.layer_name, matrix_set_name,
-            extent, max_pixel_span)
+        image, extent = self._wmts_images(self.wmts, self.layer,
+                                          matrix_set_name, extent,
+                                          max_pixel_span)
         return image, extent
 
     def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span):
@@ -255,7 +264,8 @@ class WMTSRasterSource(RasterSource):
         tile_span_y = tile_matrix.tileheight * pixel_span
         return tile_span_x, tile_span_y
 
-    def _select_tiles(self, tile_matrix, tile_span_x, tile_span_y, extent):
+    def _select_tiles(self, tile_matrix, tile_matrix_limits,
+                      tile_span_x, tile_span_y, extent):
         # Convert the requested extent from CRS coordinates to tile
         # indices. See annex H of the WMTS v1.0.0 spec.
         # NB. The epsilons get rid of any tiles which only just
@@ -274,9 +284,15 @@ class WMTSRasterSource(RasterSource):
         max_col = min(max_col, tile_matrix.matrixwidth - 1)
         min_row = max(min_row, 0)
         max_row = min(max_row, tile_matrix.matrixheight - 1)
+        # Clamp to any layer-specific limits on the tile matrix.
+        if tile_matrix_limits:
+            min_col = max(min_col, tile_matrix_limits.mintilecol)
+            max_col = min(max_col, tile_matrix_limits.maxtilecol)
+            min_row = max(min_row, tile_matrix_limits.mintilerow)
+            max_row = min(max_row, tile_matrix_limits.maxtilerow)
         return min_col, max_col, min_row, max_row
 
-    def _wmts_images(self, wmts, layer_name, matrix_set_name, extent,
+    def _wmts_images(self, wmts, layer, matrix_set_name, extent,
                      max_pixel_span):
         """
         Add images from the specified WMTS layer and matrix set to cover
@@ -290,7 +306,7 @@ class WMTSRasterSource(RasterSource):
         Args:
 
             * wmts - The owslib.wmts.WebMapTileService providing the tiles.
-            * layer_name - The name of the layer to use.
+            * layer - The owslib.wmts.ContentMetadata (aka. layer) to draw.
             * matrix_set_name - The name of the matrix set to use.
             * extent - Tuple of (left, right, bottom, top) in Axes coordinates.
             * max_pixel_span - Preferred maximum pixel width or height
@@ -308,14 +324,21 @@ class WMTSRasterSource(RasterSource):
         # Determine which tiles are required to cover the requested extent.
         tile_span_x, tile_span_y = self._tile_span(tile_matrix,
                                                    meters_per_unit)
+        tile_matrix_set_links = getattr(layer, 'tilematrixsetlinks', None)
+        if tile_matrix_set_links is None:
+            tile_matrix_limits = None
+        else:
+            tile_matrix_set_link = tile_matrix_set_links[matrix_set_name]
+            tile_matrix_limits = tile_matrix_set_link.tilematrixlimits.get(
+                tile_matrix.identifier)
         min_col, max_col, min_row, max_row = self._select_tiles(
-            tile_matrix, tile_span_x, tile_span_y, extent)
+            tile_matrix, tile_matrix_limits, tile_span_x, tile_span_y, extent)
 
         # Find the relevant section of the image cache.
         tile_matrix_id = tile_matrix.identifier
         cache_by_wmts = WMTSRasterSource._shared_image_cache
         cache_by_layer_matrix = cache_by_wmts.setdefault(wmts, {})
-        image_cache = cache_by_layer_matrix.setdefault((layer_name,
+        image_cache = cache_by_layer_matrix.setdefault((layer.id,
                                                         tile_matrix_id), {})
 
         # To avoid nasty seams between the individual tiles, we
@@ -323,6 +346,9 @@ class WMTSRasterSource(RasterSource):
         big_img = None
         n_rows = 1 + max_row - min_row
         n_cols = 1 + max_col - min_col
+        # Ignore out-of-range errors if the current version of OWSLib
+        # doesn't provide the regional information.
+        ignore_out_of_range = tile_matrix_set_links is None
         for row in range(min_row, max_row + 1):
             for col in range(min_col, max_col + 1):
                 # Get the tile's Image from the cache if possible.
@@ -331,14 +357,15 @@ class WMTSRasterSource(RasterSource):
                 if img is None:
                     try:
                         tile = wmts.gettile(
-                            layer=layer_name,
+                            layer=layer.id,
                             tilematrixset=matrix_set_name,
                             tilematrix=tile_matrix_id,
                             row=row, column=col)
-                    except owslib.util.ServiceException as e:
-                        if 'TileOutOfRange' in e.message:
+                    except owslib.util.ServiceException as exception:
+                        if ('TileOutOfRange' in exception.message and
+                                ignore_out_of_range):
                             continue
-                        raise e
+                        raise exception
                     img = PIL.Image.open(io.BytesIO(tile.read()))
                     image_cache[img_key] = img
                 if big_img is None:
