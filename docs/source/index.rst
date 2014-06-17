@@ -30,7 +30,6 @@ and is at version |version|. You can find the source code for cartopy on
 Installation
 ============
 
-Installation of cartopy can currently only be done from source. 
 Build instructions for specific operating systems can be found in the 
 :ref:`installation <installing>` section.
 

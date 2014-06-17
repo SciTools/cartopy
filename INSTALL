@@ -1,25 +1,14 @@
-Installing Cartopy currently requires you to build it from source. The 
-latest release is available from https://github.com/SciTools/Cartopy.
+The latest release of Cartopy is available from
+https://github.com/SciTools/Cartopy.
 
-Once you have satisfied the requirements detailed below, 
-extract the Cartopy source package, cd to the new directory, and enter::
-
+Once you have satisfied the requirements detailed below, simply
   python setup.py install
 
 
-In-place build - an alternative for developers
-==============================================
-We strongly encourage people to contribute to Cartopy and for this type of 
-development activity an in-place build can be useful. Once you've cloned 
-the Cartopy git repository you can perform an in-place build by entering::
-
-  python setup.py build_ext --inplace
-
-
-Build requirements
-==================
-These are external packages which you will need to install before
-installing Cartopy. 
+Requirements
+============
+These external packages are required to install Cartopy or gain access to
+significant Cartopy functionality.
 
 Many of these packages are available in Linux package managers
 such as aptitude and yum. For example, it may be possible to install 
@@ -31,27 +20,19 @@ If you are installing dependencies with a package manager on Linux,
 you may need to install the development packages (look for a "-dev" 
 postfix) in addition to the core packages.  
 
-python 2.7 or later (http://www.python.org/)
-    Cartopy requires Python 2.7 or later, but is not currently compatible with Python 3.
 
-numpy 1.6 or later (http://numpy.scipy.org/)
-    Python package for scientific computing including a powerful N-dimensional array object.
+python 2.7 or later (http://www.python.org/)
+    Cartopy requires Python 2.7 or later.
 
 Cython 0.15.1 or later (https://pypi.python.org/pypi/Cython/)
 
-
-Runtime requirements
-====================
-These are external packages you will need to install to access significant Cartopy functionality.
-
-python 2.7 or later (http://www.python.org/)
-    Cartopy requires Python 2.7 or later, but is not currently compatible with Python 3.
-
 numpy 1.6 or later (http://numpy.scipy.org/)
-    Python package for scientific computing including a powerful N-dimensional array object.
+    Python package for scientific computing including a powerful N-dimensional
+    array object.
 
 shapely 1.2.14* (https://github.com/Toblerity/Shapely)
-    Python package for the manipulation and analysis of planar geometric objects.
+    Python package for the manipulation and analysis of planar geometric
+    objects.
 
 pyshp 1.1.4 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
@@ -59,13 +40,18 @@ pyshp 1.1.4 or later (https://pypi.python.org/pypi/pyshp)
 PROJ.4 4.8.0 or later (http://trac.osgeo.org/proj/)
     Cartographic Projections library.
 
+matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
+    Python package for 2D plotting.  This package is required for any
+    graphical capability.
+
+six 1.3.0 or later (https://pypi.python.org/pypi/six)
+    Python 2 and 3 compatibility.
+
+
 Optional
 --------
 These are optional packages which you may want to install to enable
 additional Cartopy functionality.
-
-matplotlib 1.2.0 (http://matplotlib.sourceforge.net/)
-    Python package for 2D plotting.  This package is required for any graphical capability.
 
 Pillow 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
     Popular fork of PythonImagingLibrary.
@@ -78,8 +64,13 @@ PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
 scipy 0.10 or later (http://www.scipy.org/)
     Python package for scientific computing.
 
-Test
-----
+OWSLib 0.8.7 (https://pypi.python.org/pypi/OWSLib)
+     Python package for client programming with Open Geospatial Consortium
+     (OGC) web service.  Gives access to cartopy ogc clients.
+
+
+Testing
+-------
 These packages are required for the full Cartopy test suite to run.
 
 mock 1.0.1 (http://pypi.python.org/pypi/mock/)
@@ -95,21 +86,19 @@ pep8 1.3.3 or later (https://pypi.python.org/pypi/pep8)
  
 * Those packages have been tested with a specific build.
 
+
 Packaged distributions
 ======================
-`Conda (Anaconda), an OS agnostic package manager
-<http://conda.pydata.org/miniconda.html>`_
+`Conda <http://conda.pydata.org/miniconda.html>`_ (Anaconda), an OS agnostic
+package manager via `rsignell-usgs's <https://binstar.org/rsignell>`_ conda
+repo.
 
-`Homebrew OS X package manager
-<http://brew.sh/>`_
+`Christoph Gohlke's <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ windows
+binaries.
 
-`Enthought Canopy
-<https://www.enthought.com/products/canopy/>`_
+`Installation recipies <https://github.com/SciTools/installation-recipes>`_
+for numerous operating systems are maintained by the community.
 
-`Python (x, y)
-<http://code.google.com/p/pythonxy/>`_ which tends to be updated a bit more frequently.
+`OSGeo Live <http://live.osgeo.org>`_
 
-`Christoph Gohlke's
-<http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ windows binaries
-
-`Installation recipies <https://github.com/SciTools/installation-recipes>`_ for numerous operating systems are maintained by the community.
+`Enthought Canopy <https://www.enthought.com/products/canopy/>`_
