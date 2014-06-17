@@ -808,6 +808,14 @@ class EuroPP(UTM):
         globe = Globe(ellipse='intl')
         super(EuroPP, self).__init__(32, globe=globe)
 
+    @property
+    def x_limits(self):
+        return (-1.4e6, 2e6)
+
+    @property
+    def y_limits(self):
+        return (4e6, 7.9e6)
+
 
 class Mercator(Projection):
     """
