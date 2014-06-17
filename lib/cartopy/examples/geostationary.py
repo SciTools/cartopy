@@ -41,7 +41,7 @@ def geos_image():
     """
     url = ('https://gist.github.com/pelson/5871263/raw/'
            'EIDA50_201211061300_clip2.png')
-    img_handle = BytesIO(urllib2.urlopen(url).read())
+    img_handle = BytesIO(urlopen(url).read())
     img = plt.imread(img_handle)
     img_proj = ccrs.Geostationary(satellite_height=35786000)
     img_extent = (-5500000, 5500000, -5500000, 5500000)
