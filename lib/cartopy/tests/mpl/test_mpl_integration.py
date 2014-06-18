@@ -342,6 +342,18 @@ def test_pcolormesh_goode_wrap():
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 
 
+@ImageTesting(['pcolormesh_mercator_wrap'])
+def test_pcolormesh_mercator_wrap():
+    x = np.linspace(0, 360, 73)
+    y = np.linspace(-87.5, 87.5, 36)
+    X, Y = np.meshgrid(*[np.deg2rad(c) for c in (x, y)])
+    Z = np.cos(Y) + 0.375 * np.sin(2. * X)
+    Z = Z[:-1, :-1]
+    ax = plt.axes(projection=ccrs.Mercator())
+    ax.coastlines()
+    ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
+
+
 @ImageTesting(['quiver_plate_carree'])
 def test_quiver_plate_carree():
     x = np.arange(-60, 42.5, 2.5)
