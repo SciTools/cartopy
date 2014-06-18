@@ -28,6 +28,7 @@ extend, whilst still making it possible for users to configure in their own
 way.
 
 .. autoclass:: cartopy.io.Downloader
+    :noindex:
     :members: FORMAT_KEYS, path, url, target_path,
               pre_downloaded_path, acquire_resource, from_config
 
@@ -62,6 +63,7 @@ this way.
 
 .. autoclass:: cartopy.io.RasterSource
     :members:
+    :noindex:
 
 .. currentmodule:: cartopy.mpl.slippy_image_artist
 
@@ -74,3 +76,4 @@ interface, with users often creating a
 the GeoAxes' :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method.
 
 .. autoclass:: SlippyImageArtist
+    :noindex:

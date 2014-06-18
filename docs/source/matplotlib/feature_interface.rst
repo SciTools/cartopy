@@ -8,6 +8,7 @@ The cartopy Feature interface
 .. autoclass:: Feature
     :members:
     :undoc-members:
+    :noindex:
 
 
 ---------
@@ -17,10 +18,13 @@ Natural Earth or GSHHS shapefiles.
 
 
 .. autoclass:: ShapelyFeature
+    :noindex:
     
 .. autoclass:: NaturalEarthFeature
+    :noindex:
     
 .. autoclass:: GSHHSFeature
+    :noindex:
 
 ----------
 

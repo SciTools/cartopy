@@ -26,16 +26,16 @@ def geos_image():
     """
     Return a specific MODIS image by retrieving it from a github gist URL.
 
-    Returns
-    -------
-    img : numpy array
+    Returns:
+
+    * img : numpy array
         The pixels of the image in a numpy array.
-    img_proj : cartopy CRS
+    * img_proj : cartopy CRS
         The rectangular coordinate system of the image.
-    img_extent : tuple of floats
+    * img_extent : tuple of floats
         The extent of the image ``(x0, y0, x1, y1)`` referenced in
         the ``img_proj`` coordinate system.
-    origin : str
+    * origin : str
         The origin of the image to be passed through to matplotlib's imshow.
 
     """
