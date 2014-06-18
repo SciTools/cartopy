@@ -9,6 +9,10 @@ python:
 install:
   - sudo apt-get update -qq
 
+  # Workarounds exising conda recipies
+  # ----------------------------------
+  - export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/
+
   # Install miniconda
   # -----------------
   - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
