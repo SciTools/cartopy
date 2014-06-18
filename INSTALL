@@ -87,17 +87,19 @@ pep8 1.3.3 or later (https://pypi.python.org/pypi/pep8)
 * Those packages have been tested with a specific build.
 
 
-Packaged distributions
-======================
+Installation options
+====================
 `Conda <http://conda.pydata.org/miniconda.html>`_ (Anaconda), an OS agnostic
-package manager via `rsignell-usgs's <https://binstar.org/rsignell>`_ conda
+package manager via `Rich Signell's <https://binstar.org/rsignell>`_ conda
 repo.
 
 `Christoph Gohlke's <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ windows
 binaries.
 
-`Installation recipies <https://github.com/SciTools/installation-recipes>`_
-for numerous operating systems are maintained by the community.
+A community maintained repository of installation recipes can be found at
+`SciTools/installation-recipes <https://github.com/SciTools/installation-recipes>`_
+which provide step-by-step instructions for building Cartopy from source on
+specific operating systems.
 
 `OSGeo Live <http://live.osgeo.org>`_
 
