@@ -2,7 +2,7 @@
     :hidden:
 
     whats_new.rst
-    building_from_source/index.rst
+    installing.rst
     citation.rst
     cartopy_outline.rst
 
@@ -27,17 +27,10 @@ and is at version |version|. You can find the source code for cartopy on
 `our github page <http://github.com/SciTools/cartopy>`_.
 
 
-Installation
-============
-
-Installation of cartopy can currently only be done from source. 
-Build instructions for specific operating systems can be found in the 
-:ref:`building from source <building_from_source>` section.
-
-
 Getting started
 ===============
 
+To get up and running with cartopy, simply follow the :ref:`installation <installing>` section.
 The cartopy documentation is arranged in a userguide form with reference documentation available inline.
 
 .. toctree::
