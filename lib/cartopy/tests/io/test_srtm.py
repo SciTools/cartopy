@@ -18,6 +18,9 @@ from __future__ import absolute_import
 
 import warnings
 
+import numpy as np
+from numpy.testing import assert_array_equal
+
 import cartopy.io.srtm
 from cartopy.tests.io.test_downloaders import download_to_temp
 
@@ -39,6 +42,12 @@ def test_srtm3_retrieve():
         assert img.max() == 602, msg
         assert img.min() == -32768, msg
         assert img[-10, 12] == 78, msg + 'Got {}'.format(img[-10, 12])
+
+
+def test_srtm3_out_of_range():
+    # Somewhere over the pacific the elevation should be 0.
+    img, _, _ = cartopy.io.srtm.srtm_composite(120, 2, 2, 2)
+    assert_array_equal(img, np.zeros(np.array((1201, 1201)) * 2))
 
 
 if __name__ == '__main__':

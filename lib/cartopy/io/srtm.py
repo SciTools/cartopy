@@ -119,14 +119,18 @@ def srtm_composite(lon_min, lat_min, nx, ny):
             x_img_slice = slice(i * shape[0], (i + 1) * shape[0])
             y_img_slice = slice(j * shape[1], (j + 1) * shape[1])
 
-            tile_img, crs, extent = srtm(bottom_left_ll[0] + j,
-                                         bottom_left_ll[1] + i)
-            img[x_img_slice, y_img_slice] = tile_img
+            try:
+                tile_img, _, _ = srtm(bottom_left_ll[0] + j,
+                                      bottom_left_ll[1] + i)
+            except ValueError:
+                img[x_img_slice, y_img_slice] = 0
+            else:
+                img[x_img_slice, y_img_slice] = tile_img
 
     extent = (bottom_left_ll[0], bottom_left_ll[0] + ny,
               bottom_left_ll[1], bottom_left_ll[1] + nx)
 
-    return img, crs, extent
+    return img, ccrs.PlateCarree(), extent
 
 
 def read_SRTM3(fh):
@@ -153,11 +157,22 @@ def read_SRTM3(fh):
 
 
 def SRTM3_retrieve(lon, lat):
+    """
+    Return the path of a .hgt file for the given SRTM location.
+
+    If no such .hgt file exists (because it is over the ocean)
+    None will be returned.
+
+    """
     x = '%s%03d' % ('E' if lon > 0 else 'W', abs(int(lon)))
     y = '%s%02d' % ('N' if lat > 0 else 'S', abs(int(lat)))
 
     srtm_downloader = Downloader.from_config(('SRTM', 'SRTM3'))
-    return srtm_downloader.path({'config': config, 'x': x, 'y': y})
+    params = {'config': config, 'x': x, 'y': y}
+    if srtm_downloader.url(params) is None:
+        return None
+    else:
+        return srtm_downloader.path({'config': config, 'x': x, 'y': y})
 
 
 class SRTM3Downloader(Downloader):
