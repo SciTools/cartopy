@@ -1,1 +1,0 @@
-.. autofunction:: cartopy.crs.epsg

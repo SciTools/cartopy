@@ -18,6 +18,14 @@
 Implements RasterSource classes which can retrieve imagery from web services
 such as WMS and WMTS.
 
+The matplotlib interface can make use of RasterSources via the
+:meth:`cartopy.mpl.geoaxes.GeoAxes.add_raster` method,
+with additional specific methods which make use of this for WMS and WMTS
+(:meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wms` and
+:meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts`). An example of using WMTS in
+this way can be found at :ref:`examples-wmts`.
+
+
 """
 from __future__ import absolute_import, division
 
