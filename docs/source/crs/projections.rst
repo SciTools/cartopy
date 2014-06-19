@@ -176,6 +176,12 @@ TransverseMercator
     ax.gridlines()
 
 
+UTM
+---
+
+.. autoclass:: cartopy.crs.UTM
+
+
 InterruptedGoodeHomolosine
 --------------------------
 

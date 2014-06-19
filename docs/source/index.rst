@@ -18,7 +18,7 @@ drawing interface to matplotlib for creating publication quality maps.
 Some of the key features of cartopy are:
 
  * object oriented projection definitions
- * point, line, polygon and image transformations between projections
+ * point, line, vector, polygon and image transformations between projections
  * integration to expose advanced mapping in matplotlib with a simple and intuitive interface
  * powerful vector data handling by integrating shapefile reading with Shapely capabilities 
 
@@ -30,8 +30,8 @@ and is at version |version|. You can find the source code for cartopy on
 Getting started
 ===============
 
-To get up and running with cartopy, simply follow the :ref:`installation <installing>` section.
-The cartopy documentation is arranged in a userguide form with reference documentation available inline.
+The :ref:`installation guide <installing>` provides information on getting up and running, and
+cartopy's documentation is arranged userguide form with reference documentation available inline.
 
 .. toctree::
     :maxdepth: 1
@@ -41,7 +41,6 @@ The cartopy documentation is arranged in a userguide form with reference documen
     tutorials/using_the_shapereader.rst
     matplotlib/intro.rst
     matplotlib/feature_interface.rst
-
     developer_interfaces.rst
 
 

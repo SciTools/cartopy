@@ -39,3 +39,7 @@ coordinate reference systems which are 3 dimensional and could not be drawn dire
 .. autoclass:: cartopy.crs.Geocentric(globe=None)
 
 .. autoclass:: cartopy.crs.RotatedGeodetic
+
+There is also a function for calling epsg.io with a specified code, returning the corresponding cartopy projection, see below.
+
+.. autofunction:: cartopy.crs.epsg

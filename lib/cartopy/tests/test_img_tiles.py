@@ -52,7 +52,7 @@ def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
 
 def test_google_tile_styles():
     """
-    Tests that settings the Google Maps tile style works as expected.
+    Tests that setting the Google Maps tile style works as expected.
 
     This is essentially just assures information is properly propagated through
     the class structure.
