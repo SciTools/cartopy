@@ -2,7 +2,7 @@ What's new in cartopy 0.11
 **************************
 
 :Release: 0.11.0
-:Date:
+:Date: 19 June 2014
 
 
 * Richard Hattersley added :func:`~cartopy.crs.epsg` support for generating
