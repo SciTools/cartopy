@@ -58,7 +58,7 @@ install:
 script:
   - mkdir ../test_folder
   - cd ../test_folder
-  - nosetests cartopy --with-doctest -sv
+  - nosetests cartopy --with-doctest --nocapture --verbose
 
 after_failure:
   - source activate test-environment
