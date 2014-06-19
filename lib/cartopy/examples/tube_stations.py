@@ -1,13 +1,12 @@
+__tags__ = ['Miscellanea']
 """
 Produces a map showing London Underground station locations with high
 resolution background imagery provided by MapQuest.
 
 """
-__tags__ = ['Miscellanea']
+from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import numpy as np
-
-from matplotlib.path import Path
 
 import cartopy.crs as ccrs
 from cartopy.io.img_tiles import MapQuestOSM
@@ -47,7 +46,7 @@ def main():
     circle_verts = np.vstack([np.sin(theta), np.cos(theta)]).T
     concentric_circle = Path.make_compound_path(Path(circle_verts[::-1]),
                                                 Path(circle_verts * 0.6))
- 
+
     rectangle = Path([[-1.1, -0.2], [1, -0.2], [1, 0.3], [-1.1, 0.3]])
 
     # Add the imagery to the map.
