@@ -9,6 +9,11 @@ python:
 install:
   - sudo apt-get update -qq
 
+  # Workarounds exising conda recipies
+  # ----------------------------------
+  # Ensure that the systems freetype library is used and not the conda installed version due to testing issues.
+  - export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/
+
   # Install miniconda
   # -----------------
   - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
