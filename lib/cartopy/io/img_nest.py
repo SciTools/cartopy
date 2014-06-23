@@ -152,7 +152,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                 result = os.path.join(dirname, result)
             return result
 
-        result.extend(map(_convert_basename, result))
+        result += [_convert_basename(r) for r in result]
         return result
 
     def __array__(self):
