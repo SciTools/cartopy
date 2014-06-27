@@ -62,8 +62,8 @@ class TestLineString(unittest.TestCase):
         for coords, pieces in tests:
             line_string = geometry.LineString(coords)
             multi_line_string = projection.project_geometry(line_string)
-            #from cartopy.tests import show
-            #show(projection, multi_line_string)
+            # from cartopy.tests import show
+            # show(projection, multi_line_string)
             self.assertEqual(len(multi_line_string), pieces)
 
     def test_split(self):
@@ -71,7 +71,7 @@ class TestLineString(unittest.TestCase):
         line_string = geometry.LineString([(-10, 30), (10, 60)])
         multi_line_string = projection.project_geometry(line_string)
         from cartopy.tests import show
-        #show(projection, multi_line_string)
+        # show(projection, multi_line_string)
         self.assertEqual(len(multi_line_string), 2)
 
     def test_out_of_domain_efficiency(self):
@@ -199,7 +199,7 @@ class TestBisect(unittest.TestCase):
         line_string = geometry.LineString([(-10, 30), (10, 50)])
         multi_line_string = projection.project_geometry(line_string)
         from cartopy.tests import show
-        #show(projection, multi_line_string)
+        # show(projection, multi_line_string)
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
             for coord in line_string.coords:
@@ -213,7 +213,7 @@ class TestMisc(unittest.TestCase):
         line_string = geometry.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         from cartopy.tests import show
-        #show(projection, multi_line_string)
+        # show(projection, multi_line_string)
         for line_string in multi_line_string:
             for coord in line_string.coords:
                 self.assertFalse(any(np.isnan(coord)),
