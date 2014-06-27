@@ -90,7 +90,7 @@ def test_null_geometry():
 
 @ImageTesting(['contour_with_interiors'], tolerance=0.3)
 def test_contour_interiors():
-    ############### produces a polygon with multiple holes:
+    # produces a polygon with multiple holes:
     nx, ny = 10, 10
     numlev = 2
     lons, lats = np.meshgrid(np.linspace(-50, 50, nx),
@@ -110,7 +110,7 @@ def test_contour_interiors():
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
 
-    ############## produces singular polygons (zero area polygons)
+    # produces singular polygons (zero area polygons)
 
     numlev = 2
     x, y = np.meshgrid(np.arange(-5.5, 5.5, 0.25), np.arange(-5.5, 5.5, 0.25))

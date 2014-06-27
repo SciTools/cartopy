@@ -42,7 +42,7 @@ install:
   - conda install mock
   - conda install nose
   - conda install owslib
-  - conda install pep8=1.4.5
+  - conda install pep8
   - conda install proj4
   - conda install pyshp
   - conda install shapely

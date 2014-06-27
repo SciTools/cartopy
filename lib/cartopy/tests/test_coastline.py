@@ -31,9 +31,9 @@ class TestCoastline(unittest.TestCase):
         all_geometries = list(reader.geometries())
         geometries = []
         geometries += all_geometries
-        #geometries += all_geometries[48:52] # Aus & Taz
-        #geometries += all_geometries[72:73] # GB
-        #for geometry in geometries:
+        # geometries += all_geometries[48:52] # Aus & Taz
+        # geometries += all_geometries[72:73] # GB
+        # for geometry in geometries:
         for i, geometry in enumerate(geometries[93:]):
             for line_string in geometry:
                 multi_line_string = projection.project_geometry(line_string)

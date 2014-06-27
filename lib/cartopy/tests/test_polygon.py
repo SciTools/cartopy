@@ -161,8 +161,8 @@ class TestQuality(unittest.TestCase):
             (175.0, -57.19913331),
         ])
         self.multi_polygon = projection.project_geometry(polygon)
-        #from cartopy.tests import show
-        #show(projection, self.multi_polygon)
+        # from cartopy.tests import show
+        # show(projection, self.multi_polygon)
 
     def test_split(self):
         # Start simple ... there should be two projected polygons.
