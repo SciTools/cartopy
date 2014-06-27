@@ -39,7 +39,7 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
                             'Miriam.A2012270.2050.2km.jpg')
 
 
-@ImageTesting(['web_tiles'])
+@ImageTesting(['web_tiles'], tolerance=0.5)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
