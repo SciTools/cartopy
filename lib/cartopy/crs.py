@@ -1310,12 +1310,24 @@ class Gnomonic(Projection):
 class Stereographic(Projection):
     def __init__(self, central_latitude=0.0, central_longitude=0.0,
                  false_easting=0.0, false_northing=0.0,
-                 true_scale_latitude=None, globe=None):
+                 true_scale_latitude=None, 
+                 scale_factor=None, # equivalent to 1.0
+                 globe=None):
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
+
         if true_scale_latitude:
+            if central_latitude not in (-90., 90.):
+                warnings.warn('"true_scale_latitude" parameter is only used for polar stereographic projections. Consider the use of "scale_factor" instead.')
             proj4_params.append(('lat_ts', true_scale_latitude))
+
+        # See https://github.com/SciTools/cartopy/issues/455
+        if scale_factor:
+            if true_scale_latitude is not None:
+                warnings.warn('It does not make sense to provide both "scale_factor" and "true_scale_latitude"')
+            proj4_params.append(('k_0', scale_factor))
+
         super(Stereographic, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
@@ -1358,17 +1370,21 @@ class Stereographic(Projection):
 
 
 class NorthPolarStereo(Stereographic):
-    def __init__(self, central_longitude=0.0, globe=None):
+    def __init__(self, central_longitude=0.0, true_scale_latitude=None, globe=None):
         super(NorthPolarStereo, self).__init__(
             central_latitude=90,
-            central_longitude=central_longitude, globe=globe)
+            central_longitude=central_longitude, 
+            true_scale_latitude=true_scale_latitude, # None is equivalent to +90
+            globe=globe)
 
 
 class SouthPolarStereo(Stereographic):
-    def __init__(self, central_longitude=0.0, globe=None):
+    def __init__(self, central_longitude=0.0, true_scale_latitude=None, globe=None):
         super(SouthPolarStereo, self).__init__(
             central_latitude=-90,
-            central_longitude=central_longitude, globe=globe)
+            central_longitude=central_longitude, 
+            true_scale_latitude=true_scale_latitude, # None is equivalent to -90
+            globe=globe)
 
 
 class Orthographic(Projection):
