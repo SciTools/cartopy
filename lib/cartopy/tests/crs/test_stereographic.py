@@ -52,13 +52,38 @@ class TestStereographic(unittest.TestCase):
                             [-3932.82587779, 3932.82587779], decimal=4)
 
     def test_true_scale(self):
-        # The "true_scale_latitude" parameter to Stereographic appears
-        # meaningless. This test just ensures that the correct proj4
-        # string is being created. (#339)
-        stereo = ccrs.Stereographic(true_scale_latitude=10)
-        expected = ('+ellps=WGS84 +proj=stere +lat_0=0.0 +lon_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +lat_ts=10 +no_defs')
+        # The "true_scale_latitude" parameter only makes sense for 
+        # polar stereographic projections (#339 and #455).
+        # For now only the proj4 string creation is tested
+        # See test_scale_factor for test on projection.
+        globe = ccrs.Globe(ellipse='sphere')
+        stereo = ccrs.NorthPolarStereo(true_scale_latitude=30, globe=globe)
+        expected = ('+ellps=sphere +proj=stere +lat_0=90 +lon_0=0.0 '
+                    '+x_0=0.0 +y_0=0.0 +lat_ts=30 +no_defs')
         assert_equal(stereo.proj4_init, expected)
+
+    def test_scale_factor(self):
+        # See #455
+        # Use spherical Earth in North Polar Stereographic to check equivalence 
+        # with between true_scale and scale_factor.
+        # In these conditions a scale factor of 0.75 corresponds exactly to 
+        # a standard parallel of 30N.
+        globe = ccrs.Globe(ellipse='sphere')
+        stereo = ccrs.Stereographic(central_latitude=90., \
+                scale_factor=0.75, globe=globe)
+        expected = ('+ellps=sphere +proj=stere +lat_0=90.0 +lon_0=0.0 '
+                    '+x_0=0.0 +y_0=0.0 +k_0=0.75 +no_defs')
+        assert_equal(stereo.proj4_init, expected)
+
+        # Now test projections
+        lon, lat = 10, 10
+        projected_scale_factor = stereo.transform_point(lon, lat, ccrs.Geodetic())
+
+        # should be equivalent to North Polar Stereo with true_scale_latitude = 30
+        nstereo = ccrs.NorthPolarStereo(globe=globe, true_scale_latitude=30)
+        projected_true_scale = nstereo.transform_point(lon, lat, ccrs.Geodetic())
+
+        assert_equal(projected_true_scale, projected_scale_factor)
 
     def test_eastings(self):
         stereo = ccrs.Stereographic()
