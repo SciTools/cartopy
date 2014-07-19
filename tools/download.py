@@ -28,6 +28,7 @@ from __future__ import print_function
 
 import argparse
 
+from cartopy import config
 from cartopy.feature import Feature, GSHHSFeature, NaturalEarthFeature
 from cartopy.crs import PlateCarree
 import matplotlib.pyplot as plt
@@ -107,6 +108,16 @@ if __name__ == '__main__':
                         help='Feature group name: %(choices)s')
     parser.add_argument('--hold', action='store_true',
                         help='keep the matplotlib window open')
+    parser.add_argument('--output', '-o',
+                        help='save datasets in the specified directory '
+                             '(default: user cache directory)')
+    parser.add_argument('--ignore-repo-data', action='store_true',
+                        help='ignore existing repo data when downloading')
     args = parser.parse_args()
 
+    if args.output:
+        config['pre_existing_data_dir'] = args.output
+        config['data_dir'] = args.output
+    if args.ignore_repo_data:
+        config['repo_data_dir'] = config['data_dir']
     download_features(args.group_names, args.hold)
