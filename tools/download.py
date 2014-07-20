@@ -40,7 +40,7 @@ ALL_SCALES = ('110m', '50m', '10m')
 FEATURE_DEFN_GROUPS = {
     # Only need one GSHHS resolution because they *all* get downloaded
     # from one file.
-    'gshhs': GSHHSFeature(scale='c'),
+    'gshhs': GSHHSFeature(scale='f'),
     'physical': (
         ('physical', 'coastline', ALL_SCALES),
         ('physical', 'land', ALL_SCALES),
