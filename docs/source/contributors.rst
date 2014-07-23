@@ -27,6 +27,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Thomas Lecocq
  * Lion Krischer
  * Nat Wilson
+ * Henry Walshaw
 
 
 Thank you!
