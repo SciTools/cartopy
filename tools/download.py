@@ -28,6 +28,7 @@ from __future__ import print_function
 
 import argparse
 
+from cartopy import config
 from cartopy.feature import Feature, GSHHSFeature, NaturalEarthFeature
 from cartopy.crs import PlateCarree
 import matplotlib.pyplot as plt
@@ -39,7 +40,7 @@ ALL_SCALES = ('110m', '50m', '10m')
 FEATURE_DEFN_GROUPS = {
     # Only need one GSHHS resolution because they *all* get downloaded
     # from one file.
-    'gshhs': GSHHSFeature(scale='c'),
+    'gshhs': GSHHSFeature(scale='f'),
     'physical': (
         ('physical', 'coastline', ALL_SCALES),
         ('physical', 'land', ALL_SCALES),
@@ -100,27 +101,23 @@ def download_features(group_names, hold):
 
 
 if __name__ == '__main__':
-    def group_name(string):
-        if string not in FEATURE_DEFN_GROUPS:
-            msg = '{!r} is not a valid feature group (choose from {!s})'
-            msg = msg.format(string, list(FEATURE_DEFN_GROUPS.keys()))
-            raise argparse.ArgumentTypeError(msg)
-        return string
-
     parser = argparse.ArgumentParser(description='Download feature datasets.')
-    parser.add_argument('group_names', nargs='*',
-                        type=group_name,
+    parser.add_argument('group_names', nargs='+',
+                        choices=FEATURE_DEFN_GROUPS,
                         metavar='GROUP_NAME',
-                        help='Feature group name')
+                        help='Feature group name: %(choices)s')
     parser.add_argument('--hold', action='store_true',
                         help='keep the matplotlib window open')
-    parser.add_argument('--show', action='store_true',
-                        help='show the list of valid feature group names')
+    parser.add_argument('--output', '-o',
+                        help='save datasets in the specified directory '
+                             '(default: user cache directory)')
+    parser.add_argument('--ignore-repo-data', action='store_true',
+                        help='ignore existing repo data when downloading')
     args = parser.parse_args()
-    if args.show:
-        print('Feature group names:')
-        for name in sorted(FEATURE_DEFN_GROUPS.keys()):
-            print('   ', name)
-    elif not args.group_names:
-       parser.error('Please supply one or more feature group names.')
+
+    if args.output:
+        config['pre_existing_data_dir'] = args.output
+        config['data_dir'] = args.output
+    if args.ignore_repo_data:
+        config['repo_data_dir'] = config['data_dir']
     download_features(args.group_names, args.hold)
