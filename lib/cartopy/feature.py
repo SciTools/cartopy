@@ -43,6 +43,7 @@ feature being plotted.
 
 
 _NATURAL_EARTH_GEOM_CACHE = {}
+_GADM_GEOM_CACHE = {}
 """
 Caches a mapping between (name, category, scale) and a tuple of the
 resulting geometries.
@@ -185,6 +186,41 @@ class NaturalEarthFeature(Feature):
 
         return iter(geometries)
 
+class GADMFeature(Feature):
+    """
+    A simple interface to GADM (version 2) shapefiles.
+
+    See http://www.gadm.org/
+
+    """
+    def __init__(self, name, level, **kwargs):
+        """
+        Args:
+
+        * name:
+            The name of the administrative area as a three letter
+            code, e.g. 'GBR' or 'USA'.
+        * level:
+            The 
+
+        Kwargs:
+            Keyword arguments to be used when drawing this feature.
+
+        """
+        super(GADMFeature, self).__init__(cartopy.crs.PlateCarree(), **kwargs)
+        self.name = name
+        self.level = level
+
+    def geometries(self):
+        key = (self.name, self.level)
+        if key not in _GADM_GEOM_CACHE:
+            path = shapereader.gadm(name=self.name, level=self.level)
+            geometries = tuple(shapereader.Reader(path).geometries())
+            _GADM_GEOM_CACHE[key] = geometries
+        else:
+            geometries = _GADM_GEOM_CACHE[key]
+
+        return iter(geometries)
 
 class GSHHSFeature(Feature):
     """
