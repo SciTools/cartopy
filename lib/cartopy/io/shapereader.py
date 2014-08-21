@@ -261,7 +261,8 @@ class NEShpDownloader(Downloader):
     # define the NaturalEarth url template. The natural earth website
     # returns a 302 status if accessing directly, so we use the nacis
     # url directly
-    _NE_URL_TEMPLATE = ('http://www.nacis.org/naturalearth/{resolution}'
+    _NE_URL_TEMPLATE = ('http://www.naturalearthdata.com/'
+                        'http//www.naturalearthdata.com/download/{resolution}'
                         '/{category}/ne_{resolution}_{name}.zip')
 
     def __init__(self,
