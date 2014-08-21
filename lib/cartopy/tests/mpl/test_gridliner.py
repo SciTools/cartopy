@@ -18,6 +18,7 @@
 import unittest
 import warnings
 
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from nose.tools import assert_raises
@@ -139,7 +140,8 @@ def test_grid_labels():
 
     # trigger a draw at this point and check the appropriate artists are
     # populated on the gridliner instance
-    plt.draw()
+    FigureCanvasAgg(plt.gcf()).draw()
+
     assert len(gl.xlabel_artists) == 4
     assert len(gl.ylabel_artists) == 5
     assert len(gl.ylabel_artists) == 5
