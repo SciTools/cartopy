@@ -30,6 +30,10 @@ numpy 1.6 or later (http://numpy.scipy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
+GEOS 3.3.3 or later (http://trac.osgeo.org/geos/)
+    GEOS is an API of spatial predicates and functions for processing geometry
+    written in C++.
+
 shapely 1.2.14* (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric
     objects.
@@ -53,6 +57,10 @@ Optional
 These are optional packages which you may want to install to enable
 additional Cartopy functionality.
 
+GDAL tested with version 1.10.0 (http://www.gdal.org/)
+    GDAL is a translator library for raster and vector geospatial data formats,
+    which has powerful data transformation and processing capabilities.
+
 Pillow 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
     Popular fork of PythonImagingLibrary.
 
@@ -60,6 +68,9 @@ Pillow 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
 
 PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
     Python package for image processing.
+
+pyepsg 0.2.0 or later (https://github.com/rhattersley/pyepsg)
+    A simple Python interface to http://epsg.io
 
 scipy 0.10 or later (http://www.scipy.org/)
     Python package for scientific computing.
