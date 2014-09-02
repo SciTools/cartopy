@@ -34,7 +34,7 @@ class TestBoundary(unittest.TestCase):
         projection = ccrs.Robinson(170.5)
         multi_line_string = projection.project_geometry(linear_ring)
         from cartopy.tests import show
-        #show(projection, multi_line_string)
+        # show(projection, multi_line_string)
 
         # The original ring should have been split into multiple pieces.
         self.assertGreater(len(multi_line_string), 1)
@@ -96,8 +96,8 @@ class TestMisc(unittest.TestCase):
                                                    (10, 60),
                                                    (10, 50)])
         multi_line_string = projection.project_geometry(linear_ring)
-        #from cartopy.tests import show
-        #show(projection, multi_line_string)
+        # from cartopy.tests import show
+        # show(projection, multi_line_string)
         # XXX not a test...
 
     def test_small(self):
@@ -113,8 +113,8 @@ class TestMisc(unittest.TestCase):
         # there should be one, and only one, returned line:
         assert isinstance(multi_line_string, geometry.polygon.LinearRing)
 
-        #from cartopy.tests import show
-        #show(projection, multi_line_string)
+        # from cartopy.tests import show
+        # show(projection, multi_line_string)
 
     def test_three_points(self):
         # The following LinearRing when projected from PlateCarree() to

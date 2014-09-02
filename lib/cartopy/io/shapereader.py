@@ -235,6 +235,21 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     Returns the path to the requested natural earth shapefile,
     downloading and unziping if necessary.
 
+    To identify valid components for this function, either browse
+    NaturalEarthData.com, or if you know what you are looking for, go to
+    https://github.com/nvkelso/natural-earth-vector/tree/master/zips to
+    see the actual files which will be downloaded.
+
+    .. note::
+
+        Some of the Natural Earth shapefiles have special features which are
+        described in the name. For example, the 110m resolution
+        "admin_0_countries" data also has a sibling shapefile called
+        "admin_0_countries_lakes" which excludes lakes in the country
+        outlines. For details of what is available refer to the Natural Earth
+        website, and look at the "download" link target to identify
+        appropriate names.
+
     """
     # get hold of the Downloader (typically a NEShpDownloader instance)
     # which we can then simply call its path method to get the appropriate
@@ -258,11 +273,15 @@ class NEShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'resolution', 'category', 'name')
 
-    # define the NaturalEarth url template. The natural earth website
-    # returns a 302 status if accessing directly, so we use the nacis
-    # url directly
-    _NE_URL_TEMPLATE = ('http://www.nacis.org/naturalearth/{resolution}'
+    # Define the NaturalEarth URL template. The natural earth website
+    # returns a 302 status if accessing directly, so we could use the naciscdn
+    # URL directly.
+    _NE_URL_TEMPLATE = ('http://naciscdn.org/naturalearth/{resolution}'
                         '/{category}/ne_{resolution}_{name}.zip')
+    # But in preference we use the latest files from the Github repo instead.
+    _NE_URL_TEMPLATE = ('https://github.com/nvkelso/natural-earth-vector/'
+                        'raw/master/zips/{resolution}_{category}/'
+                        'ne_{resolution}_{name}.zip')
 
     def __init__(self,
                  url_template=_NE_URL_TEMPLATE,

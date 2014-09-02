@@ -384,7 +384,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                                        [(boundary_point.x, boundary_point.y)])
                     line_string = sgeom.LineString(combined_coords)
                     # XXX
-                    #edge_things.remove(next_thing)
+                    # edge_things.remove(next_thing)
                 elif next_thing.data[0] == i:
                     if debug:
                         print('   close loop')
@@ -1415,7 +1415,7 @@ class _Thing(object):
 def _find_gt(a, x):
     for v in a:
         # TODO: Fix the problem of co-incident boundary & line points
-        #if v.distance >= x:
+        # if v.distance >= x:
         if v.distance > x:
             return v
     return a[0]

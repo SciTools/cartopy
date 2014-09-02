@@ -120,7 +120,7 @@ else:
         Clip the given path to the given bounding box.
 
         """
-        #A shim on clip_path_python to support Bbox path clipping.
+        # A shim on clip_path_python to support Bbox path clipping.
 
         bbox_patch = bbox_to_path(clip_bbox)
         bbox_center = ((clip_bbox.x0 + clip_bbox.x1) / 2,
