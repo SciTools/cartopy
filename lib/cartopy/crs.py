@@ -48,7 +48,8 @@ class RotatedGeodetic(CRS):
     Coordinates are measured in degrees.
 
     """
-    def __init__(self, pole_longitude, pole_latitude, globe=None):
+    def __init__(self, pole_longitude, pole_latitude, grid_lon_rotation=0.0,
+                 globe=None):
         """
         Create a RotatedGeodetic CRS.
 
@@ -56,6 +57,7 @@ class RotatedGeodetic(CRS):
 
             * pole_longitude - Pole longitude position, in unrotated degrees.
             * pole_latitude - Pole latitude position, in unrotated degrees.
+            * grid_lon_rotation - Rotation about the new pole, in degrees.
 
         Kwargs:
 
@@ -64,7 +66,8 @@ class RotatedGeodetic(CRS):
 
         """
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
-                        ('o_lon_p', 0), ('o_lat_p', pole_latitude),
+                        ('o_lon_p', grid_lon_rotation),
+                        ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
         globe = globe or Globe(datum='WGS84')
@@ -1012,9 +1015,11 @@ class Miller(_RectangularProjection):
 
 
 class RotatedPole(_CylindricalProjection):
-    def __init__(self, pole_longitude=0.0, pole_latitude=90.0, globe=None):
+    def __init__(self, pole_longitude=0.0, pole_latitude=90.0,
+                 grid_lon_rotation=0.0, globe=None):
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
-                        ('o_lon_p', 0), ('o_lat_p', pole_latitude),
+                        ('o_lon_p', grid_lon_rotation),
+                        ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
         super(RotatedPole, self).__init__(proj4_params, 180, 90, globe=globe)
