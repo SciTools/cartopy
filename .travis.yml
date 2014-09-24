@@ -70,4 +70,4 @@ script:
 
 after_failure:
   - source activate test-environment
-  - python -c "import cartopy.tests.mpl; print cartopy.tests.mpl.failed_images_html()"
+  - python -c "from __future__ import print_function; import cartopy.tests.mpl; print(cartopy.tests.mpl.failed_images_html())"
