@@ -48,16 +48,25 @@ class RotatedGeodetic(CRS):
     Coordinates are measured in degrees.
 
     """
-    def __init__(self, pole_longitude, pole_latitude, grid_lon_rotation=0.0,
-                 globe=None):
+    def __init__(self, pole_longitude, pole_latitude,
+                 central_rotated_longitude=0.0, globe=None):
         """
         Create a RotatedGeodetic CRS.
+
+        The class uses proj4 to perform an ob_tran operation, using the
+        pole_longitude to set a lon_0 then performing two rotations based on
+        pole_latitude and central_rotated_longitude.
+        This is equivalent to setting the new pole to a location defined by
+        the pole_latitude and pole_longitude values in the GeogCRS defined by
+        globe, then rotating this new CRS about it's pole using the
+        central_rotated_longitude value.
 
         Args:
 
             * pole_longitude - Pole longitude position, in unrotated degrees.
             * pole_latitude - Pole latitude position, in unrotated degrees.
-            * grid_lon_rotation - Rotation about the new pole, in degrees.
+            * central_rotated_longitude - Longitude rotation about the new
+                                          pole, in degrees.
 
         Kwargs:
 
@@ -66,7 +75,7 @@ class RotatedGeodetic(CRS):
 
         """
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
-                        ('o_lon_p', grid_lon_rotation),
+                        ('o_lon_p', central_rotated_longitude),
                         ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
@@ -1015,10 +1024,43 @@ class Miller(_RectangularProjection):
 
 
 class RotatedPole(_CylindricalProjection):
+    """
+    Defines a rotated latitude/longitude projected coordinate system
+    with cylindrical topology and projected distance.
+
+    Coordinates are measured in projection metres.
+
+    """
+
     def __init__(self, pole_longitude=0.0, pole_latitude=90.0,
-                 grid_lon_rotation=0.0, globe=None):
+                 central_rotated_longitude=0.0, globe=None):
+        """
+        Create a RotatedPole CRS.
+
+        The class uses proj4 to perform an ob_tran operation, using the
+        pole_longitude to set a lon_0 then performing two rotations based on
+        pole_latitude and central_rotated_longitude.
+        This is equivalent to setting the new pole to a location defined by
+        the pole_latitude and pole_longitude values in the GeogCRS defined by
+        globe, then rotating this new CRS about it's pole using the
+        central_rotated_longitude value.
+
+        Args:
+
+            * pole_longitude - Pole longitude position, in unrotated degrees.
+            * pole_latitude - Pole latitude position, in unrotated degrees.
+            * central_rotated_longitude - Longitude rotation about the new
+                                          pole, in degrees.
+
+        Kwargs:
+
+            * globe - An optional :class:`cartopy.crs.Globe`.
+                      Defaults to a "WGS84" datum.
+
+        """
+
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
-                        ('o_lon_p', grid_lon_rotation),
+                        ('o_lon_p', central_rotated_longitude),
                         ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
