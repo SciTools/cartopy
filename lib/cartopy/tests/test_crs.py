@@ -84,6 +84,20 @@ class TestCRS(unittest.TestCase):
     def test_osgb(self):
         self._check_osgb(ccrs.OSGB())
 
+    def test_proj4(self):
+        #taken from http://epsg.io/27700 for consistency with pyepsg
+        proj4_str = "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs"
+        xmin, ymin, xmax, ymax = -8.73, 49.81, 1.83, 60.89
+        uk = ccrs.proj4(proj4_str, xmin, ymin, xmax, ymax)
+        #Assume a bit of rounding error, but this defaults to 7 decimal places
+        #so it's pretty close
+        self.assertAlmostEqual(uk.x_limits, (-83948.465999040171,
+                                             675634.89881823619))
+        self.assertAlmostEqual(uk.y_limits, (-2994.0109472532495,
+                                             1241785.8617898584))
+        self.assertAlmostEqual(uk.threshold, 7595.8336481727638)
+        self._check_osgb(uk)
+
     @unittest.skipIf(pyepsg is None, 'requires pyepsg')
     def test_epsg(self):
         uk = ccrs.epsg(27700)
