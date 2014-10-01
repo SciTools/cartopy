@@ -31,9 +31,7 @@ install:
   - conda config --add channels rsignell
   - conda install numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0
   - conda install cython
-  # The conda "pillow" build is broken, so we use "imaging" instead.
-  #     - https://github.com/ContinuumIO/anaconda-issues/issues/30
-  - conda install imaging
+  - conda install pillow
   - conda install mock
   - conda install nose
   - conda install owslib
