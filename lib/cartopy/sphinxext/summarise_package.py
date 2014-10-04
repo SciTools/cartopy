@@ -85,7 +85,7 @@ def objects_to_document(module_name):
     given name should document.
 
     The module name may be any importable, including submodules
-    (e.g. ``cartopy.io```)
+    (e.g. ``cartopy.io``)
 
     """
     try:
