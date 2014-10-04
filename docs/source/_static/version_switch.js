@@ -19,12 +19,12 @@
   function build_select(current_version, current_release) {
     var buf = ['<select>'];
 
-    $.each(all_versions, function(version, title) {
-      buf.push('<option value="' + version + '"');
+    $.each(all_versions, function(path, version) {
+      buf.push('<option value="' + path + '"');
       if (version == current_version)
         buf.push(' selected="selected">' + current_release + '</option>');
       else
-        buf.push('>' + title + '</option>');
+        buf.push('>' + version + '</option>');
     });
 
     buf.push('</select>');
