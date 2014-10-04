@@ -82,6 +82,6 @@ subjects prefixed with "cartopy: ".
     :glob:
     :hidden:
 
-    gallery.rst
-    examples/*.rst
-    copyright.rst
+    gallery
+    examples/*
+    copyright
