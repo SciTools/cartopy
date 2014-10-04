@@ -82,6 +82,8 @@ subjects prefixed with "cartopy: ".
     :glob:
     :hidden:
 
+    who_uses_cartopy
     gallery
     examples/*
     copyright
+    contributors
