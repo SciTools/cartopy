@@ -19,12 +19,12 @@
   function build_select(current_version, current_release) {
     var buf = ['<select>'];
 
-    $.each(all_versions, function(version, title) {
-      buf.push('<option value="' + version + '"');
+    $.each(all_versions, function(path, version) {
+      buf.push('<option value="' + path + '"');
       if (version == current_version)
         buf.push(' selected="selected">' + current_release + '</option>');
       else
-        buf.push('>' + title + '</option>');
+        buf.push('>' + version + '</option>');
     });
 
     buf.push('</select>');
@@ -32,7 +32,7 @@
   }
 
   function patch_url(url, new_version) {
-    var url_re = /scitools\.org\.uk\/cartopy\/docs\/(latest|(v\d\.\d))\//,
+    var url_re = /scitools\.org\.uk\/cartopy\/docs\/(latest|(v\d+\.\d+))\//,
         new_url = url.replace(url_re, 'scitools.org.uk/cartopy/docs/' + new_version + '/');
 
     if (new_url == url && !new_url.match(url_re)) {
@@ -63,8 +63,8 @@
 
   $(document).ready(function() {
     var release = DOCUMENTATION_OPTIONS.VERSION;
-    // Take the first 3 characters of the release (e.g. "0.6.0" -> "0.6")
-    var version = release.substr(0, 3);
+    // Take the first 2 parts of the release (e.g. "0.6.0" -> "0.6")
+    var version = release.split('.').slice(0, 2).join('.');
     var select = build_select(version, release);
 
     var index_li = $('li.right:contains("index")');
