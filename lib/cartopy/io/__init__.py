@@ -362,7 +362,7 @@ class RasterSource(object):
             so the extent of the resulting image is also returned. The extents
             must be defined in the form ``(min_x, max_x, min_y, max_y)``.
         target_resolution : iterable of length 2
-            The desired resolution of the image as ``(width, height)`
+            The desired resolution of the image as ``(width, height)``
             in pixels.
 
         Returns
