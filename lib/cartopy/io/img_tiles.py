@@ -28,7 +28,7 @@ using tiles in this way can be found at :ref:`examples-eyja_volcano`.
 """
 from __future__ import division
 
-import PIL.Image as Image
+from PIL import Image
 import shapely.geometry as sgeom
 import numpy as np
 import six

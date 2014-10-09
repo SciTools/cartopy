@@ -20,7 +20,7 @@ import types
 
 import numpy as np
 import matplotlib.pyplot as plt
-import PIL.Image
+from PIL import Image
 import shapely.geometry
 
 from cartopy import config
@@ -157,7 +157,7 @@ def test_stock_img():
 
 @ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.44)
 def test_pil_Image():
-    img = PIL.Image.open(NATURAL_EARTH_IMG)
+    img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.imshow(img, origin='upper', transform=source_proj,

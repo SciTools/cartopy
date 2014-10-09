@@ -22,7 +22,7 @@ import itertools
 import os.path
 
 import numpy as np
-import PIL.Image
+from PIL import Image
 from shapely.geometry import box
 from six.moves import zip
 
@@ -156,7 +156,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         return result
 
     def __array__(self):
-        return np.array(PIL.Image.open(self.filename))
+        return np.array(Image.open(self.filename))
 
     @classmethod
     def from_world_file(cls, img_fname, world_fname):
@@ -165,9 +165,10 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         worldfile filename.
 
         """
-        im = PIL.Image.open(img_fname)
+        im = Image.open(img_fname)
         with open(world_fname) as world_fh:
             extent, pix_size = cls.world_file_extent(world_fh, im.size)
+        im.close()
         return cls(img_fname, extent, 'lower', pix_size)
 
     @staticmethod
@@ -488,7 +489,7 @@ class NestedImageCollection(object):
 
         """
         img = collection_image[1]
-        img_data = PIL.Image.open(img.filename)
+        img_data = Image.open(img.filename)
         img_data = img_data.convert(self.desired_tile_form)
         return img_data, img.extent, img.origin
 

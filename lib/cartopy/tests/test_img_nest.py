@@ -24,7 +24,7 @@ import warnings
 from nose.tools import assert_equal, assert_in, assert_true
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
-import PIL.Image
+from PIL import Image
 import shapely.geometry as sgeom
 from six.moves import cPickle as pickle
 
@@ -95,7 +95,7 @@ def test_intersect():
         os.mkdir(z_0_dir)
         world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                      y_pix_size=2, x_center=1, y_center=1)
-        im = PIL.Image.new('RGB', (50, 50))
+        im = Image.new('RGB', (50, 50))
         fname = os.path.join(z_0_dir, 'p0.tfw')
         _save_world(fname, world)
         fname = os.path.join(z_0_dir, 'p0.tif')
@@ -107,7 +107,7 @@ def test_intersect():
         os.mkdir(z_1_dir)
         world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                      y_pix_size=2, x_center=21, y_center=21)
-        im = PIL.Image.new('RGB', (30, 30))
+        im = Image.new('RGB', (30, 30))
         fname = os.path.join(z_1_dir, 'p1.tfw')
         _save_world(fname, world)
         fname = os.path.join(z_1_dir, 'p1.tif')
@@ -119,7 +119,7 @@ def test_intersect():
         os.mkdir(z_2_dir)
         world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                      y_pix_size=2, x_center=6, y_center=21)
-        im = PIL.Image.new('RGB', (5, 5))
+        im = Image.new('RGB', (5, 5))
         fname = os.path.join(z_2_dir, 'p2-1.tfw')
         _save_world(fname, world)
         fname = os.path.join(z_2_dir, 'p2-1.tif')
@@ -128,7 +128,7 @@ def test_intersect():
         #         lower left corner.
         world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                      y_pix_size=2, x_center=6, y_center=6)
-        im = PIL.Image.new('RGB', (5, 5))
+        im = Image.new('RGB', (5, 5))
         fname = os.path.join(z_2_dir, 'p2-2.tfw')
         _save_world(fname, world)
         fname = os.path.join(z_2_dir, 'p2-2.tif')
@@ -136,7 +136,7 @@ def test_intersect():
         # File 3: complete containment within p1.
         world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                      y_pix_size=2, x_center=41, y_center=41)
-        im = PIL.Image.new('RGB', (5, 5))
+        im = Image.new('RGB', (5, 5))
         fname = os.path.join(z_2_dir, 'p2-3.tfw')
         _save_world(fname, world)
         fname = os.path.join(z_2_dir, 'p2-3.tif')
@@ -144,7 +144,7 @@ def test_intersect():
         # File 4: overlap with p1 right edge.
         world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                      y_pix_size=2, x_center=76, y_center=61)
-        im = PIL.Image.new('RGB', (5, 5))
+        im = Image.new('RGB', (5, 5))
         fname = os.path.join(z_2_dir, 'p2-4.tfw')
         _save_world(fname, world)
         fname = os.path.join(z_2_dir, 'p2-4.tif')
@@ -152,7 +152,7 @@ def test_intersect():
         # File 5: overlap with p1 bottom right corner.
         world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                      y_pix_size=2, x_center=76, y_center=76)
-        im = PIL.Image.new('RGB', (5, 5))
+        im = Image.new('RGB', (5, 5))
         fname = os.path.join(z_2_dir, 'p2-5.tfw')
         _save_world(fname, world)
         fname = os.path.join(z_2_dir, 'p2-5.tif')
@@ -394,7 +394,7 @@ def test_find_images():
                                10018754.17139462, 20037508.342789244),
                               decimal=4)
     assert_equal(img.origin, 'lower')
-    assert_array_equal(img, np.array(PIL.Image.open(img.filename)))
+    assert_array_equal(img, np.array(Image.open(img.filename)))
     assert_equal(img.pixel_size, (39135.7585, 39135.7585))
 
 
