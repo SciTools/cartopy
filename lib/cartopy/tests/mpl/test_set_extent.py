@@ -147,6 +147,7 @@ def test_view_lim_autoscaling():
     expected_non_tight = np.array([[86, 52.45], [86.8, 52.9]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected_non_tight)
+    plt.close()
 
 
 def test_view_lim_default_global():
@@ -159,6 +160,7 @@ def test_view_lim_default_global():
     expected = np.array([[-180, -90], [180, 90]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected)
+    plt.close()
 
 
 if __name__ == '__main__':

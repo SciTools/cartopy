@@ -77,6 +77,7 @@ def test_set_xticks_non_cylindrical():
         ax.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.Geodetic())
     with nose.tools.assert_raises(RuntimeError):
         ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.Geodetic())
+    plt.close()
 
 
 @ImageTesting(['yticks_no_transform'], tolerance=0.125)
@@ -108,6 +109,7 @@ def test_set_yticks_non_cylindrical():
         ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.Geodetic())
     with nose.tools.assert_raises(RuntimeError):
         ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
+    plt.close()
 
 
 @ImageTesting(['xyticks'], tolerance=0.17)
