@@ -33,14 +33,20 @@ import io
 import math
 import weakref
 
-from owslib.wms import WebMapService
-import owslib.util
-import owslib.wmts
 from PIL import Image
+
+try:
+    from owslib.wms import WebMapService
+    import owslib.util
+    import owslib.wmts
+except ImportError:
+    WebMapService = None
 
 from cartopy.io import RasterSource
 import cartopy.crs as ccrs
 
+
+_OWSLIB_REQUIRED = 'OWSLib is required to use the WMS or WMTS source.'
 
 # Hardcode some known EPSG codes for now.
 _CRS_TO_OGC_SRS = {ccrs.PlateCarree(): 'EPSG:4326'
@@ -99,6 +105,9 @@ class WMSRasterSource(RasterSource):
             be defined.
 
         """
+        if WebMapService is None:
+            raise ImportError(_OWSLIB_REQUIRED)
+
         if isinstance(service, basestring):
             service = WebMapService(service)
 
@@ -187,6 +196,9 @@ class WMTSRasterSource(RasterSource):
             * layer_name - The name of the layer to use.
 
         """
+        if WebMapService is None:
+            raise ImportError(_OWSLIB_REQUIRED)
+
         if not (hasattr(wmts, 'tilematrixsets') and
                 hasattr(wmts, 'contents') and
                 hasattr(wmts, 'gettile')):
