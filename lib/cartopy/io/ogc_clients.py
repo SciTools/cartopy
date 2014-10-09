@@ -34,9 +34,9 @@ import math
 import weakref
 
 from owslib.wms import WebMapService
-import PIL.Image
 import owslib.util
 import owslib.wmts
+from PIL import Image
 
 from cartopy.io import RasterSource
 import cartopy.crs as ccrs
@@ -66,7 +66,7 @@ class WMSRasterSource(RasterSource):
     """
     A WMS imagery retriever which can be added to a map.
 
-    .. note:: Requires owslib and PIL to work.
+    .. note:: Requires owslib and Pillow to work.
 
     .. note::
 
@@ -152,7 +152,7 @@ class WMSRasterSource(RasterSource):
                                    bbox=(min_x, min_y, max_x, max_y),
                                    size=target_resolution, format='image/png',
                                    **self.getmap_extra_kwargs)
-        wms_image = PIL.Image.open(io.BytesIO(wms_image.read()))
+        wms_image = Image.open(io.BytesIO(wms_image.read()))
         return wms_image, extent
 
 
@@ -162,7 +162,7 @@ class WMTSRasterSource(RasterSource):
 
     Uses tile caching for fast repeated map retrievals.
 
-    .. note:: Requires owslib and PIL to work.
+    .. note:: Requires owslib and Pillow to work.
 
     """
 
@@ -374,11 +374,11 @@ class WMTSRasterSource(RasterSource):
                                 ignore_out_of_range):
                             continue
                         raise exception
-                    img = PIL.Image.open(io.BytesIO(tile.read()))
+                    img = Image.open(io.BytesIO(tile.read()))
                     image_cache[img_key] = img
                 if big_img is None:
                     size = (img.size[0] * n_cols, img.size[1] * n_rows)
-                    big_img = PIL.Image.new('RGBA', size, (255, 255, 255, 255))
+                    big_img = Image.new('RGBA', size, (255, 255, 255, 255))
                 top = (row - min_row) * tile_matrix.tileheight
                 left = (col - min_col) * tile_matrix.tilewidth
                 big_img.paste(img, (left, top))

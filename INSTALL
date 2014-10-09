@@ -64,11 +64,6 @@ GDAL tested with version 1.10.0 (http://www.gdal.org/)
 Pillow 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
     Popular fork of PythonImagingLibrary.
 
-  or
-
-PythonImagingLibrary 1.1.7 or later (http://effbot.org/zone/pil-index.htm)
-    Python package for image processing.
-
 pyepsg 0.2.0 or later (https://github.com/rhattersley/pyepsg)
     A simple Python interface to http://epsg.io
 
