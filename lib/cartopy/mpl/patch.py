@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -25,6 +25,9 @@ and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
    http://toblerity.github.com/shapely/manual.html#geometric-objects
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import numpy as np
 import matplotlib.path
 from matplotlib.path import Path

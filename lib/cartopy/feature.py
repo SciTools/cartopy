@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,6 +19,9 @@ This module defines :class:`Feature` instances, for use with
 ax.add_feature().
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 from abc import ABCMeta, abstractmethod
 import os.path
 

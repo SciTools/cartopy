@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,3 +18,5 @@
 Tests for specific Cartopy CRS subclasses.
 
 """
+
+from __future__ import (absolute_import, division, print_function)

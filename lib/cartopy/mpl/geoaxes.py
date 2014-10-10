@@ -21,6 +21,9 @@ When a matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import collections
 import contextlib
 import warnings

@@ -27,7 +27,8 @@ this way can be found at :ref:`examples-wmts`.
 
 
 """
-from __future__ import absolute_import, division
+
+from __future__ import (absolute_import, division, print_function)
 
 import io
 import math

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -25,6 +25,9 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
    - Wikipedia (August 2012)
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import json
 import os
 

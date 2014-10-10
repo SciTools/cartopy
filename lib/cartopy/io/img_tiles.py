@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -26,7 +26,8 @@ at zoom level 2, do ``ax.add_image(MapQuestOpenAerial(), 2)``. An example of
 using tiles in this way can be found at :ref:`examples-eyja_volcano`.
 
 """
-from __future__ import division
+
+from __future__ import (absolute_import, division, print_function)
 
 from PIL import Image
 import shapely.geometry as sgeom
