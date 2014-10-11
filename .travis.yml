@@ -5,6 +5,8 @@ python:
   # to build scipy we cannot use the virtual env of travis. Instead, we
   # use miniconda.
   - 2.7
+  - 3.3
+  - 3.4
 
 install:
   - sudo apt-get update -qq
