@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -195,7 +195,7 @@ class TestMisc(unittest.TestCase):
 
         # Test area of smallest Polygon that contains all the points in the
         # geometry.
-        self.assertAlmostEqual(r.convex_hull.area, 2347.75619258)
+        self.assertAlmostEqual(r.convex_hull.area, 2347.75623076)
 
 
 if __name__ == '__main__':
