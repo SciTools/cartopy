@@ -46,10 +46,8 @@ install:
   - conda install pyshp
   - conda install shapely
   - conda install six
-
   - conda install requests
-  - conda install pip
-  - pip install pyepsg
+  - conda install pyepsg
 
   # Conda debug
   # -----------
