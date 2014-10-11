@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -40,7 +40,7 @@ _CRS_ROB = ccrs.Robinson()
 def test_transform_point():
     # this way has always worked
     result = _CRS_ROB.transform_point(35.0, 70.0, _CRS_PC)
-    assert_arr_almost_eq(result, (2376187.159105642, 7275318.947140937))
+    assert_arr_almost_eq(result, (2376187.15910577, 7275318.94714286))
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_point(_NAN, 70.0, _CRS_PC)
@@ -57,14 +57,14 @@ def test_transform_points():
                                        np.array([35.0]),
                                        np.array([70.0]))
     assert_arr_almost_eq(result,
-                         [[2376187.159105642, 7275318.947140937, 0]])
+                         [[2376187.15910577, 7275318.94714286, 0]])
 
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
                                        np.array([70.0]),
                                        np.array([0.0]))
     assert_arr_almost_eq(result,
-                         [[2376187.159105642, 7275318.947140937, 0]])
+                         [[2376187.15910577, 7275318.94714286, 0]])
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_points(_CRS_PC,
