@@ -39,8 +39,10 @@ try:
     from owslib.wms import WebMapService
     import owslib.util
     import owslib.wmts
+    _OWSLIB_AVAILABLE = True
 except ImportError:
     WebMapService = None
+    _OWSLIB_AVAILABLE = False
 
 from cartopy.io import RasterSource
 import cartopy.crs as ccrs
