@@ -17,13 +17,20 @@
 from __future__ import absolute_import
 
 import cartopy.io.ogc_clients as ogc
-from owslib.wms import WebMapService
-from owslib.wmts import ContentMetadata, WebMapTileService
+from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
+try:
+    from owslib.wms import WebMapService
+    from owslib.wmts import ContentMetadata, WebMapTileService
+except ImportError:
+    WebMapService = None
+    ContentMetadata = None
+    WebMapTileService = None
 import unittest
 import cartopy.crs as ccrs
 import numpy as np
 
 
+@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 class test_WMSRasterSource(unittest.TestCase):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
     layer = 'basic'
@@ -88,6 +95,7 @@ class test_WMSRasterSource(unittest.TestCase):
         self.assertEqual(extent, extent_out)
 
 
+@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 class test_WMTSRasterSource(unittest.TestCase):
     URI = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'

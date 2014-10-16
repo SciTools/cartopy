@@ -15,12 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
+import unittest
+
 import matplotlib.pyplot as plt
 
 from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
+from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 
+@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 @ImageTesting(['wmts'])
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())

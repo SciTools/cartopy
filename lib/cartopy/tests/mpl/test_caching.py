@@ -16,17 +16,22 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 import gc
 
-from owslib.wmts import WebMapTileService
+import six
+import unittest
+
+try:
+    from owslib.wmts import WebMapTileService
+except ImportError as e:
+    WebMapTileService = None
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 from matplotlib.path import Path
 import shapely.geometry
-import six
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist
-from cartopy.io.ogc_clients import WMTSRasterSource
+from cartopy.io.ogc_clients import WMTSRasterSource, _OWSLIB_AVAILABLE
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
@@ -177,6 +182,7 @@ def test_contourf_transform_path_counting():
     plt.close()
 
 
+@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()
