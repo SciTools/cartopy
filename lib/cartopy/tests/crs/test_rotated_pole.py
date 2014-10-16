@@ -36,7 +36,7 @@ class TestRotatedGeodetic(unittest.TestCase):
         geos = ccrs.RotatedGeodetic(30, 15, 27)
         expected = ['+datum=WGS84', 'ellps=WGS84', 'lon_0=210', 'no_defs',
                     'o_lat_p=15', 'o_lon_p=27', 'o_proj=latlon',
-                    'proj=ob_tran', 'to_meter=0.0174532925199']
+                    'proj=ob_tran', 'to_meter=0.0174532925199433']
         self.check_proj4_params(geos, expected)
 
 

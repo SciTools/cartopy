@@ -36,7 +36,7 @@ class TestRotatedPole(unittest.TestCase):
         geos = ccrs.RotatedPole(60, 50, 80)
         expected = ['+ellps=WGS84', 'lon_0=240', 'no_defs', 'o_lat_p=50',
                     'o_lon_p=80', 'o_proj=latlon', 'proj=ob_tran',
-                    'to_meter=0.0174532925199']
+                    'to_meter=0.0174532925199433']
         self.check_proj4_params(geos, expected)
 
 
