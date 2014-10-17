@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013, Met Office
+# (C) British Crown Copyright 2013 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -36,11 +36,11 @@ class TestTransverseMercator(unittest.TestCase):
     def test_default(self):
         proj = ccrs.TransverseMercator()
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (-245269.531806,
-                                                   5627508.743548))
+        np.testing.assert_array_almost_equal(res, (-245269.53180633,
+                                                   5627508.74354959))
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (35474.635666,
-                                                   5596583.419497))
+        np.testing.assert_array_almost_equal(res, (35474.63566645,
+                                                   5596583.41949901))
 
     def test_osgb_vals(self):
         proj = ccrs.TransverseMercator(central_longitude=-2,
@@ -51,11 +51,11 @@ class TestTransverseMercator(unittest.TestCase):
                                        globe=ccrs.Globe(datum='OSGB36',
                                                         ellipse='airy'))
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (295971.286677,
-                                                   93064.276662))
+        np.testing.assert_array_almost_equal(res, (295971.28667707,
+                                                   93064.27666368))
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (577274.983801,
-                                                   69740.492270))
+        np.testing.assert_array_almost_equal(res, (577274.98380140,
+                                                   69740.49227181))
 
     def test_nan(self):
         proj = ccrs.TransverseMercator()
@@ -75,11 +75,11 @@ class TestOSGB(unittest.TestCase):
     def test_default(self):
         proj = ccrs.OSGB()
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (295971.286677,
-                                                   93064.276662))
+        np.testing.assert_array_almost_equal(res, (295971.28667707,
+                                                   93064.27666368))
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (577274.983801,
-                                                   69740.492270))
+        np.testing.assert_array_almost_equal(res, (577274.98380140,
+                                                   69740.49227181))
 
     def test_nan(self):
         proj = ccrs.OSGB()
@@ -98,8 +98,8 @@ class TestOSNI(unittest.TestCase):
     def test_default(self):
         proj = ccrs.OSNI()
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (275614.871056,
-                                                   386984.153472))
+        np.testing.assert_array_almost_equal(res, (275614.87105610,
+                                                   386984.15347340))
 
     def test_nan(self):
         proj = ccrs.OSNI()

@@ -46,7 +46,7 @@ def test_default_with_cutoff():
     assert_equal(hash(crs), hash(crs2))
 
     assert_array_almost_equal(crs.y_limits,
-                              (-49788019.81822971, 30793476.084826108))
+                              (-49788019.81831982, 30793476.08487709))
 
 
 def test_specific_lambert():

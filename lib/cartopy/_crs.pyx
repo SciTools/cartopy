@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -146,7 +146,12 @@ cdef class CRS:
         init_items = []
         for k, v in self.proj4_params.items():
             if v is not None:
-                init_items.append('+{}={}'.format(k, v))
+                if isinstance(v, float):
+                    init_items.append('+{}={:.16}'.format(k, v))
+                elif isinstance(v, np.float32):
+                    init_items.append('+{}={:.8}'.format(k, v))
+                else:
+                    init_items.append('+{}={}'.format(k, v))
             else:
                 init_items.append('+{}'.format(k))
         self.proj4_init = ' '.join(init_items) + ' +no_defs'
