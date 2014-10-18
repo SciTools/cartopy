@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -20,6 +20,8 @@ Provides a collection of sub-packages for loading, saving and retrieving
 various data formats.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
 
 import os
 import string

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -21,7 +21,8 @@ The crs module defines Coordinate Reference Systems and the transformations
 between them.
 
 """
-from __future__ import print_function
+
+from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractproperty
 import math

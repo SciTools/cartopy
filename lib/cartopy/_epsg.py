@@ -18,6 +18,9 @@
 Provides support for converting EPSG codes to Projection instances.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import cartopy.crs as ccrs
 import numpy as np
 import pyepsg

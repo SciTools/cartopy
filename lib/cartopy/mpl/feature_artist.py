@@ -19,6 +19,9 @@ This module defines the :class:`FeatureArtist` class, for drawing
 :class:`Feature` instances with matplotlib.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import warnings
 import weakref
 

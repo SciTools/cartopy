@@ -22,6 +22,9 @@ Problem report in : https://github.com/SciTools/cartopy/issues/23
 Fix covered in : https://github.com/SciTools/cartopy/pull/277
 
 '''
+
+from __future__ import (absolute_import, division, print_function)
+
 import sys
 import unittest
 

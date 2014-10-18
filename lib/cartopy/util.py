@@ -19,6 +19,9 @@ This module contains utilities that are useful in conjunction with
 cartopy.
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import numpy as np
 import numpy.ma as ma
 

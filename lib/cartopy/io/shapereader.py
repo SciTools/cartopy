@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -41,6 +41,9 @@ geometry representation of shapely:
     <class 'shapely.geometry.point.Point'>
 
 """
+
+from __future__ import (absolute_import, division, print_function)
+
 import glob
 import itertools
 import os
