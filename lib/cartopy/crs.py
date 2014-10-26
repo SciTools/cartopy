@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2014, Met Office
+# (C) British Crown Copyright 2011 - 2015, Met Office
 #
 # This file is part of cartopy.
 #
@@ -1529,6 +1529,55 @@ class Geostationary(Projection):
     @property
     def y_limits(self):
         return self._ylim
+
+
+class AzimuthalEquidistant(Projection):
+    """
+    An Azimuthal Equidistant projection
+
+    This projection provides accurate angles about and distances through the
+    central position. Other angles, distances, or areas may be distorted.
+    """
+
+    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 globe=None):
+        """
+        Kwargs:
+
+            * central_longitude - The true longitude of the central meridian in
+                                  degrees. Defaults to 0.
+            * central_latitude - The true latitude of the planar origin in
+                                 degrees. Defaults to 0.
+            * false_easting - X offset from the planar origin in metres.
+                              Defaults to 0.
+            * false_northing - Y offset from the planar origin in metres.
+                               Defaults to 0.
+            * globe - An instance of :class:`cartopy.crs.Globe`. If omitted, a
+                      default globe is created.
+
+        """
+        proj4_params = [('proj', 'aeqd'), ('lon_0', central_longitude),
+                        ('lat_0', central_latitude),
+                        ('x_0', false_easting), ('y_0', false_northing)]
+        super(AzimuthalEquidistant, self).__init__(proj4_params, globe=globe)
+        self._max = 2e7
+
+    @property
+    def boundary(self):
+        return sgeom.Point(0, 0).buffer(self._max).exterior
+
+    @property
+    def threshold(self):
+        return 1e5
+
+    @property
+    def x_limits(self):
+        return (-self._max, self._max)
+
+    @property
+    def y_limits(self):
+        return (-self._max, self._max)
 
 
 class _BoundaryPoint(object):
