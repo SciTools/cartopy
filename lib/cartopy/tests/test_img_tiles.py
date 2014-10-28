@@ -197,6 +197,17 @@ def test_quadtree_wts():
                       KNOWN_EXTENTS[(8, 9, 4)])
 
 
+def test_mapbox_tiles():
+    token = 'foo'
+    map_id = 'bar'
+    tile = [0, 1, 2]
+    exp_url = 'http://api.tiles.mapbox.com/v4/bar/2/0/1.png?access_token=foo'
+
+    mapbox_sample = cimgt.MapboxTiles(token, map_id)
+    url_str = mapbox_sample._image_url(tile)
+    assert_equal(url_str, exp_url)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
