@@ -253,6 +253,42 @@ class StamenTerrain(GoogleTiles):
         return url
 
 
+class MapboxTiles(GoogleTiles):
+    """
+    Implements web tile retrieval from Mapbox.
+
+    For terms of service, see https://www.mapbox.com/tos/.
+
+    """
+    def __init__(self, access_token, map_id):
+        """
+        Set up a new Mapbox tiles instance.
+
+        Access to Mapbox web services requires an access token and a map ID.
+        See https://www.mapbox.com/developers/api/ for details.
+
+        Parameters
+        ----------
+        access_token: str
+            A valid Mapbox API access token.
+        map_id: str
+            A map ID for a publically accessible map. This is the map whose
+            tiles will be retrieved through this process.
+
+        """
+        self.access_token = access_token
+        self.map_id = map_id
+        super(MapboxTiles, self).__init__()
+
+    def _image_url(self, tile):
+        x, y, z = tile
+        url = ('http://api.tiles.mapbox.com/v4/{mapid}/{z}/{x}/{y}.png?'
+               'access_token={token}'.format(z=z, y=y, x=x,
+                                             mapid=self.map_id,
+                                             token=self.access_token))
+        return url
+
+
 class QuadtreeTiles(GoogleTiles):
     """
     Implements web tile retrieval using the Microsoft WTS quadkey coordinate
