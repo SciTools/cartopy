@@ -32,6 +32,8 @@ from __future__ import (absolute_import, division, print_function)
 
 import io
 import math
+import urllib
+import urlparse
 import weakref
 
 from PIL import Image
@@ -190,13 +192,18 @@ class WMTSRasterSource(RasterSource):
 
     """
 
-    def __init__(self, wmts, layer_name):
+    def __init__(self, wmts, layer_name, vendor_kwargs=None):
         """
         Args:
 
             * wmts - The URL of the WMTS, or an
                      owslib.wmts.WebMapTileService instance.
             * layer_name - The name of the layer to use.
+
+        Kwargs:
+
+            * vendor_kwargs - A dictionary of vendor specific parameters
+                              for inclusion as URL query parameters.
 
         """
         if WebMapService is None:
@@ -205,6 +212,17 @@ class WMTSRasterSource(RasterSource):
         if not (hasattr(wmts, 'tilematrixsets') and
                 hasattr(wmts, 'contents') and
                 hasattr(wmts, 'gettile')):
+            if vendor_kwargs:
+                # Ensure the vendor keyword arguments are included in
+                # the initial request URL.
+                pieces = urlparse.urlparse(wmts)
+                args = urlparse.parse_qs(pieces.query)
+                args.update(vendor_kwargs)
+                query = urllib.urlencode(args, doseq=True)
+                pieces = urlparse.ParseResult(pieces.scheme, pieces.netloc,
+                                              pieces.path, pieces.params,
+                                              query, pieces.fragment)
+                wmts = urlparse.urlunparse(pieces)
             wmts = owslib.wmts.WebMapTileService(wmts)
 
         try:
@@ -218,6 +236,11 @@ class WMTSRasterSource(RasterSource):
 
         #: The layer to fetch.
         self.layer = layer
+
+        if vendor_kwargs:
+            self.vendor_kwargs = dict(vendor_kwargs)
+        else:
+            self.vendor_kwargs = {}
 
         self._matrix_set_name_map = {}
 
@@ -383,7 +406,7 @@ class WMTSRasterSource(RasterSource):
                             layer=layer.id,
                             tilematrixset=matrix_set_name,
                             tilematrix=tile_matrix_id,
-                            row=row, column=col)
+                            row=row, column=col, **self.vendor_kwargs)
                     except owslib.util.ServiceException as exception:
                         if ('TileOutOfRange' in exception.message and
                                 ignore_out_of_range):
