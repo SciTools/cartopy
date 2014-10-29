@@ -61,11 +61,13 @@ METERS_PER_PIXEL = 0.28e-3
 _WGS84_METERS_PER_UNIT = 2 * math.pi * 6378137 / 360
 
 METERS_PER_UNIT = {
+    'urn:ogc:def:crs:EPSG::27700': 1,
     'urn:ogc:def:crs:EPSG::900913': 1,
     'urn:ogc:def:crs:OGC:1.3:CRS84': _WGS84_METERS_PER_UNIT,
 }
 
 _URN_TO_CRS = {
+    'urn:ogc:def:crs:EPSG::27700': ccrs.OSGB(),
     'urn:ogc:def:crs:EPSG::900913': ccrs.GOOGLE_MERCATOR,
     'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
 }
