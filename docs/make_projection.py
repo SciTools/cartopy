@@ -39,9 +39,10 @@ def projection_rst(projection_cls):
     print(name)
 
 
-SPECIAL_CASES = {ccrs.PlateCarree: ['PlateCarree()', 'PlateCarree(central_longitude=180)'],
-                 ccrs.RotatedPole: ['RotatedPole(pole_longitude=177.5, pole_latitude=37.5)'],
-                 }
+SPECIAL_CASES = {
+    ccrs.PlateCarree: [{}, {'central_longitude': 180}],
+    ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
+}
 
 
 COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
@@ -81,28 +82,22 @@ if __name__ == '__main__':
     prj_class_sorter = lambda cls: (PRJ_SORT_ORDER.get(cls.__name__, []), cls.__name__)
     for prj in sorted(find_projections(), key=prj_class_sorter):
         name = prj.__name__
-#        print prj in SPECIAL_CASES, prj in all_projections_in_groups, prj
-
-        # put the class documentation on the left, and a sidebar on the right.
-
-        aspect = (np.diff(prj().x_limits) / np.diff(prj().y_limits))[0]
-        width = 3 * aspect
-        if width == int(width):
-            width = int(width)
 
         table.write(name + '\n')
         table.write('-' * len(name) + '\n\n')
 
         table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
-#        table.write('Ipsum lorum....')
+        for instance_args in SPECIAL_CASES.get(prj, [{}]):
+            prj_inst = prj(**instance_args)
+            aspect = (np.diff(prj_inst.x_limits) / np.diff(prj_inst.y_limits))[0]
+            width = 3 * aspect
+            if width == int(width):
+                width = int(width)
 
-#        table.write("""\n\n
-#
-#.. sidebar:: Example
-#""")
-
-        for instance_creation_code in SPECIAL_CASES.get(prj, ['%s()' % name]):
+            instance_params = ', '.join('{}={}'.format(k, v)
+                                        for k, v in instance_args.items())
+            instance_creation_code = '{}({})'.format(name, instance_params)
             code = """
 .. plot::
 
