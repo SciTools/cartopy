@@ -166,7 +166,7 @@ class WMSRasterSource(RasterSource):
         Return a :class:`cartopy.crs.Projection` and corresponding
         SRS string in which the WMS service can supply the requested
         layers.
-        
+
         """
         for proj, srs in _CRS_TO_OGC_SRS.items():
             missing = False

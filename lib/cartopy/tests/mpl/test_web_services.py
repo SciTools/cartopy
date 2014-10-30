@@ -34,6 +34,7 @@ def test_wmts():
     # Use a layer which doesn't change over time.
     ax.add_wmts(url, 'MODIS_Water_Mask')
 
+
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 @ImageTesting(['wms'])
 def test_wms():
