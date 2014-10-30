@@ -28,6 +28,7 @@ except ImportError:
     WebMapTileService = None
 import unittest
 import cartopy.crs as ccrs
+import mock
 import numpy as np
 
 
@@ -80,9 +81,14 @@ class test_WMSRasterSource(unittest.TestCase):
 
     def test_unsupported_projection(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
-        msg = 'was not convertible to a suitable WMS SRS.'
-        with self.assertRaisesRegexp(ValueError, msg):
-            source.validate_projection(ccrs.Miller())
+        # Patch dict of known Proj->SRS mappings so that it does
+        # not include any of the available SRSs from the WMS.
+        with mock.patch.dict('cartopy.io.ogc_clients._CRS_TO_OGC_SRS',
+                             {ccrs.OSGB(): 'EPSG:27700'},
+                             clear=True):
+            msg = 'not available in any of the fallback'
+            with self.assertRaisesRegexp(ValueError, msg):
+                source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
@@ -94,6 +100,14 @@ class test_WMSRasterSource(unittest.TestCase):
         # No transparency in this image.
         self.assertEqual(img[:, :, 3].min(), 255)
         self.assertEqual(extent, extent_out)
+
+    def test_fetch_img_different_projection(self):
+        source = ogc.WMSRasterSource(self.URI, self.layer)
+        extent = [-570000, 5100000, 870000, 3500000]
+        img, extent_out = source.fetch_raster(ccrs.Orthographic(), extent,
+                                              (30, 30))
+        img = np.array(img)
+        self.assertEqual(img.shape, (30, 30, 4))
 
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
