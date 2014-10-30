@@ -42,6 +42,7 @@ def projection_rst(projection_cls):
 SPECIAL_CASES = {
     ccrs.PlateCarree: [{}, {'central_longitude': 180}],
     ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
+    ccrs.UTM: [{'zone': 30}],
 }
 
 
@@ -52,11 +53,11 @@ COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
 PRJ_SORT_ORDER = {'PlateCarree': 1, 'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
                   'TransverseMercator': 2, 'LambertCylindrical': 2,
                   'LambertConformal': 2, 'Stereographic': 2, 'Miller': 2,
-                  'Orthographic': 2, 'InterruptedGoodeHomolosine': 3,
+                  'Orthographic': 2, 'UTM': 2, 'InterruptedGoodeHomolosine': 3,
                   'RotatedPole': 3, 'OSGB': 4}
 
 
-groups = [('cylindrical', [ccrs.PlateCarree, ccrs.Mercator, ccrs.TransverseMercator,
+groups = [('cylindrical', [ccrs.PlateCarree, ccrs.Mercator, ccrs.TransverseMercator, ccrs.UTM,
                            ccrs.OSGB, ccrs.LambertCylindrical, ccrs.Miller, ccrs.RotatedPole]),
           ('pseudo-cylindrical', [ccrs.Mollweide, ccrs.Robinson]),
 #          ('conic', [ccrs.aed]),
