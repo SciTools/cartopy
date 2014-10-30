@@ -143,6 +143,7 @@ class WMSRasterSource(RasterSource):
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
         self._srs_for_projection_id = {}
+        self._fallback_proj = ccrs.PlateCarree()
 
     def _srs(self, projection):
         key = id(projection)
@@ -160,37 +161,34 @@ class WMSRasterSource(RasterSource):
         return srs
 
     def validate_projection(self, projection):
-        # Debug - change to pass/remove
         try:
             self._srs(projection)
         except ValueError as e:
-            warnings.warn(e.message)
+            try:
+                self._srs(self._fallback_proj)
+            except ValueError:
+                msg = e.message + 'Furthermore, data is not available in ' \
+                    'the fallback projection {!r}.'.format(self._fallback_proj)
+                raise ValueError(msg)
 
     def fetch_raster(self, projection, extent, target_resolution):
         service = self.service
         min_x, max_x, min_y, max_y = extent
-        print('extent =', extent)
-
         try:
             srs = self._srs(projection)
         except ValueError:
             # Native projection is not available from the WMS service so
-            # attempt to default to PlateCarree. 
-            wms_proj = ccrs.PlateCarree()
-            srs = 'EPSG:4326'
-            for layer in self.layers:
-                if srs not in self.service.contents[layer].crsOptions:
-                    raise ValueError('The  projection {!r} was not convertible to '
-                                     'a suitable WMS SRS and the fallback SRS {!r} '
-                                     'is not available.'.format(projection, srs))
-
+            # attempt to use the fallback and perform the necessary
+            # transformations.
+            wms_proj = self._fallback_proj
+            srs = self._srs(wms_proj)
+            # Calculate the bounding box in WMS projection.
             domain_in_proj = shapely.geometry.box(min_x, min_y, max_x, max_y)
             boundary_poly = shapely.geometry.Polygon(projection.boundary)
             geom_in_proj = boundary_poly.intersection(domain_in_proj)
             if geom_in_proj.equals(boundary_poly):
                 min_x, min_y, max_x, max_y = [-180, -90, 180, 90]
             else:
-                print('geom_in_proj=', geom_in_proj)
                 # Erode to help avoid transform issues related to the boundary.
                 geom_in_proj = geom_in_proj.buffer(-projection.threshold)
                 wms_box = wms_proj.project_geometry(geom_in_proj,
@@ -200,8 +198,6 @@ class WMSRasterSource(RasterSource):
                 # wms projection threshold.
                 wms_box = wms_box.buffer(wms_proj.threshold * 5)
                 min_x, min_y, max_x, max_y = wms_box.bounds
-                print('wms_box=', wms_box)
-                print('wms_box.bounds=', wms_box.bounds)
         else:
             wms_proj = projection
 
