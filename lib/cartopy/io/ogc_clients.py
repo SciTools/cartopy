@@ -48,8 +48,9 @@ except ImportError:
     WebMapService = None
     _OWSLIB_AVAILABLE = False
 
-from cartopy.io import RasterSource
 import cartopy.crs as ccrs
+from cartopy.io import RasterSource
+from cartopy.img_transform import warp_array
 
 
 _OWSLIB_REQUIRED = 'OWSLib is required to use the WMS or WMTS source.'
@@ -168,56 +169,85 @@ class WMSRasterSource(RasterSource):
     def fetch_raster(self, projection, extent, target_resolution):
         service = self.service
         min_x, max_x, min_y, max_y = extent
-        print(extent)
+        print('extent =', extent)
+
         try:
             srs = self._srs(projection)
         except ValueError:
-            #import pdb;pdb.set_trace()
             # Native projection is not available from the WMS service so
-            # attempt to default to platecarree. 
+            # attempt to default to PlateCarree. 
+            wms_proj = ccrs.PlateCarree()
             srs = 'EPSG:4326'
             for layer in self.layers:
                 if srs not in self.service.contents[layer].crsOptions:
                     raise ValueError('The  projection {!r} was not convertible to '
                                      'a suitable WMS SRS and the fallback SRS {!r} '
                                      'is not available.'.format(projection, srs))
-            wms_proj = ccrs.PlateCarree()
-            #bbox = shapely.geometry.box(min_x, min_y, max_x, max_y)
-            #print('bbox=', bbx)
-            ## Erode to avoid transform issues
-            #bbox = bbox.buffer(-projection.threshold)
-            #wms_box = wms_proj.project_geometry(bbox, projection).envelope
-            #min_x, min_y, max_x, max_y = wms_box.bounds
-            min_x, min_y, max_x, max_y = [-180, -90, 180, 90]  # Global
+
+            domain_in_proj = shapely.geometry.box(min_x, min_y, max_x, max_y)
+            boundary_poly = shapely.geometry.Polygon(projection.boundary)
+            geom_in_proj = boundary_poly.intersection(domain_in_proj)
+            if geom_in_proj.equals(boundary_poly):
+                min_x, min_y, max_x, max_y = [-180, -90, 180, 90]
+            else:
+                print('geom_in_proj=', geom_in_proj)
+                # Erode to help avoid transform issues related to the boundary.
+                geom_in_proj = geom_in_proj.buffer(-projection.threshold)
+                wms_box = wms_proj.project_geometry(geom_in_proj,
+                                                    projection).envelope
+                # Dilate to counter the erosion and to obtain an extra buffer
+                # around the required region by an empirical multiple of the
+                # wms projection threshold.
+                wms_box = wms_box.buffer(wms_proj.threshold * 5)
+                min_x, min_y, max_x, max_y = wms_box.bounds
+                print('wms_box=', wms_box)
+                print('wms_box.bounds=', wms_box.bounds)
         else:
             wms_proj = projection
 
-        wms_image = service.getmap(layers=self.layers,
-                                   srs=srs,
-                                   bbox=(min_x, min_y, max_x, max_y),
-                                   size=target_resolution, format='image/png',
-                                   **self.getmap_extra_kwargs)
+        # Retrive image from WMS.
+        wms_image = self.service.getmap(layers=self.layers,
+                                        srs=srs,
+                                        bbox=(min_x, min_y, max_x, max_y),
+                                        size=target_resolution,
+                                        format='image/png',
+                                        **self.getmap_extra_kwargs)
         wms_image = Image.open(io.BytesIO(wms_image.read()))
-        wms_image.save('hello.png')
-
 
         if wms_proj != projection:
-            x1, x2, y1, y2 = extent
-            #domain_in_proj = shapely.geometry.box(x1, y1, x2, y2)
-            #boundary_poly = shapely.geometry.Polygon(projection.boundary)
-            #geom_in_proj = boundary_poly.intersection(domain_in_proj)
-            #x1, y1, x2, y2 = geom_in_proj.bounds
-            print('target_extent =', x1, y1, x2, y2)
+            # Convert Image to numpy array (flipping so that origin
+            # is 'lower').
+            img, extent = warp_array(np.asanyarray(wms_image)[::-1],
+                                     source_proj=wms_proj,
+                                     source_extent=(min_x, max_x,
+                                                    min_y, max_y),
+                                     target_proj=projection,
+                                     target_res=target_resolution,
+                                     target_extent=extent,
+                                     mask_extrapolated=True)
 
-            from cartopy.img_transform import warp_array
-            wms_image, extent = warp_array(np.array(wms_image)[::-1],
-                                           source_proj=wms_proj,
-                                           source_extent=(min_x, max_x, min_y, max_y),
-                                           target_proj=projection,
-                                           target_res=target_resolution,
-                                           target_extent=(x1, x2, y1, y2),
-                                           mask_extrapolated=True)
-            wms_image = Image.fromarray(wms_image[::-1])
+            # Convert arrays with masked RGB(A) values to non-masked RGBA
+            # arrays, setting the alpha channel to zero for masked values.
+            # This avoids unsightly grey boundaries appearing when the
+            # extent is limited (i.e. not global).
+            if np.ma.isMaskedArray(img) and img.mask.any():
+                if img.shape[2:3] == (3,):
+                    # RGB
+                    old_img = img
+                    img = np.zeros(img.shape[:2] + (4,), dtype=img.dtype)
+                    img[:, :, 0:3] = old_img
+                    img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
+                    if img.dtype.kind == 'u':
+                        img[:, :, 3] *= 255
+                elif img.shape[2:3] == (4,):
+                    # RGBA
+                    img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
+                                            img[:, :, 3])
+                    img = img.data
+
+            # Convert warped image array back to an Image, undoing the
+            # earlier flip.
+            wms_image = Image.fromarray(img[::-1])
 
         return wms_image, extent
 
