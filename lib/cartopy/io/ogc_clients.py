@@ -32,24 +32,29 @@ from __future__ import (absolute_import, division, print_function)
 
 import io
 import math
+import os
 import weakref
+from xml.etree import ElementTree
 
 from PIL import Image
+from shapely.geometry import LinearRing, LineString, Point
 
 try:
     from owslib.wms import WebMapService
+    from owslib.wfs import WebFeatureService
     import owslib.util
     import owslib.wmts
     _OWSLIB_AVAILABLE = True
 except ImportError:
     WebMapService = None
+    WebFeatureService = None
     _OWSLIB_AVAILABLE = False
 
 from cartopy.io import RasterSource
 import cartopy.crs as ccrs
 
 
-_OWSLIB_REQUIRED = 'OWSLib is required to use the WMS or WMTS source.'
+_OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 
 # Hardcode some known EPSG codes for now.
 _CRS_TO_OGC_SRS = {ccrs.PlateCarree(): 'EPSG:4326'
@@ -66,7 +71,9 @@ METERS_PER_UNIT = {
 }
 
 _URN_TO_CRS = {
+    'urn:ogc:def:crs:EPSG::4326': ccrs.PlateCarree(),
     'urn:ogc:def:crs:EPSG::900913': ccrs.GOOGLE_MERCATOR,
+    'urn:ogc:def:crs:EPSG::32661': ccrs.Mercator(),
     'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
 }
 
@@ -407,3 +414,196 @@ class WMTSRasterSource(RasterSource):
             img_extent = (min_img_x, min_img_x + n_cols * tile_span_x,
                           max_img_y - n_rows * tile_span_y, max_img_y)
         return big_img, img_extent
+
+
+class WFSRasterSource(RasterSource):
+    """Web Feature Service (WFS) retrieval for Cartopy."""
+
+    def __init__(self, service, features, getfeature_extra_kwargs=None):
+        """
+        Args:
+
+        * service:
+            The URL of a WFS, or an :class:`owslib.wfs.WebFeatureService`
+            instance.
+        * features:
+            The name(s) of the features from the WFS to use.
+
+        Kwargs:
+
+        * getfeature_extra_kwargs:
+            Extra keyword args to pass to the service's `getfeature` call.
+
+        """
+        if WebFeatureService is None:
+            raise ImportError(_OWSLIB_REQUIRED)
+
+        if isinstance(service, basestring):
+            service = WebFeatureService(service)
+
+        if isinstance(features, basestring):
+            features = [features]
+
+        # Populate an empty kwargs dict with something harmless.
+        if getfeature_extra_kwargs is None:
+            getfeature_extra_kwargs = {'propertyname': ['*']}
+
+        if len(features) == 0:
+            raise ValueError('One or more features must be specified.')
+        for feature in features:
+            if feature not in service.contents:
+                raise ValueError('The {!r} feature does not exist in this '
+                                 'service.'.format(feature))
+
+        self.service = service
+        self.features = features
+        self.getfeature_extra_kwargs = getfeature_extra_kwargs
+
+        # For parsing GML. The enclosing {} are required as part of this.
+        self.ms = "{http://mapserver.gis.umn.edu/mapserver}"
+        self.gml = "{http://www.opengis.net/gml}"
+
+        self._crs_urn_for_projection_id = {}
+
+    def _crs_urn(self, projection):
+        """
+        Confirm that the SRS of the features in the WFS response is recognised
+        and that it lines up with the requested `projection`.
+
+        """
+        key = id(projection)
+        crs_urn = self._crs_urn_for_projection_id.get(key)
+        if crs_urn is None:
+            # Confirm the CRS URNs are recognised and match `projection`.
+            for feature in self.features:
+                crs_options = self.service.contents[feature].crsOptions
+                for features_crs_urn in crs_options:
+                    if features_crs_urn in _URN_TO_CRS:
+                        this_crs = _URN_TO_CRS[features_crs_urn]
+                        if this_crs == projection:
+                            crs_urn = features_crs_urn
+                            break
+            # Fail informatively if not.
+            if crs_urn is None:
+                raise ValueError('The projection {!r} was not convertible to '
+                                 'a suitable WFS SRS.'.format(projection))
+            self._crs_urn_for_projection_id[key] = crs_urn
+        return crs_urn
+
+    def validate_projection(self, projection):
+        self._crs_urn(projection)
+
+    def fetch_raster(self, projection, extent):
+        """
+        Return Shapely geometries of any Point, Linestring or LinearRing
+        geometries found in the WFS request.
+
+        .. note::
+            Kwargs passed to the get feature request are not guaranteed to
+            have an impact on the response data as the WFS server will not
+            necessarily be able to supply data that precisely matches the
+            request. In such cases the response will contain the default
+            data provided by the WFS server.
+
+        """
+        service = self.service
+        min_x, max_x, min_y, max_y = extent
+        response = service.getfeature(typename=self.features,
+                                      bbox=(min_x, min_y, max_x, max_y),
+                                      **self.getfeature_extra_kwargs)
+        wfs_features = self._to_shapely_geoms(response)
+        return wfs_features, extent
+
+    def _to_shapely_geoms(self, response):
+        """
+        Convert polygon coordinate strings in WFS response XML to Shapely
+        geometries.
+
+        Args:
+
+        * response:
+            WFS response XML data.
+
+        """
+        linear_rings_data = []
+        linestrings_data = []
+        points_data = []
+        tree = ElementTree.parse(response)
+
+        for node in tree.findall('.//{ms}msGeometry'.format(ms=self.ms)):
+            # Find LinearRing geometries in our Polygon node.
+            find_str = './/{gml}LinearRing'.format(gml=self.gml)
+            if self._node_has_child(node, find_str):
+                data = self._find_polygon_coords(node, find_str)
+                linear_rings_data.extend(data)
+
+            # Find LineString geometries in our Polygon node.
+            find_str = './/{gml}LineString'.format(gml=self.gml)
+            if _node_has_child(node, find_str):
+                data = self._find_polygon_coords(node, find_str)
+                linestrings_data.extend(data)
+
+            # Find Point geometries in our Polygon node.
+            find_str = './/{gml}Point'.format(gml=self.gml)
+            if _node_has_child(node, find_str):
+                data = self._find_polygon_coords(node, find_str)
+                points_data.extend(data)
+
+        linear_rings = {}
+        for k, x, y in linear_rings_data:
+            linear_rings.setdefault(k, []).append(LinearRing(zip(x, y)))
+        linestrings = {}
+        for k, x, y in linestrings_data:
+            linestrings.setdefault(k, []).append(LineString(zip(x, y)))
+        points = {}
+        for k, x, y in points_data:
+            points.setdefault(k, []).append(Point(zip(x, y)))
+        return linear_rings, linestrings, points
+
+    def _find_polygon_coords(self, node, find_str):
+        """Find all coordinates data for a given Polygon `node`."""
+
+        data = []
+        for polygon in node.findall(find_str):
+            feature_srs = polygon.attrib.get('srsName')
+            # Assume we can either have nodes called `coordinates` or `coords`.
+            find_str = '{}coordinates'.format(self.gml)
+            if _node_has_child(polygon, find_str): 
+                points = polygon.findtext(find_str)
+                x, y = self._coordinates_to_points(points)
+            else:
+                x, y = [], []
+                for coord in polygon.findall('{}coord'.format(self.gml)):
+                    x.append(float(coord.findtext('{}X'.format(self.gml))))
+                    y.append(float(coord.findtext('{}Y'.format(self.gml))))
+
+            data.append([feature_srs, x, y])
+        return data
+
+    def _node_has_child(self, node, find_str):
+        """
+        Determine whether `node` contains (at any sub-level), a node with name
+        equal to `find_str`.
+
+        """
+        found = list(node.iterfind(find_str))
+        return len(found) > 0
+
+    def _coordinates_to_points(self, points):
+        """
+        If our XML has a coordinates node then we'll get one string of
+        whitespace-separated points:
+
+            "x,y x,y ... x,y"
+
+        Parses this string to return lists of x and y points.
+
+        """
+        x = []
+        y = []
+        coords = points.strip().split(' ')
+        for coord in coords:
+            x_val, y_val = coord.split(',')
+            x.append(float(x_val))
+            y.append(float(y_val))
+        return x, y
