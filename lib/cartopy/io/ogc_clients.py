@@ -83,6 +83,8 @@ _URN_TO_CRS = {
     'urn:ogc:def:crs:EPSG::900913': ccrs.GOOGLE_MERCATOR,
     'urn:ogc:def:crs:EPSG::32661': ccrs.Mercator(),
     'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
+    'urn:ogc:def:crs:EPSG::3031': ccrs.Stereographic(central_latitude=-90,
+                                                     true_scale_latitude=-71)
 }
 
 
@@ -517,7 +519,7 @@ class WMTSRasterSource(RasterSource):
         return big_img, img_extent
 
 
-class WFSRasterSource(RasterSource):
+class WFSGeometrySource(RasterSource):
     """Web Feature Service (WFS) retrieval for Cartopy."""
 
     def __init__(self, service, features, getfeature_extra_kwargs=None):
@@ -528,7 +530,7 @@ class WFSRasterSource(RasterSource):
             The URL of a WFS, or an :class:`owslib.wfs.WebFeatureService`
             instance.
         * features:
-            The name(s) of the features from the WFS to use.
+            The typename(s) of the features from the WFS to use.
 
         Kwargs:
 
@@ -549,7 +551,7 @@ class WFSRasterSource(RasterSource):
         if getfeature_extra_kwargs is None:
             getfeature_extra_kwargs = {'propertyname': ['*']}
 
-        if len(features) == 0:
+        if not features:
             raise ValueError('One or more features must be specified.')
         for feature in features:
             if feature not in service.contents:
@@ -564,56 +566,126 @@ class WFSRasterSource(RasterSource):
         self.ms = "{http://mapserver.gis.umn.edu/mapserver}"
         self.gml = "{http://www.opengis.net/gml}"
 
-        self._crs_urn_for_projection_id = {}
+        #self._crs_urn_for_projection_id = {}
+        self._srs_for_projection_id = {}
 
-    def _crs_urn(self, projection):
+    #def _crs_urn(self, projection):
+    #    """
+    #    Confirm that the SRS of the features in the WFS response is recognised
+    #    and that it lines up with the requested `projection`.
+#
+#        """
+#        key = id(projection)
+#        crs_urn = self._crs_urn_for_projection_id.get(key)
+#        if crs_urn is None:
+#            # Confirm the CRS URNs are recognised and match `projection`.
+#            for feature in self.features:
+#                crs_options = self.service.contents[feature].crsOptions
+#                for features_crs_urn in crs_options:
+#                    if features_crs_urn in _URN_TO_CRS:
+#                        this_crs = _URN_TO_CRS[features_crs_urn]
+#                        if this_crs == projection:
+#                            crs_urn = features_crs_urn
+#                            break
+#            # Fail informatively if not.
+#            if crs_urn is None:
+#                raise ValueError('The projection {!r} was not convertible to '
+#                                 'a suitable WFS SRS.'.format(projection))
+#            self._crs_urn_for_projection_id[key] = crs_urn
+#        return crs_urn
+
+    #def validate_projection(self, projection):
+    #    self._crs_urn(projection)
+
+    #def _srs(self, projection):
+    #    key = id(projection)
+    #    srs = self._srs_for_projection_id.get(key)
+    #    if srs is None:
+    #        srs = _CRS_TO_OGC_SRS.get(projection)
+    #        if srs is None:
+    #            raise ValueError('The projection {!r} was not convertible to '
+    #                             'a suitable OGC SRS.'.format(projection))
+    #        for feature in self.features:
+   #             if srs not in self.service.contents[feature].crsOptions:
+   #                 raise ValueError('The SRS {} is not a valid SRS for the '
+   #                                  '{!r} WFS feature.'.format(srs, feature))
+   #         self._srs_for_projection_id[key] = srs
+   #     return srs
+
+    def default_projection(self):
         """
-        Confirm that the SRS of the features in the WFS response is recognised
-        and that it lines up with the requested `projection`.
+        Return a :class:`cartopy.crs.Projection` and corresponding
+        in which the WFS service can supply the requested features.
 
         """
-        key = id(projection)
-        crs_urn = self._crs_urn_for_projection_id.get(key)
-        if crs_urn is None:
-            # Confirm the CRS URNs are recognised and match `projection`.
-            for feature in self.features:
-                crs_options = self.service.contents[feature].crsOptions
-                for features_crs_urn in crs_options:
-                    if features_crs_urn in _URN_TO_CRS:
-                        this_crs = _URN_TO_CRS[features_crs_urn]
-                        if this_crs == projection:
-                            crs_urn = features_crs_urn
-                            break
-            # Fail informatively if not.
-            if crs_urn is None:
-                raise ValueError('The projection {!r} was not convertible to '
-                                 'a suitable WFS SRS.'.format(projection))
-            self._crs_urn_for_projection_id[key] = crs_urn
-        return crs_urn
+        # Using first element in crsOptions (default)
+        #import pdb;pdb.set_trace()
+        default_srs = set(self.service.contents[feature].crsOptions[0] for
+                          feature in self.features)
+        if len(default_srs) != 1:
+            ValueError('Failed to find a single common default SRS '
+                       'across all features (typenames).')
+        else:
+            default_srs = unicode(list(default_srs)[0])
 
-    def validate_projection(self, projection):
-        self._crs_urn(projection)
+        if default_srs not in _URN_TO_CRS:
+            raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
+                             'cartopy projection.'.format(default_srs))
 
-    def fetch_raster(self, projection, extent):
+        return _URN_TO_CRS[default_srs]
+
+        #for proj, srs in _CRS_TO_OGC_SRS.items():
+        #    missing = False
+        #    for feature in self.features:
+        #        if srs not in self.service.contents[feature].crsOptions:
+        #            missing = True
+        #    if not missing:
+        #        break
+        #if missing:
+        #    raise ValueError('The requested features are not available in '
+        #                     'any of the supported SRSs.')
+        #return proj
+
+
+    def fetch_geometries(self, projection, extent):
         """
         Return Shapely geometries of any Point, Linestring or LinearRing
         geometries found in the WFS request.
 
         .. note::
+
             Kwargs passed to the get feature request are not guaranteed to
             have an impact on the response data as the WFS server will not
             necessarily be able to supply data that precisely matches the
             request. In such cases the response will contain the default
             data provided by the WFS server.
 
+        Returns:
+            ...
+
         """
-        service = self.service
-        min_x, max_x, min_y, max_y = extent
-        response = service.getfeature(typename=self.features,
-                                      bbox=(min_x, min_y, max_x, max_y),
-                                      **self.getfeature_extra_kwargs)
-        wfs_features = self._to_shapely_geoms(response)
-        return wfs_features, extent
+        #import pdb;pdb.set_trace()
+        min_x, max_x, min_y, max_y = extent  #TODO - handle non-native proj. ie. convert extent to query wfs - may depend on
+        # on default srs.
+
+        response = self.service.getfeature(typename=self.features,
+                                           #srsname=self._srs(projection),  - doesn't nec. work - could try query params
+                                           bbox=(min_x, min_y, max_x, max_y),  # - what proj?????
+                                           **self.getfeature_extra_kwargs)
+        geoms_by_srs = self._to_shapely_geoms(response)
+        if not geoms_by_srs:
+            geoms = []
+        elif len(geoms_by_srs) > 1:
+            raise ValueError('Geoms in multiple SRSs')     # DEBUG code
+        else:
+            srs, geoms = geoms_by_srs.items()[0]
+            if srs is not None:
+                # Verify SRS.
+                geom_proj = _URN_TO_CRS[srs]
+                if geom_proj != projection:
+                    raise ValueError('Geometries are not in requested proj - need to project...')
+
+        return geoms
 
     def _to_shapely_geoms(self, response):
         """
@@ -629,6 +701,7 @@ class WFSRasterSource(RasterSource):
         linear_rings_data = []
         linestrings_data = []
         points_data = []
+        #import pdb;pdb.set_trace()
         tree = ElementTree.parse(response)
 
         for node in tree.findall('.//{ms}msGeometry'.format(ms=self.ms)):
@@ -640,29 +713,27 @@ class WFSRasterSource(RasterSource):
 
             # Find LineString geometries in our Polygon node.
             find_str = './/{gml}LineString'.format(gml=self.gml)
-            if _node_has_child(node, find_str):
+            if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 linestrings_data.extend(data)
 
             # Find Point geometries in our Polygon node.
             find_str = './/{gml}Point'.format(gml=self.gml)
-            if _node_has_child(node, find_str):
+            if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 points_data.extend(data)
 
-        linear_rings = {}
-        for k, x, y in linear_rings_data:
-            linear_rings.setdefault(k, []).append(
+        geoms_by_srs = {}
+        for srs, x, y in linear_rings_data:
+            geoms_by_srs.setdefault(srs, []).append(
                 shapely.geometry.LinearRing(zip(x, y)))
-        linestrings = {}
-        for k, x, y in linestrings_data:
-            linestrings.setdefault(k, []).append(
+        for srs, x, y in linestrings_data:
+            geoms_by_srs.setdefault(srs, []).append(
                 shapely.geometry.LineString(zip(x, y)))
-        points = {}
-        for k, x, y in points_data:
-            points.setdefault(k, []).append(
+        for srs, x, y in points_data:
+            geoms_by_srs.setdefault(srs, []).append(
                 shapely.geometry.Point(zip(x, y)))
-        return linear_rings, linestrings, points
+        return geoms_by_srs
 
     def _find_polygon_coords(self, node, find_str):
         """Find all coordinates data for a given Polygon `node`."""
@@ -672,7 +743,7 @@ class WFSRasterSource(RasterSource):
             feature_srs = polygon.attrib.get('srsName')
             # Assume we can either have nodes called `coordinates` or `coords`.
             find_str = '{}coordinates'.format(self.gml)
-            if _node_has_child(polygon, find_str): 
+            if self._node_has_child(polygon, find_str): 
                 points = polygon.findtext(find_str)
                 x, y = self._coordinates_to_points(points)
             else:
@@ -690,8 +761,9 @@ class WFSRasterSource(RasterSource):
         equal to `find_str`.
 
         """
+        #TODO Can this be done with a generator??
         found = list(node.iterfind(find_str))
-        return len(found) > 0
+        return bool(found)
 
     def _coordinates_to_points(self, points):
         """
@@ -703,6 +775,7 @@ class WFSRasterSource(RasterSource):
         Parses this string to return lists of x and y points.
 
         """
+        #TODO optimise this using itertools.
         x = []
         y = []
         coords = points.strip().split(' ')
