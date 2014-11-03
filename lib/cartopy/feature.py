@@ -29,6 +29,7 @@ import numpy as np
 import shapely.geometry
 import six
 
+from cartopy.io.ogc_clients import WFSGeometrySource
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
 
@@ -290,6 +291,32 @@ class GSHHSFeature(Feature):
             for geom in geoms:
                 if extent is None or extent_geom.intersects(geom):
                     yield geom
+
+
+class WFSFeature(Feature):
+    """
+    A class capable of drawing a collection of geometries
+    obtained from a Web Ferature Service (WFS)
+    
+    """
+    def __init__(self, wfs, features, **kwargs):
+        self.source = WFSGeometrySource(wfs, features)
+        crs = self.source.default_projection()
+        super(WFSFeature, self).__init__(crs, **kwargs)
+        # Default kwargs
+        self._kwargs.setdefault('edgecolor', 'red')
+        self._kwargs.setdefault('facecolor', 'none')
+
+    def geometries(self):
+        min_x, min_y, max_x, max_y = self.crs.boundary.bounds
+        geoms = self.source.fetch_geometries(self.crs,
+                                             extent=(min_x, max_x,
+                                                     min_y, max_y))
+        return iter(geoms)
+
+    def intersecting_geometries(self, extent):
+        geoms = self.source.fetch_geometries(self.crs, extent)
+        return iter(geoms)
 
 
 BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
