@@ -35,6 +35,15 @@ def test_wmts():
     ax.add_wmts(url, 'MODIS_Water_Mask')
 
 
+@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@ImageTesting(['wms'])
+def test_wms():
+    ax = plt.axes(projection=ccrs.Orthographic())
+    url = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
+    layer = 'basic'
+    ax.add_wms(url, layer)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
