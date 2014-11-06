@@ -320,7 +320,7 @@ class WFSFeature(Feature):
         crs = self.source.default_projection()
         super(WFSFeature, self).__init__(crs, **kwargs)
         # Default kwargs
-        self._kwargs.setdefault('edgecolor', 'red')
+        self._kwargs.setdefault('edgecolor', 'black')
         self._kwargs.setdefault('facecolor', 'none')
 
     def geometries(self):
