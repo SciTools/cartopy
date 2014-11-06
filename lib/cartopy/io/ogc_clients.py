@@ -50,13 +50,14 @@ except ImportError:
     _OWSLIB_AVAILABLE = False
 
 import cartopy.crs as ccrs
-from cartopy.io import RasterSource
+from cartopy.io import LocatedImage, RasterSource
 from cartopy.img_transform import warp_array
 
 
 _OWSLIB_REQUIRED = 'OWSLib is required to use the WMS or WMTS source.'
 
 # Hardcode some known EPSG codes for now.
+# The order given here determines the preferred SRS for WMS retrievals.
 _CRS_TO_OGC_SRS = collections.OrderedDict(
     [(ccrs.PlateCarree(), 'EPSG:4326'),
      (ccrs.GOOGLE_MERCATOR, 'EPSG:900913')])
@@ -144,22 +145,10 @@ class WMSRasterSource(RasterSource):
         #: Extra kwargs passed through to the service's getmap request.
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
-        self._srs_for_projection_id = {}
-
-    def _srs(self, projection):
-        key = id(projection)
-        srs = self._srs_for_projection_id.get(key)
-        if srs is None:
-            srs = _CRS_TO_OGC_SRS.get(projection)
-            if srs is None:
-                raise ValueError('The projection {!r} was not convertible to '
-                                 'a suitable WMS SRS.'.format(projection))
-            for layer in self.layers:
-                if srs not in self.service.contents[layer].crsOptions:
-                    raise ValueError('The SRS {} is not a valid SRS for the '
-                                     '{!r} WMS layer.'.format(srs, layer))
-            self._srs_for_projection_id[key] = srs
-        return srs
+    def _native_srs(self, projection):
+        # Return the SRS which corresponds to the given projection when
+        # known, otherwise return None.
+        return _CRS_TO_OGC_SRS.get(projection)
 
     def _fallback_proj_and_srs(self):
         """
@@ -168,78 +157,50 @@ class WMSRasterSource(RasterSource):
         layers.
 
         """
-        for proj, srs in _CRS_TO_OGC_SRS.items():
-            missing = False
-            for layer in self.layers:
-                if srs not in self.service.contents[layer].crsOptions:
-                    missing = True
+        contents = self.service.contents
+        for proj, srs in _CRS_TO_OGC_SRS.iteritems():
+            missing = any(srs not in contents[layer].crsOptions for
+                          layer in self.layers)
             if not missing:
                 break
         if missing:
-            raise ValueError('The requested layers are also not available in '
-                             'any of the fallback SRSs.')
+            raise ValueError('The requested layers are not available in a '
+                             'known SRS.')
         return proj, srs
 
     def validate_projection(self, projection):
-        try:
-            self._srs(projection)
-        except ValueError:
+        if self._native_srs(projection) is None:
             self._fallback_proj_and_srs()
 
-    def fetch_raster(self, projection, extent, target_resolution):
-        service = self.service
-        min_x, max_x, min_y, max_y = extent
-        try:
-            srs = self._srs(projection)
-        except ValueError:
-            # Native projection is not available from the WMS service so
-            # attempt to use the fallback and perform the necessary
-            # transformations.
-            wms_proj, srs = self._fallback_proj_and_srs()
-            # Calculate the bounding box in WMS projection.
-            domain_in_proj = shapely.geometry.box(min_x, min_y, max_x, max_y)
-            boundary_poly = shapely.geometry.Polygon(projection.boundary)
-            geom_in_proj = boundary_poly.intersection(domain_in_proj)
-            if geom_in_proj.equals(boundary_poly):
-                min_x, min_y, max_x, max_y = wms_proj.boundary.bounds
-            else:
-                # Erode to help avoid transform issues related to the boundary.
-                geom_in_proj = geom_in_proj.buffer(-projection.threshold)
-                wms_box = wms_proj.project_geometry(geom_in_proj,
-                                                    projection).envelope
-                # Dilate to counter the erosion and to obtain an extra buffer
-                # around the required region by an empirical multiple of the
-                # wms projection threshold.
-                wms_box = wms_box.buffer(wms_proj.threshold * 5)
-                min_x, min_y, max_x, max_y = wms_box.bounds
-        else:
-            wms_proj = projection
-        # Retrive image from WMS.
+    def _image_and_extent(self, wms_proj, wms_srs, wms_extent, output_proj,
+                          output_extent, target_resolution):
+        min_x, max_x, min_y, max_y = wms_extent
         wms_image = self.service.getmap(layers=self.layers,
-                                        srs=srs,
+                                        srs=wms_srs,
                                         bbox=(min_x, min_y, max_x, max_y),
                                         size=target_resolution,
                                         format='image/png',
                                         **self.getmap_extra_kwargs)
         wms_image = Image.open(io.BytesIO(wms_image.read()))
 
-        if wms_proj != projection:
+        if wms_proj == output_proj:
+            extent = output_extent
+        else:
             # Convert Image to numpy array (flipping so that origin
             # is 'lower').
             img, extent = warp_array(np.asanyarray(wms_image)[::-1],
                                      source_proj=wms_proj,
-                                     source_extent=(min_x, max_x,
-                                                    min_y, max_y),
-                                     target_proj=projection,
+                                     source_extent=wms_extent,
+                                     target_proj=output_proj,
                                      target_res=target_resolution,
-                                     target_extent=extent,
+                                     target_extent=output_extent,
                                      mask_extrapolated=True)
 
             # Convert arrays with masked RGB(A) values to non-masked RGBA
             # arrays, setting the alpha channel to zero for masked values.
             # This avoids unsightly grey boundaries appearing when the
             # extent is limited (i.e. not global).
-            if np.ma.isMaskedArray(img) and img.mask.any():
+            if np.ma.is_masked(img):
                 if img.shape[2:3] == (3,):
                     # RGB
                     old_img = img
@@ -258,7 +219,55 @@ class WMSRasterSource(RasterSource):
             # earlier flip.
             wms_image = Image.fromarray(img[::-1])
 
-        return wms_image, extent
+        return LocatedImage(wms_image, extent)
+
+    def fetch_raster(self, projection, extent, target_resolution):
+        service = self.service
+        min_x, max_x, min_y, max_y = extent
+        wms_srs = self._native_srs(projection)
+        if wms_srs is not None:
+            wms_proj = projection
+            wms_extents = [extent]
+        else:
+            # The SRS for the requested projection is not known, so
+            # attempt to use the fallback and perform the necessary
+            # transformations.
+            wms_proj, wms_srs = self._fallback_proj_and_srs()
+
+            # Calculate the bounding box(es) in WMS projection.
+
+            # Start with the requested area.
+            target_box = shapely.geometry.box(min_x, min_y, max_x, max_y)
+            # If the requested area (i.e. target_box) is bigger (or
+            # nearly bigger) than the entire output projection domain
+            # then we erode the request area to avoid re-projection
+            # instabilities near the full-projection limit.
+            buffered_target_box = target_box.buffer(projection.threshold,
+                                                    resolution=1)
+            fudge_mode = buffered_target_box.contains(projection.domain)
+            if fudge_mode:
+                target_box = projection.domain.buffer(-projection.threshold)
+            # Convert the requested area to the WMS server's projection.
+            wms_polys = wms_proj.project_geometry(target_box, projection)
+            wms_extents = []
+            for wms_poly in wms_polys:
+                min_x, min_y, max_x, max_y = wms_poly.bounds
+                if fudge_mode:
+                    # If we shrunk the request area before, then here we
+                    # need to re-inflate.
+                    radius = min(max_x - min_x, max_y - min_y) / 20.0
+                    radius = min(radius, wms_proj.threshold * 5)
+                    wms_poly = wms_poly.buffer(radius, resolution=1)
+                    min_x, min_y, max_x, max_y = wms_poly.bounds
+                wms_extents.append((min_x, max_x, min_y, max_y))
+
+        located_images = []
+        for wms_extent in wms_extents:
+            located_images.append(self._image_and_extent(wms_proj, wms_srs,
+                                                         wms_extent,
+                                                         projection, extent,
+                                                         target_resolution))
+        return located_images
 
 
 class WMTSRasterSource(RasterSource):
@@ -355,7 +364,7 @@ class WMTSRasterSource(RasterSource):
         image, extent = self._wmts_images(self.wmts, self.layer,
                                           matrix_set_name, extent,
                                           max_pixel_span)
-        return image, extent
+        return [LocatedImage(image, extent)]
 
     def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span):
         # Get the tile matrices in order of increasing resolution.

@@ -32,6 +32,9 @@ import mock
 import numpy as np
 
 
+RESOLUTION = (30, 30)
+
+
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 class test_WMSRasterSource(unittest.TestCase):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
@@ -86,28 +89,35 @@ class test_WMSRasterSource(unittest.TestCase):
         with mock.patch.dict('cartopy.io.ogc_clients._CRS_TO_OGC_SRS',
                              {ccrs.OSGB(): 'EPSG:27700'},
                              clear=True):
-            msg = 'not available in any of the fallback'
+            msg = 'not available'
             with self.assertRaisesRegexp(ValueError, msg):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
         extent = [-10, 10, 40, 60]
-        img, extent_out = source.fetch_raster(self.projection, extent,
-                                              (30, 30))
-        img = np.array(img)
-        self.assertEqual(img.shape, (30, 30, 4))
+        located_image, = source.fetch_raster(self.projection, extent,
+                                             RESOLUTION)
+        img = np.array(located_image.image)
+        self.assertEqual(img.shape, RESOLUTION + (4,))
         # No transparency in this image.
         self.assertEqual(img[:, :, 3].min(), 255)
-        self.assertEqual(extent, extent_out)
+        self.assertEqual(extent, located_image.extent)
 
     def test_fetch_img_different_projection(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
         extent = [-570000, 5100000, 870000, 3500000]
-        img, extent_out = source.fetch_raster(ccrs.Orthographic(), extent,
-                                              (30, 30))
-        img = np.array(img)
-        self.assertEqual(img.shape, (30, 30, 4))
+        located_image, = source.fetch_raster(ccrs.Orthographic(), extent,
+                                             RESOLUTION)
+        img = np.array(located_image.image)
+        self.assertEqual(img.shape, RESOLUTION + (4,))
+
+    def test_multi_image_result(self):
+        source = ogc.WMSRasterSource(self.URI, self.layer)
+        crs = ccrs.PlateCarree(central_longitude=180)
+        extent = [-15, 25, 45, 85]
+        located_images = source.fetch_raster(crs, extent, RESOLUTION)
+        self.assertEqual(len(located_images), 2)
 
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
@@ -140,14 +150,14 @@ class test_WMTSRasterSource(unittest.TestCase):
     def test_fetch_img(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         extent = [-10, 10, 40, 60]
-        img, extent_out = source.fetch_raster(self.projection, extent,
-                                              (30, 30))
-        img = np.array(img)
+        located_image, = source.fetch_raster(self.projection, extent,
+                                             RESOLUTION)
+        img = np.array(located_image.image)
         self.assertEqual(img.shape, (512, 512, 4))
         # No transparency in this image.
         self.assertEqual(img[:, :, 3].min(), 255)
         self.assertEqual((-180.0, 107.99999999999994,
-                          -197.99999999999994, 90.0), extent_out)
+                          -197.99999999999994, 90.0), located_image.extent)
 
 
 if __name__ == '__main__':
