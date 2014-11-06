@@ -144,22 +144,10 @@ class WMSRasterSource(RasterSource):
         #: Extra kwargs passed through to the service's getmap request.
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
-        self._srs_for_projection_id = {}
-
-    def _srs(self, projection):
-        key = id(projection)
-        srs = self._srs_for_projection_id.get(key)
-        if srs is None:
-            srs = _CRS_TO_OGC_SRS.get(projection)
-            if srs is None:
-                raise ValueError('The projection {!r} was not convertible to '
-                                 'a suitable WMS SRS.'.format(projection))
-            for layer in self.layers:
-                if srs not in self.service.contents[layer].crsOptions:
-                    raise ValueError('The SRS {} is not a valid SRS for the '
-                                     '{!r} WMS layer.'.format(srs, layer))
-            self._srs_for_projection_id[key] = srs
-        return srs
+    def _native_srs(self, projection):
+        # Return the SRS which corresponds to the given projection when
+        # known, otherwise return None.
+        return _CRS_TO_OGC_SRS.get(projection)
 
     def _fallback_proj_and_srs(self):
         """
@@ -168,7 +156,7 @@ class WMSRasterSource(RasterSource):
         layers.
 
         """
-        for proj, srs in _CRS_TO_OGC_SRS.items():
+        for proj, srs in _CRS_TO_OGC_SRS.iteritems():
             missing = False
             for layer in self.layers:
                 if srs not in self.service.contents[layer].crsOptions:
@@ -176,22 +164,21 @@ class WMSRasterSource(RasterSource):
             if not missing:
                 break
         if missing:
-            raise ValueError('The requested layers are also not available in '
-                             'any of the fallback SRSs.')
+            raise ValueError('The requested layers are not available in a '
+                             'known SRS.')
         return proj, srs
 
     def validate_projection(self, projection):
-        try:
-            self._srs(projection)
-        except ValueError:
+        if self._native_srs(projection) is None:
             self._fallback_proj_and_srs()
 
     def fetch_raster(self, projection, extent, target_resolution):
         service = self.service
         min_x, max_x, min_y, max_y = extent
-        try:
-            srs = self._srs(projection)
-        except ValueError:
+        srs = self._native_srs(projection)
+        if srs is not None:
+            wms_proj = projection
+        else:
             # Native projection is not available from the WMS service so
             # attempt to use the fallback and perform the necessary
             # transformations.
@@ -212,8 +199,6 @@ class WMSRasterSource(RasterSource):
                 # wms projection threshold.
                 wms_box = wms_box.buffer(wms_proj.threshold * 5)
                 min_x, min_y, max_x, max_y = wms_box.bounds
-        else:
-            wms_proj = projection
         # Retrive image from WMS.
         wms_image = self.service.getmap(layers=self.layers,
                                         srs=srs,
