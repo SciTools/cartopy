@@ -160,6 +160,7 @@ class test_WMTSRasterSource(unittest.TestCase):
         self.assertEqual((-180.0, 107.99999999999994,
                           -197.99999999999994, 90.0), located_image.extent)
 
+
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 class test_WFSGeometrySource(unittest.TestCase):
     URI = 'http://nsidc.org/cgi-bin/atlas_south?service=WFS'

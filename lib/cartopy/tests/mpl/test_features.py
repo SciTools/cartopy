@@ -61,6 +61,7 @@ def test_gshhs():
     ax.add_feature(cfeature.GSHHSFeature('low', levels=[2],
                                          facecolor='green'), facecolor='blue')
 
+
 @ImageTesting(['wfs'])
 def test_wfs():
     ax = plt.axes(projection=ccrs.OSGB())
