@@ -550,7 +550,6 @@ class WFSGeometrySource(object):
 
         # Populate an empty kwargs dict with something harmless.
         if getfeature_extra_kwargs is None:
-            #getfeature_extra_kwargs = {'propertyname': ['*']}
             getfeature_extra_kwargs = {}
 
         if not features:
@@ -605,7 +604,7 @@ class WFSGeometrySource(object):
             The projection in which the extent is specified and in
             which the geometries should be returned. Only the default
             (native) projection is supported.
-            
+
         * extent: four element tuple
             (min_x, max_x, min_y, max_y) tuple defining the geographic extent
             of the geometries to obtain.
@@ -641,11 +640,11 @@ class WFSGeometrySource(object):
                                          'projection. Expected {!r}, got '
                                          '{!r}.'.format(projection, geom_proj))
                 else:
-                    warnings.warn('Unable to verify matching projections due '
-                                  'to incomplete mappings from srs identifiers '
-                                  'to cartopy projections. The geometries have '
-                                  'an SRS of {!r}.'.format(srs))
-                
+                    msg = 'Unable to verify matching projections due ' \
+                          'to incomplete mappings from srs identifiers ' \
+                          'to cartopy projections. The geometries have ' \
+                          'an SRS of {!r}.'.format(srs)
+                    warnings.warn(msg)
         return geoms
 
     def _to_shapely_geoms(self, response):
@@ -707,7 +706,7 @@ class WFSGeometrySource(object):
         Args:
 
         * node: :class:`xml.etree.ElementTree.Element`
-            Node of the parsed XML response. 
+            Node of the parsed XML response.
 
         * find_str: string
             A search string used to match subelements that contain
@@ -716,19 +715,19 @@ class WFSGeometrySource(object):
 
         Returns:
             A list of (srsName, x_vals, y_vals) tuples.
-        
+
         """
 
         data = []
         for polygon in node.findall(find_str):
             feature_srs = polygon.attrib.get('srsName')
             x, y = [], []
-            
+
             # We can have nodes called `coordinates` or `coord`.
             coordinates_find_str = '{}coordinates'.format(self.gml)
             coords_find_str = '{}coord'.format(self.gml)
 
-            if self._node_has_child(polygon, coordinates_find_str): 
+            if self._node_has_child(polygon, coordinates_find_str):
                 points = polygon.findtext(coordinates_find_str)
                 coords = points.strip().split(' ')
                 for coord in coords:

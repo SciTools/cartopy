@@ -741,33 +741,6 @@ class GeoAxes(matplotlib.axes.Axes):
             self.add_image(img)
         return img
 
-    def add_web_feature(self, geoms_source, crs, **kwargs):
-        """
-        Add the given shapely geometries (in the given crs) from a
-        Web Feature Service (WFS) to the axes.
-
-        """
-        ax = self.get_axes()
-        # Fail early if the WFS source cannot provide features in the
-        # current projection.
-        #geoms_source.validate_projection(self.projection)
-        
-        [x1, y1], [x2, y2] = ax.viewLim.get_points()
-        features, extent = geoms_source.fetch_raster(ax.projection,
-                                                     extent=[x1, x2, y1, y2])
-        if features is None or extent is None:
-            raise ValueError('Uh-oh.')
-        with ax.hold_limits():
-            self.set_extent(extent)
-        
-        geoms = []
-        for source in features:
-            if source.values():
-                for polygon in source.values():
-                    geoms.extend(polygon)
-        feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
-        return self.add_feature(feature)
-
     def _regrid_shape_aspect(self, regrid_shape, target_extent):
         """
         Helper for setting regridding shape which is used in several

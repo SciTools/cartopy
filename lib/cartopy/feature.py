@@ -296,8 +296,8 @@ class GSHHSFeature(Feature):
 class WFSFeature(Feature):
     """
     A class capable of drawing a collection of geometries
-    obtained from a OGC Web Feature Service (WFS).
-    
+    obtained from an OGC Web Feature Service (WFS).
+
     """
     def __init__(self, wfs, features, **kwargs):
         """
