@@ -339,7 +339,7 @@ class RasterSource(object):
     """
     def validate_projection(self, projection):
         """
-        Return whether this raster source can provide images in the
+        Raise an error if this raster source cannot provide images in the
         specified projection.
 
         Parameters
