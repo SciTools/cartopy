@@ -296,10 +296,26 @@ class GSHHSFeature(Feature):
 class WFSFeature(Feature):
     """
     A class capable of drawing a collection of geometries
-    obtained from a Web Ferature Service (WFS)
+    obtained from a OGC Web Feature Service (WFS).
     
     """
     def __init__(self, wfs, features, **kwargs):
+        """
+        Args:
+
+        * wfs: string or :class:`owslib.wfs.WebFeatureService` instance
+            The WebFeatureService instance, or URL of a WFS service, from which
+            to retrieve the geometries.
+
+        * features: string or list of strings
+            The typename(s) of features available from the web service that
+            will be retrieved. Somewhat analogous to layers in WMS/WMTS.
+
+        Kwargs:
+            Keyword arguments to be used when drawing this feature.
+
+        """
+
         self.source = WFSGeometrySource(wfs, features)
         crs = self.source.default_projection()
         super(WFSFeature, self).__init__(crs, **kwargs)
