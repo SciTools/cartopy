@@ -57,6 +57,7 @@ from cartopy.img_transform import warp_array
 _OWSLIB_REQUIRED = 'OWSLib is required to use the WMS or WMTS source.'
 
 # Hardcode some known EPSG codes for now.
+# The order given here determines the preferred SRS for WMS retrievals.
 _CRS_TO_OGC_SRS = collections.OrderedDict(
     [(ccrs.PlateCarree(), 'EPSG:4326'),
      (ccrs.GOOGLE_MERCATOR, 'EPSG:900913')])
@@ -156,11 +157,10 @@ class WMSRasterSource(RasterSource):
         layers.
 
         """
+        contents = self.service.contents
         for proj, srs in _CRS_TO_OGC_SRS.iteritems():
-            missing = False
-            for layer in self.layers:
-                if srs not in self.service.contents[layer].crsOptions:
-                    missing = True
+            missing = any(srs not in contents[layer].crsOptions for
+                          layer in self.layers)
             if not missing:
                 break
         if missing:
@@ -200,7 +200,7 @@ class WMSRasterSource(RasterSource):
             # arrays, setting the alpha channel to zero for masked values.
             # This avoids unsightly grey boundaries appearing when the
             # extent is limited (i.e. not global).
-            if np.ma.isMaskedArray(img) and img.mask.any():
+            if np.ma.is_masked(img):
                 if img.shape[2:3] == (3,):
                     # RGB
                     old_img = img
@@ -238,15 +238,15 @@ class WMSRasterSource(RasterSource):
 
             # Start with the requested area.
             target_box = shapely.geometry.box(min_x, min_y, max_x, max_y)
-            # If the requested area (i.e. target_box) is almost as big
-            # as the entire projection that it will be displayed on then
-            # we erode the request area to avoid re-projection
+            # If the requested area (i.e. target_box) is bigger (or
+            # nearly bigger) than the entire output projection domain
+            # then we erode the request area to avoid re-projection
             # instabilities near the full-projection limit.
             buffered_target_box = target_box.buffer(projection.threshold,
                                                     resolution=1)
             fudge_mode = buffered_target_box.contains(projection.domain)
             if fudge_mode:
-                target_box = target_box.buffer(-projection.threshold)
+                target_box = projection.domain.buffer(-projection.threshold)
             # Convert the requested area to the WMS server's projection.
             wms_polys = wms_proj.project_geometry(target_box, projection)
             wms_extents = []
