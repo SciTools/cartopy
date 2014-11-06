@@ -255,8 +255,8 @@ class WMSRasterSource(RasterSource):
                 if fudge_mode:
                     # If we shrunk the request area before, then here we
                     # need to re-inflate.
-                    radius = min(max_x - min_x, max_y - min_y) / 20.0
-                    radius = min(radius, wms_proj.threshold * 5)
+                    radius = min(max_x - min_x, max_y - min_y) / 5.0
+                    radius = min(radius, wms_proj.threshold * 15)
                     wms_poly = wms_poly.buffer(radius, resolution=1)
                     min_x, min_y, max_x, max_y = wms_poly.bounds
                 wms_extents.append((min_x, max_x, min_y, max_y))
