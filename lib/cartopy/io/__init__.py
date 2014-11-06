@@ -23,6 +23,7 @@ various data formats.
 
 from __future__ import (absolute_import, division, print_function)
 
+import collections
 import os
 import string
 import warnings
@@ -323,13 +324,21 @@ class Downloader(object):
         return result_downloader
 
 
+class LocatedImage(collections.namedtuple('LocatedImage', 'image extent')):
+    """
+    Defines an image and associated extent in the form:
+       ``image, (min_x, max_x, min_y, max_y)``
+
+    """
+
+
 class RasterSource(object):
     """
     Defines the cartopy raster fetching interface.
 
-    A :class:`RasterSource` instance is able to supply an image and associated
-    extent (in the form ``img_array, (min_x, max_x, min_y, max_y)``) through
-    its :meth:`~RasterSource.fetch_raster` method.
+    A :class:`RasterSource` instance is able to supply images and
+    associated extents (as a sequence of :class:`LocatedImage` instances)
+    through its :meth:`~RasterSource.fetch_raster` method.
 
     As a result, further interfacing classes, such as
     :class:`cartopy.mpl.slippy_image_artist.SlippyImageArtist`, can then
@@ -352,7 +361,8 @@ class RasterSource(object):
 
     def fetch_raster(self, projection, extent, target_resolution):
         """
-        Return the image and its extent given some constraining information.
+        Return a sequence of images with extents given some constraining
+        information.
 
         Parameters
         ----------
@@ -369,13 +379,7 @@ class RasterSource(object):
 
         Returns
         -------
-        img : array like object (e.g. PIL.Image.Image)
-            The representative image.
-        extent : iterable of length 4
-            The extent of the returned array in the form
-            ``(min_x, max_x, min_y, max_y)``.
-
-        .. note:: Return (None, None) to indicate an invisible result.
+        A sequence of :class:`LocatedImage` instances.
 
         """
         raise NotImplementedError()

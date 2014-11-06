@@ -50,13 +50,12 @@ class SlippyImageArtist(AxesImage):
         ax = self.get_axes()
         window_extent = ax.get_window_extent()
         [x1, y1], [x2, y2] = ax.viewLim.get_points()
-        img, extent = self.raster_source.fetch_raster(
+        located_images = self.raster_source.fetch_raster(
             ax.projection, extent=[x1, x2, y1, y2],
             target_resolution=(window_extent.width, window_extent.height))
-        if img is None or extent is None:
-            return
-        self.set_array(img)
-        with ax.hold_limits():
-            self.set_extent(extent)
 
-        super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)
+        for img, extent in located_images:
+            self.set_array(img)
+            with ax.hold_limits():
+                self.set_extent(extent)
+            super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)
