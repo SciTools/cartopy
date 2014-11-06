@@ -39,8 +39,8 @@ import warnings
 import weakref
 from xml.etree import ElementTree
 
-import numpy as np
 from PIL import Image
+import numpy as np
 import shapely.geometry as sgeom
 
 try:
@@ -78,18 +78,113 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:OGC:1.3:CRS84': _WGS84_METERS_PER_UNIT,
 }
 
-_URN_TO_CRS = {
-    'urn:ogc:def:crs:EPSG::27700': ccrs.OSGB(),
-    'urn:ogc:def:crs:EPSG::4326': ccrs.PlateCarree(),
-    'urn:ogc:def:crs:EPSG::900913': ccrs.GOOGLE_MERCATOR,
-    'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
-    'urn:ogc:def:crs:EPSG::3031': ccrs.Stereographic(central_latitude=-90,
-                                                     true_scale_latitude=-71)
-}
+_URN_TO_CRS = collections.OrderedDict([
+    ('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
+    ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
+    ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
+    ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
+    ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(central_latitude=-90,
+                                                      true_scale_latitude=-71))
+])
 
 # XML namespace definitions
 _MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
 _GML_NS = '{http://www.opengis.net/gml}'
+
+
+def _warped_located_image(image, source_projection, source_extent,
+                          output_projection, output_extent, target_resolution):
+    """
+    Reproject an Image from one source-projection and extent to another.
+
+    Returns:
+        A reprojected LocatedImage, the extent of which is >= the requested
+        'output_extent'.
+
+    """
+    if source_projection == output_projection:
+        extent = output_extent
+    else:
+        # Convert Image to numpy array (flipping so that origin
+        # is 'lower').
+        img, extent = warp_array(np.asanyarray(image)[::-1],
+                                 source_proj=source_projection,
+                                 source_extent=source_extent,
+                                 target_proj=output_projection,
+                                 target_res=target_resolution,
+                                 target_extent=output_extent,
+                                 mask_extrapolated=True)
+
+        # Convert arrays with masked RGB(A) values to non-masked RGBA
+        # arrays, setting the alpha channel to zero for masked values.
+        # This avoids unsightly grey boundaries appearing when the
+        # extent is limited (i.e. not global).
+        if np.ma.is_masked(img):
+            if img.shape[2:3] == (3,):
+                # RGB
+                old_img = img
+                img = np.zeros(img.shape[:2] + (4,), dtype=img.dtype)
+                img[:, :, 0:3] = old_img
+                img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
+                if img.dtype.kind == 'u':
+                    img[:, :, 3] *= 255
+            elif img.shape[2:3] == (4,):
+                # RGBA
+                img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
+                                        img[:, :, 3])
+                img = img.data
+
+        # Convert warped image array back to an Image, undoing the
+        # earlier flip.
+        image = Image.fromarray(img[::-1])
+
+    return LocatedImage(image, extent)
+
+
+def _target_extents(extent, requested_projection, available_projection):
+    """
+    Translate the requested extent in the display projection into a list of
+    extents in the projection available from the service (multiple if it
+    crosses seams).
+
+    The extents are represented as (min_x, max_x, min_y, max_y).
+
+    """
+    # Start with the requested area.
+    min_x, max_x, min_y, max_y = extent
+    target_box = sgeom.box(min_x, min_y, max_x, max_y)
+
+    # If the requested area (i.e. target_box) is bigger (or nearly bigger) than
+    # the entire output requested_projection domain, then we erode the request
+    # area to avoid re-projection instabilities near the projection boundary.
+    buffered_target_box = target_box.buffer(requested_projection.threshold,
+                                            resolution=1)
+    fudge_mode = buffered_target_box.contains(requested_projection.domain)
+    if fudge_mode:
+        target_box = requested_projection.domain.buffer(
+            -requested_projection.threshold)
+
+    # Translate the requested area into the server projection.
+    polys = available_projection.project_geometry(target_box,
+                                                  requested_projection)
+
+    # Return the polygons' rectangular bounds as extent tuples.
+    target_extents = []
+    for poly in polys:
+        min_x, min_y, max_x, max_y = poly.bounds
+        if fudge_mode:
+            # If we shrunk the request area before, then here we
+            # need to re-inflate.
+            radius = min(max_x - min_x, max_y - min_y) / 5.0
+            radius = min(radius, available_projection.threshold * 15)
+            poly = poly.buffer(radius, resolution=1)
+            # Prevent the expanded request going beyond the
+            # limits of the requested_projection.
+            poly = available_projection.domain.intersection(poly)
+            min_x, min_y, max_x, max_y = poly.bounds
+        target_extents.append((min_x, max_x, min_y, max_y))
+
+    return target_extents
 
 
 class WMSRasterSource(RasterSource):
@@ -195,46 +290,11 @@ class WMSRasterSource(RasterSource):
                                         **self.getmap_extra_kwargs)
         wms_image = Image.open(io.BytesIO(wms_image.read()))
 
-        if wms_proj == output_proj:
-            extent = output_extent
-        else:
-            # Convert Image to numpy array (flipping so that origin
-            # is 'lower').
-            img, extent = warp_array(np.asanyarray(wms_image)[::-1],
-                                     source_proj=wms_proj,
-                                     source_extent=wms_extent,
-                                     target_proj=output_proj,
-                                     target_res=target_resolution,
-                                     target_extent=output_extent,
-                                     mask_extrapolated=True)
-
-            # Convert arrays with masked RGB(A) values to non-masked RGBA
-            # arrays, setting the alpha channel to zero for masked values.
-            # This avoids unsightly grey boundaries appearing when the
-            # extent is limited (i.e. not global).
-            if np.ma.is_masked(img):
-                if img.shape[2:3] == (3,):
-                    # RGB
-                    old_img = img
-                    img = np.zeros(img.shape[:2] + (4,), dtype=img.dtype)
-                    img[:, :, 0:3] = old_img
-                    img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
-                    if img.dtype.kind == 'u':
-                        img[:, :, 3] *= 255
-                elif img.shape[2:3] == (4,):
-                    # RGBA
-                    img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
-                                            img[:, :, 3])
-                    img = img.data
-
-            # Convert warped image array back to an Image, undoing the
-            # earlier flip.
-            wms_image = Image.fromarray(img[::-1])
-
-        return LocatedImage(wms_image, extent)
+        return _warped_located_image(wms_image, wms_proj, wms_extent,
+                                     output_proj, output_extent,
+                                     target_resolution)
 
     def fetch_raster(self, projection, extent, target_resolution):
-        min_x, max_x, min_y, max_y = extent
         target_resolution = [int(np.ceil(val)) for val in target_resolution]
         wms_srs = self._native_srs(projection)
         if wms_srs is not None:
@@ -247,34 +307,7 @@ class WMSRasterSource(RasterSource):
             wms_proj, wms_srs = self._fallback_proj_and_srs()
 
             # Calculate the bounding box(es) in WMS projection.
-
-            # Start with the requested area.
-            target_box = sgeom.box(min_x, min_y, max_x, max_y)
-            # If the requested area (i.e. target_box) is bigger (or
-            # nearly bigger) than the entire output projection domain
-            # then we erode the request area to avoid re-projection
-            # instabilities near the full-projection limit.
-            buffered_target_box = target_box.buffer(projection.threshold,
-                                                    resolution=1)
-            fudge_mode = buffered_target_box.contains(projection.domain)
-            if fudge_mode:
-                target_box = projection.domain.buffer(-projection.threshold)
-            # Convert the requested area to the WMS server's projection.
-            wms_polys = wms_proj.project_geometry(target_box, projection)
-            wms_extents = []
-            for wms_poly in wms_polys:
-                min_x, min_y, max_x, max_y = wms_poly.bounds
-                if fudge_mode:
-                    # If we shrunk the request area before, then here we
-                    # need to re-inflate.
-                    radius = min(max_x - min_x, max_y - min_y) / 5.0
-                    radius = min(radius, wms_proj.threshold * 15)
-                    wms_poly = wms_poly.buffer(radius, resolution=1)
-                    # Prevent the expanded request going beyond the
-                    # limits of the projection.
-                    wms_poly = wms_proj.domain.intersection(wms_poly)
-                    min_x, min_y, max_x, max_y = wms_poly.bounds
-                wms_extents.append((min_x, max_x, min_y, max_y))
+            wms_extents = _target_extents(extent, projection, wms_proj)
 
         located_images = []
         for wms_extent in wms_extents:
@@ -338,32 +371,46 @@ class WMTSRasterSource(RasterSource):
 
         self._matrix_set_name_map = {}
 
-    def _matrix_set_name(self, projection):
-        key = id(projection)
+    def _matrix_set_name(self, target_projection):
+        key = id(target_projection)
         matrix_set_name = self._matrix_set_name_map.get(key)
         if matrix_set_name is None:
-            wmts = self.wmts
             if hasattr(self.layer, 'tilematrixsetlinks'):
                 matrix_set_names = self.layer.tilematrixsetlinks.keys()
             else:
                 matrix_set_names = self.layer.tilematrixsets
-            for tile_matrix_set_name in matrix_set_names:
-                tile_matrix_set = wmts.tilematrixsets[tile_matrix_set_name]
-                crs_urn = tile_matrix_set.crs
-                if crs_urn in _URN_TO_CRS:
-                    tms_crs = _URN_TO_CRS[crs_urn]
-                    if tms_crs == projection:
-                        matrix_set_name = tile_matrix_set_name
+
+            def find_projection(match_projection):
+                result = None
+                for tile_matrix_set_name in matrix_set_names:
+                    matrix_sets = self.wmts.tilematrixsets
+                    tile_matrix_set = matrix_sets[tile_matrix_set_name]
+                    crs_urn = tile_matrix_set.crs
+                    tms_crs = _URN_TO_CRS.get(crs_urn)
+                    if tms_crs == match_projection:
+                        result = tile_matrix_set_name
                         break
+                return result
+
+            # First search for a matrix set in the target projection.
+            matrix_set_name = find_projection(target_projection)
             if matrix_set_name is None:
-                available_urns = sorted(set(
-                    wmts.tilematrixsets[name].crs for name in
-                    matrix_set_names))
-                msg = 'Unable to find tile matrix for projection.'
-                msg += '\n    Projection: ' + str(projection)
-                msg += '\n    Available tile CRS URNs:'
-                msg += '\n        ' + '\n        '.join(available_urns)
-                raise ValueError(msg)
+                # Search instead for a set in _any_ projection we can use.
+                for possible_projection in _URN_TO_CRS.values():
+                    # Look for supported projections (in a preferred order).
+                    matrix_set_name = find_projection(possible_projection)
+                    if matrix_set_name is not None:
+                        break
+                if matrix_set_name is None:
+                    # Fail completely.
+                    available_urns = sorted(set(
+                        self.wmts.tilematrixsets[name].crs
+                        for name in matrix_set_names))
+                    msg = 'Unable to find tile matrix for projection.'
+                    msg += '\n    Projection: ' + str(target_projection)
+                    msg += '\n    Available tile CRS URNs:'
+                    msg += '\n        ' + '\n        '.join(available_urns)
+                    raise ValueError(msg)
             self._matrix_set_name_map[key] = matrix_set_name
         return matrix_set_name
 
@@ -372,14 +419,57 @@ class WMTSRasterSource(RasterSource):
 
     def fetch_raster(self, projection, extent, target_resolution):
         matrix_set_name = self._matrix_set_name(projection)
-        min_x, max_x, min_y, max_y = extent
+        wmts_projection = _URN_TO_CRS[
+            self.wmts.tilematrixsets[matrix_set_name].crs]
+
+        if wmts_projection == projection:
+            wmts_extents = [extent]
+        else:
+            # Calculate (possibly multiple) extents in the given projection.
+            wmts_extents = _target_extents(extent, projection, wmts_projection)
+            # Bump resolution by a small factor, as a weak alternative to
+            # delivering a minimum projected resolution.
+            # Generally, the desired area is smaller than the enclosing extent
+            # in projection space and may have varying scaling, so the ideal
+            # solution is a hard problem !
+            resolution_factor = 1.4
+            target_resolution = np.array(target_resolution) * resolution_factor
+
         width, height = target_resolution
-        max_pixel_span = min((max_x - min_x) / width,
-                             (max_y - min_y) / height)
-        image, extent = self._wmts_images(self.wmts, self.layer,
-                                          matrix_set_name, extent,
-                                          max_pixel_span)
-        return [LocatedImage(image, extent)]
+        located_images = []
+        for wmts_desired_extent in wmts_extents:
+            # Calculate target resolution for the actual polygon.  Note that
+            # this gives *every* polygon enough pixels for the whole result,
+            # which is potentially excessive!
+            min_x, max_x, min_y, max_y = wmts_desired_extent
+            if wmts_projection == projection:
+                max_pixel_span = min((max_x - min_x) / width,
+                                     (max_y - min_y) / height)
+            else:
+                # X/Y orientation is arbitrary, so use a worst-case guess.
+                max_pixel_span = (min(max_x - min_x, max_y - min_y) /
+                                  max(width, height))
+
+            # Fetch a suitable image and its actual extent.
+            wmts_image, wmts_actual_extent = self._wmts_images(
+                self.wmts, self.layer, matrix_set_name,
+                extent=wmts_desired_extent,
+                max_pixel_span=max_pixel_span)
+
+            # Return each (image, extent) as a LocatedImage.
+            if wmts_projection == projection:
+                located_image = LocatedImage(wmts_image, wmts_actual_extent)
+            else:
+                # Reproject the image to the desired projection.
+                located_image = _warped_located_image(
+                    wmts_image,
+                    wmts_projection, wmts_actual_extent,
+                    output_projection=projection, output_extent=extent,
+                    target_resolution=target_resolution)
+
+            located_images.append(located_image)
+
+        return located_images
 
     def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span):
         # Get the tile matrices in order of increasing resolution.
