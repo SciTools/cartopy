@@ -74,7 +74,11 @@ METERS_PER_UNIT = {
 _URN_TO_CRS = {
     'urn:ogc:def:crs:EPSG::4326': ccrs.PlateCarree(),
     'urn:ogc:def:crs:EPSG::900913': ccrs.GOOGLE_MERCATOR,
-    'urn:ogc:def:crs:EPSG::32661': ccrs.Mercator(),
+    'urn:ogc:def:crs:EPSG::32661': ccrs.Stereographic(central_latitude=90,
+                                                      false_easting=2000000,
+                                                      false_northing=2000000,
+                                                      true_scale_latitude=90,
+                                                      scaling_factor=0.994),
     'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
     'urn:ogc:def:crs:EPSG::3031': ccrs.Stereographic(central_latitude=-90,
                                                      true_scale_latitude=-71)

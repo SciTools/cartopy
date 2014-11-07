@@ -1098,12 +1098,14 @@ class Gnomonic(Projection):
 class Stereographic(Projection):
     def __init__(self, central_latitude=0.0, central_longitude=0.0,
                  false_easting=0.0, false_northing=0.0,
-                 true_scale_latitude=None, globe=None):
+                 true_scale_latitude=None, scaling_factor=None, globe=None):
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
         if true_scale_latitude:
             proj4_params.append(('lat_ts', true_scale_latitude))
+        if scaling_factor:
+            proj4_params.append(('k_0', scaling_factor))
         super(Stereographic, self).__init__(proj4_params, globe=globe)
 
         # TODO: Factor this out, particularly if there are other places using
