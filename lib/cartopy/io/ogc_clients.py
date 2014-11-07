@@ -35,6 +35,7 @@ import io
 import math
 import warnings
 import weakref
+from xml.etree import ElementTree
 
 import numpy as np
 from PIL import Image
@@ -42,11 +43,13 @@ import shapely.geometry
 
 try:
     from owslib.wms import WebMapService
+    from owslib.wfs import WebFeatureService
     import owslib.util
     import owslib.wmts
     _OWSLIB_AVAILABLE = True
 except ImportError:
     WebMapService = None
+    WebFeatureService = None
     _OWSLIB_AVAILABLE = False
 
 import cartopy.crs as ccrs
@@ -54,7 +57,7 @@ from cartopy.io import LocatedImage, RasterSource
 from cartopy.img_transform import warp_array
 
 
-_OWSLIB_REQUIRED = 'OWSLib is required to use the WMS or WMTS source.'
+_OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 
 # Hardcode some known EPSG codes for now.
 # The order given here determines the preferred SRS for WMS retrievals.
@@ -75,9 +78,16 @@ METERS_PER_UNIT = {
 
 _URN_TO_CRS = {
     'urn:ogc:def:crs:EPSG::27700': ccrs.OSGB(),
+    'urn:ogc:def:crs:EPSG::4326': ccrs.PlateCarree(),
     'urn:ogc:def:crs:EPSG::900913': ccrs.GOOGLE_MERCATOR,
     'urn:ogc:def:crs:OGC:1.3:CRS84': ccrs.PlateCarree(),
+    'urn:ogc:def:crs:EPSG::3031': ccrs.Stereographic(central_latitude=-90,
+                                                     true_scale_latitude=-71)
 }
+
+# XML namespace definitions
+_MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
+_GML_NS = '{http://www.opengis.net/gml}'
 
 
 class WMSRasterSource(RasterSource):
@@ -512,3 +522,236 @@ class WMTSRasterSource(RasterSource):
             img_extent = (min_img_x, min_img_x + n_cols * tile_span_x,
                           max_img_y - n_rows * tile_span_y, max_img_y)
         return big_img, img_extent
+
+
+class WFSGeometrySource(object):
+    """Web Feature Service (WFS) retrieval for Cartopy."""
+
+    def __init__(self, service, features, getfeature_extra_kwargs=None):
+        """
+        Args:
+
+        * service:
+            The URL of a WFS, or an instance of
+            :class:`owslib.wfs.WebFeatureService`.
+        * features:
+            The typename(s) of the features from the WFS that
+            will be retrieved and made available as geometries.
+
+        Kwargs:
+
+        * getfeature_extra_kwargs:
+            Extra keyword args to pass to the service's `getfeature` call.
+
+        """
+        if WebFeatureService is None:
+            raise ImportError(_OWSLIB_REQUIRED)
+
+        if isinstance(service, basestring):
+            service = WebFeatureService(service)
+
+        if isinstance(features, basestring):
+            features = [features]
+
+        if getfeature_extra_kwargs is None:
+            getfeature_extra_kwargs = {}
+
+        if not features:
+            raise ValueError('One or more features must be specified.')
+        for feature in features:
+            if feature not in service.contents:
+                raise ValueError('The {!r} feature does not exist in this '
+                                 'service.'.format(feature))
+
+        self.service = service
+        self.features = features
+        self.getfeature_extra_kwargs = getfeature_extra_kwargs
+
+        self._default_urn = None
+
+    def default_projection(self):
+        """
+        Return a :class:`cartopy.crs.Projection` in which the WFS
+        service can supply the requested features.
+
+        """
+        # Using first element in crsOptions (default).
+        if self._default_urn is None:
+            default_urn = set(self.service.contents[feature].crsOptions[0] for
+                              feature in self.features)
+            if len(default_urn) != 1:
+                ValueError('Failed to find a single common default SRS '
+                           'across all features (typenames).')
+            else:
+                default_urn = default_urn.pop()
+                default_srs = default_urn.id
+
+            if unicode(default_urn) not in _URN_TO_CRS:
+                raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
+                                 'cartopy projection.'.format(default_urn))
+
+            self._default_urn = default_urn
+
+        return _URN_TO_CRS[unicode(self._default_urn)]
+
+    def fetch_geometries(self, projection, extent):
+        """
+        Return any Point, Linestring or LinearRing geometries available
+        from the WFS that lie within the specified extent.
+
+        Args:
+
+        * projection: :class:`cartopy.crs.Projection`
+            The projection in which the extent is specified and in
+            which the geometries should be returned. Only the default
+            (native) projection is supported.
+
+        * extent: four element tuple
+            (min_x, max_x, min_y, max_y) tuple defining the geographic extent
+            of the geometries to obtain.
+
+        Returns:
+            A list of Shapely geometries.
+
+        """
+        if self.default_projection() != projection:
+            raise ValueError('Geometries are only available in projection '
+                             '{!r}.'.format(self.default_projection()))
+
+        min_x, max_x, min_y, max_y = extent
+        response = self.service.getfeature(typename=self.features,
+                                           bbox=(min_x, min_y, max_x, max_y),
+                                           **self.getfeature_extra_kwargs)
+        geoms_by_srs = self._to_shapely_geoms(response)
+        if not geoms_by_srs:
+            geoms = []
+        elif len(geoms_by_srs) > 1:
+            raise ValueError('Unexpected response from the WFS server. The '
+                             'geometries are in multiple SRSs, when only one '
+                             'was expected.')
+        else:
+            srs, geoms = geoms_by_srs.items()[0]
+            # Attempt to verify the SRS associated with the geometries (if any)
+            # matches the specified projection.
+            if srs is not None:
+                if srs in _URN_TO_CRS:
+                    geom_proj = _URN_TO_CRS[srs]
+                    if geom_proj != projection:
+                        raise ValueError('The geometries are not in expected '
+                                         'projection. Expected {!r}, got '
+                                         '{!r}.'.format(projection, geom_proj))
+                else:
+                    msg = 'Unable to verify matching projections due ' \
+                          'to incomplete mappings from SRS identifiers ' \
+                          'to cartopy projections. The geometries have ' \
+                          'an SRS of {!r}.'.format(srs)
+                    warnings.warn(msg)
+        return geoms
+
+    def _to_shapely_geoms(self, response):
+        """
+        Convert polygon coordinate strings in WFS response XML to Shapely
+        geometries.
+
+        Args:
+
+        * response: (file-like object)
+            WFS response XML data.
+
+        Returns:
+            A dictionary containing geometries, with key-value pairs of
+            the form {srsname: [geoms]}.
+
+        """
+        linear_rings_data = []
+        linestrings_data = []
+        points_data = []
+        tree = ElementTree.parse(response)
+
+        for node in tree.findall('.//{}msGeometry'.format(_MAP_SERVER_NS)):
+            # Find LinearRing geometries in our msGeometry node.
+            find_str = './/{gml}LinearRing'.format(gml=_GML_NS)
+            if self._node_has_child(node, find_str):
+                data = self._find_polygon_coords(node, find_str)
+                linear_rings_data.extend(data)
+
+            # Find LineString geometries in our msGeometry node.
+            find_str = './/{gml}LineString'.format(gml=_GML_NS)
+            if self._node_has_child(node, find_str):
+                data = self._find_polygon_coords(node, find_str)
+                linestrings_data.extend(data)
+
+            # Find Point geometries in our msGeometry node.
+            find_str = './/{gml}Point'.format(gml=_GML_NS)
+            if self._node_has_child(node, find_str):
+                data = self._find_polygon_coords(node, find_str)
+                points_data.extend(data)
+
+        geoms_by_srs = {}
+        for srs, x, y in linear_rings_data:
+            geoms_by_srs.setdefault(srs, []).append(
+                shapely.geometry.LinearRing(zip(x, y)))
+        for srs, x, y in linestrings_data:
+            geoms_by_srs.setdefault(srs, []).append(
+                shapely.geometry.LineString(zip(x, y)))
+        for srs, x, y in points_data:
+            geoms_by_srs.setdefault(srs, []).append(
+                shapely.geometry.Point(zip(x, y)))
+        return geoms_by_srs
+
+    def _find_polygon_coords(self, node, find_str):
+        """
+        Return the x, y coordinate values for all the geometries in
+        a given`node`.
+
+        Args:
+
+        * node: :class:`xml.etree.ElementTree.Element`
+            Node of the parsed XML response.
+
+        * find_str: string
+            A search string used to match subelements that contain
+            the coordinates of interest, for example:
+            './/{http://www.opengis.net/gml}LineString'
+
+        Returns:
+            A list of (srsName, x_vals, y_vals) tuples.
+
+        """
+
+        data = []
+        for polygon in node.findall(find_str):
+            feature_srs = polygon.attrib.get('srsName')
+            x, y = [], []
+
+            # We can have nodes called `coordinates` or `coord`.
+            coordinates_find_str = '{}coordinates'.format(_GML_NS)
+            coords_find_str = '{}coord'.format(_GML_NS)
+
+            if self._node_has_child(polygon, coordinates_find_str):
+                points = polygon.findtext(coordinates_find_str)
+                coords = points.strip().split(' ')
+                for coord in coords:
+                    x_val, y_val = coord.split(',')
+                    x.append(float(x_val))
+                    y.append(float(y_val))
+            elif self._node_has_child(polygon, coords_find_str):
+                for coord in polygon.findall(coords_find_str):
+                    x.append(float(coord.findtext('{}X'.format(_GML_NS))))
+                    y.append(float(coord.findtext('{}Y'.format(_GML_NS))))
+            else:
+                raise ValueError('Unable to find or parse coordinate values '
+                                 'from the XML.')
+
+            data.append((feature_srs, x, y))
+        return data
+
+    @staticmethod
+    def _node_has_child(node, find_str):
+        """
+        Return whether `node` contains (at any sub-level), a node with name
+        equal to `find_str`.
+
+        """
+        element = node.find(find_str)
+        return element is not None

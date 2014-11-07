@@ -20,6 +20,7 @@ from __future__ import (absolute_import, division, print_function)
 import cartopy.io.ogc_clients as ogc
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 try:
+    from owslib.wfs import WebFeatureService
     from owslib.wms import WebMapService
     from owslib.wmts import ContentMetadata, WebMapTileService
 except ImportError:
@@ -158,6 +159,44 @@ class test_WMTSRasterSource(unittest.TestCase):
         self.assertEqual(img[:, :, 3].min(), 255)
         self.assertEqual((-180.0, 107.99999999999994,
                           -197.99999999999994, 90.0), located_image.extent)
+
+
+@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+class test_WFSGeometrySource(unittest.TestCase):
+    URI = 'http://nsidc.org/cgi-bin/atlas_south?service=WFS'
+    typename = 'land_excluding_antarctica'
+    native_projection = ccrs.Stereographic(central_latitude=-90,
+                                           true_scale_latitude=-71)
+
+    def test_string_service(self):
+        service = WebFeatureService(self.URI)
+        source = ogc.WFSGeometrySource(self.URI, self.typename)
+        self.assertIsInstance(source.service, type(service))
+        self.assertEqual(source.features, [self.typename])
+
+    def test_wfs_service_instance(self):
+        service = WebFeatureService(self.URI)
+        source = ogc.WFSGeometrySource(service, self.typename)
+        self.assertIs(source.service, service)
+        self.assertEqual(source.features, [self.typename])
+
+    def test_default_projection(self):
+        source = ogc.WFSGeometrySource(self.URI, self.typename)
+        self.assertEqual(source.default_projection(), self.native_projection)
+
+    def test_unsupported_projection(self):
+        source = ogc.WFSGeometrySource(self.URI, self.typename)
+        with self.assertRaisesRegexp(ValueError,
+                                     'Geometries are only available '
+                                     'in projection'):
+            source.fetch_geometries(ccrs.PlateCarree(), [-180, 180, -90, 90])
+
+    def test_fetch_geometries(self):
+        source = ogc.WFSGeometrySource(self.URI, self.typename)
+        # Extent covering New Zealand.
+        extent = (-99012, 1523166, -6740315, -4589165)
+        geoms = source.fetch_geometries(self.native_projection, extent)
+        self.assertEqual(len(geoms), 23)
 
 
 if __name__ == '__main__':

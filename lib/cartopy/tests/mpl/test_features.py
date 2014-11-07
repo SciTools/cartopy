@@ -62,6 +62,16 @@ def test_gshhs():
                                          facecolor='green'), facecolor='blue')
 
 
+@ImageTesting(['wfs'])
+def test_wfs():
+    ax = plt.axes(projection=ccrs.OSGB())
+    url = 'http://nsidc.org/cgi-bin/atlas_south?service=WFS'
+    typename = 'land_excluding_antarctica'
+    feature = cfeature.WFSFeature(url, typename,
+                                  edgecolor='red')
+    ax.add_feature(feature)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
