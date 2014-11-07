@@ -33,7 +33,6 @@ from __future__ import (absolute_import, division, print_function)
 import collections
 import io
 import math
-import os
 import warnings
 import weakref
 from xml.etree import ElementTree
@@ -86,6 +85,10 @@ _URN_TO_CRS = {
     'urn:ogc:def:crs:EPSG::3031': ccrs.Stereographic(central_latitude=-90,
                                                      true_scale_latitude=-71)
 }
+
+# XML namespace definitions
+_MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
+_GML_NS = '{http://www.opengis.net/gml}'
 
 
 class WMSRasterSource(RasterSource):
@@ -548,7 +551,6 @@ class WFSGeometrySource(object):
         if isinstance(features, basestring):
             features = [features]
 
-        # Populate an empty kwargs dict with something harmless.
         if getfeature_extra_kwargs is None:
             getfeature_extra_kwargs = {}
 
@@ -564,9 +566,6 @@ class WFSGeometrySource(object):
         self.getfeature_extra_kwargs = getfeature_extra_kwargs
 
         self._default_urn = None
-        # For parsing GML. The enclosing {} are required as part of this.
-        self.ms = "{http://mapserver.gis.umn.edu/mapserver}"
-        self.gml = "{http://www.opengis.net/gml}"
 
     def default_projection(self):
         """
@@ -587,7 +586,7 @@ class WFSGeometrySource(object):
 
             if unicode(default_urn) not in _URN_TO_CRS:
                 raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
-                                 'cartopy projection.'.format(default_srs))
+                                 'cartopy projection.'.format(default_urn))
 
             self._default_urn = default_urn
 
@@ -641,7 +640,7 @@ class WFSGeometrySource(object):
                                          '{!r}.'.format(projection, geom_proj))
                 else:
                     msg = 'Unable to verify matching projections due ' \
-                          'to incomplete mappings from srs identifiers ' \
+                          'to incomplete mappings from SRS identifiers ' \
                           'to cartopy projections. The geometries have ' \
                           'an SRS of {!r}.'.format(srs)
                     warnings.warn(msg)
@@ -667,21 +666,21 @@ class WFSGeometrySource(object):
         points_data = []
         tree = ElementTree.parse(response)
 
-        for node in tree.findall('.//{ms}msGeometry'.format(ms=self.ms)):
-            # Find LinearRing geometries in our Polygon node.
-            find_str = './/{gml}LinearRing'.format(gml=self.gml)
+        for node in tree.findall('.//{}msGeometry'.format(_MAP_SERVER_NS)):
+            # Find LinearRing geometries in our msGeometry node.
+            find_str = './/{gml}LinearRing'.format(gml=_GML_NS)
             if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 linear_rings_data.extend(data)
 
-            # Find LineString geometries in our Polygon node.
-            find_str = './/{gml}LineString'.format(gml=self.gml)
+            # Find LineString geometries in our msGeometry node.
+            find_str = './/{gml}LineString'.format(gml=_GML_NS)
             if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 linestrings_data.extend(data)
 
-            # Find Point geometries in our Polygon node.
-            find_str = './/{gml}Point'.format(gml=self.gml)
+            # Find Point geometries in our msGeometry node.
+            find_str = './/{gml}Point'.format(gml=_GML_NS)
             if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 points_data.extend(data)
@@ -724,8 +723,8 @@ class WFSGeometrySource(object):
             x, y = [], []
 
             # We can have nodes called `coordinates` or `coord`.
-            coordinates_find_str = '{}coordinates'.format(self.gml)
-            coords_find_str = '{}coord'.format(self.gml)
+            coordinates_find_str = '{}coordinates'.format(_GML_NS)
+            coords_find_str = '{}coord'.format(_GML_NS)
 
             if self._node_has_child(polygon, coordinates_find_str):
                 points = polygon.findtext(coordinates_find_str)
@@ -736,8 +735,8 @@ class WFSGeometrySource(object):
                     y.append(float(y_val))
             elif self._node_has_child(polygon, coords_find_str):
                 for coord in polygon.findall(coords_find_str):
-                    x.append(float(coord.findtext('{}X'.format(self.gml))))
-                    y.append(float(coord.findtext('{}Y'.format(self.gml))))
+                    x.append(float(coord.findtext('{}X'.format(_GML_NS))))
+                    y.append(float(coord.findtext('{}Y'.format(_GML_NS))))
             else:
                 raise ValueError('Unable to find or parse coordinate values '
                                  'from the XML.')
