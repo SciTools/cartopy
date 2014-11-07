@@ -258,6 +258,9 @@ class WMSRasterSource(RasterSource):
                     radius = min(max_x - min_x, max_y - min_y) / 5.0
                     radius = min(radius, wms_proj.threshold * 15)
                     wms_poly = wms_poly.buffer(radius, resolution=1)
+                    # Prevent the expanded request going beyond the
+                    # limits of the projection.
+                    wms_poly = wms_proj.domain.intersection(wms_poly)
                     min_x, min_y, max_x, max_y = wms_poly.bounds
                 wms_extents.append((min_x, max_x, min_y, max_y))
 
