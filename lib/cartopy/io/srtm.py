@@ -167,8 +167,8 @@ def SRTM3_retrieve(lon, lat):
     None will be returned.
 
     """
-    x = '%s%03d' % ('E' if lon > 0 else 'W', abs(int(lon)))
-    y = '%s%02d' % ('N' if lat > 0 else 'S', abs(int(lat)))
+    x = '%s%03d' % ('E' if lon >= 0 else 'W', abs(int(lon)))
+    y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
 
     srtm_downloader = Downloader.from_config(('SRTM', 'SRTM3'))
     params = {'config': config, 'x': x, 'y': y}
