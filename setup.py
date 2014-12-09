@@ -62,14 +62,14 @@ def find_package_tree(root_path, root_package):
 
     """
     packages = [root_package]
-    root_count = len(root_path.split('/'))
+    root_count = len(root_path.split(os.path.sep))
     for (dir_path, dir_names, _) in os.walk(convert_path(root_path)):
         # Prune dir_names *in-place* to prevent unwanted directory recursion
         for dir_name in list(dir_names):
             if not os.path.isfile(os.path.join(dir_path, dir_name, '__init__.py')):
                 dir_names.remove(dir_name)
         if dir_names:
-            prefix = dir_path.split('/')[root_count:]
+            prefix = dir_path.split(os.path.sep)[root_count:]
             packages.extend(['.'.join([root_package] + prefix + [dir_name]) for dir_name in dir_names])
     return packages
 
