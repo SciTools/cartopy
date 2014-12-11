@@ -47,6 +47,10 @@ install:
   - conda install pip
   - pip install pyepsg
 
+  # Conda debug
+  # -----------
+  - conda list
+
   - MPL_CONFIG_DIR=~/.config/matplotlib
   - mkdir -p $MPL_CONFIG_DIR
   - echo "backend" ":" "agg" > $MPL_CONFIG_DIR/matplotlibrc
