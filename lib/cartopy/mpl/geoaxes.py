@@ -957,6 +957,10 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if transform is None:
             transform = self.transData
+
+        if isinstance(transform, cartopy.crs.CRS):
+            transform = transform._as_mpl_transform(self)
+
         if self.background_patch is None:
             background = matplotlib.patches.PathPatch(path, edgecolor='none',
                                                       facecolor='white',
