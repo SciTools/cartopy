@@ -277,14 +277,10 @@ class NEShpDownloader(Downloader):
     FORMAT_KEYS = ('config', 'resolution', 'category', 'name')
 
     # Define the NaturalEarth URL template. The natural earth website
-    # returns a 302 status if accessing directly, so we could use the naciscdn
+    # returns a 302 status if accessing directly, so we use the naciscdn
     # URL directly.
     _NE_URL_TEMPLATE = ('http://naciscdn.org/naturalearth/{resolution}'
                         '/{category}/ne_{resolution}_{name}.zip')
-    # But in preference we use the latest files from the Github repo instead.
-    _NE_URL_TEMPLATE = ('https://github.com/nvkelso/natural-earth-vector/'
-                        'raw/master/zips/{resolution}_{category}/'
-                        'ne_{resolution}_{name}.zip')
 
     def __init__(self,
                  url_template=_NE_URL_TEMPLATE,
