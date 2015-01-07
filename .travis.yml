@@ -21,7 +21,7 @@ install:
 
   # Create the basic testing environment
   # ------------------------------------
-  - conda config --set always_yes yes --set changeps1 no
+  - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda update conda
   - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
