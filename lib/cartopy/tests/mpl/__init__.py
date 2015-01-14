@@ -196,6 +196,9 @@ class ImageTesting(object):
         mod_name = mod_name.rsplit('.', 1)[-1]
 
         def wrapped(*args, **kwargs):
+            orig_backend = plt.get_backend()
+            plt.switch_backend('agg')
+
             if pyplot_helpers.Gcf.figs:
                 warnings.warn('Figures existed before running the %s %s test.'
                               ' All figures should be closed after they run. '
@@ -213,6 +216,7 @@ class ImageTesting(object):
             finally:
                 for figure in figures:
                     pyplot_helpers.Gcf.destroy_fig(figure)
+                plt.switch_backend(orig_backend)
             return r
 
         # nose needs the function's name to be in the form "test_*" to
@@ -274,6 +278,9 @@ def failed_images_html():
 
 
 def show(projection, geometry):
+    orig_backend = matplotlib.get_backend()
+    plt.switch_backend('tkagg')
+
     if geometry.type == 'MultiPolygon' and 1:
         multi_polygon = geometry
         for polygon in multi_polygon:
@@ -326,3 +333,4 @@ def show(projection, geometry):
              scalex=False, scaley=False, zorder=-1)
 
     plt.show()
+    plt.switch_backend(orig_backend)
