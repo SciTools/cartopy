@@ -17,10 +17,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import unittest
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 from cartopy.tests.mpl import ImageTesting
 
@@ -62,6 +65,7 @@ def test_gshhs():
                                          facecolor='green'), facecolor='blue')
 
 
+@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 @ImageTesting(['wfs'])
 def test_wfs():
     ax = plt.axes(projection=ccrs.OSGB())
