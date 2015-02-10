@@ -22,7 +22,8 @@ import glob
 import shutil
 import warnings
 
-
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import matplotlib.testing.compare as mcompare
 import matplotlib._pylab_helpers as pyplot_helpers
 
@@ -195,6 +196,9 @@ class ImageTesting(object):
         mod_name = mod_name.rsplit('.', 1)[-1]
 
         def wrapped(*args, **kwargs):
+            orig_backend = plt.get_backend()
+            plt.switch_backend('agg')
+
             if pyplot_helpers.Gcf.figs:
                 warnings.warn('Figures existed before running the %s %s test.'
                               ' All figures should be closed after they run. '
@@ -212,6 +216,7 @@ class ImageTesting(object):
             finally:
                 for figure in figures:
                     pyplot_helpers.Gcf.destroy_fig(figure)
+                plt.switch_backend(orig_backend)
             return r
 
         # nose needs the function's name to be in the form "test_*" to
@@ -270,3 +275,62 @@ def failed_images_html():
 
     html.extend(['</body>', '</html>'])
     return '\n'.join(html)
+
+
+def show(projection, geometry):
+    orig_backend = matplotlib.get_backend()
+    plt.switch_backend('tkagg')
+
+    if geometry.type == 'MultiPolygon' and 1:
+        multi_polygon = geometry
+        for polygon in multi_polygon:
+            import cartopy.mpl.patch as patch
+            paths = patch.geos_to_path(polygon)
+            for pth in paths:
+                patch = mpatches.PathPatch(pth, edgecolor='none',
+                                           lw=0, alpha=0.2)
+                plt.gca().add_patch(patch)
+            line_string = polygon.exterior
+            plt.plot(*list(zip(*line_string.coords)),
+                     marker='+', linestyle='-')
+    elif geometry.type == 'MultiPolygon':
+        multi_polygon = geometry
+        for polygon in multi_polygon:
+            line_string = polygon.exterior
+            plt.plot(*list(zip(*line_string.coords)),
+                     marker='+', linestyle='-')
+
+    elif geometry.type == 'MultiLineString':
+        multi_line_string = geometry
+        for line_string in multi_line_string:
+            plt.plot(*list(zip(*line_string.coords)),
+                     marker='+', linestyle='-')
+
+    elif geometry.type == 'LinearRing':
+        plt.plot(*list(zip(*geometry.coords)), marker='+', linestyle='-')
+
+    if 1:
+        # Whole map domain
+        plt.autoscale()
+    elif 0:
+        # The left-hand triangle
+        plt.xlim(-1.65e7, -1.2e7)
+        plt.ylim(0.3e7, 0.65e7)
+    elif 0:
+        # The tip of the left-hand triangle
+        plt.xlim(-1.65e7, -1.55e7)
+        plt.ylim(0.3e7, 0.4e7)
+    elif 1:
+        # The very tip of the left-hand triangle
+        plt.xlim(-1.632e7, -1.622e7)
+        plt.ylim(0.327e7, 0.337e7)
+    elif 1:
+        # The tip of the right-hand triangle
+        plt.xlim(1.55e7, 1.65e7)
+        plt.ylim(0.3e7, 0.4e7)
+
+    plt.plot(*list(zip(*projection.boundary.coords)), marker='o',
+             scalex=False, scaley=False, zorder=-1)
+
+    plt.show()
+    plt.switch_backend(orig_backend)

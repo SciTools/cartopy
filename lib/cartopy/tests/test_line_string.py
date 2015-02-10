@@ -63,7 +63,7 @@ class TestLineString(unittest.TestCase):
         for coords, pieces in tests:
             line_string = geometry.LineString(coords)
             multi_line_string = projection.project_geometry(line_string)
-            # from cartopy.tests import show
+            # from cartopy.tests.mpl import show
             # show(projection, multi_line_string)
             self.assertEqual(len(multi_line_string), pieces)
 
@@ -71,7 +71,7 @@ class TestLineString(unittest.TestCase):
         projection = ccrs.Robinson(170.5)
         line_string = geometry.LineString([(-10, 30), (10, 60)])
         multi_line_string = projection.project_geometry(line_string)
-        from cartopy.tests import show
+        # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
         self.assertEqual(len(multi_line_string), 2)
 
@@ -199,7 +199,7 @@ class TestBisect(unittest.TestCase):
         projection = ccrs.TransverseMercator(central_longitude=-90)
         line_string = geometry.LineString([(-10, 30), (10, 50)])
         multi_line_string = projection.project_geometry(line_string)
-        from cartopy.tests import show
+        # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
         self.assertEqual(len(multi_line_string), 1)
         for line_string in multi_line_string:
@@ -213,7 +213,7 @@ class TestMisc(unittest.TestCase):
         projection = ccrs.TransverseMercator(central_longitude=-90)
         line_string = geometry.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
-        from cartopy.tests import show
+        # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
         for line_string in multi_line_string:
             for coord in line_string.coords:
