@@ -87,6 +87,52 @@ class MissingHeaderError(Exception):
     pass
 
 
+class TestRunner(Command):
+    """Run the Cartopy tests under nose"""
+    description = "run tests under nose"
+    user_options = [('stop', 'x', 'Stop running tests after the first '
+                     'error or failure'),]
+
+    boolean_options = ['stop']
+    
+    def initialize_options(self):
+        self.stop = False
+    
+    def finalize_options(self):
+        if self.stop:
+            print "Stopping tests after the first error or failure"
+
+    def run(self):
+        import nose
+        import matplotlib
+
+        matplotlib.use('agg')
+
+        lib_dir = os.path.join(sys.path[0], 'lib')
+
+        tests = [os.path.join(lib_dir, 'cartopy', 'tests')]
+
+        for test in tests:
+            if not os.path.exists(test):
+                raise RuntimeError('No tests found in {}'.format(test))
+
+#        n_processors = max(multiprocessing.cpu_count() - 1, 1)
+
+        args = ['', None, '--with-doctest', '--nocapture', '--verbose']
+#                '--processes=%s' % n_processors,
+        if self.stop:
+            args.append('--stop')
+
+        result = True
+        for test in tests:
+            args[1] = test
+            print
+            print 'Running test discovery on {}.'.format(test)
+            result &= nose.run(argv=args)
+        if result is False:
+            exit(1)
+
+
 class HeaderCheck(Command):
     """
     Checks that all the necessary files have the copyright and licence
@@ -181,5 +227,6 @@ setup(
                   ),
     ],
 
-    cmdclass={'build_ext': build_ext, 'header_check': HeaderCheck},
+    cmdclass={'build_ext': build_ext, 'header_check': HeaderCheck,
+              'test': TestRunner},
 )
