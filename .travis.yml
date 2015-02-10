@@ -5,6 +5,8 @@ python:
   # to build scipy we cannot use the virtual env of travis. Instead, we
   # use miniconda.
   - 2.7
+  - 3.3
+  - 3.4
 
 install:
   - sudo apt-get update -qq
@@ -29,7 +31,11 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  - conda install numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0
+  - if [[ "$TRAVIS_PYTHON_VERSION" == 3.4 ]]; then
+      conda install numpy=1.8.2 matplotlib=1.3.1 scipy=0.14.0;
+    else
+      conda install numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0;
+    fi
   - conda install cython
   - conda install pillow
   - conda install mock
@@ -42,10 +48,8 @@ install:
   - conda install pyshp
   - conda install shapely
   - conda install six
-
   - conda install requests
-  - conda install pip
-  - pip install pyepsg
+  - conda install pyepsg
 
   # Conda debug
   # -----------
@@ -66,4 +70,4 @@ script:
 
 after_failure:
   - source activate test-environment
-  - python -c "import cartopy.tests.mpl; print cartopy.tests.mpl.failed_images_html()"
+  - python -c "from __future__ import print_function; import cartopy.tests.mpl; print(cartopy.tests.mpl.failed_images_html())"
