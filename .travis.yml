@@ -8,9 +8,9 @@ python:
   - 3.3
   - 3.4
 
-install:
-  - sudo apt-get update -qq
+sudo: false
 
+install:
   # Install miniconda
   # -----------------
   - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
