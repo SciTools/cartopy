@@ -181,6 +181,16 @@ UTM
 
 .. autoclass:: cartopy.crs.UTM
 
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(0.128571428571, 3))
+    ax = plt.axes(projection=ccrs.UTM(zone=30))
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
 
 InterruptedGoodeHomolosine
 --------------------------
@@ -209,7 +219,7 @@ RotatedPole
     import cartopy.crs as ccrs
 
     plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5))
+    ax = plt.axes(projection=ccrs.RotatedPole(pole_latitude=37.5, pole_longitude=177.5))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -240,7 +250,7 @@ EuroPP
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(2.51842105263, 3))
+    plt.figure(figsize=(2.61538461538, 3))
     ax = plt.axes(projection=ccrs.EuroPP())
     ax.coastlines(resolution='50m')
     ax.gridlines()

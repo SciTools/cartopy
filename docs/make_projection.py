@@ -25,48 +25,32 @@ import numpy as np
 import cartopy.crs as ccrs
 
 
-def find_projections():
-    for obj_name, o in vars(ccrs).copy().items():
-#        o = getattr(ccrs, obj_name)
-        if (isinstance(o, type) and issubclass(o, ccrs.Projection) and
-            not obj_name.startswith('_') and obj_name not in ['Projection']):
-
-            # yield the projections
-            yield o
-
-def projection_rst(projection_cls):
-    name = projection_cls.__name__
-    print(name)
-
-
-SPECIAL_CASES = {ccrs.PlateCarree: ['PlateCarree()', 'PlateCarree(central_longitude=180)'],
-                 ccrs.RotatedPole: ['RotatedPole(pole_longitude=177.5, pole_latitude=37.5)'],
-                 }
+SPECIAL_CASES = {
+    ccrs.PlateCarree: [{}, {'central_longitude': 180}],
+    ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
+    ccrs.UTM: [{'zone': 30}],
+}
 
 
 COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
                         ccrs.OSGB: '50m',
                         ccrs.EuroPP: '50m'}
 
-PRJ_SORT_ORDER = {'PlateCarree': 1, 'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
+PRJ_SORT_ORDER = {'PlateCarree': 1,
+                  'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
                   'TransverseMercator': 2, 'LambertCylindrical': 2,
                   'LambertConformal': 2, 'Stereographic': 2, 'Miller': 2,
-                  'Orthographic': 2, 'InterruptedGoodeHomolosine': 3,
-                  'RotatedPole': 3, 'OSGB': 4}
+                  'Orthographic': 2, 'UTM': 2,
+                  'InterruptedGoodeHomolosine': 3, 'RotatedPole': 3,
+                  'OSGB': 4}
 
 
-groups = [('cylindrical', [ccrs.PlateCarree, ccrs.Mercator, ccrs.TransverseMercator,
-                           ccrs.OSGB, ccrs.LambertCylindrical, ccrs.Miller, ccrs.RotatedPole]),
-          ('pseudo-cylindrical', [ccrs.Mollweide, ccrs.Robinson]),
-#          ('conic', [ccrs.aed]),
-          ('azimuthal', [ccrs.Stereographic, ccrs.NorthPolarStereo,
-                         ccrs.SouthPolarStereo, ccrs.Gnomonic, ccrs.Orthographic
-                         ]),
-          ('misc', [ccrs.InterruptedGoodeHomolosine]),
-          ]
+def find_projections():
+    for obj_name, o in vars(ccrs).copy().items():
+        if isinstance(o, type) and issubclass(o, ccrs.Projection) and \
+           not obj_name.startswith('_') and obj_name not in ['Projection']:
 
-
-all_projections_in_groups = list(itertools.chain.from_iterable([g[1] for g in groups]))
+            yield o
 
 
 if __name__ == '__main__':
@@ -78,31 +62,27 @@ if __name__ == '__main__':
     table.write('Cartopy projection list\n')
     table.write('=======================\n\n\n')
 
-    prj_class_sorter = lambda cls: (PRJ_SORT_ORDER.get(cls.__name__, []), cls.__name__)
+    prj_class_sorter = lambda cls: (PRJ_SORT_ORDER.get(cls.__name__, []),
+                                    cls.__name__)
     for prj in sorted(find_projections(), key=prj_class_sorter):
         name = prj.__name__
-#        print prj in SPECIAL_CASES, prj in all_projections_in_groups, prj
-
-        # put the class documentation on the left, and a sidebar on the right.
-
-        aspect = (np.diff(prj().x_limits) / np.diff(prj().y_limits))[0]
-        width = 3 * aspect
-        if width == int(width):
-            width = int(width)
 
         table.write(name + '\n')
         table.write('-' * len(name) + '\n\n')
 
         table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
-#        table.write('Ipsum lorum....')
+        for instance_args in SPECIAL_CASES.get(prj, [{}]):
+            prj_inst = prj(**instance_args)
+            aspect = (np.diff(prj_inst.x_limits) /
+                      np.diff(prj_inst.y_limits))[0]
+            width = 3 * aspect
+            if width == int(width):
+                width = int(width)
 
-#        table.write("""\n\n
-#
-#.. sidebar:: Example
-#""")
-
-        for instance_creation_code in SPECIAL_CASES.get(prj, ['%s()' % name]):
+            instance_params = ', '.join('{}={}'.format(k, v)
+                                        for k, v in instance_args.items())
+            instance_creation_code = '{}({})'.format(name, instance_params)
             code = """
 .. plot::
 
