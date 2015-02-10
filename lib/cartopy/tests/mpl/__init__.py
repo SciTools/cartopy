@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2014, Met Office
+# (C) British Crown Copyright 2011 - 2015, Met Office
 #
 # This file is part of cartopy.
 #
@@ -254,7 +254,7 @@ def failed_images_html():
         with open(fname, "rb") as fh:
             return fh.read().encode("base64").replace("\n", "")
 
-    html = ['<html>', '<body>']
+    html = ['<!DOCTYPE html>', '<html>', '<body>']
 
     for expected, actual, diff in failed_images_iter():
         expected_html = data_uri_template.format(
@@ -264,9 +264,9 @@ def failed_images_html():
         diff_html = data_uri_template.format(
             alt='diff', img=image_as_base64(diff))
 
-        html.extend([expected, '</br>',
+        html.extend([expected, '<br>',
                      expected_html, actual_html, diff_html,
-                     '</br><hr>'])
+                     '<br><hr>'])
 
-    html.extend(['</html>', '</body>'])
+    html.extend(['</body>', '</html>'])
     return '\n'.join(html)
