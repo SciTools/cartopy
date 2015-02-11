@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2014, Met Office
+# (C) British Crown Copyright 2011 - 2015, Met Office
 #
 # This file is part of cartopy.
 #
@@ -1529,6 +1529,85 @@ class Geostationary(Projection):
     @property
     def y_limits(self):
         return self._ylim
+
+
+class AlbersEqualArea(Projection):
+    """
+    An Albers Equal Area projection
+
+    This projection is conic and equal-area, and is commonly used for maps of
+    the conterminous United States.
+    """
+
+    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 standard_parallels=(20.0, 50.0), globe=None):
+        """
+        Kwargs:
+
+            * central_longitude - The central longitude. Defaults to 0.
+            * central_latitude - The central latitude. Defaults to 0.
+            * false_easting - X offset from planar origin in metres.
+                              Defaults to 0.
+            * false_northing - Y offset from planar origin in metres.
+                               Defaults to 0.
+            * standard_parallels - The one or two latitudes of correct scale.
+                                   Defaults to (20, 50).
+            * globe - A :class:`cartopy.crs.Globe`.
+                      If omitted, a default globe is created.
+
+        """
+        proj4_params = [('proj', 'aea'),
+                        ('lon_0', central_longitude),
+                        ('lat_0', central_latitude),
+                        ('x_0', false_easting),
+                        ('y_0', false_northing)]
+        if standard_parallels is not None:
+            try:
+                proj4_params.append(('lat_1', standard_parallels[0]))
+                try:
+                    proj4_params.append(('lat_2', standard_parallels[1]))
+                except IndexError:
+                    pass
+            except TypeError:
+                proj4_params.append(('lat_1', standard_parallels))
+
+        super(AlbersEqualArea, self).__init__(proj4_params, globe=globe)
+
+        # bounds
+        n = 103
+        lons = np.empty(2 * n + 1)
+        lats = np.empty(2 * n + 1)
+        tmp = np.linspace(central_longitude - 180, central_longitude + 180, n)
+        lons[:n] = tmp
+        lats[:n] = 90
+        lons[n:-1] = tmp[::-1]
+        lats[n:-1] = -90
+        lons[-1] = lons[0]
+        lats[-1] = lats[0]
+
+        points = self.transform_points(self.as_geodetic(), lons, lats)
+
+        self._boundary = sgeom.LineString(points[::-1])
+        bounds = self._boundary.bounds
+        self._x_limits = bounds[0], bounds[2]
+        self._y_limits = bounds[1], bounds[3]
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return 1e5
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
 
 
 class _BoundaryPoint(object):
