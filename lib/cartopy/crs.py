@@ -183,12 +183,17 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         returns the resultant LinearRing or MultiLineString.
 
         """
+        debug = False
         # 1) Resolve the initial lines into projected segments
         # 1abc
         # def23ghi
         # jkl41
         multi_line_string = cartopy.trace.project_linear(linear_ring,
                                                          src_crs, self)
+
+        # Threshold for whether a point is close enough to be the same
+        # point as another.
+        threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
 
         # 2) Simplify the segments where appropriate.
         if len(multi_line_string) > 1:
@@ -202,13 +207,15 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             # 2) The cut ends of segments are too close to reliably
             # place into an order along the boundary.
 
-            # Threshold for whether a point is close enough to be the same
-            # point as another.
-            threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
-
             line_strings = list(multi_line_string)
             any_modified = False
             i = 0
+            if debug:
+                first_coord = np.array([ls.coords[0] for ls in line_strings])
+                last_coord = np.array([ls.coords[-1] for ls in line_strings])
+                print('Distance matrix:')
+                print(np.abs(first_coord - last_coord[np.newaxis, :]))
+
             while i < len(line_strings):
                 modified = False
                 j = 0
@@ -216,6 +223,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     if i != j and np.allclose(line_strings[i].coords[0],
                                               line_strings[j].coords[-1],
                                               atol=threshold):
+                        if debug:
+                            print('Joining together {} and {}.'.format(i, j))
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
                         combo = sgeom.LineString(last_coords + first_coords)
@@ -237,7 +246,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         if (len(multi_line_string) == 1 and
                 len(multi_line_string[0].coords) > 3 and
                 np.allclose(multi_line_string[0].coords[0],
-                            multi_line_string[0].coords[-1])):
+                            multi_line_string[0].coords[-1], atol=threshold)):
             result_geometry = LinearRing(multi_line_string[0].coords[:-1])
         else:
             result_geometry = multi_line_string
@@ -367,6 +376,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         # to ensure that end-points are still found and followed when they
         # coincide.
         edge_things.sort(key=lambda thing: (thing.distance, thing.kind))
+        remaining_ls = dict(enumerate(line_strings))
 
         prev_thing = None
         for edge_thing in edge_things[:]:
@@ -379,9 +389,9 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                 mid_dist = (edge_thing.distance + prev_thing.distance) * 0.5
                 mid_point = boundary.interpolate(mid_dist)
                 new_thing = _BoundaryPoint(mid_dist, True, mid_point)
-                ind = edge_things.index(edge_thing)
                 if debug:
                     print('Artificially insert boundary: {}'.format(new_thing))
+                ind = edge_things.index(edge_thing)
                 edge_things.insert(ind, new_thing)
                 prev_thing = None
             else:
@@ -405,7 +415,6 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     ax.text(coords[-1, 0], coords[-1, 1],
                             '{}.'.format(thing.data[0]))
 
-        remaining_ls = dict(enumerate(line_strings))
         processed_ls = []
         while remaining_ls:
             # Rename line_string to current_ls
