@@ -169,7 +169,8 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         im = Image.open(img_fname)
         with open(world_fname) as world_fh:
             extent, pix_size = cls.world_file_extent(world_fh, im.size)
-        im.close()
+        if hasattr(im, 'close'):
+            im.close()
         return cls(img_fname, extent, 'lower', pix_size)
 
     @staticmethod
