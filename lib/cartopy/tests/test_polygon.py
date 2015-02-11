@@ -151,6 +151,37 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(len(multi_polygon), 1)
         self.assertEqual(len(multi_polygon[0].exterior.coords), 4)
 
+    def test_self_intersecting_1(self):
+        # Geometry comes from a matplotlib contourf (see #537)
+        wkt = ('POLYGON ((366.22000122 -9.71489298, '
+               '366.73212393 -9.679999349999999, '
+               '366.77412634 -8.767753000000001, '
+               '366.17762962 -9.679999349999999, '
+               '366.22000122 -9.71489298), '
+               '(366.22000122 -9.692636309999999, '
+               '366.32998657 -9.603356099999999, '
+               '366.74765799 -9.019999500000001, '
+               '366.5094086 -9.63175386, '
+               '366.22000122 -9.692636309999999))')
+        geom = shapely.wkt.loads(wkt)
+        source, target = ccrs.RotatedPole(198.0, 39.25), ccrs.EuroPP()
+        projected = target.project_geometry(geom, source)
+        # Before handling self intersecting interiors, the area would be
+        # approximately 13262233761329.
+        self.assertTrue(2.2e9 < projected.area < 2.3e9)
+
+    def test_self_intersecting_2(self):
+        # Geometry comes from a matplotlib contourf (see #509)
+        wkt = ('POLYGON ((343 20, 345 23, 342 25, 343 22, '
+               '340 25, 341 25, 340 25, 343 20), (343 21, '
+               '343 22, 344 23, 343 21))')
+        geom = shapely.wkt.loads(wkt)
+        source = target = ccrs.RotatedPole(193.0, 41.0)
+        projected = target.project_geometry(geom, source)
+        # Before handling self intersecting interiors, the area would be
+        # approximately 64808.
+        self.assertTrue(7.9 < projected.area < 8.1)
+
 
 class TestQuality(unittest.TestCase):
     def setUp(self):

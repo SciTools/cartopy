@@ -459,6 +459,11 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                 if prep_polygon.contains(interior_ring):
                     holes.append(interior_ring)
                     interior_rings.remove(interior_ring)
+                elif polygon.crosses(interior_ring):
+                    # Likely that we have an invalid geometry such as
+                    # that from #509 or #537.
+                    holes.append(interior_ring)
+                    interior_rings.remove(interior_ring)
             polygon_bits.append((exterior_ring.coords,
                                  [ring.coords for ring in holes]))
 
