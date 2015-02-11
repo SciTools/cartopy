@@ -343,16 +343,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                                    (i, 'first', line_string.coords[0]))
             edge_things.append(thing)
             last_dist = boundary_distance(line_string.coords[-1])
-            if last_dist == first_dist:
-                # We have a closed line-string. Just offset the last_dist by a
-                # tiny fraction.
-                last_dist += 1e-8  # TODO: Use epsilon.
-                thing = _BoundaryPoint(last_dist, False,
-                                       (i, 'self-closing',
-                                        line_string.coords[-1]))
-            else:
-                thing = _BoundaryPoint(last_dist, False,
-                                       (i, 'last', line_string.coords[-1]))
+            thing = _BoundaryPoint(last_dist, False,
+                                   (i, 'last', line_string.coords[-1]))
             edge_things.append(thing)
 
         # Record the positions of all the boundary vertices
@@ -381,10 +373,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             if (prev_thing is not None and
                     not edge_thing.kind and
                     not prev_thing.kind and
-                    edge_thing.data[0] == prev_thing.data[0]
-                    and 'self-closing' not in [edge_thing.data[1],
-                                               prev_thing.data[1]]):
-
+                    edge_thing.data[0] == prev_thing.data[0]):
                 j = edge_thing.data[0]
                 # Insert a edge boundary point in between this geometry.
                 mid_dist = (edge_thing.distance + prev_thing.distance) * 0.5
@@ -489,6 +478,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     if j not in added_linestring:
                         added_linestring.add(j)
                     else:
+                        if debug_plot_edges:
+                            plt.show()
                         raise RuntimeError('Unidentified problem with '
                                            'geometry, linestring being '
                                            're-added. Please raise an issue.')
