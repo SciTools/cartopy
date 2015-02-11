@@ -105,11 +105,7 @@ class TestMisc(unittest.TestCase):
         # check the result is non-empty
         self.assertFalse(multi_polygon.is_empty)
 
-    def test_catch_infinite_loop(self):
-        # Known bug resulting in an infinite loop occurring, ensure exception
-        # is raised.  If this multilinestring does not result in an inf. loop
-        # (raised exception), then you've fixed a bug and this test can be
-        # updated.
+    def test_project_previous_infinite_loop(self):
         mstring1 = shapely.wkt.loads(
             'MULTILINESTRING ('
             '(-179.9999990464349651 -80.2000000000000171, '
@@ -139,8 +135,7 @@ class TestMisc(unittest.TestCase):
         multi_line_strings = [mstring1, mstring2]
 
         src = ccrs.PlateCarree()
-        with self.assertRaises(RuntimeError):
-            src._attach_lines_to_boundary(multi_line_strings, True)
+        src._attach_lines_to_boundary(multi_line_strings, True)
 
     def test_3pt_poly(self):
         projection = ccrs.OSGB()
@@ -168,7 +163,9 @@ class TestMisc(unittest.TestCase):
         projected = target.project_geometry(geom, source)
         # Before handling self intersecting interiors, the area would be
         # approximately 13262233761329.
-        self.assertTrue(2.2e9 < projected.area < 2.3e9)
+        area = projected.area
+        self.assertTrue(2.2e9 < area < 2.3e9,
+                        msg='Got area {}, expecting ~2.2e9'.format(area))
 
     def test_self_intersecting_2(self):
         # Geometry comes from a matplotlib contourf (see #509)
@@ -181,6 +178,22 @@ class TestMisc(unittest.TestCase):
         # Before handling self intersecting interiors, the area would be
         # approximately 64808.
         self.assertTrue(7.9 < projected.area < 8.1)
+
+    def test_tiny_point_between_boundary_points(self):
+        # Geometry comes from #259.
+        target = ccrs.Orthographic(0, -75)
+        source = ccrs.PlateCarree()
+        wkt = 'POLYGON ((132 -40, 133 -6, 125.3 1, 115 -6, 132 -40))'
+        geom = shapely.wkt.loads(wkt)
+
+        target = ccrs.Orthographic(central_latitude=90., central_longitude=0)
+        source = ccrs.PlateCarree()
+        projected = target.project_geometry(geom, source)
+        area = projected.area
+        # Before fixing, this geometry used to fill the whole disk. Approx
+        # 1.2e14.
+        self.assertTrue(2.4e9 < area < 2.5e9,
+                        msg='Got area {}, expecting ~2.4e9'.format(area))
 
 
 class TestQuality(unittest.TestCase):
