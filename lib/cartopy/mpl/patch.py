@@ -76,7 +76,8 @@ def geos_to_path(shape):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
             return codes
-
+        if shape.is_empty:
+            return []
         vertices = np.concatenate([np.array(shape.exterior.xy)] +
                                   [np.array(ring.xy) for ring in
                                    shape.interiors], 1).T

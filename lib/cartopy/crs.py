@@ -180,7 +180,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
     def _project_linear_ring(self, linear_ring, src_crs):
         """
         Projects the given LinearRing from the src_crs into this CRS and
-        returns the resultant LinearRing or MultiLineString.
+        returns a list of LinearRings and a single MultiLineString.
 
         """
         debug = False
@@ -214,7 +214,10 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                 first_coord = np.array([ls.coords[0] for ls in line_strings])
                 last_coord = np.array([ls.coords[-1] for ls in line_strings])
                 print('Distance matrix:')
-                print(np.abs(first_coord - last_coord[np.newaxis, :]))
+                np.set_printoptions(precision=2)
+                x = first_coord[:, np.newaxis, :]
+                y = last_coord[np.newaxis, :, :]
+                print(np.abs(x - y).max(axis=-1))
 
             while i < len(line_strings):
                 modified = False
@@ -242,16 +245,22 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             if any_modified:
                 multi_line_string = sgeom.MultiLineString(line_strings)
 
-        # 3) Check for a single resulting ring.
-        if (len(multi_line_string) == 1 and
-                len(multi_line_string[0].coords) > 3 and
-                np.allclose(multi_line_string[0].coords[0],
-                            multi_line_string[0].coords[-1], atol=threshold)):
-            result_geometry = LinearRing(multi_line_string[0].coords[:-1])
-        else:
-            result_geometry = multi_line_string
+        # 3) Check for rings that have been created by the projection stage.
+        rings = []
+        line_strings = []
+        for line in multi_line_string:
+            if len(line.coords) > 3 and np.allclose(line.coords[0],
+                                                    line.coords[-1],
+                                                    atol=threshold):
+                result_geometry = LinearRing(line.coords[:-1])
+                rings.append(result_geometry)
+            else:
+                line_strings.append(line)
+        # If we found any rings, then we should re-create the multi-line str.
+        if rings:
+            multi_line_string = sgeom.MultiLineString(line_strings)
 
-        return result_geometry
+        return rings, multi_line_string
 
     def _project_multipoint(self, geometry, src_crs):
         geoms = []
@@ -303,11 +312,12 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         rings = []
         multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
-            geometry = self._project_linear_ring(src_ring, src_crs)
-            if geometry.geom_type == 'LinearRing':
-                rings.append(geometry)
-            else:
-                multi_lines.append(geometry)
+            p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
+            if p_rings:
+                rings.extend(p_rings)
+            if len(p_mline) > 0:
+                multi_lines.append(p_mline)
+
         # Convert any lines to rings by attaching them to the boundary.
         if multi_lines:
             rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))

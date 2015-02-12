@@ -28,7 +28,7 @@ import weakref
 import matplotlib.artist
 import matplotlib.collections
 
-import cartopy.mpl.patch
+import cartopy.mpl.patch as cpatch
 
 
 class FeatureArtist(matplotlib.artist.Artist):
@@ -118,8 +118,7 @@ class FeatureArtist(matplotlib.artist.Artist):
                         geom, feature_crs)
                 else:
                     projected_geom = geom
-                geom_paths = cartopy.mpl.patch.geos_to_path(
-                    projected_geom)
+                geom_paths = cpatch.geos_to_path(projected_geom)
                 mapping[key] = geom_paths
             paths.extend(geom_paths)
 
