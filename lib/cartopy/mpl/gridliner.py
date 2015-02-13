@@ -426,8 +426,15 @@ class Gridliner(object):
 #                         horizontalalignment='right')
 
         inside = in_data[ok, :]
-        x_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
-        y_range = np.nanmin(inside[:, 1]), np.nanmax(inside[:, 1])
+
+        # If there were no data points in the axes we just use the x and y
+        # range of the projection.
+        if inside.size == 0:
+            x_range = self.crs.x_limits
+            y_range = self.crs.y_limits
+        else:
+            x_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
+            y_range = np.nanmin(inside[:, 1]), np.nanmax(inside[:, 1])
 
         # XXX Cartopy specific thing. Perhaps make this bit a specialisation
         # in a subclass...
@@ -436,7 +443,7 @@ class Gridliner(object):
             x_range = np.clip(x_range, *crs.x_limits)
             y_range = np.clip(y_range, *crs.y_limits)
 
-            # if the limit is >90 of the full x limit, then just use the full
+            # if the limit is >90% of the full x limit, then just use the full
             # x limit (this makes circular handling better)
             prct = np.abs(np.diff(x_range) / np.diff(crs.x_limits))
             if prct > 0.9:
