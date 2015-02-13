@@ -19,7 +19,8 @@ from __future__ import (absolute_import, division, print_function)
 
 import unittest
 
-from shapely import geometry
+import shapely.geometry as sgeom
+from shapely.geometry.polygon import LinearRing
 import numpy as np
 
 import cartopy.crs as ccrs
@@ -29,23 +30,20 @@ class TestBoundary(unittest.TestCase):
     def test_cuts(self):
         # Check that fragments do not start or end with one of the
         # original ... ?
-        linear_ring = geometry.polygon.LinearRing([(-10, 30),
-                                                   (10, 60),
-                                                   (10, 50)])
+        linear_ring = LinearRing([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.5)
-        multi_line_string = projection.project_geometry(linear_ring)
-        # from cartopy.tests.mpl import show
-        # show(projection, multi_line_string)
+        rings, multi_line_string = projection.project_geometry(linear_ring)
 
         # The original ring should have been split into multiple pieces.
         self.assertGreater(len(multi_line_string), 1)
+        self.assertFalse(rings)
 
         def assert_intersection_with_boundary(segment_coords):
             # Double the length of the segment.
             start = segment_coords[0]
             end = segment_coords[1]
             end = [end[i] + 2 * (end[i] - start[i]) for i in (0, 1)]
-            extended_segment = geometry.LineString([start, end])
+            extended_segment = sgeom.LineString([start, end])
             # And see if it crosses the boundary.
             intersection = extended_segment.intersection(projection.boundary)
             self.assertFalse(intersection.is_empty,
@@ -80,39 +78,32 @@ class TestBoundary(unittest.TestCase):
 
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords, expected_n_lines in rings:
-            linear_ring = geometry.polygon.LinearRing(coords)
-            projected = projection.project_geometry(linear_ring)
+            linear_ring = LinearRing(coords)
+            rings, mlinestr = projection.project_geometry(linear_ring)
             if expected_n_lines == -1:
-                self.assertIsInstance(projected, geometry.polygon.LinearRing)
+                self.assertTrue(rings)
+                self.assertFalse(mlinestr)
             else:
-                self.assertEqual(len(projected), expected_n_lines)
+                self.assertEqual(len(mlinestr), expected_n_lines)
                 if expected_n_lines == 0:
-                    self.assertTrue(projected.is_empty)
+                    self.assertTrue(mlinestr.is_empty)
 
 
 class TestMisc(unittest.TestCase):
-    def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90)
-        linear_ring = geometry.polygon.LinearRing([(-10, 30),
-                                                   (10, 60),
-                                                   (10, 50)])
-        multi_line_string = projection.project_geometry(linear_ring)
-        # from cartopy.tests.mpl import show
-        # show(projection, multi_line_string)
-        # XXX not a test...
-
     def test_small(self):
         # What happens when a small (i.e. < threshold) feature crosses the
         # boundary?
         projection = ccrs.Mercator()
-        linear_ring = geometry.polygon.LinearRing([
+        linear_ring = LinearRing([
             (-179.9173693847652942, -16.5017831356493616),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
         ])
-        multi_line_string = projection.project_geometry(linear_ring)
-        # there should be one, and only one, returned line:
-        assert isinstance(multi_line_string, geometry.polygon.LinearRing)
+        rings, multi_line_string = projection.project_geometry(linear_ring)
+        # There should be one, and only one, returned ring.
+        self.assertIsInstance(multi_line_string, sgeom.MultiLineString)
+        self.assertEqual(len(multi_line_string), 0)
+        self.assertEqual(len(rings), 1)
 
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
@@ -128,11 +119,11 @@ class TestMisc(unittest.TestCase):
                   (0.000727869825138, -45.0),
                   (0.0, -45.000105851567454),
                   (0.0, -45.0)]
-        linear_ring = geometry.polygon.LinearRing(coords)
+        linear_ring = LinearRing(coords)
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.PlateCarree(180.0)
         try:
-            result = target_proj.project_geometry(linear_ring, src_proj)
+            _ = target_proj.project_geometry(linear_ring, src_proj)
         except ValueError:
             self.fail("Failed to project LinearRing.")
 
@@ -157,14 +148,17 @@ class TestMisc(unittest.TestCase):
                   (10, -73)]
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(80)
-        linear_ring = geometry.polygon.LinearRing(coords)
-        result = target_proj.project_geometry(linear_ring, src_proj)
-        self.assertEqual(len(result), 1)
+
+        linear_ring = LinearRing(coords)
+        rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
+        self.assertEqual(len(mlinestr), 1)
+        self.assertEqual(len(rings), 0)
 
         # Check the stitch works in either direction.
-        linear_ring = geometry.polygon.LinearRing(coords[::-1])
-        result = target_proj.project_geometry(linear_ring, src_proj)
-        self.assertEqual(len(result), 1)
+        linear_ring = LinearRing(coords[::-1])
+        rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
+        self.assertEqual(len(mlinestr), 1)
+        self.assertEqual(len(rings), 0)
 
     def test_at_boundary(self):
         # Check that a polygon is split and recombined correctly
@@ -179,24 +173,25 @@ class TestMisc(unittest.TestCase):
              [178.438, -83.333],
              [178.333, -83.312],
              [177.956, -83.888],
-             [180.,  -84.086],
+             [180., -84.086],
              [180.833, -84.318],
              [183., -86.],
              [183., -78.],
              [177.5, -79.912]])
-        tring = geometry.polygon.LinearRing(exterior)
+        tring = LinearRing(exterior)
 
         tcrs = ccrs.PlateCarree()
         scrs = ccrs.PlateCarree()
 
-        r = tcrs._project_linear_ring(tring, scrs)
+        rings, mlinestr = tcrs._project_linear_ring(tring, scrs)
 
         # Number of linearstrings
-        self.assertEqual(len(r), 4)
+        self.assertEqual(len(mlinestr), 4)
+        self.assertFalse(rings)
 
         # Test area of smallest Polygon that contains all the points in the
         # geometry.
-        self.assertAlmostEqual(r.convex_hull.area, 2347.75623076)
+        self.assertAlmostEqual(mlinestr.convex_hull.area, 2347.75623076)
 
 
 if __name__ == '__main__':

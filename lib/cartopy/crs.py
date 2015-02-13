@@ -180,15 +180,20 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
     def _project_linear_ring(self, linear_ring, src_crs):
         """
         Projects the given LinearRing from the src_crs into this CRS and
-        returns the resultant LinearRing or MultiLineString.
+        returns a list of LinearRings and a single MultiLineString.
 
         """
+        debug = False
         # 1) Resolve the initial lines into projected segments
         # 1abc
         # def23ghi
         # jkl41
         multi_line_string = cartopy.trace.project_linear(linear_ring,
                                                          src_crs, self)
+
+        # Threshold for whether a point is close enough to be the same
+        # point as another.
+        threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
 
         # 2) Simplify the segments where appropriate.
         if len(multi_line_string) > 1:
@@ -202,13 +207,18 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             # 2) The cut ends of segments are too close to reliably
             # place into an order along the boundary.
 
-            # Threshold for whether a point is close enough to be the same
-            # point as another.
-            threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
-
             line_strings = list(multi_line_string)
             any_modified = False
             i = 0
+            if debug:
+                first_coord = np.array([ls.coords[0] for ls in line_strings])
+                last_coord = np.array([ls.coords[-1] for ls in line_strings])
+                print('Distance matrix:')
+                np.set_printoptions(precision=2)
+                x = first_coord[:, np.newaxis, :]
+                y = last_coord[np.newaxis, :, :]
+                print(np.abs(x - y).max(axis=-1))
+
             while i < len(line_strings):
                 modified = False
                 j = 0
@@ -216,6 +226,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     if i != j and np.allclose(line_strings[i].coords[0],
                                               line_strings[j].coords[-1],
                                               atol=threshold):
+                        if debug:
+                            print('Joining together {} and {}.'.format(i, j))
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
                         combo = sgeom.LineString(last_coords + first_coords)
@@ -233,16 +245,22 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             if any_modified:
                 multi_line_string = sgeom.MultiLineString(line_strings)
 
-        # 3) Check for a single resulting ring.
-        if (len(multi_line_string) == 1 and
-                len(multi_line_string[0].coords) > 3 and
-                np.allclose(multi_line_string[0].coords[0],
-                            multi_line_string[0].coords[-1])):
-            result_geometry = LinearRing(multi_line_string[0].coords[:-1])
-        else:
-            result_geometry = multi_line_string
+        # 3) Check for rings that have been created by the projection stage.
+        rings = []
+        line_strings = []
+        for line in multi_line_string:
+            if len(line.coords) > 3 and np.allclose(line.coords[0],
+                                                    line.coords[-1],
+                                                    atol=threshold):
+                result_geometry = LinearRing(line.coords[:-1])
+                rings.append(result_geometry)
+            else:
+                line_strings.append(line)
+        # If we found any rings, then we should re-create the multi-line str.
+        if rings:
+            multi_line_string = sgeom.MultiLineString(line_strings)
 
-        return result_geometry
+        return rings, multi_line_string
 
     def _project_multipoint(self, geometry, src_crs):
         geoms = []
@@ -288,18 +306,17 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             is_ccw = True
         else:
             is_ccw = polygon.exterior.is_ccw
-
         # Project the polygon exterior/interior rings.
         # Each source ring will result in either a ring, or one or more
         # lines.
         rings = []
         multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
-            geometry = self._project_linear_ring(src_ring, src_crs)
-            if geometry.geom_type == 'LinearRing':
-                rings.append(geometry)
-            else:
-                multi_lines.append(geometry)
+            p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
+            if p_rings:
+                rings.extend(p_rings)
+            if len(p_mline) > 0:
+                multi_lines.append(p_mline)
 
         # Convert any lines to rings by attaching them to the boundary.
         if multi_lines:
@@ -316,6 +333,9 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         lines and boundary.
 
         """
+        debug = False
+        debug_plot_edges = False
+
         # Accumulate all the boundary and segment end points, along with
         # their distance along the boundary.
         edge_things = []
@@ -338,43 +358,87 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         # Record the positions of all the segment ends
         for i, line_string in enumerate(line_strings):
             first_dist = boundary_distance(line_string.coords[0])
-            thing = _Thing(first_dist, False,
-                           (i, 'first', line_string.coords[0]))
+            thing = _BoundaryPoint(first_dist, False,
+                                   (i, 'first', line_string.coords[0]))
             edge_things.append(thing)
             last_dist = boundary_distance(line_string.coords[-1])
-            thing = _Thing(last_dist, False,
-                           (i, 'last', line_string.coords[-1]))
+            thing = _BoundaryPoint(last_dist, False,
+                                   (i, 'last', line_string.coords[-1]))
             edge_things.append(thing)
 
         # Record the positions of all the boundary vertices
         for xy in list(boundary.coords)[:-1]:
             point = sgeom.Point(*xy)
             dist = boundary.project(point)
-            thing = _Thing(dist, True, point)
+            thing = _BoundaryPoint(dist, True, point)
             edge_things.append(thing)
+
+        if debug_plot_edges:
+            import matplotlib.pyplot as plt
+            current_fig = plt.gcf()
+            fig = plt.figure()
+            # Reset the current figure so we don't upset anything.
+            plt.figure(current_fig.number)
+            ax = fig.add_subplot(1, 1, 1)
 
         # Order everything as if walking around the boundary.
         # NB. We make line end-points take precedence over boundary points
         # to ensure that end-points are still found and followed when they
         # coincide.
         edge_things.sort(key=lambda thing: (thing.distance, thing.kind))
-        debug = 0
+        remaining_ls = dict(enumerate(line_strings))
+
+        prev_thing = None
+        for edge_thing in edge_things[:]:
+            if (prev_thing is not None and
+                    not edge_thing.kind and
+                    not prev_thing.kind and
+                    edge_thing.data[0] == prev_thing.data[0]):
+                j = edge_thing.data[0]
+                # Insert a edge boundary point in between this geometry.
+                mid_dist = (edge_thing.distance + prev_thing.distance) * 0.5
+                mid_point = boundary.interpolate(mid_dist)
+                new_thing = _BoundaryPoint(mid_dist, True, mid_point)
+                if debug:
+                    print('Artificially insert boundary: {}'.format(new_thing))
+                ind = edge_things.index(edge_thing)
+                edge_things.insert(ind, new_thing)
+                prev_thing = None
+            else:
+                prev_thing = edge_thing
+
         if debug:
             print()
             print('Edge things')
             for thing in edge_things:
                 print('   ', thing)
+        if debug_plot_edges:
+            for thing in edge_things:
+                if isinstance(thing.data, sgeom.Point):
+                    ax.plot(*thing.data.xy, marker='o')
+                else:
+                    ax.plot(*thing.data[2], marker='o')
+                    ls = line_strings[thing.data[0]]
+                    coords = np.array(ls.coords)
+                    ax.plot(coords[:, 0], coords[:, 1])
+                    ax.text(coords[0, 0], coords[0, 1], thing.data[0])
+                    ax.text(coords[-1, 0], coords[-1, 1],
+                            '{}.'.format(thing.data[0]))
 
-        to_do = {i: line_string for i, line_string in enumerate(line_strings)}
-        done = []
-        while to_do:
-            i, line_string = to_do.popitem()
+        processed_ls = []
+        while remaining_ls:
+            # Rename line_string to current_ls
+            i, current_ls = remaining_ls.popitem()
+
             if debug:
                 import sys
                 sys.stdout.write('+')
                 sys.stdout.flush()
                 print()
-                print('Processing: %s, %s' % (i, line_string))
+                print('Processing: %s, %s' % (i, current_ls))
+            # We only want to consider boundary-points, the starts-and-ends of
+            # all other line-strings, or the start-point of the current
+            # line-string.
             filter_fn = lambda t: (t.kind or
                                    t.data[0] != i or
                                    t.data[1] != 'last')
@@ -382,56 +446,68 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
             added_linestring = set()
             while True:
-                # Find the distance of the last point
-                d_last = boundary_distance(line_string.coords[-1])
+                # Find out how far around this linestring's last
+                # point is on the boundary. We will use this to find
+                # the next point on the boundary.
+                d_last = boundary_distance(current_ls.coords[-1])
                 if debug:
-                    print('   d_last:', d_last)
-                next_thing = _find_gt(edge_things, d_last)
+                    print('   d_last: {!r}'.format(d_last))
+                next_thing = _find_first_gt(edge_things, d_last)
+                # Remove this boundary point from the edge.
+                edge_things.remove(next_thing)
                 if debug:
                     print('   next_thing:', next_thing)
                 if next_thing.kind:
+                    # We've just got a boundary point, add it, and keep going.
                     if debug:
                         print('   adding boundary point')
                     boundary_point = next_thing.data
-                    combined_coords = (list(line_string.coords) +
+                    combined_coords = (list(current_ls.coords) +
                                        [(boundary_point.x, boundary_point.y)])
-                    line_string = sgeom.LineString(combined_coords)
-                    # XXX
-                    # edge_things.remove(next_thing)
-                elif next_thing.data[0] == i:
+                    current_ls = sgeom.LineString(combined_coords)
+
+                elif next_thing.data[0] == i and next_thing.data[1] == 'first':
+                    # We've gone all the way around and are now back at the
+                    # first boundary thing.
                     if debug:
                         print('   close loop')
-                    done.append(line_string)
+                    processed_ls.append(current_ls)
+                    if debug_plot_edges:
+                        coords = np.array(current_ls.coords)
+                        ax.plot(coords[:, 0], coords[:, 1], color='black',
+                                linestyle='--')
                     break
                 else:
                     if debug:
                         print('   adding line')
                     j = next_thing.data[0]
                     line_to_append = line_strings[j]
-                    # XXX pelson: I think this if statement can be removed
-                    if j in to_do:
-                        del to_do[j]
+                    if j in remaining_ls:
+                        remaining_ls.pop(j)
                     coords_to_append = list(line_to_append.coords)
+
                     if next_thing.data[1] == 'last':
                         coords_to_append = coords_to_append[::-1]
-                    line_string = sgeom.LineString((list(line_string.coords) +
-                                                    coords_to_append))
+                    # Build up the linestring.
+                    current_ls = sgeom.LineString((list(current_ls.coords) +
+                                                   coords_to_append))
 
                     # Catch getting stuck in an infinite loop by checking that
-                    # linestring only added once
+                    # linestring only added once.
                     if j not in added_linestring:
                         added_linestring.add(j)
                     else:
+                        if debug_plot_edges:
+                            plt.show()
                         raise RuntimeError('Unidentified problem with '
                                            'geometry, linestring being '
-                                           're-added')
+                                           're-added. Please raise an issue.')
 
         # filter out any non-valid linear rings
-        done = [linear_ring for linear_ring in done if
-                len(linear_ring.coords) > 2]
+        processed_ls = [linear_ring for linear_ring in processed_ls if
+                        len(linear_ring.coords) > 2]
 
-        # XXX Is the last point in each ring actually the same as the first?
-        linear_rings = [LinearRing(line) for line in done]
+        linear_rings = [LinearRing(line) for line in processed_ls]
 
         if debug:
             print('   DONE')
@@ -1455,22 +1531,37 @@ class Geostationary(Projection):
         return self._ylim
 
 
-class _Thing(object):
+class _BoundaryPoint(object):
     def __init__(self, distance, kind, data):
+        """
+        A representation for a geometric object which is
+        connected to the boundary.
+
+        Parameters
+        ==========
+        distance - float
+            The distance along the boundary that this object
+            can be found.
+        kind - bool
+            Whether this object represents a point from the pre-computed
+            boundary.
+        data - point or namedtuple
+            The actual data that this boundary object represents.
+        """
         self.distance = distance
         self.kind = kind
         self.data = data
 
     def __repr__(self):
-        return '_Thing(%r, %r, %s)' % (self.distance, self.kind, self.data)
+        return '_BoundaryPoint(%r, %r, %s)' % (self.distance, self.kind,
+                                               self.data)
 
 
-def _find_gt(a, x):
+def _find_first_gt(a, x):
     for v in a:
-        # TODO: Fix the problem of co-incident boundary & line points
-        # if v.distance >= x:
         if v.distance > x:
             return v
+    # We've gone all the way around, so pick the first point again.
     return a[0]
 
 
