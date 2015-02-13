@@ -38,7 +38,7 @@ class TestCodeFormat(unittest.TestCase):
         # The file should be a line separated list of filenames/directories
         # as can be passed to the "pep8" tool's exclude list.
         pep8style = pep8.StyleGuide(quiet=False)
-        pep8style.options.exclude.extend([])
+        pep8style.options.exclude.extend(['trace.py', '_crs.py'])
 
         # allow users to add their own exclude list
         extra_exclude_file = os.path.join(os.path.dirname(__file__),
@@ -57,6 +57,8 @@ class TestFutureImports(unittest.TestCase):
     excluded = (
         '*/cartopy/examples/*.py',
         '*/docs/source/examples/*.py',
+        '*/cartopy/_crs.py',   # A file created by setuptools for so loading.
+        '*/cartopy/trace.py',  # Ditto.
     )
 
     future_imports_pattern = re.compile(

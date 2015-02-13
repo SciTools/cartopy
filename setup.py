@@ -21,7 +21,11 @@ Distribution definition for Cartopy.
 
 """
 
-from distutils.core import setup, Command, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
+from distutils.core import Command
 from distutils.sysconfig import get_config_var
 from distutils.util import convert_path
 import fnmatch
@@ -139,12 +143,20 @@ class HeaderCheck(Command):
                 bad = target not in line
         return bad
 
+here = os.path.dirname(__file__)
+with open(os.path.join(here, 'README.rst'), 'r') as fh:
+    description = ''.join(fh.readlines())
 
 setup(
     name='Cartopy',
     version='0.12.x',
-    url='http://github.com/SciTools/cartopy',
+    url='http://scitools.org.uk/cartopy/docs/latest/',
+    download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',
+    description='A cartographic python library with matplotlib support for visualisation',
+    long_description=description,
+    license = "LGPLv3",
+    keywords = "cartography map transform projection proj.4 geos shapely shapefile",
 
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},
@@ -182,4 +194,18 @@ setup(
     ],
 
     cmdclass={'build_ext': build_ext, 'header_check': HeaderCheck},
+    classifiers=[
+            'Development Status :: 4 - Beta',
+            'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+            'Operating System :: MacOS :: MacOS X',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX',
+            'Operating System :: POSIX :: AIX',
+            'Operating System :: POSIX :: Linux',
+            'Programming Language :: C++',
+            'Programming Language :: Python',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Scientific/Engineering :: GIS',
+            'Topic :: Scientific/Engineering :: Visualization',
+          ],
 )
