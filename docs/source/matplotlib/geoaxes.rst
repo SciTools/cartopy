@@ -8,7 +8,13 @@ are there to add improved -expected- behaviour, but some are to work around limi
 standard matplotlib axes treats data in a Cartesian way (most of which either have, or will be,
 submitted back to the matplotlib project).
 
+
 .. autoclass:: cartopy.mpl.geoaxes.GeoAxes
     :members:
     :exclude-members: cla, contour, contourf, draw, format_coord, imshow, pcolor, pcolormesh, scatter
     :undoc-members:
+
+
+.. class:: cartopy.mpl.geoaxes.GeoAxesSubplot
+
+    See :class:`cartopy.mpl.geoaxes.GeoAxes`.
