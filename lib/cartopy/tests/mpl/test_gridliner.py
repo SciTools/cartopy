@@ -17,9 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-import warnings
-
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
