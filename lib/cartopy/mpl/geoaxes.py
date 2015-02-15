@@ -1549,7 +1549,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return self.add_raster(wms, **kwargs)
 
 
-# Define the GeoAxesSubplot class, so that a type(ax) will eminate from
+# Define the GeoAxesSubplot class, so that a type(ax) will emanate from
 # cartopy.mpl.geoaxes, not matplotlib.axes.
 class GeoAxesSubplot(matplotlib.axes.SubplotBase, GeoAxes):
     _axes_class = GeoAxes
