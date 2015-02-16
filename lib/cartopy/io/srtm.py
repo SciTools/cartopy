@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-
 """
 The Shuttle Radar Topography Mission (SRTM) is an international research
 effort that obtained digital elevation models on a near-global scale from
@@ -30,13 +29,128 @@ from __future__ import (absolute_import, division, print_function)
 
 import json
 import os
+import warnings
 
 import numpy as np
 import six
 
 from cartopy import config
 import cartopy.crs as ccrs
-from cartopy.io import fh_getter, Downloader
+from cartopy.io import fh_getter, Downloader, RasterSource
+
+
+class SRTM3Source(RasterSource):
+    """
+    A source of SRTM3 data, which implements the cartopy's :ref`RasterSource
+    interface <raster-source-interface>`.
+
+    """
+    def __init__(self, downloader=None, max_nx=3, max_ny=3):
+        """
+        Parameters
+        ==========
+        downloader : :class:`cartopy.io.Downloader` instance or None
+            The downloader to use for the SRTM3 dataset. If None, the
+            downloader will be taken using
+            :class:`cartopy.io.Downloader.from_config` with ('SRTM', 'SRTM3')
+            as the target.
+        max_nx : int
+            The maximum number of x tiles to be combined when producing a
+            wider composite for this RasterSource.
+        max_ny : int
+            The maximum number of y tiles to be combined when producing a
+            taller composite for this RasterSource.
+
+        """
+        #: The CRS of the underlying SRTM3 data.
+        self.crs = ccrs.PlateCarree()
+
+        #: The cartopy Downloader which can handle SRTM3 data. Normally, this
+        #: will be a :class:`SRTM3Downloader` instance.
+        self.downloader = downloader
+
+        if self.downloader is None:
+            self.downloader = Downloader.from_config(('SRTM', 'SRTM3'))
+
+        #: A tuple of (max_x_tiles, max_y_tiles).
+        self._max_tiles = (max_nx, max_ny)
+
+    def validate_projection(self, projection):
+        return projection == self.crs
+
+    def fetch_raster(self, projection, extent, target_resolution):
+        """
+        Fetch SRTM3 elevation for the given projection and approximate extent.
+
+        """
+        if not self.validate_projection(projection):
+            raise ValueError('Unsupported projection for the SRTM3 source.')
+
+        min_x, max_x, min_y, max_y = extent
+        min_x, min_y = np.floor([min_x, min_y])
+        nx = int(np.ceil(max_x) - min_x)
+        ny = int(np.ceil(max_y) - min_y)
+        if nx > self._max_tiles[0] or ny > self._max_tiles[1]:
+            return (None, None)
+        else:
+            img, _, extent = self.combined(min_x, min_y, nx, ny)
+            return (np.flipud(img), extent)
+
+    def srtm_fname(self, lon, lat):
+        """
+        Return the filename for the given lon/lat SRTM tile (downloading if
+        necessary), or None if no such tile exists (i.e. the tile would be
+        entirely over water, or out of latitude range).
+
+        """
+        if int(lon) != lon or int(lat) != lat:
+            raise ValueError('Integer longitude/latitude values required.')
+
+        x = '%s%03d' % ('E' if lon >= 0 else 'W', abs(int(lon)))
+        y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
+
+        srtm_downloader = Downloader.from_config(('SRTM', 'SRTM3'))
+        params = {'config': config, 'x': x, 'y': y}
+
+        # If the URL doesn't exist then we are over sea/north/south of the
+        # limits of the SRTM data and we return None.
+        if srtm_downloader.url(params) is None:
+            return None
+        else:
+            return self.downloader.path(params)
+
+    def combined(self, lon_min, lat_min, nx, ny):
+        """
+        Return an image and its extent for the group of nx by ny tiles
+        starting at the given bottom left location.
+
+        """
+        bottom_left_ll = (lon_min, lat_min)
+        shape = np.array([1201, 1201])
+        img = np.zeros(shape * (ny, nx))
+
+        for i, j in np.ndindex(nx, ny):
+            x_img_slice = slice(i * shape[1], (i + 1) * shape[1])
+            y_img_slice = slice(j * shape[0], (j + 1) * shape[0])
+
+            try:
+                tile_img, _, _ = self.single_tile(bottom_left_ll[0] + i,
+                                                  bottom_left_ll[1] + j)
+            except ValueError:
+                img[y_img_slice, x_img_slice] = 0
+            else:
+                img[y_img_slice, x_img_slice] = tile_img
+
+        extent = (bottom_left_ll[0], bottom_left_ll[0] + nx,
+                  bottom_left_ll[1], bottom_left_ll[1] + ny)
+
+        return img, self.crs, extent
+
+    def single_tile(self, lon, lat):
+        fname = self.srtm_fname(lon, lat)
+        if fname is None:
+            raise ValueError('No srtm tile found for those coordinates.')
+        return read_SRTM3(fname)
 
 
 def srtm(lon, lat):
@@ -44,10 +158,9 @@ def srtm(lon, lat):
     Return (elevation, crs, extent) for the given longitude latitude.
     Elevation is in meters.
     """
-    fname = SRTM3_retrieve(lon, lat)
-    if fname is None:
-        raise ValueError('No srtm tile found for those coordinates.')
-    return read_SRTM3(fname)
+    warnings.warn("This method has been deprecated. "
+                  "See the \"What's new\" section for v0.12.")
+    return SRTM3Source().single_tile(lon, lat)
 
 
 def add_shading(elevation, azimuth, altitude):
@@ -109,34 +222,33 @@ def fill_gaps(elevation, max_distance=10):
 
 
 def srtm_composite(lon_min, lat_min, nx, ny):
-
-    # XXX nx and ny have got confused in the code (numpy array ordering?).
-    # However, the interface works well.
-
-    bottom_left_ll = (lon_min, lat_min)
-    shape = np.array([1201, 1201])
-    img = np.empty(shape * (nx, ny))
-
-    for i in range(nx):
-        for j in range(ny):
-            x_img_slice = slice(i * shape[0], (i + 1) * shape[0])
-            y_img_slice = slice(j * shape[1], (j + 1) * shape[1])
-
-            try:
-                tile_img, _, _ = srtm(bottom_left_ll[0] + j,
-                                      bottom_left_ll[1] + i)
-            except ValueError:
-                img[x_img_slice, y_img_slice] = 0
-            else:
-                img[x_img_slice, y_img_slice] = tile_img
-
-    extent = (bottom_left_ll[0], bottom_left_ll[0] + ny,
-              bottom_left_ll[1], bottom_left_ll[1] + nx)
-
-    return img, ccrs.PlateCarree(), extent
+    warnings.warn("This method has been deprecated. "
+                  "See the \"What's new\" section for v0.12.")
+    return SRTM3Source().combined(lon_min, lat_min, nx, ny)
 
 
 def read_SRTM3(fh):
+    """
+    Read the (1201, 1201) array of (y, x) elevation data from the given
+    named file-handle.
+
+    Parameters
+    ==========
+    fh : file-handle like
+        A named file-like as passed through to :func:`cartopy.io.fh_getter`.
+        The filename is used to determine the extent of the resulting array.
+
+    Returns
+    =======
+    elevation : numpy array
+        The elevation values from the SRTM file. Data is flipped vertically
+        such that the higher the the y-index, the further north the data.
+    crs : :class:`cartopy.crs.CRS`
+        The coordinate reference system of the extents.
+    extents : 4-tuple (x0, x1, y0, y1)
+        The boundaries of the returned elevation array.
+
+    """
     fh, fname = fh_getter(fh, needs_filename=True)
     if fname.endswith('.zip'):
         from zipfile import ZipFile
@@ -155,8 +267,7 @@ def read_SRTM3(fh):
     if x_dir == 'W':
         x *= -1
 
-    # xxx extent may need to be wider by half a pixel
-    return elev[::-1, ...], ccrs.PlateCarree(), [x, x + 1, y, y + 1]
+    return elev[::-1, ...], ccrs.PlateCarree(), (x, x + 1, y, y + 1)
 
 
 def SRTM3_retrieve(lon, lat):
@@ -167,15 +278,9 @@ def SRTM3_retrieve(lon, lat):
     None will be returned.
 
     """
-    x = '%s%03d' % ('E' if lon >= 0 else 'W', abs(int(lon)))
-    y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
-
-    srtm_downloader = Downloader.from_config(('SRTM', 'SRTM3'))
-    params = {'config': config, 'x': x, 'y': y}
-    if srtm_downloader.url(params) is None:
-        return None
-    else:
-        return srtm_downloader.path({'config': config, 'x': x, 'y': y})
+    warnings.warn("This method has been deprecated. "
+                  "See the \"What's new\" section for v0.12.")
+    return SRTM3Source().srtm_fname(lon, lat)
 
 
 class SRTM3Downloader(Downloader):
@@ -193,7 +298,6 @@ class SRTM3Downloader(Downloader):
     of the file to download.
 
     """
-
     def __init__(self,
                  target_path_template,
                  pre_downloaded_path_template='',
@@ -253,10 +357,7 @@ class SRTM3Downloader(Downloader):
         """
         # lazy imports. In most situations, these are not
         # dependencies of cartopy.
-        if six.PY3:
-            from urllib.request import urlopen
-        else:
-            from urllib2 import urlopen
+        from six.moves.urllib.request import urlopen
         from BeautifulSoup import BeautifulSoup
 
         files = {}
