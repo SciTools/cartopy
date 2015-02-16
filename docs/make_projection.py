@@ -40,7 +40,7 @@ PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
                   'TransverseMercator': 2, 'LambertCylindrical': 2,
                   'LambertConformal': 2, 'Stereographic': 2, 'Miller': 2,
-                  'Orthographic': 2, 'UTM': 2,
+                  'Orthographic': 2, 'UTM': 2, 'AlbersEqualArea': 2,
                   'InterruptedGoodeHomolosine': 3, 'RotatedPole': 3,
                   'OSGB': 4}
 
