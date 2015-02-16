@@ -29,6 +29,7 @@ SPECIAL_CASES = {
     ccrs.PlateCarree: [{}, {'central_longitude': 180}],
     ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
     ccrs.UTM: [{'zone': 30}],
+    ccrs.AzimuthalEquidistant: [{'central_latitude': 90}],
 }
 
 
@@ -40,7 +41,7 @@ PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
                   'TransverseMercator': 2, 'LambertCylindrical': 2,
                   'LambertConformal': 2, 'Stereographic': 2, 'Miller': 2,
-                  'Orthographic': 2, 'UTM': 2,
+                  'Orthographic': 2, 'UTM': 2, 'AzimuthalEquidistant': 2,
                   'InterruptedGoodeHomolosine': 3, 'RotatedPole': 3,
                   'OSGB': 4}
 
