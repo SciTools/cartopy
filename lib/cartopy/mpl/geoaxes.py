@@ -912,49 +912,97 @@ class GeoAxes(matplotlib.axes.Axes):
             all Axes artists.
 
         """
+        # Hide the old "background" patch used by matplotlib - it is not
+        # used by cartopy's GeoAxes.
+        self.patch.set_facecolor((1, 1, 1, 0))
+        self.patch.set_edgecolor((0.5, 0.5, 0.5))
+        self.patch.set_visible(False)
+        self.background_patch = None
+        self.outline_patch = None
+
         path, = cpatch.geos_to_path(self.projection.boundary)
 
         # Get the outline path in terms of self.transData
         proj_to_data = self.projection._as_mpl_transform(self) - self.transData
-        tp = proj_to_data.transform_path(path)
+        trans_path = proj_to_data.transform_path(path)
 
-        outline_patch = mpatches.PathPatch(tp,
-                                           facecolor='none', edgecolor='k',
-                                           zorder=2.5, clip_on=False,
-                                           transform=self.transData)
-
-        background_patch = mpatches.PathPatch(tp,
-                                              facecolor='w', edgecolor='none',
-                                              zorder=-1, clip_on=False,
-                                              transform=self.transData)
-
-        # Attach the original path to the patches. This will be used each time
-        # a new clipped path is calculated.
-        outline_patch.orig_path = tp
-        background_patch.orig_path = tp
-
-        # Attach a "reclip" attribute, which determines if the patch's path is
-        # reclipped before drawing. A callback is used to change the "reclip"
-        # state.
-        outline_patch.reclip = False
-        background_patch.reclip = False
-
-        # Add the patches to the axes, and also make them available as
-        # attributes.
-        self.add_patch(outline_patch)
-        self.outline_patch = outline_patch
-        self.add_patch(background_patch)
-        self.background_patch = background_patch
+        # Set the boundary - we can make use of the rectangular clipping.
+        self.set_boundary(trans_path, use_as_clip_path=False)
 
         # Attach callback events for when the xlim or ylim are changed. This
         # is what triggers the patches to be re-clipped at draw time.
         self.callbacks.connect('xlim_changed', _trigger_patch_reclip)
         self.callbacks.connect('ylim_changed', _trigger_patch_reclip)
 
-        # Hide the old "background" patch. It is not used by GeoAxes.
-        self.patch.set_facecolor((1, 1, 1, 0))
-        self.patch.set_edgecolor((0.5, 0.5, 0.5))
-        self.patch.set_visible(False)
+    def set_boundary(self, path, transform=None, use_as_clip_path=True):
+        """
+        Given a path, update the :data:`.outline_patch` and
+        :data:`.background_patch`..
+
+        Parameters
+        ----------
+
+        path : :class:`matplotlib.path.Path`
+            The path of the desired boundary.
+        transform : None or :class:`matplotlib.transforms.Transform`
+            The coordinate system of the given path. Currently this must be
+            convertible to data coordinates, and therefore cannot extend beyond
+            the limits of the axes' projection.
+        use_as_clip_path : bool
+            Whether axes.patch should be updated. Updating axes.patch means
+            that any artists subsequently created will inherit clipping from
+            this path, rather than the standard unit square in axes
+            coordinates.
+
+        """
+        if transform is None:
+            transform = self.transData
+        if self.background_patch is None:
+            background = matplotlib.patches.PathPatch(path, edgecolor='none',
+                                                      facecolor='white',
+                                                      zorder=-1, clip_on=False,
+                                                      transform=transform)
+        else:
+            background = matplotlib.patches.PathPatch(path, zorder=-1,
+                                                      clip_on=False)
+            background.update_from(self.background_patch)
+            self.background_patch.remove()
+            background.set_transform(transform)
+
+        if self.outline_patch is None:
+            outline = matplotlib.patches.PathPatch(path, edgecolor='black',
+                                                   facecolor='none',
+                                                   zorder=2.5, clip_on=False,
+                                                   transform=transform)
+        else:
+            outline = matplotlib.patches.PathPatch(path, zorder=2.5,
+                                                   clip_on=False)
+            outline.update_from(self.outline_patch)
+            self.outline_patch.remove()
+            outline.set_transform(transform)
+
+        # Attach the original path to the patches. This will be used each time
+        # a new clipped path is calculated.
+        outline.orig_path = path
+        background.orig_path = path
+
+        # Attach a "reclip" attribute, which determines if the patch's path is
+        # reclipped before drawing. A callback is used to change the "reclip"
+        # state.
+        outline.reclip = True
+        background.reclip = True
+
+        # Add the patches to the axes, and also make them available as
+        # attributes.
+        self.background_patch = background
+        self.outline_patch = outline
+
+        if use_as_clip_path:
+            self.patch = background
+
+        with self.hold_limits():
+            self.add_patch(outline)
+            self.add_patch(background)
 
     def contour(self, *args, **kwargs):
         """
@@ -1555,7 +1603,10 @@ class GeoAxesSubplot(matplotlib.axes.SubplotBase, GeoAxes):
     _axes_class = GeoAxes
 
 
-matplotlib.axes._subplot_classes[GeoAxes] = GeoAxesSubplot
+try:
+    matplotlib.axes._subplots._subplot_classes[GeoAxes] = GeoAxesSubplot
+except AttributeError:
+    matplotlib.axes._subplot_classes[GeoAxes] = GeoAxesSubplot
 
 
 def _trigger_patch_reclip(event):
