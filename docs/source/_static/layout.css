@@ -6,3 +6,5 @@ div.body p { width: 65em; padding-right: 45px; }
 .inline-paragraphs p {display: inline;}
 
 .highlight {background: none;}
+
+.admonition {width: 70em;}

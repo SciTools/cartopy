@@ -481,8 +481,8 @@ class GeoAxes(matplotlib.axes.Axes):
             Keyword arguments to be used when drawing this feature.
 
         Returns:
-             * A :class:`cartopy.mpl.feature_artist.FeatureArtist`
-               instance responsible for drawing the geometries.
+             A :class:`cartopy.mpl.feature_artist.FeatureArtist`
+             instance responsible for drawing the geometries.
 
         """
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
