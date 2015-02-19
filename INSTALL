@@ -6,7 +6,7 @@ Pre-built binaries
 
 The easiest route to installing cartopy is through 
 `Conda <http://conda.pydata.org/miniconda.html>`_. For all platforms
-installing cartopy can be done with:
+installing cartopy can be done with::
 
     conda install -c scitools cartopy
 
@@ -22,12 +22,12 @@ Building from source
 The latest release of Cartopy is available from
 https://github.com/SciTools/Cartopy.
 
-Once you have satisfied the requirements detailed below, simply run:
+Once you have satisfied the requirements detailed below, simply run::
 
     python setup.py install
 
 For non-standard locations, additional build lib & include paths
-can be provided as per-usual at build_ext phase:
+can be provided as per-usual at build_ext phase::
 
     python setup.py build_ext --inplace -I/path/to/include -L/path/to/lib
     python setup.py install
