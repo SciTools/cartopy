@@ -36,7 +36,7 @@ import six
 
 from cartopy import config
 import cartopy.crs as ccrs
-from cartopy.io import fh_getter, Downloader, RasterSource
+from cartopy.io import fh_getter, Downloader, RasterSource, LocatedImage
 
 
 class SRTM3Source(RasterSource):
@@ -91,10 +91,10 @@ class SRTM3Source(RasterSource):
         nx = int(np.ceil(max_x) - min_x)
         ny = int(np.ceil(max_y) - min_y)
         if nx > self._max_tiles[0] or ny > self._max_tiles[1]:
-            return (None, None)
+            return []
         else:
             img, _, extent = self.combined(min_x, min_y, nx, ny)
-            return (np.flipud(img), extent)
+            return [LocatedImage(np.flipud(img), extent)]
 
     def srtm_fname(self, lon, lat):
         """

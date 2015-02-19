@@ -324,7 +324,7 @@ class Downloader(object):
         return result_downloader
 
 
-class LocatedImage(collections.namedtuple('LocatedImage', 'image extent')):
+class LocatedImage(collections.namedtuple('LocatedImage', 'image, extent')):
     """
     Defines an image and associated extent in the form:
        ``image, (min_x, max_x, min_y, max_y)``
@@ -422,16 +422,16 @@ class PostprocessedRasterSource(RasterSourceContainer):
             The source of the raster that this container is wrapping.
         img_post_process : callable
             Called after each `fetch_raster` call which yields a non-None
-            image result. The callable must accept the image/array from the
-            contained fetch_raster as its only argument, and must return an
-            array representing the same extent as its input.
+            image result. The callable must accept the :class:`LocatedImage`
+            from the contained fetch_raster as its only argument, and must
+            return a single LocatedImage.
         """
         super(PostprocessedRasterSource, self).__init__(contained_source)
         self._post_fetch_fn = img_post_process
 
     def fetch_raster(self, *args, **kwargs):
         fetch_raster = super(PostprocessedRasterSource, self).fetch_raster
-        img, extent = fetch_raster(*args, **kwargs)
-        if img is not None:
-            img = self._post_fetch_fn(img)
-        return img, extent
+        located_imgs = fetch_raster(*args, **kwargs)
+        if located_imgs:
+            located_imgs = [self._post_fetch_fn(img) for img in located_imgs]
+        return located_imgs

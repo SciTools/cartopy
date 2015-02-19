@@ -11,19 +11,19 @@ import cartopy.crs as ccrs
 from cartopy.io import srtm
 import matplotlib.pyplot as plt
 
-from cartopy.io import PostprocessedRasterSource
+from cartopy.io import PostprocessedRasterSource, LocatedImage
 from cartopy.io.srtm import SRTM3Source
 
 
-def fill_and_shade(elevations):
+def fill_and_shade(located_elevations):
     """
-    Given an array of elevations, fill any holes in the data and add a
-    relief (shadows) to give a realistic 3d appearance.
+    Given an array of elevations in a LocatedImage, fill any holes in
+    the data and add a relief (shadows) to give a realistic 3d appearance.
 
     """
-    elevations = srtm.fill_gaps(elevations, max_distance=15)
-    img = srtm.add_shading(elevations, azimuth=135, altitude=15)
-    return img
+    new_elevations = srtm.fill_gaps(located_elevations.image, max_distance=15)
+    new_img = srtm.add_shading(new_elevations, azimuth=135, altitude=15)
+    return LocatedImage(new_img, located_elevations.extent)
 
 
 def main():
