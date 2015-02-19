@@ -1,11 +1,114 @@
 What's new in cartopy 0.12
-**************************
+==========================
 
 :Release: 0.12.0
-:Date:
+:Date: 20 February 2015
+
+Features
+--------
+
+* We are very pleased to announce that Elliott Sales de Andrade was added to the cartopy
+  core development team. Elliott has added several new projections in this release, as well
+  as setting up cartopy's Python 3 testing on TravisCI and generally improving the cartopy
+  codebase.
+
+* Installing cartopy became much easier for conda users. A ``scitools`` channel has been
+  added which has makes getting cartopy and all of its dependencies on Linux, OSX and
+  Windows possible with::
+
+     conda install -c scitools cartopy
+
+* Two new projections, :class:`~cartopy.crs.AzimuthalEquidistant` and
+  :class:`~cartopy.crs.AlbersEqualArea` have been added. See the :ref:`cartopy_projections`
+  for the full list of projections now available in cartopy.
+
+* The Web Map Service (WMS) interface has been extended to support on-the-fly reprojection
+  of imagery if the service does not support the projection of the map being drawn.
+
+    .. plot:: examples/wms.py
+       :width: 200pt
+
+* Peter Killick added an interface for accessing MapBox tiles using the MapBox
+  Developer API. A MapBox client can be created with,
+  :class:`~cartopy.io.img_tiles.MapboxTiles` and as with the other imagery from a simple URL
+  based imagery service, it can be added to a :class:`~cartopy.mpl.geoaxes.GeoAxes` with the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_image` method. The following example demonstrates the
+  interface for another source of imagery:
+
+    .. plot:: examples/image_tiles.py
+       :width: 200pt
+
+* Some improvements were made to the geometry transformation algorithm to improve
+  the stability of geometry winding. Several cases of geometries being incorrectly
+  inverted when transformed have now been resolved. (:pull:`545`)
+
+* Mark Hedley added the ``central_rotated_longitude`` keyword to
+  :class:`cartopy.crs.RotatedPole`, which is particularly useful for limited area
+  rotated pole models in areas such as New Zealand:
+
+    .. plot::
+       :width: 200pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        rpole = ccrs.RotatedPole(pole_longitude=171.77,
+                                 pole_latitude=49.55,
+                                 central_rotated_longitude=180)
+        ax = plt.axes(projection=rpole)
+        ax.set_global()
+        ax.gridlines()
+        ax.stock_img()
+        ax.coastlines()
+        plt.show()
+
+* A new method has been added to the :class:`~cartopy.mpl.geoaxes.GeoAxes` to
+  allow control the neatline of a map drawn with the matplotlib interface.
+  The method, :meth:`~cartopy.mpl.geoaxes.GeoAxes.set_boundary`, takes a
+  :class:`matplotlib Path<matplotlib.path.Path>` object, which means that
+  arbitrary shaped edges can be achieved:
+
+    .. plot:: examples/star_shaped_boundary.py
+       :width: 200pt
 
 * A new SRTM3 RasterSource has been implemented allowing interactive pan/zoom
   of 3 arc-second elevation data from the Shuttle Radar Topography Mission.
+  The :ref:`SRTM example<examples-srtm_shading>` has also been updated to use the
+  new interface.
+
+* New additions to the gallery:
+
+  * |image_un_flag|_
+
+    .. |image_un_flag| image:: examples/un_flag_01_00.thumb.png
+
+    .. _image_un_flag: examples/un_flag.html
+
+  * |image_always_circular_stereo|_
+
+    .. |image_always_circular_stereo| image:: examples/always_circular_stereo_01_00.thumb.png
+
+    .. _image_always_circular_stereo: examples/always_circular_stereo.html
+
+  * |image_tube_stations|_
+
+    .. |image_tube_stations| image:: examples/tube_stations_01_00.thumb.png
+
+    .. _image_tube_stations: examples/tube_stations.html
+
+  * |image_wms|_
+
+    .. |image_wms| image:: examples/wms_01_00.thumb.png
+
+    .. _image_wms: examples/wms.html
+
+  * |image_image_tiles|_
+
+    .. |image_image_tiles| image:: examples/image_tiles_01_00.thumb.png
+
+    .. _image_image_tiles: examples/image_tiles.html
+
+
 
 Deprecations
 ------------
@@ -19,9 +122,18 @@ Deprecations
   :meth:`cartopy.io.srtm.SRTM3Source.combined` and
   :meth:`cartopy.io.srtm.SRTM3Source.srtm_fname` methods respectively.
 
+* The :class:`cartopy.io.RasterSource.fetch_raster` interface has been
+  changed such that a sequence of :class:`cartopy.io.LocatedImage` must be
+  returned, rather than a single image and its associated extent. This has allowed
+  
+
+
+-----------
+
+
 
 What's new in cartopy 0.11
-**************************
+==========================
 
 :Release: 0.11.0
 :Date: 19 June 2014
@@ -81,8 +193,11 @@ What's new in cartopy 0.11
    :width: 300pt
 
 
+-----------
+
+
 What's new in cartopy 0.10
-**************************
+==========================
 
 :Release: 0.10.0
 :Date: 17 January 2014
@@ -114,8 +229,12 @@ capabilities, including:
 .. plot:: examples/barbs.py
     :width: 300pt
 
+
+-----------
+
+
 What's new in cartopy 0.9
-*************************
+=========================
 
 :Release: 0.9.0
 :Date: 12 September 2013
@@ -152,8 +271,12 @@ What's new in cartopy 0.9
 * Byron Blay added the :class:`Lambert conformal conic projection <cartopy.crs.LambertConformal>`.
 
 
+-----------
+
+
+
 What's new in cartopy 0.8
-*************************
+=========================
 
 :Release: 0.8.0
 :Date: 3 June 2013
@@ -168,8 +291,12 @@ What's new in cartopy 0.8
   datum information for CRSs. Globe handling in many projections, including Stereographic, has been added.
 
 
+-----------
+
+
+
 What's new in cartopy 0.7
-*************************
+=========================
 
 :Release: 0.7.0
 :Date: 21 Mar 2013
@@ -183,8 +310,12 @@ This is a quick release which targets two very specific requirements. The goals 
 ``v0.6`` still remain the primary target for ``v0.8`` and beyond.
 
 
+
+-----------
+
+
 What's new in cartopy 0.6
-*************************
+=========================
 
 :Release: 0.6.0
 :Date: 19 Feb 2013
@@ -210,7 +341,7 @@ What's new in cartopy 0.6
 
 
 Development plans for cartopy 0.7 and beyond
-============================================
+--------------------------------------------
 
 * Improve the projection definitions to support better control over datum definitions
   and consider adding WKT support (:issue:`ticket <153>`).
@@ -226,7 +357,7 @@ Development plans for cartopy 0.7 and beyond
 
 
 What's new in cartopy 0.5
-*************************
+=========================
 
 :Release: 0.5.0
 :Date: 7 Dec 2012
@@ -239,7 +370,7 @@ improvements.
 
 
 Cartopy 0.5 features
-====================
+--------------------
 
 A summary of the main features added with version 0.5:
 
@@ -260,7 +391,7 @@ Deprecations
 
 
 Feature API
-===========
+-----------
 
 A new features api is now available, see :doc:`tutorials/using_the_shapereader`.
 

@@ -82,6 +82,11 @@ def main():
 
     # We're drawing a flag with a 3:5 aspect ratio.
     fig = plt.figure(figsize=[10, 6], facecolor=blue)
+    # Put a blue background on the figure.
+    blue_background = PathPatch(matplotlib.path.Path.unit_rectangle(),
+                                transform=fig.transFigure, color=blue,
+                                zorder=-1)
+    fig.patches.append(blue_background)
 
     # Set up the Azimuthal Equidistant and Plate Carree projections
     # for later use.
