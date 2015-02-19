@@ -52,6 +52,7 @@ extensions = [
               'sphinx.ext.coverage',
               'sphinx.ext.viewcode',
               'sphinx.ext.extlinks',
+              #'sphinxcontrib.napoleon', (Needs work before this can be enabled.)
               'matplotlib.sphinxext.plot_directive'
               ]
 
@@ -72,7 +73,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'cartopy'
-copyright = u'2011 - 2014 British Crown Copyright' # the template will need updating if this is changed
+copyright = u'2011 - 2015 British Crown Copyright' # the template will need updating if this is changed
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

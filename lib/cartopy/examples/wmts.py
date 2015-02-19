@@ -1,5 +1,8 @@
 __tags__ = ['Web services']
 """
+Interactive WMTS (Web Map Tile Service)
+---------------------------------------
+
 This example demonstrates the interactive pan and zoom capability
 supported by an OGC web services Web Map Tile Service (WMTS) aware axes.
 

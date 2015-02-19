@@ -3,7 +3,6 @@
 
     whats_new.rst
     installing.rst
-    citation.rst
     cartopy_outline.rst
 
 
@@ -51,6 +50,17 @@ For those updating from an older version of cartopy, the :doc:`what's new <whats
 outlines recent changes, new features, and future development plans.
 
 
+..
+  All the stuff that isn't in chapter form.
+
+.. toctree::
+    :hidden:
+
+    cartopy.rst
+    cartopy/io/ogc_clients.rst
+    cartopy/util/util.rst
+
+
 Getting involved
 ================
 
@@ -82,8 +92,8 @@ subjects prefixed with "cartopy: ".
     :glob:
     :hidden:
 
-    who_uses_cartopy
     gallery
     examples/*
+    citation
     copyright
     contributors
