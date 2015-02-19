@@ -201,7 +201,9 @@ def path_to_geos(path, force_ccw=False):
         # If geom is a Polygon and is contained within the last geom in
         # collection, add it to its list of internal polygons, otherwise
         # simple append it as a  new external geom.
-        if (len(collection) > 0 and
+        if geom.is_empty:
+            pass
+        elif (len(collection) > 0 and
                 isinstance(collection[-1][0], Polygon) and
                 isinstance(geom, Polygon) and
                 collection[-1][0].contains(geom.exterior)):
