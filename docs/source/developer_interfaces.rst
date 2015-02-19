@@ -60,8 +60,11 @@ this way.
 
 .. currentmodule:: cartopy.io
 
-.. autoclass:: cartopy.io.RasterSource
+.. autoclass:: RasterSource
     :members:
+
+.. autoclass:: LocatedImage
+
 
 .. currentmodule:: cartopy.mpl.slippy_image_artist
 

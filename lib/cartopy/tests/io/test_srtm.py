@@ -80,7 +80,7 @@ class TestSRTM3Source__combined(unittest.TestCase):
         source = cartopy.io.srtm.SRTM3Source()
         e_img, e_crs, e_extent = source.single_tile(-3, 50)
         r_img, r_crs, r_extent = source.combined(-3, 50, 1, 1)
-        np.testing.assert_array_equal(e_img, r_img)
+        assert_array_equal(e_img, r_img)
         self.assertEqual(e_crs, r_crs)
         self.assertEqual(e_extent, r_extent)
 
@@ -90,18 +90,20 @@ class TestSRTM3Source__combined(unittest.TestCase):
         self.assertEqual(e_extent, (-1, 1, 50, 51))
         imgs = [source.single_tile(-1, 50)[0],
                 source.single_tile(0, 50)[0]]
-        np.testing.assert_array_equal(np.hstack(imgs), e_img)
+        assert_array_equal(np.hstack(imgs), e_img)
 
 
 class TestSRTM3Source_fetch_raster(unittest.TestCase):
     def test_as_combined(self):
         source = cartopy.io.srtm.SRTM3Source()
         e_img, e_crs, e_extent = source.combined(-1, 50, 2, 1)
-        r_img, r_extent = source.fetch_raster(ccrs.PlateCarree(),
-                                              (-0.9, 0.1, 50.1, 50.999),
-                                              None)
+        imgs = source.fetch_raster(ccrs.PlateCarree(),
+                                   (-0.9, 0.1, 50.1, 50.999),
+                                   None)
+        self.assertEqual(len(imgs), 1)
+        r_img, r_extent = imgs[0]
         self.assertEqual(e_extent, r_extent)
-        np.testing.assert_array_equal(e_img[::-1, :], r_img)
+        assert_array_equal(e_img[::-1, :], r_img)
 
 
 if __name__ == '__main__':
