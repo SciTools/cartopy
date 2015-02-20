@@ -57,6 +57,7 @@ outlines recent changes, new features, and future development plans.
     :hidden:
 
     cartopy.rst
+    cartopy/io/img_tiles.rst
     cartopy/io/ogc_clients.rst
     cartopy/util/util.rst
 

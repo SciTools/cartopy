@@ -937,7 +937,7 @@ class GeoAxes(matplotlib.axes.Axes):
     def set_boundary(self, path, transform=None, use_as_clip_path=True):
         """
         Given a path, update the :data:`.outline_patch` and
-        :data:`.background_patch`..
+        :data:`.background_patch` to take its shape.
 
         Parameters
         ----------
