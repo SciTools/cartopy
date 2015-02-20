@@ -13,7 +13,7 @@ Features
   codebase.
 
 * Installing cartopy became much easier for conda users. A ``scitools`` channel has been
-  added which has makes getting cartopy and all of its dependencies on Linux, OSX and
+  added which makes getting cartopy and all of its dependencies on Linux, OSX and
   Windows possible with::
 
      conda install -c scitools cartopy
@@ -24,6 +24,9 @@ Features
 
 * The Web Map Service (WMS) interface has been extended to support on-the-fly reprojection
   of imagery if the service does not support the projection of the map being drawn.
+  The following example demonstrates the process by adding WMS imagery to an Interrupted
+  Goode Homolosine map - unsurprisingly this WMS service does not provide IGH imagery, so
+  cartopy has had to reproject them from a projection the WMS does support:
 
     .. plot:: examples/wms.py
        :width: 200pt
@@ -63,7 +66,7 @@ Features
         plt.show()
 
 * A new method has been added to the :class:`~cartopy.mpl.geoaxes.GeoAxes` to
-  allow control the neatline of a map drawn with the matplotlib interface.
+  allow control of the neatline of a map drawn with the matplotlib interface.
   The method, :meth:`~cartopy.mpl.geoaxes.GeoAxes.set_boundary`, takes a
   :class:`matplotlib Path<matplotlib.path.Path>` object, which means that
   arbitrary shaped edges can be achieved:
@@ -124,7 +127,7 @@ Deprecations
 
 * The :class:`cartopy.io.RasterSource.fetch_raster` interface has been
   changed such that a sequence of :class:`cartopy.io.LocatedImage` must be
-  returned, rather than a single image and its associated extent. This has allowed
+  returned, rather than a single image and its associated extent.
   
 
 
