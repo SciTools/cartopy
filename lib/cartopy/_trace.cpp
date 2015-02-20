@@ -231,6 +231,11 @@ class LineAccumulator
     void add_point_if_empty(const Point &point);
     GEOSGeometry *as_geom(GEOSContextHandle_t handle);
 
+    std::list<Line>::size_type size() const
+    {
+        return m_lines.size();
+    }
+
     private:
     std::list<Line> m_lines;
 };
@@ -558,7 +563,7 @@ void _project_segment(GEOSContextHandle_t handle,
     t_current = 0.0;
     state = get_state(p_current, gp_domain, handle);
 
-    while(t_current < 1.0)
+    while(t_current < 1.0 && lines.size() < 500)
     {
         //std::cerr << "Bisecting" << std::endl;
 #ifdef DEBUG
