@@ -1638,11 +1638,23 @@ class AzimuthalEquidistant(Projection):
                         ('lat_0', central_latitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
         super(AzimuthalEquidistant, self).__init__(proj4_params, globe=globe)
-        self._max = 2e7
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        b = np.float(self.globe.semiminor_axis or a)
+
+        coords = _ellipse_boundary(a * np.pi, b * np.pi,
+                                   false_easting, false_northing, 61)
+        coords = tuple(tuple(pair) for pair in coords.T)
+
+        self._boundary = sgeom.polygon.LinearRing(coords)
+        bounds = self._boundary.bounds
+        self._x_limits = bounds[0], bounds[2]
+        self._y_limits = bounds[1], bounds[3]
 
     @property
     def boundary(self):
-        return sgeom.Point(0, 0).buffer(self._max).exterior
+        return self._boundary
 
     @property
     def threshold(self):
@@ -1650,11 +1662,11 @@ class AzimuthalEquidistant(Projection):
 
     @property
     def x_limits(self):
-        return (-self._max, self._max)
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return (-self._max, self._max)
+        return self._y_limits
 
 
 class _BoundaryPoint(object):
