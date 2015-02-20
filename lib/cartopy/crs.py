@@ -1499,7 +1499,7 @@ class Geostationary(Projection):
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or 6378137.0)
-        b = np.float(self.globe.semiminor_axis or 6378137.0)
+        b = np.float(self.globe.semiminor_axis or a)
         h = np.float(satellite_height)
         max_x = h * math.atan(a / (a + h))
         max_y = h * math.atan(b / (b + h))
