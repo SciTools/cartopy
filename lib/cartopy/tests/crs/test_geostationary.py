@@ -41,8 +41,8 @@ class TestGeostationary(unittest.TestCase):
         self.check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-5364970.19679699, -5370680.80015303,
-                             5372584.78443894, 5370680.80015303),
+                            (-5372584.78443894, -5372584.78443894,
+                             5372584.78443894, 5372584.78443894),
                             decimal=4)
 
     def test_eccentric_globe(self):
@@ -55,7 +55,7 @@ class TestGeostationary(unittest.TestCase):
         self.check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-8245.7306, -4531.3879, 8257.4339, 4531.3879),
+                            (-8257.4338, -4532.9943, 8257.4338, 4532.9943),
                             decimal=4)
 
     def test_eastings(self):
@@ -67,8 +67,8 @@ class TestGeostationary(unittest.TestCase):
         self.check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-364970.19679699, -5495680.80015303,
-                             10372584.78443894, 5245680.80015303),
+                            (-372584.78443894, -5497584.78443894,
+                             10372584.78443894, 5247584.78443894),
                             decimal=4)
 
 if __name__ == '__main__':

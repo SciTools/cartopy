@@ -642,7 +642,7 @@ class _CylindricalProjection(_RectangularProjection):
     """
 
 
-def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=200):
+def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
     """
     Defines a projection boundary using an ellipse.
 
@@ -1219,7 +1219,7 @@ class Stereographic(Projection):
             self._boundary = point.buffer(self._x_limits[1]).exterior
         else:
             coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
-                                       false_easting, false_northing, 90)
+                                       false_easting, false_northing, 91)
             coords = tuple(tuple(pair) for pair in coords.T)
             self._boundary = sgeom.polygon.LinearRing(coords)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
@@ -1505,7 +1505,7 @@ class Geostationary(Projection):
         max_y = h * math.atan(b / (b + h))
 
         coords = _ellipse_boundary(max_x, max_y,
-                                   false_easting, false_northing, 60)
+                                   false_easting, false_northing, 61)
         coords = tuple(tuple(pair) for pair in coords.T)
         self._boundary = sgeom.polygon.LinearRing(coords)
         self._xlim = self._boundary.bounds[::2]
