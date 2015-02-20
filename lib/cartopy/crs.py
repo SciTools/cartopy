@@ -642,6 +642,20 @@ class _CylindricalProjection(_RectangularProjection):
     """
 
 
+def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
+    """
+    Defines a projection boundary using an ellipse.
+
+    This type of boundary is used by several projections.
+
+    """
+
+    t = np.linspace(0, 2 * np.pi, n)
+    coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
+    coords += ([easting], [northing])
+    return coords
+
+
 class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0, globe=None):
         proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude)]
@@ -1187,14 +1201,6 @@ class Stereographic(Projection):
             proj4_params.append(('lat_ts', true_scale_latitude))
         super(Stereographic, self).__init__(proj4_params, globe=globe)
 
-        # TODO: Factor this out, particularly if there are other places using
-        # it (currently: Stereographic & Geostationary). (#340)
-        def ellipse(semimajor=2, semiminor=1, easting=0, northing=0, n=200):
-            t = np.linspace(0, 2 * np.pi, n)
-            coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
-            coords += ([easting], [northing])
-            return coords
-
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or 6378137.0)
         b = np.float(self.globe.semiminor_axis or 6356752.3142)
@@ -1212,8 +1218,8 @@ class Stereographic(Projection):
             point = sgeom.Point(false_easting, false_northing)
             self._boundary = point.buffer(self._x_limits[1]).exterior
         else:
-            coords = ellipse(self._x_limits[1], self._y_limits[1],
-                             false_easting, false_northing, 90)
+            coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
+                                       false_easting, false_northing, 91)
             coords = tuple(tuple(pair) for pair in coords.T)
             self._boundary = sgeom.polygon.LinearRing(coords)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
@@ -1491,23 +1497,15 @@ class Geostationary(Projection):
                         ('units', 'm')]
         super(Geostationary, self).__init__(proj4_params, globe=globe)
 
-        # TODO: Factor this out, particularly if there are other places using
-        # it (currently: Stereographic & Geostationary). (#340)
-        def ellipse(semimajor=2, semiminor=1, easting=0, northing=0, n=200):
-            t = np.linspace(0, 2 * np.pi, n)
-            coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
-            coords += ([easting], [northing])
-            return coords
-
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or 6378137.0)
-        b = np.float(self.globe.semiminor_axis or 6378137.0)
+        b = np.float(self.globe.semiminor_axis or a)
         h = np.float(satellite_height)
         max_x = h * math.atan(a / (a + h))
         max_y = h * math.atan(b / (b + h))
 
-        coords = ellipse(max_x, max_y,
-                         false_easting, false_northing, 60)
+        coords = _ellipse_boundary(max_x, max_y,
+                                   false_easting, false_northing, 61)
         coords = tuple(tuple(pair) for pair in coords.T)
         self._boundary = sgeom.polygon.LinearRing(coords)
         self._xlim = self._boundary.bounds[::2]
@@ -1640,11 +1638,23 @@ class AzimuthalEquidistant(Projection):
                         ('lat_0', central_latitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
         super(AzimuthalEquidistant, self).__init__(proj4_params, globe=globe)
-        self._max = 2e7
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        b = np.float(self.globe.semiminor_axis or a)
+
+        coords = _ellipse_boundary(a * np.pi, b * np.pi,
+                                   false_easting, false_northing, 61)
+        coords = tuple(tuple(pair) for pair in coords.T)
+
+        self._boundary = sgeom.polygon.LinearRing(coords)
+        bounds = self._boundary.bounds
+        self._x_limits = bounds[0], bounds[2]
+        self._y_limits = bounds[1], bounds[3]
 
     @property
     def boundary(self):
-        return sgeom.Point(0, 0).buffer(self._max).exterior
+        return self._boundary
 
     @property
     def threshold(self):
@@ -1652,11 +1662,11 @@ class AzimuthalEquidistant(Projection):
 
     @property
     def x_limits(self):
-        return (-self._max, self._max)
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return (-self._max, self._max)
+        return self._y_limits
 
 
 class _BoundaryPoint(object):
