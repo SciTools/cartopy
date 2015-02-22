@@ -653,7 +653,7 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
     t = np.linspace(0, 2 * np.pi, n)
     coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
     coords += ([easting], [northing])
-    return coords
+    return coords[:, ::-1]
 
 
 class PlateCarree(_CylindricalProjection):
@@ -1072,6 +1072,9 @@ class LambertConformal(Projection):
 
         points = self.transform_points(PlateCarree(),
                                        np.array(lons), np.array(lats))
+        if plat == 90:
+            # Ensure clockwise
+            points = points[::-1, :]
 
         self._boundary = sgeom.LineString(points)
         bounds = self._boundary.bounds
@@ -1586,7 +1589,7 @@ class AlbersEqualArea(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LineString(points[::-1])
+        self._boundary = sgeom.LineString(points)
         bounds = self._boundary.bounds
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]
