@@ -1223,8 +1223,7 @@ class Stereographic(Projection):
         else:
             coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
                                        false_easting, false_northing, 91)
-            coords = tuple(tuple(pair) for pair in coords.T)
-            self._boundary = sgeom.polygon.LinearRing(coords)
+            self._boundary = sgeom.polygon.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1509,8 +1508,7 @@ class Geostationary(Projection):
 
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
-        coords = tuple(tuple(pair) for pair in coords.T)
-        self._boundary = sgeom.polygon.LinearRing(coords)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
         self._xlim = self._boundary.bounds[::2]
         self._ylim = self._boundary.bounds[1::2]
         self._threshold = np.diff(self._xlim)[0] * 0.02
@@ -1648,9 +1646,7 @@ class AzimuthalEquidistant(Projection):
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)
-        coords = tuple(tuple(pair) for pair in coords.T)
-
-        self._boundary = sgeom.polygon.LinearRing(coords)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
         bounds = self._boundary.bounds
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]
