@@ -50,8 +50,8 @@ LICENSE_TEMPLATE = """
 
 
 LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE).replace('\{YEARS\}', '(.*?)')
-# Add shebang possibility to the LICENSE_RE_PATTERN
-LICENSE_RE_PATTERN = r'(\#\!.*\n)?' + LICENSE_RE_PATTERN
+# Add shebang possibility or C comment starter to the LICENSE_RE_PATTERN
+LICENSE_RE_PATTERN = r'((\#\!.*|\/\*)\n)?' + LICENSE_RE_PATTERN
 LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 
 
