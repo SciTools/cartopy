@@ -1114,7 +1114,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
-    # mpl 1.2.0rc2 compatibility. To be removed once 1.2 is released
     def _pcolormesh_patched(self, *args, **kwargs):
         """
         A temporary, modified duplicate of
@@ -1153,15 +1152,13 @@ class GeoAxes(matplotlib.axes.Axes):
         antialiased = kwargs.pop('antialiased', False)
         kwargs.setdefault('edgecolors', 'None')
 
-        X, Y, C = self._pcolorargs('pcolormesh', *args)
+        allmatch = (shading == 'gouraud')
+
+        X, Y, C = self._pcolorargs('pcolormesh', *args, allmatch=allmatch)
         Ny, Nx = X.shape
 
         # convert to one dimensional arrays
-        if shading != 'gouraud':
-            # data point in each cell is value at lower left corner
-            C = ma.ravel(C[0:Ny - 1, 0:Nx - 1])
-        else:
-            C = C.ravel()
+        C = C.ravel()
         X = X.ravel()
         Y = Y.ravel()
 
@@ -1183,9 +1180,6 @@ class GeoAxes(matplotlib.axes.Axes):
 
         self.grid(False)
 
-        ########################
-        # PATCH FOR MPL 1.2.0rc2
-
         # Transform from native to data coordinates?
         t = collection._transform
         if (not isinstance(t, mtransforms.Transform)
@@ -1196,17 +1190,17 @@ class GeoAxes(matplotlib.axes.Axes):
             trans_to_data = t - self.transData
             pts = np.vstack([X, Y]).T.astype(np.float)
             transformed_pts = trans_to_data.transform(pts)
-
             X = transformed_pts[..., 0]
             Y = transformed_pts[..., 1]
 
-            # XXX Not a mpl 1.2 thing...
+            ########################
+            # PATCH
+            # XXX Non-standard matplotlib thing.
             no_inf = (X != np.inf) & (Y != np.inf)
             X = X[no_inf]
             Y = Y[no_inf]
-
-        # END OF PATCH
-        ##############
+            # END OF PATCH
+            ##############
 
         minx = np.amin(X)
         maxx = np.amax(X)
@@ -1218,7 +1212,9 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         self.add_collection(collection)
 
-        # XXX Non-standard matplotlib 1.2 thing.
+        ########################
+        # PATCH
+        # XXX Non-standard matplotlib thing.
         # Handle a possible wrap around for rectangular projections.
         t = kwargs.get('transform', None)
         if isinstance(t, ccrs.CRS):
@@ -1318,6 +1314,9 @@ class GeoAxes(matplotlib.axes.Axes):
             # Clip the QuadMesh to the projection boundary, which is required
             # to keep the shading inside the projection bounds.
             collection.set_clip_path(self.outline_patch)
+
+        # END OF PATCH
+        ##############
 
         return collection
 
