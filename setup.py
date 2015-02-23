@@ -91,58 +91,6 @@ class MissingHeaderError(Exception):
     pass
 
 
-class HeaderCheck(Command):
-    """
-    Checks that all the necessary files have the copyright and licence
-    header.
-
-    """
-
-    description = "check for copyright/licence headers"
-    user_options = []
-
-    exclude_patterns = ('./setup.py',
-                        './build/*',
-                        './docs/build/*',
-                        './dist/*',
-                        './lib/cartopy/examples/*.py')
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        check_paths = []
-        for root, dirs, files in os.walk('.'):
-            for file in files:
-                if file.endswith('.py') or file.endswith('.c'):
-                    path = os.path.join(root, file)
-                    check_paths.append(path)
-
-        for pattern in self.exclude_patterns:
-            exclude = lambda path: not fnmatch.fnmatch(path, pattern)
-            check_paths = list(filter(exclude, check_paths))
-
-        bad_paths = list(filter(self._header_bad, check_paths))
-        if bad_paths:
-            raise MissingHeaderError(bad_paths)
-
-    def _header_bad(self, path):
-        target = '(C) British Crown Copyright 2011 - 2012, Met Office'
-        with open(path, 'rt') as text_file:
-            # Check for the header on the first line.
-            line = text_file.readline().rstrip()
-            bad = target not in line
-
-            # Check if it was an executable script, with the header
-            # starting on the second line.
-            if bad and line == '#!/usr/bin/env python':
-                line = text_file.readline().rstrip()
-                bad = target not in line
-        return bad
-
 here = os.path.dirname(__file__)
 with open(os.path.join(here, 'README.rst'), 'r') as fh:
     description = ''.join(fh.readlines())
@@ -193,7 +141,7 @@ setup(
                   ),
     ],
 
-    cmdclass={'build_ext': build_ext, 'header_check': HeaderCheck},
+    cmdclass={'build_ext': build_ext},
     classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
