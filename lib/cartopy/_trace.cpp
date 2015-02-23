@@ -563,7 +563,7 @@ void _project_segment(GEOSContextHandle_t handle,
     t_current = 0.0;
     state = get_state(p_current, gp_domain, handle);
 
-    while(t_current < 1.0 && lines.size() < 100)
+    while(t_current < 1.0 && lines.size() < 500)
     {
         //std::cerr << "Bisecting" << std::endl;
 #ifdef DEBUG
