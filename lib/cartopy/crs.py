@@ -131,7 +131,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         try:
             boundary = self._ccw_boundary
         except AttributeError:
-            boundary = sgeom.LineString(list(self.boundary.coords)[::-1])
+            boundary = sgeom.LineString(self.boundary.coords[::-1])
             self._ccw_boundary = boundary
         return boundary
 
@@ -367,7 +367,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             edge_things.append(thing)
 
         # Record the positions of all the boundary vertices
-        for xy in list(boundary.coords)[:-1]:
+        for xy in boundary.coords[:-1]:
             point = sgeom.Point(*xy)
             dist = boundary.project(point)
             thing = _BoundaryPoint(dist, True, point)

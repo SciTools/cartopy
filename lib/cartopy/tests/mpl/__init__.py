@@ -293,23 +293,23 @@ def show(projection, geometry):
                                            lw=0, alpha=0.2)
                 plt.gca().add_patch(patch)
             line_string = polygon.exterior
-            plt.plot(*list(zip(*line_string.coords)),
+            plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
     elif geometry.type == 'MultiPolygon':
         multi_polygon = geometry
         for polygon in multi_polygon:
             line_string = polygon.exterior
-            plt.plot(*list(zip(*line_string.coords)),
+            plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
 
     elif geometry.type == 'MultiLineString':
         multi_line_string = geometry
         for line_string in multi_line_string:
-            plt.plot(*list(zip(*line_string.coords)),
+            plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
 
     elif geometry.type == 'LinearRing':
-        plt.plot(*list(zip(*geometry.coords)), marker='+', linestyle='-')
+        plt.plot(*zip(*geometry.coords), marker='+', linestyle='-')
 
     if 1:
         # Whole map domain
@@ -331,7 +331,7 @@ def show(projection, geometry):
         plt.xlim(1.55e7, 1.65e7)
         plt.ylim(0.3e7, 0.4e7)
 
-    plt.plot(*list(zip(*projection.boundary.coords)), marker='o',
+    plt.plot(*zip(*projection.boundary.coords), marker='o',
              scalex=False, scaley=False, zorder=-1)
 
     plt.show()
