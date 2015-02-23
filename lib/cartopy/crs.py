@@ -601,8 +601,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             y = vertices[:, 1]
             x_limits = self.x_limits
             y_limits = self.y_limits
-            if (x.min() >= x_limits[0] and x.max() <= x_limits[1]
-                    and y.min() >= y_limits[0] and y.max() <= y_limits[1]):
+            if (x.min() >= x_limits[0] and x.max() <= x_limits[1] and
+                    y.min() >= y_limits[0] and y.max() <= y_limits[1]):
                 return_value = vertices
 
         return return_value
@@ -744,8 +744,8 @@ class PlateCarree(_CylindricalProjection):
                     # this range, we're not going to transform it quickly.
                     for i in [-1, 0, 1, 2]:
                         offset = mod * i - proj_offset
-                        if ((poly[0] + offset) <= x_lim[0]
-                                and (poly[1] + offset) >= x_lim[1]):
+                        if ((poly[0] + offset) <= x_lim[0] and
+                                (poly[1] + offset) >= x_lim[1]):
                             return_value = vertices + [[-offset, 0]]
                             break
                     if return_value is not None:

@@ -1188,8 +1188,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # Transform from native to data coordinates?
         t = collection._transform
-        if (not isinstance(t, mtransforms.Transform)
-                and hasattr(t, '_as_mpl_transform')):
+        if (not isinstance(t, mtransforms.Transform) and
+                hasattr(t, '_as_mpl_transform')):
             t = t._as_mpl_transform(self.axes)
 
         if t and any(t.contains_branch_seperately(self.transData)):
