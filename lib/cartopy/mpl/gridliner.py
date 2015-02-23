@@ -95,7 +95,8 @@ class Gridliner(object):
     # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
     # determination on zoom/pan.
-    def __init__(self, axes, crs, draw_labels=False, collection_kwargs=None):
+    def __init__(self, axes, crs, draw_labels=False, xlocator=None,
+                 ylocator=None, collection_kwargs=None):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -113,6 +114,18 @@ class Gridliner(object):
             Toggle whether to draw labels. For finer control, attributes of
             :class:`Gridliner` may be modified individually.
 
+        * xlocator
+            A :class:`matplotlib.ticker.Locator` instance which will be used
+            to determine the locations of the gridlines in the x-coordinate of
+            the given CRS. Defaults to None, which implies automatic locating
+            of the gridlines.
+
+        * ylocator
+            A :class:`matplotlib.ticker.Locator` instance which will be used
+            to determine the locations of the gridlines in the y-coordinate of
+            the given CRS. Defaults to None, which implies automatic locating
+            of the gridlines.
+
         * collection_kwargs
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`.
@@ -122,11 +135,11 @@ class Gridliner(object):
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the x
         #: gridlines and labels.
-        self.xlocator = degree_locator
+        self.xlocator = xlocator or degree_locator
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the y
         #: gridlines and labels.
-        self.ylocator = degree_locator
+        self.ylocator = ylocator or degree_locator
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the x labels.
         self.xformatter = mticker.ScalarFormatter()
