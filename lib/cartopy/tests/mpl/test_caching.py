@@ -30,7 +30,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 from matplotlib.path import Path
-import shapely.geometry
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist

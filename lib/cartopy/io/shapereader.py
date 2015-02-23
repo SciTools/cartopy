@@ -48,7 +48,7 @@ import glob
 import itertools
 import os
 
-from shapely.geometry import MultiLineString, MultiPolygon, Point, Polygon
+import shapely.geometry as sgeom
 import shapefile
 import six
 
@@ -60,22 +60,22 @@ __all__ = ['Reader', 'Record']
 
 
 def _create_point(shape):
-    return Point(shape.points[0])
+    return sgeom.Point(shape.points[0])
 
 
 def _create_polyline(shape):
     if not shape.points:
-        return MultiLineString()
+        return sgeom.MultiLineString()
 
     parts = list(shape.parts) + [None]
     bounds = list(zip(parts[:-1], parts[1:]))
     lines = [shape.points[slice(lower, upper)] for lower, upper in bounds]
-    return MultiLineString(lines)
+    return sgeom.MultiLineString(lines)
 
 
 def _create_polygon(shape):
     if not shape.points:
-        return MultiPolygon()
+        return sgeom.MultiPolygon()
 
     # Partition the shapefile rings into outer rings/polygons (clockwise) and
     # inner rings/holes (anti-clockwise).
@@ -84,7 +84,7 @@ def _create_polygon(shape):
     outer_polygons_and_holes = []
     inner_polygons = []
     for lower, upper in bounds:
-        polygon = Polygon(shape.points[slice(lower, upper)])
+        polygon = sgeom.Polygon(shape.points[slice(lower, upper)])
         if polygon.exterior.is_ccw:
             inner_polygons.append(polygon)
         else:
@@ -100,7 +100,7 @@ def _create_polygon(shape):
 
     polygon_defns = [(outer_polygon.exterior.coords, holes)
                      for outer_polygon, holes in outer_polygons_and_holes]
-    return MultiPolygon(polygon_defns)
+    return sgeom.MultiPolygon(polygon_defns)
 
 
 def _make_geometry(geometry_factory, shape):

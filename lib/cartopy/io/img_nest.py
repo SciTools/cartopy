@@ -24,7 +24,7 @@ import os.path
 
 import numpy as np
 from PIL import Image
-from shapely.geometry import box
+import shapely.geometry as sgeom
 from six.moves import zip
 
 
@@ -88,7 +88,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         """
         if self._bbox is None:
             x0, x1, y0, y1 = self.extent
-            self._bbox = box(x0, y0, x1, y1)
+            self._bbox = sgeom.box(x0, y0, x1, y1)
         return self._bbox
 
     @staticmethod

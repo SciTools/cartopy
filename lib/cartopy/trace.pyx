@@ -30,9 +30,7 @@ cdef extern from "geos_c.h":
 from cartopy._crs cimport CRS
 
 
-from shapely.geometry.base import BaseGeometry
-from shapely.geometry import MultiLineString
-from shapely.geometry.base import geom_factory
+import shapely.geometry as sgeom
 from shapely.geos import lgeos
 
 
@@ -77,8 +75,8 @@ cdef shapely_from_geos(GEOSGeometry *geom):
     # This is the "correct" way to do it...
     #   return geom_factory(<ptr>geom)
     # ... but it's quite slow, so we do it by hand.
-    multi_line_string = BaseGeometry()
-    multi_line_string.__class__ = MultiLineString
+    multi_line_string = sgeom.base.BaseGeometry()
+    multi_line_string.__class__ = sgeom.MultiLineString
     multi_line_string.__geom__ = <ptr>geom
     multi_line_string.__parent__ = None
     multi_line_string._ndim = 2
