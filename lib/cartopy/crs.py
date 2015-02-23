@@ -436,12 +436,15 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                 sys.stdout.flush()
                 print()
                 print('Processing: %s, %s' % (i, current_ls))
+
             # We only want to consider boundary-points, the starts-and-ends of
             # all other line-strings, or the start-point of the current
             # line-string.
-            filter_fn = lambda t: (t.kind or
-                                   t.data[0] != i or
-                                   t.data[1] != 'last')
+            def filter_fn(t):
+                return (t.kind or
+                        t.data[0] != i or
+                        t.data[1] != 'last')
+
             edge_things = list(filter(filter_fn, edge_things))
 
             added_linestring = set()

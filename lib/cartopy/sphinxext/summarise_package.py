@@ -62,8 +62,10 @@ def walk_module(mod_name, exclude_folders=None):
         files.sort()
         folders.sort()
 
-        is_py_src = lambda fname: fname.endswith(
-            '.py') or fname.endswith('.so')
+        def is_py_src(fname):
+            root, ext = os.path.splitext(fname)
+            return ext in ('.py', '.so')
+
         files = list(filter(is_py_src, files))
 
         for fname in files:
@@ -106,8 +108,8 @@ def objects_to_document(module_name):
                           if not inspect.ismodule(getattr(module, obj)) and
                           not obj.startswith('_')]
 
-        is_from_this_module = lambda x: (
-            getattr(x[1], '__module__', '') == module_name)
+        def is_from_this_module(x):
+            return getattr(x[1], '__module__', '') == module_name
 
         document_these = list(filter(is_from_this_module, document_these))
         document_these = sorted(document_these,
