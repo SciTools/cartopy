@@ -653,7 +653,7 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
     t = np.linspace(0, 2 * np.pi, n)
     coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
     coords += ([easting], [northing])
-    return coords
+    return coords[:, ::-1]
 
 
 class PlateCarree(_CylindricalProjection):
@@ -1072,6 +1072,9 @@ class LambertConformal(Projection):
 
         points = self.transform_points(PlateCarree(),
                                        np.array(lons), np.array(lats))
+        if plat == 90:
+            # Ensure clockwise
+            points = points[::-1, :]
 
         self._boundary = sgeom.LineString(points)
         bounds = self._boundary.bounds
@@ -1220,8 +1223,7 @@ class Stereographic(Projection):
         else:
             coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
                                        false_easting, false_northing, 91)
-            coords = tuple(tuple(pair) for pair in coords.T)
-            self._boundary = sgeom.polygon.LinearRing(coords)
+            self._boundary = sgeom.polygon.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1506,8 +1508,7 @@ class Geostationary(Projection):
 
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
-        coords = tuple(tuple(pair) for pair in coords.T)
-        self._boundary = sgeom.polygon.LinearRing(coords)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
         self._xlim = self._boundary.bounds[::2]
         self._ylim = self._boundary.bounds[1::2]
         self._threshold = np.diff(self._xlim)[0] * 0.02
@@ -1586,7 +1587,7 @@ class AlbersEqualArea(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LineString(points[::-1])
+        self._boundary = sgeom.LineString(points)
         bounds = self._boundary.bounds
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]
@@ -1645,9 +1646,7 @@ class AzimuthalEquidistant(Projection):
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)
-        coords = tuple(tuple(pair) for pair in coords.T)
-
-        self._boundary = sgeom.polygon.LinearRing(coords)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
         bounds = self._boundary.bounds
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]
