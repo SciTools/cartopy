@@ -30,20 +30,20 @@ from distutils.sysconfig import get_config_var
 from distutils.util import convert_path
 import fnmatch
 import os
+import subprocess
 import sys
+import warnings
 
 from Cython.Distutils import build_ext
 import numpy as np
 
 
-if sys.platform.startswith('win'):
-    def get_config_var(name):
-        return '.'
-    geos = 'geos'
-    extra_extension_args = {}
-else:
-    geos = 'geos_c'
-    extra_extension_args = dict(runtime_library_dirs=[get_config_var('LIBDIR')])
+PY3 = (sys.version_info[0] == 3)
+
+# Please keep in sync with INSTALL file.
+GEOS_MIN_VERSION = (3, 3, 3)
+
+HERE = os.path.dirname(__file__)
 
 
 def file_walk_relative(top, remove=''):
@@ -143,10 +143,64 @@ class HeaderCheck(Command):
                 bad = target not in line
         return bad
 
-here = os.path.dirname(__file__)
-with open(os.path.join(here, 'README.rst'), 'r') as fh:
+
+# Dependency checks
+# =================
+
+# GEOS
+try:
+    geos_version = subprocess.check_output(['geos-config', '--version'])
+    geos_version = tuple(int(v) for v in geos_version.split(b'.'))
+    geos_includes = subprocess.check_output(['geos-config', '--includes'])
+    geos_clibs = subprocess.check_output(['geos-config', '--clibs'])
+except (OSError, ValueError, subprocess.CalledProcessError):
+    warnings.warn(
+        'Unable to determine GEOS version. Ensure you have %s or later '
+        'installed, or installation may fail.' % (
+            '.'.join(str(v) for v in GEOS_MIN_VERSION), ))
+
+    geos_includes = []
+    geos_library_dirs = []
+    if sys.platform.startswith('win'):
+        geos_libraries = ['geos']
+    else:
+        geos_libraries = ['geos_c']
+else:
+    if geos_version < GEOS_MIN_VERSION:
+        print('GEOS version %s is installed, but cartopy requires at least '
+              'version %s.' % ('.'.join(str(v) for v in geos_version),
+                               '.'.join(str(v) for v in GEOS_MIN_VERSION)))
+        exit(1)
+
+    if PY3:
+        geos_includes = geos_includes.decode()
+        geos_clibs = geos_clibs.decode()
+
+    geos_includes = geos_includes.split()
+    geos_libraries = []
+    geos_library_dirs = []
+    for entry in geos_clibs.split():
+        if entry.startswith('-L'):
+            geos_library_dirs.append(entry[2:])
+        elif entry.startswith('-l'):
+            geos_libraries.append(entry[2:])
+
+if sys.platform.startswith('win'):
+    def get_config_var(name):
+        return '.'
+    extra_extension_args = {}
+else:
+    extra_extension_args = dict(
+        runtime_library_dirs=[get_config_var('LIBDIR')])
+
+# Description
+# ===========
+
+with open(os.path.join(HERE, 'README.rst'), 'r') as fh:
     description = ''.join(fh.readlines())
 
+# Main setup
+# ==========
 setup(
     name='Cartopy',
     version='0.12.x',
@@ -179,9 +233,9 @@ setup(
     # requires proj4 headers
     ext_modules=[
         Extension('cartopy.trace', ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
-                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy'],
-                  libraries=[geos, 'proj'],
-                  library_dirs=[get_config_var('LIBDIR')],
+                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy'] + geos_includes,
+                  libraries=['proj'] + geos_libraries,
+                  library_dirs=[get_config_var('LIBDIR')] + geos_library_dirs,
                   language='c++',
                   **extra_extension_args
                   ),
