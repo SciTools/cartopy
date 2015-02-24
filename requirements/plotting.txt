@@ -1,0 +1,4 @@
+matplotlib>=1.3.0
+GDAL>=1.10.0
+pillow>=1.7.8
+scipy>=0.10

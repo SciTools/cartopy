@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2012, Met Office
+# (C) British Crown Copyright 2011 - 2015, Met Office
 #
 # This file is part of cartopy.
 #
@@ -252,6 +252,22 @@ else:
             elif entry.startswith('-l'):
                 proj_libraries.append(entry[2:])
 
+# Python dependencies
+extras_require = {}
+for name in os.listdir(os.path.join(HERE, 'requirements')):
+    with open(os.path.join(HERE, 'requirements', name), 'r') as fh:
+        section, ext = os.path.splitext(name)
+        extras_require[section] = []
+        for line in fh:
+            if line.startswith('#'):
+                pass
+            elif line.startswith('-'):
+                pass
+            else:
+                extras_require[section].append(line.strip())
+install_requires = extras_require.pop('default')
+tests_require = extras_require.pop('tests', [])
+
 # General extension paths
 if sys.platform.startswith('win'):
     def get_config_var(name):
@@ -282,6 +298,10 @@ setup(
     long_description=description,
     license = "LGPLv3",
     keywords = "cartography map transform projection proj.4 geos shapely shapefile",
+
+    install_requires=install_requires,
+    extras_require=extras_require,
+    tests_require=tests_require,
 
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},
