@@ -194,14 +194,18 @@ else:
         elif entry.startswith('-l'):
             geos_libraries.append(entry[2:])
 
+
 # Proj4
-conda = os.getenv('CONDA_DEFAULT_ENV')
-if conda is not None and conda in sys.prefix:
-    # Conda does not provide pkg-config compatibility, but the search paths
-    # should be set up so that nothing extra is required. We'll still check
-    # the version, though.
+def find_proj_version_by_program(conda=None):
     proj = find_executable('proj')
-    if proj is None or conda not in proj:
+    if proj is None:
+        print(
+            'Proj4 %s must be installed.' % (
+                '.'.join(str(v) for v in PROJ_MIN_VERSION), ),
+            file=sys.stderr)
+        exit(1)
+
+    if conda is not None and conda not in proj:
         print(
             'Proj4 %s must be installed in Conda environment "%s".' % (
                 '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
@@ -218,6 +222,17 @@ if conda is not None and conda in sys.prefix:
             'Unable to determine Proj4 version. Ensure you have %s or later '
             'installed, or installation may fail.' % (
                 '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
+        proj_version = (0, 0, 0)
+
+    return proj_version
+
+
+conda = os.getenv('CONDA_DEFAULT_ENV')
+if conda is not None and conda in sys.prefix:
+    # Conda does not provide pkg-config compatibility, but the search paths
+    # should be set up so that nothing extra is required. We'll still check
+    # the version, though.
+    proj_version = find_proj_version_by_program(conda)
 
     proj_includes = []
     proj_libraries = ['proj']
@@ -226,16 +241,21 @@ if conda is not None and conda in sys.prefix:
 else:
     try:
         proj_version = subprocess.check_output(['pkg-config', '--modversion',
-                                                'proj'])
+                                                'proj'],
+                                               stderr=subprocess.STDOUT)
         proj_version = tuple(int(v) for v in proj_version.split(b'.'))
         proj_includes = subprocess.check_output(['pkg-config', '--cflags',
                                                  'proj'])
         proj_clibs = subprocess.check_output(['pkg-config', '--libs', 'proj'])
     except (OSError, ValueError, subprocess.CalledProcessError):
-        warnings.warn(
-            'Unable to determine Proj4 version. Ensure you have %s or later '
-            'installed, or installation may fail.' % (
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
+        proj_version = find_proj_version_by_program()
+        if proj_version < PROJ_MIN_VERSION:
+            print(
+                'Proj4 version %s is installed, but cartopy requires at least '
+                'version %s.' % ('.'.join(str(v) for v in proj_version),
+                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)),
+                file=sys.stderr)
+            exit(1)
 
         proj_includes = []
         proj_libraries = ['proj']
