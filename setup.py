@@ -42,6 +42,7 @@ PY3 = (sys.version_info[0] == 3)
 
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 3, 3)
+PROJ_MIN_VERSION = (4, 8, 0)
 
 HERE = os.path.dirname(__file__)
 
@@ -185,9 +186,49 @@ else:
         elif entry.startswith('-l'):
             geos_libraries.append(entry[2:])
 
+# Proj4
+try:
+    proj_version = subprocess.check_output(['pkg-config', '--modversion',
+                                            'proj'])
+    proj_version = tuple(int(v) for v in proj_version.split(b'.'))
+    proj_includes = subprocess.check_output(['pkg-config', '--cflags', 'proj'])
+    proj_clibs = subprocess.check_output(['pkg-config', '--libs', 'proj'])
+except (OSError, ValueError, subprocess.CalledProcessError):
+    warnings.warn(
+        'Unable to determine Proj4 version. Ensure you have %s or later '
+        'installed, or installation may fail.' % (
+            '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
+
+    proj_includes = []
+    proj_libraries = ['proj']
+    proj_library_dirs = []
+else:
+    if proj_version < PROJ_MIN_VERSION:
+        print('Proj4 version %s is installed, but cartopy requires at least '
+              'version %s.' % ('.'.join(str(v) for v in proj_version),
+                               '.'.join(str(v) for v in PROJ_MIN_VERSION)))
+        exit(1)
+
+    if PY3:
+        proj_includes = proj_includes.decode()
+        proj_clibs = proj_clibs.decode()
+
+    proj_includes = proj_includes.split()
+    proj_libraries = []
+    proj_library_dirs = []
+    for entry in proj_clibs.split():
+        if entry.startswith('-L'):
+            proj_library_dirs.append(entry[2:])
+        elif entry.startswith('-l'):
+            proj_libraries.append(entry[2:])
+
+# General extension paths
 if sys.platform.startswith('win'):
     def get_config_var(name):
         return '.'
+include_dir = get_config_var('INCLUDEDIR')
+library_dir = get_config_var('LIBDIR')
+if sys.platform.startswith('win'):
     extra_extension_args = {}
 else:
     extra_extension_args = dict(
@@ -232,19 +273,24 @@ setup(
 
     # requires proj4 headers
     ext_modules=[
-        Extension('cartopy.trace', ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
-                  include_dirs=[get_config_var('INCLUDEDIR'), './lib/cartopy'] + geos_includes,
-                  libraries=['proj'] + geos_libraries,
-                  library_dirs=[get_config_var('LIBDIR')] + geos_library_dirs,
-                  language='c++',
-                  **extra_extension_args
-                  ),
-        Extension('cartopy._crs', ['lib/cartopy/_crs.pyx'],
-                  include_dirs=[get_config_var('INCLUDEDIR'), np.get_include()],
-                  libraries=['proj'],
-                  library_dirs=[get_config_var('LIBDIR')],
-                  **extra_extension_args
-                  ),
+        Extension(
+            'cartopy.trace',
+            ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
+            include_dirs=[include_dir,
+                          './lib/cartopy'] + proj_includes + geos_includes,
+            libraries=proj_libraries + geos_libraries,
+            library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
+            language='c++',
+            **extra_extension_args
+        ),
+        Extension(
+            'cartopy._crs',
+            ['lib/cartopy/_crs.pyx'],
+            include_dirs=[include_dir, np.get_include()] + proj_includes,
+            libraries=proj_libraries,
+            library_dirs=[library_dir] + proj_library_dirs,
+            **extra_extension_args
+        ),
     ],
 
     cmdclass={'build_ext': build_ext, 'header_check': HeaderCheck},
