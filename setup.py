@@ -26,6 +26,7 @@ try:
 except ImportError:
     from distutils.core import setup, Extension
 from distutils.core import Command
+from distutils.spawn import find_executable
 from distutils.sysconfig import get_config_var
 from distutils.util import convert_path
 import fnmatch
@@ -187,40 +188,69 @@ else:
             geos_libraries.append(entry[2:])
 
 # Proj4
-try:
-    proj_version = subprocess.check_output(['pkg-config', '--modversion',
-                                            'proj'])
-    proj_version = tuple(int(v) for v in proj_version.split(b'.'))
-    proj_includes = subprocess.check_output(['pkg-config', '--cflags', 'proj'])
-    proj_clibs = subprocess.check_output(['pkg-config', '--libs', 'proj'])
-except (OSError, ValueError, subprocess.CalledProcessError):
-    warnings.warn(
-        'Unable to determine Proj4 version. Ensure you have %s or later '
-        'installed, or installation may fail.' % (
-            '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
+conda = os.getenv('CONDA_DEFAULT_ENV')
+if conda is not None and conda in sys.prefix:
+    # Conda does not provide pkg-config compatibility, but the search paths
+    # should be set up so that nothing extra is required. We'll still check
+    # the version, though.
+    proj = find_executable('proj')
+    if proj is None or conda not in proj:
+        print('Proj4 %s must be installed in Conda environment "%s".' % (
+            '.'.join(str(v) for v in PROJ_MIN_VERSION), conda))
+        exit(1)
+
+    try:
+        proj_version = subprocess.check_output([proj],
+                                               stderr=subprocess.STDOUT)
+        proj_version = proj_version.split()[1].split(b'.')
+        proj_version = tuple(int(v.strip(b',')) for v in proj_version)
+    except (OSError, IndexError, ValueError, subprocess.CalledProcessError):
+        warnings.warn(
+            'Unable to determine Proj4 version. Ensure you have %s or later '
+            'installed, or installation may fail.' % (
+                '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
 
     proj_includes = []
     proj_libraries = ['proj']
     proj_library_dirs = []
+
 else:
-    if proj_version < PROJ_MIN_VERSION:
-        print('Proj4 version %s is installed, but cartopy requires at least '
-              'version %s.' % ('.'.join(str(v) for v in proj_version),
-                               '.'.join(str(v) for v in PROJ_MIN_VERSION)))
-        exit(1)
+    try:
+        proj_version = subprocess.check_output(['pkg-config', '--modversion',
+                                                'proj'])
+        proj_version = tuple(int(v) for v in proj_version.split(b'.'))
+        proj_includes = subprocess.check_output(['pkg-config', '--cflags',
+                                                 'proj'])
+        proj_clibs = subprocess.check_output(['pkg-config', '--libs', 'proj'])
+    except (OSError, ValueError, subprocess.CalledProcessError):
+        warnings.warn(
+            'Unable to determine Proj4 version. Ensure you have %s or later '
+            'installed, or installation may fail.' % (
+                '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
 
-    if PY3:
-        proj_includes = proj_includes.decode()
-        proj_clibs = proj_clibs.decode()
+        proj_includes = []
+        proj_libraries = ['proj']
+        proj_library_dirs = []
+    else:
+        if proj_version < PROJ_MIN_VERSION:
+            print(
+                'Proj4 version %s is installed, but cartopy requires at least '
+                'version %s.' % ('.'.join(str(v) for v in proj_version),
+                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)))
+            exit(1)
 
-    proj_includes = proj_includes.split()
-    proj_libraries = []
-    proj_library_dirs = []
-    for entry in proj_clibs.split():
-        if entry.startswith('-L'):
-            proj_library_dirs.append(entry[2:])
-        elif entry.startswith('-l'):
-            proj_libraries.append(entry[2:])
+        if PY3:
+            proj_includes = proj_includes.decode()
+            proj_clibs = proj_clibs.decode()
+
+        proj_includes = proj_includes.split()
+        proj_libraries = []
+        proj_library_dirs = []
+        for entry in proj_clibs.split():
+            if entry.startswith('-L'):
+                proj_library_dirs.append(entry[2:])
+            elif entry.startswith('-l'):
+                proj_libraries.append(entry[2:])
 
 # General extension paths
 if sys.platform.startswith('win'):
