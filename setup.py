@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
 
 """
 Distribution definition for Cartopy.
@@ -35,8 +35,14 @@ import subprocess
 import sys
 import warnings
 
-from Cython.Distutils import build_ext
-import numpy as np
+try:
+    from Cython.Distutils import build_ext
+except ImportError:
+    raise ImportError('Cython 0.15.1+ is required to install cartopy.')
+try:
+    import numpy as np
+except ImportError:
+    raise ImportError('NumPy 1.6+ is required to install cartopy.')
 
 
 PY3 = (sys.version_info[0] == 3)
@@ -171,7 +177,8 @@ else:
     if geos_version < GEOS_MIN_VERSION:
         print('GEOS version %s is installed, but cartopy requires at least '
               'version %s.' % ('.'.join(str(v) for v in geos_version),
-                               '.'.join(str(v) for v in GEOS_MIN_VERSION)))
+                               '.'.join(str(v) for v in GEOS_MIN_VERSION)),
+              file=sys.stderr)
         exit(1)
 
     if PY3:
@@ -195,8 +202,10 @@ if conda is not None and conda in sys.prefix:
     # the version, though.
     proj = find_executable('proj')
     if proj is None or conda not in proj:
-        print('Proj4 %s must be installed in Conda environment "%s".' % (
-            '.'.join(str(v) for v in PROJ_MIN_VERSION), conda))
+        print(
+            'Proj4 %s must be installed in Conda environment "%s".' % (
+                '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
+            file=sys.stderr)
         exit(1)
 
     try:
@@ -236,7 +245,8 @@ else:
             print(
                 'Proj4 version %s is installed, but cartopy requires at least '
                 'version %s.' % ('.'.join(str(v) for v in proj_version),
-                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)))
+                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)),
+                file=sys.stderr)
             exit(1)
 
         if PY3:
