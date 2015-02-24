@@ -303,7 +303,10 @@ class NestedImageCollection(object):
         self.crs = crs
         self._collections_by_name = {collection.name: collection
                                      for collection in collections}
-        sort_func = lambda c: np.max([image.bbox().area for image in c.images])
+
+        def sort_func(c):
+            return np.max([image.bbox().area for image in c.images])
+
         self._collections = sorted(collections, key=sort_func, reverse=True)
         self._ancestry = {}
         """

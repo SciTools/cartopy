@@ -194,6 +194,9 @@ class TestCodeFormat(unittest.TestCase):
         pep8style = pep8.StyleGuide(quiet=False)
         pep8style.options.exclude.extend(['trace.py', '_crs.py'])
 
+        # Ignore E402 module level import not at top of file
+        pep8style.options.ignore += ('E402', )
+
         # allow users to add their own exclude list
         extra_exclude_file = os.path.join(os.path.dirname(__file__),
                                           '.pep8_test_exclude.txt')
