@@ -213,7 +213,7 @@ def path_to_geos(path, force_ccw=False):
 
     # Convert each (external_geom, [internal_polygons]) pair into a
     # a shapely Polygon that encapsulates the internal polygons, if the
-    # external geom is a LineSting leave it alone.
+    # external geom is a LineString leave it alone.
     geom_collection = []
     for external_geom, internal_polys in collection:
         if internal_polys:
@@ -223,8 +223,9 @@ def path_to_geos(path, force_ccw=False):
             geom = external_geom
 
         # Correctly orientate the polygon (ccw)
-        if force_ccw and not geom.exterior.is_ccw:
-            geom = shapely.geometry.polygon.orient(geom)
+        if isinstance(geom, Polygon):
+            if force_ccw and not geom.exterior.is_ccw:
+                geom = shapely.geometry.polygon.orient(geom)
 
         geom_collection.append(geom)
 
