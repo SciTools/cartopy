@@ -31,12 +31,12 @@ def main():
     on_draw()
 
     # Generate a matplotlib path representing the character "C".
-    fp = FontProperties(family='Arial', weight='bold')
+    fp = FontProperties(family='Bitstream Vera Sans', weight='bold')
     logo_path = matplotlib.textpath.TextPath((-4.5e7, -3.7e7),
                                              'C', size=1, prop=fp)
 
     # Scale the letter up to an appropriate X and Y scale.
-    logo_path._vertices *= np.array([123500000, 103250000])
+    logo_path._vertices *= np.array([103250000, 103250000])
 
     # Add the path as a patch, drawing black outlines around the text.
     patch = matplotlib.patches.PathPatch(logo_path, facecolor='white',
