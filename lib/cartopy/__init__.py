@@ -17,7 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-__version__ = '0.12.x'
+__version__ = '0.13.dev0'
 __document_these__ = ['config']
 
 # Enable shapely performance enhancements
