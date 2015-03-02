@@ -25,6 +25,7 @@ import warnings
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.testing.compare as mcompare
+import matplotlib.tests as mtests
 import matplotlib._pylab_helpers as pyplot_helpers
 
 
@@ -198,6 +199,7 @@ class ImageTesting(object):
         def wrapped(*args, **kwargs):
             orig_backend = plt.get_backend()
             plt.switch_backend('agg')
+            mtests.setup()
 
             if pyplot_helpers.Gcf.figs:
                 warnings.warn('Figures existed before running the %s %s test.'
