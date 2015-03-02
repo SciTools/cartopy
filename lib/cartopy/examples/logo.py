@@ -15,11 +15,11 @@ def main():
     ax.gridlines()
 
     # generate a matplotlib path representing the word "cartopy"
-    fp = FontProperties(family='Arial', weight='bold')
+    fp = FontProperties(family='Bitstream Vera Sans', weight='bold')
     logo_path = matplotlib.textpath.TextPath((-175, -35), 'cartopy',
                                              size=1, prop=fp)
     # scale the letters up to sensible longitude and latitude sizes
-    logo_path._vertices *= np.array([95, 160])
+    logo_path._vertices *= np.array([80, 160])
 
     # add a background image
     im = ax.stock_img()
