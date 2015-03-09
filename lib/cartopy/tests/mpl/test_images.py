@@ -89,7 +89,7 @@ def test_web_tiles():
     ax.coastlines()
 
 
-@ImageTesting(['image_nest'], tolerance=17)
+@ImageTesting(['image_nest'], tolerance=1.5)
 def test_image_nest():
     nest_z0_z1 = ctest_nest.gen_nest()
 
@@ -127,7 +127,7 @@ def test_image_merge():
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
 
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.45)
+@ImageTesting(['imshow_natural_earth_ortho'])
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
@@ -151,13 +151,13 @@ def test_imshow_projected():
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
-@ImageTesting(['imshow_natural_earth_ortho'])
+@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.54)
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()
 
 
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.44)
+@ImageTesting(['imshow_natural_earth_ortho'])
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()

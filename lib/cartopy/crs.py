@@ -1272,7 +1272,9 @@ class Orthographic(Projection):
             warnings.warn('The proj4 "ortho" projection does not appear to '
                           'handle elliptical globes.')
 
-        coords = _ellipse_boundary(a, b, n=61)
+        # To stabilise the projection of geometries, we reduce the boundary by
+        # a tiny fraction at the cost of the extreme edges.
+        coords = _ellipse_boundary(a * 0.99999, b * 0.99999, n=61)
         self._boundary = sgeom.polygon.LinearRing(coords.T)
         self._xlim = self._boundary.bounds[::2]
         self._ylim = self._boundary.bounds[1::2]
