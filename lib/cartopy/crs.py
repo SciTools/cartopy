@@ -388,12 +388,13 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         edge_things.sort(key=lambda thing: (thing.distance, thing.kind))
         remaining_ls = dict(enumerate(line_strings))
 
+        # Look for any co-incident _BoundaryPoint objects and insert an edge
+        # point between them.
         prev_thing = None
         for edge_thing in edge_things[:]:
             if (prev_thing is not None and
                     not edge_thing.kind and
-                    not prev_thing.kind and
-                    edge_thing.data[0] == prev_thing.data[0]):
+                    not prev_thing.kind):
                 j = edge_thing.data[0]
                 # Insert a edge boundary point in between this geometry.
                 mid_dist = (edge_thing.distance + prev_thing.distance) * 0.5
