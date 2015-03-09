@@ -131,7 +131,9 @@ Deprecations
 * The :class:`cartopy.io.RasterSource.fetch_raster` interface has been
   changed such that a sequence of :class:`cartopy.io.LocatedImage` must be
   returned, rather than a single image and its associated extent.
-  
+
+* The ``secant_latitudes`` keyword in :class:`cartopy.crs.LambertConformal` has
+  been deprecated in favour of ``standard_parallels``.
 
 
 -----------
