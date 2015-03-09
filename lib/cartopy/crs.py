@@ -1263,23 +1263,36 @@ class Orthographic(Projection):
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
         super(Orthographic, self).__init__(proj4_params, globe=globe)
-        self._max = 6.4e6
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        b = np.float(self.globe.semiminor_axis or a)
+
+        if b != a:
+            warnings.warn('The proj4 "ortho" projection does not appear to '
+                          'handle elliptical globes.')
+
+        coords = _ellipse_boundary(a, b, n=61)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
+        self._xlim = self._boundary.bounds[::2]
+        self._ylim = self._boundary.bounds[1::2]
+        self._threshold = np.diff(self._xlim)[0] * 0.02
 
     @property
     def boundary(self):
-        return sgeom.Point(0, 0).buffer(self._max).exterior
+        return self._boundary
 
     @property
     def threshold(self):
-        return 1e5
+        return self._threshold
 
     @property
     def x_limits(self):
-        return (-self._max, self._max)
+        return self._xlim
 
     @property
     def y_limits(self):
-        return (-self._max, self._max)
+        return self._ylim
 
 
 class _WarpedRectangularProjection(Projection):
