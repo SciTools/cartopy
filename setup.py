@@ -320,7 +320,7 @@ with open(os.path.join(HERE, 'README.rst'), 'r') as fh:
 # ==========
 setup(
     name='Cartopy',
-    version='0.12.x',
+    version='0.12.0rc1',
     url='http://scitools.org.uk/cartopy/docs/latest/',
     download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',
