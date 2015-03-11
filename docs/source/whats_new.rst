@@ -18,6 +18,9 @@ Features
 
      conda install -c scitools cartopy
 
+* Support for Python 3, specifically 3.3 and 3.4, has been added. Some features that depend
+  on OWSLib will not be available as it does not support Python 3.
+
 * Two new projections, :class:`~cartopy.crs.AzimuthalEquidistant` and
   :class:`~cartopy.crs.AlbersEqualArea` have been added. See the :ref:`cartopy_projections`
   for the full list of projections now available in cartopy.
@@ -128,7 +131,9 @@ Deprecations
 * The :class:`cartopy.io.RasterSource.fetch_raster` interface has been
   changed such that a sequence of :class:`cartopy.io.LocatedImage` must be
   returned, rather than a single image and its associated extent.
-  
+
+* The ``secant_latitudes`` keyword in :class:`cartopy.crs.LambertConformal` has
+  been deprecated in favour of ``standard_parallels``.
 
 
 -----------

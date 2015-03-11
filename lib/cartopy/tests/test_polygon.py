@@ -192,8 +192,8 @@ class TestMisc(unittest.TestCase):
         area = projected.area
         # Before fixing, this geometry used to fill the whole disk. Approx
         # 1.2e14.
-        self.assertTrue(2.4e9 < area < 2.5e9,
-                        msg='Got area {}, expecting ~2.4e9'.format(area))
+        self.assertTrue(81330 < area < 81340,
+                        msg='Got area {}, expecting ~81336'.format(area))
 
 
 class TestQuality(unittest.TestCase):

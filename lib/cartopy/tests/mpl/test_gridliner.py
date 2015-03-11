@@ -20,10 +20,13 @@ from __future__ import (absolute_import, division, print_function)
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import mock
 from nose.tools import assert_raises
+import numpy as np
 
 import cartopy.crs as ccrs
 from cartopy.tests.mpl import ImageTesting
+from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
 
@@ -83,6 +86,17 @@ def test_gridliner():
     delta = 1.5e-2
     plt.subplots_adjust(left=0 + delta, right=1 - delta,
                         top=1 - delta, bottom=0 + delta)
+
+
+def test_gridliner_specified_lines():
+    xs = [0, 60, 120, 180, 240, 360]
+    ys = [-90, -60, -30, 0, 30, 60, 90]
+    ax = mock.Mock(_gridliners=[], spec=GeoAxes)
+    gl = GeoAxes.gridlines(ax, xlocs=xs, ylocs=ys)
+    assert isinstance(gl.xlocator, mticker.FixedLocator)
+    assert isinstance(gl.ylocator, mticker.FixedLocator)
+    assert gl.xlocator.tick_values(None, None).tolist() == xs
+    assert gl.ylocator.tick_values(None, None).tolist() == ys
 
 
 # The tolerance on this test is particularly high because of the high number

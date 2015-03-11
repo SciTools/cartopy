@@ -656,7 +656,7 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
     t = np.linspace(0, 2 * np.pi, n)
     coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
     coords += ([easting], [northing])
-    return coords
+    return coords[:, ::-1]
 
 
 class PlateCarree(_CylindricalProjection):
@@ -1025,7 +1025,8 @@ class LambertConformal(Projection):
 
     def __init__(self, central_longitude=-96.0, central_latitude=39.0,
                  false_easting=0.0, false_northing=0.0,
-                 secant_latitudes=(33, 45), globe=None, cutoff=-30):
+                 secant_latitudes=None, standard_parallels=None,
+                 globe=None, cutoff=-30):
         """
         Kwargs:
 
@@ -1035,8 +1036,8 @@ class LambertConformal(Projection):
                               Defaults to 0.
             * false_northing - Y offset from planar origin in metres.
                                Defaults to 0.
-            * secant_latitudes - The two latitudes of secant intersection.
-                                 Defaults to (33, 45).
+            * standard_parallels - Standard parallel latitude(s).
+                                   Defaults to (33, 45).
             * globe - A :class:`cartopy.crs.Globe`.
                       If omitted, a default globe is created.
             * cutoff - Latitude of map cutoff.
@@ -1050,19 +1051,45 @@ class LambertConformal(Projection):
                         ('lat_0', central_latitude),
                         ('x_0', false_easting),
                         ('y_0', false_northing)]
-        if secant_latitudes is not None:
-            proj4_params.append(('lat_1', secant_latitudes[0]))
-            proj4_params.append(('lat_2', secant_latitudes[1]))
+        if secant_latitudes and standard_parallels:
+            raise TypeError('standard_parallels replaces secant_latitudes.')
+        elif secant_latitudes is not None:
+            warnings.warn('secant_latitudes has been deprecated in v0.12. '
+                          'The standard_parallels keyword can be used as a '
+                          'direct replacement.')
+            standard_parallels = secant_latitudes
+        elif standard_parallels is None:
+            # The default. Put this as a keyword arg default once
+            # secant_latitudes is removed completely.
+            standard_parallels = (33, 45)
+
+        n_parallels = len(standard_parallels)
+
+        if not 1 <= n_parallels <= 2:
+            raise ValueError('1 or 2 standard parallels must be specified. '
+                             'Got {} ({})'.format(n_parallels,
+                                                  standard_parallels))
+
+        proj4_params.append(('lat_1', standard_parallels[0]))
+        if n_parallels == 2:
+            proj4_params.append(('lat_2', standard_parallels[1]))
+
         super(LambertConformal, self).__init__(proj4_params, globe=globe)
 
-        # are we north or south polar?
-        if abs(secant_latitudes[0]) > abs(secant_latitudes[1]):
-            poliest_sec = secant_latitudes[0]
+        # Compute whether this projection is at the "north pole" or the
+        # "south pole" (after the central lon/lat have been taken into
+        # account).
+        if n_parallels == 1:
+            plat = 90 if standard_parallels[0] > 0 else -90
         else:
-            poliest_sec = secant_latitudes[1]
-        plat = 90 if poliest_sec > 0 else -90
+            # Which pole are the parallels closest to? That is the direction
+            # that the cone converges.
+            if abs(standard_parallels[0]) > abs(standard_parallels[1]):
+                poliest_sec = standard_parallels[0]
+            else:
+                poliest_sec = standard_parallels[1]
+            plat = 90 if poliest_sec > 0 else -90
 
-        # bounds
         self.cutoff = cutoff
         n = 91
         lons = [0]
@@ -1075,6 +1102,9 @@ class LambertConformal(Projection):
 
         points = self.transform_points(PlateCarree(),
                                        np.array(lons), np.array(lats))
+        if plat == 90:
+            # Ensure clockwise
+            points = points[::-1, :]
 
         self._boundary = sgeom.LineString(points)
         bounds = self._boundary.bounds
@@ -1223,8 +1253,7 @@ class Stereographic(Projection):
         else:
             coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
                                        false_easting, false_northing, 91)
-            coords = tuple(tuple(pair) for pair in coords.T)
-            self._boundary = sgeom.polygon.LinearRing(coords)
+            self._boundary = sgeom.polygon.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1264,23 +1293,38 @@ class Orthographic(Projection):
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
         super(Orthographic, self).__init__(proj4_params, globe=globe)
-        self._max = 6.4e6
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        b = np.float(self.globe.semiminor_axis or a)
+
+        if b != a:
+            warnings.warn('The proj4 "ortho" projection does not appear to '
+                          'handle elliptical globes.')
+
+        # To stabilise the projection of geometries, we reduce the boundary by
+        # a tiny fraction at the cost of the extreme edges.
+        coords = _ellipse_boundary(a * 0.99999, b * 0.99999, n=61)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
+        self._xlim = self._boundary.bounds[::2]
+        self._ylim = self._boundary.bounds[1::2]
+        self._threshold = np.diff(self._xlim)[0] * 0.02
 
     @property
     def boundary(self):
-        return sgeom.Point(0, 0).buffer(self._max).exterior
+        return self._boundary
 
     @property
     def threshold(self):
-        return 1e5
+        return self._threshold
 
     @property
     def x_limits(self):
-        return (-self._max, self._max)
+        return self._xlim
 
     @property
     def y_limits(self):
-        return (-self._max, self._max)
+        return self._ylim
 
 
 class _WarpedRectangularProjection(Projection):
@@ -1509,8 +1553,7 @@ class Geostationary(Projection):
 
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
-        coords = tuple(tuple(pair) for pair in coords.T)
-        self._boundary = sgeom.polygon.LinearRing(coords)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
         self._xlim = self._boundary.bounds[::2]
         self._ylim = self._boundary.bounds[1::2]
         self._threshold = np.diff(self._xlim)[0] * 0.02
@@ -1589,7 +1632,7 @@ class AlbersEqualArea(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LineString(points[::-1])
+        self._boundary = sgeom.LineString(points)
         bounds = self._boundary.bounds
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]
@@ -1648,9 +1691,7 @@ class AzimuthalEquidistant(Projection):
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)
-        coords = tuple(tuple(pair) for pair in coords.T)
-
-        self._boundary = sgeom.polygon.LinearRing(coords)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
         bounds = self._boundary.bounds
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]

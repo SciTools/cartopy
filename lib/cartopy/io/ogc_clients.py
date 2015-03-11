@@ -232,8 +232,8 @@ class WMSRasterSource(RasterSource):
         return LocatedImage(wms_image, extent)
 
     def fetch_raster(self, projection, extent, target_resolution):
-        service = self.service
         min_x, max_x, min_y, max_y = extent
+        target_resolution = [int(np.ceil(val)) for val in target_resolution]
         wms_srs = self._native_srs(projection)
         if wms_srs is not None:
             wms_proj = projection

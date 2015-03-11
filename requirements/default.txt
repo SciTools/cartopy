@@ -1,0 +1,5 @@
+Cython>=0.15.1
+numpy>=1.6
+shapely>=1.2.14
+pyshp>=1.1.4
+six>=1.3.0

@@ -54,7 +54,8 @@ cdef extern from "_trace.h":
     GEOSGeometry *_project_line_string(GEOSContextHandle_t handle,
                                        GEOSGeometry *g_line_string,
                                        Interpolator *interpolator,
-                                       GEOSGeometry *g_domain, double handle)
+                                       GEOSGeometry *g_domain,
+                                       double threshold)
 
 # XXX What should go here?
 ctypedef long ptr

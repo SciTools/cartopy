@@ -120,6 +120,15 @@ class test_WMSRasterSource(unittest.TestCase):
         located_images = source.fetch_raster(crs, extent, RESOLUTION)
         self.assertEqual(len(located_images), 2)
 
+    def test_float_resolution(self):
+        # The resolution (in pixels) should be cast to ints.
+        source = ogc.WMSRasterSource(self.URI, self.layer)
+        extent = [-570000, 5100000, 870000, 3500000]
+        located_image, = source.fetch_raster(self.projection, extent,
+                                             [19.5, 39.1])
+        img = np.array(located_image.image)
+        self.assertEqual(img.shape, (40, 20, 4))
+
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 class test_WMTSRasterSource(unittest.TestCase):
