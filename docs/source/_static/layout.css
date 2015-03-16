@@ -1,5 +1,3 @@
-div.body p { width: 65em; padding-right: 45px; }
-
 .gallery-images img { border: none;}
 .gallery-images p { display: inline;}
 
@@ -8,9 +6,6 @@ div.body p { width: 65em; padding-right: 45px; }
 .highlight {background: none;}
 
 pre {max-width: 70em;}
-div.admonition {width: 65em;}
-div.admonition p {width: 60em;}
-div.admonition p.admonition-title {width: auto;}
 
 div.section dl, div.section ul { max-width: 80em;}
 
