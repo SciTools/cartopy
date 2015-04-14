@@ -2,7 +2,7 @@ What's new in cartopy 0.12
 ==========================
 
 :Release: 0.12.0
-:Date: 20 February 2015
+:Date: 14th April 2015
 
 Features
 --------
