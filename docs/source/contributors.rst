@@ -28,6 +28,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Lion Krischer
  * Nat Wilson
  * Elliott Sales de Andrade
+ * Laura Dreyer
 
 
 Thank you!

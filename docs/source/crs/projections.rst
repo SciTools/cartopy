@@ -298,7 +298,7 @@ Geostationary
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(2.99893683337, 3))
+    plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.Geostationary())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -316,6 +316,22 @@ Gnomonic
 
     plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.Gnomonic())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+LambertAzimuthalEqualArea
+-------------------------
+
+.. autoclass:: cartopy.crs.LambertAzimuthalEqualArea
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(3.00670336247, 3))
+    ax = plt.axes(projection=ccrs.LambertAzimuthalEqualArea())
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
