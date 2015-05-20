@@ -44,7 +44,7 @@ install:
       conda install owslib;
     fi
   - conda install pep8=1.5.7
-  - conda install proj4
+  - conda install proj4=4.8   # Until we've updated the tests for 4.9.
   - conda install pyshp
   - conda install shapely
   - conda install six
