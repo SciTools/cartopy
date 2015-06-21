@@ -585,13 +585,13 @@ class WFSGeometrySource(object):
                 default_urn = default_urn.pop()
                 default_srs = default_urn.id
 
-            if unicode(default_urn) not in _URN_TO_CRS:
+            if six.text_type(default_urn) not in _URN_TO_CRS:
                 raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
                                  'cartopy projection.'.format(default_urn))
 
             self._default_urn = default_urn
 
-        return _URN_TO_CRS[unicode(self._default_urn)]
+        return _URN_TO_CRS[six.text_type(self._default_urn)]
 
     def fetch_geometries(self, projection, extent):
         """
