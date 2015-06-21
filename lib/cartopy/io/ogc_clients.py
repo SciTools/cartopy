@@ -389,13 +389,10 @@ class WMTSRasterSource(RasterSource):
 
         # Find which tile matrix has the appropriate resolution.
         max_scale = max_pixel_span * meters_per_unit / METERS_PER_PIXEL
-        ok_tile_matrices = filter(lambda tm: tm.scaledenominator <= max_scale,
-                                  tile_matrices)
-        if ok_tile_matrices:
-            tile_matrix = ok_tile_matrices[0]
-        else:
-            tile_matrix = tile_matrices[-1]
-        return tile_matrix
+        for tm in tile_matrices:
+            if tm.scaledenominator <= max_scale:
+                return tm
+        return tile_matrices[-1]
 
     def _tile_span(self, tile_matrix, meters_per_unit):
         pixel_span = tile_matrix.scaledenominator * (
