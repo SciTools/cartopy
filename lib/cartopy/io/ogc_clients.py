@@ -170,7 +170,7 @@ class WMSRasterSource(RasterSource):
 
         """
         contents = self.service.contents
-        for proj, srs in _CRS_TO_OGC_SRS.iteritems():
+        for proj, srs in six.iteritems(_CRS_TO_OGC_SRS):
             missing = any(srs not in contents[layer].crsOptions for
                           layer in self.layers)
             if not missing:
@@ -629,7 +629,7 @@ class WFSGeometrySource(object):
                              'geometries are in multiple SRSs, when only one '
                              'was expected.')
         else:
-            srs, geoms = geoms_by_srs.items()[0]
+            srs, geoms = list(geoms_by_srs.items())[0]
             # Attempt to verify the SRS associated with the geometries (if any)
             # matches the specified projection.
             if srs is not None:
