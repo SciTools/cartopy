@@ -30,6 +30,8 @@ this way can be found at :ref:`examples-wmts`.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import collections
 import io
 import math
@@ -130,10 +132,10 @@ class WMSRasterSource(RasterSource):
         if WebMapService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, basestring):
+        if isinstance(service, six.string_types):
             service = WebMapService(service)
 
-        if isinstance(layers, basestring):
+        if isinstance(layers, six.string_types):
             layers = [layers]
 
         if getmap_extra_kwargs is None:
@@ -547,10 +549,10 @@ class WFSGeometrySource(object):
         if WebFeatureService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, basestring):
+        if isinstance(service, six.string_types):
             service = WebFeatureService(service)
 
-        if isinstance(features, basestring):
+        if isinstance(features, six.string_types):
             features = [features]
 
         if getfeature_extra_kwargs is None:
