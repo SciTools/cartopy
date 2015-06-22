@@ -61,6 +61,23 @@ def test_equality():
     assert_equal(hash(crs), hash(crs2))
 
 
+def test_central_longitude():
+    cl = 10.0
+    crs = ccrs.Mercator(central_longitude=cl)
+    proj4_str = ('+ellps=WGS84 +proj=merc +lon_0={} +k=1 '
+                 '+units=m +no_defs'.format(cl))
+    assert_equal(crs.proj4_init, proj4_str)
+
+    assert_almost_equal(crs.boundary.bounds,
+                        [-20037508, -15496570, 20037508, 18764656], decimal=0)
+
+
+def test_large_central_longitude():
+    crs = ccrs.Mercator(central_longitude=540.)
+    crs2 = ccrs.Mercator(central_longitude=180.)
+    assert_equal(crs, crs2)
+
+
 if __name__ == '__main__':
     import nose
     nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
