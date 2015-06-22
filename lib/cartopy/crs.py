@@ -954,7 +954,8 @@ class Mercator(Projection):
 
         # Calculate limits.
         limits = self.transform_points(Geodetic(),
-                                       np.array([-180., 180.]),
+                                       np.array([-180,
+                                                 180]) + central_longitude,
                                        np.array([min_latitude, max_latitude]))
         self._xlimits = tuple(limits[..., 0])
         self._ylimits = tuple(limits[..., 1])
