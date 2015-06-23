@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014, Met Office
+# (C) British Crown Copyright 2014 - 2015, Met Office
 #
 # This file is part of cartopy.
 #
@@ -29,6 +29,8 @@ this way can be found at :ref:`examples-wmts`.
 """
 
 from __future__ import (absolute_import, division, print_function)
+
+import six
 
 import collections
 import io
@@ -130,10 +132,10 @@ class WMSRasterSource(RasterSource):
         if WebMapService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, basestring):
+        if isinstance(service, six.string_types):
             service = WebMapService(service)
 
-        if isinstance(layers, basestring):
+        if isinstance(layers, six.string_types):
             layers = [layers]
 
         if getmap_extra_kwargs is None:
@@ -168,7 +170,7 @@ class WMSRasterSource(RasterSource):
 
         """
         contents = self.service.contents
-        for proj, srs in _CRS_TO_OGC_SRS.iteritems():
+        for proj, srs in six.iteritems(_CRS_TO_OGC_SRS):
             missing = any(srs not in contents[layer].crsOptions for
                           layer in self.layers)
             if not missing:
@@ -387,13 +389,10 @@ class WMTSRasterSource(RasterSource):
 
         # Find which tile matrix has the appropriate resolution.
         max_scale = max_pixel_span * meters_per_unit / METERS_PER_PIXEL
-        ok_tile_matrices = filter(lambda tm: tm.scaledenominator <= max_scale,
-                                  tile_matrices)
-        if ok_tile_matrices:
-            tile_matrix = ok_tile_matrices[0]
-        else:
-            tile_matrix = tile_matrices[-1]
-        return tile_matrix
+        for tm in tile_matrices:
+            if tm.scaledenominator <= max_scale:
+                return tm
+        return tile_matrices[-1]
 
     def _tile_span(self, tile_matrix, meters_per_unit):
         pixel_span = tile_matrix.scaledenominator * (
@@ -547,10 +546,10 @@ class WFSGeometrySource(object):
         if WebFeatureService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, basestring):
+        if isinstance(service, six.string_types):
             service = WebFeatureService(service)
 
-        if isinstance(features, basestring):
+        if isinstance(features, six.string_types):
             features = [features]
 
         if getfeature_extra_kwargs is None:
@@ -586,13 +585,13 @@ class WFSGeometrySource(object):
                 default_urn = default_urn.pop()
                 default_srs = default_urn.id
 
-            if unicode(default_urn) not in _URN_TO_CRS:
+            if six.text_type(default_urn) not in _URN_TO_CRS:
                 raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
                                  'cartopy projection.'.format(default_urn))
 
             self._default_urn = default_urn
 
-        return _URN_TO_CRS[unicode(self._default_urn)]
+        return _URN_TO_CRS[six.text_type(self._default_urn)]
 
     def fetch_geometries(self, projection, extent):
         """
@@ -630,7 +629,7 @@ class WFSGeometrySource(object):
                              'geometries are in multiple SRSs, when only one '
                              'was expected.')
         else:
-            srs, geoms = geoms_by_srs.items()[0]
+            srs, geoms = list(geoms_by_srs.items())[0]
             # Attempt to verify the SRS associated with the geometries (if any)
             # matches the specified projection.
             if srs is not None:
