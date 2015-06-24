@@ -326,8 +326,12 @@ cdef class CRS:
         npts = x.shape[0]
 
         result = np.empty([npts, 3], dtype=np.double)
-        result[:, 0] = x
-        result[:, 1] = y
+        if src_crs.is_geodetic():
+            result[:, 0] = np.deg2rad(x)
+            result[:, 1] = np.deg2rad(y)
+        else:
+            result[:, 0] = x
+            result[:, 1] = y
         # if a z has been given, put it in the result array which will be
         # transformed in-place
         if z is None:
@@ -335,15 +339,12 @@ cdef class CRS:
         else:
             result[:, 2] = z
 
-        if src_crs.is_geodetic():
-            result = np.deg2rad(result)
-
         # call proj.4. The result array is modified in place.
         status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
                               &result[0, 0], &result[0, 1], &result[0, 2])
 
         if self.is_geodetic():
-            result = np.rad2deg(result)
+            result[:, :2] = np.rad2deg(result[:, :2])
         #if status:
         #    raise Proj4Error()
 
