@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2014, Met Office
+# (C) British Crown Copyright 2011 - 2015, Met Office
 #
 # This file is part of cartopy.
 #
@@ -79,15 +79,6 @@ def test_polygon_interiors():
     collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
                                  transform=ccrs.Geodetic(), zorder=10)
     ax.add_collection(collection)
-
-
-def test_null_geometry():
-    pth = Path([[358.27203369, 3.56399965],
-                [358.27203369, 3.56399965],
-                [358.27203369, 3.56399965]])
-    geoms = cpatch.path_to_geos(pth)
-
-    assert len(geoms) == 0
 
 
 @ImageTesting(['contour_with_interiors'], tolerance=0.3)

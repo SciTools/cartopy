@@ -180,6 +180,7 @@ def path_to_geos(path, force_ccw=False):
 
     # Iterate through the vertices generating a list of
     # (external_geom, [internal_polygons]) tuples.
+    other_result_geoms = []
     collection = []
     for path_verts, path_codes in zip(verts_split, codes_split):
         if len(path_verts) == 0:
@@ -187,10 +188,13 @@ def path_to_geos(path, force_ccw=False):
 
         # XXX A path can be given which does not end with close poly, in that
         # situation, we have to guess?
-        # XXX Implement a point
-        if (path_verts.shape[0] > 2 and
+        verts_same_as_first = np.all(path_verts[0, :] == path_verts[1:, :],
+                                     axis=1)
+        if all(verts_same_as_first):
+            geom = Point(path_verts[0, :])
+        elif (path_verts.shape[0] > 2 and
                 (path_codes[-1] == Path.CLOSEPOLY or
-                 all(path_verts[0, :] == path_verts[-1, :]))):
+                 verts_same_as_first[-1])):
             if path_codes[-1] == Path.CLOSEPOLY:
                 geom = Polygon(path_verts[:-1, :])
             else:
@@ -200,7 +204,7 @@ def path_to_geos(path, force_ccw=False):
 
         # If geom is a Polygon and is contained within the last geom in
         # collection, add it to its list of internal polygons, otherwise
-        # simple append it as a  new external geom.
+        # simply append it as a new external geom.
         if geom.is_empty:
             pass
         elif (len(collection) > 0 and
@@ -208,6 +212,8 @@ def path_to_geos(path, force_ccw=False):
                 isinstance(geom, Polygon) and
                 collection[-1][0].contains(geom.exterior)):
             collection[-1][1].append(geom.exterior)
+        elif isinstance(geom, Point):
+            other_result_geoms.append(geom)
         else:
             collection.append((geom, []))
 
@@ -241,4 +247,4 @@ def path_to_geos(path, force_ccw=False):
                                   not isinstance(geom, Polygon))
     result = list(filter(not_zero_poly, geom_collection))
 
-    return result
+    return result + other_result_geoms
