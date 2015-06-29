@@ -21,18 +21,32 @@ import six
 import unittest
 
 from matplotlib.path import Path
+import shapely.geometry as sgeom
 
 import cartopy.mpl.patch as cpatch
 
 
 class Test_path_to_geos(unittest.TestCase):
-    def test_empty_polyong(self):
+    def test_empty_polyon(self):
         p = Path([[0, 0], [0, 0], [0, 0], [0, 0],
-                  [0, 0], [0, 0], [0, 0], [0, 0]],
+                  [1, 2], [1, 2], [1, 2], [1, 2]],
                  codes=[1, 2, 2, 79,
                         1, 2, 2, 79])
-        geom = cpatch.path_to_geos(p)
-        self.assertEqual(len(geom), 0)
+        geoms = cpatch.path_to_geos(p)
+        self.assertEqual(list(type(geom) for geom in geoms),
+                         [sgeom.Point, sgeom.Point])
+        self.assertEqual(len(geoms), 2)
+
+    def test_polygon_with_interior_and_singularity(self):
+        # A geometry with two interiors, one a single point.
+        p = Path([[0, -90], [200, -40], [200, 40], [0, 40], [0, -90],
+                  [126, 26], [126, 26], [126, 26], [126, 26], [126, 26],
+                  [114, 5], [103, 8], [126, 12], [126, 0], [114, 5]],
+                 codes=[1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2])
+        geoms = cpatch.path_to_geos(p)
+        self.assertEqual(list(type(geom) for geom in geoms),
+                         [sgeom.Polygon, sgeom.Point])
+        self.assertEqual(len(geoms[0].interiors), 1)
 
 
 if __name__ == '__main__':
