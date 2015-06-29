@@ -65,7 +65,7 @@ The recipes for these can be found at https://github.com/SciTools/conda-recipes-
     GEOS is an API of spatial predicates and functions for processing geometry
     written in C++.
 
-**shapely** 1.2.14 or later (https://github.com/Toblerity/Shapely)
+**shapely** 1.5.6 or later (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric
     objects.
 
