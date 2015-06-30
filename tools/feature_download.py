@@ -31,8 +31,7 @@ import argparse
 
 from cartopy import config
 from cartopy.feature import Feature, GSHHSFeature, NaturalEarthFeature
-from cartopy.crs import PlateCarree
-import matplotlib.pyplot as plt
+from cartopy.io import Downloader
 
 
 ALL_SCALES = ('110m', '50m', '10m')
@@ -61,7 +60,7 @@ FEATURE_DEFN_GROUPS = {
 
         ('cultural', 'urban_areas', ('50m', '10m')),
 
-        #('cultural', 'roads', '10m'), # ERROR in NE dataset?
+        ('cultural', 'roads', '10m'),
         ('cultural', 'roads_north_america', '10m'),
         ('cultural', 'railroads', '10m'),
         ('cultural', 'railroads_north_america', '10m'),
@@ -77,28 +76,41 @@ FEATURE_DEFN_GROUPS = {
 }
 
 
-def download_features(group_names, hold):
-    plt.ion()
-    ax = plt.axes(projection=PlateCarree())
-    ax.set_global()
+def download_features(group_names, dry_run=True):
     for group_name in group_names:
         feature_defns = FEATURE_DEFN_GROUPS[group_name]
         if isinstance(feature_defns, Feature):
-            features = [feature_defns]
+            feature = feature_defns
+            level = list(feature._levels)[0]
+            downloader = Downloader.from_config(('shapefiles', 'gshhs',
+                                                 feature._scale, level))
+            format_dict = {'config': config, 'scale': feature._scale,
+                           'level': level}
+            if dry_run:
+                print('URL: {}'.format(downloader.url(format_dict)))
+            else:
+                downloader.path(format_dict)
+                geoms = list(feature.geometries())
+                print('Feature {} length: {}'.format(feature, len(geoms)))
         else:
-            features = []
             for category, name, scales in feature_defns:
                 if not isinstance(scales, tuple):
                     scales = (scales,)
                 for scale in scales:
-                    features.append(NaturalEarthFeature(category, name, scale))
-        for feature in features:
-            ax.add_feature(feature)
-            plt.draw()
-
-    plt.ioff()
-    if hold:
-        plt.show()
+                    downloader = Downloader.from_config(('shapefiles',
+                                                         'natural_earth',
+                                                         scale, category,
+                                                         name))
+                    feature = NaturalEarthFeature(category, name, scale)
+                    format_dict = {'config': config, 'category': category,
+                                   'name': name, 'resolution': scale}
+                    if dry_run:
+                        print('URL: {}'.format(downloader.url(format_dict)))
+                    else:
+                        downloader.path(format_dict)
+                        geoms = list(feature.geometries())
+                        print('Feature {}, {}, {} length: {}'
+                              ''.format(category, name, scale, len(geoms)))
 
 
 if __name__ == '__main__':
@@ -107,11 +119,12 @@ if __name__ == '__main__':
                         choices=FEATURE_DEFN_GROUPS,
                         metavar='GROUP_NAME',
                         help='Feature group name: %(choices)s')
-    parser.add_argument('--hold', action='store_true',
-                        help='keep the matplotlib window open')
     parser.add_argument('--output', '-o',
                         help='save datasets in the specified directory '
                              '(default: user cache directory)')
+    parser.add_argument('--dry-run',
+                        help='just print the URLs to download',
+                        action='store_true')
     parser.add_argument('--ignore-repo-data', action='store_true',
                         help='ignore existing repo data when downloading')
     args = parser.parse_args()
@@ -121,4 +134,4 @@ if __name__ == '__main__':
         config['data_dir'] = args.output
     if args.ignore_repo_data:
         config['repo_data_dir'] = config['data_dir']
-    download_features(args.group_names, args.hold)
+    download_features(args.group_names, dry_run=args.dry_run)
