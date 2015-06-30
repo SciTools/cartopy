@@ -18,3 +18,8 @@ submitted back to the matplotlib project).
 .. class:: cartopy.mpl.geoaxes.GeoAxesSubplot
 
     See :class:`cartopy.mpl.geoaxes.GeoAxes`.
+
+
+.. autofunction:: cartopy.mpl.patch.path_to_geos
+
+.. autofunction:: cartopy.mpl.patch.geos_to_path
