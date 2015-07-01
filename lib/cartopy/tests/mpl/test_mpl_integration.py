@@ -21,6 +21,10 @@ import math
 import warnings
 
 from nose.tools import assert_equal
+try:
+    from nose.tools import assert_regex
+except ImportError:
+    from nose.tools import assert_regexp_matches as assert_regex
 import numpy as np
 import matplotlib.pyplot as plt
 import six
@@ -186,8 +190,9 @@ def test_cursor_values():
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2]), np.array([2363093.4])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'),
-                 six.b('1.606e+07, 2.363e+06 (22.095524N, 173.709136E)'))
+    assert_regex(r.encode('ascii', 'ignore'),
+                 six.b('1.606e\\+07, 2.363e\\+06 '
+                       '\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)'))
 
     plt.close()
 
