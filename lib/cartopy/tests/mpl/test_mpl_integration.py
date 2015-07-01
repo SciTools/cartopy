@@ -27,7 +27,11 @@ import six
 
 import cartopy.crs as ccrs
 
+from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
+
+
+_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.1
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -105,7 +109,7 @@ def test_global_scatter_wrap_no_transform():
     plt.scatter(x, y, c=data)
 
 
-@ImageTesting(['global_map'])
+@ImageTesting(['global_map'], tolerance=16 if _proj4_version < 4.9 else 0.1)
 def test_global_map():
     ax = plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
@@ -188,7 +192,7 @@ def test_cursor_values():
     plt.close()
 
 
-@ImageTesting(['natural_earth_interface'])
+@ImageTesting(['natural_earth_interface'], tolerance=_ROB_TOL)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 
@@ -256,7 +260,7 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global()  # make sure everything is visible
 
 
-@ImageTesting(['pcolormesh_global_wrap3'])
+@ImageTesting(['pcolormesh_global_wrap3'], tolerance=_ROB_TOL)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)

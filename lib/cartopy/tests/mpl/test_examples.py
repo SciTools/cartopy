@@ -20,7 +20,11 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 import matplotlib.pyplot as plt
 
+from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
+
+
+_ROB_TOL = 1.0 if _proj4_version < 4.9 else 0.1
 
 
 class ExampleImageTesting(ImageTesting):
@@ -41,7 +45,7 @@ class ExampleImageTesting(ImageTesting):
         return new_fn
 
 
-@ExampleImageTesting(['global_map'])
+@ExampleImageTesting(['global_map'], tolerance=_ROB_TOL)
 def test_global_map():
     import cartopy.examples.global_map as c
     c.main()
