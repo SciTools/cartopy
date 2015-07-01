@@ -33,17 +33,21 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 
 import cartopy.crs as ccrs
+from cartopy.tests import _proj4_version
 
 
 _NAN = float('nan')
 _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
+# Increase tolerance if using older proj.4 releases
+_TOL = -1 if _proj4_version < 4.9 else 7
+
 
 def test_transform_point():
     # this way has always worked
     result = _CRS_ROB.transform_point(35.0, 70.0, _CRS_PC)
-    assert_arr_almost_eq(result, (2376187.15910577, 7275318.94714286))
+    assert_arr_almost_eq(result, (2376187.27182751, 7275317.81573085), _TOL)
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_point(_NAN, 70.0, _CRS_PC)
@@ -60,14 +64,14 @@ def test_transform_points():
                                        np.array([35.0]),
                                        np.array([70.0]))
     assert_arr_almost_eq(result,
-                         [[2376187.15910577, 7275318.94714286, 0]])
+                         [[2376187.27182751, 7275317.81573085, 0]], _TOL)
 
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
                                        np.array([70.0]),
                                        np.array([0.0]))
     assert_arr_almost_eq(result,
-                         [[2376187.15910577, 7275318.94714286, 0]])
+                         [[2376187.27182751, 7275317.81573085, 0]], _TOL)
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_points(_CRS_PC,

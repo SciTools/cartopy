@@ -27,7 +27,11 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 import cartopy.mpl.patch as cpatch
 
+from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
+
+
+_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.3
 
 
 @ImageTesting(['poly_interiors'])
@@ -81,7 +85,7 @@ def test_polygon_interiors():
     ax.add_collection(collection)
 
 
-@ImageTesting(['contour_with_interiors'], tolerance=0.3)
+@ImageTesting(['contour_with_interiors'], tolerance=_ROB_TOL)
 def test_contour_interiors():
     # produces a polygon with multiple holes:
     nx, ny = 10, 10

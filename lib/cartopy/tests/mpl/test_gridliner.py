@@ -25,12 +25,17 @@ from nose.tools import assert_raises
 import numpy as np
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import ImageTesting
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
+from cartopy.tests import _proj4_version
+from cartopy.tests.mpl import ImageTesting
 
-@ImageTesting(['gridliner1'])
+
+_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.1
+
+
+@ImageTesting(['gridliner1'], tolerance=_ROB_TOL)
 def test_gridliner():
     ny, nx = 2, 4
 

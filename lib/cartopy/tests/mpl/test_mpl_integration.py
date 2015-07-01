@@ -21,13 +21,21 @@ import math
 import warnings
 
 from nose.tools import assert_equal
+try:
+    from nose.tools import assert_regex
+except ImportError:
+    from nose.tools import assert_regexp_matches as assert_regex
 import numpy as np
 import matplotlib.pyplot as plt
 import six
 
 import cartopy.crs as ccrs
 
+from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
+
+
+_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.1
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -105,7 +113,7 @@ def test_global_scatter_wrap_no_transform():
     plt.scatter(x, y, c=data)
 
 
-@ImageTesting(['global_map'])
+@ImageTesting(['global_map'], tolerance=16 if _proj4_version < 4.9 else 0.1)
 def test_global_map():
     ax = plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
@@ -182,13 +190,14 @@ def test_cursor_values():
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2]), np.array([2363093.4])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'),
-                 six.b('1.606e+07, 2.363e+06 (22.095524N, 173.709136E)'))
+    assert_regex(r.encode('ascii', 'ignore'),
+                 six.b('1.606e\\+07, 2.363e\\+06 '
+                       '\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)'))
 
     plt.close()
 
 
-@ImageTesting(['natural_earth_interface'])
+@ImageTesting(['natural_earth_interface'], tolerance=_ROB_TOL)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 
@@ -256,7 +265,7 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global()  # make sure everything is visible
 
 
-@ImageTesting(['pcolormesh_global_wrap3'])
+@ImageTesting(['pcolormesh_global_wrap3'], tolerance=_ROB_TOL)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
