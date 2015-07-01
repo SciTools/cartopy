@@ -1,3 +1,35 @@
+What's new in cartopy 0.13
+==========================
+
+:Release: 0.13.0
+:Date: 30th June 2015
+
+Features
+--------
+
+* Andrea Smith fixed the cartopy CRS class such that 3d transforms such as :class:`cartopy.crs.Geocentric`
+  now correctly apply deg2rad and rad2deg. (:pull:`625`)
+
+* Peter Killick fixed the cartopy.crs.Mercator projection for non-zero central longitudes. (:pull:`633`)
+
+* Conversion between matplotlib :class:`matplotlib.path.Path` and
+  :class:`shapely.geometry.Geometry <Shapely geometry>` using
+  :func:`cartopy.mpl.patch.path_to_geos` and :func:`cartopy.mpl.patch.geos_to_path` now
+  handles degenerate point paths.
+
+* Update of tools/feature_download.py to allow mass download of feature data rather than
+  on-demand downloading.
+
+* A new example was added to the gallery:
+
+  |image_eccentric_ellipse|_
+
+    .. |image_eccentric_ellipse| image:: examples/eccentric_ellipse_01_00.thumb.png
+
+    .. _image_eccentric_ellipse: examples/eccentric_ellipse.html
+
+
+
 What's new in cartopy 0.12
 ==========================
 
