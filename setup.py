@@ -21,10 +21,7 @@ Distribution definition for Cartopy.
 
 """
 
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+from setuptools import setup, Extension
 from distutils.core import Command
 from distutils.spawn import find_executable
 from distutils.sysconfig import get_config_var
@@ -347,9 +344,9 @@ setup(
                                                      remove='lib/cartopy/')) +\
                              list(file_walk_relative('lib/cartopy/data/shapefiles/gshhs',
                                                      remove='lib/cartopy/')) +\
-                             ['io/srtm.json']
+                             ['io/srtm.json'],
+                  '': ['requirements/*.txt'],
                  },
-
 
     # requires proj4 headers
     ext_modules=[
