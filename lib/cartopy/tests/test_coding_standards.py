@@ -58,7 +58,8 @@ LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 # Guess cartopy repo directory of cartopy - realpath is used to mitigate
 # against Python finding the cartopy package via a symlink.
 CARTOPY_DIR = os.path.realpath(os.path.dirname(cartopy.__file__))
-REPO_DIR = os.path.dirname(os.path.dirname(CARTOPY_DIR))
+REPO_DIR = os.getenv('CARTOPY_GIT_DIR',
+                     os.path.dirname(os.path.dirname(CARTOPY_DIR)))
 
 
 class TestLicenseHeaders(unittest.TestCase):
@@ -152,10 +153,10 @@ class TestLicenseHeaders(unittest.TestCase):
 
         try:
             last_change_by_fname = self.last_change_by_fname()
-        except ValueError:
+        except ValueError as e:
             # Caught the case where this is not a git repo.
             return self.skipTest('cartopy installation did not look like a '
-                                 'git repo.')
+                                 'git repo: ' + str(e))
 
         failed = False
         for fname, last_change in sorted(last_change_by_fname.items()):
