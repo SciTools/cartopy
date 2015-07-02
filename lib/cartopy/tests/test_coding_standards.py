@@ -136,7 +136,7 @@ class TestLicenseHeaders(unittest.TestCase):
         output = subprocess.check_output(['git', 'whatchanged',
                                           "--pretty=TIME:%ct"],
                                          cwd=REPO_DIR)
-        output = output.split('\n')
+        output = output.decode().split('\n')
         res = {}
         for fname, dt in TestLicenseHeaders.whatchanged_parse(output):
             if fname not in res or dt > res[fname]:
