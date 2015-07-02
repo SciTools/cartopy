@@ -67,7 +67,7 @@ install:
 script:
   - mkdir ../test_folder
   - cd ../test_folder
-  - nosetests cartopy --with-doctest -sv
+  - CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR nosetests cartopy --with-doctest -sv
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
