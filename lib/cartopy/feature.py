@@ -26,7 +26,7 @@ from abc import ABCMeta, abstractmethod
 import os.path
 
 import numpy as np
-import shapely.geometry
+import shapely.geometry as sgeom
 import six
 
 from cartopy.io.ogc_clients import WFSGeometrySource
@@ -112,8 +112,8 @@ class Feature(six.with_metaclass(ABCMeta)):
 
         """
         if extent is not None:
-            extent_geom = shapely.geometry.box(extent[0], extent[2],
-                                               extent[1], extent[3])
+            extent_geom = sgeom.box(extent[0], extent[2],
+                                    extent[1], extent[3])
             return (geom for geom in self.geometries() if
                     extent_geom.intersects(geom))
         else:
@@ -278,8 +278,8 @@ class GSHHSFeature(Feature):
             scale = self._scale[0]
 
         if extent is not None:
-            extent_geom = shapely.geometry.box(extent[0], extent[2],
-                                               extent[1], extent[3])
+            extent_geom = sgeom.box(extent[0], extent[2],
+                                    extent[1], extent[3])
         for level in self._levels:
             geoms = GSHHSFeature._geometries_cache.get((scale, level))
             if geoms is None:

@@ -20,7 +20,6 @@ from __future__ import (absolute_import, division, print_function)
 import unittest
 
 import shapely.geometry as sgeom
-from shapely.geometry.polygon import LinearRing
 import numpy as np
 
 import cartopy.crs as ccrs
@@ -30,7 +29,7 @@ class TestBoundary(unittest.TestCase):
     def test_cuts(self):
         # Check that fragments do not start or end with one of the
         # original ... ?
-        linear_ring = LinearRing([(-10, 30), (10, 60), (10, 50)])
+        linear_ring = sgeom.LinearRing([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.5)
         rings, multi_line_string = projection.project_geometry(linear_ring)
 
@@ -78,7 +77,7 @@ class TestBoundary(unittest.TestCase):
 
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords, expected_n_lines in rings:
-            linear_ring = LinearRing(coords)
+            linear_ring = sgeom.LinearRing(coords)
             rings, mlinestr = projection.project_geometry(linear_ring)
             if expected_n_lines == -1:
                 self.assertTrue(rings)
@@ -94,7 +93,7 @@ class TestMisc(unittest.TestCase):
         # What happens when a small (i.e. < threshold) feature crosses the
         # boundary?
         projection = ccrs.Mercator()
-        linear_ring = LinearRing([
+        linear_ring = sgeom.LinearRing([
             (-179.9173693847652942, -16.5017831356493616),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
@@ -119,7 +118,7 @@ class TestMisc(unittest.TestCase):
                   (0.000727869825138, -45.0),
                   (0.0, -45.000105851567454),
                   (0.0, -45.0)]
-        linear_ring = LinearRing(coords)
+        linear_ring = sgeom.LinearRing(coords)
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.PlateCarree(180.0)
         try:
@@ -149,13 +148,13 @@ class TestMisc(unittest.TestCase):
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(80)
 
-        linear_ring = LinearRing(coords)
+        linear_ring = sgeom.LinearRing(coords)
         rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
         self.assertEqual(len(mlinestr), 1)
         self.assertEqual(len(rings), 0)
 
         # Check the stitch works in either direction.
-        linear_ring = LinearRing(coords[::-1])
+        linear_ring = sgeom.LinearRing(coords[::-1])
         rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
         self.assertEqual(len(mlinestr), 1)
         self.assertEqual(len(rings), 0)
@@ -178,7 +177,7 @@ class TestMisc(unittest.TestCase):
              [183., -86.],
              [183., -78.],
              [177.5, -79.912]])
-        tring = LinearRing(exterior)
+        tring = sgeom.LinearRing(exterior)
 
         tcrs = ccrs.PlateCarree()
         scrs = ccrs.PlateCarree()

@@ -22,7 +22,6 @@ import unittest
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-from shapely.geometry import MultiPolygon, Polygon
 import six
 
 import cartopy.io.shapereader as shp

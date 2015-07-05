@@ -31,14 +31,7 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 import matplotlib.path
 from matplotlib.path import Path
-import shapely
-from shapely.geometry.collection import GeometryCollection
-from shapely.geometry.linestring import LineString
-from shapely.geometry.point import Point
-from shapely.geometry.polygon import Polygon
-from shapely.geometry.multilinestring import MultiLineString
-from shapely.geometry.multipoint import MultiPoint
-from shapely.geometry.multipolygon import MultiPolygon
+import shapely.geometry as sgeom
 
 
 def geos_to_path(shape):
@@ -69,9 +62,9 @@ def geos_to_path(shape):
             paths.extend(geos_to_path(shp))
         return paths
 
-    if isinstance(shape, (LineString, Point)):
+    if isinstance(shape, (sgeom.LineString, sgeom.Point)):
         return [Path(np.vstack(shape.xy).T)]
-    elif isinstance(shape, Polygon):
+    elif isinstance(shape, sgeom.Polygon):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
@@ -84,8 +77,8 @@ def geos_to_path(shape):
         codes = np.concatenate([poly_codes(shape.exterior)] +
                                [poly_codes(ring) for ring in shape.interiors])
         return [Path(vertices, codes)]
-    elif isinstance(shape, (MultiPolygon, GeometryCollection, MultiLineString,
-                            MultiPoint)):
+    elif isinstance(shape, (sgeom.MultiPolygon, sgeom.GeometryCollection,
+                            sgeom.MultiLineString, sgeom.MultiPoint)):
         paths = []
         for geom in shape.geoms:
             paths.extend(geos_to_path(geom))
@@ -191,16 +184,16 @@ def path_to_geos(path, force_ccw=False):
         verts_same_as_first = np.all(path_verts[0, :] == path_verts[1:, :],
                                      axis=1)
         if all(verts_same_as_first):
-            geom = Point(path_verts[0, :])
+            geom = sgeom.Point(path_verts[0, :])
         elif (path_verts.shape[0] > 2 and
                 (path_codes[-1] == Path.CLOSEPOLY or
                  verts_same_as_first[-1])):
             if path_codes[-1] == Path.CLOSEPOLY:
-                geom = Polygon(path_verts[:-1, :])
+                geom = sgeom.Polygon(path_verts[:-1, :])
             else:
-                geom = Polygon(path_verts)
+                geom = sgeom.Polygon(path_verts)
         else:
-            geom = LineString(path_verts)
+            geom = sgeom.LineString(path_verts)
 
         # If geom is a Polygon and is contained within the last geom in
         # collection, add it to its list of internal polygons, otherwise
@@ -208,11 +201,11 @@ def path_to_geos(path, force_ccw=False):
         if geom.is_empty:
             pass
         elif (len(collection) > 0 and
-                isinstance(collection[-1][0], Polygon) and
-                isinstance(geom, Polygon) and
+                isinstance(collection[-1][0], sgeom.Polygon) and
+                isinstance(geom, sgeom.Polygon) and
                 collection[-1][0].contains(geom.exterior)):
             collection[-1][1].append(geom.exterior)
-        elif isinstance(geom, Point):
+        elif isinstance(geom, sgeom.Point):
             other_result_geoms.append(geom)
         else:
             collection.append((geom, []))
@@ -224,28 +217,28 @@ def path_to_geos(path, force_ccw=False):
     for external_geom, internal_polys in collection:
         if internal_polys:
             # XXX worry about islands within lakes
-            geom = Polygon(external_geom.exterior, internal_polys)
+            geom = sgeom.Polygon(external_geom.exterior, internal_polys)
         else:
             geom = external_geom
 
         # Correctly orientate the polygon (ccw)
-        if isinstance(geom, Polygon):
+        if isinstance(geom, sgeom.Polygon):
             if force_ccw and not geom.exterior.is_ccw:
-                geom = shapely.geometry.polygon.orient(geom)
+                geom = sgeom.polygon.orient(geom)
 
         geom_collection.append(geom)
 
     # If the geom_collection only contains LineStrings combine them
     # into a single MultiLinestring.
-    if geom_collection and all(isinstance(geom, LineString) for
+    if geom_collection and all(isinstance(geom, sgeom.LineString) for
                                geom in geom_collection):
-        geom_collection = [MultiLineString(geom_collection)]
+        geom_collection = [sgeom.MultiLineString(geom_collection)]
 
     # Remove any zero area Polygons
     def not_zero_poly(geom):
-        return ((isinstance(geom, Polygon) and not geom._is_empty and
+        return ((isinstance(geom, sgeom.Polygon) and not geom._is_empty and
                  geom.area != 0) or
-                not isinstance(geom, Polygon))
+                not isinstance(geom, sgeom.Polygon))
 
     result = list(filter(not_zero_poly, geom_collection))
 

@@ -23,7 +23,7 @@ import types
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-import shapely.geometry
+import shapely.geometry as sgeom
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -44,11 +44,11 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 @ImageTesting(['web_tiles'], tolerance=0.5)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
-    target_domain = shapely.geometry.Polygon([[extent[0], extent[1]],
-                                              [extent[2], extent[1]],
-                                              [extent[2], extent[3]],
-                                              [extent[0], extent[3]],
-                                              [extent[0], extent[1]]])
+    target_domain = sgeom.Polygon([[extent[0], extent[1]],
+                                   [extent[2], extent[1]],
+                                   [extent[2], extent[3]],
+                                   [extent[0], extent[3]],
+                                   [extent[0], extent[1]]])
     map_prj = cimgt.GoogleTiles().crs
 
     ax = plt.subplot(3, 2, 1, projection=map_prj)

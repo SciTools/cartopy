@@ -41,7 +41,7 @@ from xml.etree import ElementTree
 
 import numpy as np
 from PIL import Image
-import shapely.geometry
+import shapely.geometry as sgeom
 
 try:
     from owslib.wms import WebMapService
@@ -249,7 +249,7 @@ class WMSRasterSource(RasterSource):
             # Calculate the bounding box(es) in WMS projection.
 
             # Start with the requested area.
-            target_box = shapely.geometry.box(min_x, min_y, max_x, max_y)
+            target_box = sgeom.box(min_x, min_y, max_x, max_y)
             # If the requested area (i.e. target_box) is bigger (or
             # nearly bigger) than the entire output projection domain
             # then we erode the request area to avoid re-projection
@@ -689,13 +689,13 @@ class WFSGeometrySource(object):
         geoms_by_srs = {}
         for srs, x, y in linear_rings_data:
             geoms_by_srs.setdefault(srs, []).append(
-                shapely.geometry.LinearRing(zip(x, y)))
+                sgeom.LinearRing(zip(x, y)))
         for srs, x, y in linestrings_data:
             geoms_by_srs.setdefault(srs, []).append(
-                shapely.geometry.LineString(zip(x, y)))
+                sgeom.LineString(zip(x, y)))
         for srs, x, y in points_data:
             geoms_by_srs.setdefault(srs, []).append(
-                shapely.geometry.Point(zip(x, y)))
+                sgeom.Point(zip(x, y)))
         return geoms_by_srs
 
     def _find_polygon_coords(self, node, find_str):

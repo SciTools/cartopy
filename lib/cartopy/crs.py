@@ -30,7 +30,6 @@ import warnings
 
 import numpy as np
 import shapely.geometry as sgeom
-from shapely.geometry.polygon import LinearRing
 from shapely.prepared import prep
 import six
 
@@ -252,7 +251,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             if len(line.coords) > 3 and np.allclose(line.coords[0],
                                                     line.coords[-1],
                                                     atol=threshold):
-                result_geometry = LinearRing(line.coords[:-1])
+                result_geometry = sgeom.LinearRing(line.coords[:-1])
                 rings.append(result_geometry)
             else:
                 line_strings.append(line)
@@ -510,7 +509,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         processed_ls = [linear_ring for linear_ring in processed_ls if
                         len(linear_ring.coords) > 2]
 
-        linear_rings = [LinearRing(line) for line in processed_ls]
+        linear_rings = [sgeom.LinearRing(line) for line in processed_ls]
 
         if debug:
             print('   DONE')
@@ -1254,7 +1253,7 @@ class Stereographic(Projection):
         else:
             coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
                                        false_easting, false_northing, 91)
-            self._boundary = sgeom.polygon.LinearRing(coords.T)
+            self._boundary = sgeom.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1554,7 +1553,7 @@ class Geostationary(Projection):
 
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
-        self._boundary = sgeom.polygon.LinearRing(coords.T)
+        self._boundary = sgeom.LinearRing(coords.T)
         self._xlim = self._boundary.bounds[::2]
         self._ylim = self._boundary.bounds[1::2]
         self._threshold = np.diff(self._xlim)[0] * 0.02
@@ -1692,7 +1691,7 @@ class AzimuthalEquidistant(Projection):
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)
-        self._boundary = sgeom.polygon.LinearRing(coords.T)
+        self._boundary = sgeom.LinearRing(coords.T)
         bounds = self._boundary.bounds
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]
