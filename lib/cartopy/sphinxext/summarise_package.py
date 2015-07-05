@@ -66,7 +66,7 @@ def walk_module(mod_name, exclude_folders=None):
             root, ext = os.path.splitext(fname)
             return ext in ('.py', '.so')
 
-        files = list(filter(is_py_src, files))
+        files = filter(is_py_src, files)
 
         for fname in files:
             sub_mod_name = mod_name
@@ -111,7 +111,7 @@ def objects_to_document(module_name):
         def is_from_this_module(x):
             return getattr(x[1], '__module__', '') == module_name
 
-        document_these = list(filter(is_from_this_module, document_these))
+        document_these = filter(is_from_this_module, document_these)
         document_these = sorted(document_these,
                                 key=lambda x: (type(x[1]),
                                                not x[0].isupper(),

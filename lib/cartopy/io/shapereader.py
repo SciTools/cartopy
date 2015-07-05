@@ -68,7 +68,7 @@ def _create_polyline(shape):
         return sgeom.MultiLineString()
 
     parts = list(shape.parts) + [None]
-    bounds = list(zip(parts[:-1], parts[1:]))
+    bounds = zip(parts[:-1], parts[1:])
     lines = [shape.points[slice(lower, upper)] for lower, upper in bounds]
     return sgeom.MultiLineString(lines)
 
@@ -80,7 +80,7 @@ def _create_polygon(shape):
     # Partition the shapefile rings into outer rings/polygons (clockwise) and
     # inner rings/holes (anti-clockwise).
     parts = list(shape.parts) + [None]
-    bounds = list(zip(parts[:-1], parts[1:]))
+    bounds = zip(parts[:-1], parts[1:])
     outer_polygons_and_holes = []
     inner_polygons = []
     for lower, upper in bounds:
