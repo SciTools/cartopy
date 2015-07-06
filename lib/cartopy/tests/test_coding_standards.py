@@ -58,7 +58,8 @@ LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
 # Guess cartopy repo directory of cartopy - realpath is used to mitigate
 # against Python finding the cartopy package via a symlink.
 CARTOPY_DIR = os.path.realpath(os.path.dirname(cartopy.__file__))
-REPO_DIR = os.path.dirname(os.path.dirname(CARTOPY_DIR))
+REPO_DIR = os.getenv('CARTOPY_GIT_DIR',
+                     os.path.dirname(os.path.dirname(CARTOPY_DIR)))
 
 
 class TestLicenseHeaders(unittest.TestCase):
@@ -89,31 +90,6 @@ class TestLicenseHeaders(unittest.TestCase):
         return (start_year, end_year)
 
     @staticmethod
-    def whatchanged_parse(whatchanged_output):
-        """
-        Returns a generator of tuples of data parsed from
-        "git whatchanged --pretty='TIME:%at". The tuples are of the form
-        ``(filename, last_commit_datetime)``
-
-        Sample input::
-
-            ['TIME:1366884020', '',
-             ':000000 100644 0000000... 5862ced... A\tlib/cartopy/cube.py']
-
-        """
-        dt = None
-        for line in whatchanged_output:
-            if not line.strip():
-                continue
-            elif line.startswith('TIME:'):
-                dt = datetime.fromtimestamp(int(line[5:]))
-            else:
-                # Non blank, non date, line -> must be the lines
-                # containing the file info.
-                fname = ' '.join(line.split('\t')[1:])
-                yield fname, dt
-
-    @staticmethod
     def last_change_by_fname():
         """
         Return a dictionary of all the files under git which maps to
@@ -132,14 +108,17 @@ class TestLicenseHeaders(unittest.TestCase):
 
         # Call "git whatchanged" to get the details of all the files and when
         # they were last changed.
-        output = subprocess.check_output(['git', 'whatchanged',
-                                          "--pretty=TIME:%ct"],
+        output = subprocess.check_output(['git', 'ls-tree', '-r',
+                                          '--name-only', 'HEAD'],
                                          cwd=REPO_DIR)
-        output = output.split('\n')
+        output = output.decode().split('\n')
         res = {}
-        for fname, dt in TestLicenseHeaders.whatchanged_parse(output):
-            if fname not in res or dt > res[fname]:
-                res[fname] = dt
+        for fname in output:
+            dt = subprocess.check_output(['git', 'log', '-1', '--pretty=%ct',
+                                          '--', fname],
+                                         cwd=REPO_DIR)
+            dt = datetime.fromtimestamp(int(dt))
+            res[fname] = dt
 
         return res
 
@@ -152,10 +131,10 @@ class TestLicenseHeaders(unittest.TestCase):
 
         try:
             last_change_by_fname = self.last_change_by_fname()
-        except ValueError:
+        except ValueError as e:
             # Caught the case where this is not a git repo.
             return self.skipTest('cartopy installation did not look like a '
-                                 'git repo.')
+                                 'git repo: ' + str(e))
 
         failed = False
         for fname, last_change in sorted(last_change_by_fname.items()):
