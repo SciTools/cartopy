@@ -40,7 +40,7 @@ def vesta_image():
         the ``img_proj`` coordinate system.
 
     """
-    url = ('http://www.nasa.gov/sites/default/files/pia17037.jpg')
+    url = 'http://www.nasa.gov/sites/default/files/pia17037.jpg'
     img_handle = BytesIO(urlopen(url).read())
     raw_image = Image.open(img_handle)
     # The image is extremely high-resolution, which takes a long time to
@@ -49,20 +49,20 @@ def vesta_image():
     smaller_image = raw_image.resize([raw_image.size[0] / 10,
                                       raw_image.size[1] / 10])
     img = np.asarray(smaller_image)
-    img_proj = ccrs.PlateCarree()
-    img_extent = (-180, 180, 90, -90)
-    return img, img_proj, img_extent
+    # We define the semimajor and semiminor axes, but must also tell the
+    # globe not to use the WGS84 ellipse, which is its default behaviour.
+    img_globe = ccrs.Globe(semimajor_axis=285000., semiminor_axis=229000.,
+                           ellipse=None)
+    img_proj = ccrs.PlateCarree(globe=img_globe)
+    img_extent = (-895353.906273091, 895353.906273091,
+                  447676.9531365455, -447676.9531365455)
+    return img, img_globe, img_proj, img_extent
 
 
 def main():
-    # We define the semimajor and semiminor axes, but must also tell the
-    # globe not to use the WGS84 ellipse, which is its default behaviour.
-    globe = ccrs.Globe(semimajor_axis=285000., semiminor_axis=229000.,
-                       ellipse=None)
+    img, globe, crs, extent = vesta_image()
     projection = ccrs.Geostationary(globe=globe)
     ax = plt.axes(projection=projection)
-    ax.set_global()
-    img, crs, extent = vesta_image()
     ax.imshow(img, transform=crs, extent=extent)
     plt.gcf().text(.075, .012,
                    "Image credit: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA/PSI",
