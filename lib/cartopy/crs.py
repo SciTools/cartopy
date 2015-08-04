@@ -40,6 +40,10 @@ import cartopy.trace
 __document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
 
 
+WGS84_SEMIMAJOR_AXIS = 6378137.0
+WGS84_SEMIMINOR_AXIS = 6356752.3142
+
+
 class RotatedGeodetic(CRS):
     """
     Defines a rotated latitude/longitude coordinate system with spherical
@@ -663,8 +667,9 @@ class PlateCarree(_CylindricalProjection):
         proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude)]
         if globe is None:
             globe = Globe(semimajor_axis=math.degrees(1))
-        x_max = math.radians(globe.semimajor_axis or 6378137.0) * 180
-        y_max = math.radians(globe.semimajor_axis or 6378137.0) * 90
+        a_rad = math.radians(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        x_max = a_rad * 180
+        y_max = a_rad * 90
         # Set the threshold around 0.5 if the x max is 180.
         self._threshold = x_max / 360.
         super(PlateCarree, self).__init__(proj4_params, x_max, y_max,
@@ -1000,8 +1005,8 @@ class Mercator(Projection):
 GOOGLE_MERCATOR = Mercator(min_latitude=-85.0511287798066,
                            max_latitude=85.0511287798066,
                            globe=Globe(ellipse=None,
-                                       semimajor_axis=6378137,
-                                       semiminor_axis=6378137,
+                                       semimajor_axis=WGS84_SEMIMAJOR_AXIS,
+                                       semiminor_axis=WGS84_SEMIMAJOR_AXIS,
                                        nadgrids='@null'))
 
 
@@ -1030,8 +1035,8 @@ class LambertConformal(Projection):
         """
         Kwargs:
 
-            * central_longitude - The central longitude. Defaults to 0.
-            * central_latitude - The central latitude. Defaults to 0.
+            * central_longitude - The central longitude. Defaults to -96.
+            * central_latitude - The central latitude. Defaults to 39.
             * false_easting - X offset from planar origin in metres.
                               Defaults to 0.
             * false_northing - Y offset from planar origin in metres.
@@ -1140,6 +1145,66 @@ class LambertConformal(Projection):
         return self._y_limits
 
 
+class LambertAzimuthalEqualArea(Projection):
+    """
+    A Lambert Azimuthal Equal-Area projection.
+
+    """
+
+    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 globe=None):
+        """
+        Kwargs:
+
+            * central_longitude - The central longitude. Defaults to 0.
+            * central_latitude - The central latitude. Defaults to 0.
+            * false_easting - X offset from planar origin in metres.
+                              Defaults to 0.
+            * false_northing - Y offset from planar origin in metres.
+                               Defaults to 0.
+            * globe - A :class:`cartopy.crs.Globe`.
+                      If omitted, a default globe is created.
+
+        """
+        proj4_params = [('proj', 'laea'),
+                        ('lon_0', central_longitude),
+                        ('lat_0', central_latitude),
+                        ('x_0', false_easting),
+                        ('y_0', false_northing)]
+
+        super(LambertAzimuthalEqualArea, self).__init__(proj4_params,
+                                                        globe=globe)
+
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(self.globe.semiminor_axis or WGS84_SEMIMINOR_AXIS)
+        lon, lat = central_longitude + 180, - central_latitude + 0.01
+        x, max_y = self.transform_point(lon, lat, PlateCarree())
+
+        coords = _ellipse_boundary(a * 1.9999, max_y - false_northing,
+                                   false_easting, false_northing, 61)
+        self._boundary = sgeom.polygon.LinearRing(coords.T)
+        self._x_limits = self._boundary.bounds[::2]
+        self._y_limits = self._boundary.bounds[1::2]
+        self._threshold = np.diff(self._x_limits)[0] * 1e-3
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
 class Miller(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
@@ -1235,14 +1300,14 @@ class Stereographic(Projection):
         super(Stereographic, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or 6378137.0)
-        b = np.float(self.globe.semiminor_axis or 6356752.3142)
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(self.globe.semiminor_axis or WGS84_SEMIMINOR_AXIS)
 
         # Note: The magic number has been picked to maintain consistent
         # behaviour with a wgs84 globe. There is no guarantee that the scaling
         # should even be linear.
-        x_axis_offset = 5e7 / 6378137.
-        y_axis_offset = 5e7 / 6356752.3142
+        x_axis_offset = 5e7 / WGS84_SEMIMAJOR_AXIS
+        y_axis_offset = 5e7 / WGS84_SEMIMINOR_AXIS
         self._x_limits = (-a * x_axis_offset + false_easting,
                           a * x_axis_offset + false_easting)
         self._y_limits = (-b * y_axis_offset + false_northing,
@@ -1295,7 +1360,7 @@ class Orthographic(Projection):
         super(Orthographic, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
         b = np.float(self.globe.semiminor_axis or a)
 
         if b != a:
@@ -1545,7 +1610,7 @@ class Geostationary(Projection):
         super(Geostationary, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
         b = np.float(self.globe.semiminor_axis or a)
         h = np.float(satellite_height)
         max_x = h * math.atan(a / (a + h))
@@ -1686,7 +1751,7 @@ class AzimuthalEquidistant(Projection):
         super(AzimuthalEquidistant, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or 6378137.0)
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
         b = np.float(self.globe.semiminor_axis or a)
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
