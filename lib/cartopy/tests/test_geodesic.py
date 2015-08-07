@@ -25,7 +25,6 @@ from nose.tools import assert_equal
 
 from cartopy import geodesic
 
-
 class TestGeodesic(unittest.TestCase):
     
     def test_dir(self):
