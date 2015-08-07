@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 """
 This module defines the core CRS class which can interface with Proj.4.
 The CRS class is the base-class for all projections defined in :mod:`cartopy.crs`.
@@ -39,7 +37,6 @@ cdef extern from "geodesic.h":
                      double*, double*, double*) nogil
     void geod_inverse(geodesic_t, double, double, double, double,
                       double*, double*, double*) nogil
-
 
 cdef class Geodesic:
     """
