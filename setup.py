@@ -375,8 +375,8 @@ setup(
 	Extension('cartopy.geodesic._geodesic', ['lib/cartopy/geodesic/_geodesic.pyx'],
             include_dirs=[get_config_var('INCLUDEDIR'), np.get_include()],
             libraries=['proj'],
-            library_dirs=[get_config_var('LIBDIR')                
-            **extra_extension_arg    
+            library_dirs=[get_config_var('LIBDIR')],                
+            **extra_extension_args    
         ),
     ],
 
