@@ -373,9 +373,9 @@ setup(
         ),
 	# Requires proj4 v4.9
 	Extension('cartopy.geodesic._geodesic', ['lib/cartopy/geodesic/_geodesic.pyx'],
-            include_dirs=[get_config_var('INCLUDEDIR'), np.get_include()],
-            libraries=['proj'],
-            library_dirs=[get_config_var('LIBDIR')],                
+            include_dirs=[include_dir, np.get_include()] + proj_includes,
+            libraries=proj_libraries,
+            library_dirs=[library_dir] + proj_library_dirs,              
             **extra_extension_args    
         ),
     ],
