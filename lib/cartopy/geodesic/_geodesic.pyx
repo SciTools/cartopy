@@ -1,7 +1,7 @@
 # (C) British Crown Copyright 2015, Met Office
 #
 # This file is part of cartopy.
-# 
+#
 # cartopy is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,9 @@ This module defines the core CRS class which can interface with Proj.4.
 The CRS class is the base-class for all projections defined in :mod:`cartopy.crs`.
 
 """
-from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
+from cpython.mem cimport PyMem_Malloc
+from cpython.mem cimport PyMem_Realloc
+from cpython.mem cimport PyMem_Free
 import numpy as np
 cimport numpy as np
 from cython.parallel cimport prange
@@ -93,13 +95,13 @@ cdef class Geodesic:
         """
 
         cdef int n_points, i
-        cdef double[:,:] pts
+        cdef double[:, :] pts
         cdef double[:] azims, dists
 
         # Create numpy arrays from inputs, and ensure correct shape. Note: 
         # reshape(-1) returns a 1D array from a 0 dimensional array as required 
         # for broadcasting.
-        pts = np.array(points, dtype = np.float64).reshape((-1,2))
+        pts = np.array(points, dtype = np.float64).reshape((-1, 2))
         azims = np.array(azimuths, dtype = np.float64).reshape(-1)
         dists = np.array(distances, dtype = np.float64).reshape(-1)
 
@@ -107,9 +109,9 @@ cdef class Geodesic:
 
         # Broadcast any length 1 arrays to the correct size.
         try:
-            tmp = np.zeros((n_points,2))
-            tmp[:,0] += pts[:,0]
-            tmp[:,1] += pts[:,1]
+            tmp = np.zeros((n_points, 2))
+            tmp[:, 0] += pts[:, 0]
+            tmp[:, 1] += pts[:, 1]
 
             pts = tmp
 
@@ -120,7 +122,7 @@ cdef class Geodesic:
         except ValueError:
             raise ValueError("Inputs must have common length n or length one.")
 
-        cdef double[:,:] return_pts = np.empty((n_points,3))
+        cdef double[:, :] return_pts = np.empty((n_points, 3))
         cdef double[:] lon, lat, azi
 
         lon = np.empty(n_points)
@@ -130,11 +132,11 @@ cdef class Geodesic:
         with nogil:
             for i in prange(n_points):
 
-                geod_direct(self.geod, pts[i,1], pts[i,0], azims[i], dists[i], 
+                geod_direct(self.geod, pts[i, 1], pts[i, 0], azims[i], dists[i], 
                             &lat[i], &lon[i], &azi[i])
-                return_pts[i,0] = lon[i]
-                return_pts[i,1] = lat[i]
-                return_pts[i,2] = azi[i]
+                return_pts[i, 0] = lon[i]
+                return_pts[i, 1] = lat[i]
+                return_pts[i, 2] = azi[i]
 
         return np.array(return_pts)
 
@@ -163,34 +165,34 @@ cdef class Geodesic:
         """        
 
         cdef int n_points, i
-        cdef double[:,:] pts, epts
+        cdef double[:, :] pts, epts
 
         # Create numpy arrays from inputs, and ensure correct shape. Note: 
         # reshape(-1) returns a 1D array from a 0 dimensional array as required 
         # for broadcasting.        
-        pts = np.array(points, dtype = np.float64).reshape((-1,2))
-        epts =  np.array(endpoints, dtype = np.float64).reshape((-1,2))
+        pts = np.array(points, dtype = np.float64).reshape((-1, 2))
+        epts =  np.array(endpoints, dtype = np.float64).reshape((-1, 2))
 
         n_points = max(pts.shape[0], epts.shape[0])
 
         # Broadcast any length 1 arrays to the correct size.        
         try:
-            tmp = np.zeros((n_points,2))
-            tmp[:,0] += pts[:,0]
-            tmp[:,1] += pts[:,1]
+            tmp = np.zeros((n_points, 2))
+            tmp[:, 0] += pts[:, 0]
+            tmp[:, 1] += pts[:, 1]
 
             pts = tmp
 
-            tmp = np.zeros((n_points,2))
-            tmp[:,0] += epts[:,0]
-            tmp[:,1] += epts[:,1]
+            tmp = np.zeros((n_points, 2))
+            tmp[:, 0] += epts[:, 0]
+            tmp[:, 1] += epts[:, 1]
 
             epts = tmp
 
         except ValueError:
             raise ValueError("Inputs must have common length n or length one.")
 
-        cdef double[:,:] results = np.empty((n_points, 3))
+        cdef double[:, :] results = np.empty((n_points, 3))
         cdef double[:] dist, azi0, azi1
 
         dist = np.empty(n_points)
@@ -200,12 +202,12 @@ cdef class Geodesic:
         with nogil:
             for i in prange(n_points):
 
-                geod_inverse(self.geod, pts[i,1], pts[i,0], epts[i,1],
-                             epts[i,0], &dist[i], &azi0[i], &azi1[i])
+                geod_inverse(self.geod, pts[i, 1], pts[i, 0], epts[i, 1],
+                             epts[i, 0], &dist[i], &azi0[i], &azi1[i])
 
-                results[i,0] = dist[i]
-                results[i,1] = azi0[i]
-                results[i,2] = azi1[i]
+                results[i, 0] = dist[i]
+                results[i, 1] = azi0[i]
+                results[i, 2] = azi1[i]
 
         return np.array(results)
 
@@ -238,7 +240,7 @@ cdef class Geodesic:
         cdef int i
 
         # Put the input arguments into c-typed values.        
-        cdef double[:,:] center = np.array([lon, lat]).reshape((1,2))
+        cdef double[:,:] center = np.array([lon, lat]).reshape((1, 2))
         cdef double[:] radius_m = np.asarray(radius).reshape(1)
 
         azimuths = np.linspace(360., 0., n_samples, 
