@@ -38,8 +38,9 @@ class TestGeodesic(unittest.TestCase):
         geod = geodesic.Geodesic()
         geod_inv = geod.inverse([40, 50],
                                 [45, 59])
-        assert_almost_equal(geod_inv, np.array([[1.05216248e+06, 1.59036831e+01,
-                            1.99877316e+01]]), decimal=3)
+        assert_almost_equal(geod_inv, np.array([[1.05216248e+06,
+                                                 1.59036831e+01,
+                                                 1.99877316e+01]]), decimal=3)
 
     def test_circle(self):
         geod = geodesic.Geodesic()
