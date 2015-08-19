@@ -47,20 +47,20 @@ cdef class Geodesic:
     """
     cdef geod_geodesic* geod
 
-    def __cinit__(self, radius=6378137, flattening=1/298.257223563):
+    def __cinit__(self, radius=6378137.0, flattening=1/298.257223563):
         """
         Create an ellipsoid with a given radius and flattening.
-        Defaults to the semi-major axis radius and flattening defined
-        by the WGS84 system.
 
         Kwargs:
 
-            * radius  - Equatorial radius (metres).
+            * radius  - Equatorial radius (metres). Defaults to the WGS84 
+                        semimajor axis (6378137.0 metres).
 
             * flattening - Flattening of ellipsoid.
                            Setting flattening = 0 gives a sphere. Negative 
                            flattening gives a prolate ellipsoid. If 
                            flattening > 1, set flattening to 1/flattening.
+                           Defaults to the WGS84 flattening (1/298.257223563).
 
         """
         # allocate some memory (filled with random data)
