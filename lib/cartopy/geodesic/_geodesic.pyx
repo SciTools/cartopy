@@ -50,6 +50,8 @@ cdef class Geodesic:
     def __cinit__(self, radius=6378137, flattening=1/298.257223563):
         """
         Create an ellipsoid with a given radius and flattening.
+        Defaults to the semi-major axis radius and flattening defined
+        by the WGS84 system.
 
         Kwargs:
 
@@ -89,8 +91,8 @@ cdef class Geodesic:
                           values (metres).
 
         Returns:
-            An n by 3 np.ndarray of lons, lats, and azimuths of the located 
-            endpoint. 
+            An n by 3 np.ndarray of lons, lats, and forward azimuths of the located 
+            endpoint(s). 
 
         """
 
@@ -152,8 +154,8 @@ cdef class Geodesic:
                           The point(s) to travel to.            
 
         Returns:
-            An n by 3 np.ndarray of distances, and the azimuths of the start and
-            end points. 
+            An n by 3 np.ndarray of distances, and the (forward) azimuths of the
+            start and end points. 
 
         """        
 
