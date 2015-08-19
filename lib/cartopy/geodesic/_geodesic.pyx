@@ -101,9 +101,9 @@ cdef class Geodesic:
         # Create numpy arrays from inputs, and ensure correct shape. Note: 
         # reshape(-1) returns a 1D array from a 0 dimensional array as required 
         # for broadcasting.
-        pts = np.array(points, dtype = np.float64).reshape((-1, 2))
-        azims = np.array(azimuths, dtype = np.float64).reshape(-1)
-        dists = np.array(distances, dtype = np.float64).reshape(-1)
+        pts = np.array(points, dtype=np.float64).reshape((-1, 2))
+        azims = np.array(azimuths, dtype=np.float64).reshape(-1)
+        dists = np.array(distances, dtype=np.float64).reshape(-1)
 
         n_points = max(pts.shape[0], azims.size, dists.size)
 
@@ -115,30 +115,23 @@ cdef class Geodesic:
 
             pts = tmp
 
-            azims = np.zeros(n_points) + azims[:]
+            azims = np.zeros(n_points) + azims
 
-            dists = np.zeros(n_points) + dists[:]
+            dists = np.zeros(n_points) + dists
 
         except ValueError:
             raise ValueError("Inputs must have common length n or length one.")
 
         cdef double[:, :] return_pts = np.empty((n_points, 3))
-        cdef double[:] lon, lat, azi
-
-        lon = np.empty(n_points)
-        lat = np.empty(n_points)
-        azi = np.empty(n_points)
 
         with nogil:
             for i in prange(n_points):
 
                 geod_direct(self.geod, pts[i, 1], pts[i, 0], azims[i], dists[i], 
-                            &lat[i], &lon[i], &azi[i])
-                return_pts[i, 0] = lon[i]
-                return_pts[i, 1] = lat[i]
-                return_pts[i, 2] = azi[i]
+                            &return_pts[i, 0], &return_pts[i, 1], 
+                            &return_pts[i,2])
 
-        return np.array(return_pts)
+        return return_pts
 
     def inverse(self, points, endpoints):
         """
@@ -170,8 +163,8 @@ cdef class Geodesic:
         # Create numpy arrays from inputs, and ensure correct shape. Note: 
         # reshape(-1) returns a 1D array from a 0 dimensional array as required 
         # for broadcasting.        
-        pts = np.array(points, dtype = np.float64).reshape((-1, 2))
-        epts =  np.array(endpoints, dtype = np.float64).reshape((-1, 2))
+        pts = np.array(points, dtype=np.float64).reshape((-1, 2))
+        epts =  np.array(endpoints, dtype=np.float64).reshape((-1, 2))
 
         n_points = max(pts.shape[0], epts.shape[0])
 
@@ -193,23 +186,15 @@ cdef class Geodesic:
             raise ValueError("Inputs must have common length n or length one.")
 
         cdef double[:, :] results = np.empty((n_points, 3))
-        cdef double[:] dist, azi0, azi1
-
-        dist = np.empty(n_points)
-        azi0 = np.empty(n_points)
-        azi1 = np.empty(n_points)
 
         with nogil:
             for i in prange(n_points):
 
                 geod_inverse(self.geod, pts[i, 1], pts[i, 0], epts[i, 1],
-                             epts[i, 0], &dist[i], &azi0[i], &azi1[i])
+                             epts[i, 0], &results[i,0], &results[i,1], 
+                             &results[i,2])
 
-                results[i, 0] = dist[i]
-                results[i, 1] = azi0[i]
-                results[i, 2] = azi1[i]
-
-        return np.array(results)
+        return results
 
     def circle(self, double lon, double lat, double radius, int n_samples=180,
                endpoint=False):
