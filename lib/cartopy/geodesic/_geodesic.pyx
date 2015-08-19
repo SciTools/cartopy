@@ -128,7 +128,7 @@ cdef class Geodesic:
             for i in prange(n_points):
 
                 geod_direct(self.geod, pts[i, 1], pts[i, 0], azims[i], dists[i], 
-                            &return_pts[i, 0], &return_pts[i, 1], 
+                            &return_pts[i, 1], &return_pts[i, 0], 
                             &return_pts[i,2])
 
         return return_pts
