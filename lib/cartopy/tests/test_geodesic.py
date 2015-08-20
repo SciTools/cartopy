@@ -55,8 +55,8 @@ class TestGeodesic(unittest.TestCase):
                          [0.0000000000, 31.2989275984, 155.7723493796,
                           93.8764112107, -69.2776346668, 98.5250397385,
                           13370814.5013951007],
-                         [0.0000000000, 49.6823298563, 1.0175398481, 
-                          5.3554086646, 83.8681965431, 6.1667605618, 
+                         [0.0000000000, 49.6823298563, 1.0175398481,
+                          5.3554086646, 83.8681965431, 6.1667605618,
                           3815028.2543704999],
                          [0.0000000000, 32.7651878215, 98.6494285944,
                           70.3527194957, 2.4777491770, 123.5999412794,
@@ -79,13 +79,13 @@ class TestGeodesic(unittest.TestCase):
     def test_inverse(self):
         geod = geodesic.Geodesic()
         data = TestGeodesic.get_data(self)
-        geod_inv = geod.inverse(data[:, :2],data[:, 3:5])
-        assert_array_almost_equal(geod_inv, data[:, [6,2,5]], decimal=5)
+        geod_inv = geod.inverse(data[:, :2], data[:, 3:5])
+        assert_array_almost_equal(geod_inv, data[:, [6, 2, 5]], decimal=5)
 
     def test_circle(self):
         geod = geodesic.Geodesic()
         geod_circle = geod.circle(40, 50, 500000, n_samples=3)
-        assert_almost_equal(geod_circle, 
+        assert_almost_equal(geod_circle,
                             np.array([[40., 54.49349757],
                                       [34.23766162, 47.60355349],
                                       [45.76233838, 47.60355349]]), decimal=5)
