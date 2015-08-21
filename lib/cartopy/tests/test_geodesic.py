@@ -30,7 +30,7 @@ class TestGeodesic(unittest.TestCase):
 
     def get_data(self):
         """
-        Data sampled from GeographicLib Test Data for Geodesics at:
+        Data sampled from the GeographicLib Test Data for Geodesics at:
         http://geographiclib.sourceforge.net/html/geodesic.html#testgeod
 
         """
