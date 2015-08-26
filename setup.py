@@ -233,6 +233,13 @@ if conda is not None and conda in sys.prefix:
     # should be set up so that nothing extra is required. We'll still check
     # the version, though.
     proj_version = find_proj_version_by_program(conda)
+    if proj_version < PROJ_MIN_VERSION:
+        print(
+            'Proj4 version %s is installed, but cartopy requires at least '
+            'version %s.' % ('.'.join(str(v) for v in proj_version),
+                             '.'.join(str(v) for v in PROJ_MIN_VERSION)),
+            file=sys.stderr)
+        exit(1)
 
     proj_includes = []
     proj_libraries = ['proj']
