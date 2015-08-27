@@ -28,16 +28,18 @@ from cartopy import geodesic
 
 class TestGeodesic(unittest.TestCase):
 
-    def get_data(self):
+    def setUp(self):
         """
         Data sampled from GeographicLib Test Data for Geodesics at:
         http://geographiclib.sourceforge.net/html/geodesic.html#testgeod
 
         """
+        self.geod = geodesic.Geodesic()
+
         # Fill a 10 by 7 numpy array with starting lons, lats, azimuths; ending
         # lons, lats and azimuths and distances to travel.
 
-        data = np.array([[0.0000000000, 36.5300423550, 176.1258751622,
+        self.data = np.array([[0.0000000000, 36.5300423550, 176.1258751622,
                           5.7623446947, -48.1642707791, 175.3343083163,
                           9398502.0434687007],
                          [0.0000000000, 20.8766024619, 6.9012827094,
@@ -68,27 +70,26 @@ class TestGeodesic(unittest.TestCase):
                           33.1346935645, -26.3211288531, 150.4502346224,
                           7512675.5414637001]])
 
-        return data
-
     def test_dir(self):
-        geod = geodesic.Geodesic()
-        data = TestGeodesic.get_data(self)
-        geod_dir = geod.direct(data[:, :2], data[:, 2], data[:, 6])
-        assert_array_almost_equal(geod_dir, data[:, 3:6], decimal=5)
+        geod_dir = self.geod.direct(self.data[:, :2], self.data[:, 2],
+                                                      self.data[:, 6])
+        assert_array_almost_equal(geod_dir, self.data[:, 3:6], decimal=5)
 
     def test_inverse(self):
-        geod = geodesic.Geodesic()
-        data = TestGeodesic.get_data(self)
-        geod_inv = geod.inverse(data[:, :2], data[:, 3:5])
-        assert_array_almost_equal(geod_inv, data[:, [6, 2, 5]], decimal=5)
+        geod_inv = self.geod.inverse(self.data[:, :2], self.data[:, 3:5])
+        assert_array_almost_equal(geod_inv, self.data[:, [6, 2, 5]], decimal=5)
 
     def test_circle(self):
-        geod = geodesic.Geodesic()
-        geod_circle = geod.circle(40, 50, 500000, n_samples=3)
+        geod_circle = self.geod.circle(40, 50, 500000, n_samples=3)
         assert_almost_equal(geod_circle,
                             np.array([[40., 54.49349757],
                                       [34.23766162, 47.60355349],
                                       [45.76233838, 47.60355349]]), decimal=5)
+
+    def test_repr(self):
+	expected = '<Geodesic: radius=6378137.000, flattening=1/298.257>'
+	assert_equal(expected, repr(self.geod))
+
 
 if __name__ == '__main__':
     import nose
