@@ -185,15 +185,16 @@ cdef class Geodesic:
         if not all(size in [1, n_points] for size in sizes):
             raise ValueError("Inputs must have common length n or length one.")
 
+	# Broadcast any length 1 arrays to the correct size.
         if pts.shape[0] == 1:
             orig_pts = pts
             pts = np.empty([n_points, 2], dtype=np.float64)
             pts[:, :] = orig_pts
 
         if epts.shape[0] == 1:
-            orig_pts = pts
-            pts = np.empty([n_points, 2], dtype=np.float64)
-            pts[:, :] = orig_pts
+            orig_pts = epts
+            epts = np.empty([n_points, 2], dtype=np.float64)
+            epts[:, :] = orig_pts
 
         cdef double[:, :] results = np.empty((n_points, 3), dtype=np.float64)
 
