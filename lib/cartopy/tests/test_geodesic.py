@@ -76,33 +76,33 @@ class TestGeodesic(unittest.TestCase):
         assert_array_almost_equal(geod_dir, self.data[:, 3:6], decimal=5)
 
     def test_dir_broadcast(self):
-        repeated_dists = np.repeat(np.array([self.data[0, 6]]), 10, axis=0)
-        repeated_start_pts = np.repeat(np.array([self.data[0, :2]]), 10, axis=0)
-        repeated_results = np.repeat(np.array([self.data[0, 3:6]]), 10, axis=0)
+        repeat_dists = np.repeat(np.array([self.data[0, 6]]), 10, axis=0)
+        repeat_start_pts = np.repeat(np.array([self.data[0, :2]]), 10, axis=0)
+        repeat_results = np.repeat(np.array([self.data[0, 3:6]]), 10, axis=0)
 
         geod_dir1 = self.geod.direct(self.data[0, :2], self.data[0, 2],
-                                     repeated_dists) 
-        geod_dir2 = self.geod.direct(repeated_start_pts, self.data[0, 2],
-                                     self.data[0, 6]) 
+                                     repeat_dists)
+        geod_dir2 = self.geod.direct(repeat_start_pts, self.data[0, 2],
+                                     self.data[0, 6])
 
-        assert_array_almost_equal(geod_dir1, repeated_results, decimal=5)
-        assert_array_almost_equal(geod_dir2, repeated_results, decimal=5)
+        assert_array_almost_equal(geod_dir1, repeat_results, decimal=5)
+        assert_array_almost_equal(geod_dir2, repeat_results, decimal=5)
 
     def test_inverse(self):
         geod_inv = self.geod.inverse(self.data[:, :2], self.data[:, 3:5])
         assert_array_almost_equal(geod_inv, self.data[:, [6, 2, 5]], decimal=5)
 
     def test_inverse_broadcast(self):
-        repeated_start_pts = np.repeat(np.array([self.data[0, :2]]), 10, axis=0)
-        repeated_end_pts = np.repeat(np.array([self.data[0, 3:5]]), 10, axis=0)
-        repeated_results = np.repeat(np.array([self.data[0, [6, 2, 5]]]), 10,
-                                              axis=0)
+        repeat_start_pts = np.repeat(np.array([self.data[0, :2]]), 10, axis=0)
+        repeat_end_pts = np.repeat(np.array([self.data[0, 3:5]]), 10, axis=0)
+        repeat_results = np.repeat(np.array([self.data[0, [6, 2, 5]]]), 10,
+                                   axis=0)
 
-        geod_inv1 = self.geod.inverse(self.data[0, :2], repeated_end_pts) 
-        geod_inv2 = self.geod.inverse(repeated_start_pts, self.data[0, 3:5]) 
+        geod_inv1 = self.geod.inverse(self.data[0, :2], repeat_end_pts)
+        geod_inv2 = self.geod.inverse(repeat_start_pts, self.data[0, 3:5])
 
-        assert_array_almost_equal(geod_inv1, repeated_results, decimal=5)
-        assert_array_almost_equal(geod_inv2, repeated_results, decimal=5)
+        assert_array_almost_equal(geod_inv1, repeat_results, decimal=5)
+        assert_array_almost_equal(geod_inv2, repeat_results, decimal=5)
 
     def test_circle(self):
         geod_circle = self.geod.circle(40, 50, 500000, n_samples=3)
