@@ -172,7 +172,7 @@ cdef class Geodesic:
         """        
 
         cdef int n_points, i
-        cdef double[:, :] pts, epts
+        cdef double[:, :] pts, epts, orig_pts
 
         # Create numpy arrays from inputs, and ensure correct shape. Note: 
         # reshape(-1) returns a 1D array from a 0 dimensional array as required 
@@ -180,30 +180,25 @@ cdef class Geodesic:
         pts = np.array(points, dtype=np.float64).reshape((-1, 2))
         epts =  np.array(endpoints, dtype=np.float64).reshape((-1, 2))
 
-        n_points = max(pts.shape[0], epts.shape[0])
-
-        # Broadcast any length 1 arrays to the correct size.        
-        try:
-            tmp = np.zeros((n_points, 2))
-            tmp[:, 0] += pts[:, 0]
-            tmp[:, 1] += pts[:, 1]
-
-            pts = tmp
-
-            tmp = np.zeros((n_points, 2))
-            tmp[:, 0] += epts[:, 0]
-            tmp[:, 1] += epts[:, 1]
-
-            epts = tmp
-
-        except ValueError:
+        sizes = [pts.shape[0], epts.shape[0]]
+        n_points = max(sizes)
+        if not all(size in [1, n_points] for size in sizes):
             raise ValueError("Inputs must have common length n or length one.")
 
-        cdef double[:, :] results = np.empty((n_points, 3))
+        if pts.shape[0] == 1:
+            orig_pts = pts
+            pts = np.empty([n_points, 2], dtype=np.float64)
+            pts[:, :] = orig_pts
+
+        if epts.shape[0] == 1:
+            orig_pts = pts
+            pts = np.empty([n_points, 2], dtype=np.float64)
+            pts[:, :] = orig_pts
+
+        cdef double[:, :] results = np.empty((n_points, 3), dtype=np.float64)
 
         with nogil:
             for i in prange(n_points):
-
                 geod_inverse(self.geod, pts[i, 1], pts[i, 0], epts[i, 1],
                              epts[i, 0], &results[i,0], &results[i,1], 
                              &results[i,2])
