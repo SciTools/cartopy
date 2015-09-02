@@ -47,7 +47,7 @@ install:
       PACKAGES="$PACKAGES owslib";
     fi
   - PACKAGES="$PACKAGES pep8=1.5.7"
-  - PACKAGES="$PACKAGES proj4=4.8"   # Until we've updated the tests for 4.9.
+  - PACKAGES="$PACKAGES proj4=4.9"
   - PACKAGES="$PACKAGES pyshp"
   - PACKAGES="$PACKAGES shapely"
   - PACKAGES="$PACKAGES six"
