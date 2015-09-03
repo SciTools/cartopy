@@ -29,6 +29,8 @@ the package wouldn't be as rich or diverse as it is today:
  * Nat Wilson
  * Elliott Sales de Andrade
  * Laura Dreyer
+ * Daniel Atton Beckmann
+ * Joseph Hogg
 
 
 Thank you!
