@@ -77,7 +77,7 @@ cdef class Geodesic:
         # Free allocated memory.
         PyMem_Free(self.geod)
     
-    def __repr__(self):
+    def __str__(self):
         fmt = self.radius, 1/self.flattening
         return '<Geodesic: radius=%0.3f, flattening=1/%0.3f>' %(fmt)
 
