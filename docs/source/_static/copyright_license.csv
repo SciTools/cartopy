@@ -1,0 +1,3 @@
+Data Provider;Cartopy Function;Citation (short);Citation (long);License;Terms of Use Information
+OpenStreetMap;:mod:`img_tiles.OSM <cartopy.io.img_tiles>`;|copy| OpenStreetMap;Map data |copy| OpenStreetMap contributors;`Open Database Licence <www.opendatacommons.org/licenses/odbl>`_;`Legal FAQ <http://wiki.openstreetmap.org/wiki/Legal_FAQ#3a._I_would_like_to_use_OpenStreetMap_maps._How_should_I_credit_you.3F>`_
+Natural Earth raster + vector map data;:class:`NaturalEarthFeature <cartopy.feature.NaturalEarthFeature>`;Made with Natural Earth.;Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.;`Public Domain <http://creativecommons.org/publicdomain/>`_;`Terms of Use <http://www.naturalearthdata.com/about/terms-of-use/>`_
