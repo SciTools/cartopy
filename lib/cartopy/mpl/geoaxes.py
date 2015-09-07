@@ -417,6 +417,34 @@ class GeoAxes(matplotlib.axes.Axes):
                                                       resolution, **kwargs)
         return self.add_feature(feature)
 
+    def tissot(self, rad_km=5e5, n_samples=80, lon_n=10, lat_n=6, **kwargs):
+        """
+        Adds Tissot's indicatrices to the current axes using the geodesic class.
+
+        Kwargs:
+
+            * rad_km - The radius in km of the the circles to be drawn.
+
+            * n_samples - Integer number of points sampled around the
+              circumference of each circle.
+
+            * lon_n - Number of circles in the longitudinal direction.
+
+            * lat_n - Number of circles in the latitudinal direction.
+
+        """
+        geod = cartopy.geodesic.Geodesic()
+        geoms = []
+
+        for lat in np.linspace(-80, 80, lat_n):
+            for lon in np.linspace(-180, 180, lon_n, endpoint=False):
+                circle = geod.circle(lon, lat, rad_km, n_samples=n_samples)
+                geoms.append(sgeom.Polygon(zip(circle[:,0],circle[:,1])))
+
+        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
+                                                 **kwargs)
+        return self.add_feature(feature)
+
     def natural_earth_shp(self, name='land', resolution='110m',
                           category='physical', **kwargs):
         """
