@@ -49,7 +49,7 @@ import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
-
+from cartopy import geodesic
 
 assert matplotlib.__version__ >= '1.2', ('Cartopy can only work with '
                                          'matplotlib 1.2 or greater.')
