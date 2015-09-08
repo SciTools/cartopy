@@ -49,7 +49,7 @@ import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
-from cartopy import geodesic
+
 
 assert matplotlib.__version__ >= '1.2', ('Cartopy can only work with '
                                          'matplotlib 1.2 or greater.')
@@ -417,9 +417,10 @@ class GeoAxes(matplotlib.axes.Axes):
                                                       resolution, **kwargs)
         return self.add_feature(feature)
 
-    def tissot(self, rad_km=5e5, n_samples=80, lon_n=10, lat_n=6, **kwargs):
+    def tissot(self, rad_km=5e5, n_samples=80, lon_n=6, lat_n=6, lon_max=180,
+               lon_min=-180, lat_max=80, lat_min=-80, **kwargs):
         """
-        Adds Tissot's indicatrices to the current axes with the geodesic class.
+        Adds Tissot's indicatrices to the axes.
 
         Kwargs:
 
@@ -432,14 +433,30 @@ class GeoAxes(matplotlib.axes.Axes):
 
             * lat_n - Number of circles in the latitudinal direction.
 
+            * lon_max - Maximum extent in degrees in the longitudinal
+              direction.
+
+            * lon_min - Minimum extent in degrees in the longitudinal
+              direction.
+
+            * lat_max - Maximum extent in degrees in the latitudinal
+              direction.
+
+            * lat_min - Minimum extent in degrees in the latitudinal
+              direction.
+
+        **kwargs are passed through to `class:ShapelyFeature`.
+
         """
-        geod = cartopy.geodesic.Geodesic()
+        from cartopy import geodesic
+
+        geod = geodesic.Geodesic()
         geoms = []
 
-        for lat in np.linspace(-80, 80, lat_n):
-            for lon in np.linspace(-180, 180, lon_n, endpoint=False):
+        for lat in np.linspace(lat_min, lat_max, lat_n):
+            for lon in np.linspace(lon_min, lon_max, lon_n, endpoint=False):
                 circle = geod.circle(lon, lat, rad_km, n_samples=n_samples)
-                geoms.append(sgeom.Polygon(zip(circle[:, 0], circle[:, 1])))
+                geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
                                                  **kwargs)

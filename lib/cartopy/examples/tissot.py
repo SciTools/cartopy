@@ -13,7 +13,7 @@ def main():
     ax.stock_img()
     ax.coastlines()
 
-    ax.tissot(lat_n=10, lon_n=6, facecolor='orange', alpha=0.4)
+    ax.tissot(facecolor='orange', alpha=0.4)
 
     plt.show()
 
