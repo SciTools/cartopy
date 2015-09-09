@@ -7,7 +7,7 @@ What's New in cartopy 0.14
 Features
 --------
 
-* Joseph Hogg and Daniel Atton Beckmann added the :class:'cartopy.geodesic.Geodesic'
+* Joseph Hogg and Daniel Atton Beckmann added the :class:`cartopy.geodesic.Geodesic`
   class which wraps the proj.4 geodesic library. This allows users to solve the direct and
   inverse geodesic problems (calculating distances between points etc). It also contains a
   convenience function that returns geodetic circles. This is used by
