@@ -21,14 +21,11 @@ Distribution definition for Cartopy.
 
 """
 
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
-from distutils.core import Command
+from setuptools import setup, Extension
+from setuptools import Command
+from setuptools import convert_path
 from distutils.spawn import find_executable
 from distutils.sysconfig import get_config_var
-from distutils.util import convert_path
 import fnmatch
 import os
 import subprocess
@@ -382,8 +379,8 @@ setup(
 	Extension('cartopy.geodesic._geodesic', ['lib/cartopy/geodesic/_geodesic.pyx'],
             include_dirs=[include_dir, np.get_include()] + proj_includes,
             libraries=proj_libraries,
-            library_dirs=[library_dir] + proj_library_dirs,              
-            **extra_extension_args    
+            library_dirs=[library_dir] + proj_library_dirs,
+            **extra_extension_args
         ),
     ],
 
