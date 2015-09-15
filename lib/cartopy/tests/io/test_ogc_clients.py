@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -29,7 +29,10 @@ except ImportError:
     WebMapTileService = None
 import unittest
 import cartopy.crs as ccrs
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 import numpy as np
 
 

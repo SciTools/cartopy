@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2015, Met Office
+# (C) British Crown Copyright 2014 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,7 +17,10 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-from mock import Mock
+try:
+    from unittest.mock import Mock
+except ImportError:
+    from mock import Mock
 from nose.tools import assert_equal
 try:
     from nose.tools import assert_raises_regex
