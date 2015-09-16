@@ -417,8 +417,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                                       resolution, **kwargs)
         return self.add_feature(feature)
 
-    def tissot(self, rad_km=5e5, n_samples=80, lon_n=6, lat_n=6, lon_max=180,
-               lon_min=-180, lat_max=80, lat_min=-80, **kwargs):
+    def tissot(self, rad_km=5e5, lons=None, lats=None, n_samples=80, **kwargs):
         """
         Adds Tissot's indicatrices to the axes.
 
@@ -426,24 +425,16 @@ class GeoAxes(matplotlib.axes.Axes):
 
             * rad_km - The radius in km of the the circles to be drawn.
 
+            * lons - A numpy.ndarray, list or tuple of longitude values that
+                     locate the centre of each circle. Specifying more than one
+                     dimension allows individual points to be drawn whereas a
+                     1D array produces a grid of points.
+
+            * lats - A numpy.ndarray, list or tuple of latitude values that
+                     that locate the centre of each circle. See lons.
+
             * n_samples - Integer number of points sampled around the
-              circumference of each circle.
-
-            * lon_n - Number of circles in the longitudinal direction.
-
-            * lat_n - Number of circles in the latitudinal direction.
-
-            * lon_max - Maximum extent in degrees in the longitudinal
-              direction.
-
-            * lon_min - Minimum extent in degrees in the longitudinal
-              direction.
-
-            * lat_max - Maximum extent in degrees in the latitudinal
-              direction.
-
-            * lat_min - Minimum extent in degrees in the latitudinal
-              direction.
+                          circumference of each circle.
 
         **kwargs are passed through to `class:ShapelyFeature`.
 
@@ -453,9 +444,25 @@ class GeoAxes(matplotlib.axes.Axes):
         geod = geodesic.Geodesic()
         geoms = []
 
-        for lat in np.linspace(lat_min, lat_max, lat_n):
-            for lon in np.linspace(lon_min, lon_max, lon_n, endpoint=False):
-                circle = geod.circle(lon, lat, rad_km, n_samples=n_samples)
+        if lons is None:
+            lons = np.linspace(-180, 180, 6, endpoint=False)
+        else:
+            lons = np.asarray(lons)
+        if lats is None:
+            lats = np.linspace(-80, 80, 6)
+        else:
+            lats = np.asarray(lats)
+
+        if lons.ndim == 1 or lats.ndim == 1:
+            lons, lats = np.meshgrid(lons, lats)
+        lons, lats = lons.flatten(), lats.flatten()
+
+        if lons.shape != lats.shape:
+            raise ValueError('lons and lats must have the same shape.')
+
+        for i in range(len(lons)):
+                circle = geod.circle(lons[i], lats[i], rad_km,
+                                     n_samples=n_samples)
                 geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),

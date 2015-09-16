@@ -104,13 +104,14 @@ if __name__ == '__main__':
     plt.figure(figsize=({width}, 3))
     ax = plt.axes(projection=ccrs.{proj_constructor})
     ax.coastlines(resolution={coastline_resolution!r})
-    ax.tissot(rad_km = {tissot_rad}, lon_n={latlon_n}, lat_n={latlon_n},
+    lons = np.linspace(-180, 180, {latlon_n}+1)
+    lats = np.linspace(-80, 80, {latlon_n})
+    ax.tissot(rad_km = {tissot_rad}, lons=lons, lats=lats,
               facecolor='seashell', alpha=0.4)
     gl = ax.gridlines()
 
-    lon_lines = np.linspace(-180, 180, {latlon_n}+1)
-    lat_lines = [-90] + list(np.linspace(-80, 80, {latlon_n})) + [90]
-    gl.xlocator = mticker.FixedLocator(lon_lines)
+    lat_lines = [-90] + list(lats) + [90]
+    gl.xlocator = mticker.FixedLocator(lons)
     gl.ylocator = mticker.FixedLocator(lat_lines)
 
 \n""".format(width=width, proj_constructor=instance_creation_code,
