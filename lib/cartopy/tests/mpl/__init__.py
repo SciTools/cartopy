@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import base64
 import os
 import glob
 import shutil
@@ -262,7 +263,7 @@ def failed_images_html():
 
     def image_as_base64(fname):
         with open(fname, "rb") as fh:
-            return fh.read().encode("base64").replace("\n", "")
+            return base64.b64encode(fh.read()).decode("ascii")
 
     html = ['<!DOCTYPE html>', '<html>', '<body>']
 
