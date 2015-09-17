@@ -37,14 +37,6 @@ COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
                         ccrs.OSGB: '50m',
                         ccrs.EuroPP: '50m'}
 
-TISSOT_RAD = {ccrs.OSNI: 10000,
-              ccrs.OSGB: 50000,
-              ccrs.EuroPP: 100000}
-
-LATLON_NUM = {ccrs.OSNI: 500,
-              ccrs.OSGB: 100,
-              ccrs.EuroPP: 50}
-
 PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
                   'TransverseMercator': 2, 'LambertCylindrical': 2,
@@ -97,26 +89,14 @@ if __name__ == '__main__':
 .. plot::
 
     import matplotlib.pyplot as plt
-    import matplotlib.ticker as mticker
     import cartopy.crs as ccrs
-    import numpy as np
 
     plt.figure(figsize=({width}, 3))
     ax = plt.axes(projection=ccrs.{proj_constructor})
     ax.coastlines(resolution={coastline_resolution!r})
-    lons = np.linspace(-180, 180, {latlon_n}+1)
-    lats = np.linspace(-80, 80, {latlon_n})
-    ax.tissot(rad_km = {tissot_rad}, lons=lons, lats=lats,
-              facecolor='seashell', alpha=0.4)
-    gl = ax.gridlines()
-
-    lat_lines = [-90] + list(lats) + [90]
-    gl.xlocator = mticker.FixedLocator(lons)
-    gl.ylocator = mticker.FixedLocator(lat_lines)
+    ax.gridlines()
 
 \n""".format(width=width, proj_constructor=instance_creation_code,
-             coastline_resolution=COASTLINE_RESOLUTION.get(prj, '110m'),
-             tissot_rad=TISSOT_RAD.get(prj, 5e5),
-             latlon_n=LATLON_NUM.get(prj, 6))
+             coastline_resolution=COASTLINE_RESOLUTION.get(prj, '110m'))
 
             table.write(code)
