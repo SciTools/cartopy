@@ -31,16 +31,43 @@ import matplotlib.collections
 import cartopy.mpl.patch as cpatch
 
 
+class _GeomKey(object):
+    """
+    Provide id() based equality and hashing for geometries.
+
+    Instances of this class must be treated as immutable for the caching
+    to operate correctly.
+
+    A workaround for Shapely polygons no longer being hashable as of 1.5.13.
+
+    """
+    def __init__(self, geom):
+        self._id = id(geom)
+
+    def __eq__(self, other):
+        return self._id == other._id
+
+    def __hash__(self):
+        return hash(self._id)
+
+
 class FeatureArtist(matplotlib.artist.Artist):
     """
     A subclass of :class:`~matplotlib.artist.Artist` capable of
     drawing a :class:`cartopy.feature.Feature`.
 
     """
-    _geometry_to_path_cache = weakref.WeakKeyDictionary()
+
+    _geom_key_to_geometry_cache = weakref.WeakValueDictionary()
     """
-    A nested mapping from geometry and target projection to the
-    resulting transformed matplotlib paths::
+    A mapping from _GeomKey to geometry to assist with the caching of
+    transformed matplotlib paths.
+
+    """
+    _geom_key_to_path_cache = weakref.WeakKeyDictionary()
+    """
+    A nested mapping from geometry (converted to a _GeomKey) and target
+    projection to the resulting transformed matplotlib paths::
 
         {geom: {target_projection: list_of_paths}}
 
@@ -48,6 +75,7 @@ class FeatureArtist(matplotlib.artist.Artist):
     same projection.
 
     """
+
     def __init__(self, feature, **kwargs):
         """
         Args:
@@ -109,8 +137,22 @@ class FeatureArtist(matplotlib.artist.Artist):
         paths = []
         key = ax.projection
         for geom in geoms:
-            mapping = FeatureArtist._geometry_to_path_cache.setdefault(geom,
-                                                                       {})
+            # As Shapely geometries cannot be relied upon to be
+            # hashable, we have to use a WeakValueDictionary to manage
+            # their weak references. The key can then be a simple,
+            # "disposable", hashable geom-key object that just uses the
+            # id() of a geometry to determine equality and hash value.
+            # The only persistent, strong reference to the geom-key is
+            # in the WeakValueDictionary, so when the geometry is
+            # garbage collected so is the geom-key.
+            # The geom-key is also used to access the WeakKeyDictionary
+            # cache of transformed geometries. So when the geom-key is
+            # garbage collected so are the transformed geometries.
+            geom_key = _GeomKey(geom)
+            FeatureArtist._geom_key_to_geometry_cache.setdefault(
+                geom_key, geom)
+            mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
+                geom_key, {})
             geom_paths = mapping.get(key)
             if geom_paths is None:
                 if ax.projection != feature_crs:
