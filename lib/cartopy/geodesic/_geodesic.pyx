@@ -25,6 +25,7 @@ from cpython.mem cimport PyMem_Realloc
 from cpython.mem cimport PyMem_Free
 import numpy as np
 cimport numpy as np
+cimport cython
 from cython.parallel cimport prange
 
 cdef extern from "geodesic.h":
@@ -81,6 +82,7 @@ cdef class Geodesic:
         fmt = self.radius, 1/self.flattening
         return '<Geodesic: radius=%0.3f, flattening=1/%0.3f>' % fmt
 
+    @cython.boundscheck(False)
     def direct(self, points, azimuths, distances):
         """
         Solve the direct geodesic problem where the length of the geodesic is
@@ -148,6 +150,7 @@ cdef class Geodesic:
 
         return return_pts
 
+    @cython.boundscheck(False)
     def inverse(self, points, endpoints):
         """
         Solve the inverse geodesic problem.
