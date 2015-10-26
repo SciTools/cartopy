@@ -89,7 +89,18 @@ class SRTM3Source(RasterSource):
         min_x, min_y = np.floor([min_x, min_y])
         nx = int(np.ceil(max_x) - min_x)
         ny = int(np.ceil(max_y) - min_y)
-        if nx > self._max_tiles[0] or ny > self._max_tiles[1]:
+        skip = False
+        if nx > self._max_tiles[0]:
+            warnings.warn(
+                'Required SRTM3 tile count ({}) exceeds maximum ''({}). '
+                'Increase max_nx limit.'.format(nx, self._max_tiles[0]))
+            skip = True
+        if ny > self._max_tiles[1]:
+            warnings.warn(
+                'Required SRTM3 tile count ({}) exceeds maximum ({}). '
+                'Increase max_ny limit.'.format(ny, self._max_tiles[1]))
+            skip = True
+        if skip:
             return []
         else:
             img, _, extent = self.combined(min_x, min_y, nx, ny)
