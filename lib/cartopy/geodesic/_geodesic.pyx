@@ -16,7 +16,7 @@
 # along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-This module defines the Geodesic class which can interface with the Proj.4. 
+This module defines the Geodesic class which can interface with the Proj.4.
 geodesic functions.
 
 """
@@ -25,10 +25,11 @@ from cpython.mem cimport PyMem_Realloc
 from cpython.mem cimport PyMem_Free
 import numpy as np
 cimport numpy as np
+cimport cython
 from cython.parallel cimport prange
 
 cdef extern from "geodesic.h":
-    #External imports of Proj4.9 functions
+    # External imports of Proj4.9 functions
     cdef struct geod_geodesic:
         pass
 
@@ -42,7 +43,7 @@ cdef extern from "geodesic.h":
 
 cdef class Geodesic:
     """
-    Defines an ellipsoid on which to solve geodesic problems. 
+    Defines an ellipsoid on which to solve geodesic problems.
 
     """
     cdef geod_geodesic* geod
@@ -55,12 +56,12 @@ cdef class Geodesic:
 
         Kwargs:
 
-            * radius  - Equatorial radius (metres). Defaults to the WGS84 
+            * radius  - Equatorial radius (metres). Defaults to the WGS84
                         semimajor axis (6378137.0 metres).
 
             * flattening - Flattening of ellipsoid.
-                           Setting flattening = 0 gives a sphere. Negative 
-                           flattening gives a prolate ellipsoid. If 
+                           Setting flattening = 0 gives a sphere. Negative
+                           flattening gives a prolate ellipsoid. If
                            flattening > 1, set flattening to 1/flattening.
                            Defaults to the WGS84 flattening (1/298.257223563).
 
@@ -76,19 +77,20 @@ cdef class Geodesic:
     def __dealloc__(self):
         # Free allocated memory.
         PyMem_Free(self.geod)
-    
+
     def __str__(self):
         fmt = self.radius, 1/self.flattening
-        return '<Geodesic: radius=%0.3f, flattening=1/%0.3f>' %(fmt)
+        return '<Geodesic: radius=%0.3f, flattening=1/%0.3f>' % fmt
 
+    @cython.boundscheck(False)
     def direct(self, points, azimuths, distances):
         """
-        Solve the direct geodesic problem where the length of the geodesic is 
+        Solve the direct geodesic problem where the length of the geodesic is
         specified in terms of distance.
 
-        Can accept and broadcast length 1 arguments. For example, given a single
-        start point and distance, an array of different azimuths can be supplied
-        to locate multiple endpoints.
+        Can accept and broadcast length 1 arguments. For example, given a
+        single start point and distance, an array of different azimuths can be
+        supplied to locate multiple endpoints.
 
         Args:
 
@@ -96,15 +98,15 @@ cdef class Geodesic:
                        points.
                        The starting point(s) from which to travel.
 
-            * azimuths - A length n (or 1) numpy.ndarray or list of azimuth 
+            * azimuths - A length n (or 1) numpy.ndarray or list of azimuth
                          values (degrees).
 
-            * distances - A length n (or 1) numpy.ndarray or list of distances 
+            * distances - A length n (or 1) numpy.ndarray or list of distances
                           values (metres).
 
         Returns:
-            An n by 3 np.ndarray of lons, lats, and forward azimuths of the located 
-            endpoint(s). 
+            An n by 3 np.ndarray of lons, lats, and forward azimuths of the
+            located endpoint(s).
 
         """
 
@@ -112,19 +114,19 @@ cdef class Geodesic:
         cdef double[:, :] pts, orig_pts
         cdef double[:] azims, dists
 
-        # Create numpy arrays from inputs, and ensure correct shape. Note: 
-        # reshape(-1) returns a 1D array from a 0 dimensional array as required 
+        # Create numpy arrays from inputs, and ensure correct shape. Note:
+        # reshape(-1) returns a 1D array from a 0 dimensional array as required
         # for broadcasting.
         pts = np.array(points, dtype=np.float64).reshape((-1, 2))
         azims = np.array(azimuths, dtype=np.float64).reshape(-1)
         dists = np.array(distances, dtype=np.float64).reshape(-1)
-        
+
         sizes = [pts.shape[0], azims.size, dists.size]
         n_points = max(sizes)
         if not all(size in [1, n_points] for size in sizes):
             raise ValueError("Inputs must have common length n or length one.")
 
-        # Broadcast any length 1 arrays to the correct size.    
+        # Broadcast any length 1 arrays to the correct size.
         if pts.shape[0] == 1:
             orig_pts = pts
             pts = np.empty([n_points, 2], dtype=np.float64)
@@ -136,24 +138,26 @@ cdef class Geodesic:
         if dists.size == 1:
             dists = np.repeat(dists, n_points)
 
-        cdef double[:, :] return_pts = np.empty((n_points, 3), dtype=np.float64)
+        cdef double[:, :] return_pts = np.empty((n_points, 3),
+                                                dtype=np.float64)
 
         with nogil:
             for i in prange(n_points):
-
-                geod_direct(self.geod, pts[i, 1], pts[i, 0], azims[i], dists[i], 
-                            &return_pts[i, 1], &return_pts[i, 0], 
-                            &return_pts[i,2])
+                geod_direct(self.geod,
+                            pts[i, 1], pts[i, 0], azims[i], dists[i],
+                            &return_pts[i, 1], &return_pts[i, 0],
+                            &return_pts[i, 2])
 
         return return_pts
 
+    @cython.boundscheck(False)
     def inverse(self, points, endpoints):
         """
         Solve the inverse geodesic problem.
 
-        Can accept and broadcast length 1 arguments. For example, given a single
-        start point, an array of different endpoints can be supplied to find 
-        multiple distances.
+        Can accept and broadcast length 1 arguments. For example, given a
+        single start point, an array of different endpoints can be supplied to
+        find multiple distances.
 
         Args:
 
@@ -161,31 +165,31 @@ cdef class Geodesic:
                        points.
                        The starting point(s) from which to travel.
 
-            * endpoints - An n (or 1) by 2 numpy.ndarray, list or tuple of 
+            * endpoints - An n (or 1) by 2 numpy.ndarray, list or tuple of
                           lon-lat points.
-                          The point(s) to travel to.            
+                          The point(s) to travel to.
 
         Returns:
-            An n by 3 np.ndarray of distances, and the (forward) azimuths of the
-            start and end points. 
+            An n by 3 np.ndarray of distances, and the (forward) azimuths of
+            the start and end points.
 
-        """        
+        """
 
         cdef int n_points, i
         cdef double[:, :] pts, epts, orig_pts
 
-        # Create numpy arrays from inputs, and ensure correct shape. Note: 
-        # reshape(-1) returns a 1D array from a 0 dimensional array as required 
-        # for broadcasting.        
+        # Create numpy arrays from inputs, and ensure correct shape. Note:
+        # reshape(-1) returns a 1D array from a 0 dimensional array as required
+        # for broadcasting.
         pts = np.array(points, dtype=np.float64).reshape((-1, 2))
-        epts =  np.array(endpoints, dtype=np.float64).reshape((-1, 2))
+        epts = np.array(endpoints, dtype=np.float64).reshape((-1, 2))
 
         sizes = [pts.shape[0], epts.shape[0]]
         n_points = max(sizes)
         if not all(size in [1, n_points] for size in sizes):
             raise ValueError("Inputs must have common length n or length one.")
 
-	# Broadcast any length 1 arrays to the correct size.
+        # Broadcast any length 1 arrays to the correct size.
         if pts.shape[0] == 1:
             orig_pts = pts
             pts = np.empty([n_points, 2], dtype=np.float64)
@@ -201,8 +205,8 @@ cdef class Geodesic:
         with nogil:
             for i in prange(n_points):
                 geod_inverse(self.geod, pts[i, 1], pts[i, 0], epts[i, 1],
-                             epts[i, 0], &results[i,0], &results[i,1], 
-                             &results[i,2])
+                             epts[i, 0], &results[i, 0], &results[i, 1],
+                             &results[i, 2])
 
         return results
 
@@ -223,22 +227,22 @@ cdef class Geodesic:
 
             * n_samples - Integer number of sample points of circle.
 
-            * endpoint - Boolean for whether to repeat endpoint at the end of 
-                         returned array.           
+            * endpoint - Boolean for whether to repeat endpoint at the end of
+                         returned array.
 
         Returns:
-            An n_samples by 2 np.ndarray of evenly spaced lon-lat points on the 
-            circle. 
+            An n_samples by 2 np.ndarray of evenly spaced lon-lat points on the
+            circle.
 
-        """   
+        """
 
         cdef int i
 
-        # Put the input arguments into c-typed values.        
-        cdef double[:,:] center = np.array([lon, lat]).reshape((1, 2))
+        # Put the input arguments into c-typed values.
+        cdef double[:, :] center = np.array([lon, lat]).reshape((1, 2))
         cdef double[:] radius_m = np.asarray(radius).reshape(1)
 
-        azimuths = np.linspace(360., 0., n_samples, 
+        azimuths = np.linspace(360., 0., n_samples,
                                endpoint=endpoint).astype(np.double)
 
         return self.direct(center, azimuths, radius_m)[:, 0:2]
