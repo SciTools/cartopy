@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -122,7 +122,7 @@ class FeatureArtist(matplotlib.artist.Artist):
         if not self.get_visible():
             return
 
-        ax = self.get_axes()
+        ax = self.axes
         feature_crs = self._feature.crs
 
         # Get geometries that we need to draw.
