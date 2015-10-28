@@ -214,6 +214,8 @@ def fill_gaps(elevation, max_distance=10):
     :rtype: numpy.ndarray
     :return: SRTM elevation data with filled gaps..
     """
+    warnings.warn("The fill_gaps function has been deprecated. "
+                  "See the \"What's new\" section for v0.14.")
     # Lazily import osgeo - it is only an optional dependency for cartopy.
     from osgeo import gdal
     from osgeo import gdal_array
