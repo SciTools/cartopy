@@ -832,10 +832,6 @@ class GeoAxes(matplotlib.axes.Axes):
             The corner coordinates of the image in the form
             ``(left, right, bottom, top)``. The coordinates should be in the
             coordinate system passed to the transform keyword.
-        target_extent : tuple
-            The corner coordinate of the desired image in the form
-            ``(left, right, bottom, top)``. The coordinates should be in the
-            coordinate system passed to the transform keyword.
         origin : {'lower', 'upper'}
             The origin of the vertical pixels. See
             :func:`matplotlib.pyplot.imshow` for further details. Default
