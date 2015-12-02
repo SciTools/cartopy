@@ -585,7 +585,18 @@ class GeoAxes(matplotlib.axes.Axes):
 
         if projected is None:
             projected = self.projection.project_geometry(domain_in_crs, crs)
-        x1, y1, x2, y2 = projected.bounds
+        try:
+            # This might fail with an unhelpful error message ('need more
+            # than 0 values to unpack') if the specified extents fall outside
+            # the projection extents, so try and give a better error message.
+            x1, y1, x2, y2 = projected.bounds
+        except ValueError:
+            msg = ('Failed to determine the required bounds in projection '
+                   'coordinates. Check that the values provided are within '
+                   'the valid range (x_limits=[{xlim[0]}, {xlim[1]}], '
+                   'y_limits=[{ylim[0]}, {ylim[1]}]).')
+            raise ValueError(msg.format(xlim=self.projection.x_limits,
+                                        ylim=self.projection.y_limits))
         self.set_xlim([x1, x2])
         self.set_ylim([y1, y2])
 
