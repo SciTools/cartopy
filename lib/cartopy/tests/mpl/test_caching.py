@@ -118,8 +118,10 @@ def test_shapefile_transform_cache():
     ax = plt.axes(projection=ccrs.Robinson())
 
     # Empty the cache.
-    FeatureArtist._geometry_to_path_cache.clear()
-    assert len(FeatureArtist._geometry_to_path_cache) == 0
+    FeatureArtist._geom_key_to_geometry_cache.clear()
+    FeatureArtist._geom_key_to_path_cache.clear()
+    assert len(FeatureArtist._geom_key_to_geometry_cache) == 0
+    assert len(FeatureArtist._geom_key_to_path_cache) == 0
 
     counter = CallCounter(ax.projection, 'project_geometry')
     with counter:
@@ -136,14 +138,16 @@ def test_shapefile_transform_cache():
                                      ''.format(n_geom, n_geom, counter.count))
 
     # Check the cache has an entry for each geometry.
-    assert len(FeatureArtist._geometry_to_path_cache) == n_geom
+    assert len(FeatureArtist._geom_key_to_geometry_cache) == n_geom
+    assert len(FeatureArtist._geom_key_to_path_cache) == n_geom
 
     # Check that the cache is empty again once we've dropped all references
     # to the source paths.
     plt.clf()
     del geoms
     gc.collect()
-    assert len(FeatureArtist._geometry_to_path_cache) == 0
+    assert len(FeatureArtist._geom_key_to_geometry_cache) == 0
+    assert len(FeatureArtist._geom_key_to_path_cache) == 0
 
     plt.close()
 
