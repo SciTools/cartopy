@@ -1287,6 +1287,21 @@ class GeoAxes(matplotlib.axes.Axes):
         miny = np.amin(Y)
         maxy = np.amax(Y)
 
+        #####################
+        # PATCH
+        # XXX Non-standard matplotlib thing.
+        def patched_get_datalim(transData):
+            self = collection
+            x0, y0, x1, y1 = self._bbox.bounds
+            pth = mpath.Path([[x0, y0], [x1, y0], [x1, y1], [x0, y1],
+                              [x0, y0]])
+            boundary = (self.get_transform() - transData).transform_path(pth)
+            return boundary.get_extents()
+
+        collection.get_datalim = patched_get_datalim
+        # END OF PATCH
+        ##############
+
         corners = (minx, miny), (maxx, maxy)
         self.update_datalim(corners)
         self.autoscale_view()
