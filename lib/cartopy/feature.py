@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -29,7 +29,6 @@ import numpy as np
 import shapely.geometry as sgeom
 import six
 
-from cartopy.io.ogc_clients import WFSGeometrySource
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
 
@@ -298,6 +297,8 @@ class WFSFeature(Feature):
     A class capable of drawing a collection of geometries
     obtained from an OGC Web Feature Service (WFS).
 
+    This feature requires additional dependencies. If installed via pip,
+    try ``pip install cartopy[ows]``.
     """
     def __init__(self, wfs, features, **kwargs):
         """
@@ -315,6 +316,12 @@ class WFSFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
+        try:
+            from cartopy.io.ogc_clients import WFSGeometrySource
+        except ImportError as e:
+            six.raise_from(ImportError(
+                'WFSFeature requires additional dependencies. If installed '
+                'via pip, try `pip install cartopy[ows]`.\n'), e)
 
         self.source = WFSGeometrySource(wfs, features)
         crs = self.source.default_projection()
