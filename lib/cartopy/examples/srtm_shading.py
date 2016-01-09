@@ -1,8 +1,7 @@
 __tags__ = ['Scalar data']
 """
-This example illustrates the automatic download of
-STRM data, gap filling (using gdal) and adding shading
-to create a so-called "Shaded Relief SRTM".
+This example illustrates the automatic download of STRM data, and adding of
+shading to create a so-called "Shaded Relief SRTM".
 
 Originally contributed by Thomas Lecocq (http://geophysique.be).
 
@@ -15,14 +14,14 @@ from cartopy.io import PostprocessedRasterSource, LocatedImage
 from cartopy.io.srtm import SRTM3Source
 
 
-def fill_and_shade(located_elevations):
+def shade(located_elevations):
     """
-    Given an array of elevations in a LocatedImage, fill any holes in
-    the data and add a relief (shadows) to give a realistic 3d appearance.
+    Given an array of elevations in a LocatedImage, add a relief (shadows) to
+    give a realistic 3d appearance.
 
     """
-    new_elevations = srtm.fill_gaps(located_elevations.image, max_distance=15)
-    new_img = srtm.add_shading(new_elevations, azimuth=135, altitude=15)
+    new_img = srtm.add_shading(located_elevations.image,
+                               azimuth=135, altitude=15)
     return LocatedImage(new_img, located_elevations.extent)
 
 
@@ -30,8 +29,8 @@ def main():
     ax = plt.axes(projection=ccrs.PlateCarree())
 
     # Define a raster source which uses the SRTM3 data and applies the
-    # fill_and_shade function when the data is retrieved.
-    shaded_srtm = PostprocessedRasterSource(SRTM3Source(), fill_and_shade)
+    # shade function when the data is retrieved.
+    shaded_srtm = PostprocessedRasterSource(SRTM3Source(), shade)
 
     # Add the shaded SRTM source to our map with a grayscale colormap.
     ax.add_raster(shaded_srtm, cmap='Greys')

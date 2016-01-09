@@ -27,7 +27,6 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
 
 from __future__ import (absolute_import, division, print_function)
 
-import json
 import os
 import warnings
 
@@ -90,7 +89,18 @@ class SRTM3Source(RasterSource):
         min_x, min_y = np.floor([min_x, min_y])
         nx = int(np.ceil(max_x) - min_x)
         ny = int(np.ceil(max_y) - min_y)
-        if nx > self._max_tiles[0] or ny > self._max_tiles[1]:
+        skip = False
+        if nx > self._max_tiles[0]:
+            warnings.warn(
+                'Required SRTM3 tile count ({}) exceeds maximum ''({}). '
+                'Increase max_nx limit.'.format(nx, self._max_tiles[0]))
+            skip = True
+        if ny > self._max_tiles[1]:
+            warnings.warn(
+                'Required SRTM3 tile count ({}) exceeds maximum ({}). '
+                'Increase max_ny limit.'.format(ny, self._max_tiles[1]))
+            skip = True
+        if skip:
             return []
         else:
             img, _, extent = self.combined(min_x, min_y, nx, ny)
@@ -204,6 +214,8 @@ def fill_gaps(elevation, max_distance=10):
     :rtype: numpy.ndarray
     :return: SRTM elevation data with filled gaps..
     """
+    warnings.warn("The fill_gaps function has been deprecated. "
+                  "See the \"What's new\" section for v0.14.")
     # Lazily import osgeo - it is only an optional dependency for cartopy.
     from osgeo import gdal
     from osgeo import gdal_array
@@ -290,12 +302,13 @@ class SRTM3Downloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'x', 'y')
 
-    _JSON_SRTM3_LOOKUP = os.path.join(os.path.dirname(__file__),
-                                      'srtm.json')
-    _SRTM3_LOOKUP_URL = json.load(open(_JSON_SRTM3_LOOKUP, 'r'))
+    _SRTM3_BASE_URL = 'http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL3.003/2000.02.11/'
+    _SRTM3_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
+                                       'srtm.npz')
+    _SRTM3_LOOKUP_MASK = np.load(_SRTM3_LOOKUP_CACHE)['mask']
     """
-    The SRTM3 url lookup dictionary maps keys such as 'N43E043' to the url
-    of the file to download.
+    The SRTM3 lookup mask determines whether keys such as 'N43E043' are
+    available to download.
 
     """
     def __init__(self,
@@ -303,18 +316,32 @@ class SRTM3Downloader(Downloader):
                  pre_downloaded_path_template='',
                  ):
         # adds some SRTM3 defaults to the __init__ of a Downloader
-        # namely, the URl is determined on the fly using the
-        # ``SRTM3Downloader._SRTM3_LOOKUP_URL`` dictionary
+        # namely, the URL is determined on the fly using the
+        # ``SRTM3Downloader._SRTM3_LOOKUP_MASK`` array
         Downloader.__init__(self, None,
                             target_path_template,
                             pre_downloaded_path_template)
 
     def url(self, format_dict):
         # override the url method, looking up the url from the
-        # ``SRTM3Downloader._SRTM3_LOOKUP_URL`` dictionary
-        key = u'{y}{x}'.format(**format_dict)
-        url = SRTM3Downloader._SRTM3_LOOKUP_URL.get(key, None)
-        return url
+        # ``SRTM3Downloader._SRTM3_LOOKUP_MASK`` array
+        lat = int(format_dict['y'][1:])
+        # Change to co-latitude.
+        if format_dict['y'][0] == 'N':
+            colat = 90 - lat
+        else:
+            colat = 90 + lat
+
+        lon = int(format_dict['x'][1:4])
+        # Ensure positive.
+        if format_dict['x'][0] == 'W':
+            lon = 360 - lon
+
+        if SRTM3Downloader._SRTM3_LOOKUP_MASK[lon, colat]:
+            return (SRTM3Downloader._SRTM3_BASE_URL +
+                    u'{y}{x}.SRTMGL3.hgt.zip'.format(**format_dict))
+        else:
+            return None
 
     def acquire_resource(self, target_path, format_dict):
         from zipfile import ZipFile
@@ -339,44 +366,55 @@ class SRTM3Downloader(Downloader):
         return target_path
 
     @staticmethod
-    def _create_srtm3_dict():
+    def _create_srtm3_mask(filename=None):
         """
-        Returns a dictionary mapping srtm filename to the URL of the file.
+        Returns a NumPy mask of available lat/lon.
 
         This is slow as it must query the SRTM server to identify the
-        continent from which the tile comes. Hence a json file with this
-        content exists in ``SRTM3Downloader._JSON_SRTM3_LOOKUP``.
+        continent from which the tile comes. Hence a NumPy file with this
+        content exists in ``SRTM3Downloader._SRTM3_LOOKUP_CACHE``.
 
-        The json file was created with::
+        The NumPy file was created with::
 
             import cartopy.io.srtm as srtm
-            import json
-            fh = open(srtm.SRTM3Downloader._JSON_SRTM3_LOOKUP, 'w')
-            json.dump(srtm.SRTM3Downloader._create_srtm3_dict(), fh)
+            import numpy as np
+            np.savez_compressed(srtm.SRTM3Downloader._SRTM3_LOOKUP_CACHE,
+                                mask=srtm.SRTM3Downloader._create_srtm3_mask())
 
         """
         # lazy imports. In most situations, these are not
         # dependencies of cartopy.
-        from six.moves.urllib.request import urlopen
-        from BeautifulSoup import BeautifulSoup
+        from bs4 import BeautifulSoup
+        if filename is None:
+            from six.moves.urllib.request import urlopen
+            with urlopen(SRTM3Downloader._SRTM3_BASE_URL) as f:
+                html = f.read()
+        else:
+            with open(filename) as f:
+                html = f.read()
 
-        files = {}
+        mask = np.zeros((360, 181), dtype=np.bool)
 
-        for continent in ['Australia', 'Africa', 'Eurasia', 'Islands',
-                          'North_America', 'South_America']:
+        soup = BeautifulSoup(html)
 
-            url = "http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/%s" % continent
-            f = urlopen(url)
-            html = f.read()
-            soup = BeautifulSoup(html)
+        for link in soup('a'):
+            name = str(link.text).strip()
+            if name[0] in 'NS' and name.endswith('.hgt.zip'):
+                lat = int(name[1:3])
+                # Change to co-latitude.
+                if name[0] == 'N':
+                    colat = 90 - lat
+                else:
+                    colat = 90 + lat
 
-            for link in soup('li'):
-                name = str(link.text)
-                if name != ' Parent Directory':
-                    # remove the '.hgt.zip'
-                    files[name[:-8]] = url + '/' + name
-            f.close()
-        return files
+                lon = int(name[4:7])
+                # Ensure positive.
+                if name[3] == 'W':
+                    lon = 360 - lon
+
+                mask[lon, colat] = True
+
+        return mask
 
     @classmethod
     def default_downloader(cls):
@@ -385,7 +423,7 @@ class SRTM3Downloader(Downloader):
         method is used to create the default configuration in cartopy.config
 
         """
-        default_spec = ('SRTM', 'SRTM3', '{y}{x}.hgt')
+        default_spec = ('SRTM', 'SRTMGL3', '{y}{x}.hgt')
         target_path_template = os.path.join('{config[data_dir]}',
                                             *default_spec)
         pre_path_template = os.path.join('{config[pre_existing_data_dir]}',

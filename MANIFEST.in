@@ -5,6 +5,6 @@ include INSTALL
 include README.rst
 include requirements/*.txt
 include lib/cartopy/data/*
-include lib/cartopy/io/srtm.json
+include lib/cartopy/io/srtm.npz
 recursive-include lib *.py
 recursive-include lib *.pyx *.pxd *.h

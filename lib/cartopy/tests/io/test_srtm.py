@@ -43,7 +43,7 @@ def test_srtm3_retrieve():
         # check that the data is fairly sensible
         msg = 'srtm data has changed. arbitrary value testing failed.'
         assert img.max() == 602, msg
-        assert img.min() == -32768, msg
+        assert img.min() == -34, msg
         assert img[-10, 12] == 78, msg + 'Got {}'.format(img[-10, 12])
 
 

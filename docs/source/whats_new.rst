@@ -13,6 +13,13 @@ Features
   convenience function that returns geodetic circles. This is used by
   :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot` which draws Tissot's indicatrices on the axes.
 
+* The SRTM3 data source has been changed to the `LP DAAC Data Pool
+  <https://lpdaac.usgs.gov/data_access/data_pool>`. The Data Pool is more
+  consistent, fixing several missing tiles, and the data is void-filled.
+  Consequently, the :func:`cartopy.srtm.fill_gaps` function has been deprecated
+  as it has no purpose. The :ref:`SRTM example<examples-srtm_shading>` has also
+  been updated to skip the void-filling step.
+
 
 
 What's new in cartopy 0.13
