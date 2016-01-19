@@ -1778,6 +1778,75 @@ class AzimuthalEquidistant(Projection):
         return self._y_limits
 
 
+class Sinusoidal(Projection):
+    """
+    A Sinusoidal projection
+
+    This projection provides generally accurate sizes, but angles are distorted
+    toward the bounds.
+    """
+
+    def __init__(self, central_longitude=0.0, false_easting=0, false_northing=0,
+            a=6371007.181, b=6371007.181, globe=None):
+        """
+        Kwargs:
+
+            * central_longitude - The true longitude of the central meridian in
+                                  degrees. Defaults to 0.
+            * false_easting - X offset from the planar origin in metres.
+                              Defaults to 0.
+            * false_northing - Y offset from the planar origin in metres.
+                               Defaults to 0.
+            * a - semimajor axis length of the Earth
+            * b - semiminor axis length of the Earth
+            * globe - An instance of :class:`cartopy.crs.Globe`. If omitted, a
+                      default globe is created.
+
+        """
+        proj4_params = [('proj', 'sinu'), ('lon_0', central_longitude),
+                        ('x_0', false_easting), ('y_0', false_northing),
+                        ('a', a), ('b', b), ('units', 'm')]
+        super(Sinusoidal, self).__init__(proj4_params, globe=globe)
+
+        geodetic_crs = self.as_geodetic()
+
+        def transform(latitude, longitude):
+            return self.transform_point(
+                longitude + central_longitude + false_easting,
+                latitude + false_northing,
+                geodetic_crs
+            )
+
+        lats = np.linspace(-90, 90, 91)
+
+        # Right half, going up
+        points = [transform(lat, 180) for lat in lats]
+        # Left half, going down
+        points += [transform(lat, -180) for lat in lats[::-1]]
+
+        self._boundary = sgeom.LineString(points[::-1])
+
+        xs, ys = zip(*points)
+        self._x_limits = min(xs), max(xs)
+        self._y_limits = min(ys), max(ys)
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return 0.01
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
 class _BoundaryPoint(object):
     def __init__(self, distance, kind, data):
         """
