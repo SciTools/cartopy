@@ -42,7 +42,7 @@ PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'TransverseMercator': 2, 'LambertCylindrical': 2,
                   'LambertConformal': 2, 'Stereographic': 2, 'Miller': 2,
                   'Orthographic': 2, 'UTM': 2, 'AlbersEqualArea': 2,
-                  'AzimuthalEquidistant': 2,
+                  'AzimuthalEquidistant': 2, 'Sinusoidal': 2,
                   'InterruptedGoodeHomolosine': 3, 'RotatedPole': 3,
                   'OSGB': 4}
 
