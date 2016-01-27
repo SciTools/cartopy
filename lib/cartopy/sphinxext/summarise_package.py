@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -113,7 +113,7 @@ def objects_to_document(module_name):
 
         document_these = filter(is_from_this_module, document_these)
         document_these = sorted(document_these,
-                                key=lambda x: (type(x[1]),
+                                key=lambda x: (str(type(x[1])),
                                                not x[0].isupper(),
                                                x[0]))
 
