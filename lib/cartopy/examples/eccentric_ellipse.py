@@ -46,8 +46,8 @@ def vesta_image():
     # The image is extremely high-resolution, which takes a long time to
     # plot. Sub-sampling reduces the time taken to plot while not
     # significantly altering the integrity of the result.
-    smaller_image = raw_image.resize([raw_image.size[0] / 10,
-                                      raw_image.size[1] / 10])
+    smaller_image = raw_image.resize([raw_image.size[0] // 10,
+                                      raw_image.size[1] // 10])
     img = np.asarray(smaller_image)
     # We define the semimajor and semiminor axes, but must also tell the
     # globe not to use the WGS84 ellipse, which is its default behaviour.
