@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -41,7 +41,7 @@ PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
                   'TransverseMercator': 2, 'LambertCylindrical': 2,
                   'LambertConformal': 2, 'Stereographic': 2, 'Miller': 2,
-                  'Orthographic': 2, 'UTM': 2, 'AlbersEqualArea': 2, 
+                  'Orthographic': 2, 'UTM': 2, 'AlbersEqualArea': 2,
                   'AzimuthalEquidistant': 2,
                   'InterruptedGoodeHomolosine': 3, 'RotatedPole': 3,
                   'OSGB': 4}
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     table.write('Cartopy projection list\n')
     table.write('=======================\n\n\n')
 
-    prj_class_sorter = lambda cls: (PRJ_SORT_ORDER.get(cls.__name__, []),
+    prj_class_sorter = lambda cls: (PRJ_SORT_ORDER.get(cls.__name__, 100),
                                     cls.__name__)
     for prj in sorted(find_projections(), key=prj_class_sorter):
         name = prj.__name__
