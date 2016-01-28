@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -55,8 +55,7 @@ cdef extern from "_trace.h":
                                        GEOSGeometry *g_domain,
                                        double threshold)
 
-# XXX What should go here?
-ctypedef long ptr
+ctypedef unsigned long ptr
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
