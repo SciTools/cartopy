@@ -7,6 +7,11 @@ What's New in cartopy 0.14
 Features
 --------
 
+* Zachary Tessler and Raj Kesavan added the :class:`cartopy.crs.Sinusoidal` projection,
+  allowing MODIS data to be visualised in its native projection. Additionally, a
+  prepared :data:`cartopy.crs.Sinusoidal.MODIS` projection has been made available for
+  convenience.
+
 * Joseph Hogg and Daniel Atton Beckmann added the :class:`cartopy.geodesic.Geodesic`
   class which wraps the proj.4 geodesic library. This allows users to solve the direct and
   inverse geodesic problems (calculating distances between points etc). It also contains a
@@ -22,6 +27,9 @@ Features
   provides SRTM at a higher resolution of 1 arc-second, which may be accessed
   via :class:`cartopy.io.srtm.SRTM1Source`.
 
+Deprecations
+------------
+* :data:`cartopy.crs.GOOGLE_MERCATOR` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
 
 
 What's new in cartopy 0.13

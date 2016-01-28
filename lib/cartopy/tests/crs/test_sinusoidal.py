@@ -69,7 +69,7 @@ class TestSinusoidal(unittest.TestCase):
         # Testpoints verified with MODLAND Tile Calculator
         # http://landweb.nascom.nasa.gov/cgi-bin/developer/tilemap.cgi
         # Settings: Sinusoidal, Global map coordinates, Forward mapping
-        crs = ccrs.MODIS
+        crs = ccrs.Sinusoidal.MODIS
         lons = np.array([-180, -50, 40, 180])
         lats = np.array([-89.999, 30, 20, 89.999])
         expected_x = np.array([-349.33, -4814886.99,
