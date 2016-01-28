@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2014, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -70,7 +70,7 @@ class GoogleTiles(object):
             raise ValueError(msg % self.style)
 
         self.imgs = []
-        self.crs = ccrs.GOOGLE_MERCATOR
+        self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
 
     def image_for_domain(self, target_domain, target_z):
