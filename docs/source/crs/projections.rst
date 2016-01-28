@@ -42,7 +42,7 @@ AlbersEqualArea
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(5.12985642927, 3))
+    plt.figure(figsize=(5.129856429268199, 3))
     ax = plt.axes(projection=ccrs.AlbersEqualArea())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -74,7 +74,7 @@ LambertConformal
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(4.28969332205, 3))
+    plt.figure(figsize=(4.28969332204859, 3))
     ax = plt.axes(projection=ccrs.LambertConformal())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -90,7 +90,7 @@ LambertCylindrical
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(9.42477796077, 3))
+    plt.figure(figsize=(9.42477796076938, 3))
     ax = plt.axes(projection=ccrs.LambertCylindrical())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -106,7 +106,7 @@ Mercator
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3.50907018473, 3))
+    plt.figure(figsize=(3.5090701847348473, 3))
     ax = plt.axes(projection=ccrs.Mercator())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -122,7 +122,7 @@ Miller
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(4.09152901955, 3))
+    plt.figure(figsize=(4.091529019548417, 3))
     ax = plt.axes(projection=ccrs.Miller())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -170,8 +170,24 @@ Robinson
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(5.91496652704, 3))
+    plt.figure(figsize=(5.914966076674721, 3))
     ax = plt.axes(projection=ccrs.Robinson())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+Sinusoidal
+----------
+
+.. autoclass:: cartopy.crs.Sinusoidal
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6.0100710855457855, 3))
+    ax = plt.axes(projection=ccrs.Sinusoidal())
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -218,7 +234,7 @@ UTM
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(0.128571428571, 3))
+    plt.figure(figsize=(0.12857142857142856, 3))
     ax = plt.axes(projection=ccrs.UTM(zone=30))
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -234,7 +250,7 @@ InterruptedGoodeHomolosine
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(6.92280629527, 3))
+    plt.figure(figsize=(6.922806295266478, 3))
     ax = plt.axes(projection=ccrs.InterruptedGoodeHomolosine())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -251,7 +267,7 @@ RotatedPole
     import cartopy.crs as ccrs
 
     plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.RotatedPole(pole_latitude=37.5, pole_longitude=177.5))
+    ax = plt.axes(projection=ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -266,7 +282,7 @@ OSGB
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(1.61538461538, 3))
+    plt.figure(figsize=(1.6153846153846154, 3))
     ax = plt.axes(projection=ccrs.OSGB())
     ax.coastlines(resolution='50m')
     ax.gridlines()
@@ -282,7 +298,7 @@ EuroPP
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(2.61538461538, 3))
+    plt.figure(figsize=(2.6153846153846154, 3))
     ax = plt.axes(projection=ccrs.EuroPP())
     ax.coastlines(resolution='50m')
     ax.gridlines()
@@ -330,7 +346,7 @@ LambertAzimuthalEqualArea
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3.00670336247, 3))
+    plt.figure(figsize=(3.0065680601446605, 3))
     ax = plt.axes(projection=ccrs.LambertAzimuthalEqualArea())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -362,7 +378,7 @@ OSNI
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(2.43233741378, 3))
+    plt.figure(figsize=(2.4323374137753486, 3))
     ax = plt.axes(projection=ccrs.OSNI())
     ax.coastlines(resolution='10m')
     ax.gridlines()

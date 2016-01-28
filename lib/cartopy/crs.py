@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -1776,6 +1776,79 @@ class AzimuthalEquidistant(Projection):
     @property
     def y_limits(self):
         return self._y_limits
+
+
+class Sinusoidal(Projection):
+    """
+    A Sinusoidal projection.
+
+    This projection is equal-area.
+    """
+
+    def __init__(self, central_longitude=0.0, false_easting=0.0,
+                 false_northing=0.0, globe=None):
+        """
+        Kwargs:
+
+            * central_longitude - The central longitude. Defaults to 0.
+            * false_easting - X offset from planar origin in metres.
+                              Defaults to 0.
+            * false_northing - Y offset from planar origin in metres.
+                               Defaults to 0.
+            * globe - A :class:`cartopy.crs.Globe`.
+                      If omitted, a default globe is created.
+        """
+        proj4_params = [('proj', 'sinu'),
+                        ('lon_0', central_longitude),
+                        ('x_0', false_easting),
+                        ('y_0', false_northing)]
+        super(Sinusoidal, self).__init__(proj4_params, globe=globe)
+
+        # Obtain boundary points
+        points = []
+        n = 91
+        geodetic_crs = self.as_geodetic()
+        for lat in np.linspace(-90, 90, n):
+            points.append(
+                self.transform_point(180 + central_longitude,
+                                     lat, geodetic_crs)
+            )
+        for lat in np.linspace(90, -90, n):
+            points.append(
+                self.transform_point(-180 + central_longitude,
+                                     lat, geodetic_crs)
+            )
+        points.append(
+            self.transform_point(180 + central_longitude, -90, geodetic_crs))
+
+        self._boundary = sgeom.LineString(points[::-1])
+        minx, miny, maxx, maxy = self._boundary.bounds
+        self._x_limits = minx, maxx
+        self._y_limits = miny, maxy
+        self._threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+# MODIS data products use a Sinusoidal projection of a spherical Earth
+# http://modis-land.gsfc.nasa.gov/GCTP.html
+MODIS = Sinusoidal(globe=Globe(ellipse=None,
+                               semimajor_axis=6371007.181,
+                               semiminor_axis=6371007.181,
+                               nadgrids='@null'))
 
 
 class _BoundaryPoint(object):
