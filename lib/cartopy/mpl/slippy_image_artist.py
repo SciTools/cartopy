@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014, Met Office
 #
 # This file is part of cartopy.
 #
@@ -47,12 +47,7 @@ class SlippyImageArtist(AxesImage):
         if not self.get_visible():
             return
 
-        try:
-            ax = self.axes
-        except AttributeError:
-            # matplotlib <1.5.0
-            ax = self.get_axes()
-
+        ax = self.get_axes()
         window_extent = ax.get_window_extent()
         [x1, y1], [x2, y2] = ax.viewLim.get_points()
         located_images = self.raster_source.fetch_raster(
