@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -28,74 +28,118 @@ import cartopy.io.srtm
 from cartopy.tests.io.test_downloaders import download_to_temp
 
 
-def test_srtm3_retrieve():
-    # test that the download mechanism for srtm3 works
+def _test_srtm_retrieve(Source, read_SRTM, max_, min_, pt):
+    # test that the download mechanism for SRTM works
     with download_to_temp() as tmp_dir:
         with warnings.catch_warnings(record=True) as w:
-            r = cartopy.io.srtm.SRTM3Source().srtm_fname(-4, 50)
+            r = Source().srtm_fname(-4, 50)
             assert len(w) == 1
             assert issubclass(w[0].category, cartopy.io.DownloadWarning)
 
         assert r.startswith(tmp_dir), 'File not downloaded to tmp dir'
 
-        img, _, _ = cartopy.io.srtm.read_SRTM3(r)
+        img, _, _ = read_SRTM(r)
 
         # check that the data is fairly sensible
-        msg = 'srtm data has changed. arbitrary value testing failed.'
-        assert img.max() == 602, msg
-        assert img.min() == -34, msg
-        assert img[-10, 12] == 78, msg + 'Got {}'.format(img[-10, 12])
+        msg = 'SRTM data has changed. Arbitrary value testing failed. Got {}.'
+        assert img.max() == max_, msg.format(img.max())
+        assert img.min() == min_, msg.format(img.min())
+        assert img[-10, 12] == pt, msg.format(img[-10, 12])
+
+
+def test_srtm3_retrieve():
+    _test_srtm_retrieve(cartopy.io.srtm.SRTM3Source,
+                        cartopy.io.srtm.read_SRTM3,
+                        602, -34, 78)
+
+
+def test_srtm1_retrieve():
+    _test_srtm_retrieve(cartopy.io.srtm.SRTM1Source,
+                        cartopy.io.srtm.read_SRTM1,
+                        602, -37, 50)
+
+
+def _test_srtm_out_of_range(Source, shape):
+    # Somewhere over the pacific the elevation should be 0.
+    img, _, _ = Source().combined(120, 2, 2, 2)
+    assert_array_equal(img, np.zeros(np.array(shape) * 2))
 
 
 def test_srtm3_out_of_range():
-    # Somewhere over the pacific the elevation should be 0.
-    img, _, _ = cartopy.io.srtm.SRTM3Source().combined(120, 2, 2, 2)
-    assert_array_equal(img, np.zeros(np.array((1201, 1201)) * 2))
+    _test_srtm_out_of_range(cartopy.io.srtm.SRTM3Source, (1201, 1201))
 
 
-class TestSRTM3Source__single_tile(unittest.TestCase):
-    def test_out_of_range(self):
-        source = cartopy.io.srtm.SRTM3Source()
+def test_srtm1_out_of_range():
+    _test_srtm_out_of_range(cartopy.io.srtm.SRTM1Source, (3601, 3601))
+
+
+class TestSRTMSource__single_tile(unittest.TestCase):
+    def _out_of_range(self, source):
         msg = 'No srtm tile found for those coordinates.'
         with self.assertRaisesRegexp(ValueError, msg):
             source.single_tile(-25, 50)
 
-    def test_in_range(self):
-        source = cartopy.io.srtm.SRTM3Source()
+    def test_out_of_range3(self):
+        self._out_of_range(cartopy.io.srtm.SRTM3Source())
+
+    def test_out_of_range1(self):
+        self._out_of_range(cartopy.io.srtm.SRTM1Source())
+
+    def _in_range(self, source, shape):
         img, crs, extent = source.single_tile(-1, 50)
         self.assertIsInstance(img, np.ndarray)
-        self.assertEqual(img.shape, (1201, 1201))
+        self.assertEqual(img.shape, shape)
         self.assertEqual(img.dtype, np.dtype('>i2'))
         self.assertEqual(crs, ccrs.PlateCarree())
         self.assertEqual(extent, (-1, 0, 50, 51))
 
-    def test_zeros(self):
-        source = cartopy.io.srtm.SRTM3Source()
+    def test_in_range3(self):
+        self._in_range(cartopy.io.srtm.SRTM3Source(), (1201, 1201))
+
+    def test_in_range1(self):
+        self._in_range(cartopy.io.srtm.SRTM1Source(), (3601, 3601))
+
+    def _zeros(self, source):
         _, _, extent = source.single_tile(0, 50)
         self.assertEqual(extent, (0, 1, 50, 51))
 
+    def test_zeros3(self):
+        self._zeros(cartopy.io.srtm.SRTM3Source())
 
-class TestSRTM3Source__combined(unittest.TestCase):
-    def test_trivial(self):
-        source = cartopy.io.srtm.SRTM3Source()
+    def test_zeros1(self):
+        self._zeros(cartopy.io.srtm.SRTM1Source())
+
+
+class TestSRTMSource__combined(unittest.TestCase):
+    def _trivial(self, source):
         e_img, e_crs, e_extent = source.single_tile(-3, 50)
         r_img, r_crs, r_extent = source.combined(-3, 50, 1, 1)
         assert_array_equal(e_img, r_img)
         self.assertEqual(e_crs, r_crs)
         self.assertEqual(e_extent, r_extent)
 
-    def test_2by2(self):
-        source = cartopy.io.srtm.SRTM3Source()
+    def test_trivial3(self):
+        self._trivial(cartopy.io.srtm.SRTM3Source())
+
+    def test_trivial1(self):
+        self._trivial(cartopy.io.srtm.SRTM1Source())
+
+    def _2by2(self, source):
         e_img, _, e_extent = source.combined(-1, 50, 2, 1)
         self.assertEqual(e_extent, (-1, 1, 50, 51))
         imgs = [source.single_tile(-1, 50)[0],
                 source.single_tile(0, 50)[0]]
         assert_array_equal(np.hstack(imgs), e_img)
 
+    def test_2by2_3(self):
+        self._2by2(cartopy.io.srtm.SRTM3Source())
+
+    def test_2by2_1(self):
+        self._2by2(cartopy.io.srtm.SRTM1Source())
+
 
 class TestSRTM3Source_fetch_raster(unittest.TestCase):
-    def test_as_combined(self):
-        source = cartopy.io.srtm.SRTM3Source()
+    def _as_combined(self, source):
         e_img, e_crs, e_extent = source.combined(-1, 50, 2, 1)
         imgs = source.fetch_raster(ccrs.PlateCarree(),
                                    (-0.9, 0.1, 50.1, 50.999),
@@ -104,6 +148,12 @@ class TestSRTM3Source_fetch_raster(unittest.TestCase):
         r_img, r_extent = imgs[0]
         self.assertEqual(e_extent, r_extent)
         assert_array_equal(e_img[::-1, :], r_img)
+
+    def test_as_combined3(self):
+        self._as_combined(cartopy.io.srtm.SRTM3Source())
+
+    def test_as_combined1(self):
+        self._as_combined(cartopy.io.srtm.SRTM1Source())
 
 
 if __name__ == '__main__':

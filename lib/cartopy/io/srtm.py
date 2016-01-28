@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -38,21 +38,24 @@ import cartopy.crs as ccrs
 from cartopy.io import fh_getter, Downloader, RasterSource, LocatedImage
 
 
-class SRTM3Source(RasterSource):
+class _SRTMSource(RasterSource):
     """
-    A source of SRTM3 data, which implements the cartopy's :ref`RasterSource
+    A source of SRTM data, which implements Cartopy's :ref:`RasterSource
     interface <raster-source-interface>`.
 
     """
-    def __init__(self, downloader=None, max_nx=3, max_ny=3):
+    def __init__(self, resolution, downloader, max_nx, max_ny):
         """
         Parameters
         ==========
+        resolution : int
+            The resolution of SRTM to download, in arc-seconds. Data is
+            available at resolutions of 3 and 1 arc-seconds.
         downloader : :class:`cartopy.io.Downloader` instance or None
-            The downloader to use for the SRTM3 dataset. If None, the
+            The downloader to use for the SRTM dataset. If None, the
             downloader will be taken using
-            :class:`cartopy.io.Downloader.from_config` with ('SRTM', 'SRTM3')
-            as the target.
+            :class:`cartopy.io.Downloader.from_config` with ('SRTM',
+            'SRTM{resolution}') as the target.
         max_nx : int
             The maximum number of x tiles to be combined when producing a
             wider composite for this RasterSource.
@@ -61,15 +64,25 @@ class SRTM3Source(RasterSource):
             taller composite for this RasterSource.
 
         """
-        #: The CRS of the underlying SRTM3 data.
+        if resolution == 3:
+            self._shape = (1201, 1201)
+        elif resolution == 1:
+            self._shape = (3601, 3601)
+        else:
+            raise ValueError(
+                'Resolution is an unexpected value ({}).'.format(resolution))
+        self._resolution = resolution
+
+        #: The CRS of the underlying SRTM data.
         self.crs = ccrs.PlateCarree()
 
-        #: The cartopy Downloader which can handle SRTM3 data. Normally, this
-        #: will be a :class:`SRTM3Downloader` instance.
+        #: The Cartopy Downloader which can handle SRTM data. Normally, this
+        #: will be a :class:`SRTMDownloader` instance.
         self.downloader = downloader
 
         if self.downloader is None:
-            self.downloader = Downloader.from_config(('SRTM', 'SRTM3'))
+            self.downloader = Downloader.from_config(
+                ('SRTM', 'SRTM' + str(resolution)))
 
         #: A tuple of (max_x_tiles, max_y_tiles).
         self._max_tiles = (max_nx, max_ny)
@@ -79,11 +92,13 @@ class SRTM3Source(RasterSource):
 
     def fetch_raster(self, projection, extent, target_resolution):
         """
-        Fetch SRTM3 elevation for the given projection and approximate extent.
+        Fetch SRTM elevation for the given projection and approximate extent.
 
         """
         if not self.validate_projection(projection):
-            raise ValueError('Unsupported projection for the SRTM3 source.')
+            raise ValueError(
+                'Unsupported projection for the SRTM{} source.'.format(
+                    self._resolution))
 
         min_x, max_x, min_y, max_y = extent
         min_x, min_y = np.floor([min_x, min_y])
@@ -92,13 +107,15 @@ class SRTM3Source(RasterSource):
         skip = False
         if nx > self._max_tiles[0]:
             warnings.warn(
-                'Required SRTM3 tile count ({}) exceeds maximum ''({}). '
-                'Increase max_nx limit.'.format(nx, self._max_tiles[0]))
+                'Required SRTM{} tile count ({}) exceeds maximum ({}). '
+                'Increase max_nx limit.'.format(self._resolution, nx,
+                                                self._max_tiles[0]))
             skip = True
         if ny > self._max_tiles[1]:
             warnings.warn(
-                'Required SRTM3 tile count ({}) exceeds maximum ({}). '
-                'Increase max_ny limit.'.format(ny, self._max_tiles[1]))
+                'Required SRTM{} tile count ({}) exceeds maximum ({}). '
+                'Increase max_ny limit.'.format(self._resolution, ny,
+                                                self._max_tiles[1]))
             skip = True
         if skip:
             return []
@@ -119,8 +136,10 @@ class SRTM3Source(RasterSource):
         x = '%s%03d' % ('E' if lon >= 0 else 'W', abs(int(lon)))
         y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
 
-        srtm_downloader = Downloader.from_config(('SRTM', 'SRTM3'))
-        params = {'config': config, 'x': x, 'y': y}
+        srtm_downloader = Downloader.from_config(
+            ('SRTM', 'SRTM' + str(self._resolution)))
+        params = {'config': config, 'resolution': self._resolution,
+                  'x': x, 'y': y}
 
         # If the URL doesn't exist then we are over sea/north/south of the
         # limits of the SRTM data and we return None.
@@ -136,7 +155,7 @@ class SRTM3Source(RasterSource):
 
         """
         bottom_left_ll = (lon_min, lat_min)
-        shape = np.array([1201, 1201])
+        shape = np.array(self._shape)
         img = np.zeros(shape * (ny, nx))
 
         for i, j in np.ndindex(nx, ny):
@@ -160,7 +179,61 @@ class SRTM3Source(RasterSource):
         fname = self.srtm_fname(lon, lat)
         if fname is None:
             raise ValueError('No srtm tile found for those coordinates.')
-        return read_SRTM3(fname)
+        return read_SRTM(fname)
+
+
+class SRTM3Source(_SRTMSource):
+    """
+    A source of SRTM3 data, which implements Cartopy's :ref:`RasterSource
+    interface <raster-source-interface>`.
+
+    """
+    def __init__(self, downloader=None, max_nx=3, max_ny=3):
+        """
+        Parameters
+        ==========
+        downloader : :class:`cartopy.io.Downloader` instance or None
+            The downloader to use for the SRTM3 dataset. If None, the
+            downloader will be taken using
+            :class:`cartopy.io.Downloader.from_config` with ('SRTM', 'SRTM3')
+            as the target.
+        max_nx : int
+            The maximum number of x tiles to be combined when producing a
+            wider composite for this RasterSource.
+        max_ny : int
+            The maximum number of y tiles to be combined when producing a
+            taller composite for this RasterSource.
+
+        """
+        super(SRTM3Source, self).__init__(resolution=3, downloader=downloader,
+                                          max_nx=max_nx, max_ny=max_ny)
+
+
+class SRTM1Source(_SRTMSource):
+    """
+    A source of SRTM1 data, which implements Cartopy's :ref:`RasterSource
+    interface <raster-source-interface>`.
+
+    """
+    def __init__(self, downloader=None, max_nx=3, max_ny=3):
+        """
+        Parameters
+        ==========
+        downloader : :class:`cartopy.io.Downloader` instance or None
+            The downloader to use for the SRTM1 dataset. If None, the
+            downloader will be taken using
+            :class:`cartopy.io.Downloader.from_config` with ('SRTM', 'SRTM1')
+            as the target.
+        max_nx : int
+            The maximum number of x tiles to be combined when producing a
+            wider composite for this RasterSource.
+        max_ny : int
+            The maximum number of y tiles to be combined when producing a
+            taller composite for this RasterSource.
+
+        """
+        super(SRTM1Source, self).__init__(resolution=1, downloader=downloader,
+                                          max_nx=max_nx, max_ny=max_ny)
 
 
 def srtm(lon, lat):
@@ -239,10 +312,9 @@ def srtm_composite(lon_min, lat_min, nx, ny):
     return SRTM3Source().combined(lon_min, lat_min, nx, ny)
 
 
-def read_SRTM3(fh):
+def read_SRTM(fh):
     """
-    Read the (1201, 1201) array of (y, x) elevation data from the given
-    named file-handle.
+    Read the array of (y, x) elevation data from the given named file-handle.
 
     Parameters
     ==========
@@ -254,7 +326,10 @@ def read_SRTM3(fh):
     =======
     elevation : numpy array
         The elevation values from the SRTM file. Data is flipped vertically
-        such that the higher the the y-index, the further north the data.
+        such that the higher the y-index, the further north the data. Data
+        shape is automatically determined by the size of data read from file,
+        and is either (1201, 1201) for 3 arc-second data or (3601, 3601) for 1
+        arc-second data.
     crs : :class:`cartopy.crs.CRS`
         The coordinate reference system of the extents.
     extents : 4-tuple (x0, x1, y0, y1)
@@ -268,7 +343,13 @@ def read_SRTM3(fh):
         fh = zfh.open(os.path.basename(fname[:-4]), 'r')
 
     elev = np.fromfile(fh, dtype=np.dtype('>i2'))
-    elev.shape = (1201, 1201)
+    if elev.size == 12967201:
+        elev.shape = (3601, 3601)
+    elif elev.size == 1442401:
+        elev.shape = (1201, 1201)
+    else:
+        raise ValueError(
+            'Shape of SRTM data ({}) is unexpected.'.format(elev.size))
 
     fname = os.path.basename(fname)
     y_dir, y, x_dir, x = fname[0], int(fname[1:3]), fname[3], int(fname[4:7])
@@ -280,6 +361,10 @@ def read_SRTM3(fh):
         x *= -1
 
     return elev[::-1, ...], ccrs.PlateCarree(), (x, x + 1, y, y + 1)
+
+
+read_SRTM3 = read_SRTM
+read_SRTM1 = read_SRTM
 
 
 def SRTM3_retrieve(lon, lat):
@@ -295,19 +380,20 @@ def SRTM3_retrieve(lon, lat):
     return SRTM3Source().srtm_fname(lon, lat)
 
 
-class SRTM3Downloader(Downloader):
+class SRTMDownloader(Downloader):
     """
-    Provides a SRTM3 download mechanism.
+    Provides a SRTM download mechanism.
 
     """
-    FORMAT_KEYS = ('config', 'x', 'y')
+    FORMAT_KEYS = ('config', 'resolution', 'x', 'y')
 
-    _SRTM3_BASE_URL = 'http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL3.003/2000.02.11/'
-    _SRTM3_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
-                                       'srtm.npz')
-    _SRTM3_LOOKUP_MASK = np.load(_SRTM3_LOOKUP_CACHE)['mask']
+    _SRTM_BASE_URL = ('http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL{resolution}.003/'
+                      '2000.02.11/')
+    _SRTM_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
+                                      'srtm.npz')
+    _SRTM_LOOKUP_MASK = np.load(_SRTM_LOOKUP_CACHE)['mask']
     """
-    The SRTM3 lookup mask determines whether keys such as 'N43E043' are
+    The SRTM lookup mask determines whether keys such as 'N43E043' are
     available to download.
 
     """
@@ -315,16 +401,16 @@ class SRTM3Downloader(Downloader):
                  target_path_template,
                  pre_downloaded_path_template='',
                  ):
-        # adds some SRTM3 defaults to the __init__ of a Downloader
+        # adds some SRTM defaults to the __init__ of a Downloader
         # namely, the URL is determined on the fly using the
-        # ``SRTM3Downloader._SRTM3_LOOKUP_MASK`` array
+        # ``SRTMDownloader._SRTM_LOOKUP_MASK`` array
         Downloader.__init__(self, None,
                             target_path_template,
                             pre_downloaded_path_template)
 
     def url(self, format_dict):
         # override the url method, looking up the url from the
-        # ``SRTM3Downloader._SRTM3_LOOKUP_MASK`` array
+        # ``SRTMDownloader._SRTM_LOOKUP_MASK`` array
         lat = int(format_dict['y'][1:])
         # Change to co-latitude.
         if format_dict['y'][0] == 'N':
@@ -337,9 +423,9 @@ class SRTM3Downloader(Downloader):
         if format_dict['x'][0] == 'W':
             lon = 360 - lon
 
-        if SRTM3Downloader._SRTM3_LOOKUP_MASK[lon, colat]:
-            return (SRTM3Downloader._SRTM3_BASE_URL +
-                    u'{y}{x}.SRTMGL3.hgt.zip'.format(**format_dict))
+        if SRTMDownloader._SRTM_LOOKUP_MASK[lon, colat]:
+            return (SRTMDownloader._SRTM_BASE_URL +
+                    u'{y}{x}.SRTMGL{resolution}.hgt.zip').format(**format_dict)
         else:
             return None
 
@@ -366,20 +452,20 @@ class SRTM3Downloader(Downloader):
         return target_path
 
     @staticmethod
-    def _create_srtm3_mask(filename=None):
+    def _create_srtm_mask(resolution, filename=None):
         """
         Returns a NumPy mask of available lat/lon.
 
         This is slow as it must query the SRTM server to identify the
         continent from which the tile comes. Hence a NumPy file with this
-        content exists in ``SRTM3Downloader._SRTM3_LOOKUP_CACHE``.
+        content exists in ``SRTMDownloader._SRTM_LOOKUP_CACHE``.
 
         The NumPy file was created with::
 
             import cartopy.io.srtm as srtm
             import numpy as np
-            np.savez_compressed(srtm.SRTM3Downloader._SRTM3_LOOKUP_CACHE,
-                                mask=srtm.SRTM3Downloader._create_srtm3_mask())
+            np.savez_compressed(srtm.SRTMDownloader._SRTM_LOOKUP_CACHE,
+                                mask=srtm.SRTMDownloader._create_srtm_mask(3))
 
         """
         # lazy imports. In most situations, these are not
@@ -387,7 +473,8 @@ class SRTM3Downloader(Downloader):
         from bs4 import BeautifulSoup
         if filename is None:
             from six.moves.urllib.request import urlopen
-            with urlopen(SRTM3Downloader._SRTM3_BASE_URL) as f:
+            url = SRTMDownloader._SRTM_BASE_URL.format(resolution=resolution)
+            with urlopen(url) as f:
                 html = f.read()
         else:
             with open(filename) as f:
@@ -423,7 +510,7 @@ class SRTM3Downloader(Downloader):
         method is used to create the default configuration in cartopy.config
 
         """
-        default_spec = ('SRTM', 'SRTMGL3', '{y}{x}.hgt')
+        default_spec = ('SRTM', 'SRTMGL{resolution}', '{y}{x}.hgt')
         target_path_template = os.path.join('{config[data_dir]}',
                                             *default_spec)
         pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
@@ -434,4 +521,6 @@ class SRTM3Downloader(Downloader):
 
 # add a generic SRTM downloader to the config 'downloaders' section.
 config['downloaders'].setdefault(('SRTM', 'SRTM3'),
-                                 SRTM3Downloader.default_downloader())
+                                 SRTMDownloader.default_downloader())
+config['downloaders'].setdefault(('SRTM', 'SRTM1'),
+                                 SRTMDownloader.default_downloader())

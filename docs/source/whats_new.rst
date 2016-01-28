@@ -14,11 +14,13 @@ Features
   :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot` which draws Tissot's indicatrices on the axes.
 
 * The SRTM3 data source has been changed to the `LP DAAC Data Pool
-  <https://lpdaac.usgs.gov/data_access/data_pool>`. The Data Pool is more
+  <https://lpdaac.usgs.gov/data_access/data_pool>`_. The Data Pool is more
   consistent, fixing several missing tiles, and the data is void-filled.
   Consequently, the :func:`cartopy.srtm.fill_gaps` function has been deprecated
   as it has no purpose. The :ref:`SRTM example<examples-srtm_shading>` has also
-  been updated to skip the void-filling step.
+  been updated to skip the void-filling step. Additionally, this data source
+  provides SRTM at a higher resolution of 1 arc-second, which may be accessed
+  via :class:`cartopy.io.srtm.SRTM1Source`.
 
 
 

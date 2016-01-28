@@ -11,7 +11,7 @@ from cartopy.io import srtm
 import matplotlib.pyplot as plt
 
 from cartopy.io import PostprocessedRasterSource, LocatedImage
-from cartopy.io.srtm import SRTM3Source
+from cartopy.io.srtm import SRTM3Source, SRTM1Source
 
 
 def shade(located_elevations):
@@ -25,12 +25,13 @@ def shade(located_elevations):
     return LocatedImage(new_img, located_elevations.extent)
 
 
-def main():
+def plot(Source, name):
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
 
-    # Define a raster source which uses the SRTM3 data and applies the
+    # Define a raster source which uses the SRTM data and applies the
     # shade function when the data is retrieved.
-    shaded_srtm = PostprocessedRasterSource(SRTM3Source(), shade)
+    shaded_srtm = PostprocessedRasterSource(Source(), shade)
 
     # Add the shaded SRTM source to our map with a grayscale colormap.
     ax.add_raster(shaded_srtm, cmap='Greys')
@@ -39,11 +40,16 @@ def main():
     # interesting orography.
     ax.set_extent([12, 13, 47, 48])
 
-    plt.title("SRTM Shaded Relief Map")
+    plt.title(name + " Shaded Relief Map")
 
     gl = ax.gridlines(draw_labels=True)
     gl.xlabels_top = False
     gl.ylabels_left = False
+
+
+def main():
+    plot(SRTM3Source, 'SRTM3')
+    plot(SRTM1Source, 'SRTM1')
 
     plt.show()
 
