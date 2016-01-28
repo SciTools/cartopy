@@ -1,12 +1,13 @@
 language: python
 
-python:
-  # This is not actually used. Because it would take an overly long time
-  # to build scipy we cannot use the virtual env of travis. Instead, we
-  # use miniconda.
-  - 2.7
-  - 3.3
-  - 3.4
+env:
+    matrix:
+        - PYTHON=2.7
+          PACKAGES="numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0 libpng=1.5.*"
+        - PYTHON=3.4
+          PACKAGES="numpy=1.8.2 matplotlib=1.3.1 scipy=0.14.0 libpng=1.5.*"
+        - PYTHON=3.4
+          PACKAGES="numpy=1.8.2 matplotlib=1.3.1"
 
 sudo: false
 
@@ -34,25 +35,10 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 3.4 ]]; then
-      PACKAGES="numpy=1.8.2 matplotlib=1.3.1 scipy=0.14.0 libpng=1.5.*";
-    else
-      PACKAGES="numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0 libpng=1.5.*";
-    fi
-  - PACKAGES="$PACKAGES cython"
-  - PACKAGES="$PACKAGES pillow"
-  - PACKAGES="$PACKAGES mock"
-  - PACKAGES="$PACKAGES nose"
+  - PACKAGES="$PACKAGES cython pillow mock nose pep8=1.5.7 proj4=4.9 pyshp shapely six requests pyepsg"
   - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
       PACKAGES="$PACKAGES owslib";
     fi
-  - PACKAGES="$PACKAGES pep8=1.5.7"
-  - PACKAGES="$PACKAGES proj4=4.9"
-  - PACKAGES="$PACKAGES pyshp"
-  - PACKAGES="$PACKAGES shapely"
-  - PACKAGES="$PACKAGES six"
-  - PACKAGES="$PACKAGES requests"
-  - PACKAGES="$PACKAGES pyepsg"
   - conda install $PACKAGES
 
   # Conda debug
