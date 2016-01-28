@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -236,7 +236,7 @@ cdef class CRS:
     cpdef is_geodetic(self):
         return bool(pj_is_latlong(self.proj4))
 
-    def transform_point(self, double x, double y, CRS src_crs not None):
+    def transform_point(self, double x, double y, CRS src_crs not None, trap=True):
         """
         transform_point(x, y, src_crs)
 
@@ -249,6 +249,8 @@ cdef class CRS:
         * y - the y coordinate, in ``src_crs`` coordinates, to transform
         * src_crs - instance of :class:`CRS` that represents the coordinate
                     system of ``x`` and ``y``.
+        * trap - Whether proj.4 errors for "latitude or longitude exceeded limits" and
+                 "tolerance condition error" should be trapped.
 
         Returns:
 
@@ -264,12 +266,14 @@ cdef class CRS:
             cx *= DEG_TO_RAD
             cy *= DEG_TO_RAD
         status = pj_transform(src_crs.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
-        #if status == -14 or status == -20:
+
+        if trap and status == -14 or status == -20:
             # -14 => "latitude or longitude exceeded limits"
             # -20 => "tolerance condition error"
-        #    cx = cy = NAN
-        #elif status != 0:
-        #    raise Proj4Error()
+            cx = cy = NAN
+        elif trap and status != 0:
+            raise Proj4Error()
+
         if self.is_geodetic():
             cx *= RAD_TO_DEG
             cy *= RAD_TO_DEG

@@ -27,6 +27,11 @@ Features
   provides SRTM at a higher resolution of 1 arc-second, which may be accessed
   via :class:`cartopy.io.srtm.SRTM1Source`.
 
+Incompatible changes
+--------------------
+* :meth:`cartopy.crs.CRS.transform_point` now issues NaNs when invalid transforms are identified.
+
+
 Deprecations
 ------------
 * :data:`cartopy.crs.GOOGLE_MERCATOR` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
