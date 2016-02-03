@@ -6,10 +6,13 @@ docs/build
 # cartopy build files
 lib/cartopy/trace.cpp
 lib/cartopy/trace.so
+lib/cartopy/trace.*.so
 lib/cartopy/_crs.c
 lib/cartopy/_crs.so
+lib/cartopy/_crs.*.so
 lib/cartopy/geodesic/_geodesic.c
 lib/cartopy/geodesic/_geodesic.so
+lib/cartopy/geodesic/_geodesic.*.so
 docs/build
 lib/cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
