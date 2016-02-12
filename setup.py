@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -21,6 +21,7 @@ Distribution definition for Cartopy.
 
 """
 
+import setuptools
 from setuptools import setup, Extension
 from setuptools import Command
 from setuptools import convert_path
@@ -31,6 +32,14 @@ import os
 import subprocess
 import sys
 import warnings
+
+
+# Ensure build-time dependencies are available.
+# See http://stackoverflow.com/a/12061891
+setuptools.dist.Distribution(
+    dict(
+        setup_requires=['Cython>=0.15.1', 'numpy>=1.6']))
+
 
 try:
     from Cython.Distutils import build_ext
