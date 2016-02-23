@@ -127,7 +127,7 @@ def test_shapefile_transform_cache():
         ax.add_geometries(geoms, ccrs.PlateCarree())
         ax.add_geometries(geoms, ccrs.PlateCarree())
         ax.add_geometries(geoms[:], ccrs.PlateCarree())
-        plt.draw()
+        ax.figure.canvas.draw()
 
     # Without caching the count would have been
     # n_calls * n_geom, but should now be just n_geom.
@@ -153,7 +153,7 @@ def test_shapefile_transform_cache():
 
 def test_contourf_transform_path_counting():
     ax = plt.axes(projection=ccrs.Robinson())
-    plt.draw()
+    ax.figure.canvas.draw()
 
     # Capture the size of the cache before our test.
     gc.collect()
@@ -167,7 +167,7 @@ def test_contourf_transform_path_counting():
         del cs
         if not six.PY3:
             del c
-        plt.draw()
+        ax.figure.canvas.draw()
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom.
