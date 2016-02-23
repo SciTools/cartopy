@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -86,7 +86,9 @@ class ImageTesting(object):
             image_output_directory = os.path.join(os.getcwd(),
                                                   'cartopy_test_output')
 
-    def __init__(self, img_names, tolerance=0.1 if mpl.__version__ < '1.4' else 0.5):
+    def __init__(self, img_names, tolerance=(0.1
+                                             if mpl.__version__ < '1.4' else
+                                             0.5)):
         # With matplotlib v1.3 the tolerance keyword is an RMS of the pixel
         # differences, as computed by matplotlib.testing.compare.calculate_rms
         self.img_names = img_names

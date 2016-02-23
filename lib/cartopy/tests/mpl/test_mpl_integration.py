@@ -55,7 +55,6 @@ def test_global_contour_wrap_no_transform():
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data)
-    # TODO: Needs dealing with!
 
 
 @ImageTesting(['global_contourf_wrap'])
