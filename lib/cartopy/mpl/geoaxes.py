@@ -1287,25 +1287,13 @@ class GeoAxes(matplotlib.axes.Axes):
         miny = np.amin(Y)
         maxy = np.amax(Y)
 
-        #####################
-        # PATCH
-        # XXX Non-standard matplotlib thing.
-        def patched_get_datalim(transData):
-            self = collection
-            x0, y0, x1, y1 = self._bbox.bounds
-            pth = mpath.Path([[x0, y0], [x1, y0], [x1, y1], [x0, y1],
-                              [x0, y0]])
-            boundary = (self.get_transform() - transData).transform_path(pth)
-            return boundary.get_extents()
-
-        collection.get_datalim = patched_get_datalim
-        # END OF PATCH
-        ##############
-
         corners = (minx, miny), (maxx, maxy)
+        collection._corners = corners
+        collection.get_datalim = lambda transData: collection._corners
+
         self.update_datalim(corners)
-        self.autoscale_view()
         self.add_collection(collection)
+        self.autoscale_view()
 
         ########################
         # PATCH
@@ -1365,9 +1353,6 @@ class GeoAxes(matplotlib.axes.Axes):
                         dmask = mask | C_mask
                     else:
                         dmask = mask
-
-                    # print 'Ratio of masked data: ',
-                    # print np.sum(mask) / float(np.product(mask.shape))
 
                     # create the masked array to be used with this pcolormesh
                     pcolormesh_data = np.ma.array(C, mask=mask)
@@ -1433,6 +1418,11 @@ class GeoAxes(matplotlib.axes.Axes):
                              ' consider using PlateCarree/RotatedPole.')
         kwargs.setdefault('transform', t)
         result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
+
+        # Update the datalim for this pcolor.
+        limits = result.get_datalim(self.axes.transData)
+        self.axes.update_datalim(limits)
+
         self.autoscale_view()
         return result
 
