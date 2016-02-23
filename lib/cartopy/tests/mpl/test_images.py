@@ -154,7 +154,7 @@ def test_imshow_projected():
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.54)
+@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()

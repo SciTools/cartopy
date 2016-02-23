@@ -128,7 +128,6 @@ def test_regrid_image():
     cmaps = {'red': 'Reds', 'green': 'Greens', 'blue': 'Blues'}
     for i, color in enumerate(['red', 'green', 'blue']):
         ax = plt.subplot(gs[i + 1], frameon=False, projection=target_proj)
-        ax.set_title(color)
         plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
                    cmap=cmaps[color])
         ax.coastlines()

@@ -33,7 +33,7 @@ from cartopy.tests.mpl import ImageTesting
 
 
 @ImageTesting(['poly_interiors'
-               if mpl.__version__ > '1.5' else
+               if mpl.__version__ >= '1.5' else
                'poly_interiors_pre_mpl_1.5'])
 def test_polygon_interiors():
 
