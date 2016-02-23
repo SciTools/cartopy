@@ -1386,10 +1386,6 @@ class GeoAxes(matplotlib.axes.Axes):
                         # scale the data according to the *original* data
                         pcolor_col.norm.autoscale_None(C)
 
-                        # Update the datalim for this pcolor.
-                        limits = pcolor_col.get_datalim(self.axes.transData)
-                        self.axes.update_datalim(limits)
-
                         # put the pcolor_col on the pcolormesh collection so
                         # that if really necessary, users can do things post
                         # this method
@@ -1422,6 +1418,11 @@ class GeoAxes(matplotlib.axes.Axes):
                              ' consider using PlateCarree/RotatedPole.')
         kwargs.setdefault('transform', t)
         result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
+
+        # Update the datalim for this pcolor.
+        limits = result.get_datalim(self.axes.transData)
+        self.axes.update_datalim(limits)
+
         self.autoscale_view()
         return result
 
