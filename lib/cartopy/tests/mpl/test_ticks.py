@@ -19,6 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import math
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import nose.tools
@@ -50,7 +51,10 @@ def _format_lon(val, i):
         return '%.0fW' % abs(val)
 
 
-@ImageTesting(['xticks_no_transform'], tolerance=0.12)
+test_fn_suffix = '' if mpl.__version__ >= '1.5' else 'pre_mpl_1.5'
+
+
+@ImageTesting(['xticks_no_transform' + test_fn_suffix], tolerance=0.12)
 def test_set_xticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -60,7 +64,7 @@ def test_set_xticks_no_transform():
     ax.set_xticks([-135, -45, 45, 135], minor=True)
 
 
-@ImageTesting(['xticks_cylindrical'], tolerance=0.12)
+@ImageTesting(['xticks_cylindrical' + test_fn_suffix], tolerance=0.12)
 def test_set_xticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
@@ -82,7 +86,7 @@ def test_set_xticks_non_cylindrical():
     plt.close()
 
 
-@ImageTesting(['yticks_no_transform'], tolerance=0.125)
+@ImageTesting(['yticks_no_transform' + test_fn_suffix])
 def test_set_yticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -92,7 +96,7 @@ def test_set_yticks_no_transform():
     ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
 
 
-@ImageTesting(['yticks_cylindrical'], tolerance=0.12)
+@ImageTesting(['yticks_cylindrical' + test_fn_suffix])
 def test_set_yticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
@@ -114,7 +118,7 @@ def test_set_yticks_non_cylindrical():
     plt.close()
 
 
-@ImageTesting(['xyticks'], tolerance=0.17)
+@ImageTesting(['xyticks' + test_fn_suffix])
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),

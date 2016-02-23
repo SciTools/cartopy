@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -55,7 +55,7 @@ def test_global_contour_wrap_no_transform():
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data)
-    #TODO: Needs dealing with!
+    # TODO: Needs dealing with!
 
 
 @ImageTesting(['global_contourf_wrap'])
@@ -79,6 +79,7 @@ def test_global_contourf_wrap_no_transform():
 global_pcolor_wrap = ('global_pcolor_wrap'
                       if mpl.__version__ >= '1.5' else
                       'global_pcolor_wrap_pre_mpl_1.5')
+
 
 @ImageTesting([global_pcolor_wrap])
 def test_global_pcolor_wrap_new_transform():
