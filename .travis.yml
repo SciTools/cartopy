@@ -6,12 +6,12 @@ env:
           PACKAGES="numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0"
         - PYTHON_VERSION=3.4
           PACKAGES="numpy=1.8.2 matplotlib=1.3.1 scipy=0.14.0"
-#        - NAME="Latest everything."
-#          PYTHON_VERSION=3
-#          PACKAGES="numpy matplotlib matplotlib-tests scipy owslib"
-#        - NAME="Latest everything (py2k)."
-#          PYTHON_VERSION=2
-#          PACKAGES="numpy matplotlib matplotlib-tests scipy owslib"
+        - NAME="Latest everything."
+          PYTHON_VERSION=3
+          PACKAGES="numpy matplotlib matplotlib-tests scipy"
+        - NAME="Latest everything (py2k)."
+          PYTHON_VERSION=2
+          PACKAGES="numpy matplotlib matplotlib-tests scipy"
 
 
 sudo: false
@@ -60,9 +60,11 @@ install:
 script:
   - mkdir ../test_folder
   - cd ../test_folder
-  - CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR nosetests cartopy --with-doctest -sv
+
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
+
+  - CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR nosetests cartopy --with-doctest -sv
 
 after_failure:
   - source activate test-environment
