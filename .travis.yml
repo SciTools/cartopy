@@ -1,22 +1,30 @@
 language: python
 
-python:
-  # This is not actually used. Because it would take an overly long time
-  # to build scipy we cannot use the virtual env of travis. Instead, we
-  # use miniconda.
-  - 2.7
-  - 3.3
-  - 3.4
+env:
+    matrix:
+        - PYTHON_VERSION=2.7
+          PACKAGES="numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0"
+        - PYTHON_VERSION=3.4
+          PACKAGES="numpy=1.8.2 matplotlib=1.3.1 scipy=0.14.0"
+#        - NAME="Latest everything."
+#          PYTHON_VERSION=3
+#          PACKAGES="numpy matplotlib matplotlib-tests scipy owslib"
+#        - NAME="Latest everything (py2k)."
+#          PYTHON_VERSION=2
+#          PACKAGES="numpy matplotlib matplotlib-tests scipy owslib"
+
 
 sudo: false
 
 git:
+  # Because we check the history of every file, we need to have
+  # a deep clone of the repo.
   depth: 10000
 
 install:
   # Install miniconda
   # -----------------
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
+  - if [[ "$PYTHON_VERSION" == 2* ]]; then
       wget http://repo.continuum.io/miniconda/Miniconda-3.7.0-Linux-x86_64.sh -O miniconda.sh;
     else
       wget http://repo.continuum.io/miniconda/Miniconda3-3.7.0-Linux-x86_64.sh -O miniconda.sh;
@@ -28,32 +36,14 @@ install:
   # ------------------------------------
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda update conda
-  - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
+  - conda create -n test-environment python=$PYTHON_VERSION
   - source activate test-environment
 
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels scitools
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 3.4 ]]; then
-      PACKAGES="numpy=1.8.2 matplotlib=1.3.1 scipy=0.14.0 libpng=1.5.*";
-    else
-      PACKAGES="numpy=1.7.1 matplotlib=1.3.1 scipy=0.12.0 libpng=1.5.*";
-    fi
-  - PACKAGES="$PACKAGES cython"
-  - PACKAGES="$PACKAGES pillow"
-  - PACKAGES="$PACKAGES mock"
-  - PACKAGES="$PACKAGES nose"
-  - if [[ "$TRAVIS_PYTHON_VERSION" == 2* ]]; then
-      PACKAGES="$PACKAGES owslib";
-    fi
-  - PACKAGES="$PACKAGES pep8=1.5.7"
-  - PACKAGES="$PACKAGES proj4=4.9"
-  - PACKAGES="$PACKAGES pyshp"
-  - PACKAGES="$PACKAGES shapely"
-  - PACKAGES="$PACKAGES six"
-  - PACKAGES="$PACKAGES requests"
-  - PACKAGES="$PACKAGES pyepsg"
-  - conda install $PACKAGES
+  - PACKAGES="$PACKAGES cython pillow mock nose pep8 proj4 pyshp shapely six requests pyepsg owslib"
+  - conda install --quiet $PACKAGES
 
   # Conda debug
   # -----------
