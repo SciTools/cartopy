@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2014, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -91,7 +91,7 @@ class TestRegrid(unittest.TestCase):
                             target_proj, target_x, target_y)
 
 
-@ImageTesting(['regrid_image'])
+@ImageTesting(['regrid_image'], tolerance=0.4)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
@@ -128,7 +128,6 @@ def test_regrid_image():
     cmaps = {'red': 'Reds', 'green': 'Greens', 'blue': 'Blues'}
     for i, color in enumerate(['red', 'green', 'blue']):
         ax = plt.subplot(gs[i + 1], frameon=False, projection=target_proj)
-        ax.set_title(color)
         plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
                    cmap=cmaps[color])
         ax.coastlines()

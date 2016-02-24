@@ -29,6 +29,7 @@ import contextlib
 import warnings
 import weakref
 
+import matplotlib as mpl
 import matplotlib.artist
 import matplotlib.axes
 from matplotlib.image import imread
@@ -51,8 +52,8 @@ from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
-assert matplotlib.__version__ >= '1.2', ('Cartopy can only work with '
-                                         'matplotlib 1.2 or greater.')
+assert matplotlib.__version__ >= '1.3', ('Cartopy is only supported with '
+                                         'matplotlib 1.3 or greater.')
 
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
@@ -1109,6 +1110,7 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             kwargs['transform'] = t
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
+
         self.autoscale_view()
         return result
 
@@ -1141,6 +1143,13 @@ class GeoAxes(matplotlib.axes.Axes):
                         sub_trans.force_path_ccw = True
 
         result = matplotlib.axes.Axes.contourf(self, *args, **kwargs)
+
+        # We need to compute the dataLim correctly for contours.
+        if matplotlib.__version__ >= '1.4':
+            extent = mtransforms.Bbox.union([col.get_datalim(self.transData)
+                                             for col in result.collections])
+            self.dataLim.update_from_data_xy(extent.get_points())
+
         self.autoscale_view()
         return result
 

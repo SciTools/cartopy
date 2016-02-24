@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
@@ -31,10 +32,9 @@ from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
 
 
-_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.3
-
-
-@ImageTesting(['poly_interiors'])
+@ImageTesting(['poly_interiors'
+               if mpl.__version__ >= '1.5' else
+               'poly_interiors_pre_mpl_1.5'])
 def test_polygon_interiors():
 
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
@@ -85,7 +85,7 @@ def test_polygon_interiors():
     ax.add_collection(collection)
 
 
-@ImageTesting(['contour_with_interiors'], tolerance=_ROB_TOL)
+@ImageTesting(['contour_with_interiors'])
 def test_contour_interiors():
     # produces a polygon with multiple holes:
     nx, ny = 10, 10
@@ -96,12 +96,10 @@ def test_contour_interiors():
 
     ax = plt.subplot(221, projection=ccrs.PlateCarree())
     ax.set_global()
-    plt.title("Native projection")
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
 
     plt.subplot(222, projection=ccrs.Robinson())
-    plt.title("Non-native projection")
     ax = plt.gca()
     ax.set_global()
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
@@ -118,12 +116,10 @@ def test_contour_interiors():
 
     ax = plt.subplot(223, projection=ccrs.PlateCarree())
     ax.set_global()
-    plt.title("Native projection")
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
 
     plt.subplot(224, projection=ccrs.Robinson())
-    plt.title("Non-native projection")
     ax = plt.gca()
     ax.set_global()
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())

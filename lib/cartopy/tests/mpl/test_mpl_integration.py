@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -26,6 +26,7 @@ try:
 except ImportError:
     from nose.tools import assert_regexp_matches as assert_regex
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import six
 
@@ -74,7 +75,12 @@ def test_global_contourf_wrap_no_transform():
     plt.contourf(x, y, data)
 
 
-@ImageTesting(['global_pcolor_wrap'])
+global_pcolor_wrap = ('global_pcolor_wrap'
+                      if mpl.__version__ >= '1.5' else
+                      'global_pcolor_wrap_pre_mpl_1.5')
+
+
+@ImageTesting([global_pcolor_wrap])
 def test_global_pcolor_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -83,7 +89,7 @@ def test_global_pcolor_wrap_new_transform():
     plt.pcolor(x, y, data, transform=ccrs.PlateCarree())
 
 
-@ImageTesting(['global_pcolor_wrap'])
+@ImageTesting([global_pcolor_wrap])
 def test_global_pcolor_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -504,7 +510,9 @@ def test_barbs_regrid_with_extent():
              target_extent=target_extent)
 
 
-@ImageTesting(['streamplot'])
+@ImageTesting(['streamplot'
+               if mpl.__version__ >= '1.5' else
+               'streamplot_pre_mpl_1.5'])
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

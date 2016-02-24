@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import matplotlib as mpl
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -32,10 +33,7 @@ from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
 
 
-_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.1
-
-
-@ImageTesting(['gridliner1'], tolerance=_ROB_TOL)
+@ImageTesting(['gridliner1'])
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -105,8 +103,10 @@ def test_gridliner_specified_lines():
 
 
 # The tolerance on this test is particularly high because of the high number
-# of text objects. A new testing stratergy is needed for this kind of test.
-@ImageTesting(['gridliner_labels'], tolerance=2.6)
+# of text objects. A new testing strategy is needed for this kind of test.
+@ImageTesting(['gridliner_labels'
+               if mpl.__version__ >= '1.5' else
+               'gridliner_labels_pre_mpl_1.5'])
 def test_grid_labels():
     plt.figure(figsize=(8, 10))
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2014, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -135,20 +135,20 @@ def test_view_lim_autoscaling():
     y = np.linspace(0.03739792, 0.33029076)
     x, y = np.meshgrid(x, y)
     ax = plt.axes(projection=ccrs.RotatedPole(37.5, 357.5))
-
     plt.scatter(x, y, x * y, transform=ccrs.PlateCarree())
 
     expected = np.array([[86.12433701, 52.51570463],
                          [86.69696603, 52.86372057]])
 
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected)
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected,
+                              decimal=2)
     plt.draw()
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected)
-    ax.relim()
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected,
+                              decimal=2)
     ax.autoscale_view(tight=False)
     expected_non_tight = np.array([[86, 52.45], [86.8, 52.9]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
-                              expected_non_tight)
+                              expected_non_tight, decimal=1)
     plt.close()
 
 
