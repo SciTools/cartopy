@@ -5,12 +5,12 @@ Original code in Tcl by Kevin B. Kenny, 2007
 Code translated from Tcl to Python by Jonathan Feinberg, 2016
 """
 
+import numpy as np
+from scipy.special import ellipk, ellipkinc, ellipj
+
 __author__ = "Jonathan Feinberg"
 __email__ = "jonathan@feinberg.no"
 __credits__ = ["Jonathan Feinberg", "Kevin B. Kenny"]
-
-import numpy as np
-from scipy.special import ellipk, ellipkinc, ellipj
 
 
 def forward_pq(lon, lat, lon0=20.):
@@ -48,8 +48,8 @@ Examples:
 
     # rotate to angles of interest
     lon = lon - lon0 + 180
-    lon = np.where((lon < 0)+(lon>360),
-            lon - 360 * np.floor(lon/360), lon)
+    lon = np.where((lon < 0)+(lon > 360),
+                   lon - 360 * np.floor(lon/360), lon)
 
     # from degree to radians
     lon = (lon - 180) * np.pi / 180
@@ -86,16 +86,19 @@ Examples:
     x = ellipkinc(np.arctan(sin_m/cos_m), 0.5)
     y = ellipkinc(np.arctan(sin_n/cos_n), 0.5)
 
-
     # Reflect the Southern Hemisphere outward
     neglat = lat < 0
     scale = ellipk(0.5)*2
 
     s0 = neglat * (lon < -0.75*np.pi)
-    s1 = neglat * ~s0 * (lon < -0.25*np.pi)
-    s2 = neglat * ~s1 * (lon < 0.25*np.pi)
-    s3 = neglat * ~s2 * (lon < 0.75*np.pi)
-    s4 = neglat * (lon >= 0.75*np.pi)
+    negs = ~s0
+    s1 = neglat * negs * (lon < -0.25*np.pi)
+    negs *= ~s1
+    s2 = neglat * negs * (lon < 0.25*np.pi)
+    negs *= ~s2
+    s3 = neglat * negs * (lon < 0.75*np.pi)
+    negs *= ~s3
+    s4 = neglat * negs * (lon >= 0.75*np.pi)
 
     y = np.where(s0, scale-y, y)
     x = np.where(s1, -scale-x, x)
@@ -110,7 +113,6 @@ Examples:
     return X, Y
 
 
-
 def inverse_pq(x, y, lon0=20.):
     """
 Converts Peirce Quincuncial map co-ordinates to latitude and longitude.
@@ -123,7 +125,8 @@ Kwargs:
     lon0 (array_like): Longitude of the center of projection
 
 Returns:
-    (np.ndarray, np.ndarray): Returns a list consisting of the longitude and latitude in degrees.
+    (np.ndarray, np.ndarray): Returns a list consisting of the longitude and
+    latitude in degrees.
 
 Examples:
     >>> x = [-1, -1, 1, 1]
@@ -214,26 +217,3 @@ if __name__ == "__main__":
 
     import doctest
     doctest.testmod()
-
-    # import matplotlib.pyplot as plt
-    #
-    # r = np.linspace(-180, 180, 200)[1:-1]
-    # s = np.linspace(-90, 90, 200)[1:-1]
-    # r,s = np.meshgrid(r, s)
-    # z = r+s
-    #
-    # plt.contourf(r, s, z, 50)
-    # plt.show()
-    # plt.clf()
-    #
-    # R = forward_pq(r, s)
-    #
-    # plt.contourf(R[0], R[1], z, 50)
-    # plt.show()
-    # plt.clf()
-    #
-    # S = inverse_pq(R[0], R[1])
-    #
-    # plt.contourf(S[0], S[1], z, 50)
-    # plt.show()
-    #
