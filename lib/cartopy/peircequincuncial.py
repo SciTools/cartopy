@@ -11,6 +11,77 @@ from scipy.special import ellipk, ellipkinc, ellipj
 __author__ = "Jonathan Feinberg"
 __email__ = "jonathan@feinberg.no"
 __credits__ = ["Jonathan Feinberg", "Kevin B. Kenny"]
+__all__ = ["forward_pq", "inverse_pq"]
+
+
+def forward_ssc(lon, lat):
+    """
+Calculate the stereographic projection and Swartz-Cristoffel transformation.
+
+Args:
+    lat (np.ndarray) : Latitude of the point in radians.
+    lon (np.ndarray) : Longtetude of the point in radians.
+
+Returns:
+    (np.ndarray, np.ndarray) : Coordinates on the [-1,1]^2 cube.
+    """
+
+    # Compute the auxiliary quantities 'm' and 'n'. Set 'm' to match
+    # the sign of 'lon' and 'n' to be positive if |lon| > pi/2
+    cos_phiosqrt2 = np.sqrt(2) / 2 * np.cos(lat)
+
+    cos_a = cos_phiosqrt2 * (np.sin(lon) + np.cos(lon))
+    cos_b = cos_phiosqrt2 * (np.sin(lon) - np.cos(lon))
+    sin_a = np.sqrt(1.0 - cos_a * cos_a)
+    sin_b = np.sqrt(1.0 - cos_b * cos_b)
+    sin2_m = 1.0 + cos_a*cos_b - sin_a*sin_b
+    sin2_n = 1.0 - cos_a*cos_b - sin_a*sin_b
+
+    sin2_m = np.where(sin2_m < 0, 0, sin2_m)
+    sin_m = np.sqrt(sin2_m)
+    sin2_m = np.where(sin2_m > 1, 1, sin2_m)
+    cos_m = np.sqrt(1.0 - sin2_m)
+
+    sin_m *= np.sign(np.sin(lon))
+    sin2_n *= sin2_n > 0
+
+    sin_n = np.sqrt(sin2_n)
+    sin2_n = np.where(sin2_n > 1, 1, sin2_n)
+    cos_n = np.sqrt(1.0 - sin2_n)
+
+    sin_n *= -np.sign(np.cos(lon))
+
+    # Compute elliptic integrals to map the disc to the square
+    xcorr = ellipkinc(np.arctan(sin_m/cos_m), 0.5)
+    ycorr = ellipkinc(np.arctan(sin_n/cos_n), 0.5)
+
+    return xcorr, ycorr
+
+
+def inverse_ssc(xcorr, ycorr):
+    """
+Calculate the inverse stereographic projection and Swartz-Cristoffel
+transformation.
+
+Args:
+    xcorr (array_like): x co-ordinates of a point on the map
+    ycorr (array_like): y co-ordinates of a point on the map
+    """
+    # Compute the elliptic functions to map the plane onto the sphere
+    cnx = ellipj(xcorr, 0.5)[1]
+    cny = ellipj(ycorr, 0.5)[1]
+
+    # Undo the mapping to latitude and longitude
+    arc1 = np.arccos(-cnx**2)
+    arc2 = np.arccos(cny**2)
+
+    cos_a = np.cos(0.5*(arc1-arc2))
+    cos_b = -np.cos(0.5*(arc1+arc2))
+
+    lon = np.pi/4 - np.arctan2(cos_b, cos_a)
+    lat = np.arccos(np.hypot(cos_b, cos_a))
+
+    return lon, lat
 
 
 def forward_pq(lon, lat, lon0=20.):
@@ -32,9 +103,9 @@ Examples:
     >>> lat = [-45, 45, -45, 45]
     >>> x,y = forward_pq(lon, lat)
     >>> print(x)
-    [ 4.49472464 -0.74939046  2.26997292  0.74939046]
+    [-2.26997292 -0.74939046  2.26997292  0.74939046]
     >>> print(y)
-    [ 4.89203048 -0.35208463  1.87266709  0.35208463]
+    [-1.87266709 -0.35208463  1.87266709  0.35208463]
     """
 
     # numpy safety check
@@ -55,71 +126,43 @@ Examples:
     lon = (lon - 180) * np.pi / 180
     lat = lat * np.pi / 180
 
-    # Compute the auxiliary quantities 'm' and 'n'. Set 'm' to match
-    # the sign of 'lon' and 'n' to be positive if |lon| > pi/2
-    cos_phiosqrt2 = np.sqrt(2) / 2 * np.cos(lat)
-    cos_lon = np.cos(lon)
-    sin_lon = np.sin(lon)
-
-    cos_a = cos_phiosqrt2 * (sin_lon + cos_lon)
-    cos_b = cos_phiosqrt2 * (sin_lon - cos_lon)
-    sin_a = np.sqrt(1.0 - cos_a * cos_a)
-    sin_b = np.sqrt(1.0 - cos_b * cos_b)
-    sin2_m = 1.0 + cos_a*cos_b - sin_a*sin_b
-    sin2_n = 1.0 - cos_a*cos_b - sin_a*sin_b
-
-    sin2_m = np.where(sin2_m < 0, 0, sin2_m)
-    sin_m = np.sqrt(sin2_m)
-    sin2_m = np.where(sin2_m > 1, 1, sin2_m)
-    cos_m = np.sqrt(1.0 - sin2_m)
-
-    sin_m *= np.sign(sin_lon)
-    sin2_n *= sin2_n > 0
-
-    sin_n = np.sqrt(sin2_n)
-    sin2_n = np.where(sin2_n > 1, 1, sin2_n)
-    cos_n = np.sqrt(1.0 - sin2_n)
-
-    sin_n *= -np.sign(cos_lon)
-
-    # Compute elliptic integrals to map the disc to the square
-    x = ellipkinc(np.arctan(sin_m/cos_m), 0.5)
-    y = ellipkinc(np.arctan(sin_n/cos_n), 0.5)
+    # perform transformation
+    xcorr, ycorr = forward_ssc(lon, lat)
 
     # Reflect the Southern Hemisphere outward
     neglat = lat < 0
     scale = ellipk(0.5)*2
 
-    s0 = neglat * (lon < -0.75*np.pi)
-    negs = ~s0
-    s1 = neglat * negs * (lon < -0.25*np.pi)
-    negs *= ~s1
-    s2 = neglat * negs * (lon < 0.25*np.pi)
-    negs *= ~s2
-    s3 = neglat * negs * (lon < 0.75*np.pi)
-    negs *= ~s3
-    s4 = neglat * negs * (lon >= 0.75*np.pi)
+    sector0 = neglat * (lon < -0.75*np.pi)
+    negs = ~sector0
+    sector1 = neglat * negs * (lon < -0.25*np.pi)
+    negs *= ~sector1
+    sector2 = neglat * negs * (lon < 0.25*np.pi)
+    negs *= ~sector2
+    sector3 = neglat * negs * (lon < 0.75*np.pi)
+    negs *= ~sector3
+    sector4 = neglat * negs * (lon >= 0.75*np.pi)
 
-    y = np.where(s0, scale-y, y)
-    x = np.where(s1, -scale-x, x)
-    y = np.where(s2, -scale-y, y)
-    x = np.where(s3, scale-x, x)
-    y = np.where(s4, scale-y, y)
+    ycorr = np.where(sector0, scale-ycorr, ycorr)
+    xcorr = np.where(sector1, -scale-xcorr, xcorr)
+    ycorr = np.where(sector2, -scale-ycorr, ycorr)
+    xcorr = np.where(sector3, scale-xcorr, xcorr)
+    ycorr = np.where(sector4, scale-ycorr, ycorr)
 
     # Rotate the square by 45 degrees to fit the screen better
-    X = (x - y) * np.sqrt(2) / 2
-    Y = (x + y) * np.sqrt(2) / 2
+    xcorr, ycorr = (xcorr - ycorr) * np.sqrt(2) / 2,\
+        (xcorr + ycorr) * np.sqrt(2) / 2
 
-    return X, Y
+    return xcorr, ycorr
 
 
-def inverse_pq(x, y, lon0=20.):
+def inverse_pq(xcorr, ycorr, lon0=20.):
     """
 Converts Peirce Quincuncial map co-ordinates to latitude and longitude.
 
 Args:
-    x (array_like): normalized x co-ordinates of a point on the map
-    y (array_like): normalized y co-ordinates of a point on the map
+    xcorr (array_like): normalized x co-ordinates of a point on the map
+    ycorr (array_like): normalized y co-ordinates of a point on the map
 
 Kwargs:
     lon0 (array_like): Longitude of the center of projection
@@ -129,71 +172,61 @@ Returns:
     latitude in degrees.
 
 Examples:
-    >>> x = [-1, -1, 1, 1]
-    >>> y = [-1, 1, -1, 1]
-    >>> lon, lat = inverse_pq(x, y)
+    >>> xcorr = [-1, -1, 1, 1]
+    >>> ycorr = [-1, 1, -1, 1]
+    >>> lon, lat = inverse_pq(xcorr, ycorr)
     >>> print(lon)
     [ -70. -160.   20.  110.]
     >>> print(lat)
     [ 18.10370722  18.10370722  18.10370722  18.10370722]
     """
     # numpy safety check
-    x = np.asfarray(x)
-    y = np.asfarray(y)
+    xcorr = np.asfarray(xcorr)
+    ycorr = np.asfarray(ycorr)
 
-    if len(x.shape) < len(y.shape):
-        x = x*np.ones(y.shape)
-    elif len(x.shape) > len(y.shape):
-        y = y*np.ones(x.shape)
+    if len(xcorr.shape) < len(ycorr.shape):
+        xcorr = xcorr*np.ones(ycorr.shape)
+    elif len(xcorr.shape) > len(ycorr.shape):
+        ycorr = ycorr*np.ones(xcorr.shape)
 
-    # Rotate x and y 45 degrees
-    X = (x + y) * np.sqrt(2) / 2
-    Y = (y - x) * np.sqrt(2) / 2
+    # Rotate xcorr and ycorr 45 degrees
+    xcorr, ycorr = (xcorr + ycorr) * np.sqrt(2) / 2,\
+        (ycorr - xcorr) * np.sqrt(2) / 2
 
     # Reflect Southern Hemisphere into the Northern
     limit = ellipk(0.5)
     scale = ellipk(0.5)*2
 
-    s0 = X < -limit
-    s1 = ~s0 * (X > limit)
-    s2 = ~s1 * (Y < -limit)
-    s3 = ~s2 * (Y > limit)
+    sector0 = xcorr < -limit
+    sector1 = ~sector0 * (xcorr > limit)
+    sector2 = ~sector1 * (ycorr < -limit)
+    sector3 = ~sector2 * (ycorr > limit)
 
-    X = s0 * (-scale - X) + s1 * (scale - X) + ~s0 * ~s1 * X
-    Y = s2 * (-scale - Y) + s3 * (scale - Y) + ~s2 * ~s3 * Y
-    southern = s0 + s1 + s2 + s3
+    xcorr = sector0 * (-scale - xcorr) + sector1 * (scale - xcorr) +\
+        ~sector0 * ~sector1 * xcorr
+    ycorr = sector2 * (-scale - ycorr) + sector3 * (scale - ycorr) +\
+        ~sector2 * ~sector3 * ycorr
+    southern = sector0 + sector1 + sector2 + sector3
 
-    # Now we know that latitude will be positive.  If X is negative, then
+    # Now we know that latitude will be positive.  If xcorr is negative, then
     # longitude will be negative; reflect the Western Hemisphere into the
     # Eastern.
-    western = X < 0
-    X *= (-1)**western
+    western = xcorr < 0
+    xcorr *= (-1)**western
 
-    # If Y is positive, the point is in the back hemisphere.  Reflect
+    # If ycorr is positive, the point is in the back hemisphere.  Reflect
     # it to the front.
-    back = Y > 0
-    Y *= (-1)**back
+    back = ycorr > 0
+    ycorr *= (-1)**back
 
     # Finally, constrain longitude to be less than pi/4, by reflecting across
     # the 45 degree meridian.
-    complement = X > -Y
-    X, Y = np.where(complement, Y, X), np.where(complement, -X, Y)
+    complement = xcorr > -ycorr
+    xcorr, ycorr = np.where(complement, ycorr, xcorr),\
+        np.where(complement, -xcorr, ycorr)
 
-    # Compute the elliptic functions to map the plane onto the sphere
-    cnx = ellipj(X, 0.5)[1]
-    cny = ellipj(Y, 0.5)[1]
-
-    # Undo the mapping to latitude and longitude
-    a1 = np.arccos(-cnx**2)
-    a2 = np.arccos(cny**2)
-    b = 0.5*(a1+a2)
-    a = 0.5*(a1-a2)
-
-    cos_a = np.cos(a)
-    cos_b = -np.cos(b)
-
-    lon = np.pi/4 - np.arctan2(cos_b, cos_a)
-    lat = np.arccos(np.hypot(cos_b, cos_a))
+    # Transform
+    lon, lat = inverse_ssc(xcorr, ycorr)
 
     # Undo the reflections that were done above, to get correct latitude
     # and longitude
@@ -204,7 +237,6 @@ Examples:
 
     # Convert latitude and longitude to degrees
     lon = lon * 180/np.pi + 180 + lon0
-    
     lon = np.where((lon < 0)+(lon > 360), lon - 360*np.floor(lon/360.), lon)
 
     lon = lon - 180
