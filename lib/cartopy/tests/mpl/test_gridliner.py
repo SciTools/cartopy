@@ -21,7 +21,10 @@ import matplotlib as mpl
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 from nose.tools import assert_raises
 import numpy as np
 
