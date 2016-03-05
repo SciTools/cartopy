@@ -243,7 +243,7 @@ class StamenTerrain(GoogleTiles):
     Additional info:
     http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
     http://maps.stamen.com/#terrain/12/37.6902/-122.3600
-    http://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
+    https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
     https://github.com/migurski/DEM-Tools
     """
     def _image_url(self, tile):
@@ -323,7 +323,7 @@ class QuadtreeTiles(GoogleTiles):
 
     def quadkey_to_tms(self, quadkey, google=False):
         # algorithm ported from
-        # http://msdn.microsoft.com/en-us/library/bb259689.aspx
+        # https://msdn.microsoft.com/en-us/library/bb259689.aspx
         assert isinstance(quadkey, six.string_types), \
             'quadkey must be a string'
 

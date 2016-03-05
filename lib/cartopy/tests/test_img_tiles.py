@@ -29,7 +29,7 @@ import cartopy.io.img_tiles as cimgt
 
 
 #: Maps Google tile coordinates to native mercator coordinates as defined
-#: by http://goo.gl/pgJi.
+#: by https://goo.gl/pgJi.
 KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
                              -20037508.342789244, 20037508.342789244),
                  (2, 0, 2): (0., 10018754.17139462,

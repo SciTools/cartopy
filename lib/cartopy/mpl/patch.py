@@ -22,7 +22,7 @@ See also `Shapely Geometric Objects <see_also_shapely>`_
 and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
 
 .. see_also_shapely:
-   http://toblerity.github.com/shapely/manual.html#geometric-objects
+   http://toblerity.org/shapely/manual.html#geometric-objects
 
 """
 

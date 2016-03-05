@@ -31,7 +31,7 @@ import os.path
 
 # for the writable data directory (i.e. the one where new data goes), follow
 # the XDG guidelines found at
-# http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+# https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
 _writable_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
 _data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
                          'cartopy')
