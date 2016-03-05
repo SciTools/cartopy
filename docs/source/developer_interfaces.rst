@@ -38,7 +38,7 @@ known subclasses of :class:`~cartopy.io.Downloader` are listed below for
 reference:
 
    * :class:`cartopy.io.shapereader.NEShpDownloader`
-   * :class:`cartopy.io.srtm.SRTM3Downloader`
+   * :class:`cartopy.io.srtm.SRTMDownloader`
 
 
 Raster images
