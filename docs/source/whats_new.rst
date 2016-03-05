@@ -321,11 +321,12 @@ What's new in cartopy 0.9
 * We are very pleased to announce that Bill Little was added to the cartopy
   core development team. Bill has made some excellent contributions to cartopy,
   and `his presentation at EuroScipy'13 on
-  "Iris & Cartopy" <https://www.euroscipy.org/schedule/presentation/35/>`_
+  "Iris & Cartopy" <https://www.euroscipy.org/2013/schedule/presentation/35/>`_
   was voted best talk of the conference.
 * Other talks and tutorials during this release cycle include Phil Elson's `talk at SciPy'13
   (with video) <http://conference.scipy.org/scipy2013/presentation_detail.php?id=132>`_,
-  `Thomas Lecocq's tutorial at EuroSciPy <https://www.euroscipy.org/schedule/presentation/27/>`_
+  `Thomas Lecocq's tutorial at EuroSciPy
+  <https://www.euroscipy.org/2013/schedule/presentation/27/>`_
   and a forthcoming `talk at FOSS4G <http://2013.foss4g.org/conf/programme/presentations/29/>`_.
 * Christoph Gohlke updated cartopy to support Windows 7.
 * The Plate Carree projection was updated to fully handle arbitrary globe definitions.
