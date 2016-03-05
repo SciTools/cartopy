@@ -4,8 +4,8 @@ Using the cartopy shapereader
 =============================
 
 Cartopy provides an object oriented shapefile reader based on top of the 
-`pyshp <http://code.google.com/p/pyshp/>`_ module to provide easy, programmatic,
-access to standard vector datasets.
+`pyshp <https://github.com/GeospatialPython/pyshp>`_ module to provide easy,
+programmatic, access to standard vector datasets.
 
 .. currentmodule:: cartopy.io.shapereader
 
