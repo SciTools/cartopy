@@ -76,7 +76,7 @@ There are many ways to get involved in the development of cartopy:
  * If you write a paper which makes use of cartopy, please consider :doc:`citing <citation>` it.
  * Report bugs to https://github.com/SciTools/cartopy/issues (please look to see if there are any outstanding
    bugs which cover the issue before making a new one).
- * Help others with support questions on `stackoverflow <http://stackoverflow.com/questions/tagged/cartopy>`_. 
+ * Help others with support questions on `stackoverflow <https://stackoverflow.com/questions/tagged/cartopy>`_.
  * Contribute to the documentation fixing typos, adding examples, explaining things more clearly, or even
    re-designing its layout/logos etc..
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bug>`).

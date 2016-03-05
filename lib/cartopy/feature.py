@@ -193,7 +193,7 @@ class GSHHSFeature(Feature):
     """
     An interface to the GSHHS dataset.
 
-    See http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
+    See https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
 
     Args:
 

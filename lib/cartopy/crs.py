@@ -1897,7 +1897,7 @@ def epsg(code):
     system" will not work.
 
     .. note::
-        The conversion is performed by querying http://epsg.io/ so a
+        The conversion is performed by querying https://epsg.io/ so a
         live internet connection is required.
 
     """

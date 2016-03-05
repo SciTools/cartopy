@@ -35,7 +35,7 @@ import warnings
 
 
 # Ensure build-time dependencies are available.
-# See http://stackoverflow.com/a/12061891
+# See https://stackoverflow.com/a/12061891
 setuptools.dist.Distribution(
     dict(
         setup_requires=['Cython>=0.15.1', 'numpy>=1.6']))

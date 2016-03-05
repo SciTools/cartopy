@@ -220,7 +220,7 @@ What's new in cartopy 0.11
 
 * Richard Hattersley added :func:`~cartopy.crs.epsg` support for generating
   a Cartopy projection at run-time based on the EPSG code of a projected
-  coordinate system. This mechanism utilises http://epsg.io/ as a coordinate
+  coordinate system. This mechanism utilises https://epsg.io/ as a coordinate
   system resource and employs EPSG request caching using
   `pyepsg <https://github.com/rhattersley/pyepsg>`_
 
