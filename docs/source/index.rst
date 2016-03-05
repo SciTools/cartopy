@@ -23,7 +23,7 @@ Some of the key features of cartopy are:
 
 Cartopy is licensed under `GNU Lesser General Public License <https://www.gnu.org/licenses/lgpl.html>`_
 and is at version |version|. You can find the source code for cartopy on
-`our github page <http://github.com/SciTools/cartopy>`_.
+`our github page <https://github.com/SciTools/cartopy>`_.
 
 
 Getting started

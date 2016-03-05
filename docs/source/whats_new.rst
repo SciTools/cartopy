@@ -338,7 +338,7 @@ What's new in cartopy 0.9
 
     .. _image_eyja_volcano: examples/eyja_volcano.html
 
-* The TransverseMercator class saw a tidy up to include several common arguments (:issue:`ticket <309>`)
+* The TransverseMercator class saw a tidy up to include several common arguments (:pull:`pull request <309>`)
 * Bill Little added the Geostationary projection to allow geolocation of satellite imagery.
   
     |image_geostationary|_

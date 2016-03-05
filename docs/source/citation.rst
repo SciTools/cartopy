@@ -28,7 +28,7 @@ ProductName. Version. ReleaseDate. Publisher. Location. DOIorURL. DownloadDate.
 
 For example::
 
- Cartopy. v0.11.2. 22-Aug-2014. Met Office. UK. http://github.com/SciTools/cartopy/archive/v0.11.2.tar.gz
+ Cartopy. v0.11.2. 22-Aug-2014. Met Office. UK. https://github.com/SciTools/cartopy/archive/v0.11.2.tar.gz
 
 
 ********************
