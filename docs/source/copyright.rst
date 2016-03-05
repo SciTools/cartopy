@@ -8,14 +8,14 @@ Cartopy code
 ------------
 
 All Cartopy source code, unless explicitly stated, is |copy| ``British Crown
-copyright, 2015`` and is licensed under the **GNU Lesser General Public
+copyright, 2016`` and is licensed under the **GNU Lesser General Public
 License** as published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version. You should find all source
 files with the following header:
 
 .. admonition:: Code License
 
-    |copy| British Crown Copyright 2011 - 2015, Met Office
+    |copy| British Crown Copyright 2011 - 2016, Met Office
 
     This file is part of cartopy.
 
@@ -30,7 +30,7 @@ files with the following header:
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
-    along with cartopy.  If not, see `<http://www.gnu.org/licenses/>`_.
+    along with cartopy.  If not, see `<https://www.gnu.org/licenses/>`_.
 
 
 Cartopy documentation and examples
@@ -41,7 +41,7 @@ repository are licensed under the UK's Open Government Licence:
 
 .. admonition:: Documentation, example and data license
 
-    |copy| British Crown copyright, 2015.
+    |copy| British Crown copyright, 2016.
 
     You may use and re-use the information featured on this website (not
     including logos) free of charge in any format or medium, under the terms of

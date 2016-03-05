@@ -21,8 +21,8 @@ Some of the key features of cartopy are:
  * integration to expose advanced mapping in matplotlib with a simple and intuitive interface
  * powerful vector data handling by integrating shapefile reading with Shapely capabilities 
 
-Cartopy is licensed under `GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_ 
-and is at version |version|. You can find the source code for cartopy on 
+Cartopy is licensed under `GNU Lesser General Public License <https://www.gnu.org/licenses/lgpl.html>`_
+and is at version |version|. You can find the source code for cartopy on
 `our github page <http://github.com/SciTools/cartopy>`_.
 
 
@@ -68,7 +68,7 @@ Getting involved
 Cartopy was originally developed at the UK Met Office to allow scientists to visualise 
 their data on maps quickly, easily and most importantly, accurately. 
 Cartopy has been made freely available under the terms of the
-`GNU Lesser General Public License <http://www.gnu.org/licenses/lgpl.html>`_. It is suitable to be used in a variety
+`GNU Lesser General Public License <https://www.gnu.org/licenses/lgpl.html>`_. It is suitable to be used in a variety
 of scientific fields and has an :doc:`active development community <contributors>`.
 
 There are many ways to get involved in the development of cartopy:
