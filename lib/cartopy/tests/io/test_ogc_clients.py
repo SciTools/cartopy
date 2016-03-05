@@ -135,7 +135,7 @@ class test_WMSRasterSource(unittest.TestCase):
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 class test_WMTSRasterSource(unittest.TestCase):
-    URI = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
+    URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
     projection = ccrs.PlateCarree()
 
@@ -175,7 +175,7 @@ class test_WMTSRasterSource(unittest.TestCase):
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
 class test_WFSGeometrySource(unittest.TestCase):
-    URI = 'http://nsidc.org/cgi-bin/atlas_south?service=WFS'
+    URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
     typename = 'land_excluding_antarctica'
     native_projection = ccrs.Stereographic(central_latitude=-90,
                                            true_scale_latitude=-71)

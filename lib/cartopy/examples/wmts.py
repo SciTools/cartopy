@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    url = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
+    url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer = 'VIIRS_CityLights_2012'
 
     ax = plt.axes(projection=ccrs.PlateCarree())

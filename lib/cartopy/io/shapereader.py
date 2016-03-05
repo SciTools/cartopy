@@ -390,7 +390,7 @@ class GSHHSShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'scale', 'level')
 
-    _GSHHS_URL_TEMPLATE = ('http://www.ngdc.noaa.gov/mgg/shorelines/data/'
+    _GSHHS_URL_TEMPLATE = ('https://www.ngdc.noaa.gov/mgg/shorelines/data/'
                            'gshhs/oldversions/version2.2.0/'
                            'GSHHS_shp_2.2.0.zip')
 
