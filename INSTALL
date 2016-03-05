@@ -52,12 +52,12 @@ Many of these dependencies are built as part of Cartopy's conda distribution.
 The recipes for these can be found at https://github.com/SciTools/conda-recipes-scitools.
 
 
-**python** 2.7 or later (http://www.python.org/)
+**python** 2.7 or later (https://www.python.org/)
     Cartopy requires Python 2.7 or later.
 
 **Cython** 0.15.1 or later (https://pypi.python.org/pypi/Cython/)
 
-**numpy** 1.6 or later (http://numpy.scipy.org/)
+**numpy** 1.6 or later (http://www.numpy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
@@ -110,7 +110,7 @@ Testing Dependencies
 ~~~~~~~~~~~~~~~~~~~~
 These packages are required for the full Cartopy test suite to run.
 
-**mock** 1.0.1 (http://pypi.python.org/pypi/mock/)
+**mock** 1.0.1 (https://pypi.python.org/pypi/mock/)
     Python mocking and patching package for testing. Note that this package
     is only required to support the Cartopy unit tests.
 

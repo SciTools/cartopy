@@ -78,7 +78,7 @@ def find_package_tree(root_path, root_package):
     Returns the package and all its sub-packages.
 
     Automated package discovery - extracted/modified from Distutils Cookbook:
-    http://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery
+    https://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery
 
     """
     packages = [root_package]
