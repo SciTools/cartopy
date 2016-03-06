@@ -13,7 +13,7 @@ installing cartopy can be done with::
 Additional options include:
  * `Enthought Canopy <https://www.enthought.com/products/canopy/>`_.
  * `Christoph Gohlke <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ maintains unofficial Windows binaries of cartopy.
- * `OSGeo Live <http://live.osgeo.org>`_.
+ * `OSGeo Live <https://live.osgeo.org>`_.
 
 
 Building from source
@@ -52,16 +52,16 @@ Many of these dependencies are built as part of Cartopy's conda distribution.
 The recipes for these can be found at https://github.com/SciTools/conda-recipes-scitools.
 
 
-**python** 2.7 or later (http://www.python.org/)
+**python** 2.7 or later (https://www.python.org/)
     Cartopy requires Python 2.7 or later.
 
 **Cython** 0.15.1 or later (https://pypi.python.org/pypi/Cython/)
 
-**numpy** 1.6 or later (http://numpy.scipy.org/)
+**numpy** 1.6 or later (http://www.numpy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
-**GEOS** 3.3.3 or later (http://trac.osgeo.org/geos/)
+**GEOS** 3.3.3 or later (https://trac.osgeo.org/geos/)
     GEOS is an API of spatial predicates and functions for processing geometry
     written in C++.
 
@@ -72,7 +72,7 @@ The recipes for these can be found at https://github.com/SciTools/conda-recipes-
 **pyshp** 1.1.4 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
-**PROJ.4** 4.9.0 or later (http://trac.osgeo.org/proj/)
+**PROJ.4** 4.9.0 or later (https://trac.osgeo.org/proj/)
     Cartographic Projections library.
 
 **six** 1.3.0 or later (https://pypi.python.org/pypi/six)
@@ -96,9 +96,9 @@ additional Cartopy functionality.
     Popular fork of PythonImagingLibrary.
 
 **pyepsg** 0.2.0 or later (https://github.com/rhattersley/pyepsg)
-    A simple Python interface to http://epsg.io
+    A simple Python interface to https://epsg.io
 
-**scipy** 0.10 or later (http://www.scipy.org/)
+**scipy** 0.10 or later (https://www.scipy.org/)
     Python package for scientific computing.
 
 **OWSLib** 0.8.7 (https://pypi.python.org/pypi/OWSLib)
@@ -110,11 +110,11 @@ Testing Dependencies
 ~~~~~~~~~~~~~~~~~~~~
 These packages are required for the full Cartopy test suite to run.
 
-**mock** 1.0.1 (http://pypi.python.org/pypi/mock/)
+**mock** 1.0.1 (https://pypi.python.org/pypi/mock/)
     Python mocking and patching package for testing. Note that this package
     is only required to support the Cartopy unit tests.
 
-**nose** 1.2.1 or later (http://nose.readthedocs.org/en/latest/)
+**nose** 1.2.1 or later (https://nose.readthedocs.org/en/latest/)
     Python package for software testing.
 
 **pep8** 1.3.3 or later (https://pypi.python.org/pypi/pep8) 

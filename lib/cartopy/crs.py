@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 
 """
@@ -1897,7 +1897,7 @@ def epsg(code):
     system" will not work.
 
     .. note::
-        The conversion is performed by querying http://epsg.io/ so a
+        The conversion is performed by querying https://epsg.io/ so a
         live internet connection is required.
 
     """

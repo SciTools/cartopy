@@ -1,5 +1,5 @@
 /*
-# (C) British Crown Copyright 2010 - 2015, Met Office
+# (C) British Crown Copyright 2010 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -14,7 +14,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <iostream>

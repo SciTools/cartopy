@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -31,7 +31,7 @@ import os.path
 
 # for the writable data directory (i.e. the one where new data goes), follow
 # the XDG guidelines found at
-# http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+# https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
 _writable_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
 _data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
                          'cartopy')

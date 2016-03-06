@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 """
 Implements image tile identification and fetching from various sources.
@@ -243,7 +243,7 @@ class StamenTerrain(GoogleTiles):
     Additional info:
     http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
     http://maps.stamen.com/#terrain/12/37.6902/-122.3600
-    http://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
+    https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
     https://github.com/migurski/DEM-Tools
     """
     def _image_url(self, tile):
@@ -323,7 +323,7 @@ class QuadtreeTiles(GoogleTiles):
 
     def quadkey_to_tms(self, quadkey, google=False):
         # algorithm ported from
-        # http://msdn.microsoft.com/en-us/library/bb259689.aspx
+        # https://msdn.microsoft.com/en-us/library/bb259689.aspx
         assert isinstance(quadkey, six.string_types), \
             'quadkey must be a string'
 

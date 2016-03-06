@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 
 """
@@ -35,7 +35,7 @@ import warnings
 
 
 # Ensure build-time dependencies are available.
-# See http://stackoverflow.com/a/12061891
+# See https://stackoverflow.com/a/12061891
 setuptools.dist.Distribution(
     dict(
         setup_requires=['Cython>=0.15.1', 'numpy>=1.6']))
@@ -78,7 +78,7 @@ def find_package_tree(root_path, root_package):
     Returns the package and all its sub-packages.
 
     Automated package discovery - extracted/modified from Distutils Cookbook:
-    http://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery
+    https://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery
 
     """
     packages = [root_package]

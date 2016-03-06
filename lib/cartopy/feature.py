@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 """
 This module defines :class:`Feature` instances, for use with
 ax.add_feature().
@@ -193,7 +193,7 @@ class GSHHSFeature(Feature):
     """
     An interface to the GSHHS dataset.
 
-    See http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
+    See https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
 
     Args:
 

@@ -18,7 +18,7 @@ def olive_path():
     """
     Returns a matplotlib path representing a single olive branch from the
     UN Flag. The path coordinates were extracted from the SVG at
-    http://commons.wikimedia.org/wiki/File:Flag_of_the_United_Nations.svg.
+    https://commons.wikimedia.org/wiki/File:Flag_of_the_United_Nations.svg.
 
     """
     olives_verts = np.array(

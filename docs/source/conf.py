@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 
 # -*- coding: utf-8 -*-
@@ -319,7 +319,7 @@ epub_copyright = u'2012, Philip Elson, Richard Hattersley'
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('http://docs.python.org/2', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'matplotlib': ('http://matplotlib.org', None),
                        'shapely': ('http://toblerity.org/shapely', None),}
 
@@ -328,7 +328,7 @@ intersphinx_mapping = {'python': ('http://docs.python.org/2', None),
 
 
 ############ extlinks extension ############
-extlinks = {'issues': ('https://github.com/SciTools/cartopy/issues?milestone=&state=open&labels=%s',
+extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
                       'issues labeled with '),
             'issue': ('https://github.com/SciTools/cartopy/issues/%s', 'Issue #'),
             'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #'),

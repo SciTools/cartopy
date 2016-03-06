@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2015, Met Office
+# (C) British Crown Copyright 2011 - 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -13,7 +13,7 @@
 # GNU Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <http://www.gnu.org/licenses/>.
+# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 """
 Provides shapely geometry <-> matplotlib path support.
 
@@ -22,7 +22,7 @@ See also `Shapely Geometric Objects <see_also_shapely>`_
 and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
 
 .. see_also_shapely:
-   http://toblerity.github.com/shapely/manual.html#geometric-objects
+   http://toblerity.org/shapely/manual.html#geometric-objects
 
 """
 
