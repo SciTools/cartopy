@@ -27,6 +27,10 @@ Features
   provides SRTM at a higher resolution of 1 arc-second, which may be accessed
   via :class:`cartopy.io.srtm.SRTM1Source`.
 
+* All downloaders will use secure connections where available. Note that not
+  every service supports this method, and so will use insecure HTTP connections
+  instead. (See :pull:`736` for full list.)
+
 Incompatible changes
 --------------------
 * :meth:`cartopy.crs.CRS.transform_point` now issues NaNs when invalid transforms are identified.

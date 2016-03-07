@@ -194,7 +194,7 @@ def test_wmts_tile_caching():
     image_cache.clear()
     assert len(image_cache) == 0
 
-    url = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
+    url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     wmts = WebMapTileService(url)
     layer_name = 'MODIS_Terra_CorrectedReflectance_TrueColor'
 

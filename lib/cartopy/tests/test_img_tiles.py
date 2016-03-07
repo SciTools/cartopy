@@ -44,7 +44,7 @@ KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
 
 
 def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
-    url = ('http://chart.apis.google.com/chart?chst=d_text_outline&'
+    url = ('https://chart.googleapis.com/chart?chst=d_text_outline&'
            'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
            'Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')'
            '|Zoom%20' + str(tile[2]) + '||||||______________________'
@@ -59,7 +59,7 @@ def test_google_tile_styles():
     This is essentially just assures information is properly propagated through
     the class structure.
     """
-    reference_url = ("http://mts0.google.com/vt/lyrs={style}@177000000&hl=en"
+    reference_url = ("https://mts0.google.com/vt/lyrs={style}@177000000&hl=en"
                      "&src=api&x=1&y=2&z=3&s=G")
     tile = ["1", "2", "3"]
 
@@ -201,7 +201,7 @@ def test_mapbox_tiles():
     token = 'foo'
     map_id = 'bar'
     tile = [0, 1, 2]
-    exp_url = 'http://api.tiles.mapbox.com/v4/bar/2/0/1.png?access_token=foo'
+    exp_url = 'https://api.tiles.mapbox.com/v4/bar/2/0/1.png?access_token=foo'
 
     mapbox_sample = cimgt.MapboxTiles(token, map_id)
     url_str = mapbox_sample._image_url(tile)

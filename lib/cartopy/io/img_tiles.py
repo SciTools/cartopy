@@ -173,7 +173,7 @@ class GoogleTiles(object):
             "satellite": "s",
             "terrain": "t",
             "only_streets": "h"}
-        url = ('http://mts0.google.com/vt/lyrs={style}@177000000&hl=en&'
+        url = ('https://mts0.google.com/vt/lyrs={style}@177000000&hl=en&'
                'src=api&x={tile_x}&y={tile_y}&z={tile_z}&s=G'.format(
                    style=style_dict[self.style],
                    tile_x=tile[0],
@@ -224,7 +224,7 @@ class OSM(GoogleTiles):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
+        url = 'https://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
         return url
 
 
@@ -282,7 +282,7 @@ class MapboxTiles(GoogleTiles):
 
     def _image_url(self, tile):
         x, y, z = tile
-        url = ('http://api.tiles.mapbox.com/v4/{mapid}/{z}/{x}/{y}.png?'
+        url = ('https://api.tiles.mapbox.com/v4/{mapid}/{z}/{x}/{y}.png?'
                'access_token={token}'.format(z=z, y=y, x=x,
                                              mapid=self.map_id,
                                              token=self.access_token))

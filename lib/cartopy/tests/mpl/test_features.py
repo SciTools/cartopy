@@ -69,7 +69,7 @@ def test_gshhs():
 @ImageTesting(['wfs'])
 def test_wfs():
     ax = plt.axes(projection=ccrs.OSGB())
-    url = 'http://nsidc.org/cgi-bin/atlas_south?service=WFS'
+    url = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
     typename = 'land_excluding_antarctica'
     feature = cfeature.WFSFeature(url, typename,
                                   edgecolor='red')

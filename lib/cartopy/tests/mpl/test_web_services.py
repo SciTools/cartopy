@@ -30,7 +30,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 @ImageTesting(['wmts'])
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())
-    url = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
+    url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     # Use a layer which doesn't change over time.
     ax.add_wmts(url, 'MODIS_Water_Mask')
 

@@ -32,7 +32,7 @@ from cartopy.tests.mpl.test_caching import CallCounter
 
 
 def test_Downloader_data():
-    di = cio.Downloader('http://testing.com/{category}/{name}.zip',
+    di = cio.Downloader('https://testing.com/{category}/{name}.zip',
                         os.path.join('{data_dir}', '{category}',
                                      'shape.shp'),
                         '/project/foobar/{category}/sample.shp')
@@ -42,7 +42,7 @@ def test_Downloader_data():
                         'data_dir': os.path.join('/wibble', 'foo', 'bar')}
 
     assert_equal(di.url(replacement_dict),
-                 'http://testing.com/example/test.zip')
+                 'https://testing.com/example/test.zip')
 
     assert_equal(di.target_path(replacement_dict),
                  os.path.join('/wibble', 'foo', 'bar', 'example', 'shape.shp')
@@ -87,7 +87,7 @@ def download_to_temp():
 
 
 def test_from_config():
-    generic_url = 'http://example.com/generic_ne/{name}.zip'
+    generic_url = 'https://example.com/generic_ne/{name}.zip'
 
     land_downloader = cio.Downloader(generic_url, '', '')
     generic_ne_downloader = cio.Downloader(generic_url, '', '')
@@ -107,7 +107,7 @@ def test_from_config():
 
         # check the resulting download item produces a sensible url.
         assert_equal(r.url({'name': 'ocean'}),
-                     'http://example.com/generic_ne/ocean.zip')
+                     'https://example.com/generic_ne/ocean.zip')
 
         downloaders = cio.config['downloaders']
 
@@ -119,7 +119,7 @@ def test_downloading_simple_ascii():
     # downloads a file from the Google APIs. (very high uptime and file will
     # always be there - if this goes down, most of the internet would break!)
     # to test the downloading mechanisms.
-    file_url = 'http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/{name}.js'
+    file_url = 'https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/{name}.js'
 
     format_dict = {'name': 'jquery'}
 
