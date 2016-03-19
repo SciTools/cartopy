@@ -37,8 +37,7 @@ cartopy's documentation is arranged userguide form with reference documentation 
 
     crs/index.rst
     crs/projections.rst
-    tutorials/using_the_shapereader.rst
-    tutorials/map_styling.rst
+    tutorials/using_the_shapereader.rst    
     matplotlib/intro.rst
     matplotlib/feature_interface.rst
     developer_interfaces.rst
