@@ -1,8 +1,5 @@
 """
-.. _data_copyright_plot:
-
-This exmaple plots the Natual Earth data along with a copyright note.
-
+This example plots the Natual Earth data along with a copyright note.
 """
 
 
@@ -14,10 +11,10 @@ import cartopy.feature as cfeature
 #import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
 
-# License information:
-# adapt to your data source
+# Define the license information:
+# NOTE: Adapt to your data source
 data_source = 'Natural Earth'
-# adapt to your data source
+# NOTE: adapt to your data source
 data_license = 'public domain'
 
 
@@ -39,10 +36,12 @@ def main():
     ax.add_feature(cfeature.COASTLINE)
     ax.add_feature(states_provinces, edgecolor='gray')
     
-    # Add a text annotation in the bottom right corner.
+    # Include the license information:
+    # Add a text annotation for the license information in the bottom right corner .
 #    ax.set_extent([-180, 180, 30, 90], crs=ccrs.PlateCarree())
-    text = AnchoredText(r'$\mathcircled{c}$ ' + data_source + '; license: ' + data_license, loc=4,
-                        prop={'size': 10}, frameon=True)
+    text = AnchoredText(r'$\mathcircled{c}$ ' + data_source + '; license: ' 
+                        + data_license, loc=4, prop={'size': 10}, 
+                        frameon=True)
     ax.add_artist(text)
 
     plt.show()

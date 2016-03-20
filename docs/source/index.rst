@@ -74,6 +74,7 @@ of scientific fields and has an :doc:`active development community <contributors
 There are many ways to get involved in the development of cartopy:
 
  * If you write a paper which makes use of cartopy, please consider :doc:`citing <citation>` it.
+ * If you publish the maps and plots, please consider the required :ref:`attribution of copyright  <referencing_copyright>` for the data. 
  * Report bugs to https://github.com/SciTools/cartopy/issues (please look to see if there are any outstanding
    bugs which cover the issue before making a new one).
  * Help others with support questions on `stackoverflow <https://stackoverflow.com/questions/tagged/cartopy>`_.

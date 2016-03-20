@@ -47,7 +47,7 @@ For example::
 .. [Jackson] Jackson, M. 2012. `How to cite and describe software`_. Accessed 2013-03-06.
 
 
-.. _referencing:
+.. _referencing_copyright:
 
 **********************
 Referencing (the data)
@@ -75,7 +75,7 @@ The corresponding information for the data providers included in cartopy is list
 .. _data_copyright_table:
 
 .. csv-table:: List of Data Providers and Form of Citation
-   :file: ../_static/copyright_license.csv
+   :file: ./_static/copyright_license.csv
    :delim: ;
    :header-rows: 1
    :widths: 10, 10, 10, 10, 10, 10
@@ -86,4 +86,4 @@ The corresponding information for the data providers included in cartopy is list
 .. |---| unicode:: U+02014 .. em dash
    :trim:
 
-An :ref:`example <data_copyright_plot>` showing such annotation for Natural Earth data is shown in the `feature_creation example </examples/feature_creation.html#feature-creation-example>`_
+The `feature_creation example <./examples/feature_creation.html>`_ shows such annotation for Natural Earth data.
