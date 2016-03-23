@@ -64,14 +64,6 @@ Depending on the policy, this may either be only the data source and licese or t
 
 The corresponding information for the data providers included in cartopy is listed in the :ref:`data_copyright_table`:
 
-.. todo::
-
-    Turn typical licenses into http://docutils.sourceforge.net/docs/ref/rst/directives.html#replacement-text
-    
-.. todo::
-
-    maybe even add the typical annotation text as an string property to each function / class
-
 .. _data_copyright_table:
 
 .. csv-table:: List of Data Providers and Form of Citation

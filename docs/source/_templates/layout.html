@@ -7,8 +7,6 @@
      <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
 
      <link rel="stylesheet" href="{{ pathto('_static/layout.css', 1) }}" type="text/css" />
-     <!-- Point to the *latest* version switcher. This will allow the latest versions to appear on older documentation. -->
-     <script type="text/javascript" src="http://scitools.org.uk/cartopy/docs/latest/_static/version_switch.js"></script>
 {% endblock %}
 
 
@@ -51,5 +49,8 @@ border="0" alt="Cartopy" style="margin-left: -60px;"/>
       {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
     {%- endif %}
     </div>
+
+    <!-- Point to the *latest* version switcher. This will allow the latest versions to appear on older documentation. -->
+    <script type="text/javascript" src="http://scitools.org.uk/cartopy/docs/latest/_static/version_switch.js"></script>
 
 {% endblock %}
