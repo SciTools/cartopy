@@ -202,9 +202,9 @@ def gallery_code(examples_mod_name):
             # XXX The path is currently determined out of process by
             # the plot directive. It would be nice to figure out the
             # naming scheme to handle multiple plots in a single example.
-            img_path = 'examples/{}_01_00.png'.format(
+            img_path = 'examples/{}_00_00.png'.format(
                 mod_name.split('.')[-1])
-            thumb_path = 'examples/{}_01_00.thumb.png'.format(
+            thumb_path = 'examples/{}_00_00.thumb.png'.format(
                 mod_name.split('.')[-1])
 
             entry = ["|image_{}|_\n".format(safe_name),

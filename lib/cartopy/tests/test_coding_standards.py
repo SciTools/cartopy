@@ -127,6 +127,7 @@ class TestLicenseHeaders(unittest.TestCase):
                             'dist/*',
                             'docs/build/*',
                             'docs/source/examples/*.py',
+                            'docs/source/sphinxext/*.py',
                             'lib/cartopy/examples/*.py')
 
         try:
