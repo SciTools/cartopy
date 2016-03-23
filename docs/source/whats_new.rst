@@ -2,7 +2,7 @@ What's New in cartopy 0.14
 ==========================
 
 :Release: 0.14.0
-:Date: TBC
+:Date: 24th March 2016
 
 Features
 --------
@@ -18,18 +18,36 @@ Features
   convenience function that returns geodetic circles. This is used by
   :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot` which draws Tissot's indicatrices on the axes.
 
+   |tissot|_
+
+     .. |tissot| image:: examples/tissot_00_00.png
+
+     .. _tissot: examples/tissot.html
+
 * The SRTM3 data source has been changed to the `LP DAAC Data Pool
   <https://lpdaac.usgs.gov/data_access/data_pool>`_. The Data Pool is more
   consistent, fixing several missing tiles, and the data is void-filled.
   Consequently, the :func:`cartopy.srtm.fill_gaps` function has been deprecated
-  as it has no purpose. The :ref:`SRTM example<examples-srtm_shading>` has also
+  as it has no purpose within the STRM context. The
+  :ref:`SRTM example<examples-srtm_shading>` has also
   been updated to skip the void-filling step. Additionally, this data source
   provides SRTM at a higher resolution of 1 arc-second, which may be accessed
   via :class:`cartopy.io.srtm.SRTM1Source`.
 
-* All downloaders will use secure connections where available. Note that not
-  every service supports this method, and so will use insecure HTTP connections
-  instead. (See :pull:`736` for full list.)
+* All downloaders will use secure connections where available. Not
+  every service supports this method, and so those will use non-secured HTTP connections
+  instead. (See :pull:`736` for full details.)
+
+* Cartopy now supports, and is tested against, matplotlib 1.3 and 1.5 as well as
+  numpy 1.7, 1.8 and 1.10.
+
+* Daniel Eriksson added a new example to the gallery:
+
+  |image_aurora|_
+
+    .. |image_aurora| image:: examples/aurora_forecast_00_00.png
+
+    .. _image_aurora: examples/aurora_forecast.html
 
 Incompatible changes
 --------------------
@@ -67,7 +85,7 @@ Features
 
   |image_eccentric_ellipse|_
 
-    .. |image_eccentric_ellipse| image:: examples/eccentric_ellipse_00_00.thumb.png
+    .. |image_eccentric_ellipse| image:: examples/eccentric_ellipse_00_00.png
 
     .. _image_eccentric_ellipse: examples/eccentric_ellipse.html
 
