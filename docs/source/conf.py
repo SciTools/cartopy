@@ -34,7 +34,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # -- General configuration -----------------------------------------------------
 
@@ -53,7 +53,11 @@ extensions = [
               'sphinx.ext.viewcode',
               'sphinx.ext.extlinks',
               #'sphinxcontrib.napoleon', (Needs work before this can be enabled.)
-              'matplotlib.sphinxext.plot_directive'
+              # 'matplotlib.sphinxext.plot_directive'
+              # We use a local copy of the plot_directive until
+              # https://github.com/matplotlib/matplotlib/pull/6213 is available in order
+              # to benefit from cached rebuilds of plots.
+              'sphinxext.plot_directive'
               ]
 
 import matplotlib

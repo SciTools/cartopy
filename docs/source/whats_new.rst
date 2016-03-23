@@ -67,7 +67,7 @@ Features
 
   |image_eccentric_ellipse|_
 
-    .. |image_eccentric_ellipse| image:: examples/eccentric_ellipse_01_00.thumb.png
+    .. |image_eccentric_ellipse| image:: examples/eccentric_ellipse_00_00.thumb.png
 
     .. _image_eccentric_ellipse: examples/eccentric_ellipse.html
 
@@ -161,31 +161,31 @@ Features
 
   * |image_un_flag|_
 
-    .. |image_un_flag| image:: examples/un_flag_01_00.thumb.png
+    .. |image_un_flag| image:: examples/un_flag_00_00.thumb.png
 
     .. _image_un_flag: examples/un_flag.html
 
   * |image_always_circular_stereo|_
 
-    .. |image_always_circular_stereo| image:: examples/always_circular_stereo_01_00.thumb.png
+    .. |image_always_circular_stereo| image:: examples/always_circular_stereo_00_00.thumb.png
 
     .. _image_always_circular_stereo: examples/always_circular_stereo.html
 
   * |image_tube_stations|_
 
-    .. |image_tube_stations| image:: examples/tube_stations_01_00.thumb.png
+    .. |image_tube_stations| image:: examples/tube_stations_00_00.thumb.png
 
     .. _image_tube_stations: examples/tube_stations.html
 
   * |image_wms|_
 
-    .. |image_wms| image:: examples/wms_01_00.thumb.png
+    .. |image_wms| image:: examples/wms_00_00.thumb.png
 
     .. _image_wms: examples/wms.html
 
   * |image_image_tiles|_
 
-    .. |image_image_tiles| image:: examples/image_tiles_01_00.thumb.png
+    .. |image_image_tiles| image:: examples/image_tiles_00_00.thumb.png
 
     .. _image_image_tiles: examples/image_tiles.html
 
@@ -339,7 +339,7 @@ What's new in cartopy 0.9
 
     |image_eyja_volcano|_
 
-    .. |image_eyja_volcano| image:: examples/eyja_volcano_01_00.thumb.png
+    .. |image_eyja_volcano| image:: examples/eyja_volcano_00_00.thumb.png
 
     .. _image_eyja_volcano: examples/eyja_volcano.html
 
@@ -348,7 +348,7 @@ What's new in cartopy 0.9
   
     |image_geostationary|_
 
-    .. |image_geostationary| image:: examples/geostationary_01_00.thumb.png
+    .. |image_geostationary| image:: examples/geostationary_00_00.thumb.png
 
     .. _image_geostationary: examples/geostationary.html
 
