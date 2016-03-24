@@ -21,8 +21,11 @@ except ImportError:
 from io import StringIO
 
 import numpy as np
+from datetime import datetime
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.patches as patches
 
 
 def aurora_forecast():
@@ -40,6 +43,8 @@ def aurora_forecast():
         the ``img_proj`` coordinate system.
     origin : str
         The origin of the image to be passed through to matplotlib's imshow.
+    dt : datetime
+        Time of forecast validity.
 
     """
 
@@ -51,9 +56,106 @@ def aurora_forecast():
 
     response_text = StringIO(urlopen(url).read().decode('utf-8'))
     img = np.loadtxt(response_text)
+    # Read forecast date and time
+    response_text.seek(0)
+    for line in response_text:
+        if line.startswith('Product Valid At:', 2):
+            dt = datetime.strptime(line[-17:-1], '%Y-%m-%d %H:%M')
+
     img_proj = ccrs.PlateCarree()
     img_extent = (-180, 180, -90, 90)
-    return img, img_proj, img_extent, 'lower'
+    return img, img_proj, img_extent, 'lower', dt
+
+
+def custom_colormap(name='my_cmap'):
+    """Return a custom colormap with aurora like colors"""
+    stops = {'red': [(0.00, 0.1725, 0.1725),
+                     (0.50, 0.1725, 0.1725),
+                     (1.00, 0.8353, 0.8353)],
+
+             'green': [(0.00, 0.9294, 0.9294),
+                       (0.50, 0.9294, 0.9294),
+                       (1.00, 0.8235, 0.8235)],
+
+             'blue': [(0.00, 0.3843, 0.3843),
+                      (0.50, 0.3843, 0.3843),
+                      (1.00, 0.6549, 0.6549)],
+
+             'alpha': [(0.00, 0.0, 0.0),
+                       (0.50, 1.0, 1.0),
+                       (1.00, 1.0, 1.0)]}
+
+    return LinearSegmentedColormap(name, stops)
+
+
+def sun_pos(dt=None):
+    """This function computes a rough estimate of the coordinates for
+    the point on the surface of the Earth where the Sun is directly
+    overhead at the time dt. Precision is down to a few degrees. This
+    means that the equinoxes (when the sign of the latitude changes)
+    will be off by a few days.
+
+    The function is intended only for visualization. For more precise
+    calculations consider for example the PyEphem package.
+
+    Parameters
+    ----------
+        dt: datetime
+            Defaults to datetime.utcnow()
+
+    Returns
+    -------
+        lat, lng: tuple of floats
+            Approximate coordinates of the point where the sun is
+            in zenith at the time dt.
+    """
+    if dt is None:
+        dt = datetime.utcnow()
+
+    axial_tilt = 23.4
+    ref_solstice = datetime(2016, 6, 21, 22, 22)
+    days_per_year = 365.2425
+    seconds_per_day = 24*60*60.0
+
+    days_since_ref = (dt - ref_solstice).total_seconds()/seconds_per_day
+    lat = axial_tilt*np.cos(2*np.pi*days_since_ref/days_per_year)
+    sec_since_midnight = (dt - datetime(dt.year, dt.month, dt.day)).seconds
+    lng = -(sec_since_midnight/seconds_per_day - 0.5)*360
+    return lat, lng
+
+
+def fill_dark_side(ax, time=None, *args, **kwargs):
+    """Plot a fill on the dark side of the planet. Does not account
+    for refraction.
+
+    Parameters
+    ----------
+        ax : matplotlib axes
+            The axes to plot on.
+        time : datetime
+            The time to calculate terminator for. Defaults to datetime.utcnow()
+        *args :
+            Passed on to Matplotlib's ax.fill()
+        **kwargs :
+            Passed on to Matplotlib's ax.fill()
+    """
+    lat, lng = sun_pos(time)
+    pole_lng = lng
+    if lat > 0:
+        pole_lat = -90 + lat
+        central_rot_lng = 180
+    else:
+        pole_lat = 90 + lat
+        central_rot_lng = 0
+
+    rotated_pole = ccrs.RotatedPole(pole_latitude=pole_lat,
+                                    pole_longitude=pole_lng,
+                                    central_rotated_longitude=central_rot_lng)
+
+    x = [-90]*181 + [90]*181 + [-90]
+    y = range(-90, 91) + range(90, -91, -1) + [-90]
+
+    ax.fill(x, y, transform=rotated_pole, *args, **kwargs)
 
 
 def main():
@@ -64,20 +166,18 @@ def main():
     # ax1 for Northern Hemisphere
     ax1 = plt.subplot(1, 2, 1, projection=ccrs.Orthographic(0, 90))
     # ax2 for Southern Hemisphere
-    ax2 = plt.subplot(1, 2, 2, projection=ccrs.Orthographic(0, -90))
+    ax2 = plt.subplot(1, 2, 2, projection=ccrs.Orthographic(180, -90))
 
-    # viridis was added in matplotlib 1.5. Try to use it.
-    try:
-        plt.set_cmap('viridis')
-    except ValueError:
-        plt.set_cmap('YlGnBu_r')
-
-    img, crs, extent, origin = aurora_forecast()
+    img, crs, extent, origin, dt = aurora_forecast()
+    plt.register_cmap('aurora', custom_colormap('aurora'))
+    plt.set_cmap('aurora')
     for ax in [ax1, ax2]:
-        ax.coastlines()
+        ax.coastlines(zorder=3)
+        ax.stock_img()
         ax.gridlines()
+        fill_dark_side(ax, time=dt, color='black', alpha=0.75)
         ax.imshow(img, vmin=0, vmax=100, transform=crs,
-                  extent=extent, origin=origin)
+                  extent=extent, origin=origin, zorder=2)
 
     plt.show()
 
