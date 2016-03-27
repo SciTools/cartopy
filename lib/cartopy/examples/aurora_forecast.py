@@ -67,8 +67,8 @@ def aurora_forecast():
     return img, img_proj, img_extent, 'lower', dt
 
 
-def custom_colormap(name='my_cmap'):
-    """Return a custom colormap with aurora like colors"""
+def aurora_cmap():
+    """Return a colormap with aurora like colors"""
     stops = {'red': [(0.00, 0.1725, 0.1725),
                      (0.50, 0.1725, 0.1725),
                      (1.00, 0.8353, 0.8353)],
@@ -85,7 +85,7 @@ def custom_colormap(name='my_cmap'):
                        (0.50, 1.0, 1.0),
                        (1.00, 1.0, 1.0)]}
 
-    return LinearSegmentedColormap(name, stops)
+    return LinearSegmentedColormap('aurora', stops)
 
 
 def sun_pos(dt=None):
@@ -125,8 +125,8 @@ def sun_pos(dt=None):
 
 
 def fill_dark_side(ax, time=None, *args, **kwargs):
-    """Plot a fill on the dark side of the planet. Does not account
-    for refraction.
+    """
+    Plot a fill on the dark side of the planet (without refraction).
 
     Parameters
     ----------
@@ -134,10 +134,9 @@ def fill_dark_side(ax, time=None, *args, **kwargs):
             The axes to plot on.
         time : datetime
             The time to calculate terminator for. Defaults to datetime.utcnow()
-        *args :
-            Passed on to Matplotlib's ax.fill()
         **kwargs :
             Passed on to Matplotlib's ax.fill()
+
     """
     lat, lng = sun_pos(time)
     pole_lng = lng
@@ -155,29 +154,32 @@ def fill_dark_side(ax, time=None, *args, **kwargs):
     x = [-90]*181 + [90]*181 + [-90]
     y = range(-90, 91) + range(90, -91, -1) + [-90]
 
-    ax.fill(x, y, transform=rotated_pole, *args, **kwargs)
+    ax.fill(x, y, transform=rotated_pole, **kwargs)
 
 
 def main():
     fig = plt.figure(figsize=[10, 5])
-    # Orthographic projection looks natural and distortion is
-    # small around the poles where the aurora is most likely
+
+    # We choose to plot in an Orthographic projection as it looks natural
+    # and the distortion is relatively small around the poles where
+    # the aurora is most likely.
 
     # ax1 for Northern Hemisphere
     ax1 = plt.subplot(1, 2, 1, projection=ccrs.Orthographic(0, 90))
+
     # ax2 for Southern Hemisphere
     ax2 = plt.subplot(1, 2, 2, projection=ccrs.Orthographic(180, -90))
 
     img, crs, extent, origin, dt = aurora_forecast()
-    plt.register_cmap('aurora', custom_colormap('aurora'))
-    plt.set_cmap('aurora')
+
     for ax in [ax1, ax2]:
         ax.coastlines(zorder=3)
         ax.stock_img()
         ax.gridlines()
         fill_dark_side(ax, time=dt, color='black', alpha=0.75)
         ax.imshow(img, vmin=0, vmax=100, transform=crs,
-                  extent=extent, origin=origin, zorder=2)
+                  extent=extent, origin=origin, zorder=2,
+                  cmap=aurora_cmap())
 
     plt.show()
 

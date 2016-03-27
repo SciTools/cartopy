@@ -589,10 +589,13 @@ def render_figures(code, code_path, output_dir, output_base, context,
     all_exists = True
     n_shows = -1
     for code_piece in code_pieces:
-        if len(code_pieces) > 1 and 'plt.show()' in code_piece:
-            n_shows += 1
-        else:
-            continue
+        if len(code_pieces) > 1:
+            if 'plt.show()' in code_piece:
+                n_shows += 1
+            else:
+                # We don't want to inspect whether an image exists for a code
+                # piece without a show.
+                continue
 
         images = []
         for j in xrange(1000):
