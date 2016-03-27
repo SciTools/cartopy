@@ -22,6 +22,9 @@ instead leaving the processing to be done by the :class:`cartopy.crs.Projection`
 subclasses.
 """
 
+from libc.stdint cimport uintptr_t as ptr
+
+
 cdef extern from "geos_c.h":
     ctypedef void *GEOSContextHandle_t
     ctypedef struct GEOSGeometry:
@@ -54,8 +57,6 @@ cdef extern from "_trace.h":
                                        Interpolator *interpolator,
                                        GEOSGeometry *g_domain,
                                        double threshold)
-
-ctypedef unsigned long ptr
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
