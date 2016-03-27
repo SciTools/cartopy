@@ -8,3 +8,5 @@ include lib/cartopy/data/*
 include lib/cartopy/io/srtm.npz
 recursive-include lib *.py
 recursive-include lib *.pyx *.pxd *.h
+include versioneer.py
+include lib/cartopy/_version.py

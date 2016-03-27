@@ -17,7 +17,14 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+<<<<<<< HEAD
 __version__ = '0.15.0'
+=======
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
+>>>>>>> Made use of versioneer.
 __document_these__ = ['config']
 
 # Configuration
