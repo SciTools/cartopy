@@ -7,12 +7,15 @@ docs/build
 lib/cartopy/trace.cpp
 lib/cartopy/trace.so
 lib/cartopy/trace.*.so
+lib/cartopy/trace.pyd
 lib/cartopy/_crs.c
 lib/cartopy/_crs.so
 lib/cartopy/_crs.*.so
+lib/cartopy/_crs.pyd
 lib/cartopy/geodesic/_geodesic.c
 lib/cartopy/geodesic/_geodesic.so
 lib/cartopy/geodesic/_geodesic.*.so
+lib/cartopy/geodesic/_geodesic.pyd
 docs/build
 lib/cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
