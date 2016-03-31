@@ -32,6 +32,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Daniel Atton Beckmann
  * Joseph Hogg
  * Zachary Tessler
+ * Daniel Eriksson
 
 
 Thank you!
