@@ -66,8 +66,12 @@ class _SRTMSource(RasterSource):
         """
         if resolution == 3:
             self._shape = (1201, 1201)
+            self.xres = 0.000833333333333
+            self.yres = 0.000833333333333
         elif resolution == 1:
             self._shape = (3601, 3601)
+            self.xres = 0.000277777777778
+            self.yres = 0.000277777777778
         else:
             raise ValueError(
                 'Resolution is an unexpected value ({}).'.format(resolution))
@@ -246,29 +250,61 @@ def srtm(lon, lat):
     return SRTM3Source().single_tile(lon, lat)
 
 
-def add_shading(elevation, azimuth, altitude):
+def add_shading(located_image, azimuth=315, altitude=45, scale=111120, z=1):
     """Adds shading to SRTM elevation data, using azimuth and altitude
-    of the sun.
+    of the sun. Function assumes x,y,z in same units, but automatically
+	downloaded SRTM in [lat,lon,meters]. Therefore default scale is 111120,
+	which is good for equatorial regions, and adequate elsewhere. Azimuth
+	degrees clockwise from North. Altitude is angle above horizon. 
+	Function modeled after:
+	http://geospatialpython.com/2013/12/python-and-elevation-data-creating.html
 
-    :type elevation: numpy.ndarray
-    :param elevation: SRTM elevation data (in meters)
+    :type located_image: LocatedImage instance
+    :param located_image: SRTM elevation data (in meters)
     :type azimuth: float
     :param azimuth: azimuth of the Sun (in degrees)
     :type altitude: float
     :param altitude: altitude of the Sun (in degrees)
+	:type scale: float
+	:param scale: ratio of vertical units to horizontal (111120 m/degree)
+	:type z: float
+	:param z: vertical exaggeration multiplier (1= no exaggeration)
 
     :rtype: numpy.ndarray
-    :return: shaded SRTM relief map.
-    """
+    :return: shaded SRTM relief map"""
+    elevation = located_image.image
+
+    xres = ((located_image.extent[1] - located_image.extent[0]) / 
+             elevation.shape[1])
+    yres = ((located_image.extent[3] - located_image.extent[2]) / 
+             elevation.shape[0])
+    
     azimuth = np.deg2rad(azimuth)
     altitude = np.deg2rad(altitude)
-    x, y = np.gradient(elevation)
-    slope = np.pi/2. - np.arctan(np.sqrt(x*x + y*y))
-    # -x here because of pixel orders in the SRTM tile
-    aspect = np.arctan2(-x, y)
-    shaded = np.sin(altitude) * np.sin(slope)\
-        + np.cos(altitude) * np.cos(slope)\
-        * np.cos((azimuth - np.pi/2.) - aspect)
+    
+    window = []
+    for row in range(3):
+        for col in range(3):
+            window.append(elevation[row:(row + elevation.shape[0] - 2), 
+                            col:(col + elevation.shape[1] - 2)])
+    
+    # Process each cell (average gradients)
+    x = ( ((z * window[0] + z * window[3] + z * window[3] + z * window[6]) - 
+           (z * window[2] + z * window[5] + z * window[5] + z * window[8])) / 
+           (8.0 * xres * scale) )
+    	
+    y = ( ((z * window[6] + z * window[7] + z * window[7] + z * window[8]) - 
+            (z * window[0] + z * window[1] + z * window[1] + z * window[2])) / 
+            (8.0 * yres * scale) )
+    					  
+    # Calculate reflectivity / hillshade
+    slope = np.pi/2 - np.arctan(np.hypot(x,y))
+    aspect = np.arctan2(x, y)
+    shaded = ( np.sin(altitude) * np.sin(slope) + np.cos(altitude) * 
+                np.cos(slope) * np.cos((azimuth - np.pi/2) - aspect) )
+    #shaded = (shaded*127).astype('int8') 
+    #shaded = (shaded*255).astype('int16')
+    	
     return shaded
 
 

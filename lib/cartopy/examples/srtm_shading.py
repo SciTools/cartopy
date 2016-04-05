@@ -20,8 +20,11 @@ def shade(located_elevations):
     give a realistic 3d appearance.
 
     """
-    new_img = srtm.add_shading(located_elevations.image,
-                               azimuth=135, altitude=15)
+    new_img = srtm.add_shading(located_elevations,
+                               azimuth=135, 
+							   altitude=15,
+							   scale=111120,
+							   z=1)
     return LocatedImage(new_img, located_elevations.extent)
 
 
