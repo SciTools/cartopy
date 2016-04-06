@@ -167,7 +167,7 @@ def test_intersect():
 
         names = [collection.name for collection in nic._collections]
         zoom_levels = ['dummy-z-0', 'dummy-z-1', 'dummy-z-2']
-        assert names, zoom_levels
+        assert names == zoom_levels
 
         # Check all images are loaded.
         for zoom, expected_image_count in zip(zoom_levels, [1, 1, 5]):
