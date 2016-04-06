@@ -22,7 +22,6 @@ import os
 import shutil
 import warnings
 
-from nose.tools import assert_equal, assert_in, assert_true
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from PIL import Image
@@ -49,31 +48,31 @@ def test_world_files():
     func = cimg_nest.Img.world_files
     fname = 'one'
     expected = ['one.w', 'one.W', 'ONE.w', 'ONE.W']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = 'one.png'
     expected = ['one.pngw', 'one.pgw', 'one.PNGW', 'one.PGW',
                 'ONE.pngw', 'ONE.pgw', 'ONE.PNGW', 'ONE.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = '/one.png'
     expected = ['/one.pngw', '/one.pgw', '/one.PNGW', '/one.PGW',
                 '/ONE.pngw', '/ONE.pgw', '/ONE.PNGW', '/ONE.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = '/one/two.png'
     expected = ['/one/two.pngw', '/one/two.pgw',
                 '/one/two.PNGW', '/one/two.PGW',
                 '/one/TWO.pngw', '/one/TWO.pgw',
                 '/one/TWO.PNGW', '/one/TWO.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = '/one/two/THREE.png'
     expected = ['/one/two/THREE.pngw', '/one/two/THREE.pgw',
                 '/one/two/THREE.PNGW', '/one/two/THREE.PGW',
                 '/one/two/three.pngw', '/one/two/three.pgw',
                 '/one/two/three.PNGW', '/one/two/three.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
 
 def _save_world(fname, args):
@@ -168,17 +167,16 @@ def test_intersect():
 
         names = [collection.name for collection in nic._collections]
         zoom_levels = ['dummy-z-0', 'dummy-z-1', 'dummy-z-2']
-        assert_true(names, zoom_levels)
+        assert names, zoom_levels
 
         # Check all images are loaded.
         for zoom, expected_image_count in zip(zoom_levels, [1, 1, 5]):
             images = nic._collections_by_name[zoom].images
-            assert_equal(len(images), expected_image_count)
+            assert len(images) == expected_image_count
 
         # Check the image ancestry.
         zoom_levels = ['dummy-z-0', 'dummy-z-1']
-        assert_equal(sorted(k[0] for k in nic._ancestry.keys()),
-                     zoom_levels)
+        assert sorted(k[0] for k in nic._ancestry.keys()) == zoom_levels
 
         expected = [('dummy-z-0', ['p1.tif']),
                     ('dummy-z-1', ['p2-3.tif', 'p2-4.tif', 'p2-5.tif'])]
@@ -187,7 +185,7 @@ def test_intersect():
             ancestry = nic._ancestry[key]
             fnames = sorted([os.path.basename(item[1].filename)
                              for item in ancestry])
-            assert_equal(image_names, fnames)
+            assert image_names == fnames
 
         # Check image retrieval for specific domain.
         items = [(sgeom.box(20, 20, 80, 80), 3),
@@ -196,7 +194,7 @@ def test_intersect():
         for domain, expected in items:
             result = [image for image in nic.find_images(domain,
                                                          'dummy-z-2')]
-            assert_equal(len(result), expected)
+            assert len(result) == expected
 
 
 def _tile_from_img(img):
@@ -260,23 +258,23 @@ def test_nest():
 
     z0_key = ('aerial z0 test', z0.images[0])
 
-    assert_true(z0_key in nest_z0_z1._ancestry.keys())
-    assert_equal(len(nest_z0_z1._ancestry), 1)
+    assert z0_key in nest_z0_z1._ancestry.keys()
+    assert len(nest_z0_z1._ancestry) == 1
 
     # check that it has figured out that all the z1 images are children of
     # the only z0 image
     for img in z1.images:
         key = ('aerial z0 test', z0.images[0])
-        assert_in(('aerial z1 test', img), nest_z0_z1._ancestry[key])
+        assert ('aerial z1 test', img) in nest_z0_z1._ancestry[key]
 
     x1_y0_z1, = [img for img in z1.images
                  if img.filename.endswith('z_1/x_1_y_0.png')]
 
-    assert_equal((1, 0, 1), _tile_from_img(x1_y0_z1))
+    assert (1, 0, 1) == _tile_from_img(x1_y0_z1)
 
-    assert_equal([(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)],
-                 sorted([_tile_from_img(img) for z, img in
-                         nest.subtiles(('aerial z1 test', x1_y0_z1))]))
+    assert ([(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)] ==
+            sorted([_tile_from_img(img) for z, img in
+                    nest.subtiles(('aerial z1 test', x1_y0_z1))]))
 
     nest_from_config = gen_nest()
     # check that the the images in the nest from configuration are the
@@ -284,9 +282,9 @@ def test_nest():
     for name in nest_z0_z1._collections_by_name.keys():
         for img in nest_z0_z1._collections_by_name[name].images:
             collection = nest_from_config._collections_by_name[name]
-            assert_in(img, collection.images)
+            assert img in collection.images
 
-    assert_equal(nest_z0_z1._ancestry, nest_from_config._ancestry)
+    assert nest_z0_z1._ancestry == nest_from_config._ancestry
 
     # check that a nest can be pickled and unpickled easily.
     s = io.BytesIO()
@@ -294,8 +292,7 @@ def test_nest():
     s.seek(0)
     nest_z0_z1_from_pickle = pickle.load(s)
 
-    assert_equal(nest_z0_z1._ancestry,
-                 nest_z0_z1_from_pickle._ancestry)
+    assert nest_z0_z1._ancestry == nest_z0_z1_from_pickle._ancestry
 
 
 def test_img_pickle_round_trip():
@@ -303,8 +300,8 @@ def test_img_pickle_round_trip():
 
     img = cimg_nest.Img('imaginary file', (0, 1, 2, 3), 'lower', (1, 2))
     img_from_pickle = pickle.loads(pickle.dumps(img))
-    assert_equal(img, img_from_pickle)
-    assert_equal(hasattr(img_from_pickle, '_bbox'), True)
+    assert img == img_from_pickle
+    assert hasattr(img_from_pickle, '_bbox')
 
 
 def requires_wmts_data(function):
@@ -388,14 +385,14 @@ def test_find_images():
     world_file_fname = os.path.join(z2_dir, 'x_2_y_0.pgw')
     img = RoundedImg.from_world_file(img_fname, world_file_fname)
 
-    assert_equal(img.filename, img_fname)
+    assert img.filename == img_fname
     assert_array_almost_equal(img.extent,
                               (0., 10018754.17139462,
                                10018754.17139462, 20037508.342789244),
                               decimal=4)
-    assert_equal(img.origin, 'lower')
+    assert img.origin == 'lower'
     assert_array_equal(img, np.array(Image.open(img.filename)))
-    assert_equal(img.pixel_size, (39135.7585, 39135.7585))
+    assert img.pixel_size == (39135.7585, 39135.7585)
 
 
 @requires_wmts_data

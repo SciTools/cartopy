@@ -23,8 +23,6 @@ import shutil
 import tempfile
 import warnings
 
-from nose.tools import assert_equal
-
 import cartopy
 import cartopy.io as cio
 from cartopy.io.shapereader import NEShpDownloader
@@ -41,16 +39,13 @@ def test_Downloader_data():
                         'name': 'test',
                         'data_dir': os.path.join('/wibble', 'foo', 'bar')}
 
-    assert_equal(di.url(replacement_dict),
-                 'https://testing.com/example/test.zip')
+    assert di.url(replacement_dict) == 'https://testing.com/example/test.zip'
 
-    assert_equal(di.target_path(replacement_dict),
-                 os.path.join('/wibble', 'foo', 'bar', 'example', 'shape.shp')
-                 )
+    assert (di.target_path(replacement_dict) ==
+            os.path.join('/wibble', 'foo', 'bar', 'example', 'shape.shp'))
 
-    assert_equal(di.pre_downloaded_path(replacement_dict),
-                 '/project/foobar/example/sample.shp'
-                 )
+    assert (di.pre_downloaded_path(replacement_dict) ==
+            '/project/foobar/example/sample.shp')
 
 
 @contextlib.contextmanager
@@ -106,8 +101,8 @@ def test_from_config():
         r = cio.Downloader.from_config(ocean_spec)
 
         # check the resulting download item produces a sensible url.
-        assert_equal(r.url({'name': 'ocean'}),
-                     'https://example.com/generic_ne/ocean.zip')
+        assert (r.url({'name': 'ocean'}) ==
+                'https://example.com/generic_ne/ocean.zip')
 
         downloaders = cio.config['downloaders']
 
@@ -129,10 +124,10 @@ def test_downloading_simple_ascii():
 
         dnld_item = cio.Downloader(file_url, target_template)
 
-        assert_equal(dnld_item.target_path(format_dict), tmp_fname)
+        assert dnld_item.target_path(format_dict) == tmp_fname
 
         with warnings.catch_warnings(record=True) as w:
-            assert_equal(dnld_item.path(format_dict), tmp_fname)
+            assert dnld_item.path(format_dict) == tmp_fname
 
             assert len(w) == 1, ('Expected a single download warning to be '
                                  'raised. Got {}.'.format(len(w)))
@@ -140,12 +135,11 @@ def test_downloading_simple_ascii():
 
         with open(tmp_fname, 'r') as fh:
             _ = fh.readline()
-            assert_equal(" * jQuery JavaScript Library v1.8.2\n",
-                         fh.readline())
+            assert fh.readline() == " * jQuery JavaScript Library v1.8.2\n"
 
         # check that calling path again doesn't try re-downloading
         with CallCounter(dnld_item, 'acquire_resource') as counter:
-            assert_equal(dnld_item.path(format_dict), tmp_fname)
+            assert dnld_item.path(format_dict) == tmp_fname
         assert counter.count == 0, 'Item was re-downloaded.'
 
 
@@ -177,11 +171,11 @@ def test_natural_earth_downloader():
             shp_path = dnld_item.path(format_dict)
         assert counter.count == 1, 'Item not downloaded.'
 
-        assert_equal(shp_path_template.format(**format_dict), shp_path)
+        assert shp_path_template.format(**format_dict) == shp_path
 
         # check that calling path again doesn't try re-downloading
         with CallCounter(dnld_item, 'acquire_resource') as counter:
-            assert_equal(dnld_item.path(format_dict), shp_path)
+            assert dnld_item.path(format_dict) == shp_path
         assert counter.count == 0, 'Item was re-downloaded.'
 
         # check that we have the shp and the shx
@@ -200,7 +194,7 @@ def test_natural_earth_downloader():
         # uses the path of the previously downloaded item
 
         with CallCounter(pre_dnld, 'acquire_resource') as counter:
-            assert_equal(pre_dnld.path(format_dict), shp_path)
+            assert pre_dnld.path(format_dict) == shp_path
         assert counter.count == 0, 'Aquire resource called more than once.'
 
     finally:

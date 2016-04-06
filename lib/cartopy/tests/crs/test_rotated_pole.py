@@ -23,15 +23,13 @@ from __future__ import (absolute_import, division, print_function)
 
 import unittest
 
-from nose.tools import assert_equal
-
 import cartopy.crs as ccrs
 
 
 class TestRotatedGeodetic(unittest.TestCase):
     def check_proj4_params(self, crs, expected):
         pro4_params = sorted(crs.proj4_init.split(' +'))
-        assert_equal(expected, pro4_params)
+        assert expected == pro4_params
 
     def test_default(self):
         geos = ccrs.RotatedGeodetic(30, 15, 27)

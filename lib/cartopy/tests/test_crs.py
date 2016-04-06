@@ -23,7 +23,6 @@ import unittest
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
-from nose.tools import assert_equal
 try:
     import pyepsg
 except ImportError:
@@ -257,8 +256,8 @@ def test_PlateCarree_shortcut():
 
         bbox, offset = src._bbox_and_offset(target)
 
-        assert_equal(offset, expected_offset)
-        assert_equal(bbox, expected_bboxes)
+        assert offset == expected_offset
+        assert bbox == expected_bboxes
 
 
 if __name__ == '__main__':

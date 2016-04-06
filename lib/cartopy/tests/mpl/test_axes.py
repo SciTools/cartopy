@@ -23,7 +23,6 @@ import unittest
 from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
-from nose.tools import assert_equal
 import numpy as np
 
 
@@ -74,22 +73,21 @@ def test_transform_PlateCarree_shortcut():
     with counter:
         trans.transform_path(pth1)
         # pth1 should allow a short-cut.
-        assert_equal(counter.count, 0)
+        assert counter.count == 0
 
     with counter:
         trans.transform_path(pth2)
-        assert_equal(counter.count, 1)
+        assert counter.count == 1
 
     with counter:
         trans.transform_path(pth3)
-        assert_equal(counter.count, 2)
+        assert counter.count == 2
 
 
 @cleanup
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    assert_equal(str(ax.__class__),
-                 "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>")
+    assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"
 
 
 if __name__ == '__main__':

@@ -21,7 +21,6 @@ try:
     from unittest.mock import Mock
 except ImportError:
     from mock import Mock
-from nose.tools import assert_equal
 try:
     from nose.tools import assert_raises_regex
 except ImportError:
@@ -73,7 +72,7 @@ def test_LatitudeFormatter():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'90\u00B0S', u'60\u00B0S', u'30\u00B0S', u'0\u00B0',
                 u'30\u00B0N', u'60\u00B0N', u'90\u00B0N']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LatitudeFormatter_degree_symbol():
@@ -84,7 +83,7 @@ def test_LatitudeFormatter_degree_symbol():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'90S', u'60S', u'30S', u'0',
                 u'30N', u'60N', u'90N']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LatitudeFormatter_number_format():
@@ -96,7 +95,7 @@ def test_LatitudeFormatter_number_format():
     expected = [u'90.00\u00B0S', u'60.00\u00B0S', u'30.00\u00B0S',
                 u'0.00\u00B0', u'30.00\u00B0N', u'60.00\u00B0N',
                 u'90.00\u00B0N']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LatitudeFormatter_mercator():
@@ -109,7 +108,7 @@ def test_LatitudeFormatter_mercator():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'80\u00B0S', u'60\u00B0S', u'30\u00B0S', u'0\u00B0',
                 u'30\u00B0N', u'60\u00B0N', u'80\u00B0N']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LatitudeFormatter_small_numbers():
@@ -120,7 +119,7 @@ def test_LatitudeFormatter_small_numbers():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'40.1275150\u00B0N', u'40.1275152\u00B0N',
                 u'40.1275154\u00B0N']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_central_longitude_0():
@@ -131,7 +130,7 @@ def test_LongitudeFormatter_central_longitude_0():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'180\u00B0W', u'120\u00B0W', u'60\u00B0W', u'0\u00B0',
                 u'60\u00B0E', u'120\u00B0E', u'180\u00B0E']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_central_longitude_180():
@@ -142,7 +141,7 @@ def test_LongitudeFormatter_central_longitude_180():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'0\u00B0E', u'60\u00B0E', u'120\u00B0E', u'180\u00B0',
                 u'120\u00B0W', u'60\u00B0W', u'0\u00B0W']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_central_longitude_120():
@@ -153,7 +152,7 @@ def test_LongitudeFormatter_central_longitude_120():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'60\u00B0W', u'0\u00B0', u'60\u00B0E', u'120\u00B0E',
                 u'180\u00B0', u'120\u00B0W', u'60\u00B0W']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_degree_symbol():
@@ -164,7 +163,7 @@ def test_LongitudeFormatter_degree_symbol():
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'180W', u'120W', u'60W', u'0', u'60E', u'120E', u'180E']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_number_format():
@@ -177,7 +176,7 @@ def test_LongitudeFormatter_number_format():
     expected = [u'180.00\u00B0W', u'120.00\u00B0W', u'60.00\u00B0W',
                 u'0.00\u00B0', u'60.00\u00B0E', u'120.00\u00B0E',
                 u'180.00\u00B0E']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_mercator():
@@ -190,7 +189,7 @@ def test_LongitudeFormatter_mercator():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'180\u00B0W', u'120\u00B0W', u'60\u00B0W', u'0\u00B0',
                 u'60\u00B0E', u'120\u00B0E', u'180\u00B0E']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_small_numbers_0():
@@ -201,7 +200,7 @@ def test_LongitudeFormatter_small_numbers_0():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'17.1142343\u00B0W', u'17.1142340\u00B0W',
                 u'17.1142337\u00B0W']
-    assert_equal(result, expected)
+    assert result == expected
 
 
 def test_LongitudeFormatter_small_numbers_180():
@@ -213,4 +212,4 @@ def test_LongitudeFormatter_small_numbers_180():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'162.8857657\u00B0E', u'162.8857660\u00B0E',
                 u'162.8857663\u00B0E']
-    assert_equal(result, expected)
+    assert result == expected

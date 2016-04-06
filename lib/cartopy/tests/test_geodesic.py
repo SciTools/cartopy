@@ -21,7 +21,6 @@ import unittest
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from nose.tools import assert_equal
 
 from cartopy import geodesic
 
@@ -128,7 +127,7 @@ class TestGeodesic(unittest.TestCase):
 
     def test_str(self):
         expected = '<Geodesic: radius=6378137.000, flattening=1/298.257>'
-        assert_equal(expected, str(self.geod))
+        assert expected == str(self.geod)
 
 
 if __name__ == '__main__':

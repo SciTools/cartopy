@@ -23,7 +23,7 @@ try:
 except ImportError:
     import mock
 
-from nose.tools import raises, assert_equal
+from nose.tools import raises
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.testing.decorators import cleanup
@@ -50,22 +50,22 @@ class TestQuiverShapes(unittest.TestCase):
             self.ax.quiver(self.x2d.ravel(), self.y2d.ravel(),
                            self.u.ravel(), self.v.ravel(), transform=self.rp)
         args, kwargs = patch.call_args
-        assert_equal(len(args), 5)
-        assert_equal(sorted(kwargs.keys()), [u'transform'])
+        assert len(args) == 5
+        assert sorted(kwargs.keys()) == [u'transform']
         shapes = [arg.shape for arg in args[1:]]
         # Assert that all the shapes have been broadcast.
-        assert_equal(shapes, [(70, )] * 4)
+        assert shapes == [(70, )] * 4
 
     @cleanup
     def test_quiver_transform_xy_1d_uv_2d(self):
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
             self.ax.quiver(self.x, self.y, self.u, self.v, transform=self.rp)
         args, kwargs = patch.call_args
-        assert_equal(len(args), 5)
-        assert_equal(sorted(kwargs.keys()), [u'transform'])
+        assert len(args) == 5
+        assert sorted(kwargs.keys()) == [u'transform']
         shapes = [arg.shape for arg in args[1:]]
         # Assert that all the shapes have been broadcast.
-        assert_equal(shapes, [(7, 10)] * 4)
+        assert shapes == [(7, 10)] * 4
 
     @raises(ValueError)
     def test_quiver_transform_xy_2d_uv_1d(self):

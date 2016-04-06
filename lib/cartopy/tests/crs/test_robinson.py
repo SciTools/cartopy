@@ -25,7 +25,6 @@ Fix covered in : https://github.com/SciTools/cartopy/pull/277
 
 from __future__ import (absolute_import, division, print_function)
 
-from nose.tools import assert_true, assert_false, assert_equal
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 
@@ -47,11 +46,11 @@ def test_transform_point():
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_point(_NAN, 70.0, _CRS_PC)
-    assert_true(np.all(np.isnan(result)))
+    assert np.all(np.isnan(result))
 
     # this used to crash + is now fixed
     result = _CRS_ROB.transform_point(35.0, _NAN, _CRS_PC)
-    assert_true(np.all(np.isnan(result)))
+    assert np.all(np.isnan(result))
 
 
 def test_transform_points():
@@ -73,13 +72,13 @@ def test_transform_points():
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([_NAN]),
                                        np.array([70.0]))
-    assert_true(np.all(np.isnan(result)))
+    assert np.all(np.isnan(result))
 
     # this used to crash + is now fixed
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
                                        np.array([_NAN]))
-    assert_true(np.all(np.isnan(result)))
+    assert np.all(np.isnan(result))
 
     # multipoint case
     x = np.array([10.0, 21.0, 0.0, 77.7, _NAN, 0.0])
@@ -93,11 +92,11 @@ def test_transform_points():
          [33.1, 33.2, 33.3],
          [0.0, 0.0, 0.0]])
     result = _CRS_ROB.transform_points(_CRS_PC, x, y, z)
-    assert_equal(result.shape, (6, 3))
-    assert_true(np.all(np.isnan(result[[1, 3, 4], :])))
+    assert result.shape == (6, 3)
+    assert np.all(np.isnan(result[[1, 3, 4], :]))
     result[[1, 3, 4], :] = expect_result[[1, 3, 4], :]
-    assert_false(np.any(np.isnan(result)))
-    assert_true(np.allclose(result, expect_result))
+    assert not np.any(np.isnan(result))
+    assert np.allclose(result, expect_result)
 
 
 if __name__ == '__main__':
