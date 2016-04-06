@@ -36,11 +36,11 @@ class TestCRS(unittest.TestCase):
     def test_hash(self):
         stereo = ccrs.Stereographic(90)
         north = ccrs.NorthPolarStereo()
-        self.assertEqual(stereo, north)
-        self.assertFalse(stereo != north)
-        self.assertEqual(hash(stereo), hash(north))
+        assert stereo == north
+        assert not stereo != north
+        assert hash(stereo) == hash(north)
 
-        self.assertEqual(ccrs.Geodetic(), ccrs.Geodetic())
+        assert ccrs.Geodetic() == ccrs.Geodetic()
 
     def test_osni(self):
         osni = ccrs.OSNI()
@@ -87,23 +87,20 @@ class TestCRS(unittest.TestCase):
     @unittest.skipIf(pyepsg is None, 'requires pyepsg')
     def test_epsg(self):
         uk = ccrs.epsg(27700)
-        self.assertEqual(uk.epsg_code, 27700)
-        self.assertEqual(uk.x_limits, (-84667.135022467062,
-                                       676354.14167904819))
-        self.assertEqual(uk.y_limits, (-2957.1831134535023,
-                                       1242951.4397385279
-                                       ))
-        self.assertEqual(uk.threshold, 7610.2127670151531)
+        assert uk.epsg_code == 27700
+        assert uk.x_limits == (-84667.135022467062, 676354.14167904819)
+        assert uk.y_limits == (-2957.1831134535023, 1242951.4397385279)
+        assert uk.threshold == 7610.2127670151531
         self._check_osgb(uk)
 
     def test_europp(self):
         europp = ccrs.EuroPP()
         proj4_init = europp.proj4_init
         # Transverse Mercator, UTM zone 32,
-        self.assertTrue('+proj=utm' in proj4_init)
-        self.assertTrue('+zone=32' in proj4_init)
+        assert '+proj=utm' in proj4_init
+        assert '+zone=32' in proj4_init
         # International 1924 ellipsoid.
-        self.assertTrue('+ellps=intl' in proj4_init)
+        assert '+ellps=intl' in proj4_init
 
     def test_transform_points_nD(self):
         rlons = np.array([[350., 352., 354.], [350., 352., 354.]])
@@ -198,8 +195,8 @@ class TestCRS(unittest.TestCase):
         assert_arr_almost_eq(result.xy, [[-180.], [45.]])
 
         result = pc_rotated.project_geometry(multi_point, pc)
-        self.assertIsInstance(result, sgeom.MultiPoint)
-        self.assertEqual(len(result), 2)
+        assert isinstance(result, sgeom.MultiPoint)
+        assert len(result) == 2
         assert_arr_almost_eq(result[0].xy, [[-180.], [45.]])
         assert_arr_almost_eq(result[1].xy, [[0], [45.]])
 

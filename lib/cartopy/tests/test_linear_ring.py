@@ -34,8 +34,8 @@ class TestBoundary(unittest.TestCase):
         rings, multi_line_string = projection.project_geometry(linear_ring)
 
         # The original ring should have been split into multiple pieces.
-        self.assertGreater(len(multi_line_string), 1)
-        self.assertFalse(rings)
+        assert len(multi_line_string) > 1
+        assert not rings
 
         def assert_intersection_with_boundary(segment_coords):
             # Double the length of the segment.
@@ -45,8 +45,7 @@ class TestBoundary(unittest.TestCase):
             extended_segment = sgeom.LineString([start, end])
             # And see if it crosses the boundary.
             intersection = extended_segment.intersection(projection.boundary)
-            self.assertFalse(intersection.is_empty,
-                             'Bad topology near boundary')
+            assert not intersection.is_empty, 'Bad topology near boundary'
 
         # Each line resulting from the split should start and end with a
         # segment that crosses the boundary when extended to double length.
@@ -54,7 +53,7 @@ class TestBoundary(unittest.TestCase):
         # attached to the boundary.)
         for line_string in multi_line_string:
             coords = list(line_string.coords)
-            self.assertGreaterEqual(len(coords), 2)
+            assert len(coords) >= 2
             assert_intersection_with_boundary(coords[1::-1])
             assert_intersection_with_boundary(coords[-2:])
 
@@ -80,12 +79,12 @@ class TestBoundary(unittest.TestCase):
             linear_ring = sgeom.LinearRing(coords)
             rings, mlinestr = projection.project_geometry(linear_ring)
             if expected_n_lines == -1:
-                self.assertTrue(rings)
-                self.assertFalse(mlinestr)
+                assert rings
+                assert not mlinestr
             else:
-                self.assertEqual(len(mlinestr), expected_n_lines)
+                assert len(mlinestr) == expected_n_lines
                 if expected_n_lines == 0:
-                    self.assertTrue(mlinestr.is_empty)
+                    assert mlinestr.is_empty
 
 
 class TestMisc(unittest.TestCase):
@@ -100,9 +99,9 @@ class TestMisc(unittest.TestCase):
         ])
         rings, multi_line_string = projection.project_geometry(linear_ring)
         # There should be one, and only one, returned ring.
-        self.assertIsInstance(multi_line_string, sgeom.MultiLineString)
-        self.assertEqual(len(multi_line_string), 0)
-        self.assertEqual(len(rings), 1)
+        assert isinstance(multi_line_string, sgeom.MultiLineString)
+        assert len(multi_line_string) == 0
+        assert len(rings) == 1
 
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
@@ -150,14 +149,14 @@ class TestMisc(unittest.TestCase):
 
         linear_ring = sgeom.LinearRing(coords)
         rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
-        self.assertEqual(len(mlinestr), 1)
-        self.assertEqual(len(rings), 0)
+        assert len(mlinestr) == 1
+        assert len(rings) == 0
 
         # Check the stitch works in either direction.
         linear_ring = sgeom.LinearRing(coords[::-1])
         rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
-        self.assertEqual(len(mlinestr), 1)
-        self.assertEqual(len(rings), 0)
+        assert len(mlinestr) == 1
+        assert len(rings) == 0
 
     def test_at_boundary(self):
         # Check that a polygon is split and recombined correctly
@@ -185,12 +184,12 @@ class TestMisc(unittest.TestCase):
         rings, mlinestr = tcrs._project_linear_ring(tring, scrs)
 
         # Number of linearstrings
-        self.assertEqual(len(mlinestr), 4)
-        self.assertFalse(rings)
+        assert len(mlinestr) == 4
+        assert not rings
 
         # Test area of smallest Polygon that contains all the points in the
         # geometry.
-        self.assertAlmostEqual(mlinestr.convex_hull.area, 2347.75623076)
+        assert round(abs(mlinestr.convex_hull.area - 2347.75623076), 7) == 0
 
 
 if __name__ == '__main__':

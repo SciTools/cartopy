@@ -59,9 +59,9 @@ class TestRegrid(unittest.TestCase):
                                     target_proj, target_x, target_y)
 
         # Check dimensions of return array
-        self.assertEqual(new_array.shape, target_x.shape)
-        self.assertEqual(new_array.shape, target_y.shape)
-        self.assertEqual(new_array.shape, (target_ny, target_nx))
+        assert new_array.shape == target_x.shape
+        assert new_array.shape == target_y.shape
+        assert new_array.shape == (target_ny, target_nx)
 
     def test_different_dims(self):
         # Source data

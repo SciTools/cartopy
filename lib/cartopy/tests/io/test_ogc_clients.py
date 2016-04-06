@@ -50,25 +50,25 @@ class test_WMSRasterSource(unittest.TestCase):
         source = ogc.WMSRasterSource(self.URI, self.layer)
         if isinstance(WebMapService, type):
             # OWSLib < 0.13.0
-            self.assertIsInstance(source.service, WebMapService)
+            assert isinstance(source.service, WebMapService)
         else:
             # OWSLib >= 0.13.0: WebMapService is a function that creates
             # instances of these two classes.
             from owslib.map.wms111 import WebMapService_1_1_1
             from owslib.map.wms130 import WebMapService_1_3_0
-            self.assertIsInstance(source.service,
-                                  (WebMapService_1_1_1, WebMapService_1_3_0))
-        self.assertIsInstance(source.layers, list)
-        self.assertEqual(source.layers, [self.layer])
+            assert isinstance(source.service,
+                              (WebMapService_1_1_1, WebMapService_1_3_0))
+        assert isinstance(source.layers, list)
+        assert source.layers == [self.layer]
 
     def test_wms_service_instance(self):
         service = WebMapService(self.URI)
         source = ogc.WMSRasterSource(service, self.layer)
-        self.assertIs(source.service, service)
+        assert source.service is service
 
     def test_multiple_layers(self):
         source = ogc.WMSRasterSource(self.URI, self.layers)
-        self.assertEqual(source.layers, self.layers)
+        assert source.layers == self.layers
 
     def test_no_layers(self):
         msg = 'One or more layers must be defined.'
@@ -78,18 +78,18 @@ class test_WMSRasterSource(unittest.TestCase):
     def test_extra_kwargs_empty(self):
         source = ogc.WMSRasterSource(self.URI, self.layer,
                                      getmap_extra_kwargs={})
-        self.assertEqual(source.getmap_extra_kwargs, {})
+        assert source.getmap_extra_kwargs == {}
 
     def test_extra_kwargs_None(self):
         source = ogc.WMSRasterSource(self.URI, self.layer,
                                      getmap_extra_kwargs=None)
-        self.assertEqual(source.getmap_extra_kwargs, {'transparent': True})
+        assert source.getmap_extra_kwargs == {'transparent': True}
 
     def test_extra_kwargs_non_empty(self):
         kwargs = {'another': 'kwarg'}
         source = ogc.WMSRasterSource(self.URI, self.layer,
                                      getmap_extra_kwargs=kwargs)
-        self.assertEqual(source.getmap_extra_kwargs, kwargs)
+        assert source.getmap_extra_kwargs == kwargs
 
     def test_supported_projection(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
@@ -112,10 +112,10 @@ class test_WMSRasterSource(unittest.TestCase):
         located_image, = source.fetch_raster(self.projection, extent,
                                              RESOLUTION)
         img = np.array(located_image.image)
-        self.assertEqual(img.shape, RESOLUTION + (4,))
+        assert img.shape == RESOLUTION + (4,)
         # No transparency in this image.
-        self.assertEqual(img[:, :, 3].min(), 255)
-        self.assertEqual(extent, located_image.extent)
+        assert img[:, :, 3].min() == 255
+        assert extent == located_image.extent
 
     def test_fetch_img_different_projection(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
@@ -123,14 +123,14 @@ class test_WMSRasterSource(unittest.TestCase):
         located_image, = source.fetch_raster(ccrs.Orthographic(), extent,
                                              RESOLUTION)
         img = np.array(located_image.image)
-        self.assertEqual(img.shape, RESOLUTION + (4,))
+        assert img.shape == RESOLUTION + (4,)
 
     def test_multi_image_result(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
         crs = ccrs.PlateCarree(central_longitude=180)
         extent = [-15, 25, 45, 85]
         located_images = source.fetch_raster(crs, extent, RESOLUTION)
-        self.assertEqual(len(located_images), 2)
+        assert len(located_images) == 2
 
     def test_float_resolution(self):
         # The resolution (in pixels) should be cast to ints.
@@ -139,7 +139,7 @@ class test_WMSRasterSource(unittest.TestCase):
         located_image, = source.fetch_raster(self.projection, extent,
                                              [19.5, 39.1])
         img = np.array(located_image.image)
-        self.assertEqual(img.shape, (40, 20, 4))
+        assert img.shape == (40, 20, 4)
 
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
@@ -150,14 +150,14 @@ class test_WMTSRasterSource(unittest.TestCase):
 
     def test_string_service(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
-        self.assertIsInstance(source.wmts, WebMapTileService)
-        self.assertIsInstance(source.layer, ContentMetadata)
-        self.assertEqual(source.layer.name, self.layer_name)
+        assert isinstance(source.wmts, WebMapTileService)
+        assert isinstance(source.layer, ContentMetadata)
+        assert source.layer.name == self.layer_name
 
     def test_wmts_service_instance(self):
         service = WebMapTileService(self.URI)
         source = ogc.WMTSRasterSource(service, self.layer_name)
-        self.assertIs(source.wmts, service)
+        assert source.wmts is service
 
     def test_native_projection(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
@@ -180,11 +180,11 @@ class test_WMTSRasterSource(unittest.TestCase):
         located_image, = source.fetch_raster(self.projection, extent,
                                              RESOLUTION)
         img = np.array(located_image.image)
-        self.assertEqual(img.shape, (512, 512, 4))
+        assert img.shape == (512, 512, 4)
         # No transparency in this image.
-        self.assertEqual(img[:, :, 3].min(), 255)
-        self.assertEqual((-180.0, 107.99999999999994,
-                          -197.99999999999994, 90.0), located_image.extent)
+        assert img[:, :, 3].min() == 255
+        assert located_image.extent == (-180.0, 107.99999999999994,
+                                        -197.99999999999994, 90.0)
 
     def test_fetch_img_reprojected(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
@@ -225,18 +225,18 @@ class test_WFSGeometrySource(unittest.TestCase):
     def test_string_service(self):
         service = WebFeatureService(self.URI)
         source = ogc.WFSGeometrySource(self.URI, self.typename)
-        self.assertIsInstance(source.service, type(service))
-        self.assertEqual(source.features, [self.typename])
+        assert isinstance(source.service, type(service))
+        assert source.features == [self.typename]
 
     def test_wfs_service_instance(self):
         service = WebFeatureService(self.URI)
         source = ogc.WFSGeometrySource(service, self.typename)
-        self.assertIs(source.service, service)
-        self.assertEqual(source.features, [self.typename])
+        assert source.service is service
+        assert source.features == [self.typename]
 
     def test_default_projection(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
-        self.assertEqual(source.default_projection(), self.native_projection)
+        assert source.default_projection() == self.native_projection
 
     def test_unsupported_projection(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
@@ -250,7 +250,7 @@ class test_WFSGeometrySource(unittest.TestCase):
         # Extent covering New Zealand.
         extent = (-99012, 1523166, -6740315, -4589165)
         geoms = source.fetch_geometries(self.native_projection, extent)
-        self.assertEqual(len(geoms), 23)
+        assert len(geoms) == 23
 
 
 if __name__ == '__main__':

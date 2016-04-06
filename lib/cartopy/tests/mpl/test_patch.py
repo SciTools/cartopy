@@ -32,9 +32,8 @@ class Test_path_to_geos(unittest.TestCase):
                  codes=[1, 2, 2, 79,
                         1, 2, 2, 79])
         geoms = cpatch.path_to_geos(p)
-        self.assertEqual(list(type(geom) for geom in geoms),
-                         [sgeom.Point, sgeom.Point])
-        self.assertEqual(len(geoms), 2)
+        assert [type(geom) for geom in geoms] == [sgeom.Point, sgeom.Point]
+        assert len(geoms) == 2
 
     def test_polygon_with_interior_and_singularity(self):
         # A geometry with two interiors, one a single point.
@@ -43,9 +42,8 @@ class Test_path_to_geos(unittest.TestCase):
                   [114, 5], [103, 8], [126, 12], [126, 0], [114, 5]],
                  codes=[1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2])
         geoms = cpatch.path_to_geos(p)
-        self.assertEqual(list(type(geom) for geom in geoms),
-                         [sgeom.Polygon, sgeom.Point])
-        self.assertEqual(len(geoms[0].interiors), 1)
+        assert [type(geom) for geom in geoms] == [sgeom.Polygon, sgeom.Point]
+        assert len(geoms[0].interiors) == 1
 
 
 if __name__ == '__main__':

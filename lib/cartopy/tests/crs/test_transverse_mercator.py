@@ -62,9 +62,9 @@ class TestTransverseMercator(unittest.TestCase):
     def test_nan(self):
         proj = ccrs.TransverseMercator()
         res = proj.transform_point(0.0, float('nan'), src_crs=self.src_crs)
-        self.assertTrue(np.all(np.isnan(res)))
+        assert np.all(np.isnan(res))
         res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
-        self.assertTrue(np.all(np.isnan(res)))
+        assert np.all(np.isnan(res))
 
 
 class TestOSGB(unittest.TestCase):
@@ -86,9 +86,9 @@ class TestOSGB(unittest.TestCase):
     def test_nan(self):
         proj = ccrs.OSGB()
         res = proj.transform_point(0.0, float('nan'), src_crs=self.src_crs)
-        self.assertTrue(np.all(np.isnan(res)))
+        assert np.all(np.isnan(res))
         res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
-        self.assertTrue(np.all(np.isnan(res)))
+        assert np.all(np.isnan(res))
 
 
 class TestOSNI(unittest.TestCase):
@@ -106,9 +106,9 @@ class TestOSNI(unittest.TestCase):
     def test_nan(self):
         proj = ccrs.OSNI()
         res = proj.transform_point(0.0, float('nan'), src_crs=self.src_crs)
-        self.assertTrue(np.all(np.isnan(res)))
+        assert np.all(np.isnan(res))
         res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
-        self.assertTrue(np.all(np.isnan(res)))
+        assert np.all(np.isnan(res))
 
 
 if __name__ == '__main__':

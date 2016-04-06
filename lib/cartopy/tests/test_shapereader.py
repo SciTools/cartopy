@@ -39,8 +39,8 @@ class TestLakes(unittest.TestCase):
         self.reader = shp.Reader(LAKES_PATH)
 
     def _assert_geometry(self, geometry):
-        self.assertEqual(geometry.type, 'MultiPolygon')
-        self.assertEqual(len(geometry), 1)
+        assert geometry.type == 'MultiPolygon'
+        assert len(geometry) == 1
 
         polygon = geometry[0]
 
@@ -55,11 +55,11 @@ class TestLakes(unittest.TestCase):
 
         assert_array_almost_equal(expected, polygon.exterior.coords)
 
-        self.assertEqual(len(polygon.interiors), 0)
+        assert len(polygon.interiors) == 0
 
     def test_geometry(self):
         geometries = list(self.reader.geometries())
-        self.assertEqual(len(geometries), len(self.reader))
+        assert len(geometries) == len(self.reader)
 
         # Choose a nice small lake
         lake = geometries[14]
@@ -67,15 +67,13 @@ class TestLakes(unittest.TestCase):
 
     def test_record(self):
         records = list(self.reader.records())
-        self.assertEqual(len(records), len(self.reader))
+        assert len(records) == len(self.reader)
 
         # Choose a nice small lake
         lake_record = records[14]
-        self.assertEqual(lake_record.attributes.get('name'),
-                         'Lago de\rNicaragua')
-        self.assertEqual(sorted(lake_record.attributes.keys()),
-                         sorted(['admin', 'featurecla', 'scalerank',
-                                 'name_alt', 'name']))
+        assert lake_record.attributes.get('name') == 'Lago de\rNicaragua'
+        assert sorted(lake_record.attributes.keys()) == \
+            sorted(['admin', 'featurecla', 'scalerank', 'name_alt', 'name'])
         lake = lake_record.geometry
         self._assert_geometry(lake)
 
@@ -83,13 +81,12 @@ class TestLakes(unittest.TestCase):
         # tests that a file which has a record with a bbox can
         # use the bbox without first creating the geometry
         record = next(self.reader.records())
-        self.assertEqual(record._geometry, False, ('The geometry was loaded '
-                                                   'before it was needed.'))
-        self.assertEqual(len(record._bounds), 4)
-        self.assertEqual(record._bounds, record.bounds)
-        self.assertEqual(record._geometry, False, ('The geometry was loaded '
-                                                   'in order to create the '
-                                                   'bounds.'))
+        assert not record._geometry, \
+            'The geometry was loaded before it was needed.'
+        assert len(record._bounds) == 4
+        assert record._bounds == record.bounds
+        assert not record._geometry, \
+            'The geometry was loaded in order to create the bounds.'
 
 
 class TestRivers(unittest.TestCase):
@@ -97,19 +94,19 @@ class TestRivers(unittest.TestCase):
         self.reader = shp.Reader(RIVERS_PATH)
 
     def _assert_geometry(self, geometry):
-        self.assertEqual(geometry.type, 'MultiLineString')
-        self.assertEqual(len(geometry), 1)
+        assert geometry.type == 'MultiLineString'
+        assert len(geometry) == 1
 
         linestring = geometry[0]
         coords = linestring.coords
-        self.assertAlmostEqual(coords[0][0], -113.823382738076)
-        self.assertAlmostEqual(coords[0][1], 58.7102151556671)
-        self.assertAlmostEqual(coords[1][0], -113.71351864302348)
-        self.assertAlmostEqual(coords[1][1], 58.669261583075794)
+        assert round(abs(coords[0][0] - -113.823382738076), 7) == 0
+        assert round(abs(coords[0][1] - 58.7102151556671), 7) == 0
+        assert round(abs(coords[1][0] - -113.71351864302348), 7) == 0
+        assert round(abs(coords[1][1] - 58.669261583075794), 7) == 0
 
     def test_geometry(self):
         geometries = list(self.reader.geometries())
-        self.assertEqual(len(geometries), len(self.reader))
+        assert len(geometries) == len(self.reader)
 
         # Choose a nice small river
         river = geometries[6]
@@ -117,7 +114,7 @@ class TestRivers(unittest.TestCase):
 
     def test_record(self):
         records = list(self.reader.records())
-        self.assertEqual(len(records), len(self.reader))
+        assert len(records) == len(self.reader)
 
         # Choose a nice small lake
         river_record = records[6]
@@ -129,9 +126,9 @@ class TestRivers(unittest.TestCase):
                 # This value changed between pyshp 1.2.10 and 1.2.11, test it
                 # as a special case, it should be an empty string once the
                 # leading/trailing space is removed:
-                self.assertFalse(len(value.strip()))
+                assert not len(value.strip())
             else:
-                self.assertEqual(value, expected_attributes[key])
+                assert value == expected_attributes[key]
         river = river_record.geometry
         self._assert_geometry(river)
 

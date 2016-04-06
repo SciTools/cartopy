@@ -187,8 +187,8 @@ class TestCodeFormat(unittest.TestCase):
             pep8style.options.exclude.extend(extra_exclude)
 
         result = pep8style.check_files([CARTOPY_DIR])
-        self.assertEqual(result.total_errors, 0, "Found code syntax "
-                                                 "errors (and warnings).")
+        assert result.total_errors == 0, \
+            "Found code syntax errors (and warnings)."
 
 
 class TestFutureImports(unittest.TestCase):
