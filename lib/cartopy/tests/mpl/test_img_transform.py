@@ -146,8 +146,3 @@ def test_regrid_image():
 
     # Tighten up layout
     gs.tight_layout(plt.gcf())
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

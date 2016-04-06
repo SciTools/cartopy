@@ -251,8 +251,3 @@ class test_WFSGeometrySource(unittest.TestCase):
         extent = (-99012, 1523166, -6740315, -4589165)
         geoms = source.fetch_geometries(self.native_projection, extent)
         assert len(geoms) == 23
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-sv', '--with-doctest'], exit=False)

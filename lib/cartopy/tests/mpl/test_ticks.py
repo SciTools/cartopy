@@ -145,8 +145,3 @@ def test_set_xyticks():
         p, q = prj.transform_point(x, y, ccrs.Geodetic())
         ax.set_xticks([p])
         ax.set_yticks([q])
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

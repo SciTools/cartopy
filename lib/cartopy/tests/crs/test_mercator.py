@@ -77,8 +77,3 @@ def test_latitude_true_scale():
 
     assert_almost_equal(crs.boundary.bounds,
                         [-18836475, -14567718, 18836475, 17639917], decimal=0)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

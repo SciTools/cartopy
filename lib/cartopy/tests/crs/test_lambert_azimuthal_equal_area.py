@@ -61,8 +61,3 @@ class TestLambertAzimuthalEqualArea(unittest.TestCase):
         assert crs_offset.proj4_init == expected
         assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
         assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

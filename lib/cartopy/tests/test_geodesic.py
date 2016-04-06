@@ -128,8 +128,3 @@ class TestGeodesic(unittest.TestCase):
     def test_str(self):
         expected = '<Geodesic: radius=6378137.000, flattening=1/298.257>'
         assert expected == str(self.geod)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

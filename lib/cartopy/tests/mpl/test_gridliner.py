@@ -183,8 +183,3 @@ def test_grid_labels():
 
     # Increase margins between plots to stop them bumping into one another.
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

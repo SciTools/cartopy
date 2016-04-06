@@ -109,8 +109,3 @@ class TestOSNI(unittest.TestCase):
         assert np.all(np.isnan(res))
         res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
         assert np.all(np.isnan(res))
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

@@ -97,8 +97,3 @@ def test_transform_points():
     result[[1, 3, 4], :] = expect_result[[1, 3, 4], :]
     assert not np.any(np.isnan(result))
     assert np.allclose(result, expect_result)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

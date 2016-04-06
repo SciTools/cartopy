@@ -122,8 +122,3 @@ def test_contour_interiors():
     ax.set_global()
     plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

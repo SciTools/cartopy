@@ -206,8 +206,3 @@ def test_mapbox_tiles():
     mapbox_sample = cimgt.MapboxTiles(token, map_id)
     url_str = mapbox_sample._image_url(tile)
     assert url_str == exp_url
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

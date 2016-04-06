@@ -80,8 +80,3 @@ def test_savefig_tight():
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight')
     plt.close()
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-sv', '--with-doctest'], exit=False)

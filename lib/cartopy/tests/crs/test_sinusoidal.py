@@ -77,8 +77,3 @@ class TestSinusoidal(unittest.TestCase):
                                                  lons, lats),
                             np.c_[expected_x, expected_y, [0, 0, 0, 0]],
                             decimal=2)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

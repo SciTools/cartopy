@@ -234,8 +234,3 @@ def test_wmts_tile_caching():
     del source, wmts, gettile_counter
     gc.collect()
     assert len(image_cache) == 0
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

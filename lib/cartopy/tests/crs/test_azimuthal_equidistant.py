@@ -244,8 +244,3 @@ class TestAzimuthalEquidistant(unittest.TestCase):
         result = aeqd.transform_point(pt_lon, pt_lat, geodetic)
 
         assert_array_almost_equal(result, [34176.20, 74017.88], decimal=2)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

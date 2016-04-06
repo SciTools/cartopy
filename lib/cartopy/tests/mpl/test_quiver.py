@@ -76,8 +76,3 @@ class TestQuiverShapes(unittest.TestCase):
         with pytest.raises(ValueError):
             self.ax.quiver(self.x, self.y,
                            self.u.ravel(), self.v.ravel(), transform=self.rp)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

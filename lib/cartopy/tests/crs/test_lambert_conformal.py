@@ -95,8 +95,3 @@ class Test_LambertConformal_standard_parallels(unittest.TestCase):
         assert_array_almost_equal(n_pole_crs.y_limits,
                                   (-8164817, 360848720),
                                   decimal=0)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

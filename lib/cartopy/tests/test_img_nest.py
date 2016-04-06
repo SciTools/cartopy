@@ -409,8 +409,3 @@ def gen_nest():
                              crs, files, glob_pattern='*.png',
                              img_class=RoundedImg)
     return nest_z0_z1
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

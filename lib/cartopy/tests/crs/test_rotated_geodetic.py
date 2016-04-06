@@ -37,8 +37,3 @@ class TestRotatedPole(unittest.TestCase):
                     'o_lon_p=80', 'o_proj=latlon', 'proj=ob_tran',
                     'to_meter=0.0174532925199433']
         self.check_proj4_params(geos, expected)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

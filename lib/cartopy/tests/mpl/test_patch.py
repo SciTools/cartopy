@@ -44,8 +44,3 @@ class Test_path_to_geos(unittest.TestCase):
         geoms = cpatch.path_to_geos(p)
         assert [type(geom) for geom in geoms] == [sgeom.Polygon, sgeom.Point]
         assert len(geoms[0].interiors) == 1
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

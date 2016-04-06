@@ -84,8 +84,3 @@ class GeostationaryTestsMixin(object):
 
 class TestGeostationary(unittest.TestCase, GeostationaryTestsMixin):
     pass
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

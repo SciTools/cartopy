@@ -52,8 +52,3 @@ class TestOwnSpecifics(unittest.TestCase):
                             (-5434177.81588539, -5434177.81588539,
                              5434177.81588539, 5434177.81588539),
                             decimal=4)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

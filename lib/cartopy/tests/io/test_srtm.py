@@ -155,8 +155,3 @@ class TestSRTM3Source_fetch_raster(unittest.TestCase):
 
     def test_as_combined1(self):
         self._as_combined(cartopy.io.srtm.SRTM1Source())
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-sv', '--with-doctest'], exit=False)

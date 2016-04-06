@@ -255,8 +255,3 @@ def test_PlateCarree_shortcut():
 
         assert offset == expected_offset
         assert bbox == expected_bboxes
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

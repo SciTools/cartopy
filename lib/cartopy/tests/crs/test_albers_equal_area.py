@@ -137,8 +137,3 @@ class TestAlbersEqualArea(unittest.TestCase):
         result = aea.transform_point(-75.0, 35.0, geodetic)
 
         assert_almost_equal(result, [1885472.7, 1535925.0], decimal=1)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

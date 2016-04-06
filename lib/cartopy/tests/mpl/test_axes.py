@@ -88,8 +88,3 @@ def test_transform_PlateCarree_shortcut():
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

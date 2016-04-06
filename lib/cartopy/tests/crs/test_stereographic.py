@@ -72,8 +72,3 @@ class TestStereographic(unittest.TestCase):
         assert stereo_offset.proj4_init == expected
         assert (tuple(np.array(stereo.x_limits) + 1234) ==
                 stereo_offset.x_limits)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

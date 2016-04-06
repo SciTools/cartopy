@@ -557,8 +557,3 @@ def test_streamplot():
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
                   density=(1.5, 2), color=mag, linewidth=2*mag)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

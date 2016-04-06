@@ -163,8 +163,3 @@ def test_view_lim_default_global():
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected)
     plt.close()
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
