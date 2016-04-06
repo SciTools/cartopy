@@ -1454,10 +1454,10 @@ class Robinson(_WarpedRectangularProjection):
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://trac.osgeo.org/proj/ticket/113).
         import re
-        match = re.search(r"\d\.\d", PROJ4_RELEASE)
+        match = re.search(r"\d+\.\d+", PROJ4_RELEASE)
         if match is not None:
-            proj4_version = float(match.group())
-            if 4.8 <= proj4_version < 4.9:
+            proj4_version = tuple(int(v) for v in match.group().split('.'))
+            if (4, 8) <= proj4_version < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '
                               'of Proj.4 contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
