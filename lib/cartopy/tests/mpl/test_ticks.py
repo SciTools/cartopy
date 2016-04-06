@@ -21,7 +21,7 @@ import math
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
-import nose.tools
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
@@ -88,9 +88,9 @@ def test_set_xticks_cylindrical():
 
 def test_set_xticks_non_cylindrical():
     ax = plt.axes(projection=ccrs.Orthographic())
-    with nose.tools.assert_raises(RuntimeError):
+    with pytest.raises(RuntimeError):
         ax.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.Geodetic())
-    with nose.tools.assert_raises(RuntimeError):
+    with pytest.raises(RuntimeError):
         ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.Geodetic())
     plt.close()
 
@@ -122,9 +122,9 @@ def test_set_yticks_cylindrical():
 
 def test_set_yticks_non_cylindrical():
     ax = plt.axes(projection=ccrs.Orthographic())
-    with nose.tools.assert_raises(RuntimeError):
+    with pytest.raises(RuntimeError):
         ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.Geodetic())
-    with nose.tools.assert_raises(RuntimeError):
+    with pytest.raises(RuntimeError):
         ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
     plt.close()
 

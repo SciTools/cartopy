@@ -22,6 +22,7 @@ import warnings
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -149,7 +150,7 @@ class TestTransformVectors(unittest.TestCase):
                                          central_longitude=0)
         with warnings.catch_warnings():
             warnings.simplefilter('error')
-            with self.assertRaises(UserWarning):
+            with pytest.raises(UserWarning):
                 ut, vt = target_proj.transform_vectors(
                     src_proj, rlon, rlat, u, v)
 
@@ -166,6 +167,6 @@ class TestTransformVectors(unittest.TestCase):
                                          central_longitude=0)
         with warnings.catch_warnings():
             warnings.simplefilter('error')
-            with self.assertRaises(UserWarning):
+            with pytest.raises(UserWarning):
                 ut, vt = target_proj.transform_vectors(
                     src_proj, rlon, rlat, u, v)

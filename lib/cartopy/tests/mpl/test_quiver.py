@@ -23,10 +23,10 @@ try:
 except ImportError:
     import mock
 
-from nose.tools import raises
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.testing.decorators import cleanup
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -67,15 +67,15 @@ class TestQuiverShapes(unittest.TestCase):
         # Assert that all the shapes have been broadcast.
         assert shapes == [(7, 10)] * 4
 
-    @raises(ValueError)
     def test_quiver_transform_xy_2d_uv_1d(self):
-        self.ax.quiver(self.x2d, self.y2d,
-                       self.u.ravel(), self.v.ravel(), transform=self.rp)
+        with pytest.raises(ValueError):
+            self.ax.quiver(self.x2d, self.y2d,
+                           self.u.ravel(), self.v.ravel(), transform=self.rp)
 
-    @raises(ValueError)
     def test_quiver_transform_inconsistent_shape(self):
-        self.ax.quiver(self.x, self.y,
-                       self.u.ravel(), self.v.ravel(), transform=self.rp)
+        with pytest.raises(ValueError):
+            self.ax.quiver(self.x, self.y,
+                           self.u.ravel(), self.v.ravel(), transform=self.rp)
 
 
 if __name__ == '__main__':

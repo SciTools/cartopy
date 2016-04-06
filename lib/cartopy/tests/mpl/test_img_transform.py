@@ -24,6 +24,7 @@ import unittest
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 from cartopy import config
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
@@ -86,7 +87,7 @@ class TestRegrid(unittest.TestCase):
         target_proj = ccrs.PlateCarree()
 
         # Attempt regrid
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im_trans.regrid(data, source_x, source_y, source_cs,
                             target_proj, target_x, target_y)
 

@@ -17,10 +17,10 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-from nose.tools import raises
 import numpy as np
 import numpy.ma as ma
 from numpy.testing import assert_array_equal
+import pytest
 
 from cartopy.util import add_cyclic_point
 
@@ -64,15 +64,16 @@ class Test_add_cyclic_point(object):
         r_data = ma.concatenate((self.data2d, self.data2d[:, :1]), axis=1)
         assert_array_equal(c_data, r_data)
 
-    @raises(ValueError)
     def test_invalid_coord_dimensionality(self):
         lons2d = np.repeat(self.lons[np.newaxis], 3, axis=0)
-        c_data, c_lons = add_cyclic_point(self.data2d, coord=lons2d)
+        with pytest.raises(ValueError):
+            c_data, c_lons = add_cyclic_point(self.data2d, coord=lons2d)
 
-    @raises(ValueError)
     def test_invalid_coord_size(self):
-        c_data, c_lons = add_cyclic_point(self.data2d, coord=self.lons[:-1])
+        with pytest.raises(ValueError):
+            c_data, c_lons = add_cyclic_point(self.data2d,
+                                              coord=self.lons[:-1])
 
-    @raises(ValueError)
     def test_invalid_axis(self):
-        c_data = add_cyclic_point(self.data2d, axis=-3)
+        with pytest.raises(ValueError):
+            c_data = add_cyclic_point(self.data2d, axis=-3)

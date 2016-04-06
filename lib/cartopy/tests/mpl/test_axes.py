@@ -24,7 +24,7 @@ from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
-
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import InterProjectionTransform
@@ -41,19 +41,19 @@ class TestNoSpherical(unittest.TestCase):
         plt.close()
 
     def test_contour(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.ax.contour(self.data, transform=ccrs.Geodetic())
 
     def test_contourf(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.ax.contourf(self.data, transform=ccrs.Geodetic())
 
     def test_pcolor(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.ax.pcolor(self.data, transform=ccrs.Geodetic())
 
     def test_pcolormesh(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.ax.pcolormesh(self.data, transform=ccrs.Geodetic())
 
 

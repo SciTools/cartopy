@@ -19,9 +19,9 @@ from __future__ import (absolute_import, division, print_function)
 
 import types
 
-from nose.tools import assert_raises
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
+import pytest
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
@@ -89,7 +89,7 @@ def test_google_tile_styles():
     assert reference_url.format(style="h") == url
 
     # Exception is raised if unknown style is passed.
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         cimgt.GoogleTiles(style="random_style")
 
 
@@ -100,7 +100,7 @@ def test_google_wts():
     multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 
-    with assert_raises(AssertionError):
+    with pytest.raises(AssertionError):
         list(gt.find_images(target_domain, -1))
     assert (tuple(gt.find_images(target_domain, 0)) ==
                  ((0, 0, 0),))
@@ -112,7 +112,7 @@ def test_google_wts():
     assert (list(gt.subtiles((1, 0, 1))) ==
             [(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)])
 
-    with assert_raises(AssertionError):
+    with pytest.raises(AssertionError):
         gt.tileextent((0, 1, 0))
 
     assert_arr_almost(gt.tileextent((0, 0, 0)), KNOWN_EXTENTS[(0, 0, 0)])
@@ -166,7 +166,7 @@ def test_quadtree_wts():
     multi_poly = qt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         list(qt.find_images(target_domain, 0))
 
     assert qt.tms_to_quadkey((1, 1, 1)) == '1'
@@ -181,7 +181,7 @@ def test_quadtree_wts():
     assert list(qt.subtiles('0')) == ['00', '01', '02', '03']
     assert list(qt.subtiles('11')) == ['110', '111', '112', '113']
 
-    with assert_raises(ValueError):
+    with pytest.raises(ValueError):
         qt.tileextent('4')
 
     assert_arr_almost(qt.tileextent(''), KNOWN_EXTENTS[(0, 0, 0)])
