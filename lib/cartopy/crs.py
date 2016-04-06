@@ -1748,6 +1748,23 @@ class AzimuthalEquidistant(Projection):
                       default globe is created.
 
         """
+        # Warn when using Azimuthal Equidistant with proj4 < 4.9.2 due to
+        # incorrect transformation past 90 deg distance (see
+        # https://github.com/OSGeo/proj.4/issues/246).
+        import re
+        match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
+        if match is not None:
+            proj4_version = tuple(int(v) for v in match.group().split('.'))
+            if proj4_version < (4, 9, 2):
+                warnings.warn('The Azimuthal Equidistant projection in Proj.4 '
+                              'older than 4.9.2 incorrectly transforms points '
+                              'farther than 90 deg from the origin. Use this '
+                              'projection with caution.')
+        else:
+            warnings.warn('Cannot determine Proj.4 version. The Azimuthal '
+                          'Equidistant projection may be unreliable and '
+                          'should be used with caution.')
+
         proj4_params = [('proj', 'aeqd'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
