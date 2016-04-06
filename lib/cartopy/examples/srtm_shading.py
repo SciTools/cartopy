@@ -21,10 +21,10 @@ def shade(located_elevations):
 
     """
     new_img = srtm.add_shading(located_elevations,
-                               azimuth=135, 
-							   altitude=15,
-							   scale=111120,
-							   z=1)
+                               azimuth=135,
+                               altitude=15,
+                               scale=111120,
+                               z=1)
     return LocatedImage(new_img, located_elevations.extent)
 
 
@@ -37,7 +37,7 @@ def plot(Source, name):
     shaded_srtm = PostprocessedRasterSource(Source(), shade)
 
     # Add the shaded SRTM source to our map with a grayscale colormap.
-    ax.add_raster(shaded_srtm, cmap='Greys')
+    ax.add_raster(shaded_srtm, cmap='gray')
 
     # This data is high resolution, so pick a small area which has some
     # interesting orography.
