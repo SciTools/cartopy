@@ -42,7 +42,7 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels conda-forge
-  - PACKAGES="$PACKAGES cython pillow nose pep8 proj4 pyshp shapely six requests pyepsg owslib"
+  - PACKAGES="$PACKAGES cython pillow pytest pep8 proj4 pyshp shapely six requests pyepsg owslib"
   - conda install --quiet $PACKAGES
 
   # Conda debug
@@ -64,7 +64,7 @@ script:
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
-  - CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR nosetests cartopy --with-doctest -sv
+  - CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest --doctest-modules --pyargs cartopy
 
 after_failure:
   - source activate test-environment
