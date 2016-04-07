@@ -56,7 +56,7 @@ install:
 
   # Install cartopy
   # ---------------
-  - python setup.py --quiet install
+  - pip install --no-deps .
 
 script:
   - mkdir ../test_folder
