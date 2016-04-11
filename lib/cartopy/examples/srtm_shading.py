@@ -23,8 +23,8 @@ def shade(located_elevations):
     new_img = srtm.add_shading(located_elevations,
                                azimuth=135,
                                altitude=15,
-                               scale=111120,
-                               z=1)
+                               hscale=111120,
+                               zscale=1)
     return LocatedImage(new_img, located_elevations.extent)
 
 
