@@ -1297,8 +1297,13 @@ class GeoAxes(matplotlib.axes.Axes):
         maxy = np.amax(Y)
 
         corners = (minx, miny), (maxx, maxy)
-        collection._corners = corners
+        ########################
+        # PATCH
+        # XXX Non-standard matplotlib thing.
+        collection._corners = mtransforms.Bbox(corners)
         collection.get_datalim = lambda transData: collection._corners
+        # END OF PATCH
+        ##############
 
         self.update_datalim(corners)
         self.add_collection(collection)
