@@ -32,11 +32,10 @@ import six
 
 import cartopy.crs as ccrs
 
-from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
 
 
-_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.1
+_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.1
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -119,7 +118,8 @@ def test_global_scatter_wrap_no_transform():
     plt.scatter(x, y, c=data)
 
 
-@ImageTesting(['global_map'], tolerance=16 if _proj4_version < 4.9 else 0.1)
+@ImageTesting(['global_map'],
+              tolerance=16 if ccrs.PROJ4_VERSION < (4, 9) else 0.1)
 def test_global_map():
     ax = plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()

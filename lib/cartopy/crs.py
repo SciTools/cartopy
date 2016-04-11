@@ -33,7 +33,7 @@ import shapely.geometry as sgeom
 from shapely.prepared import prep
 import six
 
-from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_RELEASE
+from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_VERSION
 import cartopy.trace
 
 
@@ -1454,10 +1454,8 @@ class Robinson(_WarpedRectangularProjection):
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://trac.osgeo.org/proj/ticket/113).
         import re
-        match = re.search(r"\d+\.\d+", PROJ4_RELEASE)
-        if match is not None:
-            proj4_version = tuple(int(v) for v in match.group().split('.'))
-            if (4, 8) <= proj4_version < (4, 9):
+        if PROJ4_VERSION != ():
+            if (4, 8) <= PROJ4_VERSION < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '
                               'of Proj.4 contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
@@ -1751,11 +1749,8 @@ class AzimuthalEquidistant(Projection):
         # Warn when using Azimuthal Equidistant with proj4 < 4.9.2 due to
         # incorrect transformation past 90 deg distance (see
         # https://github.com/OSGeo/proj.4/issues/246).
-        import re
-        match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
-        if match is not None:
-            proj4_version = tuple(int(v) for v in match.group().split('.'))
-            if proj4_version < (4, 9, 2):
+        if PROJ4_VERSION != ():
+            if PROJ4_VERSION < (4, 9, 2):
                 warnings.warn('The Azimuthal Equidistant projection in Proj.4 '
                               'older than 4.9.2 incorrectly transforms points '
                               'farther than 90 deg from the origin. Use this '

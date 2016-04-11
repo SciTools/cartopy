@@ -28,7 +28,6 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 import cartopy.mpl.patch as cpatch
 
-from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
 
 
