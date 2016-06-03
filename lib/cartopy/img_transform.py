@@ -285,7 +285,15 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                            target_x_points.flatten(),
                                            target_y_points.flatten())
 
-    kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
+    # Versions of scipy >= v0.16 added the balanced_tree argument,
+    # hence the handling of the specific exception. 
+    try:
+      kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
+    except TypeError as err:
+      if err.message[-14:-1] == 'balanced_tree':
+        kdtree = scipy.spatial.cKDTree(xyz)        
+      else: raise
+    
     distances, indices = kdtree.query(target_xyz, k=1)
     mask = np.isinf(distances)
 
