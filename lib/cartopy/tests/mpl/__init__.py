@@ -18,6 +18,8 @@
 from __future__ import (absolute_import, division, print_function)
 
 import base64
+import contextlib
+import distutils
 import os
 import glob
 import shutil
@@ -215,7 +217,14 @@ class ImageTesting(object):
                               (mod_name, test_name))
                 pyplot_helpers.Gcf.destroy_all()
 
-            with mpl.style.context('classic'):
+            if distutils.version.LooseVersion(mpl.__version__) >= '2':
+                style_context = mpl.style.context
+            else:
+                @contextlib.contextmanager
+                def style_context(style, after_reset=False):
+                    yield
+
+            with style_context('classic'):
                 r = test_func(*args, **kwargs)
 
                 fig_managers = pyplot_helpers.Gcf._activeQue
