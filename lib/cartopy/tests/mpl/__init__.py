@@ -215,17 +215,18 @@ class ImageTesting(object):
                               (mod_name, test_name))
                 pyplot_helpers.Gcf.destroy_all()
 
-            r = test_func(*args, **kwargs)
+            with mpl.style.context('classic'):
+                r = test_func(*args, **kwargs)
 
-            fig_managers = pyplot_helpers.Gcf._activeQue
-            figures = [manager.canvas.figure for manager in fig_managers]
+                fig_managers = pyplot_helpers.Gcf._activeQue
+                figures = [manager.canvas.figure for manager in fig_managers]
 
-            try:
-                self.run_figure_comparisons(figures, test_name=mod_name)
-            finally:
-                for figure in figures:
-                    pyplot_helpers.Gcf.destroy_fig(figure)
-                plt.switch_backend(orig_backend)
+                try:
+                    self.run_figure_comparisons(figures, test_name=mod_name)
+                finally:
+                    for figure in figures:
+                        pyplot_helpers.Gcf.destroy_fig(figure)
+                    plt.switch_backend(orig_backend)
             return r
 
         # nose needs the function's name to be in the form "test_*" to
