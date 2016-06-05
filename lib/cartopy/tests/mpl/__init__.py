@@ -27,8 +27,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.testing.compare as mcompare
-import matplotlib.tests as mtests
 import matplotlib._pylab_helpers as pyplot_helpers
+try:
+    from matplotlib.testing import setup as mpl_setup
+except ImportError:
+    from matplotlib.tests import setup as mpl_setup
 
 
 class ImageTesting(object):
@@ -203,7 +206,7 @@ class ImageTesting(object):
         def wrapped(*args, **kwargs):
             orig_backend = plt.get_backend()
             plt.switch_backend('agg')
-            mtests.setup()
+            mpl_setup()
 
             if pyplot_helpers.Gcf.figs:
                 warnings.warn('Figures existed before running the %s %s test.'
