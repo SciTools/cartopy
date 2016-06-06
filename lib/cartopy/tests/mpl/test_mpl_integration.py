@@ -324,11 +324,11 @@ def test_pcolormesh_limited_area_wrap():
     plt.figure(figsize=(10, 6))
 
     ax = plt.subplot(221, projection=ccrs.PlateCarree())
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
 
     ax = plt.subplot(222, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
     ax.set_global()
 
@@ -336,12 +336,12 @@ def test_pcolormesh_limited_area_wrap():
     # of the coordinates (just to test that 1d and 2d are both suitably
     # being fixed)
     ax = plt.subplot(223, projection=ccrs.PlateCarree())
-    plt.pcolormesh(x, y, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(x, y, data, transform=rp, cmap='Spectral')
     ax.coastlines()
     ax.set_extent([-70, 0, 0, 80])
 
     ax = plt.subplot(224, projection=rp)
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
 
 
