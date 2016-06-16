@@ -940,7 +940,7 @@ class Mercator(Projection):
 
     def __init__(self, central_longitude=0.0,
                  min_latitude=-80.0, max_latitude=84.0,
-                 globe=None):
+                 globe=None, latitude_true_scale=0.0):
         """
         Kwargs:
 
@@ -951,11 +951,13 @@ class Mercator(Projection):
                              Defaults to 84 degrees.
             * globe - A :class:`cartopy.crs.Globe`.
                       If omitted, a default globe is created.
+            * latitude_true_scale - the latitude where the scale is 1.
+                                    Defaults to 0 degrees.
 
         """
         proj4_params = [('proj', 'merc'),
                         ('lon_0', central_longitude),
-                        ('k', 1),
+                        ('lat_ts', latitude_true_scale),
                         ('units', 'm')]
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
