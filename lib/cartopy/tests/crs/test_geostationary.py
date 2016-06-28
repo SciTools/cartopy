@@ -29,16 +29,23 @@ from nose.tools import assert_equal
 import cartopy.crs as ccrs
 
 
-class TestGeostationary(unittest.TestCase):
-    def check_proj4_params(self, crs, expected):
-        pro4_params = sorted(crs.proj4_init.split(' +'))
-        assert_equal(expected, pro4_params)
+# Note: code here is now shared with the NearsidePerspective test.
+def check_proj4_params(crs, expected):
+    pro4_params = sorted(crs.proj4_init.split(' +'))
+    assert_equal(expected, pro4_params)
+
+
+class GeostationaryTestsMixin(object):
+    test_class = ccrs.Geostationary
+    expected_proj_name = 'geos'
 
     def test_default(self):
-        geos = ccrs.Geostationary()
-        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0', 'lon_0=0.0',
-                    'no_defs', 'proj=geos', 'units=m', 'x_0=0', 'y_0=0']
-        self.check_proj4_params(geos, expected)
+        geos = self.test_class()
+        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0.0', 'lon_0=0.0',
+                    'no_defs',
+                    'proj={}'.format(self.expected_proj_name),
+                    'units=m', 'x_0=0', 'y_0=0']
+        check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
                             (-5372584.78443894, -5372584.78443894,
@@ -48,28 +55,37 @@ class TestGeostationary(unittest.TestCase):
     def test_eccentric_globe(self):
         globe = ccrs.Globe(semimajor_axis=10000, semiminor_axis=5000,
                            ellipse=None)
-        geos = ccrs.Geostationary(satellite_height=50000,
-                                  globe=globe)
-        expected = ['+a=10000', 'b=5000', 'h=50000', 'lat_0=0', 'lon_0=0.0',
-                    'no_defs', 'proj=geos', 'units=m', 'x_0=0', 'y_0=0']
-        self.check_proj4_params(geos, expected)
+        geos = self.test_class(satellite_height=50000,
+                               globe=globe)
+        expected = ['+a=10000', 'b=5000', 'h=50000', 'lat_0=0.0', 'lon_0=0.0',
+                    'no_defs',
+                    'proj={}'.format(self.expected_proj_name),
+                    'units=m', 'x_0=0', 'y_0=0']
+        check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
                             (-8257.4338, -4532.9943, 8257.4338, 4532.9943),
                             decimal=4)
 
     def test_eastings(self):
-        geos = ccrs.Geostationary(false_easting=5000000,
-                                  false_northing=-125000,)
-        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0', 'lon_0=0.0',
-                    'no_defs', 'proj=geos', 'units=m', 'x_0=5000000',
+        geos = self.test_class(false_easting=5000000,
+                               false_northing=-125000,)
+        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0.0', 'lon_0=0.0',
+                    'no_defs',
+                    'proj={}'.format(self.expected_proj_name),
+                    'units=m', 'x_0=5000000',
                     'y_0=-125000']
-        self.check_proj4_params(geos, expected)
+        check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
                             (-372584.78443894, -5497584.78443894,
                              10372584.78443894, 5247584.78443894),
                             decimal=4)
+
+
+class TestGeostationary(unittest.TestCase, GeostationaryTestsMixin):
+    pass
+
 
 if __name__ == '__main__':
     import nose
