@@ -1645,6 +1645,10 @@ class _Satellite(Projection):
 
 
 class Geostationary(_Satellite):
+    """
+    Perspective view looking directly down from above a point on the equator.
+
+    """
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None):
         super(Geostationary, self).__init__(
@@ -1658,6 +1662,10 @@ class Geostationary(_Satellite):
 
 
 class NearsidePerspective(_Satellite):
+    """
+    Perspective view looking directly down from above a point on the globe.
+
+    """
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None):

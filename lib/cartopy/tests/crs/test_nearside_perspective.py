@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2016, Met Office
 #
 # This file is part of cartopy.
 #
@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 """
-Tests for the Geostationary projection.
+Tests for the NearsidePerspective projection.
 
 """
 
@@ -32,7 +32,7 @@ from cartopy.tests.crs.test_geostationary import (GeostationaryTestsMixin,
 from cartopy.crs import NearsidePerspective
 
 
-class TestGeostationary(unittest.TestCase, GeostationaryTestsMixin):
+class TestEquatorialDefault(unittest.TestCase, GeostationaryTestsMixin):
     # Check that it behaves just like Geostationary, in the absence of a
     # central_latitude parameter.
     test_class = NearsidePerspective
