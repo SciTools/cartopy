@@ -150,15 +150,20 @@ class test_WMTSRasterSource(unittest.TestCase):
         source = ogc.WMTSRasterSource(service, self.layer_name)
         self.assertIs(source.wmts, service)
 
-    def test_supported_projection(self):
+    def test_native_projection(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         source.validate_projection(self.projection)
 
+    def test_non_native_projection(self):
+        source = ogc.WMTSRasterSource(self.URI, self.layer_name)
+        source.validate_projection(ccrs.Miller())
+
     def test_unsupported_projection(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
-        msg = 'Unable to find tile matrix for projection.'
-        with self.assertRaisesRegexp(ValueError, msg):
-            source.validate_projection(ccrs.Miller())
+        with mock.patch('cartopy.io.ogc_clients._URN_TO_CRS', {}):
+            msg = 'Unable to find tile matrix for projection.'
+            with self.assertRaisesRegexp(ValueError, msg):
+                source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
@@ -171,6 +176,34 @@ class test_WMTSRasterSource(unittest.TestCase):
         self.assertEqual(img[:, :, 3].min(), 255)
         self.assertEqual((-180.0, 107.99999999999994,
                           -197.99999999999994, 90.0), located_image.extent)
+
+    def test_fetch_img_reprojected(self):
+        source = ogc.WMTSRasterSource(self.URI, self.layer_name)
+        extent = [-20, -1, 48, 50]
+        # NB single result in this case.
+        located_image, = source.fetch_raster(ccrs.NorthPolarStereo(), extent,
+                                             (30, 30))
+
+        # Check image array is as expected (more or less).
+        img = np.array(located_image.image)
+        self.assertEqual(img.shape, (42, 42, 4))
+        # When reprojected, extent is exactly what you asked for.
+        self.assertEqual(located_image.extent, extent)
+
+    def test_fetch_img_reprojected_twoparts(self):
+        source = ogc.WMTSRasterSource(self.URI, self.layer_name)
+        extent = [-10, 12, 48, 50]
+        images = source.fetch_raster(ccrs.NorthPolarStereo(), extent, (30, 30))
+
+        # Check for 2 results in this case.
+        self.assertEqual(len(images), 2)
+        im1, im2 = images
+        # Check image arrays is as expected (more or less).
+        self.assertEqual(np.array(im1.image).shape, (42, 42, 4))
+        self.assertEqual(np.array(im2.image).shape, (42, 42, 4))
+        # When reprojected, extent is exactly what you asked for.
+        self.assertEqual(im1.extent, extent)
+        self.assertEqual(im2.extent, extent)
 
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
