@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 
 def main():
+    fig = plt.figure(figsize=(10, 5))
     ax = plt.axes(projection=ccrs.InterruptedGoodeHomolosine())
     ax.coastlines()
 

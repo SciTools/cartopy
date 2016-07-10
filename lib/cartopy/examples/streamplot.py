@@ -6,6 +6,7 @@ from cartopy.examples.arrows import sample_data
 
 
 def main():
+    fig = plt.figure(figsize=(10, 5))
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_extent([-90, 75, 10, 60])
     ax.coastlines()

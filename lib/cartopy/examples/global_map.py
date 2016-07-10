@@ -5,6 +5,7 @@ import cartopy.crs as ccrs
 
 
 def main():
+    fig = plt.figure(figsize=(10, 5))
     ax = plt.axes(projection=ccrs.Robinson())
 
     # make the map global rather than have it zoom in to
