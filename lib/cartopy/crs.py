@@ -1603,14 +1603,15 @@ class InterruptedGoodeHomolosine(Projection):
         return self._y_limits
 
 
-class Geostationary(Projection):
-    def __init__(self, central_longitude=0.0, satellite_height=35785831,
+class _Satellite(Projection):
+    def __init__(self, projection, satellite_height=35785831,
+                 central_longitude=0.0, central_latitude=0.0,
                  false_easting=0, false_northing=0, globe=None):
-        proj4_params = [('proj', 'geos'), ('lon_0', central_longitude),
-                        ('lat_0', 0), ('h', satellite_height),
+        proj4_params = [('proj', projection), ('lon_0', central_longitude),
+                        ('lat_0', central_latitude), ('h', satellite_height),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
-        super(Geostationary, self).__init__(proj4_params, globe=globe)
+        super(_Satellite, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
@@ -1641,6 +1642,41 @@ class Geostationary(Projection):
     @property
     def y_limits(self):
         return self._ylim
+
+
+class Geostationary(_Satellite):
+    """
+    Perspective view looking directly down from above a point on the equator.
+
+    """
+    def __init__(self, central_longitude=0.0, satellite_height=35785831,
+                 false_easting=0, false_northing=0, globe=None):
+        super(Geostationary, self).__init__(
+            projection='geos',
+            satellite_height=satellite_height,
+            central_longitude=central_longitude,
+            central_latitude=0.0,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            globe=globe)
+
+
+class NearsidePerspective(_Satellite):
+    """
+    Perspective view looking directly down from above a point on the globe.
+
+    """
+    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+                 satellite_height=35785831,
+                 false_easting=0, false_northing=0, globe=None):
+        super(NearsidePerspective, self).__init__(
+            projection='nsper',
+            satellite_height=satellite_height,
+            central_longitude=central_longitude,
+            central_latitude=central_latitude,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            globe=globe)
 
 
 class AlbersEqualArea(Projection):
