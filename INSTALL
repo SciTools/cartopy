@@ -52,12 +52,12 @@ Many of these dependencies are built as part of Cartopy's conda distribution.
 The recipes for these can be found at https://github.com/SciTools/conda-recipes-scitools.
 
 
-**python** 2.7 or later (https://www.python.org/)
+**Python** 2.7 or later (https://www.python.org/)
     Cartopy requires Python 2.7 or later.
 
 **Cython** 0.15.1 or later (https://pypi.python.org/pypi/Cython/)
 
-**numpy** 1.6 or later (http://www.numpy.org/)
+**NumPy** 1.6 or later (http://www.numpy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
@@ -65,7 +65,7 @@ The recipes for these can be found at https://github.com/SciTools/conda-recipes-
     GEOS is an API of spatial predicates and functions for processing geometry
     written in C++.
 
-**shapely** 1.5.6 or later (https://github.com/Toblerity/Shapely)
+**Shapely** 1.5.6 or later (https://github.com/Toblerity/Shapely)
     Python package for the manipulation and analysis of planar geometric
     objects.
 
@@ -98,7 +98,7 @@ additional Cartopy functionality.
 **pyepsg** 0.2.0 or later (https://github.com/rhattersley/pyepsg)
     A simple Python interface to https://epsg.io
 
-**scipy** 0.10 or later (https://www.scipy.org/)
+**SciPy** 0.10 or later (https://www.scipy.org/)
     Python package for scientific computing.
 
 **OWSLib** 0.8.7 (https://pypi.python.org/pypi/OWSLib)
