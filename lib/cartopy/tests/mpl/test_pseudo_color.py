@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -51,6 +51,19 @@ def test_pcolormesh_partially_masked():
         ax.pcolormesh(np.linspace(-90, 90, 40), np.linspace(0, 360, 30), data)
         assert_equal(pcolor.call_count, 1, ("pcolor should have been "
                                             "called exactly once."))
+        plt.close()
+
+
+def test_pcolormesh_invisible():
+    data = np.zeros((3, 3))
+
+    # Check that a fully invisible mesh doesn't fail.
+    with mock.patch('cartopy.mpl.geoaxes.GeoAxes.pcolor') as pcolor:
+        ax = plt.axes(projection=ccrs.Orthographic())
+        ax.pcolormesh(np.linspace(-75, 75, 3), np.linspace(105, 255, 3), data,
+                      transform=ccrs.PlateCarree())
+        assert_equal(pcolor.call_count, 0, ("pcolor shouldn't have been "
+                                            "called, but was."))
         plt.close()
 
 
