@@ -161,6 +161,8 @@ def test_grid_labels():
     gl.yformatter = LATITUDE_FORMATTER
     gl.xlabel_style = {'size': 15, 'color': 'gray'}
     gl.xlabel_style = {'color': 'red'}
+    gl.xpadding = 10
+    gl.ypadding = 15
 
     # trigger a draw at this point and check the appropriate artists are
     # populated on the gridliner instance
