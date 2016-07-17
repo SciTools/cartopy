@@ -1480,10 +1480,21 @@ class GeoAxes(matplotlib.axes.Axes):
             # END OF PATCH
             ##############
 
-        minx = np.amin(X)
-        maxx = np.amax(X)
-        miny = np.amin(Y)
-        maxy = np.amax(Y)
+        ########################
+        # PATCH
+        # XXX Non-standard matplotlib thing (length check).
+        if len(X):
+            minx = np.amin(X)
+            maxx = np.amax(X)
+        else:
+            minx = maxx = np.nan
+        if len(Y):
+            miny = np.amin(Y)
+            maxy = np.amax(Y)
+        else:
+            miny = maxy = np.nan
+        # END OF PATCH
+        ##############
 
         corners = (minx, miny), (maxx, maxy)
         ########################
