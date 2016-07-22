@@ -198,6 +198,15 @@ class GoogleTiles(object):
 
         return img, self.tileextent(tile), 'lower'
 
+class ShadedReliefESRI(GoogleTiles):
+    # shaded relief from ESRI
+    # https://doc.arcgis.com/en/arcgis-online/share-maps/publish-tiles.htm
+    def _image_url(self, tile):
+        x, y, z = tile
+        url = ('https://server.arcgisonline.com/ArcGIS/rest/services/' \
+               'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg').format(
+               z=z, y=y, x=x)
+        return url
 
 class MapQuestOSM(GoogleTiles):
     # http://developer.mapquest.com/web/products/open/map for terms of use
