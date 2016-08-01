@@ -1645,7 +1645,7 @@ class GeoAxes(matplotlib.axes.Axes):
             sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
         return sp
 
-    def add_wmts(self, wmts, layer_name, **kwargs):
+    def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
         """
         Add the specified WMTS layer to the axes.
 
@@ -1657,13 +1657,20 @@ class GeoAxes(matplotlib.axes.Axes):
                      owslib.wmts.WebMapTileService instance.
             * layer_name - The name of the layer to use.
 
+        Kwargs:
+        
+            * wmts_kwargs - dict or None. Passed through to the
+                :class:`~cartopy.io.ogc_clients.WMTSRasterSource`
+                constructor's ``gettile_extra_kwargs`` (e.g. time).
+
         All other keywords are passed through to the construction of the
         image artist. See :meth:`~matplotlib.axes.Axes.imshow()` for
         more details.
 
         """
         from cartopy.io.ogc_clients import WMTSRasterSource
-        wmts = WMTSRasterSource(wmts, layer_name)
+        wmts = WMTSRasterSource(wmts, layer_name,
+                                gettile_extra_kwargs=wmts_kwargs)
         return self.add_raster(wmts, **kwargs)
 
     def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):
