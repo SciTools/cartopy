@@ -1658,7 +1658,7 @@ class GeoAxes(matplotlib.axes.Axes):
             * layer_name - The name of the layer to use.
 
         Kwargs:
-        
+
             * wmts_kwargs - dict or None. Passed through to the
                 :class:`~cartopy.io.ogc_clients.WMTSRasterSource`
                 constructor's ``gettile_extra_kwargs`` (e.g. time).

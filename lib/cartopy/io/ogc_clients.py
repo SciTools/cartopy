@@ -85,11 +85,13 @@ _URN_TO_CRS = collections.OrderedDict([
     ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
     ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
-    ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(central_latitude=-90,
-                                                      true_scale_latitude=-71)),
-    ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(central_longitude=-45,
-                                                      central_latitude=90,
-                                                      true_scale_latitude=70))
+    ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
+        central_latitude=-90,
+        true_scale_latitude=-71)),
+    ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
+        central_longitude=-45,
+        central_latitude=90,
+        true_scale_latitude=70))
 ])
 
 # XML namespace definitions
@@ -381,6 +383,8 @@ class WMTSRasterSource(RasterSource):
         self.layer = layer
 
         #: Extra kwargs passed through to the service's gettile request.
+        if gettile_extra_kwargs is None:
+            gettile_extra_kwargs = {}
         self.gettile_extra_kwargs = gettile_extra_kwargs
 
         self._matrix_set_name_map = {}
