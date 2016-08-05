@@ -25,7 +25,7 @@ def main():
     wmts = WebMapTileService(URL)
 
     # Layers for MODIS true color and snow RGB
-    layers = ['MODIS_Terra_CorrectedReflectance_TrueColor',
+    layers = ['MODIS_Terra_SurfaceReflectance_Bands143',
               'MODIS_Terra_CorrectedReflectance_Bands367']
 
     date_str = '2016-02-05'
