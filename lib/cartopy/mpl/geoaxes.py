@@ -418,7 +418,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                                       resolution, **kwargs)
         return self.add_feature(feature)
 
-    def tissot(self, rad_km=5e5, lons=None, lats=None, n_samples=80, **kwargs):
+    def tissot(self, rad_km=5, lons=None, lats=None, n_samples=80, **kwargs):
         """
         Adds Tissot's indicatrices to the axes.
 
@@ -462,7 +462,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for i in range(len(lons)):
-                circle = geod.circle(lons[i], lats[i], rad_km,
+                circle = geod.circle(lons[i], lats[i], rad_km*1e3,
                                      n_samples=n_samples)
                 geoms.append(sgeom.Polygon(circle))
 
