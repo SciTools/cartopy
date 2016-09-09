@@ -53,7 +53,8 @@ class GoogleTiles(object):
             'satellite', 'terrain', and 'only_streets'.
             Defaults to 'street'.
         :param url: str url pointing to a tile source such as in default
-                    {x}, {y}, and {z} must be included in url. Such as:
+                    {x}, {y}, and {z} (lower case) must be included in url.
+                    Such as:
                     ('https://server.arcgisonline.com/ArcGIS/rest/services/' \
                      'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
         """
@@ -61,7 +62,7 @@ class GoogleTiles(object):
         # the satellite map to create the known hybrid style from google.
         styles = ["street", "satellite", "terrain", "only_streets"]
         style = style.lower()
-        self.url = url.lower()
+        self.url = url
         if style not in styles:
             msg = "Invalid style '%s'. Valid styles: %s" % \
                 (style, ", ".join(styles))
