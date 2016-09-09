@@ -53,8 +53,7 @@ class GoogleTiles(object):
             'satellite', 'terrain', and 'only_streets'.
             Defaults to 'street'.
         :param url: str url pointing to a tile source such as in default
-                    {x}, {y}, and {z} (lower case) must be included in url.
-                    Such as:
+                    {x}, {y}, and {z} must be included in url. Such as:
                     ('https://server.arcgisonline.com/ArcGIS/rest/services/' \
                      'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
         """
@@ -183,9 +182,9 @@ class GoogleTiles(object):
             "only_streets": "h"}
         url = self.url.format(
                    style=style_dict[self.style],
-                   x=tile[0],
-                   y=tile[1],
-                   z=tile[2])
+                   x=tile[0], X=tile[0],
+                   y=tile[1], Y=tile[1],
+                   z=tile[2], Z=tile[2])
         return url
 
     def get_image(self, tile):
