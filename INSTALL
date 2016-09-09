@@ -29,7 +29,7 @@ Once you have satisfied the requirements detailed below, simply run::
 For non-standard locations, additional build lib & include paths
 can be provided as per-usual at build_ext phase::
 
-    python setup.py build_ext --inplace -I/path/to/include -L/path/to/lib
+    python setup.py build_ext -I/path/to/include -L/path/to/lib
     python setup.py install
 
 
