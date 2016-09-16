@@ -34,6 +34,7 @@ import shapely.geometry as sgeom
 import numpy as np
 import six
 import warnings
+import pickle
 
 import cartopy.crs as ccrs
 
@@ -47,7 +48,8 @@ class GoogleTiles(object):
     """
     def __init__(self, desired_tile_form='RGB', style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
-                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
+                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
+                 cache=None):
         """
         :param desired_tile_form:
         :param style: The style for the Google Maps tiles. One of 'street',
@@ -57,6 +59,7 @@ class GoogleTiles(object):
                     {y}, and {z}. Such as:
                     ('https://server.arcgisonline.com/ArcGIS/rest/services/'
                      'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
+        :param cache: Implementation of TileCache to use as a local cache.
         """
         # Only streets are partly transparent tiles that can be overlayed over
         # the satellite map to create the known hybrid style from google.
@@ -80,6 +83,7 @@ class GoogleTiles(object):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
+        self.cache = cache
 
     def image_for_domain(self, target_domain, target_z):
         tiles = []
@@ -188,7 +192,7 @@ class GoogleTiles(object):
                    z=tile[2], Z=tile[2])
         return url
 
-    def get_image(self, tile):
+    def _get_image(self, tile):
         if six.PY3:
             from urllib.request import urlopen
         else:
@@ -204,6 +208,17 @@ class GoogleTiles(object):
         img = img.convert(self.desired_tile_form)
 
         return img, self.tileextent(tile), 'lower'
+
+    def get_image(self, tile):
+        if self.cache is None:
+            return self._get_image(tile)
+        else:
+            url = self._image_url(tile)
+            img = self.cache.get(url)
+            if img is None:
+                img, _, _ = self._get_image(tile)
+                self.cache.put(url, img)
+            return img, self.tileextent(tile), 'lower'
 
 
 class MapQuestOSM(GoogleTiles):
@@ -391,6 +406,61 @@ class QuadtreeTiles(GoogleTiles):
             for tile in GoogleTiles.find_images(self, target_domain, target_z,
                                                 start_tile=start_tile):
                 yield self.tms_to_quadkey(tile, google=True)
+
+
+class TileCache(object):
+    """Simple caching API"""
+
+    def put(self, url, img):
+        """
+        :param url: key used in cache
+        :param img: value used in cache
+        """
+        pass
+
+    def get(self, url):
+        """
+        :param url: key to lookup in cache
+        """
+        pass
+
+    def close(self):
+        pass
+
+
+class ShelveTileCache(TileCache):
+    def __init__(self, cache_name=None):
+        """
+        Cache implementation using shelve.
+
+        If appdirs is available, the proper user_cache_dir for the system will
+        be used, otherwise the current working directory will be used.
+
+        :param cache_name: file name for cache. Defaults to 'img_tiles'
+        """
+        import os
+        import shelve
+        try:
+            import appdirs
+            cachedir = appdirs.user_cache_dir("cartopy", "SciTools")
+            if not os.path.exists(cachedir):
+                os.makedirs(cachedir)
+        except:
+            cachedir = '.'
+        self.cache = shelve.open(os.path.join(cachedir, 'img_tiles'),
+                protocol=pickle.HIGHEST_PROTOCOL)
+
+    def put(self, url, img):
+        self.cache[url] = img
+
+    def get(self, url):
+        if url in self.cache:
+            return self.cache[url]
+        else:
+            return None
+
+    def close(self):
+        self.cache.close()
 
 
 def _merge_tiles(tiles):
