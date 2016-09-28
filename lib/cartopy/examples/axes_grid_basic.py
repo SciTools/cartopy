@@ -32,8 +32,8 @@ def sample_data_3d(shape):
     data = wave + mean
 
     times = np.linspace(-1, 1, ntimes)
-    data = np.rollaxis(data.repeat(ntimes).
-                       reshape((*data.shape, ntimes)), -1)
+    new_shape = [i for i in data.shape] + [ntimes]
+    data = np.rollaxis(data.repeat(ntimes).reshape(new_shape), -1)
     data *= times[:, np.newaxis, np.newaxis]
 
     return lons, lats, times, data
@@ -67,7 +67,7 @@ def main():
 
         p = ax.contourf(lons, lats, data[i, ...],
                         transform=projection,
-                        cmap='YlGnBu_r')
+                        cmap='RdBu')
 
     axgr.cbar_axes[0].colorbar(p)
 
