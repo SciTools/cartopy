@@ -32,7 +32,7 @@ def sample_data_3d(shape):
     data = wave + mean
 
     times = np.linspace(-1, 1, ntimes)
-    new_shape = [i for i in data.shape] + [ntimes]
+    new_shape = data.shape + (ntimes, )
     data = np.rollaxis(data.repeat(ntimes).reshape(new_shape), -1)
     data *= times[:, np.newaxis, np.newaxis]
 
