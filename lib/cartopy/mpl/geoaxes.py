@@ -1513,7 +1513,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
-        Plot a 2-D field of barbs.
+        Plot a field of barbs.
 
         Extra Kwargs:
 
@@ -1577,7 +1577,7 @@ class GeoAxes(matplotlib.axes.Axes):
         elif t != self.projection:
             # Transform the vectors if the projection is not the same as the
             # data transform.
-            if x.ndim == 1 and y.ndim == 1:
+            if (x.ndim == 1 and y.ndim == 1) and (x.shape != u.shape):
                 x, y = np.meshgrid(x, y)
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.barbs(self, x, y, u, v, *args, **kwargs)
