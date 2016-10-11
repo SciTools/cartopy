@@ -510,6 +510,36 @@ def test_barbs_regrid_with_extent():
              target_extent=target_extent)
 
 
+@ImageTesting(['barbs_1d'])
+def test_barbs_1d():
+    x = np.array([20., 30., -17., 15.])
+    y = np.array([-1., 35., 11., 40.])
+    u = np.array([23., -18., 2., -11.])
+    v = np.array([5., -4., 19., 11.])
+    plot_extent = [-21, 40, -5, 45]
+    plt.figure(figsize=(6, 5))
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
+             length=8, linewidth=1, color='#7f7f7f')
+
+
+@ImageTesting(['barbs_1d_transformed'])
+def test_barbs_1d_transformed():
+    x = np.array([20., 30., -17., 15.])
+    y = np.array([-1., 35., 11., 40.])
+    u = np.array([23., -18., 2., -11.])
+    v = np.array([5., -4., 19., 11.])
+    plot_extent = [-20, 31, -5, 45]
+    plt.figure(figsize=(6, 5))
+    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
+             length=8, linewidth=1, color='#7f7f7f')
+
+
 @ImageTesting(['streamplot'
                if mpl.__version__ >= '1.5' else
                'streamplot_pre_mpl_1.5'])
