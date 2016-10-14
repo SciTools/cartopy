@@ -34,6 +34,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Louis Tiao
  * Zachary Tessler
  * Daniel Eriksson
+ * Crispian Batstone
 
 
 Thank you!

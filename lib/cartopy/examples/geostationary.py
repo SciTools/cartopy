@@ -5,10 +5,10 @@ Reprojecting images from a Geostationary projection
 This example demonstrates Cartopy's ability to project images into the desired
 projection on-the-fly. The image itself is retrieved from a URL and is loaded
 directly into memory without storing it intermediately into a file. It
-represents pre-processed data from Moderate-Resolution Imaging
-Spectroradiometer (MODIS) which has been put into an image in the data's
-native Geostationary coordinate system - it is then projected by cartopy
-into a global Miller map.
+represents pre-processed data from the Spinning Enhanced Visible and Infrared
+Imager onboard Meteosat Second Generation, which has been put into an image in
+the data's native Geostationary coordinate system - it is then projected by
+cartopy into a global Miller map.
 
 """
 __tags__ = ["Scalar data"]
@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 
 def geos_image():
     """
-    Return a specific MODIS image by retrieving it from a github gist URL.
+    Return a specific SEVIRI image by retrieving it from a github gist URL.
 
     Returns
     -------

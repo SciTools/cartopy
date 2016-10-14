@@ -76,6 +76,8 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:EPSG::27700': 1,
     'urn:ogc:def:crs:EPSG::900913': 1,
     'urn:ogc:def:crs:OGC:1.3:CRS84': _WGS84_METERS_PER_UNIT,
+    'urn:ogc:def:crs:EPSG::3031': 1,
+    'urn:ogc:def:crs:EPSG::3413': 1
 }
 
 _URN_TO_CRS = collections.OrderedDict([
@@ -83,8 +85,13 @@ _URN_TO_CRS = collections.OrderedDict([
     ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
     ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
-    ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(central_latitude=-90,
-                                                      true_scale_latitude=-71))
+    ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
+        central_latitude=-90,
+        true_scale_latitude=-71)),
+    ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
+        central_longitude=-45,
+        central_latitude=90,
+        true_scale_latitude=70))
 ])
 
 # XML namespace definitions
@@ -340,13 +347,19 @@ class WMTSRasterSource(RasterSource):
 
     """
 
-    def __init__(self, wmts, layer_name):
+    def __init__(self, wmts, layer_name, gettile_extra_kwargs=None):
         """
         Args:
 
             * wmts - The URL of the WMTS, or an
                      owslib.wmts.WebMapTileService instance.
             * layer_name - The name of the layer to use.
+
+        Kwargs:
+
+            * gettile_extra_kwargs : dict or None
+                Extra keywords (e.g. time) to pass through to the
+                service's gettile method.
 
         """
         if WebMapService is None:
@@ -368,6 +381,11 @@ class WMTSRasterSource(RasterSource):
 
         #: The layer to fetch.
         self.layer = layer
+
+        #: Extra kwargs passed through to the service's gettile request.
+        if gettile_extra_kwargs is None:
+            gettile_extra_kwargs = {}
+        self.gettile_extra_kwargs = gettile_extra_kwargs
 
         self._matrix_set_name_map = {}
 
@@ -587,7 +605,8 @@ class WMTSRasterSource(RasterSource):
                             layer=layer.id,
                             tilematrixset=matrix_set_name,
                             tilematrix=tile_matrix_id,
-                            row=row, column=col)
+                            row=row, column=col,
+                            **self.gettile_extra_kwargs)
                     except owslib.util.ServiceException as exception:
                         if ('TileOutOfRange' in exception.message and
                                 ignore_out_of_range):
