@@ -45,16 +45,16 @@ class GoogleTiles(object):
 
     """
     def __init__(self, desired_tile_form='RGB', style="street",
-                url=('https://mts0.google.com/vt/lyrs={style}' \
-                     '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
+                 url=('https://mts0.google.com/vt/lyrs={style}'
+                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
         """
         :param desired_tile_form:
         :param style: The style for the Google Maps tiles. One of 'street',
             'satellite', 'terrain', and 'only_streets'.
             Defaults to 'street'.
-        :param url: str url pointing to a tile source such as in default
-                    {x}, {y}, and {z} must be included in url. Such as:
-                    ('https://server.arcgisonline.com/ArcGIS/rest/services/' \
+        :param url: str url pointing to a tile source and containing {x},
+                    {y}, and {z}. Such as:
+                    ('https://server.arcgisonline.com/ArcGIS/rest/services/'
                      'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
         """
         # Only streets are partly transparent tiles that can be overlayed over
@@ -203,6 +203,7 @@ class GoogleTiles(object):
         img = img.convert(self.desired_tile_form)
 
         return img, self.tileextent(tile), 'lower'
+
 
 class MapQuestOSM(GoogleTiles):
     # http://developer.mapquest.com/web/products/open/map for terms of use
