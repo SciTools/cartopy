@@ -1147,7 +1147,8 @@ class GeoAxes(matplotlib.axes.Axes):
         # We need to compute the dataLim correctly for contours.
         if matplotlib.__version__ >= '1.4':
             extent = mtransforms.Bbox.union([col.get_datalim(self.transData)
-                                             for col in result.collections])
+                                             for col in result.collections
+                                             if col.get_paths()])
             self.dataLim.update_from_data_xy(extent.get_points())
 
         self.autoscale_view()
