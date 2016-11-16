@@ -848,9 +848,13 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             img = imread(fpath)
         if len(img.shape) == 2:
+            # greyscale images are only 2-dimensional, so need replicating
+            # to 3 colour channels:
             img = np.repeat(img[:,:,np.newaxis], 3, axis=2)
         
+        # now get the projection from the metadata:
         if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
+            # currently only PlateCarree is defined:
             source_proj = ccrs.PlateCarree()
         else:
             raise NotImplementedError('Background image projection not set up yet')
@@ -873,11 +877,10 @@ class GeoAxes(matplotlib.axes.Axes):
             lat_in_range = np.logical_and(lat_pts >= extent[2], lat_pts <= extent[3])
             if extent[0] < 180 and extent[1] > 180:
                 # we have a region crossing the dateline
-                # this is the left hand side of the input image
-                # (which will become the right hadn side of the output):
+                # this is the westerly side of the input image:
                 lon_in_range1 = np.logical_and(lon_pts >= extent[0], lon_pts <= 180.0)
                 img_subset1 = img_subset = img[lat_in_range, :, :][:, lon_in_range1, :]
-                # and vice-versa:
+                # and the eastward half:
                 lon_in_range2 = lon_pts + 360. <= extent[1]
                 img_subset2 = img_subset = img[lat_in_range, :, :][:, lon_in_range2, :]
                 # now join them up:
@@ -921,7 +924,7 @@ class GeoAxes(matplotlib.axes.Axes):
         json_file = os.path.join(bgdir, 'images.json')
  
         with open(json_file, 'r') as js_obj:
-            dict_in = json.load(js_obj)#, separators=(',\n', ': '), indent=2)
+            dict_in = json.load(js_obj)
         for img_type in dict_in:
             _USER_BG_IMGS[img_type] = dict_in[img_type]
         
