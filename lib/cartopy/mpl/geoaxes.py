@@ -68,6 +68,17 @@ matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
 """
 
+_BACKG_IMG_CACHE = {}
+"""
+A dictionary of pre-loaded images for large background images, kept as a dictionary
+so that large images are loaded only once.
+"""
+
+_USER_BG_IMGS = {}
+"""
+A dictionary of background images in the directory specified by the
+CARTOPY_USER_BACKGROUNDS environment variable.
+"""
 
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
@@ -783,6 +794,155 @@ class GeoAxes(matplotlib.axes.Axes):
                                extent=[-180, 180, -90, 90])
         else:
             raise ValueError('Unknown stock image %r.' % name)
+
+    def background_img(self, name='ne_shaded', resln='low', extent=None,
+                       cache=False):
+        """
+        Adds from a selection of prepared images to the map.
+
+        Currently, the only (and default) option is a downsampled version of
+        the Natural Earth shaded relief raster.
+        
+        Kwargs:
+
+            * name - the name of the image to read.
+
+            * resln - the resolution of the image to read.
+
+            * extent - using a high resolution background image, zoomed into 
+                       a small area, will take a very long time to render as
+                       the image is prepared globally, even though only a small
+                       area is used. Adding the extent will only render a
+                       particular geographic region. Specified as
+                       [longitude start, longitude end, latitude start, latitude end].
+                       e.g. [-30.0, 10.0, -30.0, 10.0] for Ascension Island
+                       or [167.0, 193.0, 47.0, 68.0] to cross the date line.
+
+            * cache - logical flag as to whether or not to cache the loaded
+                      images into memory. The images are stored before the
+                      extent is used.
+        """
+        # read in the user's background image directory:
+        if len(_USER_BG_IMGS) == 0:
+            self.read_user_backgound_images()
+        import os
+        bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
+        # now get the filename we want to use:
+        try:
+            fname = _USER_BG_IMGS[name][resln]
+        except KeyError:
+            raise ValueError('''Image name "{}" and resolution "{}" are not present in the user
+             background image metadata in directory "{}"'''.format(name, resln, bgdir))
+        # Now obtain the image data from file or cache:
+        fpath = os.path.join(bgdir, fname) 
+        if cache:
+            if fname in _BACKG_IMG_CACHE.keys():
+                img = _BACKG_IMG_CACHE[fname]
+            else:
+                img = imread(fpath)
+                _BACKG_IMG_CACHE[fname] = img
+        else:
+            img = imread(fpath)
+        if len(img.shape) == 2:
+            img = np.repeat(img[:,:,np.newaxis], 3, axis=2)
+        
+        if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
+            source_proj = ccrs.PlateCarree()
+        else:
+            raise NotImplementedError('Background image projection not set up yet')
+        
+        if extent is None:
+            # not specifying an extent, so return all of it:
+            return self.imshow(img, origin='upper',
+                               transform=source_proj,
+                               extent=[-180, 180, -90, 90])
+        else:
+            # return only a subset of the image:
+            # set up coordinate arrays:
+            d_lat = 180.0 / img.shape[0]
+            d_lon = 360.0 / img.shape[1]
+            # latitude starts at 90N for this image:
+            lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2.0)) + 90.0
+            lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2.0)) - 180.0
+            
+            # which points are in range:
+            lat_in_range = np.logical_and(lat_pts >= extent[2], lat_pts <= extent[3])
+            if extent[0] < 180 and extent[1] > 180:
+                # we have a region crossing the dateline
+                # this is the left hand side of the input image
+                # (which will become the right hadn side of the output):
+                lon_in_range1 = np.logical_and(lon_pts >= extent[0], lon_pts <= 180.0)
+                img_subset1 = img_subset = img[lat_in_range,:,:][:,lon_in_range1,:]
+                # and vice-versa:
+                lon_in_range2 = lon_pts + 360. <= extent[1]
+                img_subset2 = img_subset = img[lat_in_range,:,:][:,lon_in_range2,:]
+                # now join them up:
+                img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
+                # now define the extent for output that matches those points:
+                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2.0,
+                              lon_pts[lon_in_range2][-1] + d_lon / 2.0 + 360,
+                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+            else:
+                # not crossing the dateline, so just find the region:
+                lon_in_range = np.logical_and(lon_pts >= extent[0], lon_pts <= extent[1])
+                img_subset = img_subset = img[lat_in_range,:,:][:,lon_in_range,:]
+                # now define the extent for output that matches those points:
+                ret_extent = [lon_pts[lon_in_range][0] - d_lon / 2.0,
+                              lon_pts[lon_in_range][-1] + d_lon / 2.0,
+                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+            
+            return self.imshow(img_subset, origin='upper',
+                               transform=source_proj,
+                               extent=ret_extent)
+    
+    def read_user_backgound_images(self, verify=True):
+        """
+        Reads the metadata in the specified CARTOPY_USER_BACKGROUNDS
+        environment variable to populate the dictionaries for background_img.
+        
+        The metadata should be a standard JSON file which specifies a two
+        level dictionary. The first level is the image type. 
+        For each image type there needs to be the fields:
+        __comment__, __source__ and __projection__ 
+        and then an element giving the filename for each resolution.
+
+        """
+        import os, json
+        
+        bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
+        if bgdir is None:
+            raise ValueError('environment variable CARTOPY_USER_BACKGROUNDS not set')
+        json_file = os.path.join(bgdir, 'images.json')
+ 
+        with open(json_file, 'r') as js_obj:
+            dict_in = json.load(js_obj)#, separators=(',\n', ': '), indent=2)
+        for img_type in dict_in:
+            _USER_BG_IMGS[img_type] = dict_in[img_type]
+        
+        if verify:
+            required_info = ['__comment__', '__source__', '__projection__']
+            for img_type in _USER_BG_IMGS:
+                if img_type == '__comment__':
+                    # the top level comment doesn't need verifying:
+                    pass
+                else:
+                    # check that this image type has the required info:
+                    for required in required_info:
+                        if required not in _USER_BG_IMGS[img_type]:
+                            raise ValueError('''User background metadata file "{}", image type "{}",
+             does not specify metadata item "{}"
+'''.format(json_file, img_type, required))
+                    for resln in _USER_BG_IMGS[img_type]:
+                        # the required_info items are not resolutions:
+                        if resln not in required_info:
+                            test_file = os.path.join(bgdir, _USER_BG_IMGS[img_type][resln])
+                            if not os.path.isfile(test_file):
+                                raise ValueError('File "{}" not found'.format(test_file))
+                                raise ValueError('''User background metadata file "{}", image type "{}",
+             image file "{}" not found
+'''.format(json_file, img_type, test_file))
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
