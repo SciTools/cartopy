@@ -798,16 +798,20 @@ class GeoAxes(matplotlib.axes.Axes):
     def background_img(self, name='ne_shaded', resln='low', extent=None,
                        cache=False):
         """
-        Adds from a selection of prepared images to the map.
+        Adds from a selection of prepared images to the map where the
+        available files are held in the CARTOPY_USER_BACKGROUNDS environment
+        variable.
 
-        Currently, the only (and default) option is a downsampled version of
-        the Natural Earth shaded relief raster.
+        That directory is checked with read_user_backgound_images and needs to
+        contain a JSON file which defines for the image metadata.
         
         Kwargs:
 
-            * name - the name of the image to read.
+            * name - the name of the image to read according to the contents of
+                     the JSON file.
 
-            * resln - the resolution of the image to read.
+            * resln - the resolution of the image to read, according to the
+                      contents of the JSON file.
 
             * extent - using a high resolution background image, zoomed into 
                        a small area, will take a very long time to render as
@@ -872,10 +876,10 @@ class GeoAxes(matplotlib.axes.Axes):
                 # this is the left hand side of the input image
                 # (which will become the right hadn side of the output):
                 lon_in_range1 = np.logical_and(lon_pts >= extent[0], lon_pts <= 180.0)
-                img_subset1 = img_subset = img[lat_in_range,:,:][:,lon_in_range1,:]
+                img_subset1 = img_subset = img[lat_in_range, :, :][:, lon_in_range1, :]
                 # and vice-versa:
                 lon_in_range2 = lon_pts + 360. <= extent[1]
-                img_subset2 = img_subset = img[lat_in_range,:,:][:,lon_in_range2,:]
+                img_subset2 = img_subset = img[lat_in_range, :, :][:, lon_in_range2, :]
                 # now join them up:
                 img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
                 # now define the extent for output that matches those points:
@@ -886,7 +890,7 @@ class GeoAxes(matplotlib.axes.Axes):
             else:
                 # not crossing the dateline, so just find the region:
                 lon_in_range = np.logical_and(lon_pts >= extent[0], lon_pts <= extent[1])
-                img_subset = img_subset = img[lat_in_range,:,:][:,lon_in_range,:]
+                img_subset = img_subset = img[lat_in_range, :, :][:, lon_in_range, :]
                 # now define the extent for output that matches those points:
                 ret_extent = [lon_pts[lon_in_range][0] - d_lon / 2.0,
                               lon_pts[lon_in_range][-1] + d_lon / 2.0,
