@@ -808,10 +808,14 @@ class GeoAxes(matplotlib.axes.Axes):
         Kwargs:
 
             * name - the name of the image to read according to the contents of
-                     the JSON file.
+                     the JSON file. A typical file might have, for instance:
+                     'ne_shaded' : Natrual Earth Shaded Relief
+                     'ne_grey' : Natural Earth Grey Earth
 
             * resln - the resolution of the image to read, according to the
-                      contents of the JSON file.
+                      contents of the JSON file. A typical file might have
+                      the following for each name of the image:
+                      'low', 'med', 'high', 'vhigh'.
 
             * extent - using a high resolution background image, zoomed into 
                        a small area, will take a very long time to render as
