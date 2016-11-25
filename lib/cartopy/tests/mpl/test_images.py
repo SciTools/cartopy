@@ -54,7 +54,7 @@ def test_web_tiles():
                                    [extent[0], extent[1]]])
     map_prj = cimgt.GoogleTiles().crs
 
-    ax = plt.subplot(3, 2, 1, projection=map_prj)
+    ax = plt.subplot(2, 2, 1, projection=map_prj)
     gt = cimgt.GoogleTiles()
     gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT,
                                      gt)
@@ -63,45 +63,19 @@ def test_web_tiles():
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(3, 2, 2, projection=map_prj)
+    ax = plt.subplot(2, 2, 2, projection=map_prj)
     qt = cimgt.QuadtreeTiles()
     img, extent, origin = qt.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=qt.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(3, 2, 3, projection=map_prj)
-    mq_osm = cimgt.MapQuestOSM()
-    img, extent, origin = mq_osm.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=mq_osm.crs,
-              interpolation='bilinear', origin=origin)
-    ax.coastlines()
-
-    ax = plt.subplot(3, 2, 4, projection=map_prj)
-    mq_oa = cimgt.MapQuestOpenAerial()
-    img, extent, origin = mq_oa.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=mq_oa.crs,
-              interpolation='bilinear', origin=origin)
-    ax.coastlines()
-
-    ax = plt.subplot(3, 2, 5, projection=map_prj)
+    ax = plt.subplot(2, 2, 3, projection=map_prj)
     osm = cimgt.OSM()
     img, extent, origin = osm.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=osm.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines()
-
-
-@ImageTesting(['image_nest'], tolerance=1.5)
-def test_image_nest():
-    nest_z0_z1 = ctest_nest.gen_nest()
-
-    ax = plt.axes(projection=ccrs.Mercator())
-    shper_globe = ccrs.Globe(semimajor_axis=np.rad2deg(1))
-    spher_merc = ccrs.Mercator(globe=shper_globe)
-    ax.set_extent([-45, 45, -45, 90], spher_merc)
-    ax.coastlines()
-    ax.add_image(nest_z0_z1, 'aerial z1 test')
 
 
 @ImageTesting(['image_merge'])

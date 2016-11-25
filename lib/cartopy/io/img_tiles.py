@@ -33,6 +33,7 @@ from PIL import Image
 import shapely.geometry as sgeom
 import numpy as np
 import six
+import warnings
 
 import cartopy.crs as ccrs
 
@@ -201,10 +202,18 @@ class GoogleTiles(object):
 
 class MapQuestOSM(GoogleTiles):
     # http://developer.mapquest.com/web/products/open/map for terms of use
+    # http://devblog.mapquest.com/2016/06/15/
+    # modernization-of-mapquest-results-in-changes-to-open-tile-access/
+    # this now requires a sign up to a plan
     def _image_url(self, tile):
         x, y, z = tile
         url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
             z, x, y)
+        mqdevurl = ('http://devblog.mapquest.com/2016/06/15/'
+                    'modernization-of-mapquest-results-in-changes'
+                    '-to-open-tile-access/')
+        warnings.warn('{} will require a log in and and will likely'
+                      ' fail. see {} for more details.'.format(url, mqdevurl))
         return url
 
 
