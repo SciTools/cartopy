@@ -58,6 +58,17 @@ class TestNoSpherical(unittest.TestCase):
             self.ax.pcolormesh(self.data, transform=ccrs.Geodetic())
 
 
+class TestSetExtent(unittest.TestCase):
+    def test_PlateCarree(self):
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        extents = (130, 190, 20, 50)
+        ax.set_extent(extents)
+        result = ax.get_extent()
+        # Check x and y extents separately - each shows a problem.
+        self.assertEqual(extents[:2], result[:2])
+        self.assertEqual(extents[2:], result[2:])
+
+
 def test_transform_PlateCarree_shortcut():
     src = ccrs.PlateCarree(central_longitude=0)
     target = ccrs.PlateCarree(central_longitude=180)
