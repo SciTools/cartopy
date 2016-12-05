@@ -44,17 +44,24 @@ class GoogleTiles(object):
     A "tile" in this class refers to the coordinates (x, y, z).
 
     """
-    def __init__(self, desired_tile_form='RGB', style="street"):
+    def __init__(self, desired_tile_form='RGB', style="street",
+                 url=('https://mts0.google.com/vt/lyrs={style}'
+                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
         """
         :param desired_tile_form:
         :param style: The style for the Google Maps tiles. One of 'street',
             'satellite', 'terrain', and 'only_streets'.
             Defaults to 'street'.
+        :param url: str url pointing to a tile source and containing {x},
+                    {y}, and {z}. Such as:
+                    ('https://server.arcgisonline.com/ArcGIS/rest/services/'
+                     'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
         """
         # Only streets are partly transparent tiles that can be overlayed over
         # the satellite map to create the known hybrid style from google.
         styles = ["street", "satellite", "terrain", "only_streets"]
         style = style.lower()
+        self.url = url
         if style not in styles:
             msg = "Invalid style '%s'. Valid styles: %s" % \
                 (style, ", ".join(styles))
@@ -173,12 +180,11 @@ class GoogleTiles(object):
             "satellite": "s",
             "terrain": "t",
             "only_streets": "h"}
-        url = ('https://mts0.google.com/vt/lyrs={style}@177000000&hl=en&'
-               'src=api&x={tile_x}&y={tile_y}&z={tile_z}&s=G'.format(
+        url = self.url.format(
                    style=style_dict[self.style],
-                   tile_x=tile[0],
-                   tile_y=tile[1],
-                   tile_z=tile[2]))
+                   x=tile[0], X=tile[0],
+                   y=tile[1], Y=tile[1],
+                   z=tile[2], Z=tile[2])
         return url
 
     def get_image(self, tile):
