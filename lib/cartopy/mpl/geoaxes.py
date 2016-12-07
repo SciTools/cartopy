@@ -1298,8 +1298,13 @@ class GeoAxes(matplotlib.axes.Axes):
         maxy = np.amax(Y)
 
         corners = (minx, miny), (maxx, maxy)
-        collection._corners = corners
+        ########################
+        # PATCH
+        # XXX Non-standard matplotlib thing.
+        collection._corners = mtransforms.Bbox(corners)
         collection.get_datalim = lambda transData: collection._corners
+        # END OF PATCH
+        ##############
 
         self.update_datalim(corners)
         self.add_collection(collection)
@@ -1509,7 +1514,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
-        Plot a 2-D field of barbs.
+        Plot a field of barbs.
 
         Extra Kwargs:
 
@@ -1573,7 +1578,7 @@ class GeoAxes(matplotlib.axes.Axes):
         elif t != self.projection:
             # Transform the vectors if the projection is not the same as the
             # data transform.
-            if x.ndim == 1 and y.ndim == 1:
+            if (x.ndim == 1 and y.ndim == 1) and (x.shape != u.shape):
                 x, y = np.meshgrid(x, y)
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.barbs(self, x, y, u, v, *args, **kwargs)

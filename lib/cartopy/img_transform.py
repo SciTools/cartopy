@@ -81,6 +81,14 @@ def mesh_projection(projection, nx, ny,
     y, ystep = np.linspace(y_lower, y_upper, ny, retstep=True,
                            endpoint=False)
 
+    # Deal with single point corner case and the difference
+    # between np.linspace v1.9 and v1.10+ retstep nan result.
+    if nx == 1 and np.isnan(xstep):
+        xstep = x_upper - x_lower
+
+    if ny == 1 and np.isnan(ystep):
+        ystep = y_upper - y_lower
+
     # Offset the sample points to be within the extent range.
     x += 0.5 * xstep
     y += 0.5 * ystep
