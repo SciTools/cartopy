@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -48,7 +48,16 @@ class test_WMSRasterSource(unittest.TestCase):
 
     def test_string_service(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
-        self.assertIsInstance(source.service, WebMapService)
+        if isinstance(WebMapService, type):
+            # OWSLib < 0.13.0
+            self.assertIsInstance(source.service, WebMapService)
+        else:
+            # OWSLib >= 0.13.0: WebMapService is a function that creates
+            # instances of these two classes.
+            from owslib.map.wms111 import WebMapService_1_1_1
+            from owslib.map.wms130 import WebMapService_1_3_0
+            self.assertIsInstance(source.service,
+                                  (WebMapService_1_1_1, WebMapService_1_3_0))
         self.assertIsInstance(source.layers, list)
         self.assertEqual(source.layers, [self.layer])
 
