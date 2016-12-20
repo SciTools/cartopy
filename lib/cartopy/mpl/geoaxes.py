@@ -70,8 +70,8 @@ matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
 _BACKG_IMG_CACHE = {}
 """
-A dictionary of pre-loaded images for large background images, kept as a dictionary
-so that large images are loaded only once.
+A dictionary of pre-loaded images for large background images, kept as a
+dictionary so that large images are loaded only once.
 """
 
 _USER_BG_IMGS = {}
@@ -79,6 +79,7 @@ _USER_BG_IMGS = {}
 A dictionary of background images in the directory specified by the
 CARTOPY_USER_BACKGROUNDS environment variable.
 """
+
 
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
@@ -804,7 +805,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         That directory is checked with read_user_backgound_images and needs to
         contain a JSON file which defines for the image metadata.
-        
+
         Kwargs:
 
             * name - the name of the image to read according to the contents of
@@ -817,12 +818,14 @@ class GeoAxes(matplotlib.axes.Axes):
                       the following for each name of the image:
                       'low', 'med', 'high', 'vhigh'.
 
-            * extent - using a high resolution background image, zoomed into 
+            * extent - using a high resolution background image, zoomed into
                        a small area, will take a very long time to render as
                        the image is prepared globally, even though only a small
                        area is used. Adding the extent will only render a
                        particular geographic region. Specified as
-                       [longitude start, longitude end, latitude start, latitude end].
+                       [longitude start, longitude end,
+                        latitude start, latitude end].
+
                        e.g. [-30.0, 10.0, -30.0, 10.0] for Ascension Island
                        or [167.0, 193.0, 47.0, 68.0] to cross the date line.
 
@@ -842,10 +845,12 @@ class GeoAxes(matplotlib.axes.Axes):
         try:
             fname = _USER_BG_IMGS[name][resln]
         except KeyError:
-            raise ValueError('''Image name "{}" and resolution "{}" are not present in the user
-             background image metadata in directory "{}"'''.format(name, resln, bgdir))
+            err_str = 'Image name "{}" and resolution "{}"'.format(name, resln)
+            err_str += ' are not present in the user background image metadata'
+            err_str += ' in directory "{}"'.format(bgdir)
+            raise ValueError(err_str)
         # Now obtain the image data from file or cache:
-        fpath = os.path.join(bgdir, fname) 
+        fpath = os.path.join(bgdir, fname)
         if cache:
             if fname in _BACKG_IMG_CACHE.keys():
                 img = _BACKG_IMG_CACHE[fname]
@@ -857,15 +862,15 @@ class GeoAxes(matplotlib.axes.Axes):
         if len(img.shape) == 2:
             # greyscale images are only 2-dimensional, so need replicating
             # to 3 colour channels:
-            img = np.repeat(img[:,:,np.newaxis], 3, axis=2)
-        
+            img = np.repeat(img[:, :, np.newaxis], 3, axis=2)
+
         # now get the projection from the metadata:
         if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
             # currently only PlateCarree is defined:
             source_proj = ccrs.PlateCarree()
         else:
-            raise NotImplementedError('Background image projection not set up yet')
-        
+            raise NotImplementedError('Background image projection undefined')
+
         if extent is None:
             # not specifying an extent, so return all of it:
             return self.imshow(img, origin='upper',
@@ -879,17 +884,19 @@ class GeoAxes(matplotlib.axes.Axes):
             # latitude starts at 90N for this image:
             lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2.0)) + 90.0
             lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2.0)) - 180.0
-            
+
             # which points are in range:
-            lat_in_range = np.logical_and(lat_pts >= extent[2], lat_pts <= extent[3])
+            lat_in_range = np.logical_and(lat_pts >= extent[2],
+                                          lat_pts <= extent[3])
             if extent[0] < 180 and extent[1] > 180:
                 # we have a region crossing the dateline
                 # this is the westerly side of the input image:
-                lon_in_range1 = np.logical_and(lon_pts >= extent[0], lon_pts <= 180.0)
-                img_subset1 = img_subset = img[lat_in_range, :, :][:, lon_in_range1, :]
+                lon_in_range1 = np.logical_and(lon_pts >= extent[0],
+                                               lon_pts <= 180.0)
+                img_subset1 = img[lat_in_range, :, :][:, lon_in_range1, :]
                 # and the eastward half:
                 lon_in_range2 = lon_pts + 360. <= extent[1]
-                img_subset2 = img_subset = img[lat_in_range, :, :][:, lon_in_range2, :]
+                img_subset2 = img[lat_in_range, :, :][:, lon_in_range2, :]
                 # now join them up:
                 img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
                 # now define the extent for output that matches those points:
@@ -899,49 +906,51 @@ class GeoAxes(matplotlib.axes.Axes):
                               lat_pts[lat_in_range][0] + d_lat / 2.0]
             else:
                 # not crossing the dateline, so just find the region:
-                lon_in_range = np.logical_and(lon_pts >= extent[0], lon_pts <= extent[1])
-                img_subset = img_subset = img[lat_in_range, :, :][:, lon_in_range, :]
+                lon_in_range = np.logical_and(lon_pts >= extent[0],
+                                              lon_pts <= extent[1])
+                img_subset = img[lat_in_range, :, :][:, lon_in_range, :]
                 # now define the extent for output that matches those points:
                 ret_extent = [lon_pts[lon_in_range][0] - d_lon / 2.0,
                               lon_pts[lon_in_range][-1] + d_lon / 2.0,
                               lat_pts[lat_in_range][-1] - d_lat / 2.0,
                               lat_pts[lat_in_range][0] + d_lat / 2.0]
-            
+
             return self.imshow(img_subset, origin='upper',
                                transform=source_proj,
                                extent=ret_extent)
-    
+
     def read_user_backgound_images(self, verify=True):
         """
         Reads the metadata in the specified CARTOPY_USER_BACKGROUNDS
         environment variable to populate the dictionaries for background_img.
-        
+
         If CARTOPY_USER_BACKGROUNDS is not set then by default the image in
         lib/cartopy/data/raster/natural_earth/ will be made available.
 
         The metadata should be a standard JSON file which specifies a two
-        level dictionary. The first level is the image type. 
+        level dictionary. The first level is the image type.
         For each image type there needs to be the fields:
-        __comment__, __source__ and __projection__ 
+        __comment__, __source__ and __projection__
         and then an element giving the filename for each resolution.
 
         An example JSON file can be found at:
         lib/cartopy/data/raster/natural_earth/images.json
 
         """
-        import os, json
-        
+        import os
+        import json
+
         bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
         if bgdir is None:
             bgdir = os.path.join(config["repo_data_dir"],
                                  'raster', 'natural_earth')
         json_file = os.path.join(bgdir, 'images.json')
- 
+
         with open(json_file, 'r') as js_obj:
             dict_in = json.load(js_obj)
         for img_type in dict_in:
             _USER_BG_IMGS[img_type] = dict_in[img_type]
-        
+
         if verify:
             required_info = ['__comment__', '__source__', '__projection__']
             for img_type in _USER_BG_IMGS:
@@ -952,18 +961,21 @@ class GeoAxes(matplotlib.axes.Axes):
                     # check that this image type has the required info:
                     for required in required_info:
                         if required not in _USER_BG_IMGS[img_type]:
-                            raise ValueError('''User background metadata file "{}", image type "{}",
-             does not specify metadata item "{}"
-'''.format(json_file, img_type, required))
+                            err_str = 'User background metadata file'
+                            err_str += ' "{}"'.format(json_file)
+                            err_str += ', image type "{}"'.format(img_type)
+                            err_str += ', does not specify metadata item'
+                            err_str += ' "{}"'.format(required)
+                            raise ValueError(err_str)
                     for resln in _USER_BG_IMGS[img_type]:
                         # the required_info items are not resolutions:
                         if resln not in required_info:
-                            test_file = os.path.join(bgdir, _USER_BG_IMGS[img_type][resln])
+                            test_file = os.path.join(bgdir,
+                                          _USER_BG_IMGS[img_type][resln])
                             if not os.path.isfile(test_file):
-                                raise ValueError('File "{}" not found'.format(test_file))
-                                raise ValueError('''User background metadata file "{}", image type "{}",
-             image file "{}" not found
-'''.format(json_file, img_type, test_file))
+                                err_str = 'File "{}"'.format(test_file)
+                                err_str += ' not found'
+                                raise ValueError(err_str)
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
