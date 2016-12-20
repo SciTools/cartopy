@@ -143,19 +143,10 @@ def test_pil_Image():
               extent=[-180, 180, -90, 90])
 
 
-@ImageTesting(['imshow_bg_image_ortho'], tolerance=0.7)
+@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resln='low')
-
-
-@ImageTesting(['imshow_bg_image_ortho'])
-def test_pil_bg_Image():
-    img = Image.open(NATURAL_EARTH_IMG)
-    source_proj = ccrs.PlateCarree()
-    ax = plt.axes(projection=ccrs.Orthographic())
-    ax.imshow(img, origin='upper', transform=source_proj,
-              extent=[-180, 180, -90, 90])
 
 
 if __name__ == '__main__':
