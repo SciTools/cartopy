@@ -970,8 +970,8 @@ class GeoAxes(matplotlib.axes.Axes):
                     for resln in _USER_BG_IMGS[img_type]:
                         # the required_info items are not resolutions:
                         if resln not in required_info:
-                            test_file = os.path.join(bgdir,
-                                          _USER_BG_IMGS[img_type][resln])
+                            img_it_r = _USER_BG_IMGS[img_type][resln]
+                            test_file = os.path.join(bgdir, img_it_r)
                             if not os.path.isfile(test_file):
                                 err_str = 'File "{}"'.format(test_file)
                                 err_str += ' not found'
