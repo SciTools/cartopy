@@ -835,6 +835,9 @@ class GeoAxes(matplotlib.axes.Axes):
             self.read_user_backgound_images()
         import os
         bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
+        if bgdir is None:
+            bgdir = os.path.join(config["repo_data_dir"],
+                                 'raster', 'natural_earth')
         # now get the filename we want to use:
         try:
             fname = _USER_BG_IMGS[name][resln]
@@ -913,18 +916,25 @@ class GeoAxes(matplotlib.axes.Axes):
         Reads the metadata in the specified CARTOPY_USER_BACKGROUNDS
         environment variable to populate the dictionaries for background_img.
         
+        If CARTOPY_USER_BACKGROUNDS is not set then by default the image in
+        lib/cartopy/data/raster/natural_earth/ will be made available.
+
         The metadata should be a standard JSON file which specifies a two
         level dictionary. The first level is the image type. 
         For each image type there needs to be the fields:
         __comment__, __source__ and __projection__ 
         and then an element giving the filename for each resolution.
 
+        An example JSON file can be found at:
+        lib/cartopy/data/raster/natural_earth/images.json
+
         """
         import os, json
         
         bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
         if bgdir is None:
-            raise ValueError('environment variable CARTOPY_USER_BACKGROUNDS not set')
+            bgdir = os.path.join(config["repo_data_dir"],
+                                 'raster', 'natural_earth')
         json_file = os.path.join(bgdir, 'images.json')
  
         with open(json_file, 'r') as js_obj:
