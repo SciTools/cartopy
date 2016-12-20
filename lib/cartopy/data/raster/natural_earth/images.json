@@ -3,5 +3,5 @@
     "__comment__": "Natural Earth shaded relief",
     "__source__": "http://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/",
     "__projection__": "PlateCarree",
-    "low": "50-natural-earth-1-downsampled-low.png"  }
+    "low": "50-natural-earth-1-downsampled.png"  }
 }
