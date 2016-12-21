@@ -33,7 +33,7 @@ import shapely.geometry as sgeom
 from shapely.prepared import prep
 import six
 
-from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_VERSION
+from cartopy._crs import CRS, Geocentric, Geodetic, Globe
 import cartopy.trace
 
 
