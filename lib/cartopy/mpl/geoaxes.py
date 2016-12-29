@@ -842,7 +842,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                  'raster', 'natural_earth')
         # now get the filename we want to use:
         try:
-            fname = _USER_BG_IMGS[name][resln]
+            fname = _USER_BG_IMGS[name][resolution]
         except KeyError:
             err_str = 'Image name "{}" and resolution "{}"'.format(name, resln)
             err_str += ' are not present in the user background image metadata'
