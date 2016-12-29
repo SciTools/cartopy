@@ -796,27 +796,26 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
-    def background_img(self, name='ne_shaded', resln='low', extent=None,
+    def background_img(self, name='ne_shaded', resolution='low', extent=None,
                        cache=False):
         """
-        Adds from a selection of prepared images to the map where the
-        available files are held in the CARTOPY_USER_BACKGROUNDS environment
-        variable.
-
-        That directory is checked with read_user_backgound_images and needs to
-        contain a JSON file which defines for the image metadata.
+        Adds a background image to the map, from a selection of pre-prepared
+        images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
+        environment variable. That directory is checked with
+        func:`self.read_user_background_images` and needs to contain a JSON file
+        which defines for the image metadata.
 
         Kwargs:
 
             * name - the name of the image to read according to the contents of
                      the JSON file. A typical file might have, for instance:
-                     'ne_shaded' : Natrual Earth Shaded Relief
+                     'ne_shaded' : Natural Earth Shaded Relief
                      'ne_grey' : Natural Earth Grey Earth
 
-            * resln - the resolution of the image to read, according to the
-                      contents of the JSON file. A typical file might have
-                      the following for each name of the image:
-                      'low', 'med', 'high', 'vhigh'.
+            * resolution - the resolution of the image to read, according to the
+                           contents of the JSON file. A typical file might have
+                           the following for each name of the image:
+                          'low', 'med', 'high', 'vhigh', 'full'.
 
             * extent - using a high resolution background image, zoomed into
                        a small area, will take a very long time to render as
@@ -835,7 +834,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # read in the user's background image directory:
         if len(_USER_BG_IMGS) == 0:
-            self.read_user_backgound_images()
+            self.read_user_background_images()
         import os
         bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
         if bgdir is None:
@@ -852,7 +851,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Now obtain the image data from file or cache:
         fpath = os.path.join(bgdir, fname)
         if cache:
-            if fname in _BACKG_IMG_CACHE.keys():
+            if fname in _BACKG_IMG_CACHE:
                 img = _BACKG_IMG_CACHE[fname]
             else:
                 img = imread(fpath)
@@ -919,7 +918,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                transform=source_proj,
                                extent=ret_extent)
 
-    def read_user_backgound_images(self, verify=True):
+    def read_user_background_images(self, verify=True):
         """
         Reads the metadata in the specified CARTOPY_USER_BACKGROUNDS
         environment variable to populate the dictionaries for background_img.
@@ -929,7 +928,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         The metadata should be a standard JSON file which specifies a two
         level dictionary. The first level is the image type.
-        For each image type there needs to be the fields:
+        For each image type there must be the fields:
         __comment__, __source__ and __projection__
         and then an element giving the filename for each resolution.
 
