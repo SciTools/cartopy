@@ -846,7 +846,7 @@ class GeoAxes(matplotlib.axes.Axes):
         except KeyError:
             msg = ('Image "{} and "resolution "{}" are not present in '
                    'the user background image metadata in directory "{}"')
-            raise ValueError(msg.format(name, resolution, bgdir)
+            raise ValueError(msg.format(name, resolution, bgdir))
         # Now obtain the image data from file or cache:
         fpath = os.path.join(bgdir, fname)
         if cache:
@@ -971,7 +971,7 @@ class GeoAxes(matplotlib.axes.Axes):
                             test_file = os.path.join(bgdir, img_it_r)
                             if not os.path.isfile(test_file):
                                 msg = 'File "{}" not found'
-                                raise ValueError(msg.format(test_file)
+                                raise ValueError(msg.format(test_file))
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
