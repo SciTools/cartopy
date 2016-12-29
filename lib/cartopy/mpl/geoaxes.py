@@ -802,20 +802,20 @@ class GeoAxes(matplotlib.axes.Axes):
         Adds a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
         environment variable. That directory is checked with
-        func:`self.read_user_background_images` and needs to contain a JSON file
-        which defines for the image metadata.
+        func:`self.read_user_background_images` and needs to contain a JSON
+        file which defines for the image metadata.
 
         Kwargs:
 
-            * name - the name of the image to read according to the contents of
-                     the JSON file. A typical file might have, for instance:
+            * name - the name of the image to read according to the contents
+                     of the JSON file. A typical file might have, for instance:
                      'ne_shaded' : Natural Earth Shaded Relief
                      'ne_grey' : Natural Earth Grey Earth
 
-            * resolution - the resolution of the image to read, according to the
-                           contents of the JSON file. A typical file might have
-                           the following for each name of the image:
-                          'low', 'med', 'high', 'vhigh', 'full'.
+            * resolution - the resolution of the image to read, according to
+                           the contents of the JSON file. A typical file might
+                           have the following for each name of the image:
+                           'low', 'med', 'high', 'vhigh', 'full'.
 
             * extent - using a high resolution background image, zoomed into
                        a small area, will take a very long time to render as
@@ -844,7 +844,7 @@ class GeoAxes(matplotlib.axes.Axes):
         try:
             fname = _USER_BG_IMGS[name][resolution]
         except KeyError:
-            err_str = 'Image name "{}" and resolution "{}"'.format(name, resln)
+            err_str = 'Image "{} and "resolution "{}"'.format(name, resolution)
             err_str += ' are not present in the user background image metadata'
             err_str += ' in directory "{}"'.format(bgdir)
             raise ValueError(err_str)
