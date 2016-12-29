@@ -28,51 +28,54 @@ import cartopy.io.srtm
 from cartopy.tests.io.test_downloaders import download_to_temp
 
 
-def _test_srtm_retrieve(Source, read_SRTM, max_, min_, pt):
-    # test that the download mechanism for SRTM works
-    with download_to_temp() as tmp_dir:
-        with warnings.catch_warnings(record=True) as w:
-            r = Source().srtm_fname(-4, 50)
-            assert len(w) == 1
-            assert issubclass(w[0].category, cartopy.io.DownloadWarning)
+@unittest.skip('SRTM login not supported')
+class TestRetrieve(unittest.TestCase):
+    def _test_srtm_retrieve(self, Source, read_SRTM, max_, min_, pt):
+        # test that the download mechanism for SRTM works
+        with download_to_temp() as tmp_dir:
+            with warnings.catch_warnings(record=True) as w:
+                r = Source().srtm_fname(-4, 50)
+                self.assertEqual(len(w), 1)
+                self.assertTrue(issubclass(w[0].category,
+                                           cartopy.io.DownloadWarning))
 
-        assert r.startswith(tmp_dir), 'File not downloaded to tmp dir'
+            self.assertTrue(r.startswith(tmp_dir),
+                            'File not downloaded to tmp dir')
 
-        img, _, _ = read_SRTM(r)
+            img, _, _ = read_SRTM(r)
 
-        # check that the data is fairly sensible
-        msg = 'SRTM data has changed. Arbitrary value testing failed. Got {}.'
-        assert img.max() == max_, msg.format(img.max())
-        assert img.min() == min_, msg.format(img.min())
-        assert img[-10, 12] == pt, msg.format(img[-10, 12])
+            # check that the data is fairly sensible
+            msg = ('SRTM data has changed. Arbitrary value testing failed.'
+                   ' Got {}.')
+            self.assertEqual(img.max(), max_, msg=msg.format(img.max()))
+            self.assertEqual(img.min(), min_, msg=msg.format(img.min()))
+            self.assertEqual(img[-10, 12], pt, msg=msg.format(img[-10, 12]))
 
+    def test_srtm3_retrieve(self):
+        self._test_srtm_retrieve(cartopy.io.srtm.SRTM3Source,
+                                 cartopy.io.srtm.read_SRTM3,
+                                 602, -34, 78)
 
-def test_srtm3_retrieve():
-    _test_srtm_retrieve(cartopy.io.srtm.SRTM3Source,
-                        cartopy.io.srtm.read_SRTM3,
-                        602, -34, 78)
+    def test_srtm1_retrieve(self):
+        self._test_srtm_retrieve(cartopy.io.srtm.SRTM1Source,
+                                 cartopy.io.srtm.read_SRTM1,
+                                 602, -37, 50)
 
+    def _test_srtm_out_of_range(self, Source, shape):
+        # Somewhere over the pacific the elevation should be 0.
+        img, _, _ = Source().combined(120, 2, 2, 2)
+        assert_array_equal(img, np.zeros(np.array(shape) * 2))
 
-def test_srtm1_retrieve():
-    _test_srtm_retrieve(cartopy.io.srtm.SRTM1Source,
-                        cartopy.io.srtm.read_SRTM1,
-                        602, -37, 50)
+    def test_srtm3_out_of_range(self):
+        _test_srtm_out_of_range(self,
+                                cartopy.io.srtm.SRTM3Source, (1201, 1201))
 
-
-def _test_srtm_out_of_range(Source, shape):
-    # Somewhere over the pacific the elevation should be 0.
-    img, _, _ = Source().combined(120, 2, 2, 2)
-    assert_array_equal(img, np.zeros(np.array(shape) * 2))
-
-
-def test_srtm3_out_of_range():
-    _test_srtm_out_of_range(cartopy.io.srtm.SRTM3Source, (1201, 1201))
-
-
-def test_srtm1_out_of_range():
-    _test_srtm_out_of_range(cartopy.io.srtm.SRTM1Source, (3601, 3601))
+    def test_srtm1_out_of_range(self):
+        _test_srtm_out_of_range(self,
+                                cartopy.io.srtm.SRTM1Source, (3601, 3601))
 
 
+@unittest.skip('SRTM login not supported')
 class TestSRTMSource__single_tile(unittest.TestCase):
     def _out_of_range(self, source):
         msg = 'No srtm tile found for those coordinates.'
@@ -110,6 +113,7 @@ class TestSRTMSource__single_tile(unittest.TestCase):
         self._zeros(cartopy.io.srtm.SRTM1Source())
 
 
+@unittest.skip('SRTM login not supported')
 class TestSRTMSource__combined(unittest.TestCase):
     def _trivial(self, source):
         e_img, e_crs, e_extent = source.single_tile(-3, 50)
@@ -138,6 +142,7 @@ class TestSRTMSource__combined(unittest.TestCase):
         self._2by2(cartopy.io.srtm.SRTM1Source())
 
 
+@unittest.skip('SRTM login not supported')
 class TestSRTM3Source_fetch_raster(unittest.TestCase):
     def _as_combined(self, source):
         e_img, e_crs, e_extent = source.combined(-1, 50, 2, 1)

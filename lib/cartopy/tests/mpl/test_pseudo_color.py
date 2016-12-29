@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import io
 import matplotlib.pyplot as plt
 try:
     from unittest import mock
@@ -51,6 +52,22 @@ def test_pcolormesh_partially_masked():
         assert_equal(pcolor.call_count, 1, ("pcolor should have been "
                                             "called exactly once."))
         plt.close()
+
+
+def test_savefig_tight():
+    nx, ny = 36, 18
+    xbnds = np.linspace(0, 360, nx, endpoint=True)
+    ybnds = np.linspace(-90, 90, ny, endpoint=True)
+
+    x, y = np.meshgrid(xbnds, ybnds)
+    data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data = data[:-1, :-1]
+
+    ax = plt.subplot(211, projection=ccrs.Robinson())
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight')
+    plt.close()
 
 
 if __name__ == '__main__':

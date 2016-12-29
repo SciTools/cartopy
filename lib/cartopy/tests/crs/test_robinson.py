@@ -33,7 +33,6 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 
 import cartopy.crs as ccrs
-from cartopy.tests import _proj4_version
 
 
 _NAN = float('nan')
@@ -41,7 +40,7 @@ _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
 # Increase tolerance if using older proj.4 releases
-_TOL = -1 if _proj4_version < 4.9 else 7
+_TOL = -1 if ccrs.PROJ4_VERSION < (4, 9) else 7
 
 
 def test_transform_point():

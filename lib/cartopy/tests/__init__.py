@@ -24,15 +24,6 @@ import tempfile
 import shutil
 import types
 
-from cartopy._crs import PROJ4_RELEASE as _PROJ4_RELEASE
-
-
-_match = re.search(r"\d\.\d", _PROJ4_RELEASE)
-if _match is not None:
-    _proj4_version = float(_match.group())
-else:
-    _proj4_version = 0.0
-
 
 @contextlib.contextmanager
 def temp_dir(suffix=None):

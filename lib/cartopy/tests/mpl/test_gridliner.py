@@ -32,7 +32,6 @@ import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
-from cartopy.tests import _proj4_version
 from cartopy.tests.mpl import ImageTesting
 
 

@@ -151,8 +151,12 @@ def fill_dark_side(ax, time=None, *args, **kwargs):
                                     pole_longitude=pole_lng,
                                     central_rotated_longitude=central_rot_lng)
 
-    x = [-90]*181 + [90]*181 + [-90]
-    y = range(-90, 91) + range(90, -91, -1) + [-90]
+    x = np.empty(360)
+    y = np.empty(360)
+    x[:180] = -90
+    y[:180] = np.arange(-90, 90.)
+    x[180:] = 90
+    y[180:] = np.arange(90, -90., -1)
 
     ax.fill(x, y, transform=rotated_pole, **kwargs)
 
