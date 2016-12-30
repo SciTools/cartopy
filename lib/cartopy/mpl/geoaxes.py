@@ -844,7 +844,7 @@ class GeoAxes(matplotlib.axes.Axes):
         try:
             fname = _USER_BG_IMGS[name][resolution]
         except KeyError:
-            msg = ('Image "{}" and "resolution "{}" are not present in '
+            msg = ('Image "{}" and resolution "{}" are not present in '
                    'the user background image metadata in directory "{}"')
             raise ValueError(msg.format(name, resolution, bgdir))
         # Now obtain the image data from file or cache:
