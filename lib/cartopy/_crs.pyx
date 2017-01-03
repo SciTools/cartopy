@@ -122,7 +122,8 @@ class Globe(object):
         proj4_params = (['datum', self.datum], ['ellps', self.ellipse],
                         ['a', self.semimajor_axis], ['b', self.semiminor_axis],
                         ['f', self.flattening], ['rf', self.inverse_flattening],
-                        ['towgs84', self.towgs84], ['nadgrids', self.nadgrids])
+                        ['towgs84', self.towgs84], ['nadgrids', self.nadgrids],
+                        ['lon_0', self.lon_0], ['lat_0', self.lat_0])
         return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
 
