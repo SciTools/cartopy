@@ -118,14 +118,18 @@ class InterProjectionTransform(mtransforms.Transform):
         prj = self.target_projection
         # TODO: Catch projections which cause out of bounds problem in proj4
         # TODO: Reset lon_0 for these projections in proj4 params
-        limited_projections = [ccrs.Orthographic(), ccrs.]
-        if isinstance(xy, np.ndarray):
-            return prj.transform_points(self.source_projection,
-                                        xy[:, 0], xy[:, 1])[:, 0:2]
-        else:
-            x, y = xy
-            x, y = prj.transform_point(x, y, self.source_projection)
-            return x, y
+        limited_projections = [ccrs.Orthographic(), ccrs.TransverseMercator(),
+                               ccrs.Geostationary(), ccrs.Gnomonic()]
+        bad_projections = [ccrs.OSGB(), ccrs.EuroPP()]
+        if self.target_projection in limited_projections:
+
+            if isinstance(xy, np.ndarray):
+                return prj.transform_points(self.source_projection,
+                                            xy[:, 0], xy[:, 1])[:, 0:2]
+            else:
+                x, y = xy
+                x, y = prj.transform_point(x, y, self.source_projection)
+                return x, y
 
     def transform_path_non_affine(self, src_path):
         """
