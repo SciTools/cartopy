@@ -157,8 +157,8 @@ class TestCRS(unittest.TestCase):
                                            src_crs=src_proj)
 
         # Solutions derived by proj4 direct.
-        solx = np.array([-6082344.5, -6098151.15, -6224699.15])
-        soly = np.array([83740.44, -1.49, 24268.47])
+        solx = np.array([83740.44, -1.49, 24268.47])
+        soly = np.array([-6082344.5, -6098151.15, -6224699.15])
 
         assert_arr_almost_eq(res[..., 0], solx)
         assert_arr_almost_eq(res[..., 1], soly)
