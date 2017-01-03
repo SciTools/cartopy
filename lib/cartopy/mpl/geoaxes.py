@@ -116,6 +116,9 @@ class InterProjectionTransform(mtransforms.Transform):
 
         """
         prj = self.target_projection
+        # TODO: Catch projections which cause out of bounds problem in proj4
+        # TODO: Reset lon_0 for these projections in proj4 params
+        limited_projections = [ccrs.Orthographic(), ccrs.]
         if isinstance(xy, np.ndarray):
             return prj.transform_points(self.source_projection,
                                         xy[:, 0], xy[:, 1])[:, 0:2]
