@@ -148,8 +148,8 @@ class TestCRS(unittest.TestCase):
         assert_arr_almost_eq(unrotated_lat, soly)
 
     def test_transform_points_2D(self):
-        rlons = [142.49996948, 164.99995422, 112.99996948]
-        rlats = [-72.48229747, -72.9603603, -77.406934]
+        rlons = np.array([142.49996948, 164.99995422, 112.99996948])
+        rlats = np.array([-72.48229747, -72.9603603, -77.406934])
 
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Orthographic()
