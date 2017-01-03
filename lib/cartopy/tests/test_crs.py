@@ -147,6 +147,22 @@ class TestCRS(unittest.TestCase):
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
 
+    def test_transform_points_2D(self):
+        rlons = [142.49996948, 164.99995422, 112.99996948]
+        rlats = [-72.48229747, -72.9603603, -77.406934]
+
+        src_proj = ccrs.PlateCarree()
+        target_proj = ccrs.Orthographic()
+        res = target_proj.transform_points(x=rlons, y=rlats,
+                                           src_crs=src_proj)
+
+        # Solutions derived by proj4 direct.
+        solx = np.array([-6082344.5, -6098151.15, -6224699.15])
+        soly = np.array([83740.44, -1.49, 24268.47])
+
+        assert_arr_almost_eq(res[..., 0], solx)
+        assert_arr_almost_eq(res[..., 1], soly)
+
     def test_transform_points_xyz(self):
         # Test geodetic transforms when using z value
         rx = np.array([2574.32516e3])
