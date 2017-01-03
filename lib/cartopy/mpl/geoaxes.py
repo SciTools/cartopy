@@ -807,8 +807,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Kwargs:
 
-            * name - the name of the image to read according to the contents of
-                     the JSON file. A typical file might have, for instance:
+            * name - the name of the image to read according to the contents
+                     of the JSON file. A typical file might have, for instance:
                      'ne_shaded' : Natural Earth Shaded Relief
                      'ne_grey' : Natural Earth Grey Earth
 
@@ -844,10 +844,9 @@ class GeoAxes(matplotlib.axes.Axes):
         try:
             fname = _USER_BG_IMGS[name][resolution]
         except KeyError:
-            err_str = 'Image "{}" and resolution "{}"'.format(name, resolution)
-            err_str += ' are not present in the user background image metadata'
-            err_str += ' in directory "{}"'.format(bgdir)
-            raise ValueError(err_str)
+            msg = ('Image "{}" and resolution "{}" are not present in '
+                   'the user background image metadata in directory "{}"')
+            raise ValueError(msg.format(name, resolution, bgdir))
         # Now obtain the image data from file or cache:
         fpath = os.path.join(bgdir, fname)
         if cache:
@@ -959,21 +958,19 @@ class GeoAxes(matplotlib.axes.Axes):
                     # check that this image type has the required info:
                     for required in required_info:
                         if required not in _USER_BG_IMGS[img_type]:
-                            err_str = 'User background metadata file'
-                            err_str += ' "{}"'.format(json_file)
-                            err_str += ', image type "{}"'.format(img_type)
-                            err_str += ', does not specify metadata item'
-                            err_str += ' "{}"'.format(required)
-                            raise ValueError(err_str)
+                            msg = ('User background metadata file "{}", '
+                                   'image type "{}", does not specify '
+                                   'metadata item "{}"')
+                            raise ValueError(msg.format(json_file, img_type,
+                                                        required))
                     for resln in _USER_BG_IMGS[img_type]:
                         # the required_info items are not resolutions:
                         if resln not in required_info:
                             img_it_r = _USER_BG_IMGS[img_type][resln]
                             test_file = os.path.join(bgdir, img_it_r)
                             if not os.path.isfile(test_file):
-                                err_str = 'File "{}"'.format(test_file)
-                                err_str += ' not found'
-                                raise ValueError(err_str)
+                                msg = 'File "{}" not found'
+                                raise ValueError(msg.format(test_file))
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
