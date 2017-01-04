@@ -116,27 +116,11 @@ class InterProjectionTransform(mtransforms.Transform):
 
         """
         prj = self.target_projection
-        # TODO: Catch projections which cause out of bounds problem in proj4
-        # TODO: Reset lon_0 and lat_0 for these projections in proj4 params
-
-        # lon_0 = (np.max(xy[:, 0]) - np.min(xy[:, 0]))/2
-        # lat_0 = (np.max(xy[:, 1]) - np.min(xy[:, 1]))/2
-        #
-        # if isinstance(prj, ccrs.Orthographic) or \
-        #         isinstance(prj, ccrs.TransverseMercator):
-        #     prj.globe.central_longitude = lon_0
-        #     prj.globe.central_latitude = lat_0
-        # elif isinstance(prj, ccrs.Geostationary):
-        #     prj.globe.central_longitude = lon_0
-        # elif isinstance(prj, ccrs.Gnomonic):
-        #     prj.globe.central_latitude = lat_0
         if isinstance(xy, np.ndarray):
             points = prj.transform_points(self.source_projection,
-                                        xy[:, 0], xy[:, 1])[:, 0:2]
+                                          xy[:, 0], xy[:, 1])[:, 0:2]
             if np.inf in points:
-                # raise ValueError('proj4 error has occurred, points have not '
-                #                  'been transformed correctly. Sorry.')
-                badness = np.where(points==np.inf)
+                badness = np.where(points == np.inf)
                 mask = np.zeros(points.shape)
                 for (i, j) in (zip(badness[0], badness[1])):
                     mask[i, j] = 1

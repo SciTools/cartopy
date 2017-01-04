@@ -83,8 +83,7 @@ class Globe(object):
     def __init__(self, datum=None, ellipse='WGS84',
                  semimajor_axis=None, semiminor_axis=None,
                  flattening=None, inverse_flattening=None,
-                 towgs84=None, nadgrids=None, central_longitude=None,
-                 central_latitude=None):
+                 towgs84=None, nadgrids=None):
         """
         Keywords:
 
