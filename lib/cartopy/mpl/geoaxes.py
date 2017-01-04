@@ -118,20 +118,28 @@ class InterProjectionTransform(mtransforms.Transform):
         prj = self.target_projection
         # TODO: Catch projections which cause out of bounds problem in proj4
         # TODO: Reset lon_0 and lat_0 for these projections in proj4 params
-        limited_projections = [ccrs.Orthographic(), ccrs.TransverseMercator(),
-                               ccrs.Geostationary(), ccrs.Gnomonic()]
-        bad_projections = [ccrs.OSGB(), ccrs.EuroPP()]
-        if self.target_projection in limited_projections:
-            lon_0 = xy[len(xy[:, 0])/2, 0]
-            lat_0 = xy[len(xy[:, 1])/2, 1]
-            self.target_projection = target_projection()
-            if isinstance(xy, np.ndarray):
-                return prj.transform_points(self.source_projection,
-                                            xy[:, 0], xy[:, 1])[:, 0:2]
-            else:
-                x, y = xy
-                x, y = prj.transform_point(x, y, self.source_projection)
-                return x, y
+
+        # lon_0 = (np.max(xy[:, 0]) - np.min(xy[:, 0]))/2
+        # lat_0 = (np.max(xy[:, 1]) - np.min(xy[:, 1]))/2
+        #
+        # if isinstance(prj, ccrs.Orthographic) or \
+        #         isinstance(prj, ccrs.TransverseMercator):
+        #     prj.globe.central_longitude = lon_0
+        #     prj.globe.central_latitude = lat_0
+        # elif isinstance(prj, ccrs.Geostationary):
+        #     prj.globe.central_longitude = lon_0
+        # elif isinstance(prj, ccrs.Gnomonic):
+        #     prj.globe.central_latitude = lat_0
+        if isinstance(xy, np.ndarray):
+            points = prj.transform_points(self.source_projection,
+                                        xy[:, 0], xy[:, 1])[:, 0:2]
+            if np.inf in points:
+                raise ValueError('proj4 error has occurred, points have not '
+                                 'been transformed correctly. Sorry.')
+        else:
+            x, y = xy
+            x, y = prj.transform_point(x, y, self.source_projection)
+            return x, y
 
     def transform_path_non_affine(self, src_path):
         """
