@@ -104,10 +104,6 @@ class Globe(object):
             
             * nadgrids - Passed through to the Proj4 definition.
 
-            * central_longitude - Passed through to the Proj4 definition.
-
-            * central_latitude - Passed through to the Proj4 definition.
-
         """
         self.datum = datum
         self.ellipse = ellipse
@@ -117,8 +113,6 @@ class Globe(object):
         self.inverse_flattening = inverse_flattening
         self.towgs84 = towgs84
         self.nadgrids = nadgrids
-        self.central_longitude = central_longitude
-        self.central_latitude = central_latitude
 
     def to_proj4_params(self):
         """
@@ -129,9 +123,7 @@ class Globe(object):
         proj4_params = (['datum', self.datum], ['ellps', self.ellipse],
                         ['a', self.semimajor_axis], ['b', self.semiminor_axis],
                         ['f', self.flattening], ['rf', self.inverse_flattening],
-                        ['towgs84', self.towgs84], ['nadgrids', self.nadgrids],
-                        ['lon_0', self.central_longitude],
-                        ['lat_0', self.central_latitude])
+                        ['towgs84', self.towgs84], ['nadgrids', self.nadgrids])
         return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
 

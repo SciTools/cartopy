@@ -134,8 +134,14 @@ class InterProjectionTransform(mtransforms.Transform):
             points = prj.transform_points(self.source_projection,
                                         xy[:, 0], xy[:, 1])[:, 0:2]
             if np.inf in points:
-                raise ValueError('proj4 error has occurred, points have not '
-                                 'been transformed correctly. Sorry.')
+                # raise ValueError('proj4 error has occurred, points have not '
+                #                  'been transformed correctly. Sorry.')
+                badness = np.where(points==np.inf)
+                mask = np.zeros(points.shape)
+                for (i, j) in (zip(badness[0], badness[1])):
+                    mask[i, j] = 1
+                points = np.ma.array(points, mask=mask)
+            return points
         else:
             x, y = xy
             x, y = prj.transform_point(x, y, self.source_projection)
