@@ -116,6 +116,8 @@ class InterProjectionTransform(mtransforms.Transform):
 
         """
         prj = self.target_projection
+        if prj == self.source_projection:
+            return xy
         if isinstance(xy, np.ndarray):
             points = prj.transform_points(self.source_projection,
                                           xy[:, 0], xy[:, 1])[:, 0:2]
