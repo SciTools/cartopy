@@ -825,7 +825,7 @@ class GeoAxes(matplotlib.axes.Axes):
                        [longitude start, longitude end,
                         latitude start, latitude end].
 
-                       e.g. [-30.0, 10.0, -30.0, 10.0] for Ascension Island
+                       e.g. [-11, 3, 48, 60] for the UK
                        or [167.0, 193.0, 47.0, 68.0] to cross the date line.
 
             * cache - logical flag as to whether or not to cache the loaded
