@@ -1,3 +1,54 @@
+What's New in cartopy 0.15
+==========================
+
+:Release: 0.15.0
+:Date: 1st February 2017
+
+Features
+--------
+
+* The :class:`cartopy.crs.Mercator` class now allows a ``latitude_true_scale``
+  to be specified. 
+
+* A ``tiles`` url can now be passed directly to the
+  :class:`cartopy.io.img_tiles.GoogleTiles` class. 
+
+* The :meth:`~cartopy.mpl.geoaxes.GeoAxes.background_img` method has been
+  added. 
+
+* The Web Map Tile Service (WMTS) interface has been extended so that WMTS
+  layers can be added to geoaxes in different projections.
+
+* The :class:`~cartopy.crs.NearsidePerspective` projection has been added. 
+
+* Optional kwargs can now be supplied to the 
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method, which will be passed to
+  the OGC WMTS ``gettile`` method. 
+
+* New additions to the gallery:
+
+ |image_axes_grid|_
+
+    .. |image_axes_grid| image:: examples/axes_grid_basic_00_00.png
+
+    .. _image_axes_grid: examples/axes_grid_basic.html
+
+ |image_reprojected_wmts|_
+
+    .. |image_reprojected_wmts| image:: examples/reprojected_wmts_00_00.png
+
+    .. _image_reprojected_wmts: examples/reprojected_wmts.html
+
+ |image_wmts_time|_
+
+    .. |image_wmts_time| image:: examples/wmts_time_00_00.png
+
+    .. _image_wmts_time: examples/wmts_time.html
+
+
+-----------
+
+
 What's New in cartopy 0.14
 ==========================
 
@@ -49,6 +100,7 @@ Features
 
     .. _image_aurora: examples/aurora_forecast.html
 
+
 Incompatible changes
 --------------------
 * :meth:`cartopy.crs.CRS.transform_point` now issues NaNs when invalid transforms are identified.
@@ -57,6 +109,10 @@ Incompatible changes
 Deprecations
 ------------
 * :data:`cartopy.crs.GOOGLE_MERCATOR` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
+
+
+-----------
+
 
 
 What's new in cartopy 0.13
@@ -88,6 +144,9 @@ Features
     .. |image_eccentric_ellipse| image:: examples/eccentric_ellipse_00_00.png
 
     .. _image_eccentric_ellipse: examples/eccentric_ellipse.html
+
+
+-----------
 
 
 
