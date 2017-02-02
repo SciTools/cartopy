@@ -330,10 +330,7 @@ What's new in cartopy 0.11
 * Thomas Lecocq added functionality to :mod:`cartopy.io.srtm` allowing
   intelligent filling of missing elevation data, as well as a function to
   compute elevation shading for relief style mapping. An example has been added
-  which uses both of these functions to produce a grayscale shaded relief map:
-
-.. plot:: examples/srtm_shading.py
-   :width: 300pt
+  which uses both of these functions to produce a grayscale shaded relief map
 
 * Lion Krischer extended the capability of
   :class:`~cartopy.io.img_tiles.GoogleTiles` to allow support for **street**,
