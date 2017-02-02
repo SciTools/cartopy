@@ -39,7 +39,7 @@ import numpy as np
 RESOLUTION = (30, 30)
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class test_WMSRasterSource(unittest.TestCase):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
     layer = 'basic'
@@ -142,7 +142,7 @@ class test_WMSRasterSource(unittest.TestCase):
         assert img.shape == (40, 20, 4)
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class test_WMTSRasterSource(unittest.TestCase):
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
@@ -215,7 +215,7 @@ class test_WMTSRasterSource(unittest.TestCase):
         self.assertEqual(im2.extent, extent)
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class test_WFSGeometrySource(unittest.TestCase):
     URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
     typename = 'land_excluding_antarctica'

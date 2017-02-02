@@ -22,6 +22,7 @@ import time
 import unittest
 
 import numpy as np
+import pytest
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
@@ -240,7 +241,7 @@ class TestMisc(unittest.TestCase):
 
 
 class TestSymmetry(unittest.TestCase):
-    @unittest.expectedFailure
+    @pytest.mark.xfail
     def test_curve(self):
         # Obtain a simple, curved path.
         projection = ccrs.PlateCarree()

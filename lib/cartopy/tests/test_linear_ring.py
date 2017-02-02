@@ -19,8 +19,9 @@ from __future__ import (absolute_import, division, print_function)
 
 import unittest
 
-import shapely.geometry as sgeom
 import numpy as np
+import pytest
+import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 
@@ -123,7 +124,7 @@ class TestMisc(unittest.TestCase):
         try:
             _ = target_proj.project_geometry(linear_ring, src_proj)
         except ValueError:
-            self.fail("Failed to project LinearRing.")
+            pytest.fail("Failed to project LinearRing.")
 
     def test_stitch(self):
         # The following LinearRing wanders in/out of the map domain

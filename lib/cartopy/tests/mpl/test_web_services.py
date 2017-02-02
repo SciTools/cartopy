@@ -17,16 +17,15 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import matplotlib.pyplot as plt
+import pytest
 
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 import cartopy.crs as ccrs
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @ImageTesting(['wmts'], tolerance=7.56 if MPL_VERSION < '2' else 0)
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -35,7 +34,7 @@ def test_wmts():
     ax.add_wmts(url, 'MODIS_Water_Mask')
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @ImageTesting(['wms'], tolerance=7.76 if MPL_VERSION < '2' else 0)
 def test_wms():
     ax = plt.axes(projection=ccrs.Orthographic())

@@ -20,13 +20,13 @@ from __future__ import (absolute_import, division, print_function)
 import gc
 
 import six
-import unittest
 
 try:
     from owslib.wmts import WebMapTileService
 except ImportError as e:
     WebMapTileService = None
 import matplotlib.pyplot as plt
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist
@@ -185,7 +185,7 @@ def test_contourf_transform_path_counting():
     plt.close()
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()

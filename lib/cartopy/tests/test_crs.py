@@ -27,6 +27,7 @@ try:
     import pyepsg
 except ImportError:
     pyepsg = None
+import pytest
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
@@ -84,7 +85,7 @@ class TestCRS(unittest.TestCase):
     def test_osgb(self):
         self._check_osgb(ccrs.OSGB())
 
-    @unittest.skipIf(pyepsg is None, 'requires pyepsg')
+    @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
