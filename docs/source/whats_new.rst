@@ -14,7 +14,9 @@ Features
   :class:`cartopy.io.img_tiles.GoogleTiles` class. 
 
 * The :meth:`~cartopy.mpl.geoaxes.GeoAxes.background_img` method has been
-  added. 
+  added. This allows users to add a background image to the map, from a
+  selection of pre-prepared images held in a directory specified by the
+  CARTOPY_USER_BACKGROUNDS environment variable. 
 
 * The Web Map Tile Service (WMTS) interface has been extended so that WMTS
   layers can be added to geoaxes in different projections.
