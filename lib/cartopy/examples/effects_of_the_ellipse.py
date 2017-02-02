@@ -17,7 +17,7 @@ coastlines are shifted as a result of referencing the incorrect ellipse.
 __tags__ = ['Lines and polygons']
 import cartopy.crs as ccrs
 import cartopy.feature
-from cartopy.io.img_tiles import MapQuestOpenAerial
+from cartopy.io.img_tiles import StamenTerrain
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D as Line
 from matplotlib.patheffects import Stroke
@@ -59,8 +59,8 @@ def main():
                                                   name='coastline',
                                                   scale='10m')
 
-    # Create a MapQuest map tiler instance, and use its CRS for the GeoAxes.
-    tiler = MapQuestOpenAerial()
+    # Create a Stamen map tiler instance, and use its CRS for the GeoAxes.
+    tiler = StamenTerrain()
     ax = plt.axes(projection=tiler.crs)
     plt.title('The effect of incorrectly referencing the Solomon Islands')
 
@@ -70,7 +70,7 @@ def main():
     ax.set_extent(extent, geodetic)
     geoms = list(dataset.intersecting_geometries(extent))
 
-    # Add the MapQuest aerial imagery at zoom level 7.
+    # Add the Stamen aerial imagery at zoom level 7.
     ax.add_image(tiler, 7)
 
     # Transform the geodetic coordinates of the coastlines into the two

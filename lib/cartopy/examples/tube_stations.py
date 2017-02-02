@@ -1,7 +1,7 @@
 __tags__ = ['Miscellanea']
 """
 Produces a map showing London Underground station locations with high
-resolution background imagery provided by MapQuest.
+resolution background imagery provided by OpenStreetMap.
 
 """
 from matplotlib.path import Path
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import cartopy.crs as ccrs
-from cartopy.io.img_tiles import MapQuestOSM
+from cartopy.io.img_tiles import OSM
 
 
 def tube_locations():
@@ -35,7 +35,7 @@ def tube_locations():
 
 
 def main():
-    imagery = MapQuestOSM()
+    imagery = OSM()
 
     ax = plt.axes(projection=imagery.crs)
     ax.set_extent((-0.14, -0.1, 51.495, 51.515))
