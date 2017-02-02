@@ -20,8 +20,9 @@ from __future__ import (absolute_import, division, print_function)
 import operator
 import os
 import unittest
+from distutils.version import LooseVersion
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -91,7 +92,8 @@ class TestRegrid(unittest.TestCase):
                             target_proj, target_x, target_y)
 
 
-@ImageTesting(['regrid_image'], tolerance=0.7)
+@ImageTesting(['regrid_image'],
+              tolerance=2.5 if LooseVersion(mpl.__version__) < '2' else 0)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
@@ -118,8 +120,8 @@ def test_regrid_image():
 
     # Plot
     fig = plt.figure(figsize=(10, 10))
-    gs = matplotlib.gridspec.GridSpec(nrows=4, ncols=1,
-                                      hspace=1.5, wspace=0.5)
+    gs = mpl.gridspec.GridSpec(nrows=4, ncols=1,
+                               hspace=1.5, wspace=0.5)
     # Set up axes and title
     ax = plt.subplot(gs[0], frameon=False, projection=target_proj)
     plt.imshow(new_array, origin='lower', extent=target_extent)

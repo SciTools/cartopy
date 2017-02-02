@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,7 +18,9 @@
 from __future__ import (absolute_import, division, print_function)
 
 import unittest
+from distutils.version import LooseVersion
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from cartopy.tests.mpl import ImageTesting
@@ -27,7 +29,8 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
-@ImageTesting(['wmts'])
+@ImageTesting(['wmts'],
+              tolerance=7.56 if LooseVersion(mpl.__version__) < '2' else 0)
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())
     url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
@@ -36,7 +39,8 @@ def test_wmts():
 
 
 @unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
-@ImageTesting(['wms'])
+@ImageTesting(['wms'],
+              tolerance=7.76 if LooseVersion(mpl.__version__) < '2' else 0)
 def test_wms():
     ax = plt.axes(projection=ccrs.Orthographic())
     url = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
