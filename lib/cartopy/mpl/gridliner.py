@@ -28,7 +28,7 @@ import cartopy
 from cartopy.crs import Projection, _RectangularProjection
 
 
-degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 2, 3, 6, 15, 18])
+degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 
 _DEGREE_SYMBOL = u'\u00B0'
 
