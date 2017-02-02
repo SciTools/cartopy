@@ -19,6 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import math
 import warnings
+from distutils.version import LooseVersion
 
 from nose.tools import assert_equal
 try:
@@ -36,6 +37,12 @@ from cartopy.tests.mpl import ImageTesting
 
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.1
+if LooseVersion(mpl.__version__) >= '2':
+    _STREAMPLOT_IMAGE = 'streamplot'
+elif LooseVersion(mpl.__version__) >= '1.5':
+    _STREAMPLOT_IMAGE = 'streamplot_1.5'
+else:
+    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.5'
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -540,9 +547,7 @@ def test_barbs_1d_transformed():
              length=8, linewidth=1, color='#7f7f7f')
 
 
-@ImageTesting(['streamplot'
-               if mpl.__version__ >= '1.5' else
-               'streamplot_pre_mpl_1.5'])
+@ImageTesting([_STREAMPLOT_IMAGE])
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
