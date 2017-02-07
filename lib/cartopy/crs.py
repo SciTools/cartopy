@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -1271,8 +1271,10 @@ class RotatedPole(_CylindricalProjection):
 
 
 class Gnomonic(Projection):
-    def __init__(self, central_latitude=0.0, central_longitude=0.0, globe=None):
-        proj4_params = [('proj', 'gnom'), ('lat_0', central_latitude), ('lon_0', central_longitude)]
+    def __init__(self, central_latitude=0.0, 
+                 central_longitude=0.0, globe=None):
+        proj4_params = [('proj', 'gnom'), ('lat_0', central_latitude),
+                        ('lon_0', central_longitude)]
         super(Gnomonic, self).__init__(proj4_params, globe=globe)
         self._max = 5e7
 
