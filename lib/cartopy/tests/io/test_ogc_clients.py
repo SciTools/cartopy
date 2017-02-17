@@ -100,7 +100,7 @@ class test_WMSRasterSource(unittest.TestCase):
         # Patch dict of known Proj->SRS mappings so that it does
         # not include any of the available SRSs from the WMS.
         with mock.patch.dict('cartopy.io.ogc_clients._CRS_TO_OGC_SRS',
-                             {ccrs.OSGB(): 'EPSG:27700'},
+                             {ccrs.OSNI(): 'EPSG:29901'},
                              clear=True):
             msg = 'not available'
             with self.assertRaisesRegexp(ValueError, msg):
