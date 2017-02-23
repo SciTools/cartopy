@@ -41,7 +41,7 @@ install:
 
   # Customise the testing environment
   # ---------------------------------
-  - conda config --add channels scitools
+  - conda config --add channels conda-forge
   - PACKAGES="$PACKAGES cython pillow nose pep8 proj4 pyshp shapely six requests pyepsg owslib"
   - conda install --quiet $PACKAGES
 

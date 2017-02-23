@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -89,10 +89,10 @@ class TestCRS(unittest.TestCase):
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         self.assertEqual(uk.epsg_code, 27700)
-        self.assertEqual(uk.x_limits, (-84667.135022467002,
-                                       676354.14167904831))
-        self.assertEqual(uk.y_limits, (-2957.1831134549138,
-                                       1242951.4397385262
+        self.assertEqual(uk.x_limits, (-84667.135022467062,
+                                       676354.14167904819))
+        self.assertEqual(uk.y_limits, (-2957.1831134535023,
+                                       1242951.4397385279
                                        ))
         self.assertEqual(uk.threshold, 7610.2127670151531)
         self._check_osgb(uk)
