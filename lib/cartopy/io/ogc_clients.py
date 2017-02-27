@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -65,7 +65,8 @@ _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 # The order given here determines the preferred SRS for WMS retrievals.
 _CRS_TO_OGC_SRS = collections.OrderedDict(
     [(ccrs.PlateCarree(), 'EPSG:4326'),
-     (ccrs.Mercator.GOOGLE, 'EPSG:900913')])
+     (ccrs.Mercator.GOOGLE, 'EPSG:900913'),
+     (ccrs.OSGB(), 'EPSG:27700')])
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
 METERS_PER_PIXEL = 0.28e-3
