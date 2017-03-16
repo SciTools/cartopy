@@ -23,10 +23,7 @@ import unittest
 from nose.tools import assert_true
 
 
-
-
 # TODO: Decide how I want to test this:
-# Graphics test? (Probably not).
 # Test for nans or infs in transformed arrays? (Maybe too contrived)
 # Some kind of test of the geoaxes (like in test_contour.py) - Check mpl for options:
 # contains_point()?
@@ -34,7 +31,7 @@ from nose.tools import assert_true
 # has_data()? (unlikely, but worth a try...)
 
 class TestTransformPoints(unittest.TestCase):
-    def __init__(self):
+    def __init__():
         x = np.linspace(0, 360, 60).astype(np.float32)
         y = np.linspace(-90, 90, 90).astype(np.float32)
 
