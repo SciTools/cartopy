@@ -30,8 +30,8 @@ from nose.tools import assert_true
 # get_visible()?
 # has_data()? (unlikely, but worth a try...)
 
-class TestTransformPoints(unittest.TestCase):
-    def __init__():
+class TestTransformPoints:
+    def __init__(self):
         x = np.linspace(0, 360, 60).astype(np.float32)
         y = np.linspace(-90, 90, 90).astype(np.float32)
 
@@ -44,16 +44,23 @@ class TestTransformPoints(unittest.TestCase):
                                                 self.x2d, self.y2d)
         assert_true(np.inf not in proj_xyz)
 
-    # def test_transform_to_transverse_mercator():
-    #
-    #
-    #
-    #
-    # def test_transform_to_gnomonic():
-    #
-    #
-    #
-    # def test_transform_to_geostationary():
+    def test_transform_to_transverse_mercator(self):
+        target_proj = ccrs.TransverseMercator()
+        proj_xyz = target_proj.transform_points(self.src_proj,
+                                                self.x2d, self.y2d)
+        assert_true(np.inf not in proj_xyz)
+
+    def test_transform_to_gnomonic(self):
+        target_proj = ccrs.Gnomonic()
+        proj_xyz = target_proj.transform_points(self.src_proj,
+                                                self.x2d, self.y2d)
+        assert_true(np.inf not in proj_xyz)
+
+    def test_transform_to_geostationary(self):
+        target_proj = ccrs.Geostationary()
+        proj_xyz = target_proj.transform_points(self.src_proj,
+                                                self.x2d, self.y2d)
+        assert_true(np.inf not in proj_xyz)
 
 
 
