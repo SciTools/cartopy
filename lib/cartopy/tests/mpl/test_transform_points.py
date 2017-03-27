@@ -36,9 +36,6 @@ class TestTransformPoints:
         target_proj = ccrs.Orthographic()
         proj_xyz = target_proj.transform_points(self.src_proj,
                                                 self.x2d, self.y2d)
-        # target_lon_0 = (np.max(self.x2d) - np.min(self.x2d))/2
-        # target_lat_0 = (np.max(self.y2d) - np.min(self.y2d))/2
-        # target_proj.proj4_params.update(lon_0=target_lon_0, lat_0=target_lat_0)
         assert_true(np.inf not in proj_xyz)
 
     def test_transform_to_transverse_mercator(self):
