@@ -23,25 +23,22 @@ import unittest
 from nose.tools import assert_true
 
 
-# TODO: Decide how I want to test this:
-# Test for nans or infs in transformed arrays? (Maybe too contrived)
-# Some kind of test of the geoaxes (like in test_contour.py) - Check mpl for options:
-# contains_point()?
-# get_visible()?
-# has_data()? (unlikely, but worth a try...)
-
 class TestTransformPoints:
     def __init__(self):
-        x = np.linspace(0, 360, 60).astype(np.float32)
-        y = np.linspace(-90, 90, 90).astype(np.float32)
+        x = np.array([-68, 142.5])
+        y = np.array([-72.5, -77.1])
 
         self.x2d, self.y2d = np.meshgrid(x, y)
 
         self.src_proj = ccrs.PlateCarree()
+
     def test_transform_to_orthographic(self):
         target_proj = ccrs.Orthographic()
         proj_xyz = target_proj.transform_points(self.src_proj,
                                                 self.x2d, self.y2d)
+        # target_lon_0 = (np.max(self.x2d) - np.min(self.x2d))/2
+        # target_lat_0 = (np.max(self.y2d) - np.min(self.y2d))/2
+        # target_proj.proj4_params.update(lon_0=target_lon_0, lat_0=target_lat_0)
         assert_true(np.inf not in proj_xyz)
 
     def test_transform_to_transverse_mercator(self):
@@ -61,8 +58,6 @@ class TestTransformPoints:
         proj_xyz = target_proj.transform_points(self.src_proj,
                                                 self.x2d, self.y2d)
         assert_true(np.inf not in proj_xyz)
-
-
 
 
 if __name__ == '__main__':
