@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -91,7 +91,7 @@ class TestRegrid(unittest.TestCase):
                             target_proj, target_x, target_y)
 
 
-@ImageTesting(['regrid_image'], tolerance=0.4)
+@ImageTesting(['regrid_image'], tolerance=0.7)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',

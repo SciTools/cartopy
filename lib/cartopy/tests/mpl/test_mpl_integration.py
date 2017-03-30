@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -308,7 +308,7 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global()  # make sure everything is visible
 
 
-@ImageTesting(['pcolormesh_limited_area_wrap'])
+@ImageTesting(['pcolormesh_limited_area_wrap'], tolerance=0.7)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
@@ -335,7 +335,7 @@ def test_pcolormesh_limited_area_wrap():
     # draw the same plot, only more zoomed in, and using the 2d versions
     # of the coordinates (just to test that 1d and 2d are both suitably
     # being fixed)
-    ax = plt.subplot(223, projection=ccrs.PlateCarree(180))
+    ax = plt.subplot(223, projection=ccrs.PlateCarree())
     plt.pcolormesh(x, y, data, transform=rp, cmap='Set1')
     ax.coastlines()
     ax.set_extent([-70, 0, 0, 80])
