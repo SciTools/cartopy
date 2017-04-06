@@ -8,7 +8,7 @@ The easiest route to installing cartopy is through
 `Conda <http://conda.pydata.org/miniconda.html>`_. For all platforms
 installing cartopy can be done with::
 
-    conda install -c scitools cartopy
+    conda install -c conda-forge cartopy
 
 Additional options include:
  * `Enthought Canopy <https://www.enthought.com/products/canopy/>`_.
