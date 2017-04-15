@@ -159,6 +159,15 @@ def test_image_for_domain():
                        [11.25, 61.60639637]])
 
 
+def test_tile_find_images():
+    gt = cimgt.GoogleTiles()
+    # test the find_images method on a Tile instance.
+    target_domain = sgeom.box(-10, 60, 10, 70)
+
+    assert_equal([(7, 4, 4), (7, 5, 4), (8, 4, 4), (8, 5, 4)],
+                 list(gt.find_images(target_domain, 4)))
+
+
 def test_quadtree_wts():
     qt = cimgt.QuadtreeTiles()
 

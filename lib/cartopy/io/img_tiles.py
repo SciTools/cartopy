@@ -447,3 +447,33 @@ def _merge_tiles(tiles):
         img[img_slice] = tile_img
 
     return img, [min(xs), max(xs), min(ys), max(ys)], 'lower'
+
+
+class MBTiles(GoogleTiles):
+    ''' Retrieve tile data from MBTiles sqlite database instead of a url '''
+    def __init__(self, tile_db):
+        self.tile_db = tile_db
+        GoogleTiles.__init__(self)
+
+    def get_image(self, tile):
+        import cStringIO
+        import sqlite3
+
+        x, y, z = tile
+        y = (1 << z) - y - 1
+        sql_select = ('select zoom_level, tile_column, tile_row, tile_data' +
+            ' from tiles')
+        sql_where = 'where zoom_level=%s and tile_column=%s and tile_row=%s;' \
+            % (z, x, y)
+        con = sqlite3.connect(self.tile_db)
+        tiles = con.execute(sql_select + ' ' + sql_where)
+        tile_from_db = tiles.fetchone()
+
+        try:
+            im_data = tile_from_db[3]
+        except TypeError:
+            raise TypeError('No image data available for requested tile')
+
+        img = Image.open(cStringIO.StringIO(im_data))
+        img = img.convert(self.desired_tile_form)
+        return img, self.tileextent(tile), 'lower'
