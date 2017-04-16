@@ -1955,3 +1955,19 @@ def epsg(code):
     """
     import cartopy._epsg
     return cartopy._epsg._EPSGProjection(code)
+
+
+def proj4(proj4_str, xmin=-180., ymin=-90., xmax=180., ymax=90.):
+    """
+    Return the projection which corresponds to the given proj4 string.
+
+    The proj4 string must correspond to a "projected coordinate system"
+    so EPSG codes such as 4326 (WGS-84) which define a "geodetic coordinate
+    system" will not work.
+
+    .. note::
+        A proj4 string doesn't contain the area of validity, so you can either
+        specify the bounds, or have them default to the entire globe.
+    """
+    import cartopy._epsg
+    return cartopy._epsg._Proj4Projection(proj4_str, xmin, xmax, ymin, ymax)
