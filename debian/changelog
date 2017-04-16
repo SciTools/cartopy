@@ -1,0 +1,5 @@
+cartopy (0.11.0-0~trusty1) trusty; urgency=low
+
+  * Initial debian build.
+
+ -- Angelos Tzotsos <gcpp.kalxas@gmail.com>  Wed, 30 Jul 2014 13:06:00 +0200
