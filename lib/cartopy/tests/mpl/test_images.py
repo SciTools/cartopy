@@ -19,10 +19,8 @@ from __future__ import (absolute_import, division, print_function)
 
 import os
 import types
-from distutils.version import LooseVersion
 
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 from PIL import Image
 import shapely.geometry as sgeom
@@ -31,7 +29,7 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 
@@ -46,7 +44,7 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # The basemap changes on a regular basis (for seasons) and we really only
 # care that it is putting images onto the map which are roughly correct.
 @ImageTesting(['web_tiles'],
-              tolerance=12 if LooseVersion(mpl.__version__) < '2' else 2)
+              tolerance=12 if MPL_VERSION < '2' else 2)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = sgeom.Polygon([[extent[0], extent[1]],
@@ -81,7 +79,7 @@ def test_web_tiles():
 
 
 @ImageTesting(['image_merge'],
-              tolerance=3.6 if LooseVersion(mpl.__version__) < '2' else 0)
+              tolerance=3.6 if MPL_VERSION < '2' else 0)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -108,7 +106,7 @@ def test_image_merge():
 
 
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=3.96 if LooseVersion(mpl.__version__) < '2' else 0.7)
+              tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
@@ -121,7 +119,7 @@ def test_imshow():
 
 
 @ImageTesting(['imshow_regional_projected'],
-              tolerance=10.4 if LooseVersion(mpl.__version__) < '2' else 0)
+              tolerance=10.4 if MPL_VERSION < '2' else 0)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
@@ -134,14 +132,14 @@ def test_imshow_projected():
 
 
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=4.15 if LooseVersion(mpl.__version__) < '2' else 0.7)
+              tolerance=4.15 if MPL_VERSION < '2' else 0.7)
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()
 
 
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=3.96 if LooseVersion(mpl.__version__) < '2' else 0.7)
+              tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()
@@ -151,7 +149,7 @@ def test_pil_Image():
 
 
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=4.2 if LooseVersion(mpl.__version__) < '2' else 0)
+              tolerance=4.2 if MPL_VERSION < '2' else 0)
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resolution='low')

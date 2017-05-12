@@ -19,7 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import math
 import warnings
-from distutils.version import LooseVersion
 
 from nose.tools import assert_equal
 try:
@@ -33,13 +32,13 @@ import six
 
 import cartopy.crs as ccrs
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.1
-if LooseVersion(mpl.__version__) >= '2':
+if MPL_VERSION >= '2':
     _STREAMPLOT_IMAGE = 'streamplot'
-elif LooseVersion(mpl.__version__) >= '1.5':
+elif MPL_VERSION >= '1.5':
     _STREAMPLOT_IMAGE = 'streamplot_1.5'
 else:
     _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.5'

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,13 +19,12 @@ from __future__ import (absolute_import, division, print_function)
 
 import math
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import nose.tools
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 def _format_lat(val, i):
@@ -51,7 +50,7 @@ def _format_lon(val, i):
         return '%.0fW' % abs(val)
 
 
-test_fn_suffix = '' if mpl.__version__ >= '1.5' else '_pre_mpl_1.5'
+test_fn_suffix = '' if MPL_VERSION >= '1.5' else '_pre_mpl_1.5'
 
 
 @ImageTesting(['xticks_no_transform' + test_fn_suffix], tolerance=0.5)

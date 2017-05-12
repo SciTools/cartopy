@@ -20,14 +20,13 @@ from __future__ import (absolute_import, division, print_function)
 import operator
 import os
 import unittest
-from distutils.version import LooseVersion
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
 from cartopy import config
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
 from functools import reduce
@@ -93,7 +92,7 @@ class TestRegrid(unittest.TestCase):
 
 
 @ImageTesting(['regrid_image'],
-              tolerance=2.5 if LooseVersion(mpl.__version__) < '2' else 0)
+              tolerance=2.5 if MPL_VERSION < '2' else 0)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',

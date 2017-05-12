@@ -36,6 +36,9 @@ except ImportError:
     from matplotlib.tests import setup as mpl_setup
 
 
+MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
+
+
 class ImageTesting(object):
     """
     Provides a convenient class for running visual matplotlib tests.
@@ -92,9 +95,8 @@ class ImageTesting(object):
             image_output_directory = os.path.join(os.getcwd(),
                                                   'cartopy_test_output')
 
-    def __init__(self, img_names, tolerance=(0.1
-                                             if mpl.__version__ < '1.4' else
-                                             0.5)):
+    def __init__(self, img_names,
+                 tolerance=(0.1 if MPL_VERSION < '1.4' else 0.5)):
         # With matplotlib v1.3 the tolerance keyword is an RMS of the pixel
         # differences, as computed by matplotlib.testing.compare.calculate_rms
         self.img_names = img_names
@@ -217,7 +219,7 @@ class ImageTesting(object):
                               (mod_name, test_name))
                 pyplot_helpers.Gcf.destroy_all()
 
-            if distutils.version.LooseVersion(mpl.__version__) >= '2':
+            if MPL_VERSION >= '2':
                 style_context = mpl.style.context
             else:
                 @contextlib.contextmanager

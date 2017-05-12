@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import matplotlib as mpl
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -31,7 +30,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 @ImageTesting(['gridliner1'])
@@ -105,9 +104,9 @@ def test_gridliner_specified_lines():
 
 # The tolerance on this test is particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-if mpl.__version__ >= '2.0':
+if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
-elif mpl.__version__ >= '1.5':
+elif MPL_VERSION >= '1.5':
     grid_label_image = 'gridliner_labels_1.5'
 else:
     grid_label_image = 'gridliner_labels_pre_mpl_1.5'

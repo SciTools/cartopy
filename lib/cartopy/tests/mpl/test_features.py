@@ -18,16 +18,14 @@
 from __future__ import (absolute_import, division, print_function)
 
 import unittest
-from distutils.version import LooseVersion
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 @ImageTesting(['natural_earth'])
@@ -55,7 +53,7 @@ def test_natural_earth_custom():
 
 
 @ImageTesting(['gshhs_coastlines'],
-              tolerance=1.7 if LooseVersion(mpl.__version__) < '2' else 0)
+              tolerance=1.7 if MPL_VERSION < '2' else 0)
 def test_gshhs():
     ax = plt.axes(projection=ccrs.Mollweide())
     ax.set_extent([138, 142, 32, 42], ccrs.Geodetic())
