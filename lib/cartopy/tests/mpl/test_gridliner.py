@@ -105,9 +105,15 @@ def test_gridliner_specified_lines():
 
 # The tolerance on this test is particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-@ImageTesting(['gridliner_labels'
-               if mpl.__version__ >= '1.5' else
-               'gridliner_labels_pre_mpl_1.5'])
+if mpl.__version__ >= '2.0':
+    grid_label_image = 'gridliner_labels'
+elif mpl.__version__ >= '1.5':
+    grid_label_image = 'gridliner_labels_1.5'
+else:
+    grid_label_image = 'gridliner_labels_pre_mpl_1.5'
+
+
+@ImageTesting([grid_label_image])
 def test_grid_labels():
     plt.figure(figsize=(8, 10))
 
