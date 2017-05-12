@@ -254,7 +254,10 @@ class Gridliner(object):
         elif axis == 'y':
             y = value
             x = 1.0 if upper_end else 0.0
-            v_align = 'center'
+            if matplotlib.__version__ > '2.0':
+                v_align = 'center_baseline'
+            else:
+                v_align = 'center'
             h_align = 'left' if upper_end else 'right'
             tr_y = transform
             tr_x = self.axes.transAxes + \
