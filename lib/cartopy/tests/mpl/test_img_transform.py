@@ -91,8 +91,18 @@ class TestRegrid(unittest.TestCase):
                             target_proj, target_x, target_y)
 
 
+if MPL_VERSION < '2':
+    # Changes in zooming in old versions.
+    regrid_tolerance = 2.5
+elif '2.0.1' <= MPL_VERSION:
+    # Bug in latest Matplotlib that we don't consider correct.
+    regrid_tolerance = 4.75
+else:
+    regrid_tolerance = 0
+
+
 @ImageTesting(['regrid_image'],
-              tolerance=2.5 if MPL_VERSION < '2' else 0)
+              tolerance=regrid_tolerance)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
