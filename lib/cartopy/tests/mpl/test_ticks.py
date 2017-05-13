@@ -50,10 +50,19 @@ def _format_lon(val, i):
         return '%.0fW' % abs(val)
 
 
+# Text tends to move a lot. Also, pre-2.0.1, the new center_baseline alignment
+# did not exist.
 test_fn_suffix = '' if MPL_VERSION >= '1.5' else '_pre_mpl_1.5'
+if '1.5.0' <= MPL_VERSION < '2.0.0':
+    ticks_tolerance = 5.25
+elif '2.0.0' <= MPL_VERSION < '2.0.1':
+    ticks_tolerance = 9
+else:
+    ticks_tolerance = 0.5
 
 
-@ImageTesting(['xticks_no_transform' + test_fn_suffix], tolerance=0.5)
+@ImageTesting(['xticks_no_transform' + test_fn_suffix],
+              tolerance=ticks_tolerance)
 def test_set_xticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -63,7 +72,8 @@ def test_set_xticks_no_transform():
     ax.set_xticks([-135, -45, 45, 135], minor=True)
 
 
-@ImageTesting(['xticks_cylindrical' + test_fn_suffix], tolerance=0.5)
+@ImageTesting(['xticks_cylindrical' + test_fn_suffix],
+              tolerance=ticks_tolerance)
 def test_set_xticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
@@ -85,7 +95,8 @@ def test_set_xticks_non_cylindrical():
     plt.close()
 
 
-@ImageTesting(['yticks_no_transform' + test_fn_suffix], tolerance=0.5)
+@ImageTesting(['yticks_no_transform' + test_fn_suffix],
+              tolerance=ticks_tolerance)
 def test_set_yticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -95,7 +106,8 @@ def test_set_yticks_no_transform():
     ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
 
 
-@ImageTesting(['yticks_cylindrical' + test_fn_suffix], tolerance=0.5)
+@ImageTesting(['yticks_cylindrical' + test_fn_suffix],
+              tolerance=ticks_tolerance)
 def test_set_yticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
@@ -117,7 +129,7 @@ def test_set_yticks_non_cylindrical():
     plt.close()
 
 
-@ImageTesting(['xyticks' + test_fn_suffix], tolerance=0.5)
+@ImageTesting(['xyticks' + test_fn_suffix], tolerance=ticks_tolerance)
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),
