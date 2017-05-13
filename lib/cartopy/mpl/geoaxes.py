@@ -681,6 +681,20 @@ class GeoAxes(matplotlib.axes.Axes):
         self.set_xlim(self.projection.x_limits)
         self.set_ylim(self.projection.y_limits)
 
+    def autoscale_view(self, tight=None, scalex=True, scaley=True):
+        matplotlib.axes.Axes.autoscale_view(self, tight=tight,
+                                            scalex=scalex, scaley=scaley)
+        # Limit the resulting bounds to valid area.
+        if scalex and self._autoscaleXon:
+            bounds = self.get_xbound()
+            self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
+                            min(bounds[1], self.projection.x_limits[1]))
+        if scaley and self._autoscaleYon:
+            bounds = self.get_ybound()
+            self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
+                            min(bounds[1], self.projection.y_limits[1]))
+    autoscale_view.__doc__ = matplotlib.axes.Axes.autoscale_view.__doc__
+
     def set_xticks(self, ticks, minor=False, crs=None):
         """
         Set the x ticks.
