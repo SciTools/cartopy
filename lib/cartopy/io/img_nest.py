@@ -19,7 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import collections
 import glob
-import itertools
 import os.path
 
 import numpy as np

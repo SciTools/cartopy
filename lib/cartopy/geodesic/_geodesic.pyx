@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -21,7 +21,6 @@ geodesic functions.
 
 """
 from cpython.mem cimport PyMem_Malloc
-from cpython.mem cimport PyMem_Realloc
 from cpython.mem cimport PyMem_Free
 import numpy as np
 cimport numpy as np

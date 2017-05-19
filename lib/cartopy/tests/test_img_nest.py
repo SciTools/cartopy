@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -30,7 +30,6 @@ import shapely.geometry as sgeom
 from six.moves import cPickle as pickle
 
 from cartopy import config
-import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.img_nest as cimg_nest
 import cartopy.tests as tests

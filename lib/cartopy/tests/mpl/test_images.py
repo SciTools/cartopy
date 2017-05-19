@@ -30,7 +30,6 @@ import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
 from cartopy.tests.mpl import ImageTesting
-import cartopy.tests.test_img_nest as ctest_nest
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 

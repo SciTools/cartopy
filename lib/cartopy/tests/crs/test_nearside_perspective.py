@@ -24,7 +24,6 @@ from __future__ import (absolute_import, division, print_function)
 import unittest
 
 from numpy.testing import assert_almost_equal
-from nose.tools import assert_equal
 
 from cartopy.tests.crs.test_geostationary import (GeostationaryTestsMixin,
                                                   check_proj4_params)

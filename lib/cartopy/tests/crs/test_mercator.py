@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -16,8 +16,6 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
-
-import unittest
 
 from numpy.testing import assert_almost_equal
 from nose.tools import assert_equal, assert_true, assert_not_equal

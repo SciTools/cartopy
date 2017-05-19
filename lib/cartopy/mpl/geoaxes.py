@@ -52,8 +52,8 @@ from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
-assert matplotlib.__version__ >= '1.3', ('Cartopy is only supported with '
-                                         'matplotlib 1.3 or greater.')
+assert mpl.__version__ >= '1.3', ('Cartopy is only supported with '
+                                  'Matplotlib 1.3 or greater.')
 
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
@@ -1231,25 +1231,21 @@ class GeoAxes(matplotlib.axes.Axes):
             transform = transform._as_mpl_transform(self)
 
         if self.background_patch is None:
-            background = matplotlib.patches.PathPatch(path, edgecolor='none',
-                                                      facecolor='white',
-                                                      zorder=-1, clip_on=False,
-                                                      transform=transform)
+            background = mpatches.PathPatch(path, edgecolor='none',
+                                            facecolor='white', zorder=-1,
+                                            clip_on=False, transform=transform)
         else:
-            background = matplotlib.patches.PathPatch(path, zorder=-1,
-                                                      clip_on=False)
+            background = mpatches.PathPatch(path, zorder=-1, clip_on=False)
             background.update_from(self.background_patch)
             self.background_patch.remove()
             background.set_transform(transform)
 
         if self.outline_patch is None:
-            outline = matplotlib.patches.PathPatch(path, edgecolor='black',
-                                                   facecolor='none',
-                                                   zorder=2.5, clip_on=False,
-                                                   transform=transform)
+            outline = mpatches.PathPatch(path, edgecolor='black',
+                                         facecolor='none', zorder=2.5,
+                                         clip_on=False, transform=transform)
         else:
-            outline = matplotlib.patches.PathPatch(path, zorder=2.5,
-                                                   clip_on=False)
+            outline = mpatches.PathPatch(path, zorder=2.5, clip_on=False)
             outline.update_from(self.outline_patch)
             self.outline_patch.remove()
             outline.set_transform(transform)
@@ -1403,19 +1399,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         import warnings
-        import numpy as np
-        import numpy.ma as ma
-        import matplotlib as mpl
-        import matplotlib.cbook as cbook
         import matplotlib.colors as mcolors
-        import matplotlib.cm as cm
-        from matplotlib import docstring
-        import matplotlib.transforms as transforms
-        import matplotlib.artist as artist
-        from matplotlib.artist import allow_rasterization
-        import matplotlib.backend_bases as backend_bases
-        import matplotlib.path as mpath
-        import matplotlib.mlab as mlab
         import matplotlib.collections as mcoll
 
         if not self._hold:

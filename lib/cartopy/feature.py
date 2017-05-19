@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,7 +23,6 @@ ax.add_feature().
 from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod
-import os.path
 
 import numpy as np
 import shapely.geometry as sgeom

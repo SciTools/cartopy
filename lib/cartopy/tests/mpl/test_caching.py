@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -27,9 +27,6 @@ try:
 except ImportError as e:
     WebMapTileService = None
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
-from matplotlib.path import Path
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist

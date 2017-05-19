@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -24,9 +24,6 @@ Fix covered in : https://github.com/SciTools/cartopy/pull/277
 '''
 
 from __future__ import (absolute_import, division, print_function)
-
-import sys
-import unittest
 
 from nose.tools import assert_true, assert_false, assert_equal
 import numpy as np
