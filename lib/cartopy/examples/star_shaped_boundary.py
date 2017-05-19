@@ -18,7 +18,8 @@ import cartopy.crs as ccrs
 
 
 def main():
-    ax = plt.axes([0, 0, 1, 1], projection=ccrs.PlateCarree())
+    fig = plt.figure()
+    ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.PlateCarree())
     ax.coastlines()
 
     # Construct a star in longitudes and latitudes.

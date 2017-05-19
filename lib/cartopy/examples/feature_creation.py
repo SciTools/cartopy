@@ -6,7 +6,8 @@ from matplotlib.offsetbox import AnchoredText
 
 
 def main():
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_extent([80, 170, -45, 30])
 
     # Put a background image on for nice sea rendering.

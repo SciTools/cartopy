@@ -31,8 +31,8 @@ def sample_data():
 
 
 def main():
-    ax = plt.axes([0, 0, 1, 1],
-                  projection=ccrs.LambertConformal())
+    fig = plt.figure()
+    ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.LambertConformal())
 
     ax.set_extent([-125, -66.5, 20, 50], ccrs.Geodetic())
 
@@ -47,8 +47,8 @@ def main():
     ax.background_patch.set_visible(False)
     ax.outline_patch.set_visible(False)
 
-    plt.title('US States which intersect the track '
-              'of Hurricane Katrina (2005)')
+    ax.set_title('US States which intersect the track of '
+                 'Hurricane Katrina (2005)')
 
     # turn the lons and lats into a shapely LineString
     track = sgeom.LineString(zip(lons, lats))
@@ -81,8 +81,8 @@ def main():
     within_2_deg = mpatches.Rectangle((0, 0), 1, 1, facecolor="#FF7E00")
     labels = ['State directly intersects\nwith track',
               'State is within \n2 degrees of track']
-    plt.legend([direct_hit, within_2_deg], labels,
-               loc='lower left', bbox_to_anchor=(0.025, -0.1), fancybox=True)
+    ax.legend([direct_hit, within_2_deg], labels,
+              loc='lower left', bbox_to_anchor=(0.025, -0.1), fancybox=True)
 
     plt.show()
 

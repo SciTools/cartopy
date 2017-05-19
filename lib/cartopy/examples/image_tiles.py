@@ -15,7 +15,9 @@ from cartopy.io.img_tiles import StamenTerrain
 def main():
     tiler = StamenTerrain()
     mercator = tiler.crs
-    ax = plt.axes(projection=mercator)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=mercator)
     ax.set_extent([-90, -73, 22, 34])
 
     ax.add_image(tiler, 6)

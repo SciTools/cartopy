@@ -169,10 +169,10 @@ def main():
     # the aurora is most likely.
 
     # ax1 for Northern Hemisphere
-    ax1 = plt.subplot(1, 2, 1, projection=ccrs.Orthographic(0, 90))
+    ax1 = fig.add_subplot(1, 2, 1, projection=ccrs.Orthographic(0, 90))
 
     # ax2 for Southern Hemisphere
-    ax2 = plt.subplot(1, 2, 2, projection=ccrs.Orthographic(180, -90))
+    ax2 = fig.add_subplot(1, 2, 2, projection=ccrs.Orthographic(180, -90))
 
     img, crs, extent, origin, dt = aurora_forecast()
 

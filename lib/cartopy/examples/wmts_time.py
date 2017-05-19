@@ -40,12 +40,12 @@ def main():
     fig = plt.figure(figsize=(xsize, ysize), dpi=100)
 
     for layer, offset in zip(layers, [0, 0.5]):
-        ax = plt.axes([offset, 0, 0.5, 1], projection=plot_CRS)
+        ax = fig.add_axes([offset, 0, 0.5, 1], projection=plot_CRS)
         ax.set_xlim((x0, x1))
         ax.set_ylim((y0, y1))
         ax.add_wmts(wmts, layer, wmts_kwargs={'time': date_str})
-        txt = plt.text(4.7, 43.2, wmts[layer].title, fontsize=18,
-                       color='wheat', transform=geodetic_CRS)
+        txt = ax.text(4.7, 43.2, wmts[layer].title, fontsize=18, color='wheat',
+                      transform=geodetic_CRS)
         txt.set_path_effects([PathEffects.withStroke(linewidth=5,
                                                      foreground='black')])
     plt.show()

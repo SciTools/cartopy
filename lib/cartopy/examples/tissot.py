@@ -5,7 +5,7 @@ import cartopy.crs as ccrs
 
 def main():
     fig = plt.figure(figsize=(10, 5))
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
     # make the map global rather than have it zoom in to
     # the extents of any plotted data
