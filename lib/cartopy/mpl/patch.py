@@ -185,7 +185,7 @@ def path_to_geos(path, force_ccw=False):
                                      axis=1)
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
-        elif (path_verts.shape[0] > 2 and
+        elif (path_verts.shape[0] > 3 and
                 (path_codes[-1] == Path.CLOSEPOLY or
                  verts_same_as_first[-1])):
             if path_codes[-1] == Path.CLOSEPOLY:
