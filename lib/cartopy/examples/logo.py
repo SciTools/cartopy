@@ -8,8 +8,8 @@ import numpy as np
 
 
 def main():
-    plt.figure(figsize=[12, 6])
-    ax = plt.axes(projection=ccrs.Robinson())
+    fig = plt.figure(figsize=[12, 6])
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
 
     ax.coastlines()
     ax.gridlines()

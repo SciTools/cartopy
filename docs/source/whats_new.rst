@@ -215,6 +215,7 @@ Features
         rpole = ccrs.RotatedPole(pole_longitude=171.77,
                                  pole_latitude=49.55,
                                  central_rotated_longitude=180)
+        fig = plt.figure(figsize=(10, 5))
         ax = plt.axes(projection=rpole)
         ax.set_global()
         ax.gridlines()

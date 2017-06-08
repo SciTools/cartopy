@@ -61,8 +61,9 @@ def main():
 
     # Create a Stamen map tiler instance, and use its CRS for the GeoAxes.
     tiler = StamenTerrain()
-    ax = plt.axes(projection=tiler.crs)
-    plt.title('The effect of incorrectly referencing the Solomon Islands')
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=tiler.crs)
+    ax.set_title('The effect of incorrectly referencing the Solomon Islands')
 
     # Pick the area of interest. In our case, roughly the Solomon Islands, and
     # get hold of the coastlines for that area.
@@ -89,12 +90,13 @@ def main():
     legend_artists = [Line([0], [0], color=color, linewidth=3)
                       for color in ('white', 'gray')]
     legend_texts = ['Correct ellipse\n(WGS84)', 'Incorrect ellipse\n(sphere)']
-    legend = plt.legend(legend_artists, legend_texts, fancybox=True,
-                        loc='lower left', framealpha=0.75)
+    legend = ax.legend(legend_artists, legend_texts, fancybox=True,
+                       loc='lower left', framealpha=0.75)
     legend.legendPatch.set_facecolor('wheat')
 
     # Create an inset GeoAxes showing the location of the Solomon Islands.
-    sub_ax = plt.axes([0.7, 0.625, 0.2, 0.2], projection=ccrs.PlateCarree())
+    sub_ax = fig.add_axes([0.7, 0.625, 0.2, 0.2],
+                          projection=ccrs.PlateCarree())
     sub_ax.set_extent([110, 180, -50, 10], geodetic)
 
     # Make a nice border around the inset axes.

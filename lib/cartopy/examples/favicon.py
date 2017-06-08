@@ -8,8 +8,8 @@ import numpy as np
 
 
 def main():
-    plt.figure(figsize=[8, 8])
-    ax = plt.axes(projection=ccrs.SouthPolarStereo())
+    fig = plt.figure(figsize=[8, 8])
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.SouthPolarStereo())
 
     ax.coastlines()
     ax.gridlines()
@@ -27,7 +27,7 @@ def main():
                          transform=ax.background_patch.get_transform())
 
     # Register the on_draw method and call it once now.
-    plt.gcf().canvas.mpl_connect('draw_event', on_draw)
+    fig.canvas.mpl_connect('draw_event', on_draw)
     on_draw()
 
     # Generate a matplotlib path representing the character "C".

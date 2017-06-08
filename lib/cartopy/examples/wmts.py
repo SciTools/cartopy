@@ -24,11 +24,12 @@ def main():
     url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer = 'VIIRS_CityLights_2012'
 
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.add_wmts(url, layer)
     ax.set_extent((-15, 25, 35, 60))
 
-    plt.title('Suomi NPP Earth at night April/October 2012')
+    ax.set_title('Suomi NPP Earth at night April/October 2012')
     plt.show()
 
 
