@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -50,8 +50,8 @@ class TestOwnSpecifics(unittest.TestCase):
         check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-5372584.78443894, -5372584.78443894,
-                             5372584.78443894, 5372584.78443894),
+                            (-5434177.81588539, -5434177.81588539,
+                             5434177.81588539, 5434177.81588539),
                             decimal=4)
 
 
