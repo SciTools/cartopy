@@ -1619,8 +1619,8 @@ class _Satellite(Projection):
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
         b = np.float(self.globe.semiminor_axis or a)
         h = np.float(satellite_height)
-        max_x = h * math.atan(a / (a + h))
-        max_y = h * math.atan(b / (b + h))
+        max_x = h * np.arcsin(a / (a + h))
+        max_y = h * np.arcsin(b / (a + h))
 
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
