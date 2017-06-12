@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -122,10 +122,17 @@ class TestRivers(unittest.TestCase):
 
         # Choose a nice small lake
         river_record = records[6]
-        self.assertEqual(
-            river_record.attributes,
-            {'featurecla': 'River', 'scalerank': 2, 'name': 'Peace',
-             'name_alt': six.b(' ' * 254)})
+        expected_attributes = {'featurecla': 'River',
+                               'scalerank': 2,
+                               'name': 'Peace'}
+        for key, value in river_record.attributes.items():
+            if key == 'name_alt':
+                # This value changed between pyshp 1.2.10 and 1.2.11, test it
+                # as a special case, it should be an empty string once the
+                # leading/trailing space is removed:
+                self.assertFalse(len(value.strip()))
+            else:
+                self.assertEqual(value, expected_attributes[key])
         river = river_record.geometry
         self._assert_geometry(river)
 
