@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -408,35 +408,24 @@ class Gridliner(object):
         y = np.linspace(1e-9, 1 - 1e-9, ny)
         x, y = np.meshgrid(x, y)
 
-        coords = np.concatenate([x.flatten()[:, None],
-                                 y.flatten()[:, None]],
-                                1)
+        coords = np.column_stack((x.ravel(), y.ravel()))
 
         in_data = desired_trans.transform(coords)
 
         ax_to_bkg_patch = self.axes.transAxes - \
             background_patch.get_transform()
 
-        ok = np.zeros(in_data.shape[:-1], dtype=np.bool)
-        # XXX Vectorise contains_point
-        for i, val in enumerate(in_data):
-            # convert the coordinates of the data to the background
-            # patches coordinates
-            background_coord = ax_to_bkg_patch.transform(coords[i:i + 1, :])
-            bkg_patch_contains = background_patch.get_path().contains_point
-            if bkg_patch_contains(background_coord[0, :]):
-                color = 'r'
-                ok[i] = True
-            else:
-                color = 'b'
+        # convert the coordinates of the data to the background patches
+        # coordinates
+        background_coord = ax_to_bkg_patch.transform(coords)
+        ok = background_patch.get_path().contains_points(background_coord)
 
-            if DEBUG:
-                import matplotlib.pyplot as plt
-                plt.plot(coords[i, 0], coords[i, 1], 'o' + color,
-                         clip_on=False, transform=ax_transform)
-#                plt.text(coords[i, 0], coords[i, 1], str(val), clip_on=False,
-#                         transform=ax_transform, rotation=23,
-#                         horizontalalignment='right')
+        if DEBUG:
+            import matplotlib.pyplot as plt
+            plt.plot(coords[ok, 0], coords[ok, 1], 'or',
+                     clip_on=False, transform=ax_transform)
+            plt.plot(coords[~ok, 0], coords[~ok, 1], 'ob',
+                     clip_on=False, transform=ax_transform)
 
         inside = in_data[ok, :]
 
