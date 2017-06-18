@@ -17,17 +17,14 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
 from cartopy import geodesic
 
 
-class TestGeodesic(unittest.TestCase):
-
-    def setUp(self):
+class TestGeodesic(object):
+    def setup_class(self):
         """
         Data sampled from the GeographicLib Test Data for Geodesics at:
         http://geographiclib.sourceforge.net/html/geodesic.html#testgeod

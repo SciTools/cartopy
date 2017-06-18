@@ -21,15 +21,13 @@ Tests for the Albers Equal Area coordinate system.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal
 
 import cartopy.crs as ccrs
 
 
-class TestAlbersEqualArea(unittest.TestCase):
+class TestAlbersEqualArea(object):
     def test_default(self):
         aea = ccrs.AlbersEqualArea()
         expected = ('+ellps=WGS84 +proj=aea +lon_0=0.0 +lat_0=0.0 '

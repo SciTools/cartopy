@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
 import warnings
 
 import numpy as np
@@ -32,7 +31,7 @@ from cartopy.tests.io.test_downloaders import download_to_temp
 pytestmark = pytest.mark.skip('SRTM login not supported')
 
 
-class TestRetrieve(unittest.TestCase):
+class TestRetrieve(object):
     def _test_srtm_retrieve(self, Source, read_SRTM, max_, min_, pt):
         # test that the download mechanism for SRTM works
         with download_to_temp() as tmp_dir:
@@ -74,7 +73,7 @@ class TestRetrieve(unittest.TestCase):
                                 cartopy.io.srtm.SRTM1Source, (3601, 3601))
 
 
-class TestSRTMSource__single_tile(unittest.TestCase):
+class TestSRTMSource__single_tile(object):
     def _out_of_range(self, source):
         msg = 'No srtm tile found for those coordinates.'
         with pytest.raises(ValueError, message=msg):
@@ -111,7 +110,7 @@ class TestSRTMSource__single_tile(unittest.TestCase):
         self._zeros(cartopy.io.srtm.SRTM1Source())
 
 
-class TestSRTMSource__combined(unittest.TestCase):
+class TestSRTMSource__combined(object):
     def _trivial(self, source):
         e_img, e_crs, e_extent = source.single_tile(-3, 50)
         r_img, r_crs, r_extent = source.combined(-3, 50, 1, 1)
@@ -139,7 +138,7 @@ class TestSRTMSource__combined(unittest.TestCase):
         self._2by2(cartopy.io.srtm.SRTM1Source())
 
 
-class TestSRTM3Source_fetch_raster(unittest.TestCase):
+class TestSRTM3Source_fetch_raster(object):
     def _as_combined(self, source):
         e_img, e_crs, e_extent = source.combined(-1, 50, 2, 1)
         imgs = source.fetch_raster(ccrs.PlateCarree(),

@@ -17,15 +17,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal
 
 import cartopy.crs as ccrs
 
 
-class TestLambertAzimuthalEqualArea(unittest.TestCase):
+class TestLambertAzimuthalEqualArea(object):
     def test_default(self):
         crs = ccrs.LambertAzimuthalEqualArea()
         expected = ('+ellps=WGS84 +proj=laea +lon_0=0.0 '

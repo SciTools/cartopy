@@ -17,15 +17,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
 import cartopy.crs as ccrs
 
 
-class TestAzimuthalEquidistant(unittest.TestCase):
+class TestAzimuthalEquidistant(object):
     def test_default(self):
         aeqd = ccrs.AzimuthalEquidistant()
         expected = ('+ellps=WGS84 +proj=aeqd +lon_0=0.0 '

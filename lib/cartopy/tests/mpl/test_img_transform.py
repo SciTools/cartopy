@@ -19,7 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import operator
 import os
-import unittest
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -33,7 +32,7 @@ import cartopy.img_transform as im_trans
 from functools import reduce
 
 
-class TestRegrid(unittest.TestCase):
+class TestRegrid(object):
     def test_array_dims(self):
         # Source data
         source_nx = 100

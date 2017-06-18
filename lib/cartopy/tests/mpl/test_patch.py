@@ -17,15 +17,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 from matplotlib.path import Path
 import shapely.geometry as sgeom
 
 import cartopy.mpl.patch as cpatch
 
 
-class Test_path_to_geos(unittest.TestCase):
+class Test_path_to_geos(object):
     def test_empty_polyon(self):
         p = Path([[0, 0], [0, 0], [0, 0], [0, 0],
                   [1, 2], [1, 2], [1, 2], [1, 2]],

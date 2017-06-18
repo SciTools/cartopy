@@ -17,11 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_array_almost_equal
-import six
 
 import cartopy.io.shapereader as shp
 
@@ -34,8 +31,8 @@ RIVERS_PATH = shp.natural_earth(resolution='110m',
                                 name='rivers_lake_centerlines')
 
 
-class TestLakes(unittest.TestCase):
-    def setUp(self):
+class TestLakes(object):
+    def setup_class(self):
         self.reader = shp.Reader(LAKES_PATH)
 
     def _assert_geometry(self, geometry):
@@ -89,8 +86,8 @@ class TestLakes(unittest.TestCase):
             'The geometry was loaded in order to create the bounds.'
 
 
-class TestRivers(unittest.TestCase):
-    def setUp(self):
+class TestRivers(object):
+    def setup_class(self):
         self.reader = shp.Reader(RIVERS_PATH)
 
     def _assert_geometry(self, geometry):
@@ -131,7 +128,3 @@ class TestRivers(unittest.TestCase):
                 assert value == expected_attributes[key]
         river = river_record.geometry
         self._assert_geometry(river)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -17,15 +17,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal
 
 import cartopy.crs as ccrs
 
 
-class TestStereographic(unittest.TestCase):
+class TestStereographic(object):
     def test_default(self):
         stereo = ccrs.Stereographic()
         expected = ('+ellps=WGS84 +proj=stere +lat_0=0.0 '

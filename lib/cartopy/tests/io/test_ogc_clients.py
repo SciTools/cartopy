@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
 try:
     from unittest import mock
 except ImportError:
@@ -43,7 +42,7 @@ RESOLUTION = (30, 30)
 
 
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class test_WMSRasterSource(unittest.TestCase):
+class test_WMSRasterSource(object):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
     layer = 'basic'
     layers = ['basic', 'ocean']
@@ -146,7 +145,7 @@ class test_WMSRasterSource(unittest.TestCase):
 
 
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class test_WMTSRasterSource(unittest.TestCase):
+class test_WMTSRasterSource(object):
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
     projection = ccrs.PlateCarree()
@@ -219,7 +218,7 @@ class test_WMTSRasterSource(unittest.TestCase):
 
 
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class test_WFSGeometrySource(unittest.TestCase):
+class test_WFSGeometrySource(object):
     URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
     typename = 'land_excluding_antarctica'
     native_projection = ccrs.Stereographic(central_latitude=-90,

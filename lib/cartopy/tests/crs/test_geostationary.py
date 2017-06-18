@@ -21,8 +21,6 @@ Tests for the Geostationary projection.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 from numpy.testing import assert_almost_equal
 
 import cartopy.crs as ccrs
@@ -82,5 +80,5 @@ class GeostationaryTestsMixin(object):
                             decimal=4)
 
 
-class TestGeostationary(unittest.TestCase, GeostationaryTestsMixin):
+class TestGeostationary(GeostationaryTestsMixin, object):
     pass

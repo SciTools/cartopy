@@ -17,8 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 from numpy.testing import assert_array_almost_equal
 import pytest
 
@@ -65,7 +63,7 @@ def test_specific_lambert():
                               '+no_defs')
 
 
-class Test_LambertConformal_standard_parallels(unittest.TestCase):
+class Test_LambertConformal_standard_parallels(object):
     def test_single_value(self):
         crs = ccrs.LambertConformal(standard_parallels=[1.])
         assert crs.proj4_init == ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '

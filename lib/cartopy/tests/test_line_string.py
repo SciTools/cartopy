@@ -19,7 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import itertools
 import time
-import unittest
 
 import numpy as np
 import pytest
@@ -28,7 +27,7 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 
 
-class TestLineString(unittest.TestCase):
+class TestLineString(object):
     def test_out_of_bounds(self):
         # Check that a line that is completely out of the map boundary produces
         # a valid LineString
@@ -109,7 +108,7 @@ class FakeProjection(ccrs.PlateCarree):
                                  (-w + self.left_offset, -h)])
 
 
-class TestBisect(unittest.TestCase):
+class TestBisect(object):
     # A bunch of tests to check the bisection algorithm is robust for a
     # variety of simple and/or pathological cases.
 
@@ -207,7 +206,7 @@ class TestBisect(unittest.TestCase):
                     'Unexpected NaN in projected coords.'
 
 
-class TestMisc(unittest.TestCase):
+class TestMisc(object):
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90)
         line_string = sgeom.LineString([(10, 50), (-10, 30)])
@@ -240,7 +239,7 @@ class TestMisc(unittest.TestCase):
         assert len(multi_line_string) > 0
 
 
-class TestSymmetry(unittest.TestCase):
+class TestSymmetry(object):
     @pytest.mark.xfail
     def test_curve(self):
         # Obtain a simple, curved path.
@@ -261,7 +260,3 @@ class TestSymmetry(unittest.TestCase):
         coords2 = multi_line_string2[0].coords
         np.testing.assert_allclose(coords, coords2[::-1],
                                    err_msg='Asymmetric curve generation')
-
-
-if __name__ == '__main__':
-    unittest.main()

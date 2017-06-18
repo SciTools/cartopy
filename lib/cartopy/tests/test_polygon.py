@@ -17,8 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 import shapely.geometry as sgeom
 import shapely.wkt
@@ -27,7 +25,7 @@ import shapely.wkt
 import cartopy.crs as ccrs
 
 
-class TestBoundary(unittest.TestCase):
+class TestBoundary(object):
     def test_no_polygon_boundary_reversal(self):
         # Check that polygons preserve their clockwise or counter-clockwise
         # ordering when they are attached to the boundary.
@@ -72,7 +70,7 @@ class TestBoundary(unittest.TestCase):
             assert len(multi_polygon) == expected_polys
 
 
-class TestMisc(unittest.TestCase):
+class TestMisc(object):
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90)
         polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
@@ -196,8 +194,8 @@ class TestMisc(unittest.TestCase):
             'Got area {}, expecting ~81336'.format(area)
 
 
-class TestQuality(unittest.TestCase):
-    def setUp(self):
+class TestQuality(object):
+    def setup_class(self):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
                                       pole_latitude=37.5)
         polygon = sgeom.Polygon([
@@ -244,7 +242,7 @@ class TestQuality(unittest.TestCase):
             assert abs(num_incr - num_decr) < 3, 'Too much asymmetry.'
 
 
-class PolygonTests(unittest.TestCase):
+class PolygonTests(object):
     def _assert_bounds(self, bounds, x1, y1, x2, y2, delta=1):
         assert abs(bounds[0] - x1) < delta
         assert abs(bounds[1] - y1) < delta
@@ -394,7 +392,3 @@ class TestHoles(PolygonTests):
         source = ccrs.Geodetic()
 
         assert len(list(target.project_geometry(poly, source))) == 1
-
-
-if __name__ == '__main__':
-    unittest.main()

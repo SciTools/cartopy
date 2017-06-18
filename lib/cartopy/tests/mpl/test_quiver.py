@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
 try:
     from unittest import mock
 except ImportError:
@@ -33,8 +32,8 @@ import cartopy.crs as ccrs
 
 # Note, other tests for quiver exist in test_mpl_integration.
 
-class TestQuiverShapes(unittest.TestCase):
-    def setUp(self):
+class TestQuiverShapes(object):
+    def setup_method(self):
         self.x = np.linspace(-60, 42.5, 10)
         self.y = np.linspace(30, 72.5, 7)
         self.x2d, self.y2d = np.meshgrid(self.x, self.y)

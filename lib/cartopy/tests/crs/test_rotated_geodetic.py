@@ -21,12 +21,10 @@ Tests for the Transverse Mercator projection, including OSGB and OSNI.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import cartopy.crs as ccrs
 
 
-class TestRotatedPole(unittest.TestCase):
+class TestRotatedPole(object):
     def check_proj4_params(self, crs, expected):
         pro4_params = sorted(crs.proj4_init.split(' +'))
         assert expected == pro4_params

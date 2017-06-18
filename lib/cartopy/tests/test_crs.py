@@ -19,7 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 from io import BytesIO
 import pickle
-import unittest
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
@@ -33,7 +32,7 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 
 
-class TestCRS(unittest.TestCase):
+class TestCRS(object):
     def test_hash(self):
         stereo = ccrs.Stereographic(90)
         north = ccrs.NorthPolarStereo()

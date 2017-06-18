@@ -21,12 +21,10 @@ Tests for the Rotated Geodetic coordinate system.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import cartopy.crs as ccrs
 
 
-class TestRotatedGeodetic(unittest.TestCase):
+class TestRotatedGeodetic(object):
     def check_proj4_params(self, crs, expected):
         pro4_params = sorted(crs.proj4_init.split(' +'))
         assert expected == pro4_params

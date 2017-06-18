@@ -17,15 +17,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal
 
 import cartopy.crs as ccrs
 
 
-class TestSinusoidal(unittest.TestCase):
+class TestSinusoidal(object):
     def test_default(self):
         crs = ccrs.Sinusoidal()
         expected = ('+ellps=WGS84 +proj=sinu +lon_0=0.0 '

@@ -21,16 +21,13 @@ Tests for the Transverse Mercator projection, including OSGB and OSNI.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
-import numpy.testing
 
 import cartopy.crs as ccrs
 
 
-class TestTransverseMercator(unittest.TestCase):
-    def setUp(self):
+class TestTransverseMercator(object):
+    def setup_class(self):
         self.point_a = (-3.474083, 50.727301)
         self.point_b = (0.5, 50.5)
         self.src_crs = ccrs.PlateCarree()
@@ -67,8 +64,8 @@ class TestTransverseMercator(unittest.TestCase):
         assert np.all(np.isnan(res))
 
 
-class TestOSGB(unittest.TestCase):
-    def setUp(self):
+class TestOSGB(object):
+    def setup_class(self):
         self.point_a = (-3.474083, 50.727301)
         self.point_b = (0.5, 50.5)
         self.src_crs = ccrs.PlateCarree()
@@ -91,8 +88,8 @@ class TestOSGB(unittest.TestCase):
         assert np.all(np.isnan(res))
 
 
-class TestOSNI(unittest.TestCase):
-    def setUp(self):
+class TestOSNI(object):
+    def setup_class(self):
         self.point_a = (-6.826286, 54.725116)
         self.src_crs = ccrs.PlateCarree()
         self.nan = float('nan')

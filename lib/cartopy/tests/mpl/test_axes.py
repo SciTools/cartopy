@@ -17,9 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
-
 from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
@@ -28,15 +25,15 @@ import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import InterProjectionTransform
-from .test_caching import CallCounter
+from cartopy.tests.mpl.test_caching import CallCounter
 
 
-class TestNoSpherical(unittest.TestCase):
-    def setUp(self):
+class TestNoSpherical(object):
+    def setup_method(self):
         self.ax = plt.axes(projection=ccrs.PlateCarree())
         self.data = np.arange(12).reshape((3, 4))
 
-    def tearDown(self):
+    def teardown_method(self):
         plt.clf()
         plt.close()
 

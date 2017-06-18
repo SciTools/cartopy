@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
 import warnings
 
 import numpy as np
@@ -27,7 +26,7 @@ import pytest
 import cartopy.crs as ccrs
 
 
-class TestTransformVectors(unittest.TestCase):
+class TestTransformVectors(object):
 
     def test_transform(self):
         # Test some simple vectors to make sure they are transformed

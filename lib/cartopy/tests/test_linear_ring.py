@@ -17,8 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 import pytest
 import shapely.geometry as sgeom
@@ -26,7 +24,7 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 
 
-class TestBoundary(unittest.TestCase):
+class TestBoundary(object):
     def test_cuts(self):
         # Check that fragments do not start or end with one of the
         # original ... ?
@@ -88,7 +86,7 @@ class TestBoundary(unittest.TestCase):
                     assert mlinestr.is_empty
 
 
-class TestMisc(unittest.TestCase):
+class TestMisc(object):
     def test_small(self):
         # What happens when a small (i.e. < threshold) feature crosses the
         # boundary?
@@ -191,7 +189,3 @@ class TestMisc(unittest.TestCase):
         # Test area of smallest Polygon that contains all the points in the
         # geometry.
         assert round(abs(mlinestr.convex_hull.area - 2347.75623076), 7) == 0
-
-
-if __name__ == '__main__':
-    unittest.main()
