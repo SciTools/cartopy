@@ -147,11 +147,9 @@ class TestTransformVectors(object):
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
                                          central_longitude=0)
-        with warnings.catch_warnings():
-            warnings.simplefilter('error')
-            with pytest.raises(UserWarning):
-                ut, vt = target_proj.transform_vectors(
-                    src_proj, rlon, rlat, u, v)
+        with pytest.warns(UserWarning):
+            warnings.simplefilter('always')
+            ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
 
     def test_invalid_y_domain_corner(self):
         # If the point we need to calculate the vector angle falls outside the
@@ -164,8 +162,6 @@ class TestTransformVectors(object):
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
                                          central_longitude=0)
-        with warnings.catch_warnings():
-            warnings.simplefilter('error')
-            with pytest.raises(UserWarning):
-                ut, vt = target_proj.transform_vectors(
-                    src_proj, rlon, rlat, u, v)
+        with pytest.warns(UserWarning):
+            warnings.simplefilter('always')
+            ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
