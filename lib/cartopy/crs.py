@@ -614,7 +614,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return return_value
 
 
-class _RectangularProjection(Projection):
+class _RectangularProjection(six.with_metaclass(ABCMeta, Projection)):
     """
     The abstract superclass of projections with a rectangular domain which
     is symmetric about the origin.
@@ -640,7 +640,8 @@ class _RectangularProjection(Projection):
         return (-self._half_height, self._half_height)
 
 
-class _CylindricalProjection(_RectangularProjection):
+class _CylindricalProjection(six.with_metaclass(ABCMeta,
+                                                _RectangularProjection)):
     """
     The abstract class which denotes cylindrical projections where we
     want to allow x values to wrap around.
@@ -1399,7 +1400,7 @@ class Orthographic(Projection):
         return self._ylim
 
 
-class _WarpedRectangularProjection(Projection):
+class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
     def __init__(self, proj4_params, central_longitude, globe=None):
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
