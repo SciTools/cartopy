@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -284,7 +284,7 @@ def failed_images_html():
 
 
 def show(projection, geometry):
-    orig_backend = matplotlib.get_backend()
+    orig_backend = mpl.get_backend()
     plt.switch_backend('tkagg')
 
     if geometry.type == 'MultiPolygon' and 1:

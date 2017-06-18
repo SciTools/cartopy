@@ -23,7 +23,6 @@ import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
-import six
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection

@@ -1457,7 +1457,6 @@ class Robinson(_WarpedRectangularProjection):
         # Warn when using Robinson with proj4 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://trac.osgeo.org/proj/ticket/113).
-        import re
         if PROJ4_VERSION != ():
             if (4, 8) <= PROJ4_VERSION < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '

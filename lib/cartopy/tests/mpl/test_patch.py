@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import six
 import unittest
 
 from matplotlib.path import Path

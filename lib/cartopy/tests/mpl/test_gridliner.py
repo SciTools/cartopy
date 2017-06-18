@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -26,7 +26,6 @@ try:
 except ImportError:
     import mock
 from nose.tools import assert_raises
-import numpy as np
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes

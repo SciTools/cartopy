@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,7 +23,7 @@ import shutil
 import tempfile
 import warnings
 
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal
 
 import cartopy
 import cartopy.io as cio

@@ -25,7 +25,6 @@ from datetime import datetime
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-import matplotlib.patches as patches
 
 
 def aurora_forecast():
