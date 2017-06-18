@@ -22,6 +22,7 @@ import warnings
 
 import numpy as np
 from numpy.testing import assert_array_equal
+import pytest
 
 import cartopy.crs as ccrs
 import cartopy.io.srtm
@@ -76,7 +77,7 @@ class TestRetrieve(unittest.TestCase):
 class TestSRTMSource__single_tile(unittest.TestCase):
     def _out_of_range(self, source):
         msg = 'No srtm tile found for those coordinates.'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with pytest.raises(ValueError, message=msg):
             source.single_tile(-25, 50)
 
     def test_out_of_range3(self):

@@ -17,8 +17,10 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-from numpy.testing import assert_array_almost_equal
 import unittest
+
+from numpy.testing import assert_array_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -71,11 +73,11 @@ class Test_LambertConformal_standard_parallels(unittest.TestCase):
                                   '+no_defs')
 
     def test_no_parallel(self):
-        with self.assertRaisesRegexp(ValueError, '1 or 2 standard parallels'):
+        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[])
 
     def test_too_many_parallel(self):
-        with self.assertRaisesRegexp(ValueError, '1 or 2 standard parallels'):
+        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[1, 2, 3])
 
     def test_single_spole(self):

@@ -21,11 +21,8 @@ try:
     from unittest.mock import Mock
 except ImportError:
     from mock import Mock
-try:
-    from nose.tools import assert_raises_regex
-except ImportError:
-    from nose.tools import assert_raises_regexp as assert_raises_regex
 from matplotlib.axes import Axes
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -36,7 +33,7 @@ def test_LatitudeFormatter_bad_axes():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
     message = 'This formatter can only be used with cartopy axes.'
-    with assert_raises_regex(TypeError, message):
+    with pytest.raises(TypeError, message=message):
         formatter(0)
 
 
@@ -44,7 +41,7 @@ def test_LatitudeFormatter_bad_projection():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
     message = 'This formatter cannot be used with non-rectangular projections.'
-    with assert_raises_regex(TypeError, message):
+    with pytest.raises(TypeError, message=message):
         formatter(0)
 
 
@@ -52,7 +49,7 @@ def test_LongitudeFormatter_bad_axes():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
     message = 'This formatter can only be used with cartopy axes.'
-    with assert_raises_regex(TypeError, message):
+    with pytest.raises(TypeError, message=message):
         formatter(0)
 
 
@@ -60,7 +57,7 @@ def test_LongitudeFormatter_bad_projection():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
     message = 'This formatter cannot be used with non-rectangular projections.'
-    with assert_raises_regex(TypeError, message):
+    with pytest.raises(TypeError, message=message):
         formatter(0)
 
 

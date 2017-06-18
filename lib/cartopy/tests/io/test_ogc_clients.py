@@ -17,8 +17,13 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import cartopy.io.ogc_clients as ogc
-from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
+import unittest
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
+import numpy as np
 try:
     from owslib.wfs import WebFeatureService
     from owslib.wms import WebMapService
@@ -27,13 +32,11 @@ except ImportError:
     WebMapService = None
     ContentMetadata = None
     WebMapTileService = None
-import unittest
+import pytest
+
 import cartopy.crs as ccrs
-try:
-    from unittest import mock
-except ImportError:
-    import mock
-import numpy as np
+import cartopy.io.ogc_clients as ogc
+from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 
 RESOLUTION = (30, 30)
@@ -72,7 +75,7 @@ class test_WMSRasterSource(unittest.TestCase):
 
     def test_no_layers(self):
         msg = 'One or more layers must be defined.'
-        with self.assertRaisesRegexp(ValueError, msg):
+        with pytest.raises(ValueError, message=msg):
             ogc.WMSRasterSource(self.URI, [])
 
     def test_extra_kwargs_empty(self):
@@ -103,7 +106,7 @@ class test_WMSRasterSource(unittest.TestCase):
                              {ccrs.OSNI(): 'EPSG:29901'},
                              clear=True):
             msg = 'not available'
-            with self.assertRaisesRegexp(ValueError, msg):
+            with pytest.raises(ValueError, message=msg):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
@@ -171,7 +174,7 @@ class test_WMTSRasterSource(unittest.TestCase):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         with mock.patch('cartopy.io.ogc_clients._URN_TO_CRS', {}):
             msg = 'Unable to find tile matrix for projection.'
-            with self.assertRaisesRegexp(ValueError, msg):
+            with pytest.raises(ValueError, message=msg):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
@@ -240,9 +243,8 @@ class test_WFSGeometrySource(unittest.TestCase):
 
     def test_unsupported_projection(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
-        with self.assertRaisesRegexp(ValueError,
-                                     'Geometries are only available '
-                                     'in projection'):
+        msg = 'Geometries are only available in projection'
+        with pytest.raises(ValueError, message=msg):
             source.fetch_geometries(ccrs.PlateCarree(), [-180, 180, -90, 90])
 
     def test_fetch_geometries(self):
