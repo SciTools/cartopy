@@ -74,7 +74,7 @@ def main():
     ax.add_geometries([track_buffer], ccrs.PlateCarree(),
                       facecolor='#C8A2C8', alpha=0.5)
     ax.add_geometries([track], ccrs.PlateCarree(),
-                      facecolor='none')
+                      facecolor='none', edgecolor='k')
 
     # make two proxy artists to add to a legend
     direct_hit = mpatches.Rectangle((0, 0), 1, 1, facecolor="red")

@@ -8,10 +8,10 @@ env:
           PACKAGES="numpy=1.8.2 matplotlib=1.3.1 scipy=0.14.0"
         - NAME="Latest everything."
           PYTHON_VERSION=3.5
-          PACKAGES="numpy matplotlib==1.5.3 matplotlib-tests scipy"
+          PACKAGES="numpy matplotlib scipy"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
-          PACKAGES="numpy matplotlib==1.5.3 matplotlib-tests scipy mock"
+          PACKAGES="numpy matplotlib scipy mock"
 
 
 sudo: false

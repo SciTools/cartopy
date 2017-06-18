@@ -21,12 +21,12 @@ import operator
 import os
 import unittest
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
 from cartopy import config
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
 from functools import reduce
@@ -91,7 +91,18 @@ class TestRegrid(unittest.TestCase):
                             target_proj, target_x, target_y)
 
 
-@ImageTesting(['regrid_image'], tolerance=0.7)
+if MPL_VERSION < '2':
+    # Changes in zooming in old versions.
+    regrid_tolerance = 2.5
+elif '2.0.1' <= MPL_VERSION:
+    # Bug in latest Matplotlib that we don't consider correct.
+    regrid_tolerance = 4.75
+else:
+    regrid_tolerance = 0
+
+
+@ImageTesting(['regrid_image'],
+              tolerance=regrid_tolerance)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
@@ -118,8 +129,8 @@ def test_regrid_image():
 
     # Plot
     fig = plt.figure(figsize=(10, 10))
-    gs = matplotlib.gridspec.GridSpec(nrows=4, ncols=1,
-                                      hspace=1.5, wspace=0.5)
+    gs = mpl.gridspec.GridSpec(nrows=4, ncols=1,
+                               hspace=1.5, wspace=0.5)
     # Set up axes and title
     ax = plt.subplot(gs[0], frameon=False, projection=target_proj)
     plt.imshow(new_array, origin='lower', extent=target_extent)

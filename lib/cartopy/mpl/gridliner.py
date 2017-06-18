@@ -28,7 +28,7 @@ import cartopy
 from cartopy.crs import Projection, _RectangularProjection
 
 
-degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 2, 3, 6, 15, 18])
+degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 
 _DEGREE_SYMBOL = u'\u00B0'
 
@@ -254,7 +254,10 @@ class Gridliner(object):
         elif axis == 'y':
             y = value
             x = 1.0 if upper_end else 0.0
-            v_align = 'center'
+            if matplotlib.__version__ > '2.0':
+                v_align = 'center_baseline'
+            else:
+                v_align = 'center'
             h_align = 'left' if upper_end else 'right'
             tr_y = transform
             tr_x = self.axes.transAxes + \

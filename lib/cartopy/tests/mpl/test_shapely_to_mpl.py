@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,7 +18,6 @@
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
@@ -28,11 +27,11 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 import cartopy.mpl.patch as cpatch
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 @ImageTesting(['poly_interiors'
-               if mpl.__version__ >= '1.5' else
+               if MPL_VERSION >= '1.5' else
                'poly_interiors_pre_mpl_1.5'])
 def test_polygon_interiors():
 

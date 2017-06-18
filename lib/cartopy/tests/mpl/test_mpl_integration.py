@@ -32,10 +32,16 @@ import six
 
 import cartopy.crs as ccrs
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.1
+if MPL_VERSION >= '2':
+    _STREAMPLOT_IMAGE = 'streamplot'
+elif MPL_VERSION >= '1.5':
+    _STREAMPLOT_IMAGE = 'streamplot_1.5'
+else:
+    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.5'
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -324,11 +330,11 @@ def test_pcolormesh_limited_area_wrap():
     plt.figure(figsize=(10, 6))
 
     ax = plt.subplot(221, projection=ccrs.PlateCarree())
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
 
     ax = plt.subplot(222, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
     ax.set_global()
 
@@ -336,12 +342,12 @@ def test_pcolormesh_limited_area_wrap():
     # of the coordinates (just to test that 1d and 2d are both suitably
     # being fixed)
     ax = plt.subplot(223, projection=ccrs.PlateCarree())
-    plt.pcolormesh(x, y, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(x, y, data, transform=rp, cmap='Spectral')
     ax.coastlines()
     ax.set_extent([-70, 0, 0, 80])
 
     ax = plt.subplot(224, projection=rp)
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
 
 
@@ -540,9 +546,7 @@ def test_barbs_1d_transformed():
              length=8, linewidth=1, color='#7f7f7f')
 
 
-@ImageTesting(['streamplot'
-               if mpl.__version__ >= '1.5' else
-               'streamplot_pre_mpl_1.5'])
+@ImageTesting([_STREAMPLOT_IMAGE])
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

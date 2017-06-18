@@ -19,7 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import matplotlib.pyplot as plt
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 class ExampleImageTesting(ImageTesting):
@@ -40,7 +40,8 @@ class ExampleImageTesting(ImageTesting):
         return new_fn
 
 
-@ExampleImageTesting(['global_map'])
+@ExampleImageTesting(['global_map'],
+                     tolerance=4 if MPL_VERSION < '2' else 0)
 def test_global_map():
     import cartopy.examples.global_map as c
     c.main()

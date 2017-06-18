@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -25,7 +25,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 @ImageTesting(['natural_earth'])
@@ -52,7 +52,8 @@ def test_natural_earth_custom():
     ax.set_ylim((58, 72))
 
 
-@ImageTesting(['gshhs_coastlines'])
+@ImageTesting(['gshhs_coastlines'],
+              tolerance=1.7 if MPL_VERSION < '2' else 0)
 def test_gshhs():
     ax = plt.axes(projection=ccrs.Mollweide())
     ax.set_extent([138, 142, 32, 42], ccrs.Geodetic())
