@@ -214,7 +214,6 @@ def gen_summary_rst(app):
             fh.write(content)
 
 
-@cartopy.tests.not_a_nose_fixture
 def setup(app):
     """
     Defined the Sphinx application interface for the summary generation.
