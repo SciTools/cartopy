@@ -84,115 +84,110 @@ def _save_world(fname, args):
         fh.write(_world.format(**args))
 
 
-def test_intersect():
-    with tests.temp_dir() as base_dir:
-        # Zoom level zero.
-        # File 1: Parent space of all images.
-        z_0_dir = os.path.join(base_dir, 'z_0')
-        os.mkdir(z_0_dir)
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=1, y_center=1)
-        im = Image.new('RGB', (50, 50))
-        fname = os.path.join(z_0_dir, 'p0.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_0_dir, 'p0.tif')
-        im.save(fname)
+def test_intersect(tmpdir):
+    # Zoom level zero.
+    # File 1: Parent space of all images.
+    z_0_dir = tmpdir.mkdir('z_0')
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=1, y_center=1)
+    im = Image.new('RGB', (50, 50))
+    fname = z_0_dir.join('p0.tfw')
+    _save_world(str(fname), world)
+    fname = z_0_dir.join('p0.tif')
+    im.save(str(fname))
 
-        # Zoom level one.
-        # File 1: complete containment within p0.
-        z_1_dir = os.path.join(base_dir, 'z_1')
-        os.mkdir(z_1_dir)
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=21, y_center=21)
-        im = Image.new('RGB', (30, 30))
-        fname = os.path.join(z_1_dir, 'p1.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_1_dir, 'p1.tif')
-        im.save(fname)
+    # Zoom level one.
+    # File 1: complete containment within p0.
+    z_1_dir = tmpdir.mkdir('z_1')
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=21, y_center=21)
+    im = Image.new('RGB', (30, 30))
+    fname = z_1_dir.join('p1.tfw')
+    _save_world(str(fname), world)
+    fname = z_1_dir.join('p1.tif')
+    im.save(str(fname))
 
-        # Zoom level two.
-        # File 1: intersect right edge with p1 left edge.
-        z_2_dir = os.path.join(base_dir, 'z_2')
-        os.mkdir(z_2_dir)
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=6, y_center=21)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-1.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-1.tif')
-        im.save(fname)
-        # File 2: intersect upper right corner with p1
-        #         lower left corner.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=6, y_center=6)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-2.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-2.tif')
-        im.save(fname)
-        # File 3: complete containment within p1.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=41, y_center=41)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-3.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-3.tif')
-        im.save(fname)
-        # File 4: overlap with p1 right edge.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=76, y_center=61)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-4.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-4.tif')
-        im.save(fname)
-        # File 5: overlap with p1 bottom right corner.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=76, y_center=76)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-5.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-5.tif')
-        im.save(fname)
+    # Zoom level two.
+    # File 1: intersect right edge with p1 left edge.
+    z_2_dir = tmpdir.mkdir('z_2')
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=6, y_center=21)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-1.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-1.tif')
+    im.save(str(fname))
+    # File 2: intersect upper right corner with p1
+    #         lower left corner.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=6, y_center=6)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-2.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-2.tif')
+    im.save(str(fname))
+    # File 3: complete containment within p1.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=41, y_center=41)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-3.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-3.tif')
+    im.save(str(fname))
+    # File 4: overlap with p1 right edge.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=76, y_center=61)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-4.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-4.tif')
+    im.save(str(fname))
+    # File 5: overlap with p1 bottom right corner.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=76, y_center=76)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-5.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-5.tif')
+    im.save(str(fname))
 
-        # Provided in reverse order in order to test the area sorting.
-        items = [('dummy-z-2', z_2_dir),
-                 ('dummy-z-1', z_1_dir),
-                 ('dummy-z-0', z_0_dir)]
-        nic = cimg_nest.NestedImageCollection.from_configuration('dummy',
-                                                                 None,
-                                                                 items)
+    # Provided in reverse order in order to test the area sorting.
+    items = [('dummy-z-2', str(z_2_dir)),
+             ('dummy-z-1', str(z_1_dir)),
+             ('dummy-z-0', str(z_0_dir))]
+    nic = cimg_nest.NestedImageCollection.from_configuration('dummy',
+                                                             None,
+                                                             items)
 
-        names = [collection.name for collection in nic._collections]
-        zoom_levels = ['dummy-z-0', 'dummy-z-1', 'dummy-z-2']
-        assert names == zoom_levels
+    names = [collection.name for collection in nic._collections]
+    zoom_levels = ['dummy-z-0', 'dummy-z-1', 'dummy-z-2']
+    assert names == zoom_levels
 
-        # Check all images are loaded.
-        for zoom, expected_image_count in zip(zoom_levels, [1, 1, 5]):
-            images = nic._collections_by_name[zoom].images
-            assert len(images) == expected_image_count
+    # Check all images are loaded.
+    for zoom, expected_image_count in zip(zoom_levels, [1, 1, 5]):
+        images = nic._collections_by_name[zoom].images
+        assert len(images) == expected_image_count
 
-        # Check the image ancestry.
-        zoom_levels = ['dummy-z-0', 'dummy-z-1']
-        assert sorted(k[0] for k in nic._ancestry.keys()) == zoom_levels
+    # Check the image ancestry.
+    zoom_levels = ['dummy-z-0', 'dummy-z-1']
+    assert sorted(k[0] for k in nic._ancestry.keys()) == zoom_levels
 
-        expected = [('dummy-z-0', ['p1.tif']),
-                    ('dummy-z-1', ['p2-3.tif', 'p2-4.tif', 'p2-5.tif'])]
-        for zoom, image_names in expected:
-            key = [k for k in nic._ancestry.keys() if k[0] == zoom][0]
-            ancestry = nic._ancestry[key]
-            fnames = sorted([os.path.basename(item[1].filename)
-                             for item in ancestry])
-            assert image_names == fnames
+    expected = [('dummy-z-0', ['p1.tif']),
+                ('dummy-z-1', ['p2-3.tif', 'p2-4.tif', 'p2-5.tif'])]
+    for zoom, image_names in expected:
+        key = [k for k in nic._ancestry.keys() if k[0] == zoom][0]
+        ancestry = nic._ancestry[key]
+        fnames = sorted([os.path.basename(item[1].filename)
+                         for item in ancestry])
+        assert image_names == fnames
 
-        # Check image retrieval for specific domain.
-        items = [(sgeom.box(20, 20, 80, 80), 3),
-                 (sgeom.box(20, 20, 75, 75), 1),
-                 (sgeom.box(40, 40, 85, 85), 3)]
-        for domain, expected in items:
-            result = [image for image in nic.find_images(domain,
-                                                         'dummy-z-2')]
-            assert len(result) == expected
+    # Check image retrieval for specific domain.
+    items = [(sgeom.box(20, 20, 80, 80), 3),
+             (sgeom.box(20, 20, 75, 75), 1),
+             (sgeom.box(40, 40, 85, 85), 3)]
+    for domain, expected in items:
+        result = [image for image in nic.find_images(domain, 'dummy-z-2')]
+        assert len(result) == expected
 
 
 def _tile_from_img(img):

@@ -17,12 +17,11 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import tempfile
-
 from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -152,13 +151,12 @@ def test_view_lim_autoscaling():
     plt.close()
 
 
-def test_view_lim_default_global():
+def test_view_lim_default_global(tmpdir):
     ax = plt.axes(projection=ccrs.PlateCarree())
     # The view lim should be the default unit bbox until it is drawn.
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               [[0, 0], [1, 1]])
-    with tempfile.TemporaryFile() as tmp:
-        plt.savefig(tmp)
+    plt.savefig(str(tmpdir.join('view_lim_default_global.png')))
     expected = np.array([[-180, -90], [180, 90]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected)
