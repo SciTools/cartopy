@@ -25,6 +25,7 @@ import warnings
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from PIL import Image
+import pytest
 import shapely.geometry as sgeom
 from six.moves import cPickle as pickle
 
@@ -39,9 +40,6 @@ import cartopy.tests as tests
 _TEST_DATA_VERSION = 1
 _TEST_DATA_DIR = os.path.join(config["data_dir"],
                               'wmts', 'aerial')
-#: A global to determine whether the test data has already been made available
-#: in this session.
-_TEST_DATA_AVAILABLE = False
 
 
 def test_world_files():
@@ -226,7 +224,8 @@ class RoundedImg(cimg_nest.Img):
         return extent, pix_size
 
 
-def test_nest():
+@pytest.mark.xfail(reason='MapQuest is unavailable')
+def test_nest(nest_from_config):
     crs = cimgt.GoogleTiles().crs
     z0 = cimg_nest.ImageCollection('aerial z0 test', crs)
     z0.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_0'),
@@ -276,7 +275,6 @@ def test_nest():
             sorted([_tile_from_img(img) for z, img in
                     nest.subtiles(('aerial z1 test', x1_y0_z1))]))
 
-    nest_from_config = gen_nest()
     # check that the the images in the nest from configuration are the
     # same as those created by hand.
     for name in nest_z0_z1._collections_by_name.keys():
@@ -304,11 +302,10 @@ def test_img_pickle_round_trip():
     assert hasattr(img_from_pickle, '_bbox')
 
 
-def requires_wmts_data(function):
+@pytest.fixture(scope='session')
+def wmts_data():
     """
-    A decorator which ensures that the WMTS data is available for
-    use in testing.
-
+    A fixture which ensures that the WMTS data is available for use in testing.
     """
     aerial = cimgt.MapQuestOpenAerial()
 
@@ -372,14 +369,9 @@ def requires_wmts_data(function):
             _save_world(pgw_fname, pgw_keys)
             img.save(fname)
 
-    global _TEST_DATA_AVAILABLE
-    _TEST_DATA_AVAILABLE = True
 
-    return function
-
-
-@requires_wmts_data
-def test_find_images():
+@pytest.mark.xfail(reason='MapQuest is unavailable')
+def test_find_images(wmts_data):
     z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
     img_fname = os.path.join(z2_dir, 'x_2_y_0.png')
     world_file_fname = os.path.join(z2_dir, 'x_2_y_0.pgw')
@@ -395,8 +387,8 @@ def test_find_images():
     assert img.pixel_size == (39135.7585, 39135.7585)
 
 
-@requires_wmts_data
-def gen_nest():
+@pytest.fixture
+def nest_from_config(wmts_data):
     from_config = cimg_nest.NestedImageCollection.from_configuration
 
     files = [['aerial z0 test', os.path.join(_TEST_DATA_DIR, 'z_0')],
