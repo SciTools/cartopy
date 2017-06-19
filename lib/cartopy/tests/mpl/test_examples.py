@@ -45,8 +45,3 @@ class ExampleImageTesting(ImageTesting):
 def test_global_map():
     import cartopy.examples.global_map as c
     c.main()
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

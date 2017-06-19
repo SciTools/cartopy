@@ -19,11 +19,11 @@ from __future__ import (absolute_import, division, print_function)
 
 import operator
 import os
-import unittest
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 from cartopy import config
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
@@ -32,7 +32,7 @@ import cartopy.img_transform as im_trans
 from functools import reduce
 
 
-class TestRegrid(unittest.TestCase):
+class TestRegrid(object):
     def test_array_dims(self):
         # Source data
         source_nx = 100
@@ -59,9 +59,9 @@ class TestRegrid(unittest.TestCase):
                                     target_proj, target_x, target_y)
 
         # Check dimensions of return array
-        self.assertEqual(new_array.shape, target_x.shape)
-        self.assertEqual(new_array.shape, target_y.shape)
-        self.assertEqual(new_array.shape, (target_ny, target_nx))
+        assert new_array.shape == target_x.shape
+        assert new_array.shape == target_y.shape
+        assert new_array.shape == (target_ny, target_nx)
 
     def test_different_dims(self):
         # Source data
@@ -86,7 +86,7 @@ class TestRegrid(unittest.TestCase):
         target_proj = ccrs.PlateCarree()
 
         # Attempt regrid
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             im_trans.regrid(data, source_x, source_y, source_cs,
                             target_proj, target_x, target_y)
 
@@ -145,8 +145,3 @@ def test_regrid_image():
 
     # Tighten up layout
     gs.tight_layout(plt.gcf())
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

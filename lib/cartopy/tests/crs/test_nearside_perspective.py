@@ -21,8 +21,6 @@ Tests for the NearsidePerspective projection.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 from numpy.testing import assert_almost_equal
 
 from cartopy.tests.crs.test_geostationary import (GeostationaryTestsMixin,
@@ -31,14 +29,14 @@ from cartopy.tests.crs.test_geostationary import (GeostationaryTestsMixin,
 from cartopy.crs import NearsidePerspective
 
 
-class TestEquatorialDefault(unittest.TestCase, GeostationaryTestsMixin):
+class TestEquatorialDefault(GeostationaryTestsMixin, object):
     # Check that it behaves just like Geostationary, in the absence of a
     # central_latitude parameter.
     test_class = NearsidePerspective
     expected_proj_name = 'nsper'
 
 
-class TestOwnSpecifics(unittest.TestCase):
+class TestOwnSpecifics(object):
     def test_central_latitude(self):
         # Check the effect of the added 'central_latitude' key.
         geos = NearsidePerspective(central_latitude=53.7)
@@ -52,8 +50,3 @@ class TestOwnSpecifics(unittest.TestCase):
                             (-5434177.81588539, -5434177.81588539,
                              5434177.81588539, 5434177.81588539),
                             decimal=4)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

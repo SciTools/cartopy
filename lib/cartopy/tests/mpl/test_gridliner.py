@@ -24,7 +24,7 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-from nose.tools import assert_raises
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -129,7 +129,7 @@ def test_grid_labels():
     ax = plt.subplot(3, 2, 2,
                      projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines()
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         ax.gridlines(crs=crs_merc, draw_labels=True)
 
     ax.set_title('Known bug')
@@ -146,7 +146,7 @@ def test_grid_labels():
     # (Currently can only draw these on PlateCarree or Mercator plots.)
     ax = plt.subplot(3, 2, 4, projection=crs_osgb)
     ax.coastlines()
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         ax.gridlines(draw_labels=True)
 
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
@@ -183,8 +183,3 @@ def test_grid_labels():
 
     # Increase margins between plots to stop them bumping into one another.
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

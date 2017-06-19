@@ -21,10 +21,7 @@ Tests for the Geostationary projection.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 from numpy.testing import assert_almost_equal
-from nose.tools import assert_equal
 
 import cartopy.crs as ccrs
 
@@ -32,7 +29,7 @@ import cartopy.crs as ccrs
 # Note: code here is now shared with the NearsidePerspective test.
 def check_proj4_params(crs, expected):
     pro4_params = sorted(crs.proj4_init.split(' +'))
-    assert_equal(expected, pro4_params)
+    assert expected == pro4_params
 
 
 class GeostationaryTestsMixin(object):
@@ -83,10 +80,5 @@ class GeostationaryTestsMixin(object):
                             decimal=4)
 
 
-class TestGeostationary(unittest.TestCase, GeostationaryTestsMixin):
+class TestGeostationary(GeostationaryTestsMixin, object):
     pass
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

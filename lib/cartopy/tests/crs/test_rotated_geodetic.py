@@ -21,17 +21,13 @@ Tests for the Transverse Mercator projection, including OSGB and OSNI.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
-from nose.tools import assert_equal
-
 import cartopy.crs as ccrs
 
 
-class TestRotatedPole(unittest.TestCase):
+class TestRotatedPole(object):
     def check_proj4_params(self, crs, expected):
         pro4_params = sorted(crs.proj4_init.split(' +'))
-        assert_equal(expected, pro4_params)
+        assert expected == pro4_params
 
     def test_default(self):
         geos = ccrs.RotatedPole(60, 50, 80)
@@ -39,8 +35,3 @@ class TestRotatedPole(unittest.TestCase):
                     'o_lon_p=80', 'o_proj=latlon', 'proj=ob_tran',
                     'to_meter=0.0174532925199433']
         self.check_proj4_params(geos, expected)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

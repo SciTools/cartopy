@@ -18,13 +18,9 @@
 from __future__ import (absolute_import, division, print_function)
 
 import math
+import re
 import warnings
 
-from nose.tools import assert_equal
-try:
-    from nose.tools import assert_regex
-except ImportError:
-    from nose.tools import assert_regexp_matches as assert_regex
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -190,21 +186,21 @@ def test_cursor_values():
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
     x, y = np.array([-969100.]), np.array([-4457000.])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'),
-                 six.b('-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)'))
+    assert (r.encode('ascii', 'ignore') ==
+            six.b('-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)'))
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     x, y = np.array([-181.5]), np.array([50.])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'),
-                 six.b('-181.5, 50 (50.000000N, 178.500000E)'))
+    assert (r.encode('ascii', 'ignore') ==
+            six.b('-181.5, 50 (50.000000N, 178.500000E)'))
 
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2]), np.array([2363093.4])
     r = ax.format_coord(x, y)
-    assert_regex(r.encode('ascii', 'ignore'),
-                 six.b('1.606e\\+07, 2.363e\\+06 '
-                       '\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)'))
+    assert re.search(six.b('1.606e\\+07, 2.363e\\+06 '
+                           '\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)'),
+                     r.encode('ascii', 'ignore'))
 
     plt.close()
 
@@ -222,7 +218,7 @@ def test_axes_natural_earth_interface():
                              facecolor='none')
         ax.natural_earth_shp('lakes', facecolor='blue')
 
-    assert_equal(len(all_warnings), 2)
+    assert len(all_warnings) == 2
     for warning in all_warnings:
         msg = str(warning.message)
         assert 'deprecated' in msg
@@ -561,8 +557,3 @@ def test_streamplot():
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
                   density=(1.5, 2), color=mag, linewidth=2*mag)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

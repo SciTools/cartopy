@@ -66,10 +66,11 @@ class ImageTesting(object):
         >>> result_fname = img_testing.result_path('<TESTNAME>', '<IMGNAME>')
         >>> img_test_mod_dir = os.path.dirname(cartopy.__file__)
 
-        >>> print 'Result:', os.path.relpath(result_fname, img_test_mod_dir)
-        Result: tests/mpl/output/<TESTNAME>/result-<IMGNAME>.png
+        >>> print('Result:', os.path.relpath(result_fname, img_test_mod_dir))
+        ... # doctest: +ELLIPSIS
+        Result: ...output/<TESTNAME>/result-<IMGNAME>.png
 
-        >>> print 'Expected:', os.path.relpath(exp_fname, img_test_mod_dir)
+        >>> print('Expected:', os.path.relpath(exp_fname, img_test_mod_dir))
         Expected: tests/mpl/baseline_images/mpl/<TESTNAME>/<IMGNAME>.png
 
     .. note::
