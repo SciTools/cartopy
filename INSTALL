@@ -114,7 +114,7 @@ These packages are required for the full Cartopy test suite to run.
     Python mocking and patching package for testing. Note that this package
     is only required to support the Cartopy unit tests.
 
-**nose** 1.2.1 or later (https://nose.readthedocs.org/en/latest/)
+**pytest** 3.0.0 or later (https://docs.pytest.org/en/latest/)
     Python package for software testing.
 
 **pep8** 1.3.3 or later (https://pypi.python.org/pypi/pep8) 
