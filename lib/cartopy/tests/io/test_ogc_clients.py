@@ -42,7 +42,7 @@ RESOLUTION = (30, 30)
 
 
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class test_WMSRasterSource(object):
+class TestWMSRasterSource(object):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
     layer = 'basic'
     layers = ['basic', 'ocean']
@@ -145,7 +145,7 @@ class test_WMSRasterSource(object):
 
 
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class test_WMTSRasterSource(object):
+class TestWMTSRasterSource(object):
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
     projection = ccrs.PlateCarree()
@@ -197,9 +197,9 @@ class test_WMTSRasterSource(object):
 
         # Check image array is as expected (more or less).
         img = np.array(located_image.image)
-        self.assertEqual(img.shape, (42, 42, 4))
+        assert img.shape == (42, 42, 4)
         # When reprojected, extent is exactly what you asked for.
-        self.assertEqual(located_image.extent, extent)
+        assert located_image.extent == extent
 
     def test_fetch_img_reprojected_twoparts(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
@@ -207,18 +207,18 @@ class test_WMTSRasterSource(object):
         images = source.fetch_raster(ccrs.NorthPolarStereo(), extent, (30, 30))
 
         # Check for 2 results in this case.
-        self.assertEqual(len(images), 2)
+        assert len(images) == 2
         im1, im2 = images
         # Check image arrays is as expected (more or less).
-        self.assertEqual(np.array(im1.image).shape, (42, 42, 4))
-        self.assertEqual(np.array(im2.image).shape, (42, 42, 4))
+        assert np.array(im1.image).shape == (42, 42, 4)
+        assert np.array(im2.image).shape == (42, 42, 4)
         # When reprojected, extent is exactly what you asked for.
-        self.assertEqual(im1.extent, extent)
-        self.assertEqual(im2.extent, extent)
+        assert im1.extent == extent
+        assert im2.extent == extent
 
 
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class test_WFSGeometrySource(object):
+class TestWFSGeometrySource(object):
     URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
     typename = 'land_excluding_antarctica'
     native_projection = ccrs.Stereographic(central_latitude=-90,
