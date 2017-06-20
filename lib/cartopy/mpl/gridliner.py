@@ -174,6 +174,12 @@ class Gridliner(object):
         #: for styling of the text labels.
         self.ylabel_style = {}
 
+        #: The padding from the map edge to the x labels in points.
+        self.xpadding = 5
+
+        #: The padding from the map edge to the y labels in points.
+        self.ypadding = 5
+
         self.crs = crs
 
         # if the user specifies tick labels at this point, check if they can
@@ -235,9 +241,10 @@ class Gridliner(object):
 
         """
         transform = self._crs_transform()
-        shift_dist_points = 5     # A margin from the map edge.
-        if upper_end is False:
-            shift_dist_points = -shift_dist_points
+        if upper_end:
+            shift_scale = 1
+        else:
+            shift_scale = -1
         if axis == 'x':
             x = value
             y = 1.0 if upper_end else 0.0
@@ -247,7 +254,7 @@ class Gridliner(object):
             tr_y = self.axes.transAxes + \
                 mtrans.ScaledTranslation(
                     0.0,
-                    shift_dist_points * (1.0 / 72),
+                    shift_scale * self.xpadding * (1.0 / 72),
                     self.axes.figure.dpi_scale_trans)
             str_value = self.xformatter(value)
             user_label_style = self.xlabel_style
@@ -262,7 +269,7 @@ class Gridliner(object):
             tr_y = transform
             tr_x = self.axes.transAxes + \
                 mtrans.ScaledTranslation(
-                    shift_dist_points * (1.0 / 72),
+                    shift_scale * self.ypadding * (1.0 / 72),
                     0.0,
                     self.axes.figure.dpi_scale_trans)
             str_value = self.yformatter(value)
