@@ -430,7 +430,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                                       resolution, **kwargs)
         return self.add_feature(feature)
 
-    def tissot(self, rad_km=5, lons=None, lats=None, n_samples=80, **kwargs):
+    def tissot(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
         """
         Adds Tissot's indicatrices to the axes.
 
