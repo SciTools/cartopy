@@ -362,6 +362,106 @@ config['downloaders'].setdefault(_ne_key,
                                  NEShpDownloader.default_downloader())
 
 
+def gadm(name, level=0):
+    """
+    Returns the path to the requested GADM (version 2) shapefile,
+    downloading and unziping if necessary.
+
+    """
+    gadm_downloader = Downloader.from_config(('shapefiles', 'gadm2', name))
+    format_dict = {'config': config, 'name': name, 'level': level}
+    return gadm_downloader.path(format_dict)
+
+class GADMShpDownloader(Downloader):
+    """
+    Specialises :class:`cartopy.io.Downloader` to download the zipped
+    GADM (version 2) shapefiles and extract them to the defined location
+    (typically user configurable).
+
+    The keys which should be passed through when using the ``format_dict``
+    are typically ``name`` and ``level``, where ```name`` is a three letter
+    country code (e.g. 'GBR' or 'USA') and ``level`` is 0, 1 or 2.
+
+    """
+    FORMAT_KEYS = ('name', 'level')
+
+    _GADM_URL_TEMPLATE = ('http://data.biogeo.ucdavis.edu/data/gadm2/shp/{name}_adm.zip')
+
+    def __init__(self,
+                 url_template=_GADM_URL_TEMPLATE,
+                 target_path_template=None,
+                 pre_downloaded_path_template='',
+                 ):
+        Downloader.__init__(self, url_template,
+                            target_path_template,
+                            pre_downloaded_path_template)
+
+    def zip_file_contents(self, format_dict):
+        """
+        Returns a generator of the filenames to be found in the downloaded
+        natural earth zip file.
+
+        Each archive contains levels 0, 1 and 2. Although
+        :meth:`acquire_resource` will only return the path to the requested
+        level, all of the levels are extracted.
+
+        """
+        for l in [0, 1, 2]:
+            for ext in ['.shp', '.dbf', '.shx', '.prj']:
+                yield ('{name}_adm{l}{extension}'.format(extension=ext, l=l, **format_dict))
+
+    def acquire_resource(self, target_path, format_dict):
+        """
+        Downloads the zip file and extracts the files listed in
+        :meth:`zip_file_contents` to the target path.
+
+        """
+        from zipfile import ZipFile
+
+        target_dir = os.path.dirname(target_path)
+        if not os.path.isdir(target_dir):
+            os.makedirs(target_dir)
+
+        url = self.url(format_dict)
+
+        shapefile_online = self._urlopen(url)
+
+        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
+
+        for member_path in self.zip_file_contents(format_dict):
+            target = os.path.join(target_dir, member_path)
+            member = zfh.getinfo(member_path)
+            with open(target, 'wb') as fh:
+                fh.write(zfh.open(member).read())
+
+        shapefile_online.close()
+        zfh.close()
+
+        return target_path
+
+    @staticmethod
+    def default_downloader():
+        """
+        Returns a generic, standard, NEShpDownloader instance.
+
+        Typically, a user will not need to call this staticmethod.
+
+        To find the path template of the NEShpDownloader:
+
+            >>> gadm_dnldr = GADMShpDownloader.default_downloader()
+            >>> print(gadm_dnldr.target_path_template)
+            {config[data_dir]}/shapefiles/gadm2/{name}_adm{level}.shp
+
+        """
+        default_spec = ('shapefiles', 'gadm2', '{name}_adm{level}.shp')
+        gadm_path_template = os.path.join('{config[data_dir]}', *default_spec)
+        pre_path_template = os.path.join('{config[pre_existing_data_dir]}', *default_spec)
+        return GADMShpDownloader(target_path_template=gadm_path_template, pre_downloaded_path_template=pre_path_template)
+
+_gadm_key = ('shapefiles', 'gadm2')
+config['downloaders'].setdefault(_gadm_key, GADMShpDownloader.default_downloader())
+
+
 def gshhs(scale='c', level=1):
     """
     Returns the path to the requested GSHHS shapefile,
