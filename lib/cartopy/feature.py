@@ -345,6 +345,9 @@ BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
                               '110m', edgecolor='black', facecolor='none')
 """Small scale (1:110m) country boundaries."""
 
+STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
+                             '110m', edgecolor='black', facecolor='none')
+"""Small scale (1:110m) state and province boundaries."""
 
 COASTLINE = NaturalEarthFeature('physical', 'coastline', '110m',
                                 edgecolor='black', facecolor='none')
