@@ -1608,11 +1608,14 @@ class InterruptedGoodeHomolosine(Projection):
 class _Satellite(Projection):
     def __init__(self, projection, satellite_height=35785831,
                  central_longitude=0.0, central_latitude=0.0,
-                 false_easting=0, false_northing=0, globe=None):
+                 false_easting=0, false_northing=0, globe=None,
+                 sweep_axis=None):
         proj4_params = [('proj', projection), ('lon_0', central_longitude),
                         ('lat_0', central_latitude), ('h', satellite_height),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
+        if sweep_axis:
+            proj4_params.append(('sweep', sweep_axis))
         super(_Satellite, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
@@ -1652,7 +1655,8 @@ class Geostationary(_Satellite):
 
     """
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
-                 false_easting=0, false_northing=0, globe=None):
+                 false_easting=0, false_northing=0, globe=None,
+                 sweep_axis='y'):
         super(Geostationary, self).__init__(
             projection='geos',
             satellite_height=satellite_height,
@@ -1660,7 +1664,8 @@ class Geostationary(_Satellite):
             central_latitude=0.0,
             false_easting=false_easting,
             false_northing=false_northing,
-            globe=globe)
+            globe=globe,
+            sweep_axis=sweep_axis)
 
 
 class NearsidePerspective(_Satellite):

@@ -36,12 +36,19 @@ class GeostationaryTestsMixin(object):
     test_class = ccrs.Geostationary
     expected_proj_name = 'geos'
 
+    def adjust_expected_params(self, expected):
+        # Only for Geostationary do we expect the sweep parameter
+        if self.expected_proj_name == 'geos':
+            expected.insert(-3, 'sweep=y')
+
     def test_default(self):
         geos = self.test_class()
         expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0.0', 'lon_0=0.0',
                     'no_defs',
                     'proj={}'.format(self.expected_proj_name),
                     'units=m', 'x_0=0', 'y_0=0']
+        self.adjust_expected_params(expected)
+
         check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
@@ -58,6 +65,8 @@ class GeostationaryTestsMixin(object):
                     'no_defs',
                     'proj={}'.format(self.expected_proj_name),
                     'units=m', 'x_0=0', 'y_0=0']
+        self.adjust_expected_params(expected)
+
         check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
@@ -72,6 +81,8 @@ class GeostationaryTestsMixin(object):
                     'proj={}'.format(self.expected_proj_name),
                     'units=m', 'x_0=5000000',
                     'y_0=-125000']
+        self.adjust_expected_params(expected)
+
         check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
@@ -81,4 +92,16 @@ class GeostationaryTestsMixin(object):
 
 
 class TestGeostationary(GeostationaryTestsMixin, object):
-    pass
+    def test_sweep(self):
+        geos = ccrs.Geostationary(sweep_axis='x')
+        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=0.0', 'lon_0=0.0',
+                    'no_defs', 'proj=geos', 'sweep=x',
+                    'units=m', 'x_0=0', 'y_0=0']
+
+        check_proj4_params(geos, expected)
+
+        pt = geos.transform_point(-60, 25, ccrs.PlateCarree())
+
+        assert_almost_equal(pt,
+                            (-4529521.6442, 2437479.4195),
+                            decimal=4)
