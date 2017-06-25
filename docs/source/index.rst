@@ -19,7 +19,7 @@ Some of the key features of cartopy are:
  * object oriented projection definitions
  * point, line, vector, polygon and image transformations between projections
  * integration to expose advanced mapping in matplotlib with a simple and intuitive interface
- * powerful vector data handling by integrating shapefile reading with Shapely capabilities 
+ * powerful vector data handling by integrating shapefile reading with Shapely capabilities
 
 Cartopy is licensed under `GNU Lesser General Public License <https://www.gnu.org/licenses/lgpl.html>`_
 and is at version |version|. You can find the source code for cartopy on
@@ -37,7 +37,7 @@ cartopy's documentation is arranged userguide form with reference documentation 
 
     crs/index.rst
     crs/projections.rst
-    tutorials/using_the_shapereader.rst    
+    tutorials/using_the_shapereader.rst
     tutorials/understanding_transform.rst
     matplotlib/intro.rst
     matplotlib/feature_interface.rst
@@ -66,8 +66,8 @@ outlines recent changes, new features, and future development plans.
 Getting involved
 ================
 
-Cartopy was originally developed at the UK Met Office to allow scientists to visualise 
-their data on maps quickly, easily and most importantly, accurately. 
+Cartopy was originally developed at the UK Met Office to allow scientists to visualise
+their data on maps quickly, easily and most importantly, accurately.
 Cartopy has been made freely available under the terms of the
 `GNU Lesser General Public License <https://www.gnu.org/licenses/lgpl.html>`_. It is suitable to be used in a variety
 of scientific fields and has an :doc:`active development community <contributors>`.
@@ -75,14 +75,14 @@ of scientific fields and has an :doc:`active development community <contributors
 There are many ways to get involved in the development of cartopy:
 
  * If you write a paper which makes use of cartopy, please consider :doc:`citing <citation>` it.
- * If you publish the maps and plots, please consider the required :ref:`attribution of copyright  <referencing_copyright>` for the data. 
+ * If you publish the maps and plots, please consider the required :ref:`attribution of copyright  <referencing_copyright>` for the data.
  * Report bugs and problems with the code or documentation to https://github.com/SciTools/cartopy/issues (please look to see if there are any outstanding
    bugs which cover the issue before making a new one).
  * Help others with support questions on `stackoverflow <https://stackoverflow.com/questions/tagged/cartopy>`_.
  * Contribute to the documentation fixing typos, adding examples, explaining things more clearly, or even
    re-designing its layout/logos etc.. The `documentation source <https://github.com/SciTools/cartopy>`_ is kept in the same repository as the source code.
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bug>`).
- * Contribute enhancements and new features 
+ * Contribute enhancements and new features
    (:issues:`a wish list of features can also be found on github <wishlist>`).
 
 Development discussion takes place on the `matplotlib-devel mailing list

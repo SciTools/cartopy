@@ -21,6 +21,8 @@ lib/cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
 docs/source/examples
 docs/source/gallery.rst
+docs/source/gallery
+docs/source/api
 
 # some data files:
 lib/cartopy/data/SRTM3
@@ -40,9 +42,13 @@ lib/cartopy/siteconfig.py
 \#*
 \.\#*
 *.swp
+.ipynb_checkpoints/
 
 # Operating system files
 \.DS_Store
+.cache/
+__pycache__/
 
 # Egg that gets created with 'pip install -v -e .'
 lib/Cartopy.egg-info/
+.eggs/
