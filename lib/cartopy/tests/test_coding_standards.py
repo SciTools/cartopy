@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2016, Met Office
+# (C) British Crown Copyright 2012 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,7 +23,6 @@ from itertools import chain
 import os
 import re
 import subprocess
-import unittest
 
 import pep8
 
@@ -62,7 +61,7 @@ REPO_DIR = os.getenv('CARTOPY_GIT_DIR',
                      os.path.dirname(os.path.dirname(CARTOPY_DIR)))
 
 
-class TestLicenseHeaders(unittest.TestCase):
+class TestLicenseHeaders(object):
     @staticmethod
     def years_of_license_in_file(fh):
         """
@@ -162,7 +161,7 @@ class TestLicenseHeaders(unittest.TestCase):
             raise ValueError('There were license header failures. See stdout.')
 
 
-class TestCodeFormat(unittest.TestCase):
+class TestCodeFormat(object):
     def test_pep8_conformance(self):
         # Tests the cartopy codebase against the "pep8" tool.
         #
@@ -187,11 +186,11 @@ class TestCodeFormat(unittest.TestCase):
             pep8style.options.exclude.extend(extra_exclude)
 
         result = pep8style.check_files([CARTOPY_DIR])
-        self.assertEqual(result.total_errors, 0, "Found code syntax "
-                                                 "errors (and warnings).")
+        assert result.total_errors == 0, \
+            "Found code syntax errors (and warnings)."
 
 
-class TestFutureImports(unittest.TestCase):
+class TestFutureImports(object):
     excluded = (
         '*/cartopy/examples/*.py',
         '*/docs/source/examples/*.py',
@@ -234,7 +233,3 @@ class TestFutureImports(unittest.TestCase):
         if failed:
             raise ValueError('There were __future__ import check failures. '
                              'See stdout.')
-
-
-if __name__ == '__main__':
-    unittest.main()

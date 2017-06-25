@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -14,24 +14,17 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-"""
-Tests for the Rotated Geodetic coordinate system.
-
-"""
 
 from __future__ import (absolute_import, division, print_function)
 
-import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 
-class TestRotatedGeodetic(object):
-    def check_proj4_params(self, crs, expected):
-        pro4_params = sorted(crs.proj4_init.split(' +'))
-        assert expected == pro4_params
-
-    def test_default(self):
-        geos = ccrs.RotatedGeodetic(30, 15, 27)
-        expected = ['+datum=WGS84', 'ellps=WGS84', 'lon_0=210', 'no_defs',
-                    'o_lat_p=15', 'o_lon_p=27', 'o_proj=latlon',
-                    'proj=ob_tran', 'to_meter=0.0174532925199433']
-        self.check_proj4_params(geos, expected)
+class TestFeatures(object):
+    def test_change_scale(self):
+        # Check that features can easily be retrieved with a different scale.
+        new_lakes = cfeature.LAKES.with_scale('10m')
+        assert new_lakes.scale == '10m'
+        assert new_lakes.kwargs == cfeature.LAKES.kwargs
+        assert new_lakes.category == cfeature.LAKES.category
+        assert new_lakes.name == cfeature.LAKES.name

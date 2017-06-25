@@ -614,7 +614,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return return_value
 
 
-class _RectangularProjection(Projection):
+class _RectangularProjection(six.with_metaclass(ABCMeta, Projection)):
     """
     The abstract superclass of projections with a rectangular domain which
     is symmetric about the origin.
@@ -640,7 +640,8 @@ class _RectangularProjection(Projection):
         return (-self._half_height, self._half_height)
 
 
-class _CylindricalProjection(_RectangularProjection):
+class _CylindricalProjection(six.with_metaclass(ABCMeta,
+                                                _RectangularProjection)):
     """
     The abstract class which denotes cylindrical projections where we
     want to allow x values to wrap around.
@@ -1399,7 +1400,7 @@ class Orthographic(Projection):
         return self._ylim
 
 
-class _WarpedRectangularProjection(Projection):
+class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
     def __init__(self, proj4_params, central_longitude, globe=None):
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
@@ -1457,7 +1458,6 @@ class Robinson(_WarpedRectangularProjection):
         # Warn when using Robinson with proj4 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://trac.osgeo.org/proj/ticket/113).
-        import re
         if PROJ4_VERSION != ():
             if (4, 8) <= PROJ4_VERSION < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '
@@ -1608,19 +1608,22 @@ class InterruptedGoodeHomolosine(Projection):
 class _Satellite(Projection):
     def __init__(self, projection, satellite_height=35785831,
                  central_longitude=0.0, central_latitude=0.0,
-                 false_easting=0, false_northing=0, globe=None):
+                 false_easting=0, false_northing=0, globe=None,
+                 sweep_axis=None):
         proj4_params = [('proj', projection), ('lon_0', central_longitude),
                         ('lat_0', central_latitude), ('h', satellite_height),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
+        if sweep_axis:
+            proj4_params.append(('sweep', sweep_axis))
         super(_Satellite, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
         b = np.float(self.globe.semiminor_axis or a)
         h = np.float(satellite_height)
-        max_x = h * math.atan(a / (a + h))
-        max_y = h * math.atan(b / (b + h))
+        max_x = h * np.arcsin(a / (a + h))
+        max_y = h * np.arcsin(b / (a + h))
 
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
@@ -1652,7 +1655,8 @@ class Geostationary(_Satellite):
 
     """
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
-                 false_easting=0, false_northing=0, globe=None):
+                 false_easting=0, false_northing=0, globe=None,
+                 sweep_axis='y'):
         super(Geostationary, self).__init__(
             projection='geos',
             satellite_height=satellite_height,
@@ -1660,7 +1664,8 @@ class Geostationary(_Satellite):
             central_latitude=0.0,
             false_easting=false_easting,
             false_northing=false_northing,
-            globe=globe)
+            globe=globe,
+            sweep_axis=sweep_axis)
 
 
 class NearsidePerspective(_Satellite):

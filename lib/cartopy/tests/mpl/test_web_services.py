@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,17 +17,16 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import matplotlib.pyplot as plt
+import pytest
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 import cartopy.crs as ccrs
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
-@ImageTesting(['wmts'])
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@ImageTesting(['wmts'], tolerance=7.56 if MPL_VERSION < '2' else 0)
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())
     url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
@@ -35,15 +34,10 @@ def test_wmts():
     ax.add_wmts(url, 'MODIS_Water_Mask')
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
-@ImageTesting(['wms'])
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@ImageTesting(['wms'], tolerance=7.76 if MPL_VERSION < '2' else 0)
 def test_wms():
     ax = plt.axes(projection=ccrs.Orthographic())
     url = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
     layer = 'basic'
     ax.add_wms(url, layer)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

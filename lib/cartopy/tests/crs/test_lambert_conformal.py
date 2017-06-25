@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,17 +18,16 @@
 from __future__ import (absolute_import, division, print_function)
 
 from numpy.testing import assert_array_almost_equal
-from nose.tools import assert_equal, assert_not_equal, assert_true
-import unittest
+import pytest
 
 import cartopy.crs as ccrs
 
 
 def test_defaults():
     crs = ccrs.LambertConformal()
-    assert_equal(crs.proj4_init, ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
-                                  '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
-                                  '+lat_2=45 +no_defs'))
+    assert crs.proj4_init == ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
+                              '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
+                              '+lat_2=45 +no_defs')
 
 
 def test_default_with_cutoff():
@@ -36,17 +35,16 @@ def test_default_with_cutoff():
     crs2 = ccrs.LambertConformal(cutoff=-80)
     default = ccrs.LambertConformal()
 
-    assert_equal(crs.proj4_init, ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
-                                  '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
-                                  '+lat_2=45 +no_defs'))
+    assert crs.proj4_init == ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
+                              '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
+                              '+lat_2=45 +no_defs')
 
     # Check the behaviour of !=, == and (not ==) for the different cutoffs.
-    assert_equal(crs, crs2)
-    assert_true(crs != default)
-    assert_not_equal(crs, default)
+    assert crs == crs2
+    assert crs != default
 
-    assert_not_equal(hash(crs), hash(default))
-    assert_equal(hash(crs), hash(crs2))
+    assert hash(crs) != hash(default)
+    assert hash(crs) == hash(crs2)
 
     assert_array_almost_equal(crs.y_limits,
                               (-49788019.81831982, 30793476.08487709))
@@ -60,24 +58,24 @@ def test_specific_lambert():
                                 false_easting=4000000,
                                 false_northing=2800000,
                                 globe=ccrs.Globe(ellipse='GRS80'))
-    assert_equal(crs.proj4_init, ('+ellps=GRS80 +proj=lcc +lon_0=10 '
-                                  '+lat_0=52 +x_0=4000000 +y_0=2800000 '
-                                  '+lat_1=35 +lat_2=65 +no_defs'))
+    assert crs.proj4_init == ('+ellps=GRS80 +proj=lcc +lon_0=10 +lat_0=52 '
+                              '+x_0=4000000 +y_0=2800000 +lat_1=35 +lat_2=65 '
+                              '+no_defs')
 
 
-class Test_LambertConformal_standard_parallels(unittest.TestCase):
+class Test_LambertConformal_standard_parallels(object):
     def test_single_value(self):
         crs = ccrs.LambertConformal(standard_parallels=[1.])
-        assert_equal(crs.proj4_init, ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
-                                      '+lat_0=39.0 +x_0=0.0 +y_0=0.0 '
-                                      '+lat_1=1.0 +no_defs'))
+        assert crs.proj4_init == ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
+                                  '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=1.0 '
+                                  '+no_defs')
 
     def test_no_parallel(self):
-        with self.assertRaisesRegexp(ValueError, '1 or 2 standard parallels'):
+        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[])
 
     def test_too_many_parallel(self):
-        with self.assertRaisesRegexp(ValueError, '1 or 2 standard parallels'):
+        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[1, 2, 3])
 
     def test_single_spole(self):
@@ -97,8 +95,3 @@ class Test_LambertConformal_standard_parallels(unittest.TestCase):
         assert_array_almost_equal(n_pole_crs.y_limits,
                                   (-8164817, 360848720),
                                   decimal=0)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

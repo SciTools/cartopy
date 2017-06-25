@@ -52,8 +52,8 @@ from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
-assert matplotlib.__version__ >= '1.3', ('Cartopy is only supported with '
-                                         'matplotlib 1.3 or greater.')
+assert mpl.__version__ >= '1.3', ('Cartopy is only supported with '
+                                  'Matplotlib 1.3 or greater.')
 
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
@@ -681,6 +681,20 @@ class GeoAxes(matplotlib.axes.Axes):
         self.set_xlim(self.projection.x_limits)
         self.set_ylim(self.projection.y_limits)
 
+    def autoscale_view(self, tight=None, scalex=True, scaley=True):
+        matplotlib.axes.Axes.autoscale_view(self, tight=tight,
+                                            scalex=scalex, scaley=scaley)
+        # Limit the resulting bounds to valid area.
+        if scalex and self._autoscaleXon:
+            bounds = self.get_xbound()
+            self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
+                            min(bounds[1], self.projection.x_limits[1]))
+        if scaley and self._autoscaleYon:
+            bounds = self.get_ybound()
+            self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
+                            min(bounds[1], self.projection.y_limits[1]))
+    autoscale_view.__doc__ = matplotlib.axes.Axes.autoscale_view.__doc__
+
     def set_xticks(self, ticks, minor=False, crs=None):
         """
         Set the x ticks.
@@ -1231,25 +1245,21 @@ class GeoAxes(matplotlib.axes.Axes):
             transform = transform._as_mpl_transform(self)
 
         if self.background_patch is None:
-            background = matplotlib.patches.PathPatch(path, edgecolor='none',
-                                                      facecolor='white',
-                                                      zorder=-1, clip_on=False,
-                                                      transform=transform)
+            background = mpatches.PathPatch(path, edgecolor='none',
+                                            facecolor='white', zorder=-1,
+                                            clip_on=False, transform=transform)
         else:
-            background = matplotlib.patches.PathPatch(path, zorder=-1,
-                                                      clip_on=False)
+            background = mpatches.PathPatch(path, zorder=-1, clip_on=False)
             background.update_from(self.background_patch)
             self.background_patch.remove()
             background.set_transform(transform)
 
         if self.outline_patch is None:
-            outline = matplotlib.patches.PathPatch(path, edgecolor='black',
-                                                   facecolor='none',
-                                                   zorder=2.5, clip_on=False,
-                                                   transform=transform)
+            outline = mpatches.PathPatch(path, edgecolor='black',
+                                         facecolor='none', zorder=2.5,
+                                         clip_on=False, transform=transform)
         else:
-            outline = matplotlib.patches.PathPatch(path, zorder=2.5,
-                                                   clip_on=False)
+            outline = mpatches.PathPatch(path, zorder=2.5, clip_on=False)
             outline.update_from(self.outline_patch)
             self.outline_patch.remove()
             outline.set_transform(transform)
@@ -1403,19 +1413,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         import warnings
-        import numpy as np
-        import numpy.ma as ma
-        import matplotlib as mpl
-        import matplotlib.cbook as cbook
         import matplotlib.colors as mcolors
-        import matplotlib.cm as cm
-        from matplotlib import docstring
-        import matplotlib.transforms as transforms
-        import matplotlib.artist as artist
-        from matplotlib.artist import allow_rasterization
-        import matplotlib.backend_bases as backend_bases
-        import matplotlib.path as mpath
-        import matplotlib.mlab as mlab
         import matplotlib.collections as mcoll
 
         if not self._hold:

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,21 +17,18 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from nose.tools import assert_equal
 
 import cartopy.crs as ccrs
 
 
-class TestAzimuthalEquidistant(unittest.TestCase):
+class TestAzimuthalEquidistant(object):
     def test_default(self):
         aeqd = ccrs.AzimuthalEquidistant()
         expected = ('+ellps=WGS84 +proj=aeqd +lon_0=0.0 '
                     '+lat_0=0.0 +x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(aeqd.proj4_init, expected)
+        assert aeqd.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20037508.34278924, 20037508.34278924], decimal=6)
@@ -44,7 +41,7 @@ class TestAzimuthalEquidistant(unittest.TestCase):
         aeqd = ccrs.AzimuthalEquidistant(globe=globe)
         expected = ('+a=1000 +b=500 +proj=aeqd +lon_0=0.0 +lat_0=0.0 '
                     '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(aeqd.proj4_init, expected)
+        assert aeqd.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-3141.59265359, 3141.59265359], decimal=6)
@@ -57,7 +54,7 @@ class TestAzimuthalEquidistant(unittest.TestCase):
 
         expected = ('+ellps=WGS84 +proj=aeqd +lon_0=0.0 +lat_0=0.0 '
                     '+x_0=1234 +y_0=-4321 +no_defs')
-        assert_equal(aeqd_offset.proj4_init, expected)
+        assert aeqd_offset.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd_offset.x_limits),
                             [-20036274.34278924, 20038742.34278924], decimal=6)
@@ -75,7 +72,7 @@ class TestAzimuthalEquidistant(unittest.TestCase):
 
         expected = ('+a=1.0 +b=1.0 +proj=aeqd +lon_0=0.0 +lat_0=0.0 '
                     '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(aeqd.proj4_init, expected)
+        assert aeqd.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-3.14159265, 3.14159265], decimal=6)
@@ -144,7 +141,7 @@ class TestAzimuthalEquidistant(unittest.TestCase):
 
         expected = ('+a=3.0 +b=3.0 +proj=aeqd +lon_0=-100.0 +lat_0=40.0 '
                     '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(aeqd.proj4_init, expected)
+        assert aeqd.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-9.42477796, 9.42477796], decimal=6)
@@ -166,7 +163,7 @@ class TestAzimuthalEquidistant(unittest.TestCase):
 
         expected = ('+a=6378388.0 +f=0.003367003355798981 +proj=aeqd '
                     '+lon_0=-100.0 +lat_0=90.0 +x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(aeqd.proj4_init, expected)
+        assert aeqd.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20038296.88254529, 20038296.88254529], decimal=6)
@@ -196,7 +193,7 @@ class TestAzimuthalEquidistant(unittest.TestCase):
         expected = ('+a=6378206.4 +f=0.003390076308689371 +proj=aeqd '
                     '+lon_0=144.7487507055556 +lat_0=13.47246635277778 '
                     '+x_0=50000.0 +y_0=50000.0 +no_defs')
-        assert_equal(aeqd.proj4_init, expected)
+        assert aeqd.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-19987726.36931940, 20087726.36931940], decimal=6)
@@ -230,7 +227,7 @@ class TestAzimuthalEquidistant(unittest.TestCase):
         expected = ('+a=6378206.4 +f=0.003390076308689371 +proj=aeqd '
                     '+lon_0=145.7416588888889 +lat_0=15.18491194444444 '
                     '+x_0=28657.52 +y_0=67199.99000000001 +no_defs')
-        assert_equal(aeqd.proj4_init, expected)
+        assert aeqd.proj4_init == expected
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20009068.84931940, 20066383.88931940], decimal=6)
@@ -245,8 +242,3 @@ class TestAzimuthalEquidistant(unittest.TestCase):
         result = aeqd.transform_point(pt_lon, pt_lat, geodetic)
 
         assert_array_almost_equal(result, [34176.20, 74017.88], decimal=2)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

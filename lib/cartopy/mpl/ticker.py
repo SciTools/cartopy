@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2016, Met Office
+# (C) British Crown Copyright 2014 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -235,7 +235,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             ax.set_global()
             ax.set_xticks([0, 60, 120, 180, 240, 300, 360],
                           crs=ccrs.PlateCarree())
-            ont_formatter = LongitudeFormatter()
+            lon_formatter = LongitudeFormatter()
             ax.xaxis.set_major_formatter(lon_formatter)
 
         """

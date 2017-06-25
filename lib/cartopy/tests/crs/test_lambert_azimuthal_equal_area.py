@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,21 +17,18 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal
-from nose.tools import assert_equal
 
 import cartopy.crs as ccrs
 
 
-class TestLambertAzimuthalEqualArea(unittest.TestCase):
+class TestLambertAzimuthalEqualArea(object):
     def test_default(self):
         crs = ccrs.LambertAzimuthalEqualArea()
         expected = ('+ellps=WGS84 +proj=laea +lon_0=0.0 '
                     '+lat_0=0.0 +x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(crs.proj4_init, expected)
+        assert crs.proj4_init == expected
 
         assert_almost_equal(np.array(crs.x_limits),
                             [-12755636.1863, 12755636.1863],
@@ -46,7 +43,7 @@ class TestLambertAzimuthalEqualArea(unittest.TestCase):
         crs = ccrs.LambertAzimuthalEqualArea(globe=globe)
         expected = ('+a=1000 +b=500 +proj=laea +lon_0=0.0 +lat_0=0.0 '
                     '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(crs.proj4_init, expected)
+        assert crs.proj4_init == expected
 
         assert_almost_equal(np.array(crs.x_limits),
                             [-1999.9, 1999.9], decimal=1)
@@ -59,13 +56,6 @@ class TestLambertAzimuthalEqualArea(unittest.TestCase):
                                                     false_northing=-4321)
         expected = ('+ellps=WGS84 +proj=laea +lon_0=0.0 +lat_0=0.0 '
                     '+x_0=1234 +y_0=-4321 +no_defs')
-        assert_equal(crs_offset.proj4_init, expected)
-        assert_equal(tuple(np.array(crs.x_limits) + 1234),
-                     crs_offset.x_limits)
-        assert_equal(tuple(np.array(crs.y_limits) - 4321),
-                     crs_offset.y_limits)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
+        assert crs_offset.proj4_init == expected
+        assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
+        assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits

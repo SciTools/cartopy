@@ -49,11 +49,12 @@ def geos_image():
 
 
 def main():
-    ax = plt.axes(projection=ccrs.Miller())
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Miller())
     ax.coastlines()
     ax.set_global()
     img, crs, extent, origin = geos_image()
-    plt.imshow(img, transform=crs, extent=extent, origin=origin, cmap='gray')
+    ax.imshow(img, transform=crs, extent=extent, origin=origin, cmap='gray')
     plt.show()
 
 

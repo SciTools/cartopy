@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import itertools
 import os
 
 import numpy as np
@@ -94,11 +93,13 @@ if __name__ == '__main__':
             aspect = (np.diff(prj_inst.x_limits) /
                       np.diff(prj_inst.y_limits))[0]
             width = 3 * aspect
-            if width == int(width):
-                width = int(width)
+            width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
 
-            instance_params = ', '.join('{}={}'.format(k, v)
-                                        for k, v in instance_args.items())
+            instance_params = ',\n        '.join(
+                '{}={}'.format(k, v)
+                for k, v in sorted(instance_args.items()))
+            if instance_params:
+                instance_params = '\n        ' + instance_params
             instance_creation_code = '{}({})'.format(name, instance_params)
             code = """
 .. plot::

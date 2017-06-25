@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -283,7 +283,6 @@ def gen_examples(app):
     examples_code(example_package_name, source_dir, 'examples')
 
 
-@cartopy.tests.not_a_nose_fixture
 def setup(app):
     app.connect('builder-inited', gen_gallery)
     app.connect('builder-inited', gen_examples)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -20,7 +20,6 @@
 Combines the shapefile access of pyshp with the
 geometry representation of shapely:
 
-    >>> import os.path
     >>> import cartopy.io.shapereader as shapereader
     >>> filename = natural_earth(resolution='110m',
     ...                          category='physical',

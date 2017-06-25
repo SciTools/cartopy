@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,13 +23,12 @@ import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
-import six
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
 
 
-degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 2, 3, 6, 15, 18])
+degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 
 _DEGREE_SYMBOL = u'\u00B0'
 
@@ -175,6 +174,12 @@ class Gridliner(object):
         #: for styling of the text labels.
         self.ylabel_style = {}
 
+        #: The padding from the map edge to the x labels in points.
+        self.xpadding = 5
+
+        #: The padding from the map edge to the y labels in points.
+        self.ypadding = 5
+
         self.crs = crs
 
         # if the user specifies tick labels at this point, check if they can
@@ -236,9 +241,10 @@ class Gridliner(object):
 
         """
         transform = self._crs_transform()
-        shift_dist_points = 5     # A margin from the map edge.
-        if upper_end is False:
-            shift_dist_points = -shift_dist_points
+        if upper_end:
+            shift_scale = 1
+        else:
+            shift_scale = -1
         if axis == 'x':
             x = value
             y = 1.0 if upper_end else 0.0
@@ -248,19 +254,22 @@ class Gridliner(object):
             tr_y = self.axes.transAxes + \
                 mtrans.ScaledTranslation(
                     0.0,
-                    shift_dist_points * (1.0 / 72),
+                    shift_scale * self.xpadding * (1.0 / 72),
                     self.axes.figure.dpi_scale_trans)
             str_value = self.xformatter(value)
             user_label_style = self.xlabel_style
         elif axis == 'y':
             y = value
             x = 1.0 if upper_end else 0.0
-            v_align = 'center'
+            if matplotlib.__version__ > '2.0':
+                v_align = 'center_baseline'
+            else:
+                v_align = 'center'
             h_align = 'left' if upper_end else 'right'
             tr_y = transform
             tr_x = self.axes.transAxes + \
                 mtrans.ScaledTranslation(
-                    shift_dist_points * (1.0 / 72),
+                    shift_scale * self.ypadding * (1.0 / 72),
                     0.0,
                     self.axes.figure.dpi_scale_trans)
             str_value = self.yformatter(value)
@@ -408,35 +417,24 @@ class Gridliner(object):
         y = np.linspace(1e-9, 1 - 1e-9, ny)
         x, y = np.meshgrid(x, y)
 
-        coords = np.concatenate([x.flatten()[:, None],
-                                 y.flatten()[:, None]],
-                                1)
+        coords = np.column_stack((x.ravel(), y.ravel()))
 
         in_data = desired_trans.transform(coords)
 
         ax_to_bkg_patch = self.axes.transAxes - \
             background_patch.get_transform()
 
-        ok = np.zeros(in_data.shape[:-1], dtype=np.bool)
-        # XXX Vectorise contains_point
-        for i, val in enumerate(in_data):
-            # convert the coordinates of the data to the background
-            # patches coordinates
-            background_coord = ax_to_bkg_patch.transform(coords[i:i + 1, :])
-            bkg_patch_contains = background_patch.get_path().contains_point
-            if bkg_patch_contains(background_coord[0, :]):
-                color = 'r'
-                ok[i] = True
-            else:
-                color = 'b'
+        # convert the coordinates of the data to the background patches
+        # coordinates
+        background_coord = ax_to_bkg_patch.transform(coords)
+        ok = background_patch.get_path().contains_points(background_coord)
 
-            if DEBUG:
-                import matplotlib.pyplot as plt
-                plt.plot(coords[i, 0], coords[i, 1], 'o' + color,
-                         clip_on=False, transform=ax_transform)
-#                plt.text(coords[i, 0], coords[i, 1], str(val), clip_on=False,
-#                         transform=ax_transform, rotation=23,
-#                         horizontalalignment='right')
+        if DEBUG:
+            import matplotlib.pyplot as plt
+            plt.plot(coords[ok, 0], coords[ok, 1], 'or',
+                     clip_on=False, transform=ax_transform)
+            plt.plot(coords[~ok, 0], coords[~ok, 1], 'ob',
+                     clip_on=False, transform=ax_transform)
 
         inside = in_data[ok, :]
 

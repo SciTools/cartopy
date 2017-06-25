@@ -95,7 +95,7 @@ def main():
 
     # Pick a suitable location for the map (which is in an Azimuthal
     # Equidistant projection).
-    ax = plt.axes([0.25, 0.24, 0.5, 0.54], projection=az_eq)
+    ax = fig.add_axes([0.25, 0.24, 0.5, 0.54], projection=az_eq)
 
     # The background patch and outline patch are not needed in this example.
     ax.background_patch.set_facecolor('none')

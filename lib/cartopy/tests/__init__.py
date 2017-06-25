@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -16,34 +16,3 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
-
-import contextlib
-import functools
-import re
-import tempfile
-import shutil
-import types
-
-
-@contextlib.contextmanager
-def temp_dir(suffix=None):
-    if suffix is None:
-        suffix = ''
-    dname = tempfile.mkdtemp(suffix=suffix)
-    try:
-        yield dname
-    finally:
-        shutil.rmtree(dname)
-
-
-def not_a_nose_fixture(function):
-    """
-    Provides a decorator to mark a function as not a nose fixture.
-
-    """
-    @functools.wraps(function)
-    def setup(app):
-        if isinstance(app, types.ModuleType):
-            return
-        return function(app)
-    return setup
