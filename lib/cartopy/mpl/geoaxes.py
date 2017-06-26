@@ -1531,11 +1531,11 @@ class GeoAxes(matplotlib.axes.Axes):
                         np.diff(transformed_pts[..., 1], axis=1)
                     )
 
-                # if the change in angle is greater than 90 degrees (absolute),
-                # then mark it for masking later on.
-                dx_horizontal = np.diff(horizontal_vert_angles)
-                to_mask = ((np.abs(dx_horizontal) > np.pi / 2) |
-                           np.isnan(dx_horizontal))
+                    # if the change in angle is greater than 90 degrees
+                    # (absolute), then mark it for masking later on.
+                    dx_horizontal = np.diff(horizontal_vert_angles)
+                    to_mask = ((np.abs(dx_horizontal) > np.pi / 2) |
+                               np.isnan(dx_horizontal))
 
                 if np.any(to_mask):
                     if collection.get_cmap()._rgba_bad[3] != 0.0:
