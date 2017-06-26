@@ -1455,7 +1455,7 @@ class GeoAxes(matplotlib.axes.Axes):
         t = collection._transform
         if (not isinstance(t, mtransforms.Transform) and
                 hasattr(t, '_as_mpl_transform')):
-            t = t._as_mpl_transform(self.axes)
+            t = t._as_mpl_transform(self)
 
         if t and any(t.contains_branch_seperately(self.transData)):
             trans_to_data = t - self.transData
@@ -1614,8 +1614,8 @@ class GeoAxes(matplotlib.axes.Axes):
         result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
 
         # Update the datalim for this pcolor.
-        limits = result.get_datalim(self.axes.transData)
-        self.axes.update_datalim(limits)
+        limits = result.get_datalim(self.transData)
+        self.update_datalim(limits)
 
         self.autoscale_view()
         return result
