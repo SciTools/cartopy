@@ -22,6 +22,7 @@ docs/source/cartopy_outline.rst
 docs/source/examples
 docs/source/gallery.rst
 docs/source/gallery
+docs/source/api
 
 # some data files:
 lib/cartopy/data/SRTM3

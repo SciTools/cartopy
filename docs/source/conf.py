@@ -45,7 +45,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
               'cartopy.sphinxext.summarise_package',
-              'cartopy.sphinxext.gallery',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
@@ -92,7 +91,7 @@ release = cartopy.__version__
 
 # Sphinx gallery configuration
 sphinx_gallery_conf = {
-    'examples_dirs': ['../../lib/cartopy/gallery'],
+    'examples_dirs': ['../../lib/cartopy/examples'],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
     'doc_module': ('cartopy'),
@@ -360,14 +359,6 @@ summarise_package_exclude_directories = [['tests', 'examples', 'sphinxext']]
 summarise_package_fnames = ['cartopy_outline.rst']
 
 
-############ gallery/examples extension ###########
-
-#gallery_allowed_tags = None
-#gallery_tag_order = None
-gallery_name = 'gallery.rst'
-examples_package_name = 'cartopy.examples'
-
-
 ############ plot directive ##############
 
 plot_html_show_formats = False
@@ -376,10 +367,10 @@ plot_rcparams = {'figure.subplot.bottom': 0.04,
                  'figure.subplot.top': 0.96,
                  'figure.subplot.left': 0.04,
                  'figure.subplot.right': 0.96}
-plot_formats = (('thumb.png', 20),
+plot_formats = [('thumb.png', 20),
                 'png',
                 'pdf'
-                )
+                ]
 
 
 ############ autodoc config ##############
