@@ -1435,12 +1435,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # convert to one dimensional arrays
         C = C.ravel()
-        X = X.ravel()
-        Y = Y.ravel()
-
-        coords = np.zeros(((Nx * Ny), 2), dtype=float)
-        coords[:, 0] = X
-        coords[:, 1] = Y
+        coords = np.column_stack((X.flat, Y.flat)).astype(float, copy=False)
 
         collection = mcoll.QuadMesh(
             Nx - 1, Ny - 1, coords,
@@ -1464,33 +1459,23 @@ class GeoAxes(matplotlib.axes.Axes):
 
         if t and any(t.contains_branch_seperately(self.transData)):
             trans_to_data = t - self.transData
-            pts = np.vstack([X, Y]).T.astype(np.float)
-            transformed_pts = trans_to_data.transform(pts)
-            X = transformed_pts[..., 0]
-            Y = transformed_pts[..., 1]
-
             ########################
             # PATCH
-            # XXX Non-standard matplotlib thing.
-            no_inf = (X != np.inf) & (Y != np.inf)
-            X = X[no_inf]
-            Y = Y[no_inf]
-            # END OF PATCH
-            ##############
+            # XXX Non-standard Matplotlib thing:
+            # * Check for point existence after transform
+            # * Save non-transformed coords for later work
+            transformed_pts = trans_to_data.transform(coords)
 
-        ########################
-        # PATCH
-        # XXX Non-standard matplotlib thing (length check).
-        if len(X):
-            minx = np.amin(X)
-            maxx = np.amax(X)
+            no_inf = ~np.any(np.isinf(transformed_pts), axis=1)
+            if np.any(no_inf):
+                minx, miny = np.min(transformed_pts[no_inf], axis=0)
+                maxx, maxy = np.max(transformed_pts[no_inf], axis=0)
+            else:
+                minx = maxx = miny = maxy = np.nan
         else:
-            minx = maxx = np.nan
-        if len(Y):
-            miny = np.amin(Y)
-            maxy = np.amax(Y)
-        else:
-            miny = maxy = np.nan
+            transformed_pts = coords
+            minx, miny = np.min(coords, axis=0)
+            maxx, maxy = np.max(coords, axis=0)
         # END OF PATCH
         ##############
 
@@ -1578,7 +1563,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     else:
                         pcolor_data = np.ma.array(C, mask=~mask)
 
-                    pts = pts.reshape((Ny, Nx, 2))
+                    pts = coords.reshape((Ny, Nx, 2))
                     if np.any(~pcolor_data.mask):
                         # plot with slightly lower zorder to avoid odd issue
                         # where the main plot is obscured
