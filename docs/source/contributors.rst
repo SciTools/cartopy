@@ -35,6 +35,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Zachary Tessler
  * Daniel Eriksson
  * Crispian Batstone
+ * Daryl Herzmann
 
 
 Thank you!
