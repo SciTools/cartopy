@@ -1561,25 +1561,22 @@ class GeoAxes(matplotlib.axes.Axes):
                     mask[:, 1:][to_mask_x_shift] = True
 
                     C_mask = getattr(C, 'mask', None)
-                    if C_mask is not None:
-                        dmask = mask | C_mask
-                    else:
-                        dmask = mask
 
                     # create the masked array to be used with this pcolormesh
-                    pcolormesh_data = np.ma.array(C, mask=mask)
+                    if C_mask is not None:
+                        pcolormesh_data = np.ma.array(C, mask=mask | C_mask)
+                    else:
+                        pcolormesh_data = np.ma.array(C, mask=mask)
 
                     collection.set_array(pcolormesh_data.ravel())
 
                     # now that the pcolormesh has masked the bad values,
                     # create a pcolor with just those values that were masked
-                    pcolor_data = pcolormesh_data.copy()
-                    # invert the mask
-                    pcolor_data.mask = ~pcolor_data.mask
-
-                    # remember to re-apply the original data mask to the array
                     if C_mask is not None:
-                        pcolor_data.mask = pcolor_data.mask | C_mask
+                        # remember to re-apply the original data mask
+                        pcolor_data = np.ma.array(C, mask=~mask | C_mask)
+                    else:
+                        pcolor_data = np.ma.array(C, mask=~mask)
 
                     pts = pts.reshape((Ny, Nx, 2))
                     if np.any(~pcolor_data.mask):
