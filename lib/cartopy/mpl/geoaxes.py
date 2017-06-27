@@ -1508,19 +1508,17 @@ class GeoAxes(matplotlib.axes.Axes):
                 C = C.reshape((Ny - 1, Nx - 1))
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
 
-                # compute the vertical line angles of the pcolor in
-                # transformed coordinates
+                # Compute the length of edges in transformed coordinates
                 with np.errstate(invalid='ignore'):
-                    horizontal_vert_angles = np.arctan2(
+                    edge_lengths = np.hypot(
                         np.diff(transformed_pts[..., 0], axis=1),
                         np.diff(transformed_pts[..., 1], axis=1)
                     )
-
-                    # if the change in angle is greater than 90 degrees
-                    # (absolute), then mark it for masking later on.
-                    dx_horizontal = np.diff(horizontal_vert_angles)
-                    to_mask = ((np.abs(dx_horizontal) > np.pi / 2) |
-                               np.isnan(dx_horizontal))
+                    to_mask = (
+                        (edge_lengths > abs(self.projection.x_limits[1] -
+                                            self.projection.x_limits[0]) / 2) |
+                        np.isnan(edge_lengths)
+                    )
 
                 if np.any(to_mask):
                     if collection.get_cmap()._rgba_bad[3] != 0.0:
@@ -1529,21 +1527,15 @@ class GeoAxes(matplotlib.axes.Axes):
                                       "map it must be fully transparent.")
 
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
-                    # a shape of (Ny, Nx-2) and pts has a shape of (Ny*Nx, 2)
+                    # a shape of (Ny, Nx-1) and pts has a shape of (Ny*Nx, 2)
 
                     mask = np.zeros(C.shape, dtype=np.bool)
 
-                    # mask out the neighbouring cells if there was a cell
-                    # found with an angle change of more than pi/2 . NB.
-                    # Masking too much only has a detrimental impact on
-                    # performance.
-                    to_mask_y_shift = to_mask[:-1, :]
-                    mask[:, :-1][to_mask_y_shift] = True
-                    mask[:, 1:][to_mask_y_shift] = True
-
-                    to_mask_x_shift = to_mask[1:, :]
-                    mask[:, :-1][to_mask_x_shift] = True
-                    mask[:, 1:][to_mask_x_shift] = True
+                    # Mask out the neighbouring cells if there was an edge
+                    # found with a large length. NB. Masking too much only has
+                    # a detrimental impact on performance.
+                    mask[to_mask[:-1, :]] = True  # Edges above a cell.
+                    mask[to_mask[1:, :]] = True  # Edges below a cell.
 
                     C_mask = getattr(C, 'mask', None)
 
