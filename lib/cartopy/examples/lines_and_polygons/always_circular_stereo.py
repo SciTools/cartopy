@@ -1,7 +1,8 @@
 """
-Always Circular Stereo
+Keep Boundary Circular
 ----------------------
 
+Setting the boundary of an image to be circular.
 """
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt

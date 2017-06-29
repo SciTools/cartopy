@@ -52,7 +52,9 @@ def main():
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Miller())
     ax.coastlines()
     ax.set_global()
+    print('Retrieving image...')
     img, crs, extent, origin = geos_image()
+    print('Projecting and plotting image (this may take a while)...')
     ax.imshow(img, transform=crs, extent=extent, origin=origin, cmap='gray')
     plt.show()
 

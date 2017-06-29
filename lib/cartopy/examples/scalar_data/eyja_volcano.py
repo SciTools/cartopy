@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Map tile acquisition
 --------------------
@@ -7,8 +8,10 @@ demand from the Stamen tile server. Internally these tiles are then combined
 into a single image and displayed in the cartopy GeoAxes.
 
 .. _examples-eyja_volcano:
+
+Grabbing the map tiles
+======================
 """
-# -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
 
