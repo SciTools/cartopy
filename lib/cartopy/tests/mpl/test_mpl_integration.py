@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,13 +18,9 @@
 from __future__ import (absolute_import, division, print_function)
 
 import math
+import re
 import warnings
 
-from nose.tools import assert_equal
-try:
-    from nose.tools import assert_regex
-except ImportError:
-    from nose.tools import assert_regexp_matches as assert_regex
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -32,11 +28,16 @@ import six
 
 import cartopy.crs as ccrs
 
-from cartopy.tests import _proj4_version
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
-_ROB_TOL = 0.5 if _proj4_version < 4.9 else 0.1
+_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.1
+if MPL_VERSION >= '2':
+    _STREAMPLOT_IMAGE = 'streamplot'
+elif MPL_VERSION >= '1.5':
+    _STREAMPLOT_IMAGE = 'streamplot_1.5'
+else:
+    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.5'
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -119,7 +120,8 @@ def test_global_scatter_wrap_no_transform():
     plt.scatter(x, y, c=data)
 
 
-@ImageTesting(['global_map'], tolerance=16 if _proj4_version < 4.9 else 0.1)
+@ImageTesting(['global_map'],
+              tolerance=16 if ccrs.PROJ4_VERSION < (4, 9) else 0.1)
 def test_global_map():
     ax = plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
@@ -184,21 +186,21 @@ def test_cursor_values():
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
     x, y = np.array([-969100.]), np.array([-4457000.])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'),
-                 six.b('-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)'))
+    assert (r.encode('ascii', 'ignore') ==
+            six.b('-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)'))
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     x, y = np.array([-181.5]), np.array([50.])
     r = ax.format_coord(x, y)
-    assert_equal(r.encode('ascii', 'ignore'),
-                 six.b('-181.5, 50 (50.000000N, 178.500000E)'))
+    assert (r.encode('ascii', 'ignore') ==
+            six.b('-181.5, 50 (50.000000N, 178.500000E)'))
 
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2]), np.array([2363093.4])
     r = ax.format_coord(x, y)
-    assert_regex(r.encode('ascii', 'ignore'),
-                 six.b('1.606e\\+07, 2.363e\\+06 '
-                       '\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)'))
+    assert re.search(six.b('1.606e\\+07, 2.363e\\+06 '
+                           '\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)'),
+                     r.encode('ascii', 'ignore'))
 
     plt.close()
 
@@ -216,7 +218,7 @@ def test_axes_natural_earth_interface():
                              facecolor='none')
         ax.natural_earth_shp('lakes', facecolor='blue')
 
-    assert_equal(len(all_warnings), 2)
+    assert len(all_warnings) == 2
     for warning in all_warnings:
         msg = str(warning.message)
         assert 'deprecated' in msg
@@ -308,7 +310,7 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global()  # make sure everything is visible
 
 
-@ImageTesting(['pcolormesh_limited_area_wrap'])
+@ImageTesting(['pcolormesh_limited_area_wrap'], tolerance=0.7)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
@@ -324,24 +326,24 @@ def test_pcolormesh_limited_area_wrap():
     plt.figure(figsize=(10, 6))
 
     ax = plt.subplot(221, projection=ccrs.PlateCarree())
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
 
     ax = plt.subplot(222, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
     ax.set_global()
 
     # draw the same plot, only more zoomed in, and using the 2d versions
     # of the coordinates (just to test that 1d and 2d are both suitably
     # being fixed)
-    ax = plt.subplot(223, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(x, y, data, transform=rp, cmap='Set1')
+    ax = plt.subplot(223, projection=ccrs.PlateCarree())
+    plt.pcolormesh(x, y, data, transform=rp, cmap='Spectral')
     ax.coastlines()
     ax.set_extent([-70, 0, 0, 80])
 
     ax = plt.subplot(224, projection=rp)
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Set1')
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
     ax.coastlines()
 
 
@@ -510,9 +512,37 @@ def test_barbs_regrid_with_extent():
              target_extent=target_extent)
 
 
-@ImageTesting(['streamplot'
-               if mpl.__version__ >= '1.5' else
-               'streamplot_pre_mpl_1.5'])
+@ImageTesting(['barbs_1d'])
+def test_barbs_1d():
+    x = np.array([20., 30., -17., 15.])
+    y = np.array([-1., 35., 11., 40.])
+    u = np.array([23., -18., 2., -11.])
+    v = np.array([5., -4., 19., 11.])
+    plot_extent = [-21, 40, -5, 45]
+    plt.figure(figsize=(6, 5))
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
+             length=8, linewidth=1, color='#7f7f7f')
+
+
+@ImageTesting(['barbs_1d_transformed'])
+def test_barbs_1d_transformed():
+    x = np.array([20., 30., -17., 15.])
+    y = np.array([-1., 35., 11., 40.])
+    u = np.array([23., -18., 2., -11.])
+    v = np.array([5., -4., 19., 11.])
+    plot_extent = [-20, 31, -5, 45]
+    plt.figure(figsize=(6, 5))
+    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
+             length=8, linewidth=1, color='#7f7f7f')
+
+
+@ImageTesting([_STREAMPLOT_IMAGE])
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -527,8 +557,3 @@ def test_streamplot():
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
                   density=(1.5, 2), color=mag, linewidth=2*mag)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

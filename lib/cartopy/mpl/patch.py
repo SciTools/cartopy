@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -63,7 +63,7 @@ def geos_to_path(shape):
         return paths
 
     if isinstance(shape, (sgeom.LineString, sgeom.Point)):
-        return [Path(np.vstack(shape.xy).T)]
+        return [Path(np.column_stack(shape.xy))]
     elif isinstance(shape, sgeom.Polygon):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO

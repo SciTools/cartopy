@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,6 +18,8 @@
 from __future__ import (absolute_import, division, print_function)
 
 import base64
+import contextlib
+import distutils
 import os
 import glob
 import shutil
@@ -27,8 +29,14 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.testing.compare as mcompare
-import matplotlib.tests as mtests
 import matplotlib._pylab_helpers as pyplot_helpers
+try:
+    from matplotlib.testing import setup as mpl_setup
+except ImportError:
+    from matplotlib.tests import setup as mpl_setup
+
+
+MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
 
 
 class ImageTesting(object):
@@ -58,10 +66,11 @@ class ImageTesting(object):
         >>> result_fname = img_testing.result_path('<TESTNAME>', '<IMGNAME>')
         >>> img_test_mod_dir = os.path.dirname(cartopy.__file__)
 
-        >>> print 'Result:', os.path.relpath(result_fname, img_test_mod_dir)
-        Result: tests/mpl/output/<TESTNAME>/result-<IMGNAME>.png
+        >>> print('Result:', os.path.relpath(result_fname, img_test_mod_dir))
+        ... # doctest: +ELLIPSIS
+        Result: ...output/<TESTNAME>/result-<IMGNAME>.png
 
-        >>> print 'Expected:', os.path.relpath(exp_fname, img_test_mod_dir)
+        >>> print('Expected:', os.path.relpath(exp_fname, img_test_mod_dir))
         Expected: tests/mpl/baseline_images/mpl/<TESTNAME>/<IMGNAME>.png
 
     .. note::
@@ -87,9 +96,8 @@ class ImageTesting(object):
             image_output_directory = os.path.join(os.getcwd(),
                                                   'cartopy_test_output')
 
-    def __init__(self, img_names, tolerance=(0.1
-                                             if mpl.__version__ < '1.4' else
-                                             0.5)):
+    def __init__(self, img_names,
+                 tolerance=(0.1 if MPL_VERSION < '1.4' else 0.5)):
         # With matplotlib v1.3 the tolerance keyword is an RMS of the pixel
         # differences, as computed by matplotlib.testing.compare.calculate_rms
         self.img_names = img_names
@@ -203,7 +211,7 @@ class ImageTesting(object):
         def wrapped(*args, **kwargs):
             orig_backend = plt.get_backend()
             plt.switch_backend('agg')
-            mtests.setup()
+            mpl_setup()
 
             if pyplot_helpers.Gcf.figs:
                 warnings.warn('Figures existed before running the %s %s test.'
@@ -212,17 +220,25 @@ class ImageTesting(object):
                               (mod_name, test_name))
                 pyplot_helpers.Gcf.destroy_all()
 
-            r = test_func(*args, **kwargs)
+            if MPL_VERSION >= '2':
+                style_context = mpl.style.context
+            else:
+                @contextlib.contextmanager
+                def style_context(style, after_reset=False):
+                    yield
 
-            fig_managers = pyplot_helpers.Gcf._activeQue
-            figures = [manager.canvas.figure for manager in fig_managers]
+            with style_context('classic'):
+                r = test_func(*args, **kwargs)
 
-            try:
-                self.run_figure_comparisons(figures, test_name=mod_name)
-            finally:
-                for figure in figures:
-                    pyplot_helpers.Gcf.destroy_fig(figure)
-                plt.switch_backend(orig_backend)
+                fig_managers = pyplot_helpers.Gcf._activeQue
+                figures = [manager.canvas.figure for manager in fig_managers]
+
+                try:
+                    self.run_figure_comparisons(figures, test_name=mod_name)
+                finally:
+                    for figure in figures:
+                        pyplot_helpers.Gcf.destroy_fig(figure)
+                    plt.switch_backend(orig_backend)
             return r
 
         # nose needs the function's name to be in the form "test_*" to
@@ -284,7 +300,7 @@ def failed_images_html():
 
 
 def show(projection, geometry):
-    orig_backend = matplotlib.get_backend()
+    orig_backend = mpl.get_backend()
     plt.switch_backend('tkagg')
 
     if geometry.type == 'MultiPolygon' and 1:

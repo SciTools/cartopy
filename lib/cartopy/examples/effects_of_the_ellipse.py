@@ -17,7 +17,7 @@ coastlines are shifted as a result of referencing the incorrect ellipse.
 __tags__ = ['Lines and polygons']
 import cartopy.crs as ccrs
 import cartopy.feature
-from cartopy.io.img_tiles import MapQuestOpenAerial
+from cartopy.io.img_tiles import StamenTerrain
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D as Line
 from matplotlib.patheffects import Stroke
@@ -59,10 +59,11 @@ def main():
                                                   name='coastline',
                                                   scale='10m')
 
-    # Create a MapQuest map tiler instance, and use its CRS for the GeoAxes.
-    tiler = MapQuestOpenAerial()
-    ax = plt.axes(projection=tiler.crs)
-    plt.title('The effect of incorrectly referencing the Solomon Islands')
+    # Create a Stamen map tiler instance, and use its CRS for the GeoAxes.
+    tiler = StamenTerrain()
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=tiler.crs)
+    ax.set_title('The effect of incorrectly referencing the Solomon Islands')
 
     # Pick the area of interest. In our case, roughly the Solomon Islands, and
     # get hold of the coastlines for that area.
@@ -70,7 +71,7 @@ def main():
     ax.set_extent(extent, geodetic)
     geoms = list(dataset.intersecting_geometries(extent))
 
-    # Add the MapQuest aerial imagery at zoom level 7.
+    # Add the Stamen aerial imagery at zoom level 7.
     ax.add_image(tiler, 7)
 
     # Transform the geodetic coordinates of the coastlines into the two
@@ -89,12 +90,13 @@ def main():
     legend_artists = [Line([0], [0], color=color, linewidth=3)
                       for color in ('white', 'gray')]
     legend_texts = ['Correct ellipse\n(WGS84)', 'Incorrect ellipse\n(sphere)']
-    legend = plt.legend(legend_artists, legend_texts, fancybox=True,
-                        loc='lower left', framealpha=0.75)
+    legend = ax.legend(legend_artists, legend_texts, fancybox=True,
+                       loc='lower left', framealpha=0.75)
     legend.legendPatch.set_facecolor('wheat')
 
     # Create an inset GeoAxes showing the location of the Solomon Islands.
-    sub_ax = plt.axes([0.7, 0.625, 0.2, 0.2], projection=ccrs.PlateCarree())
+    sub_ax = fig.add_axes([0.7, 0.625, 0.2, 0.2],
+                          projection=ccrs.PlateCarree())
     sub_ax.set_extent([110, 180, -50, 10], geodetic)
 
     # Make a nice border around the inset axes.

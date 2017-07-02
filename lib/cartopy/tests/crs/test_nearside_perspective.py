@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016, Met Office
+# (C) British Crown Copyright 2016 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -21,10 +21,7 @@ Tests for the NearsidePerspective projection.
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 from numpy.testing import assert_almost_equal
-from nose.tools import assert_equal
 
 from cartopy.tests.crs.test_geostationary import (GeostationaryTestsMixin,
                                                   check_proj4_params)
@@ -32,14 +29,14 @@ from cartopy.tests.crs.test_geostationary import (GeostationaryTestsMixin,
 from cartopy.crs import NearsidePerspective
 
 
-class TestEquatorialDefault(unittest.TestCase, GeostationaryTestsMixin):
+class TestEquatorialDefault(GeostationaryTestsMixin, object):
     # Check that it behaves just like Geostationary, in the absence of a
     # central_latitude parameter.
     test_class = NearsidePerspective
     expected_proj_name = 'nsper'
 
 
-class TestOwnSpecifics(unittest.TestCase):
+class TestOwnSpecifics(object):
     def test_central_latitude(self):
         # Check the effect of the added 'central_latitude' key.
         geos = NearsidePerspective(central_latitude=53.7)
@@ -50,11 +47,6 @@ class TestOwnSpecifics(unittest.TestCase):
         check_proj4_params(geos, expected)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-5372584.78443894, -5372584.78443894,
-                             5372584.78443894, 5372584.78443894),
+                            (-5434177.81588539, -5434177.81588539,
+                             5434177.81588539, 5434177.81588539),
                             decimal=4)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

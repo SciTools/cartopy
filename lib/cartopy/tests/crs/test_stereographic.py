@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,21 +17,18 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import numpy as np
 from numpy.testing import assert_almost_equal
-from nose.tools import assert_equal
 
 import cartopy.crs as ccrs
 
 
-class TestStereographic(unittest.TestCase):
+class TestStereographic(object):
     def test_default(self):
         stereo = ccrs.Stereographic()
         expected = ('+ellps=WGS84 +proj=stere +lat_0=0.0 '
                     '+lon_0=0.0 +x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(stereo.proj4_init, expected)
+        assert stereo.proj4_init == expected
 
         assert_almost_equal(np.array(stereo.x_limits),
                             [-5e7, 5e7], decimal=4)
@@ -44,7 +41,7 @@ class TestStereographic(unittest.TestCase):
         stereo = ccrs.Stereographic(globe=globe)
         expected = ('+a=1000 +b=500 +proj=stere +lat_0=0.0 +lon_0=0.0 '
                     '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert_equal(stereo.proj4_init, expected)
+        assert stereo.proj4_init == expected
 
         # The limits in this test are sensible values, but are by no means
         # a "correct" answer - they mean that plotting the crs results in a
@@ -61,7 +58,7 @@ class TestStereographic(unittest.TestCase):
         stereo = ccrs.Stereographic(true_scale_latitude=10)
         expected = ('+ellps=WGS84 +proj=stere +lat_0=0.0 +lon_0=0.0 '
                     '+x_0=0.0 +y_0=0.0 +lat_ts=10 +no_defs')
-        assert_equal(stereo.proj4_init, expected)
+        assert stereo.proj4_init == expected
 
     def test_eastings(self):
         stereo = ccrs.Stereographic()
@@ -70,11 +67,6 @@ class TestStereographic(unittest.TestCase):
 
         expected = ('+ellps=WGS84 +proj=stere +lat_0=0.0 +lon_0=0.0 '
                     '+x_0=1234 +y_0=-4321 +no_defs')
-        assert_equal(stereo_offset.proj4_init, expected)
-        assert_equal(tuple(np.array(stereo.x_limits) + 1234),
-                     stereo_offset.x_limits)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)
+        assert stereo_offset.proj4_init == expected
+        assert (tuple(np.array(stereo.x_limits) + 1234) ==
+                stereo_offset.x_limits)

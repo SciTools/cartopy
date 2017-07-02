@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,15 +17,14 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
-
 import matplotlib.pyplot as plt
+import pytest
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 @ImageTesting(['natural_earth'])
@@ -52,7 +51,8 @@ def test_natural_earth_custom():
     ax.set_ylim((58, 72))
 
 
-@ImageTesting(['gshhs_coastlines'])
+@ImageTesting(['gshhs_coastlines'],
+              tolerance=1.7 if MPL_VERSION < '2' else 0)
 def test_gshhs():
     ax = plt.axes(projection=ccrs.Mollweide())
     ax.set_extent([138, 142, 32, 42], ccrs.Geodetic())
@@ -65,7 +65,7 @@ def test_gshhs():
                                          facecolor='green'), facecolor='blue')
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @ImageTesting(['wfs'])
 def test_wfs():
     ax = plt.axes(projection=ccrs.OSGB())
@@ -74,8 +74,3 @@ def test_wfs():
     feature = cfeature.WFSFeature(url, typename,
                                   edgecolor='red')
     ax.add_feature(feature)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

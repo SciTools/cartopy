@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -52,8 +52,8 @@ from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
-assert matplotlib.__version__ >= '1.3', ('Cartopy is only supported with '
-                                         'matplotlib 1.3 or greater.')
+assert mpl.__version__ >= '1.3', ('Cartopy is only supported with '
+                                  'Matplotlib 1.3 or greater.')
 
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
@@ -66,6 +66,18 @@ resulting transformed paths::
 Provides a significant performance boost for contours which, at
 matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 
+"""
+
+_BACKG_IMG_CACHE = {}
+"""
+A dictionary of pre-loaded images for large background images, kept as a
+dictionary so that large images are loaded only once.
+"""
+
+_USER_BG_IMGS = {}
+"""
+A dictionary of background images in the directory specified by the
+CARTOPY_USER_BACKGROUNDS environment variable.
 """
 
 
@@ -669,6 +681,20 @@ class GeoAxes(matplotlib.axes.Axes):
         self.set_xlim(self.projection.x_limits)
         self.set_ylim(self.projection.y_limits)
 
+    def autoscale_view(self, tight=None, scalex=True, scaley=True):
+        matplotlib.axes.Axes.autoscale_view(self, tight=tight,
+                                            scalex=scalex, scaley=scaley)
+        # Limit the resulting bounds to valid area.
+        if scalex and self._autoscaleXon:
+            bounds = self.get_xbound()
+            self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
+                            min(bounds[1], self.projection.x_limits[1]))
+        if scaley and self._autoscaleYon:
+            bounds = self.get_ybound()
+            self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
+                            min(bounds[1], self.projection.y_limits[1]))
+    autoscale_view.__doc__ = matplotlib.axes.Axes.autoscale_view.__doc__
+
     def set_xticks(self, ticks, minor=False, crs=None):
         """
         Set the x ticks.
@@ -783,6 +809,182 @@ class GeoAxes(matplotlib.axes.Axes):
                                extent=[-180, 180, -90, 90])
         else:
             raise ValueError('Unknown stock image %r.' % name)
+
+    def background_img(self, name='ne_shaded', resolution='low', extent=None,
+                       cache=False):
+        """
+        Adds a background image to the map, from a selection of pre-prepared
+        images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
+        environment variable. That directory is checked with
+        func:`self.read_user_background_images` and needs to contain a JSON
+        file which defines for the image metadata.
+
+        Kwargs:
+
+            * name - the name of the image to read according to the contents
+                     of the JSON file. A typical file might have, for instance:
+                     'ne_shaded' : Natural Earth Shaded Relief
+                     'ne_grey' : Natural Earth Grey Earth
+
+            * resolution - the resolution of the image to read, according to
+                           the contents of the JSON file. A typical file might
+                           have the following for each name of the image:
+                           'low', 'med', 'high', 'vhigh', 'full'.
+
+            * extent - using a high resolution background image, zoomed into
+                       a small area, will take a very long time to render as
+                       the image is prepared globally, even though only a small
+                       area is used. Adding the extent will only render a
+                       particular geographic region. Specified as
+                       [longitude start, longitude end,
+                        latitude start, latitude end].
+
+                       e.g. [-11, 3, 48, 60] for the UK
+                       or [167.0, 193.0, 47.0, 68.0] to cross the date line.
+
+            * cache - logical flag as to whether or not to cache the loaded
+                      images into memory. The images are stored before the
+                      extent is used.
+        """
+        # read in the user's background image directory:
+        if len(_USER_BG_IMGS) == 0:
+            self.read_user_background_images()
+        import os
+        bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
+        if bgdir is None:
+            bgdir = os.path.join(config["repo_data_dir"],
+                                 'raster', 'natural_earth')
+        # now get the filename we want to use:
+        try:
+            fname = _USER_BG_IMGS[name][resolution]
+        except KeyError:
+            msg = ('Image "{}" and resolution "{}" are not present in '
+                   'the user background image metadata in directory "{}"')
+            raise ValueError(msg.format(name, resolution, bgdir))
+        # Now obtain the image data from file or cache:
+        fpath = os.path.join(bgdir, fname)
+        if cache:
+            if fname in _BACKG_IMG_CACHE:
+                img = _BACKG_IMG_CACHE[fname]
+            else:
+                img = imread(fpath)
+                _BACKG_IMG_CACHE[fname] = img
+        else:
+            img = imread(fpath)
+        if len(img.shape) == 2:
+            # greyscale images are only 2-dimensional, so need replicating
+            # to 3 colour channels:
+            img = np.repeat(img[:, :, np.newaxis], 3, axis=2)
+        # now get the projection from the metadata:
+        if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
+            # currently only PlateCarree is defined:
+            source_proj = ccrs.PlateCarree()
+        else:
+            raise NotImplementedError('Background image projection undefined')
+
+        if extent is None:
+            # not specifying an extent, so return all of it:
+            return self.imshow(img, origin='upper',
+                               transform=source_proj,
+                               extent=[-180, 180, -90, 90])
+        else:
+            # return only a subset of the image:
+            # set up coordinate arrays:
+            d_lat = 180.0 / img.shape[0]
+            d_lon = 360.0 / img.shape[1]
+            # latitude starts at 90N for this image:
+            lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2.0)) + 90.0
+            lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2.0)) - 180.0
+
+            # which points are in range:
+            lat_in_range = np.logical_and(lat_pts >= extent[2],
+                                          lat_pts <= extent[3])
+            if extent[0] < 180 and extent[1] > 180:
+                # we have a region crossing the dateline
+                # this is the westerly side of the input image:
+                lon_in_range1 = np.logical_and(lon_pts >= extent[0],
+                                               lon_pts <= 180.0)
+                img_subset1 = img[lat_in_range, :, :][:, lon_in_range1, :]
+                # and the eastward half:
+                lon_in_range2 = lon_pts + 360. <= extent[1]
+                img_subset2 = img[lat_in_range, :, :][:, lon_in_range2, :]
+                # now join them up:
+                img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
+                # now define the extent for output that matches those points:
+                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2.0,
+                              lon_pts[lon_in_range2][-1] + d_lon / 2.0 + 360,
+                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+            else:
+                # not crossing the dateline, so just find the region:
+                lon_in_range = np.logical_and(lon_pts >= extent[0],
+                                              lon_pts <= extent[1])
+                img_subset = img[lat_in_range, :, :][:, lon_in_range, :]
+                # now define the extent for output that matches those points:
+                ret_extent = [lon_pts[lon_in_range][0] - d_lon / 2.0,
+                              lon_pts[lon_in_range][-1] + d_lon / 2.0,
+                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+
+            return self.imshow(img_subset, origin='upper',
+                               transform=source_proj,
+                               extent=ret_extent)
+
+    def read_user_background_images(self, verify=True):
+        """
+        Reads the metadata in the specified CARTOPY_USER_BACKGROUNDS
+        environment variable to populate the dictionaries for background_img.
+
+        If CARTOPY_USER_BACKGROUNDS is not set then by default the image in
+        lib/cartopy/data/raster/natural_earth/ will be made available.
+
+        The metadata should be a standard JSON file which specifies a two
+        level dictionary. The first level is the image type.
+        For each image type there must be the fields:
+        __comment__, __source__ and __projection__
+        and then an element giving the filename for each resolution.
+
+        An example JSON file can be found at:
+        lib/cartopy/data/raster/natural_earth/images.json
+
+        """
+        import os
+        import json
+
+        bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
+        if bgdir is None:
+            bgdir = os.path.join(config["repo_data_dir"],
+                                 'raster', 'natural_earth')
+        json_file = os.path.join(bgdir, 'images.json')
+
+        with open(json_file, 'r') as js_obj:
+            dict_in = json.load(js_obj)
+        for img_type in dict_in:
+            _USER_BG_IMGS[img_type] = dict_in[img_type]
+
+        if verify:
+            required_info = ['__comment__', '__source__', '__projection__']
+            for img_type in _USER_BG_IMGS:
+                if img_type == '__comment__':
+                    # the top level comment doesn't need verifying:
+                    pass
+                else:
+                    # check that this image type has the required info:
+                    for required in required_info:
+                        if required not in _USER_BG_IMGS[img_type]:
+                            msg = ('User background metadata file "{}", '
+                                   'image type "{}", does not specify '
+                                   'metadata item "{}"')
+                            raise ValueError(msg.format(json_file, img_type,
+                                                        required))
+                    for resln in _USER_BG_IMGS[img_type]:
+                        # the required_info items are not resolutions:
+                        if resln not in required_info:
+                            img_it_r = _USER_BG_IMGS[img_type][resln]
+                            test_file = os.path.join(bgdir, img_it_r)
+                            if not os.path.isfile(test_file):
+                                msg = 'File "{}" not found'
+                                raise ValueError(msg.format(test_file))
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
@@ -1043,25 +1245,21 @@ class GeoAxes(matplotlib.axes.Axes):
             transform = transform._as_mpl_transform(self)
 
         if self.background_patch is None:
-            background = matplotlib.patches.PathPatch(path, edgecolor='none',
-                                                      facecolor='white',
-                                                      zorder=-1, clip_on=False,
-                                                      transform=transform)
+            background = mpatches.PathPatch(path, edgecolor='none',
+                                            facecolor='white', zorder=-1,
+                                            clip_on=False, transform=transform)
         else:
-            background = matplotlib.patches.PathPatch(path, zorder=-1,
-                                                      clip_on=False)
+            background = mpatches.PathPatch(path, zorder=-1, clip_on=False)
             background.update_from(self.background_patch)
             self.background_patch.remove()
             background.set_transform(transform)
 
         if self.outline_patch is None:
-            outline = matplotlib.patches.PathPatch(path, edgecolor='black',
-                                                   facecolor='none',
-                                                   zorder=2.5, clip_on=False,
-                                                   transform=transform)
+            outline = mpatches.PathPatch(path, edgecolor='black',
+                                         facecolor='none', zorder=2.5,
+                                         clip_on=False, transform=transform)
         else:
-            outline = matplotlib.patches.PathPatch(path, zorder=2.5,
-                                                   clip_on=False)
+            outline = mpatches.PathPatch(path, zorder=2.5, clip_on=False)
             outline.update_from(self.outline_patch)
             self.outline_patch.remove()
             outline.set_transform(transform)
@@ -1147,7 +1345,8 @@ class GeoAxes(matplotlib.axes.Axes):
         # We need to compute the dataLim correctly for contours.
         if matplotlib.__version__ >= '1.4':
             extent = mtransforms.Bbox.union([col.get_datalim(self.transData)
-                                             for col in result.collections])
+                                             for col in result.collections
+                                             if col.get_paths()])
             self.dataLim.update_from_data_xy(extent.get_points())
 
         self.autoscale_view()
@@ -1214,19 +1413,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         import warnings
-        import numpy as np
-        import numpy.ma as ma
-        import matplotlib as mpl
-        import matplotlib.cbook as cbook
         import matplotlib.colors as mcolors
-        import matplotlib.cm as cm
-        from matplotlib import docstring
-        import matplotlib.transforms as transforms
-        import matplotlib.artist as artist
-        from matplotlib.artist import allow_rasterization
-        import matplotlib.backend_bases as backend_bases
-        import matplotlib.path as mpath
-        import matplotlib.mlab as mlab
         import matplotlib.collections as mcoll
 
         if not self._hold:
@@ -1291,14 +1478,30 @@ class GeoAxes(matplotlib.axes.Axes):
             # END OF PATCH
             ##############
 
-        minx = np.amin(X)
-        maxx = np.amax(X)
-        miny = np.amin(Y)
-        maxy = np.amax(Y)
+        ########################
+        # PATCH
+        # XXX Non-standard matplotlib thing (length check).
+        if len(X):
+            minx = np.amin(X)
+            maxx = np.amax(X)
+        else:
+            minx = maxx = np.nan
+        if len(Y):
+            miny = np.amin(Y)
+            maxy = np.amax(Y)
+        else:
+            miny = maxy = np.nan
+        # END OF PATCH
+        ##############
 
         corners = (minx, miny), (maxx, maxy)
-        collection._corners = corners
+        ########################
+        # PATCH
+        # XXX Non-standard matplotlib thing.
+        collection._corners = mtransforms.Bbox(corners)
         collection.get_datalim = lambda transData: collection._corners
+        # END OF PATCH
+        ##############
 
         self.update_datalim(corners)
         self.add_collection(collection)
@@ -1508,7 +1711,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
-        Plot a 2-D field of barbs.
+        Plot a field of barbs.
 
         Extra Kwargs:
 
@@ -1572,7 +1775,7 @@ class GeoAxes(matplotlib.axes.Axes):
         elif t != self.projection:
             # Transform the vectors if the projection is not the same as the
             # data transform.
-            if x.ndim == 1 and y.ndim == 1:
+            if (x.ndim == 1 and y.ndim == 1) and (x.shape != u.shape):
                 x, y = np.meshgrid(x, y)
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.barbs(self, x, y, u, v, *args, **kwargs)
@@ -1645,7 +1848,7 @@ class GeoAxes(matplotlib.axes.Axes):
             sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
         return sp
 
-    def add_wmts(self, wmts, layer_name, **kwargs):
+    def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
         """
         Add the specified WMTS layer to the axes.
 
@@ -1657,13 +1860,20 @@ class GeoAxes(matplotlib.axes.Axes):
                      owslib.wmts.WebMapTileService instance.
             * layer_name - The name of the layer to use.
 
+        Kwargs:
+
+            * wmts_kwargs - dict or None. Passed through to the
+                :class:`~cartopy.io.ogc_clients.WMTSRasterSource`
+                constructor's ``gettile_extra_kwargs`` (e.g. time).
+
         All other keywords are passed through to the construction of the
         image artist. See :meth:`~matplotlib.axes.Axes.imshow()` for
         more details.
 
         """
         from cartopy.io.ogc_clients import WMTSRasterSource
-        wmts = WMTSRasterSource(wmts, layer_name)
+        wmts = WMTSRasterSource(wmts, layer_name,
+                                gettile_extra_kwargs=wmts_kwargs)
         return self.add_raster(wmts, **kwargs)
 
     def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):

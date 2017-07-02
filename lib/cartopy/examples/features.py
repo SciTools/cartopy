@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 
 
 def main():
-
-    ax = plt.axes(projection=cartopy.crs.PlateCarree())
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=cartopy.crs.PlateCarree())
 
     ax.add_feature(cartopy.feature.LAND)
     ax.add_feature(cartopy.feature.OCEAN)

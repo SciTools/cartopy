@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -94,6 +94,19 @@ def find_package_tree(root_path, root_package):
             prefix = dir_path.split(os.path.sep)[root_count:]
             packages.extend(['.'.join([root_package] + prefix + [dir_name]) for dir_name in dir_names])
     return packages
+
+
+def extract_version():
+    version = None
+    fdir = os.path.dirname(__file__)
+    fnme = os.path.join(fdir, 'lib', 'cartopy', '__init__.py')
+    with open(fnme) as fd:
+        for line in fd:
+            if (line.startswith('__version__')):
+                _, version = line.split('=')
+                version = version.strip()[1:-1]  # Remove quotation characters
+                break
+    return version
 
 
 class MissingHeaderError(Exception):
@@ -335,7 +348,7 @@ with open(os.path.join(HERE, 'README.rst'), 'r') as fh:
 # ==========
 setup(
     name='Cartopy',
-    version='0.14.0',
+    version=extract_version(),
     url='http://scitools.org.uk/cartopy/docs/latest/',
     download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -29,8 +29,7 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
-from cartopy.tests.mpl import ImageTesting
-import cartopy.tests.test_img_nest as ctest_nest
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 
@@ -44,7 +43,8 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # We have an exceptionally large tolerance for the web_tiles test.
 # The basemap changes on a regular basis (for seasons) and we really only
 # care that it is putting images onto the map which are roughly correct.
-@ImageTesting(['web_tiles'], tolerance=2)
+@ImageTesting(['web_tiles'],
+              tolerance=12 if MPL_VERSION < '2' else 2)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = sgeom.Polygon([[extent[0], extent[1]],
@@ -54,7 +54,7 @@ def test_web_tiles():
                                    [extent[0], extent[1]]])
     map_prj = cimgt.GoogleTiles().crs
 
-    ax = plt.subplot(3, 2, 1, projection=map_prj)
+    ax = plt.subplot(2, 2, 1, projection=map_prj)
     gt = cimgt.GoogleTiles()
     gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT,
                                      gt)
@@ -63,28 +63,14 @@ def test_web_tiles():
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(3, 2, 2, projection=map_prj)
+    ax = plt.subplot(2, 2, 2, projection=map_prj)
     qt = cimgt.QuadtreeTiles()
     img, extent, origin = qt.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=qt.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(3, 2, 3, projection=map_prj)
-    mq_osm = cimgt.MapQuestOSM()
-    img, extent, origin = mq_osm.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=mq_osm.crs,
-              interpolation='bilinear', origin=origin)
-    ax.coastlines()
-
-    ax = plt.subplot(3, 2, 4, projection=map_prj)
-    mq_oa = cimgt.MapQuestOpenAerial()
-    img, extent, origin = mq_oa.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=mq_oa.crs,
-              interpolation='bilinear', origin=origin)
-    ax.coastlines()
-
-    ax = plt.subplot(3, 2, 5, projection=map_prj)
+    ax = plt.subplot(2, 2, 3, projection=map_prj)
     osm = cimgt.OSM()
     img, extent, origin = osm.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=osm.crs,
@@ -92,19 +78,8 @@ def test_web_tiles():
     ax.coastlines()
 
 
-@ImageTesting(['image_nest'], tolerance=1.5)
-def test_image_nest():
-    nest_z0_z1 = ctest_nest.gen_nest()
-
-    ax = plt.axes(projection=ccrs.Mercator())
-    shper_globe = ccrs.Globe(semimajor_axis=np.rad2deg(1))
-    spher_merc = ccrs.Mercator(globe=shper_globe)
-    ax.set_extent([-45, 45, -45, 90], spher_merc)
-    ax.coastlines()
-    ax.add_image(nest_z0_z1, 'aerial z1 test')
-
-
-@ImageTesting(['image_merge'])
+@ImageTesting(['image_merge'],
+              tolerance=3.6 if MPL_VERSION < '2' else 0)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -130,7 +105,8 @@ def test_image_merge():
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
 
-@ImageTesting(['imshow_natural_earth_ortho'])
+@ImageTesting(['imshow_natural_earth_ortho'],
+              tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
@@ -142,7 +118,8 @@ def test_imshow():
               extent=[-180, 180, -90, 90])
 
 
-@ImageTesting(['imshow_regional_projected'])
+@ImageTesting(['imshow_regional_projected'],
+              tolerance=10.4 if MPL_VERSION < '2' else 0)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
@@ -154,13 +131,15 @@ def test_imshow_projected():
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
+@ImageTesting(['imshow_natural_earth_ortho'],
+              tolerance=4.15 if MPL_VERSION < '2' else 0.7)
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()
 
 
-@ImageTesting(['imshow_natural_earth_ortho'])
+@ImageTesting(['imshow_natural_earth_ortho'],
+              tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()
@@ -169,6 +148,8 @@ def test_pil_Image():
               extent=[-180, 180, -90, 90])
 
 
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-sv', '--with-doctest'], exit=False)
+@ImageTesting(['imshow_natural_earth_ortho'],
+              tolerance=4.2 if MPL_VERSION < '2' else 0)
+def test_background_img():
+    ax = plt.axes(projection=ccrs.Orthographic())
+    ax.background_img(name='ne_shaded', resolution='low')
