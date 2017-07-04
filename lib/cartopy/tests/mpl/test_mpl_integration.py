@@ -347,6 +347,28 @@ def test_pcolormesh_limited_area_wrap():
     ax.coastlines()
 
 
+@ImageTesting(['pcolormesh_single_column_wrap'], tolerance=0.7)
+def test_pcolormesh_single_column_wrap():
+    # Check a wrapped mesh like test_pcolormesh_limited_area_wrap, but only use
+    # a single column, which could break depending on how wrapping is
+    # determined.
+    ny = 36
+    xbnds = np.array([360.9485619, 364.71999105])
+    ybnds = np.linspace(-23.59000015, 24.81000137, ny, endpoint=True)
+    x, y = np.meshgrid(xbnds, ybnds)
+    data = ((np.sin(np.deg2rad(x))) / 10. + np.exp(np.cos(np.deg2rad(y))))
+    data = data[:-1, :-1]
+
+    rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
+
+    plt.figure(figsize=(10, 6))
+
+    ax = plt.subplot(111, projection=ccrs.PlateCarree(180))
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
+    ax.coastlines()
+    ax.set_global()
+
+
 @ImageTesting(['pcolormesh_goode_wrap'])
 def test_pcolormesh_goode_wrap():
     # global data on an Interrupted Goode Homolosine projection
