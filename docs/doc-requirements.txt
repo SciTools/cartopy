@@ -2,3 +2,4 @@ netCDF4
 iris
 cf_units
 sphinx-gallery
+beautifulsoup4

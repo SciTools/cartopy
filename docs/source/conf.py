@@ -93,7 +93,7 @@ release = cartopy.__version__
 # Sphinx gallery configuration
 sphinx_gallery_conf = {
     'examples_dirs': ['../../lib/cartopy/examples'],
-    'filename_pattern': '^(?:(?!sgskip.)*$',
+    'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
     'doc_module': ('cartopy',),
     'reference_url': {'matplotlib': 'http://matplotlib.org',

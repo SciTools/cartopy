@@ -44,9 +44,8 @@ clean:
 	-rm -rf source/examples/* source/cartopy_outline.rst source/gallery.rst
 
 html:
-	python make_examples_inits.py remove
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	python make_examples_inits.py add
+	python add_noshow.py
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 

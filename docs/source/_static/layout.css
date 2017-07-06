@@ -29,3 +29,8 @@ div.section div.figure {
   padding-left: 0 !important;
   text-align: center;
 }
+
+/* hack to make the __init__.py files not display in SG*/
+div.dontshow {
+  display: none !important;
+}
