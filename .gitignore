@@ -42,9 +42,11 @@ lib/cartopy/siteconfig.py
 \#*
 \.\#*
 *.swp
+.ipynb_checkpoints/
 
 # Operating system files
 \.DS_Store
+.cache/
 
 # Egg that gets created with 'pip install -v -e .'
 lib/Cartopy.egg-info/
