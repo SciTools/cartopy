@@ -37,6 +37,7 @@ import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
 import matplotlib.ticker as mticker
+from mpl_toolkits.axes_grid1 import AxesGrid
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
@@ -1888,6 +1889,24 @@ try:
     matplotlib.axes._subplots._subplot_classes[GeoAxes] = GeoAxesSubplot
 except AttributeError:
     matplotlib.axes._subplot_classes[GeoAxes] = GeoAxesSubplot
+
+
+class GeoAxesGrid(AxesGrid):
+    """
+    A subclass of :class:`mpl_toolkits.axes_grid1.AxesGrid` representing
+    a grid of maps with the same projection :class:`~cartopy.crs.Projection`.
+
+    .. note::
+       * `axes_class` is defined automatically
+       * The :class:`AxesGrid` built-in labelling is always switched off,
+         and instead a standard procedure of creating
+         grid lines and labels should be used.
+    """
+    def __init__(self, fig, rect, nrows_ncols, projection, **axesgrid_kw):
+        axesgrid_kw['axes_class'] = (GeoAxes, dict(map_projection=projection))
+        axesgrid_kw['label_mode'] = ''  # note the empty label_mode
+        super(GeoAxesGrid, self).__init__(fig, rect, nrows_ncols,
+                                          **axesgrid_kw)
 
 
 def _trigger_patch_reclip(event):
