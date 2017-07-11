@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import matplotlib as mpl
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -25,15 +24,13 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-from nose.tools import assert_raises
-import numpy as np
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
-from cartopy.tests import _proj4_version
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 @ImageTesting(['gridliner1'])
@@ -107,9 +104,15 @@ def test_gridliner_specified_lines():
 
 # The tolerance on this test is particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-@ImageTesting(['gridliner_labels'
-               if mpl.__version__ >= '1.5' else
-               'gridliner_labels_pre_mpl_1.5'])
+if MPL_VERSION >= '2.0':
+    grid_label_image = 'gridliner_labels'
+elif MPL_VERSION >= '1.5':
+    grid_label_image = 'gridliner_labels_1.5'
+else:
+    grid_label_image = 'gridliner_labels_pre_mpl_1.5'
+
+
+@ImageTesting([grid_label_image])
 def test_grid_labels():
     plt.figure(figsize=(8, 10))
 
@@ -126,7 +129,7 @@ def test_grid_labels():
     ax = plt.subplot(3, 2, 2,
                      projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines()
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         ax.gridlines(crs=crs_merc, draw_labels=True)
 
     ax.set_title('Known bug')
@@ -143,7 +146,7 @@ def test_grid_labels():
     # (Currently can only draw these on PlateCarree or Mercator plots.)
     ax = plt.subplot(3, 2, 4, projection=crs_osgb)
     ax.coastlines()
-    with assert_raises(TypeError):
+    with pytest.raises(TypeError):
         ax.gridlines(draw_labels=True)
 
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
@@ -158,6 +161,8 @@ def test_grid_labels():
     gl.yformatter = LATITUDE_FORMATTER
     gl.xlabel_style = {'size': 15, 'color': 'gray'}
     gl.xlabel_style = {'color': 'red'}
+    gl.xpadding = 10
+    gl.ypadding = 15
 
     # trigger a draw at this point and check the appropriate artists are
     # populated on the gridliner instance
@@ -180,8 +185,3 @@ def test_grid_labels():
 
     # Increase margins between plots to stop them bumping into one another.
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

@@ -62,11 +62,12 @@ def vesta_image():
 def main():
     img, globe, crs, extent = vesta_image()
     projection = ccrs.Geostationary(globe=globe)
-    ax = plt.axes(projection=projection)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=projection)
     ax.imshow(img, transform=crs, extent=extent)
-    plt.gcf().text(.075, .012,
-                   "Image credit: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA/PSI",
-                   bbox={'facecolor': 'w', 'edgecolor': 'k'})
+    fig.text(.075, .012, "Image credit: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA/PSI",
+             bbox={'facecolor': 'w', 'edgecolor': 'k'})
     plt.show()
 
 

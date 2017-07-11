@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -21,6 +21,7 @@ import inspect
 import itertools
 import os
 import sys
+import sysconfig
 import warnings
 import six
 
@@ -45,6 +46,7 @@ def walk_module(mod_name, exclude_folders=None):
     mod = sys.modules[mod_name]
     mod_dir = os.path.dirname(mod.__file__)
     exclude_folders = exclude_folders or []
+    SOABI = sysconfig.get_config_var('SOABI')
 
     for root, folders, files in os.walk(mod_dir):
         for folder in exclude_folders:
@@ -62,13 +64,15 @@ def walk_module(mod_name, exclude_folders=None):
         files.sort()
         folders.sort()
 
-        def is_py_src(fname):
-            root, ext = os.path.splitext(fname)
-            return ext in ('.py', '.so')
-
-        files = filter(is_py_src, files)
-
         for fname in files:
+            basename, ext = os.path.splitext(fname)
+            if ext == '.so':
+                basename, soabi = os.path.splitext(basename)
+                if soabi.lstrip('.') != SOABI:
+                    continue
+            elif ext != '.py':
+                continue
+
             sub_mod_name = mod_name
             relpath = os.path.relpath(root, mod_dir)
             if relpath == '.':
@@ -78,7 +82,7 @@ def walk_module(mod_name, exclude_folders=None):
                 sub_mod_name += '.' + sub_mod
 
             if fname != '__init__.py':
-                sub_mod_name += '.' + os.path.splitext(fname)[0]
+                sub_mod_name += '.' + basename
 
             yield sub_mod_name, root, fname, folders
 
@@ -210,7 +214,6 @@ def gen_summary_rst(app):
             fh.write(content)
 
 
-@cartopy.tests.not_a_nose_fixture
 def setup(app):
     """
     Defined the Sphinx application interface for the summary generation.

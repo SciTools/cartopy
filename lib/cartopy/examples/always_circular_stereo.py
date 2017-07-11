@@ -9,9 +9,9 @@ import cartopy.feature
 
 def main():
     fig = plt.figure(figsize=[10, 5])
-    ax1 = plt.subplot(1, 2, 1, projection=ccrs.SouthPolarStereo())
-    ax2 = plt.subplot(1, 2, 2, projection=ccrs.SouthPolarStereo(),
-                      sharex=ax1, sharey=ax1)
+    ax1 = fig.add_subplot(1, 2, 1, projection=ccrs.SouthPolarStereo())
+    ax2 = fig.add_subplot(1, 2, 2, projection=ccrs.SouthPolarStereo(),
+                          sharex=ax1, sharey=ax1)
     fig.subplots_adjust(bottom=0.05, top=0.95,
                         left=0.04, right=0.95, wspace=0.02)
 

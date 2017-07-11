@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -20,16 +20,13 @@ from __future__ import (absolute_import, division, print_function)
 import gc
 
 import six
-import unittest
 
 try:
     from owslib.wmts import WebMapTileService
 except ImportError as e:
     WebMapTileService = None
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
-from matplotlib.path import Path
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.feature_artist import FeatureArtist
@@ -132,9 +129,9 @@ def test_shapefile_transform_cache():
     # Without caching the count would have been
     # n_calls * n_geom, but should now be just n_geom.
     assert counter.count == n_geom, ('The given geometry was transformed too '
-                                     'many times (expected: %s; got %s) - the'
+                                     'many times (expected: {}; got {}) - the'
                                      ' caching is not working.'
-                                     ''.format(n_geom, n_geom, counter.count))
+                                     ''.format(n_geom, counter.count))
 
     # Check the cache has an entry for each geometry.
     assert len(FeatureArtist._geom_key_to_geometry_cache) == n_geom
@@ -171,9 +168,9 @@ def test_contourf_transform_path_counting():
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom.
-    msg = ('The given geometry was transformed too many times (expected: %s; '
-           'got %s) - the caching is not working.'
-           '' % (n_geom, path_to_geos_counter.count))
+    msg = ('The given geometry was transformed too many times (expected: {}; '
+           'got {}) - the caching is not working.'
+           '').format(n_geom, path_to_geos_counter.count)
     assert path_to_geos_counter.count == n_geom, msg
 
     # Check the cache has an entry for each geometry.
@@ -188,7 +185,7 @@ def test_contourf_transform_path_counting():
     plt.close()
 
 
-@unittest.skipIf(not _OWSLIB_AVAILABLE, 'OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()
@@ -237,8 +234,3 @@ def test_wmts_tile_caching():
     del source, wmts, gettile_counter
     gc.collect()
     assert len(image_cache) == 0
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

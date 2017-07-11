@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -33,7 +33,7 @@ import shapely.geometry as sgeom
 from shapely.prepared import prep
 import six
 
-from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_RELEASE
+from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_VERSION
 import cartopy.trace
 
 
@@ -614,7 +614,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return return_value
 
 
-class _RectangularProjection(Projection):
+class _RectangularProjection(six.with_metaclass(ABCMeta, Projection)):
     """
     The abstract superclass of projections with a rectangular domain which
     is symmetric about the origin.
@@ -640,7 +640,8 @@ class _RectangularProjection(Projection):
         return (-self._half_height, self._half_height)
 
 
-class _CylindricalProjection(_RectangularProjection):
+class _CylindricalProjection(six.with_metaclass(ABCMeta,
+                                                _RectangularProjection)):
     """
     The abstract class which denotes cylindrical projections where we
     want to allow x values to wrap around.
@@ -940,7 +941,7 @@ class Mercator(Projection):
 
     def __init__(self, central_longitude=0.0,
                  min_latitude=-80.0, max_latitude=84.0,
-                 globe=None):
+                 globe=None, latitude_true_scale=0.0):
         """
         Kwargs:
 
@@ -951,11 +952,13 @@ class Mercator(Projection):
                              Defaults to 84 degrees.
             * globe - A :class:`cartopy.crs.Globe`.
                       If omitted, a default globe is created.
+            * latitude_true_scale - the latitude where the scale is 1.
+                                    Defaults to 0 degrees.
 
         """
         proj4_params = [('proj', 'merc'),
                         ('lon_0', central_longitude),
-                        ('k', 1),
+                        ('lat_ts', latitude_true_scale),
                         ('units', 'm')]
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
@@ -1269,8 +1272,10 @@ class RotatedPole(_CylindricalProjection):
 
 
 class Gnomonic(Projection):
-    def __init__(self, central_latitude=0.0, globe=None):
-        proj4_params = [('proj', 'gnom'), ('lat_0', central_latitude)]
+    def __init__(self, central_latitude=0.0,
+                 central_longitude=0.0, globe=None):
+        proj4_params = [('proj', 'gnom'), ('lat_0', central_latitude),
+                        ('lon_0', central_longitude)]
         super(Gnomonic, self).__init__(proj4_params, globe=globe)
         self._max = 5e7
 
@@ -1395,7 +1400,7 @@ class Orthographic(Projection):
         return self._ylim
 
 
-class _WarpedRectangularProjection(Projection):
+class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
     def __init__(self, proj4_params, central_longitude, globe=None):
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
@@ -1453,11 +1458,8 @@ class Robinson(_WarpedRectangularProjection):
         # Warn when using Robinson with proj4 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://trac.osgeo.org/proj/ticket/113).
-        import re
-        match = re.search(r"\d\.\d", PROJ4_RELEASE)
-        if match is not None:
-            proj4_version = float(match.group())
-            if 4.8 <= proj4_version < 4.9:
+        if PROJ4_VERSION != ():
+            if (4, 8) <= PROJ4_VERSION < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '
                               'of Proj.4 contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
@@ -1606,19 +1608,22 @@ class InterruptedGoodeHomolosine(Projection):
 class _Satellite(Projection):
     def __init__(self, projection, satellite_height=35785831,
                  central_longitude=0.0, central_latitude=0.0,
-                 false_easting=0, false_northing=0, globe=None):
+                 false_easting=0, false_northing=0, globe=None,
+                 sweep_axis=None):
         proj4_params = [('proj', projection), ('lon_0', central_longitude),
                         ('lat_0', central_latitude), ('h', satellite_height),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
+        if sweep_axis:
+            proj4_params.append(('sweep', sweep_axis))
         super(_Satellite, self).__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
         b = np.float(self.globe.semiminor_axis or a)
         h = np.float(satellite_height)
-        max_x = h * math.atan(a / (a + h))
-        max_y = h * math.atan(b / (b + h))
+        max_x = h * np.arcsin(a / (a + h))
+        max_y = h * np.arcsin(b / (a + h))
 
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
@@ -1650,7 +1655,8 @@ class Geostationary(_Satellite):
 
     """
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
-                 false_easting=0, false_northing=0, globe=None):
+                 false_easting=0, false_northing=0, globe=None,
+                 sweep_axis='y'):
         super(Geostationary, self).__init__(
             projection='geos',
             satellite_height=satellite_height,
@@ -1658,7 +1664,8 @@ class Geostationary(_Satellite):
             central_latitude=0.0,
             false_easting=false_easting,
             false_northing=false_northing,
-            globe=globe)
+            globe=globe,
+            sweep_axis=sweep_axis)
 
 
 class NearsidePerspective(_Satellite):
@@ -1784,6 +1791,20 @@ class AzimuthalEquidistant(Projection):
                       default globe is created.
 
         """
+        # Warn when using Azimuthal Equidistant with proj4 < 4.9.2 due to
+        # incorrect transformation past 90 deg distance (see
+        # https://github.com/OSGeo/proj.4/issues/246).
+        if PROJ4_VERSION != ():
+            if PROJ4_VERSION < (4, 9, 2):
+                warnings.warn('The Azimuthal Equidistant projection in Proj.4 '
+                              'older than 4.9.2 incorrectly transforms points '
+                              'farther than 90 deg from the origin. Use this '
+                              'projection with caution.')
+        else:
+            warnings.warn('Cannot determine Proj.4 version. The Azimuthal '
+                          'Equidistant projection may be unreliable and '
+                          'should be used with caution.')
+
         proj4_params = [('proj', 'aeqd'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude),
                         ('x_0', false_easting), ('y_0', false_northing)]

@@ -22,6 +22,7 @@ The CRS class is the base-class for all projections defined in :mod:`cartopy.crs
 """
 
 from collections import OrderedDict
+import re
 import warnings
 
 import numpy as np
@@ -51,6 +52,11 @@ cdef double NAN = float('nan')
 PROJ4_RELEASE = pj_get_release()
 if six.PY3:
     PROJ4_RELEASE = PROJ4_RELEASE.decode()
+_match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
+if _match is not None:
+    PROJ4_VERSION = tuple(int(v) for v in _match.group().split('.'))
+else:
+    PROJ4_VERSION = ()
 
 
 class Proj4Error(Exception):

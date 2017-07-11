@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2016, Met Office
+# (C) British Crown Copyright 2013 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,16 +17,16 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import unittest
 import warnings
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
 
-class TestTransformVectors(unittest.TestCase):
+class TestTransformVectors(object):
 
     def test_transform(self):
         # Test some simple vectors to make sure they are transformed
@@ -147,11 +147,9 @@ class TestTransformVectors(unittest.TestCase):
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
                                          central_longitude=0)
-        with warnings.catch_warnings():
-            warnings.simplefilter('error')
-            with self.assertRaises(UserWarning):
-                ut, vt = target_proj.transform_vectors(
-                    src_proj, rlon, rlat, u, v)
+        with pytest.warns(UserWarning):
+            warnings.simplefilter('always')
+            ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
 
     def test_invalid_y_domain_corner(self):
         # If the point we need to calculate the vector angle falls outside the
@@ -164,8 +162,6 @@ class TestTransformVectors(unittest.TestCase):
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
                                          central_longitude=0)
-        with warnings.catch_warnings():
-            warnings.simplefilter('error')
-            with self.assertRaises(UserWarning):
-                ut, vt = target_proj.transform_vectors(
-                    src_proj, rlon, rlat, u, v)
+        with pytest.warns(UserWarning):
+            warnings.simplefilter('always')
+            ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)

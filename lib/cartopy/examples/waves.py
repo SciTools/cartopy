@@ -22,7 +22,8 @@ def sample_data(shape=(73, 145)):
 
 
 def main():
-    ax = plt.axes(projection=ccrs.Mollweide())
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mollweide())
 
     lons, lats, data = sample_data()
 

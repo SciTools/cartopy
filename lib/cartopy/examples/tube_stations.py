@@ -1,7 +1,7 @@
 __tags__ = ['Miscellanea']
 """
 Produces a map showing London Underground station locations with high
-resolution background imagery provided by MapQuest.
+resolution background imagery provided by OpenStreetMap.
 
 """
 from matplotlib.path import Path
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import cartopy.crs as ccrs
-from cartopy.io.img_tiles import MapQuestOSM
+from cartopy.io.img_tiles import OSM
 
 
 def tube_locations():
@@ -35,9 +35,10 @@ def tube_locations():
 
 
 def main():
-    imagery = MapQuestOSM()
+    imagery = OSM()
 
-    ax = plt.axes(projection=imagery.crs)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=imagery.crs)
     ax.set_extent((-0.14, -0.1, 51.495, 51.515))
 
     # Construct concentric circles and a rectangle,
@@ -55,14 +56,12 @@ def main():
     # Plot the locations twice, first with the red concentric circles,
     # then with the blue rectangle.
     xs, ys = tube_locations().T
-    plt.plot(xs, ys, transform=ccrs.OSGB(),
-             marker=concentric_circle, color='red', markersize=9,
-             linestyle='')
-    plt.plot(xs, ys, transform=ccrs.OSGB(),
-             marker=rectangle, color='blue', markersize=11,
-             linestyle='')
+    ax.plot(xs, ys, transform=ccrs.OSGB(),
+            marker=concentric_circle, color='red', markersize=9, linestyle='')
+    ax.plot(xs, ys, transform=ccrs.OSGB(),
+            marker=rectangle, color='blue', markersize=11, linestyle='')
 
-    plt.title('London underground locations')
+    ax.set_title('London underground locations')
     plt.show()
 
 

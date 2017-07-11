@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -22,15 +22,14 @@ import os
 import shutil
 import warnings
 
-from nose.tools import assert_equal, assert_in, assert_true
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 from PIL import Image
+import pytest
 import shapely.geometry as sgeom
 from six.moves import cPickle as pickle
 
 from cartopy import config
-import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.img_nest as cimg_nest
 import cartopy.tests as tests
@@ -41,40 +40,37 @@ import cartopy.tests as tests
 _TEST_DATA_VERSION = 1
 _TEST_DATA_DIR = os.path.join(config["data_dir"],
                               'wmts', 'aerial')
-#: A global to determine whether the test data has already been made available
-#: in this session.
-_TEST_DATA_AVAILABLE = False
 
 
 def test_world_files():
     func = cimg_nest.Img.world_files
     fname = 'one'
     expected = ['one.w', 'one.W', 'ONE.w', 'ONE.W']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = 'one.png'
     expected = ['one.pngw', 'one.pgw', 'one.PNGW', 'one.PGW',
                 'ONE.pngw', 'ONE.pgw', 'ONE.PNGW', 'ONE.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = '/one.png'
     expected = ['/one.pngw', '/one.pgw', '/one.PNGW', '/one.PGW',
                 '/ONE.pngw', '/ONE.pgw', '/ONE.PNGW', '/ONE.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = '/one/two.png'
     expected = ['/one/two.pngw', '/one/two.pgw',
                 '/one/two.PNGW', '/one/two.PGW',
                 '/one/TWO.pngw', '/one/TWO.pgw',
                 '/one/TWO.PNGW', '/one/TWO.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
     fname = '/one/two/THREE.png'
     expected = ['/one/two/THREE.pngw', '/one/two/THREE.pgw',
                 '/one/two/THREE.PNGW', '/one/two/THREE.PGW',
                 '/one/two/three.pngw', '/one/two/three.pgw',
                 '/one/two/three.PNGW', '/one/two/three.PGW']
-    assert_equal(func(fname), expected)
+    assert func(fname) == expected
 
 
 def _save_world(fname, args):
@@ -88,116 +84,110 @@ def _save_world(fname, args):
         fh.write(_world.format(**args))
 
 
-def test_intersect():
-    with tests.temp_dir() as base_dir:
-        # Zoom level zero.
-        # File 1: Parent space of all images.
-        z_0_dir = os.path.join(base_dir, 'z_0')
-        os.mkdir(z_0_dir)
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=1, y_center=1)
-        im = Image.new('RGB', (50, 50))
-        fname = os.path.join(z_0_dir, 'p0.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_0_dir, 'p0.tif')
-        im.save(fname)
+def test_intersect(tmpdir):
+    # Zoom level zero.
+    # File 1: Parent space of all images.
+    z_0_dir = tmpdir.mkdir('z_0')
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=1, y_center=1)
+    im = Image.new('RGB', (50, 50))
+    fname = z_0_dir.join('p0.tfw')
+    _save_world(str(fname), world)
+    fname = z_0_dir.join('p0.tif')
+    im.save(str(fname))
 
-        # Zoom level one.
-        # File 1: complete containment within p0.
-        z_1_dir = os.path.join(base_dir, 'z_1')
-        os.mkdir(z_1_dir)
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=21, y_center=21)
-        im = Image.new('RGB', (30, 30))
-        fname = os.path.join(z_1_dir, 'p1.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_1_dir, 'p1.tif')
-        im.save(fname)
+    # Zoom level one.
+    # File 1: complete containment within p0.
+    z_1_dir = tmpdir.mkdir('z_1')
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=21, y_center=21)
+    im = Image.new('RGB', (30, 30))
+    fname = z_1_dir.join('p1.tfw')
+    _save_world(str(fname), world)
+    fname = z_1_dir.join('p1.tif')
+    im.save(str(fname))
 
-        # Zoom level two.
-        # File 1: intersect right edge with p1 left edge.
-        z_2_dir = os.path.join(base_dir, 'z_2')
-        os.mkdir(z_2_dir)
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=6, y_center=21)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-1.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-1.tif')
-        im.save(fname)
-        # File 2: intersect upper right corner with p1
-        #         lower left corner.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=6, y_center=6)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-2.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-2.tif')
-        im.save(fname)
-        # File 3: complete containment within p1.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=41, y_center=41)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-3.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-3.tif')
-        im.save(fname)
-        # File 4: overlap with p1 right edge.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=76, y_center=61)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-4.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-4.tif')
-        im.save(fname)
-        # File 5: overlap with p1 bottom right corner.
-        world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
-                     y_pix_size=2, x_center=76, y_center=76)
-        im = Image.new('RGB', (5, 5))
-        fname = os.path.join(z_2_dir, 'p2-5.tfw')
-        _save_world(fname, world)
-        fname = os.path.join(z_2_dir, 'p2-5.tif')
-        im.save(fname)
+    # Zoom level two.
+    # File 1: intersect right edge with p1 left edge.
+    z_2_dir = tmpdir.mkdir('z_2')
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=6, y_center=21)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-1.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-1.tif')
+    im.save(str(fname))
+    # File 2: intersect upper right corner with p1
+    #         lower left corner.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=6, y_center=6)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-2.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-2.tif')
+    im.save(str(fname))
+    # File 3: complete containment within p1.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=41, y_center=41)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-3.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-3.tif')
+    im.save(str(fname))
+    # File 4: overlap with p1 right edge.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=76, y_center=61)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-4.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-4.tif')
+    im.save(str(fname))
+    # File 5: overlap with p1 bottom right corner.
+    world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
+                 y_pix_size=2, x_center=76, y_center=76)
+    im = Image.new('RGB', (5, 5))
+    fname = z_2_dir.join('p2-5.tfw')
+    _save_world(str(fname), world)
+    fname = z_2_dir.join('p2-5.tif')
+    im.save(str(fname))
 
-        # Provided in reverse order in order to test the area sorting.
-        items = [('dummy-z-2', z_2_dir),
-                 ('dummy-z-1', z_1_dir),
-                 ('dummy-z-0', z_0_dir)]
-        nic = cimg_nest.NestedImageCollection.from_configuration('dummy',
-                                                                 None,
-                                                                 items)
+    # Provided in reverse order in order to test the area sorting.
+    items = [('dummy-z-2', str(z_2_dir)),
+             ('dummy-z-1', str(z_1_dir)),
+             ('dummy-z-0', str(z_0_dir))]
+    nic = cimg_nest.NestedImageCollection.from_configuration('dummy',
+                                                             None,
+                                                             items)
 
-        names = [collection.name for collection in nic._collections]
-        zoom_levels = ['dummy-z-0', 'dummy-z-1', 'dummy-z-2']
-        assert_true(names, zoom_levels)
+    names = [collection.name for collection in nic._collections]
+    zoom_levels = ['dummy-z-0', 'dummy-z-1', 'dummy-z-2']
+    assert names == zoom_levels
 
-        # Check all images are loaded.
-        for zoom, expected_image_count in zip(zoom_levels, [1, 1, 5]):
-            images = nic._collections_by_name[zoom].images
-            assert_equal(len(images), expected_image_count)
+    # Check all images are loaded.
+    for zoom, expected_image_count in zip(zoom_levels, [1, 1, 5]):
+        images = nic._collections_by_name[zoom].images
+        assert len(images) == expected_image_count
 
-        # Check the image ancestry.
-        zoom_levels = ['dummy-z-0', 'dummy-z-1']
-        assert_equal(sorted(k[0] for k in nic._ancestry.keys()),
-                     zoom_levels)
+    # Check the image ancestry.
+    zoom_levels = ['dummy-z-0', 'dummy-z-1']
+    assert sorted(k[0] for k in nic._ancestry.keys()) == zoom_levels
 
-        expected = [('dummy-z-0', ['p1.tif']),
-                    ('dummy-z-1', ['p2-3.tif', 'p2-4.tif', 'p2-5.tif'])]
-        for zoom, image_names in expected:
-            key = [k for k in nic._ancestry.keys() if k[0] == zoom][0]
-            ancestry = nic._ancestry[key]
-            fnames = sorted([os.path.basename(item[1].filename)
-                             for item in ancestry])
-            assert_equal(image_names, fnames)
+    expected = [('dummy-z-0', ['p1.tif']),
+                ('dummy-z-1', ['p2-3.tif', 'p2-4.tif', 'p2-5.tif'])]
+    for zoom, image_names in expected:
+        key = [k for k in nic._ancestry.keys() if k[0] == zoom][0]
+        ancestry = nic._ancestry[key]
+        fnames = sorted([os.path.basename(item[1].filename)
+                         for item in ancestry])
+        assert image_names == fnames
 
-        # Check image retrieval for specific domain.
-        items = [(sgeom.box(20, 20, 80, 80), 3),
-                 (sgeom.box(20, 20, 75, 75), 1),
-                 (sgeom.box(40, 40, 85, 85), 3)]
-        for domain, expected in items:
-            result = [image for image in nic.find_images(domain,
-                                                         'dummy-z-2')]
-            assert_equal(len(result), expected)
+    # Check image retrieval for specific domain.
+    items = [(sgeom.box(20, 20, 80, 80), 3),
+             (sgeom.box(20, 20, 75, 75), 1),
+             (sgeom.box(40, 40, 85, 85), 3)]
+    for domain, expected in items:
+        result = [image for image in nic.find_images(domain, 'dummy-z-2')]
+        assert len(result) == expected
 
 
 def _tile_from_img(img):
@@ -229,7 +219,8 @@ class RoundedImg(cimg_nest.Img):
         return extent, pix_size
 
 
-def test_nest():
+@pytest.mark.xfail(reason='MapQuest is unavailable')
+def test_nest(nest_from_config):
     crs = cimgt.GoogleTiles().crs
     z0 = cimg_nest.ImageCollection('aerial z0 test', crs)
     z0.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_0'),
@@ -261,33 +252,32 @@ def test_nest():
 
     z0_key = ('aerial z0 test', z0.images[0])
 
-    assert_true(z0_key in nest_z0_z1._ancestry.keys())
-    assert_equal(len(nest_z0_z1._ancestry), 1)
+    assert z0_key in nest_z0_z1._ancestry.keys()
+    assert len(nest_z0_z1._ancestry) == 1
 
     # check that it has figured out that all the z1 images are children of
     # the only z0 image
     for img in z1.images:
         key = ('aerial z0 test', z0.images[0])
-        assert_in(('aerial z1 test', img), nest_z0_z1._ancestry[key])
+        assert ('aerial z1 test', img) in nest_z0_z1._ancestry[key]
 
     x1_y0_z1, = [img for img in z1.images
                  if img.filename.endswith('z_1/x_1_y_0.png')]
 
-    assert_equal((1, 0, 1), _tile_from_img(x1_y0_z1))
+    assert (1, 0, 1) == _tile_from_img(x1_y0_z1)
 
-    assert_equal([(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)],
-                 sorted([_tile_from_img(img) for z, img in
-                         nest.subtiles(('aerial z1 test', x1_y0_z1))]))
+    assert ([(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)] ==
+            sorted([_tile_from_img(img) for z, img in
+                    nest.subtiles(('aerial z1 test', x1_y0_z1))]))
 
-    nest_from_config = gen_nest()
     # check that the the images in the nest from configuration are the
     # same as those created by hand.
     for name in nest_z0_z1._collections_by_name.keys():
         for img in nest_z0_z1._collections_by_name[name].images:
             collection = nest_from_config._collections_by_name[name]
-            assert_in(img, collection.images)
+            assert img in collection.images
 
-    assert_equal(nest_z0_z1._ancestry, nest_from_config._ancestry)
+    assert nest_z0_z1._ancestry == nest_from_config._ancestry
 
     # check that a nest can be pickled and unpickled easily.
     s = io.BytesIO()
@@ -295,8 +285,7 @@ def test_nest():
     s.seek(0)
     nest_z0_z1_from_pickle = pickle.load(s)
 
-    assert_equal(nest_z0_z1._ancestry,
-                 nest_z0_z1_from_pickle._ancestry)
+    assert nest_z0_z1._ancestry == nest_z0_z1_from_pickle._ancestry
 
 
 def test_img_pickle_round_trip():
@@ -304,15 +293,14 @@ def test_img_pickle_round_trip():
 
     img = cimg_nest.Img('imaginary file', (0, 1, 2, 3), 'lower', (1, 2))
     img_from_pickle = pickle.loads(pickle.dumps(img))
-    assert_equal(img, img_from_pickle)
-    assert_equal(hasattr(img_from_pickle, '_bbox'), True)
+    assert img == img_from_pickle
+    assert hasattr(img_from_pickle, '_bbox')
 
 
-def requires_wmts_data(function):
+@pytest.fixture(scope='session')
+def wmts_data():
     """
-    A decorator which ensures that the WMTS data is available for
-    use in testing.
-
+    A fixture which ensures that the WMTS data is available for use in testing.
     """
     aerial = cimgt.MapQuestOpenAerial()
 
@@ -376,31 +364,26 @@ def requires_wmts_data(function):
             _save_world(pgw_fname, pgw_keys)
             img.save(fname)
 
-    global _TEST_DATA_AVAILABLE
-    _TEST_DATA_AVAILABLE = True
 
-    return function
-
-
-@requires_wmts_data
-def test_find_images():
+@pytest.mark.xfail(reason='MapQuest is unavailable')
+def test_find_images(wmts_data):
     z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
     img_fname = os.path.join(z2_dir, 'x_2_y_0.png')
     world_file_fname = os.path.join(z2_dir, 'x_2_y_0.pgw')
     img = RoundedImg.from_world_file(img_fname, world_file_fname)
 
-    assert_equal(img.filename, img_fname)
+    assert img.filename == img_fname
     assert_array_almost_equal(img.extent,
                               (0., 10018754.17139462,
                                10018754.17139462, 20037508.342789244),
                               decimal=4)
-    assert_equal(img.origin, 'lower')
+    assert img.origin == 'lower'
     assert_array_equal(img, np.array(Image.open(img.filename)))
-    assert_equal(img.pixel_size, (39135.7585, 39135.7585))
+    assert img.pixel_size == (39135.7585, 39135.7585)
 
 
-@requires_wmts_data
-def gen_nest():
+@pytest.fixture
+def nest_from_config(wmts_data):
     from_config = cimg_nest.NestedImageCollection.from_configuration
 
     files = [['aerial z0 test', os.path.join(_TEST_DATA_DIR, 'z_0')],
@@ -413,8 +396,3 @@ def gen_nest():
                              crs, files, glob_pattern='*.png',
                              img_class=RoundedImg)
     return nest_z0_z1
-
-
-if __name__ == '__main__':
-    import nose
-    nose.runmodule(argv=['-s', '--with-doctest'], exit=False)

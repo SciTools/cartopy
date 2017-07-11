@@ -10,10 +10,11 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    plt.figure(figsize=(8, 10))
+    fig = plt.figure(figsize=(8, 10))
 
     # Label axes of a Plate Carree projection with a central longitude of 180:
-    ax1 = plt.subplot(211, projection=ccrs.PlateCarree(central_longitude=180))
+    ax1 = fig.add_subplot(2, 1, 1,
+                          projection=ccrs.PlateCarree(central_longitude=180))
     ax1.set_global()
     ax1.coastlines()
     ax1.set_xticks([0, 60, 120, 180, 240, 300, 360], crs=ccrs.PlateCarree())
@@ -25,7 +26,7 @@ def main():
 
     # Label axes of a Mercator projection without degree symbols in the labels
     # and formatting labels to include 1 decimal place:
-    ax2 = plt.subplot(212, projection=ccrs.Mercator())
+    ax2 = fig.add_subplot(2, 1, 2, projection=ccrs.Mercator())
     ax2.set_global()
     ax2.coastlines()
     ax2.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())

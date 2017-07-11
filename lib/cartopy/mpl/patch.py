@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -63,7 +63,7 @@ def geos_to_path(shape):
         return paths
 
     if isinstance(shape, (sgeom.LineString, sgeom.Point)):
-        return [Path(np.vstack(shape.xy).T)]
+        return [Path(np.column_stack(shape.xy))]
     elif isinstance(shape, sgeom.Polygon):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
@@ -185,7 +185,7 @@ def path_to_geos(path, force_ccw=False):
                                      axis=1)
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
-        elif (path_verts.shape[0] > 2 and
+        elif (path_verts.shape[0] > 3 and
                 (path_codes[-1] == Path.CLOSEPOLY or
                  verts_same_as_first[-1])):
             if path_codes[-1] == Path.CLOSEPOLY:
