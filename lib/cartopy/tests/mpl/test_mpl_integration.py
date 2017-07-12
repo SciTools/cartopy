@@ -125,9 +125,9 @@ def test_global_scatter_wrap_no_transform():
 @ImageTesting(['global_map'],
               tolerance=16 if ccrs.PROJ4_VERSION < (4, 9) else 0.1)
 def test_global_map():
-    ax = plt.axes(projection=ccrs.Robinson())
-#    ax.coastlines()
-#    ax.gridlines(5)
+    # ax = plt.axes(projection=ccrs.Robinson())
+    # ax.coastlines()
+    # ax.gridlines(5)
 
     plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
 
@@ -485,7 +485,7 @@ def test_barbs():
     x2d, y2d = np.meshgrid(x, y)
     u = 40 * np.cos(np.deg2rad(y2d))
     v = 40 * np.cos(2. * np.deg2rad(x2d))
-    ag = (u**2 + v**2)**.5
+    # mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
     plt.figure(figsize=(6, 6))
     # plot on native projection
