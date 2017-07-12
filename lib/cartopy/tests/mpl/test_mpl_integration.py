@@ -27,6 +27,8 @@ import matplotlib.pyplot as plt
 import six
 
 import cartopy.crs as ccrs
+from cartopy.mpl.geoaxes import GeoAxesGrid
+from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
@@ -483,7 +485,7 @@ def test_barbs():
     x2d, y2d = np.meshgrid(x, y)
     u = 40 * np.cos(np.deg2rad(y2d))
     v = 40 * np.cos(2. * np.deg2rad(x2d))
-    mag = (u**2 + v**2)**.5
+    ag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
     plt.figure(figsize=(6, 6))
     # plot on native projection
@@ -579,3 +581,21 @@ def test_streamplot():
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
                   density=(1.5, 2), color=mag, linewidth=2*mag)
+
+
+@ImageTesting(['geoaxesgrid_global'],
+              tolerance=9 if MPL_VERSION < '2' else 0.5)
+def test_geoaxesgrid_global():
+    projection = ccrs.PlateCarree()
+    fig = plt.figure()
+    geogr = GeoAxesGrid(fig, 111, (2, 3), projection,
+                        axes_pad=0.6, cbar_location='right',
+                        cbar_mode='single', cbar_pad=0.2, cbar_size='3%')
+    for i, ax in enumerate(geogr.axes_all):
+        ax.coastlines()
+        ax.set_xticks(np.linspace(-180, 180, 5), crs=projection)
+        ax.set_yticks(np.linspace(-90, 90, 5), crs=projection)
+        lon_formatter = LongitudeFormatter(zero_direction_label=True)
+        lat_formatter = LatitudeFormatter()
+        ax.xaxis.set_major_formatter(lon_formatter)
+        ax.yaxis.set_major_formatter(lat_formatter)
