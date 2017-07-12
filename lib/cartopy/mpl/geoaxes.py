@@ -1903,6 +1903,35 @@ class GeoAxesGrid(AxesGrid):
          grid lines and labels should be used.
     """
     def __init__(self, fig, rect, nrows_ncols, projection, **axesgrid_kw):
+        """
+        Build an :class:`GeoAxesGrid` instance with a grid nrows*ncols
+        :class:`GeoAxes` with a projection :class:`~cartopy.crs.Projection`
+        in :class:`~matplotlib.figure.Figure` *fig* with
+        *rect=[left, bottom, width, height]* (in
+        :class:`~matplotlib.figure.Figure` coordinates) or
+        the subplot position code (e.g., "121").
+
+        Kwargs:
+
+          Keyword           Default   Description
+          ================  ========  =========================================
+          direction         "row"     [ "row" | "column" ]
+          axes_pad          0.02      float| pad between axes given in inches
+                                      or tuple-like of floats,
+                                      (horizontal padding, vertical padding)
+          add_all           True      [ True | False ]
+          share_all         False     [ True | False ]
+          aspect            True      [ True | False ]
+          cbar_mode         None      [ "each" | "single" | "edge" ]
+          cbar_location     "right"   [ "left" | "right" | "bottom" | "top" ]
+          cbar_pad          None
+          cbar_size         "5%"
+          cbar_set_cax      True      [ True | False ]
+          ================  ========  =========================================
+
+        *cbar_set_cax* : if True, each axes in the grid has a cax
+          attribute that is bind to associated cbar_axes.
+        """
         axesgrid_kw['axes_class'] = (GeoAxes, dict(map_projection=projection))
         axesgrid_kw['label_mode'] = ''  # note the empty label_mode
         super(GeoAxesGrid, self).__init__(fig, rect, nrows_ncols,
