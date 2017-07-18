@@ -106,7 +106,7 @@ class Feature(six.with_metaclass(ABCMeta)):
         """
         pass
 
-    def intersecting_geometries(self, extent):
+    def intersecting_geometries(self, extent, return_indices=False):
         """
         Return an iterator of shapely geometries that intersect with
         the given extent. The extent is assumed to be in the CRS of
@@ -117,10 +117,12 @@ class Feature(six.with_metaclass(ABCMeta)):
         if extent is not None:
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
-            return (geom for geom in self.geometries() if
-                    geom is not None and extent_geom.intersects(geom))
+            for i, geom in enumerate(self.geometries()):
+                if geom is not None and extent_geom.intersects(geom):
+                    yield (i, geom) if return_indices else geom
         else:
-            return self.geometries()
+            for i, geom in enumerate(self.geometries()):
+                yield (i, geom) if return_indices else geom
 
 
 class ShapelyFeature(Feature):
@@ -295,7 +297,7 @@ class GSHHSFeature(Feature):
     def geometries(self):
         return self.intersecting_geometries(extent=None)
 
-    def intersecting_geometries(self, extent):
+    def intersecting_geometries(self, extent, return_indices=False):
         if self._scale == 'auto':
             scale = self._scale_from_extent(extent)
         else:
@@ -304,6 +306,7 @@ class GSHHSFeature(Feature):
         if extent is not None:
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
+        start = 0
         for level in self._levels:
             geoms = GSHHSFeature._geometries_cache.get((scale, level))
             if geoms is None:
@@ -312,9 +315,14 @@ class GSHHSFeature(Feature):
                 path = shapereader.gshhs(scale, level)
                 geoms = tuple(shapereader.Reader(path).geometries())
                 GSHHSFeature._geometries_cache[(scale, level)] = geoms
-            for geom in geoms:
+            for i, geom in enumerate(geoms, start=start):
                 if extent is None or extent_geom.intersects(geom):
-                    yield geom
+                    yield (i, geom) if return_indices else geom
+
+            try:
+                start = i
+            except NameError:
+                pass
 
 
 class WFSFeature(Feature):
@@ -363,9 +371,10 @@ class WFSFeature(Feature):
                                                      min_y, max_y))
         return iter(geoms)
 
-    def intersecting_geometries(self, extent):
+    def intersecting_geometries(self, extent, return_indices=False):
         geoms = self.source.fetch_geometries(self.crs, extent)
-        return iter(geoms)
+        for i, geom in enumerate(geoms):
+            yield (i, geom) if return_indices else geom
 
 
 BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
