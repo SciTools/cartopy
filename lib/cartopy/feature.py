@@ -377,13 +377,13 @@ LAKES = NaturalEarthFeature('physical', 'lakes', '110m',
 
 LAND = NaturalEarthFeature('physical', 'land', '110m',
                            edgecolor='face',
-                           facecolor=COLORS['land'])
+                           facecolor=COLORS['land'], zorder=-1)
 """Small scale (1:110m) land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
                             edgecolor='face',
-                            facecolor=COLORS['water'])
+                            facecolor=COLORS['water'], zorder=-1)
 """Small scale (1:110m) ocean polygons."""
 
 
