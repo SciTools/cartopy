@@ -127,7 +127,8 @@ class TestLicenseHeaders(object):
                             'docs/build/*',
                             'docs/source/examples/*.py',
                             'docs/source/sphinxext/*.py',
-                            'lib/cartopy/examples/*.py')
+                            'lib/cartopy/examples/*.py',
+                            'docs/add_noshow.py')
 
         try:
             last_change_by_fname = self.last_change_by_fname()

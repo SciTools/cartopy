@@ -430,7 +430,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                                       resolution, **kwargs)
         return self.add_feature(feature)
 
-    def tissot(self, rad_km=5e5, lons=None, lats=None, n_samples=80, **kwargs):
+    def tissot(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
         """
         Adds Tissot's indicatrices to the axes.
 
@@ -474,7 +474,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for i in range(len(lons)):
-                circle = geod.circle(lons[i], lats[i], rad_km,
+                circle = geod.circle(lons[i], lats[i], rad_km*1e3,
                                      n_samples=n_samples)
                 geoms.append(sgeom.Polygon(circle))
 
@@ -1435,12 +1435,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # convert to one dimensional arrays
         C = C.ravel()
-        X = X.ravel()
-        Y = Y.ravel()
-
-        coords = np.zeros(((Nx * Ny), 2), dtype=float)
-        coords[:, 0] = X
-        coords[:, 1] = Y
+        coords = np.column_stack((X.flat, Y.flat)).astype(float, copy=False)
 
         collection = mcoll.QuadMesh(
             Nx - 1, Ny - 1, coords,
@@ -1460,37 +1455,27 @@ class GeoAxes(matplotlib.axes.Axes):
         t = collection._transform
         if (not isinstance(t, mtransforms.Transform) and
                 hasattr(t, '_as_mpl_transform')):
-            t = t._as_mpl_transform(self.axes)
+            t = t._as_mpl_transform(self)
 
         if t and any(t.contains_branch_seperately(self.transData)):
             trans_to_data = t - self.transData
-            pts = np.vstack([X, Y]).T.astype(np.float)
-            transformed_pts = trans_to_data.transform(pts)
-            X = transformed_pts[..., 0]
-            Y = transformed_pts[..., 1]
-
             ########################
             # PATCH
-            # XXX Non-standard matplotlib thing.
-            no_inf = (X != np.inf) & (Y != np.inf)
-            X = X[no_inf]
-            Y = Y[no_inf]
-            # END OF PATCH
-            ##############
+            # XXX Non-standard Matplotlib thing:
+            # * Check for point existence after transform
+            # * Save non-transformed coords for later work
+            transformed_pts = trans_to_data.transform(coords)
 
-        ########################
-        # PATCH
-        # XXX Non-standard matplotlib thing (length check).
-        if len(X):
-            minx = np.amin(X)
-            maxx = np.amax(X)
+            no_inf = ~np.any(np.isinf(transformed_pts), axis=1)
+            if np.any(no_inf):
+                minx, miny = np.min(transformed_pts[no_inf], axis=0)
+                maxx, maxy = np.max(transformed_pts[no_inf], axis=0)
+            else:
+                minx = maxx = miny = maxy = np.nan
         else:
-            minx = maxx = np.nan
-        if len(Y):
-            miny = np.amin(Y)
-            maxy = np.amax(Y)
-        else:
-            miny = maxy = np.nan
+            transformed_pts = coords
+            minx, miny = np.min(coords, axis=0)
+            maxx, maxy = np.max(coords, axis=0)
         # END OF PATCH
         ##############
 
@@ -1523,19 +1508,17 @@ class GeoAxes(matplotlib.axes.Axes):
                 C = C.reshape((Ny - 1, Nx - 1))
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
 
-                # compute the vertical line angles of the pcolor in
-                # transformed coordinates
+                # Compute the length of edges in transformed coordinates
                 with np.errstate(invalid='ignore'):
-                    horizontal_vert_angles = np.arctan2(
+                    edge_lengths = np.hypot(
                         np.diff(transformed_pts[..., 0], axis=1),
                         np.diff(transformed_pts[..., 1], axis=1)
                     )
-
-                # if the change in angle is greater than 90 degrees (absolute),
-                # then mark it for masking later on.
-                dx_horizontal = np.diff(horizontal_vert_angles)
-                to_mask = ((np.abs(dx_horizontal) > np.pi / 2) |
-                           np.isnan(dx_horizontal))
+                    to_mask = (
+                        (edge_lengths > abs(self.projection.x_limits[1] -
+                                            self.projection.x_limits[0]) / 2) |
+                        np.isnan(edge_lengths)
+                    )
 
                 if np.any(to_mask):
                     if collection.get_cmap()._rgba_bad[3] != 0.0:
@@ -1544,44 +1527,35 @@ class GeoAxes(matplotlib.axes.Axes):
                                       "map it must be fully transparent.")
 
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
-                    # a shape of (Ny, Nx-2) and pts has a shape of (Ny*Nx, 2)
+                    # a shape of (Ny, Nx-1) and pts has a shape of (Ny*Nx, 2)
 
                     mask = np.zeros(C.shape, dtype=np.bool)
 
-                    # mask out the neighbouring cells if there was a cell
-                    # found with an angle change of more than pi/2 . NB.
-                    # Masking too much only has a detrimental impact on
-                    # performance.
-                    to_mask_y_shift = to_mask[:-1, :]
-                    mask[:, :-1][to_mask_y_shift] = True
-                    mask[:, 1:][to_mask_y_shift] = True
-
-                    to_mask_x_shift = to_mask[1:, :]
-                    mask[:, :-1][to_mask_x_shift] = True
-                    mask[:, 1:][to_mask_x_shift] = True
+                    # Mask out the neighbouring cells if there was an edge
+                    # found with a large length. NB. Masking too much only has
+                    # a detrimental impact on performance.
+                    mask[to_mask[:-1, :]] = True  # Edges above a cell.
+                    mask[to_mask[1:, :]] = True  # Edges below a cell.
 
                     C_mask = getattr(C, 'mask', None)
-                    if C_mask is not None:
-                        dmask = mask | C_mask
-                    else:
-                        dmask = mask
 
                     # create the masked array to be used with this pcolormesh
-                    pcolormesh_data = np.ma.array(C, mask=mask)
+                    if C_mask is not None:
+                        pcolormesh_data = np.ma.array(C, mask=mask | C_mask)
+                    else:
+                        pcolormesh_data = np.ma.array(C, mask=mask)
 
                     collection.set_array(pcolormesh_data.ravel())
 
                     # now that the pcolormesh has masked the bad values,
                     # create a pcolor with just those values that were masked
-                    pcolor_data = pcolormesh_data.copy()
-                    # invert the mask
-                    pcolor_data.mask = ~pcolor_data.mask
-
-                    # remember to re-apply the original data mask to the array
                     if C_mask is not None:
-                        pcolor_data.mask = pcolor_data.mask | C_mask
+                        # remember to re-apply the original data mask
+                        pcolor_data = np.ma.array(C, mask=~mask | C_mask)
+                    else:
+                        pcolor_data = np.ma.array(C, mask=~mask)
 
-                    pts = pts.reshape((Ny, Nx, 2))
+                    pts = coords.reshape((Ny, Nx, 2))
                     if np.any(~pcolor_data.mask):
                         # plot with slightly lower zorder to avoid odd issue
                         # where the main plot is obscured
@@ -1632,8 +1606,8 @@ class GeoAxes(matplotlib.axes.Axes):
         result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
 
         # Update the datalim for this pcolor.
-        limits = result.get_datalim(self.axes.transData)
-        self.axes.update_datalim(limits)
+        limits = result.get_datalim(self.transData)
+        self.update_datalim(limits)
 
         self.autoscale_view()
         return result
