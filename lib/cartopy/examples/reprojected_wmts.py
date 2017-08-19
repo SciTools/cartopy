@@ -35,7 +35,7 @@ def plot_city_lights():
 
     # Plot WMTS data in a specific region, over a plain lat-lon map.
     ax = fig.add_subplot(1, 2, 1, projection=plain_crs)
-    ax.set_extent((-6, 3, 48, 58), crs=ccrs.PlateCarree())
+    ax.set_extent((-6, 3, 48, 58), crs=plain_crs)
     ax.coastlines(resolution='50m', color='yellow')
     ax.gridlines(color='lightgrey', linestyle='-')
     # Add WMTS imaging.
