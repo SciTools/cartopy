@@ -10,6 +10,7 @@ providing web service can be accessed.
 import matplotlib.pyplot as plt
 
 from cartopy.io.img_tiles import StamenTerrain
+import cartopy.crs as ccrs
 
 
 def main():
@@ -18,7 +19,7 @@ def main():
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=mercator)
-    ax.set_extent([-90, -73, 22, 34])
+    ax.set_extent([-90, -73, 22, 34], crs=ccrs.PlateCarree())
 
     ax.add_image(tiler, 6)
 
