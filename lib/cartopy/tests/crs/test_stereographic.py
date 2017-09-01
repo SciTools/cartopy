@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -64,26 +64,29 @@ class TestStereographic(object):
 
     def test_scale_factor(self):
         # See #455
-        # Use spherical Earth in North Polar Stereographic to check equivalence
-        # with between true_scale and scale_factor.
+        # Use spherical Earth in North Polar Stereographic to check
+        # equivalence between true_scale and scale_factor.
         # In these conditions a scale factor of 0.75 corresponds exactly to
         # a standard parallel of 30N.
         globe = ccrs.Globe(ellipse='sphere')
-        stereo = ccrs.Stereographic(central_latitude=90., \
-                scale_factor=0.75, globe=globe)
+        stereo = ccrs.Stereographic(central_latitude=90., scale_factor=0.75,
+                                    globe=globe)
         expected = ('+ellps=sphere +proj=stere +lat_0=90.0 +lon_0=0.0 '
                     '+x_0=0.0 +y_0=0.0 +k_0=0.75 +no_defs')
-        assert_equal(stereo.proj4_init, expected)
+        assert stereo.proj4_init == expected
 
         # Now test projections
         lon, lat = 10, 10
-        projected_scale_factor = stereo.transform_point(lon, lat, ccrs.Geodetic())
+        projected_scale_factor = stereo.transform_point(lon, lat,
+                                                        ccrs.Geodetic())
 
-        # should be equivalent to North Polar Stereo with true_scale_latitude = 30
+        # should be equivalent to North Polar Stereo with
+        # true_scale_latitude = 30
         nstereo = ccrs.NorthPolarStereo(globe=globe, true_scale_latitude=30)
-        projected_true_scale = nstereo.transform_point(lon, lat, ccrs.Geodetic())
+        projected_true_scale = nstereo.transform_point(lon, lat,
+                                                       ccrs.Geodetic())
 
-        assert_equal(projected_true_scale, projected_scale_factor)
+        assert projected_true_scale == projected_scale_factor
 
     def test_eastings(self):
         stereo = ccrs.Stereographic()
