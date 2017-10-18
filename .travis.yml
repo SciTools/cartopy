@@ -2,10 +2,14 @@ language: python
 
 env:
     matrix:
+        # These ancient versions are linked to an old libgfortran, but that version
+        # isn't pinned in the package metadata
+        # Forcing build 3 for numpy pulls in the packages from defaults, which
+        # is needed in order to work with libgfortran 1
         - PYTHON_VERSION=2.7
-          PACKAGES="numpy=1.9.3 matplotlib=1.4.3 nose scipy=0.16.0 mock"
+          PACKAGES="numpy=1.9.3=py27_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1 mock"
         - PYTHON_VERSION=3.5
-          PACKAGES="numpy=1.9.3 matplotlib=1.4.3 nose scipy=0.16.0"
+          PACKAGES="numpy=1.9.3=py35_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1"
         # Remove nose from latest packages when Matplotlib 2.1 is released.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
