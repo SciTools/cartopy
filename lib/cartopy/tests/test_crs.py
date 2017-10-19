@@ -21,6 +21,7 @@ from io import BytesIO
 import pickle
 
 import numpy as np
+from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 try:
     import pyepsg
@@ -88,9 +89,11 @@ class TestCRS(object):
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        assert uk.x_limits == (-84667.135022467062, 676354.14167904819)
-        assert uk.y_limits == (-2957.1831134535023, 1242951.4397385279)
-        assert uk.threshold == 7610.2127670151531
+        assert_almost_equal(uk.x_limits,
+                            (-84667.135022467062, 676354.14167904819))
+        assert_almost_equal(uk.y_limits,
+                            (-2957.1831134535023, 1242951.4397385279))
+        assert_almost_equal(uk.threshold, 7610.2127670151531)
         self._check_osgb(uk)
 
     def test_europp(self):
