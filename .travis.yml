@@ -13,10 +13,10 @@ env:
         # Remove nose from latest packages when Matplotlib 2.1 is released.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
-          PACKAGES="numpy matplotlib nose scipy"
+          PACKAGES="numpy matplotlib<2.1 nose scipy"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
-          PACKAGES="numpy matplotlib nose scipy mock"
+          PACKAGES="numpy matplotlib<2.1 nose scipy mock"
 
 
 sudo: false
