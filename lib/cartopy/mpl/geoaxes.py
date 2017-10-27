@@ -1878,6 +1878,104 @@ class GeoAxes(matplotlib.axes.Axes):
         return self.add_raster(wms, **kwargs)
 
 
+# ##### YP ####################################################################
+    def _cb_resize(self, cax, pad, size, location):
+        """
+        Returns function to automatically resize colorbar for cartopy plots
+
+        Parameters
+        ----------
+        cax : colorbar axis
+        pad: number
+            padding of colorbar from main plot
+        size: number
+            relative size (thickness) of the colorbar
+        location : str
+            location relative to the plot where to place the colorbar
+        """
+
+        def resize_colorbar(event):
+            # Tell matplotlib to re-draw everything, so that we can get the
+            # correct location from get_position.
+            mpl.pyplot.draw()
+            pos = self.get_position()
+            if location in ('b', 'bottom'):
+                cax_pos = [pos.xmin, pos.ymin - pad, pos.width, size]
+            if location in ('t', 'top'):
+                cax_pos = [pos.xmin, pos.ymax + pad, pos.width, size]
+            if location in ('l', 'left'):
+                cax_pos = [pos.xmin - pad, pos.ymin, size, pos.height]
+            if location in ('r', 'right'):
+                cax_pos = [pos.xmin + pos.width + pad, pos.ymin, size,
+                           pos.height]
+
+            cax.set_position(cax_pos)
+
+        resize_colorbar(None)
+        return resize_colorbar
+
+    def add_colorbar(self, im, location='bottom', pad=0.05, size=0.02,
+                     labelsize=9, title=None):
+        """
+        Attach a colorbar to GeoAxes plot
+
+        Parameters
+        ----------
+        im : mpl.image.AxesImage
+        location : str, optional
+            location of colorbar relative to main plot
+        pad : number, optional
+            padding from main plot (default 0.05)
+        size: number, optional
+            relative size (thickness) of colorbar (default 0.02)
+        labelsize: number, optional
+            colorbar label fontsize (default 9)
+        title : str, optional
+            colorbar title (default None)
+
+        Examples
+        --------
+            >>> import cartopy.crs as ccrs
+            >>> fig = plt.figure()
+            >>> ax = fig.add_subplot(111, projection=ccrs.PlateCarree())
+            >>> im = ax.{...}  # plot data
+            >>> ax.coastlines()
+            >>> ax.gridlines()
+            >>> ax.add_colorbar(im)
+
+        """
+        # get current figure
+        fig = mpl.pyplot.gcf()
+        location = location.lower()
+        cb_ticks = {'labelsize': labelsize, 'direction': 'in'}
+        if location in ('top', 'bottom', 't', 'b'):
+            pad = 0.1
+            orient = 'horizontal'
+            bot = [0.05, 0.15][location in ('b', 'bottom')]
+            top = [0.85, 0.9][location in ('b', 'bottom')]
+            cb_ticks.update({'bottom': True, 'top': True})
+            fig.subplots_adjust(0.075, bot, 0.95, top, 0, 0)
+
+        elif location in ('left', 'right', 'l', 'r'):
+            orient = 'vertical'
+            left = [0.15, 0.075][location in ('r', 'right')]
+            right = [0.95, 0.85][location in ('r', 'right')]
+            cb_ticks.update({'left': True, 'right': True})
+            fig.subplots_adjust(left, 0.15, right, 0.85, 0, 0)
+
+        cb_ax = fig.add_axes([0, 0, 0.1, .1])
+        fig.canvas.mpl_connect('resize_event', self._cb_resize(
+            cb_ax, pad, size, location))
+
+        cb = mpl.pyplot.colorbar(im, cax=cb_ax, orientation=orient)
+        cb.ax.tick_params(**cb_ticks)
+        if title:
+            cb.ax.set_title(title)
+
+        return cb
+# ##### YP ####################################################################
+
+
 # Define the GeoAxesSubplot class, so that a type(ax) will emanate from
 # cartopy.mpl.geoaxes, not matplotlib.axes.
 class GeoAxesSubplot(matplotlib.axes.SubplotBase, GeoAxes):
