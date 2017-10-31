@@ -1915,7 +1915,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return resize_colorbar
 
     def add_colorbar(self, im, location='bottom', pad=None, size=0.02,
-                     labelsize=9, title=None):
+                     labelsize=9, title=None, **kw):
         """
         Attach a colorbar to GeoAxes plot
 
@@ -1933,6 +1933,7 @@ class GeoAxes(matplotlib.axes.Axes):
             colorbar label fontsize (default 9)
         title : str, optional
             colorbar title (default None)
+        kw : additional pyplot.colorbar keywords
 
         Examples
         --------
@@ -1969,7 +1970,7 @@ class GeoAxes(matplotlib.axes.Axes):
         fig.canvas.mpl_connect('resize_event', self._cb_resize(
             cb_ax, pad, size, location))
 
-        cb = mpl.pyplot.colorbar(im, cax=cb_ax, orientation=orient)
+        cb = mpl.pyplot.colorbar(im, cax=cb_ax, orientation=orient, **kw)
         cb.ax.tick_params(**cb_ticks)
         if title:
             cb.ax.set_title(title)
