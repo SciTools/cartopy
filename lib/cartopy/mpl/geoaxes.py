@@ -1914,7 +1914,7 @@ class GeoAxes(matplotlib.axes.Axes):
         resize_colorbar(None)
         return resize_colorbar
 
-    def add_colorbar(self, im, location='bottom', pad=0.05, size=0.02,
+    def add_colorbar(self, im, location='bottom', pad=None, size=0.02,
                      labelsize=9, title=None):
         """
         Attach a colorbar to GeoAxes plot
@@ -1923,9 +1923,10 @@ class GeoAxes(matplotlib.axes.Axes):
         ----------
         im : mpl.image.AxesImage
         location : str, optional
-            location of colorbar relative to main plot
+            location of colorbar relative to main plot (default 'bottom' ie
+            a horizontal colorbar)
         pad : number, optional
-            padding from main plot (default 0.05)
+            padding from main plot (default 0.05|0.1 for vertical|horizontal)
         size: number, optional
             relative size (thickness) of colorbar (default 0.02)
         labelsize: number, optional
@@ -1949,7 +1950,7 @@ class GeoAxes(matplotlib.axes.Axes):
         location = location.lower()
         cb_ticks = {'labelsize': labelsize, 'direction': 'in'}
         if location in ('top', 'bottom', 't', 'b'):
-            pad = 0.1
+            pad = [pad, 0.1][pad is None]
             orient = 'horizontal'
             bot = [0.05, 0.15][location in ('b', 'bottom')]
             top = [0.85, 0.9][location in ('b', 'bottom')]
@@ -1957,6 +1958,7 @@ class GeoAxes(matplotlib.axes.Axes):
             fig.subplots_adjust(0.075, bot, 0.95, top, 0, 0)
 
         elif location in ('left', 'right', 'l', 'r'):
+            pad = [pad, 0.05][pad is None]
             orient = 'vertical'
             left = [0.15, 0.075][location in ('r', 'right')]
             right = [0.95, 0.85][location in ('r', 'right')]
