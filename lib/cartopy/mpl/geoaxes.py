@@ -51,10 +51,8 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
-
 assert mpl.__version__ >= '1.3', ('Cartopy is only supported with '
                                   'Matplotlib 1.3 or greater.')
-
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
 """
@@ -242,6 +240,7 @@ class GeoAxes(matplotlib.axes.Axes):
         pyplot.contourf(x, y, data, transform=cartopy.crs.PlateCarree())
 
     """
+
     def __init__(self, *args, **kwargs):
         """
         Create a GeoAxes object using standard matplotlib
@@ -329,7 +328,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.dataLim.set_points(data_lim)
                 self.viewLim.set_points(view_lim)
                 (self.ignore_existing_data_limits,
-                    self._autoscaleXon, self._autoscaleYon) = other
+                 self._autoscaleXon, self._autoscaleYon) = other
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
@@ -474,9 +473,9 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for i in range(len(lons)):
-                circle = geod.circle(lons[i], lats[i], rad_km*1e3,
-                                     n_samples=n_samples)
-                geoms.append(sgeom.Polygon(circle))
+            circle = geod.circle(lons[i], lats[i], rad_km * 1e3,
+                                 n_samples=n_samples)
+            geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
                                                  **kwargs)
@@ -642,7 +641,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # extents are obviously the same as the projection domain.
         try_workaround = ((crs is None and
                            isinstance(self.projection, ccrs.PlateCarree)) or
-                          crs == self.projection)
+                          isinstance(crs, ccrs.PlateCarree))
         if try_workaround:
             boundary = self.projection.boundary
             if boundary.equals(domain_in_crs):
@@ -693,6 +692,7 @@ class GeoAxes(matplotlib.axes.Axes):
             bounds = self.get_ybound()
             self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
                             min(bounds[1], self.projection.y_limits[1]))
+
     autoscale_view.__doc__ = matplotlib.axes.Axes.autoscale_view.__doc__
 
     def set_xticks(self, ticks, minor=False, crs=None):
@@ -1099,10 +1099,10 @@ class GeoAxes(matplotlib.axes.Axes):
             # which are RGB with a mask into RGBA images with an alpha
             # channel.
             if (isinstance(img, np.ma.MaskedArray) and
-                    img.shape[2:3] == (3, ) and
-                    img.mask is not False):
+                        img.shape[2:3] == (3,) and
+                        img.mask is not False):
                 old_img = img
-                img = np.zeros(img.shape[:2] + (4, ), dtype=img.dtype)
+                img = np.zeros(img.shape[:2] + (4,), dtype=img.dtype)
                 img[:, :, 0:3] = old_img
                 # Put an alpha channel in if the image was masked.
                 img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
@@ -1112,12 +1112,12 @@ class GeoAxes(matplotlib.axes.Axes):
             result = matplotlib.axes.Axes.imshow(self, img, *args,
                                                  extent=extent, **kwargs)
 
-        # clip the image. This does not work as the patch moves with mouse
-        # movement, but the clip path doesn't
-        # This could definitely be fixed in matplotlib
-#        if result.get_clip_path() in [None, self.patch]:
-#            # image does not already have clipping set, clip to axes patch
-#            result.set_clip_path(self.outline_patch)
+            # clip the image. This does not work as the patch moves with mouse
+            # movement, but the clip path doesn't
+            # This could definitely be fixed in matplotlib
+        #        if result.get_clip_path() in [None, self.patch]:
+        #            # image does not already have clipping set, clip to axes patch
+        #            result.set_clip_path(self.outline_patch)
         return result
 
     def gridlines(self, crs=None, draw_labels=False, xlocs=None,
@@ -1443,7 +1443,7 @@ class GeoAxes(matplotlib.axes.Axes):
         collection.set_alpha(alpha)
         collection.set_array(C)
         if norm is not None:
-            assert(isinstance(norm, mcolors.Normalize))
+            assert (isinstance(norm, mcolors.Normalize))
         collection.set_cmap(cmap)
         collection.set_norm(norm)
         collection.set_clim(vmin, vmax)
