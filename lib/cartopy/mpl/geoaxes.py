@@ -641,7 +641,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # extents are obviously the same as the projection domain.
         try_workaround = ((crs is None and
                            isinstance(self.projection, ccrs.PlateCarree)) or
-                          isinstance(crs, ccrs.PlateCarree))
+                          isinstance(crs, self.projection.__class__))
         if try_workaround:
             boundary = self.projection.boundary
             if boundary.equals(domain_in_crs):
@@ -1115,9 +1115,9 @@ class GeoAxes(matplotlib.axes.Axes):
             # clip the image. This does not work as the patch moves with mouse
             # movement, but the clip path doesn't
             # This could definitely be fixed in matplotlib
-        #        if result.get_clip_path() in [None, self.patch]:
-        #            # image does not already have clipping set, clip to axes patch
-        #            result.set_clip_path(self.outline_patch)
+            # if result.get_clip_path() in [None, self.patch]:
+            # image does not already have clipping set, clip to axes patch
+            #  result.set_clip_path(self.outline_patch)
         return result
 
     def gridlines(self, crs=None, draw_labels=False, xlocs=None,
@@ -1443,7 +1443,7 @@ class GeoAxes(matplotlib.axes.Axes):
         collection.set_alpha(alpha)
         collection.set_array(C)
         if norm is not None:
-            assert (isinstance(norm, mcolors.Normalize))
+            assert isinstance(norm, mcolors.Normalize)
         collection.set_cmap(cmap)
         collection.set_norm(norm)
         collection.set_clim(vmin, vmax)
