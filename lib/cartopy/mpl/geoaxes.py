@@ -128,9 +128,18 @@ class InterProjectionTransform(mtransforms.Transform):
 
         """
         prj = self.target_projection
+        if prj == self.source_projection:
+            return xy
         if isinstance(xy, np.ndarray):
-            return prj.transform_points(self.source_projection,
-                                        xy[:, 0], xy[:, 1])[:, 0:2]
+            points = prj.transform_points(self.source_projection,
+                                          xy[:, 0], xy[:, 1])[:, 0:2]
+            if np.inf in points:
+                badness = np.where(points == np.inf)
+                mask = np.zeros(points.shape)
+                for (i, j) in (zip(badness[0], badness[1])):
+                    mask[i, j] = 1
+                points = np.ma.array(points, mask=mask)
+            return points
         else:
             x, y = xy
             x, y = prj.transform_point(x, y, self.source_projection)
