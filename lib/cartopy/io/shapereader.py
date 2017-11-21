@@ -112,8 +112,11 @@ def _make_geometry(geometry_factory, shape):
 # The mapping from shapefile shapeType values to geometry creation functions.
 GEOMETRY_FACTORIES = {
     shapefile.POINT: _create_point,
+    shapefile.POINTZ: _create_point,
     shapefile.POLYLINE: _create_polyline,
+    shapefile.POLYLINEZ: _create_polyline,
     shapefile.POLYGON: _create_polygon,
+    shapefile.POLYGONZ: _create_polygon,
 }
 
 
