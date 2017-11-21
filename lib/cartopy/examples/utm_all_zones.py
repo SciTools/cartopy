@@ -27,7 +27,8 @@ def main():
 
         # Add a GeoAxes object with a specific UTM zone projection to the figure
         ax = fig.add_subplot(1, len(zones), zone,
-                             projection=ccrs.UTM(zone=zone, southern_hemisphere=True))
+                             projection=ccrs.UTM(zone=zone,
+                                                 southern_hemisphere=True))
 
         # Add coastlines, gridlines and zone number for the subplot
         ax.coastlines(resolution='110m')
