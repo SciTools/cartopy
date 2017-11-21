@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
-
 """
 Distribution definition for Cartopy.
 
@@ -313,10 +312,11 @@ else:
 # Python dependencies
 extras_require = {}
 for name in os.listdir(os.path.join(HERE, 'requirements')):
-    with open(os.path.join(HERE, 'requirements', name), 'r') as fh:
+    with open(os.path.join(HERE, 'requirements', name), 'rb') as fh:
         section, ext = os.path.splitext(name)
         extras_require[section] = []
         for line in fh:
+            line = line.decode('utf8')
             if line.startswith('#'):
                 pass
             elif line.startswith('-'):
@@ -357,6 +357,7 @@ setup(
     license = "LGPLv3",
     keywords = "cartography map transform projection proj.4 geos shapely shapefile",
 
+    setup_requires=['cython>=0.16'],
     install_requires=install_requires,
     extras_require=extras_require,
     tests_require=tests_require,
