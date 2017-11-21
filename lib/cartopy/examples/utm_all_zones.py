@@ -19,25 +19,23 @@ def main():
     # Create a list of integers from 1 - 60
     zones = range(1, 61)
 
-    # Create a figure and array of 60 subplot Axes objects
-    fig, axarr = plt.subplots(nrows=1,
-                              ncols=len(zones),
-                              figsize=(18, 6))
+    # Create a figure
+    fig = plt.figure(figsize=(18, 6))
 
     # Loop through each zone in the list
     for zone in zones:
 
-        # Change the Axes object to a GeoAxes object with a specific UTM zone projection
-        axarr[zone - 1] = plt.subplot(1, len(zones), zone,
-                                      projection=ccrs.UTM(zone=zone, southern_hemisphere=True))
+        # Add a GeoAxes object with a specific UTM zone projection to the figure
+        ax = fig.add_subplot(1, len(zones), zone,
+                             projection=ccrs.UTM(zone=zone, southern_hemisphere=True))
 
         # Add coastlines, gridlines and zone number for the subplot
-        axarr[zone - 1].coastlines(resolution='110m')
-        axarr[zone - 1].gridlines()
-        axarr[zone - 1].set_title(zone)
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
+        ax.set_title(zone)
 
     # Add a supertitle for the figure
-    plt.suptitle("UTM Projection - Zones")
+    fig.suptitle("UTM Projection - Zones")
 
     # Display the figure
     plt.show()
