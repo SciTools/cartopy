@@ -25,7 +25,7 @@ def main():
     # Loop through each zone in the list
     for zone in zones:
 
-        # Add a GeoAxes object with a specific UTM zone projection to the figure
+        # Add GeoAxes object with specific UTM zone projection to the figure
         ax = fig.add_subplot(1, len(zones), zone,
                              projection=ccrs.UTM(zone=zone,
                                                  southern_hemisphere=True))
