@@ -561,8 +561,9 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             x4 += bx
             y4 += by
             for ring in interior_rings:
-                polygon = sgeom.Polygon(ring)
-                if polygon.is_valid:
+                # Use shapely buffer in an attempt to fix invalid geometries
+                polygon = sgeom.Polygon(ring).buffer(0)
+                if not polygon.is_empty and polygon.is_valid:
                     x1, y1, x2, y2 = polygon.bounds
                     bx = (x2 - x1) * 0.1
                     by = (y2 - y1) * 0.1
