@@ -35,14 +35,19 @@ class TestLakes(object):
     def setup_class(self):
         self.reader = shp.Reader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
+        # Choose a nice small lake
         self.lake_name = 'Lago de\rNicaragua'
         self.lake_index = names.index(self.lake_name)
+        self.test_lake_geometry = \
+            list(self.reader.geometries())[self.lake_index]
+        self.test_lake_record = list(self.reader.records())[self.lake_index]
 
-    def _assert_geometry(self, geometry):
-        assert geometry.type == 'MultiPolygon'
-        assert len(geometry) == 1
+    def test_geometry(self):
+        lake_geometry = self.test_lake_geometry
+        assert lake_geometry.type == 'MultiPolygon'
+        assert len(lake_geometry) == 1
 
-        polygon = geometry[0]
+        polygon = lake_geometry[0]
 
         expected = np.array([(-84.85548682324658, 11.147898667846633),
                              (-85.29013729525353, 11.176165676310276),
@@ -57,27 +62,14 @@ class TestLakes(object):
 
         assert len(polygon.interiors) == 0
 
-    def test_geometry(self):
-        geometries = list(self.reader.geometries())
-        assert len(geometries) == len(self.reader)
-
-        # Choose a nice small lake
-        lake = geometries[self.lake_index]
-        self._assert_geometry(lake)
-
     def test_record(self):
-        records = list(self.reader.records())
-        assert len(records) == len(self.reader)
-
-        # Choose a nice small lake
-        lake_record = records[self.lake_index]
+        lake_record = self.test_lake_record
         assert lake_record.attributes.get('name') == self.lake_name
         expected = sorted(['admin', 'featurecla', 'min_label', 'min_zoom',
                            'name', 'name_alt', 'scalerank'])
         actual = sorted(lake_record.attributes.keys())
         assert actual == expected
-        lake = lake_record.geometry
-        self._assert_geometry(lake)
+        assert lake_record.geometry == self.test_lake_geometry
 
     def test_bounds(self):
         # tests that a file which has a record with a bbox can
@@ -95,10 +87,15 @@ class TestRivers(object):
     def setup_class(self):
         self.reader = shp.Reader(RIVERS_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
+        # Choose a nice small river
         self.river_name = 'Peace'
         self.river_index = names.index(self.river_name)
+        self.test_river_geometry = \
+            list(self.reader.geometries())[self.river_index]
+        self.test_river_record = list(self.reader.records())[self.river_index]
 
-    def _assert_geometry(self, geometry):
+    def test_geometry(self):
+        geometry = self.test_river_geometry
         assert geometry.type == 'MultiLineString'
         assert len(geometry) == 1
 
@@ -108,14 +105,6 @@ class TestRivers(object):
         assert round(abs(coords[0][1] - 56.75692352968272), 7) == 0
         assert round(abs(coords[1][0] - -124.20045039940291), 7) == 0
         assert round(abs(coords[1][1] - 56.243492336646824), 7) == 0
-
-    def test_geometry(self):
-        geometries = list(self.reader.geometries())
-        assert len(geometries) == len(self.reader)
-
-        # Choose a nice small river
-        river = geometries[self.river_index]
-        self._assert_geometry(river)
 
     def test_record(self):
         records = list(self.reader.records())
@@ -137,5 +126,4 @@ class TestRivers(object):
                 assert not len(value.strip())
             else:
                 assert value == expected_attributes[key]
-        river = river_record.geometry
-        self._assert_geometry(river)
+        assert river_record.geometry == self.test_river_geometry
