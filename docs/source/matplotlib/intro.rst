@@ -25,7 +25,7 @@ and then adding some coastlines to the axes:
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
 
-    # Save the plot by calling plt.savefig BEFORE plt.show()
+    # Save the plot by calling plt.savefig() BEFORE plt.show()
     plt.savefig('coastlines.pdf')
     plt.savefig('coastlines.png')
 
@@ -41,6 +41,9 @@ which exposes a variety of other map related methods, in the case of the
 previous example, we used the 
 :meth:`~cartopy.mpl.geoaxes.GeoAxes.coastlines` method
 to add coastlines to the map.
+
+To save the figure, use matplotlib's savefig method:
+:meth:`~matplotlib.pyplot.savefig`.
 
 Lets create another map in a different projection, and make use of the
 :meth:`~cartopy.mpl.geoaxes.GeoAxes.stock_img` method to add an underlay
