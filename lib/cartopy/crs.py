@@ -33,7 +33,8 @@ import shapely.geometry as sgeom
 from shapely.prepared import prep
 import six
 
-from cartopy._crs import CRS, Geocentric, Geodetic, Globe, PROJ4_VERSION
+from cartopy._crs import CRS, Geodetic, Globe, PROJ4_VERSION
+from cartopy._crs import Geocentric  # noqa: F401  (unused import)
 import cartopy.trace
 
 
@@ -746,7 +747,6 @@ class PlateCarree(_CylindricalProjection):
                 mod = np.diff(src_crs.x_limits)[0]
                 bboxes, proj_offset = self._bbox_and_offset(src_crs)
                 x_lim = xs.min(), xs.max()
-                y_lim = ys.min(), ys.max()
                 for poly in bboxes:
                     # Arbitrarily choose the number of moduli to look
                     # above and below the -180->180 range. If data is beyond
@@ -1184,7 +1184,6 @@ class LambertAzimuthalEqualArea(Projection):
                                                         globe=globe)
 
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = np.float(self.globe.semiminor_axis or WGS84_SEMIMINOR_AXIS)
         lon, lat = central_longitude + 180, - central_latitude + 0.01
         x, max_y = self.transform_point(lon, lat, PlateCarree())
 

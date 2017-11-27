@@ -19,7 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import contextlib
 import os
-import shutil
 import warnings
 
 import pytest
@@ -104,8 +103,6 @@ def test_from_config():
         assert (r.url({'name': 'ocean'}) ==
                 'https://example.com/generic_ne/ocean.zip')
 
-        downloaders = cio.config['downloaders']
-
         r = cio.Downloader.from_config(land_spec)
         assert r is land_downloader
 
@@ -133,7 +130,7 @@ def test_downloading_simple_ascii(download_to_temp):
         assert issubclass(w[0].category, cio.DownloadWarning)
 
     with open(tmp_fname, 'r') as fh:
-        _ = fh.readline()
+        fh.readline()
         assert fh.readline() == " * jQuery JavaScript Library v1.8.2\n"
 
     # check that calling path again doesn't try re-downloading

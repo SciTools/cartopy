@@ -1,2 +1,2 @@
 linters:
-  flake8: {  }
+    flake8:

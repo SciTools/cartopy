@@ -122,7 +122,7 @@ def test_global_scatter_wrap_no_transform():
 @ImageTesting(['global_map'],
               tolerance=16 if ccrs.PROJ4_VERSION < (4, 9) else 0.1)
 def test_global_map():
-    ax = plt.axes(projection=ccrs.Robinson())
+    plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
 #    ax.gridlines(5)
 
@@ -249,7 +249,7 @@ def test_pcolormesh_global_with_wrap1():
 @ImageTesting(['pcolormesh_global_wrap2'])
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
-    nx, ny = 36, 18
+    nx = 36
     xbnds, xstep = np.linspace(0, 360, nx - 1, retstep=True, endpoint=True)
     ybnds, ystep = np.linspace(-90, 90, nx - 1, retstep=True, endpoint=True)
     xbnds -= xstep / 2
@@ -482,7 +482,6 @@ def test_barbs():
     x2d, y2d = np.meshgrid(x, y)
     u = 40 * np.cos(np.deg2rad(y2d))
     v = 40 * np.cos(2. * np.deg2rad(x2d))
-    mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
     plt.figure(figsize=(6, 6))
     # plot on native projection

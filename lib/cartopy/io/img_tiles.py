@@ -182,10 +182,10 @@ class GoogleTiles(object):
             "terrain": "t",
             "only_streets": "h"}
         url = self.url.format(
-                   style=style_dict[self.style],
-                   x=tile[0], X=tile[0],
-                   y=tile[1], Y=tile[1],
-                   z=tile[2], Z=tile[2])
+            style=style_dict[self.style],
+            x=tile[0], X=tile[0],
+            y=tile[1], Y=tile[1],
+            z=tile[2], Z=tile[2])
         return url
 
     def get_image(self, tile):

@@ -25,7 +25,6 @@ import pytest
 
 import cartopy.crs as ccrs
 import cartopy.io.srtm
-from cartopy.tests.io.test_downloaders import download_to_temp
 
 
 pytestmark = pytest.mark.skip('SRTM login not supported')

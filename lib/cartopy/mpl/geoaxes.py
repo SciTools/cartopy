@@ -1790,15 +1790,15 @@ class GeoAxes(matplotlib.axes.Axes):
             regrid_shape = [int(25 * d) for d in density]
         # The color and linewidth keyword arguments can be arrays so they will
         # need to be gridded also.
-        c = kwargs.get('color', None)
-        l = kwargs.get('linewidth', None)
+        col = kwargs.get('color', None)
+        lw = kwargs.get('linewidth', None)
         scalars = []
-        color_array = isinstance(c, np.ndarray)
-        linewidth_array = isinstance(l, np.ndarray)
+        color_array = isinstance(col, np.ndarray)
+        linewidth_array = isinstance(lw, np.ndarray)
         if color_array:
-            scalars.append(c)
+            scalars.append(col)
         if linewidth_array:
-            scalars.append(l)
+            scalars.append(lw)
         # Do the regridding including any scalar fields.
         target_extent = self.get_extent(self.projection)
         gridded = vector_scalar_to_grid(t, self.projection, regrid_shape,
