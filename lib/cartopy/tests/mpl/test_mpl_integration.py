@@ -22,7 +22,6 @@ import re
 import warnings
 
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import six
 
@@ -77,7 +76,7 @@ def test_global_contourf_wrap_no_transform():
 
 
 global_pcolor_wrap = ('global_pcolor_wrap'
-                      if mpl.__version__ >= '1.4.3' else
+                      if MPL_VERSION >= '1.4.3' else
                       'global_pcolor_wrap_pre_mpl_1.4.3')
 
 
