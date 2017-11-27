@@ -27,7 +27,7 @@ from cartopy.tests.mpl import ImageTesting
 def test_lambert_south():
     # Reference image: http://www.icsm.gov.au/mapping/map_projections.html
     crs = ccrs.LambertConformal(central_longitude=140, cutoff=65,
-                                secant_latitudes=(-30, -60))
+                                standard_parallels=(-30, -60))
     ax = plt.axes(projection=crs)
     ax.coastlines()
     ax.gridlines()
