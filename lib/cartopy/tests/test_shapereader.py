@@ -38,7 +38,8 @@ class TestLakes(object):
         # Choose a nice small lake
         self.lake_name = 'Lago de\rNicaragua'
         self.lake_index = names.index(self.lake_name)
-        self.test_lake_geometry = list(self.reader.geometries())[self.lake_index]
+        self.test_lake_geometry = \
+            list(self.reader.geometries())[self.lake_index]
         self.test_lake_record = list(self.reader.records())[self.lake_index]
 
     def test_geometry(self):
@@ -89,7 +90,8 @@ class TestRivers(object):
         # Choose a nice small river
         self.river_name = 'Peace'
         self.river_index = names.index(self.river_name)
-        self.test_river_geometry = list(self.reader.geometries())[self.river_index]
+        self.test_river_geometry = \
+            list(self.reader.geometries())[self.river_index]
         self.test_river_record = list(self.reader.records())[self.river_index]
 
     def test_geometry(self):
