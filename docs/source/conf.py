@@ -51,8 +51,8 @@ extensions = [
               'sphinx.ext.coverage',
               'sphinx.ext.viewcode',
               'sphinx.ext.extlinks',
-              'sphinx.ext.autosummary',
-              #'sphinxcontrib.napoleon', (Needs work before this can be enabled.)
+              # 'sphinx.ext.autosummary',
+              # 'sphinxcontrib.napoleon', (Needs work before this can be enabled.)
               # 'matplotlib.sphinxext.plot_directive'
               # We use a local copy of the plot_directive until
               # https://github.com/matplotlib/matplotlib/pull/6213 is available in order
