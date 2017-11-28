@@ -41,7 +41,7 @@ MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
 
 class ImageTesting(object):
     """
-    Provides a convenient class for running visual matplotlib tests.
+    Provides a convenient class for running visual Matplotlib tests.
 
     In general, this class should be used as a decorator to a test function
     which generates one (or more) figures.

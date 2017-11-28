@@ -209,7 +209,7 @@ cdef class CRS:
     def _as_mpl_transform(self, axes=None):
         """
         Casts this CRS instance into a :class:`matplotlib.axes.Axes` using
-        the matplotlib ``_as_mpl_transform`` interface.
+        the Matplotlib ``_as_mpl_transform`` interface.
 
         """
         # lazy import mpl.geoaxes (and therefore matplotlib) as mpl

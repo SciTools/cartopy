@@ -70,7 +70,7 @@ class Feature(six.with_metaclass(ABCMeta)):
 
     .. seealso::
 
-        To add features to the current matplotlib axes, see
+        To add features to the current Matplotlib axes, see
         :func:`GeoAxes <cartopy.mpl.geoaxes.GeoAxes.add_feature>`.
 
     """
@@ -88,7 +88,7 @@ class Feature(six.with_metaclass(ABCMeta)):
     def kwargs(self):
         """
         The read-only dictionary of keyword arguments that are used when
-        creating the matplotlib artists for this feature.
+        creating the Matplotlib artists for this feature.
 
         """
         return dict(self._kwargs)

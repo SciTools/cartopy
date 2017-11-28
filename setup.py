@@ -88,11 +88,13 @@ def find_package_tree(root_path, root_package):
     for (dir_path, dir_names, _) in os.walk(convert_path(root_path)):
         # Prune dir_names *in-place* to prevent unwanted directory recursion
         for dir_name in list(dir_names):
-            if not os.path.isfile(os.path.join(dir_path, dir_name, '__init__.py')):
+            if not os.path.isfile(os.path.join(dir_path, dir_name,
+                                               '__init__.py')):
                 dir_names.remove(dir_name)
         if dir_names:
             prefix = dir_path.split(os.path.sep)[root_count:]
-            packages.extend(['.'.join([root_package] + prefix + [dir_name]) for dir_name in dir_names])
+            packages.extend(['.'.join([root_package] + prefix + [dir_name])
+                             for dir_name in dir_names])
     return packages
 
 
@@ -352,10 +354,12 @@ setup(
     url='http://scitools.org.uk/cartopy/docs/latest/',
     download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',
-    description='A cartographic python library with matplotlib support for visualisation',
+    description='A cartographic python library with Matplotlib support for '
+                'visualisation',
     long_description=description,
-    license = "LGPLv3",
-    keywords = "cartography map transform projection proj.4 geos shapely shapefile",
+    license="LGPLv3",
+    keywords="cartography map transform projection proj.4 geos shapely "
+             "shapefile",
 
     install_requires=install_requires,
     extras_require=extras_require,
@@ -363,20 +367,22 @@ setup(
 
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},
-    package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/mpl/baseline_images/',
-                                                     remove='lib/cartopy/')) +\
-                             list(file_walk_relative('lib/cartopy/data/raster',
-                                                     remove='lib/cartopy/')) +\
-                             list(file_walk_relative('lib/cartopy/data/netcdf',
-                                                     remove='lib/cartopy/')) +\
-                             list(file_walk_relative('lib/cartopy/data/wmts',
-                                                     remove='lib/cartopy/')) +\
-                             list(file_walk_relative('lib/cartopy/data/shapefiles/natural_earth',
-                                                     remove='lib/cartopy/')) +\
-                             list(file_walk_relative('lib/cartopy/data/shapefiles/gshhs',
-                                                     remove='lib/cartopy/')) +\
-                             ['io/srtm.npz']
-                 },
+    package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/'
+                                                     'mpl/baseline_images/',
+                                                     remove='lib/cartopy/')) +
+                  list(file_walk_relative('lib/cartopy/data/raster',
+                                          remove='lib/cartopy/')) +
+                  list(file_walk_relative('lib/cartopy/data/netcdf',
+                                          remove='lib/cartopy/')) +
+                  list(file_walk_relative('lib/cartopy/data/wmts',
+                                          remove='lib/cartopy/')) +
+                  list(file_walk_relative('lib/cartopy/data/'
+                                          'shapefiles/natural_earth',
+                                          remove='lib/cartopy/')) +
+                  list(file_walk_relative('lib/cartopy/data/'
+                                          'shapefiles/gshhs',
+                                          remove='lib/cartopy/')) +
+                  ['io/srtm.npz']},
 
 
     # requires proj4 headers
@@ -399,8 +405,10 @@ setup(
             library_dirs=[library_dir] + proj_library_dirs,
             **extra_extension_args
         ),
-	# Requires proj4 v4.9
-	Extension('cartopy.geodesic._geodesic', ['lib/cartopy/geodesic/_geodesic.pyx'],
+        # Requires proj4 v4.9
+        Extension(
+            'cartopy.geodesic._geodesic',
+            ['lib/cartopy/geodesic/_geodesic.pyx'],
             include_dirs=[include_dir, np.get_include()] + proj_includes,
             libraries=proj_libraries,
             library_dirs=[library_dir] + proj_library_dirs,
@@ -411,7 +419,8 @@ setup(
     cmdclass={'build_ext': build_ext},
     classifiers=[
             'Development Status :: 4 - Beta',
-            'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+            'License :: OSI Approved :: GNU Lesser General Public License v3 '
+            'or later (LGPLv3+)',
             'Operating System :: MacOS :: MacOS X',
             'Operating System :: Microsoft :: Windows',
             'Operating System :: POSIX',

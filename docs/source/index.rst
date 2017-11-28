@@ -12,13 +12,13 @@ Introduction
 Cartopy is a Python package designed to make drawing maps for data analysis and visualisation as easy as possible.
 
 Cartopy makes use of the powerful PROJ.4, numpy and shapely libraries and has a simple and intuitive
-drawing interface to matplotlib for creating publication quality maps.
+drawing interface to Matplotlib for creating publication quality maps.
 
 Some of the key features of cartopy are:
 
  * object oriented projection definitions
  * point, line, vector, polygon and image transformations between projections
- * integration to expose advanced mapping in matplotlib with a simple and intuitive interface
+ * integration to expose advanced mapping in Matplotlib with a simple and intuitive interface
  * powerful vector data handling by integrating shapefile reading with Shapely capabilities
 
 Cartopy is licensed under `GNU Lesser General Public License <https://www.gnu.org/licenses/lgpl.html>`_

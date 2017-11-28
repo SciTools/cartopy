@@ -11,7 +11,7 @@ It features:
 
 * object oriented projection definitions
 * point, line, polygon and image transformations between projections
-* integration to expose advanced mapping in matplotlib with a simple and intuitive interface
+* integration to expose advanced mapping in Matplotlib with a simple and intuitive interface
 * powerful vector data handling by integrating shapefile reading with Shapely capabilities 
 
 Documentation can be found at http://scitools.org.uk/cartopy/docs/latest/.

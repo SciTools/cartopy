@@ -61,13 +61,13 @@ class FeatureArtist(matplotlib.artist.Artist):
     _geom_key_to_geometry_cache = weakref.WeakValueDictionary()
     """
     A mapping from _GeomKey to geometry to assist with the caching of
-    transformed matplotlib paths.
+    transformed Matplotlib paths.
 
     """
     _geom_key_to_path_cache = weakref.WeakKeyDictionary()
     """
     A nested mapping from geometry (converted to a _GeomKey) and target
-    projection to the resulting transformed matplotlib paths::
+    projection to the resulting transformed Matplotlib paths::
 
         {geom: {target_projection: list_of_paths}}
 

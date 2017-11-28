@@ -86,7 +86,7 @@ Features
   every service supports this method, and so those will use non-secured HTTP connections
   instead. (See :pull:`736` for full details.)
 
-* Cartopy now supports, and is tested against, matplotlib 1.3 and 1.5 as well as
+* Cartopy now supports, and is tested against, Matplotlib 1.3 and 1.5 as well as
   numpy 1.7, 1.8 and 1.10.
 
 * Daniel Eriksson added a new example to the gallery:
@@ -125,7 +125,7 @@ Features
 
 * Peter Killick fixed the cartopy.crs.Mercator projection for non-zero central longitudes. (:pull:`633`)
 
-* Conversion between matplotlib :class:`matplotlib.path.Path` and
+* Conversion between Matplotlib :class:`matplotlib.path.Path` and
   :class:`shapely.geometry.Geometry <Shapely geometry>` using
   :func:`cartopy.mpl.patch.path_to_geos` and :func:`cartopy.mpl.patch.geos_to_path` now
   handles degenerate point paths.
@@ -221,7 +221,7 @@ Features
         plt.show()
 
 * A new method has been added to the :class:`~cartopy.mpl.geoaxes.GeoAxes` to
-  allow control of the neatline of a map drawn with the matplotlib interface.
+  allow control of the neatline of a map drawn with the Matplotlib interface.
   The method, :meth:`~cartopy.mpl.geoaxes.GeoAxes.set_boundary`, takes a
   :class:`matplotlib Path<matplotlib.path.Path>` object, which means that
   arbitrary shaped edges can be achieved:
