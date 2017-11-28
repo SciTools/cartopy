@@ -270,10 +270,13 @@ class TestWrap(PolygonTests):
         # Check the structure
         assert len(multi_polygon) == 2
         # Check the rough shape
-        polygon = multi_polygon[0]
-        self._assert_bounds(polygon.bounds, 170, 0, 180, 10)
-        polygon = multi_polygon[1]
-        self._assert_bounds(polygon.bounds, -180, 0, -170, 10)
+        poly1, poly2 = multi_polygon
+        # The order of these polygons is not guaranteed, so figure out
+        # which is appropriate
+        if 170.0 not in poly1.bounds:
+            poly1, poly2 = poly2, poly1
+        self._assert_bounds(poly1.bounds, 170, 0, 180, 10)
+        self._assert_bounds(poly2.bounds, -180, 0, -170, 10)
 
     def test_plate_carree_wrap(self):
         proj = ccrs.PlateCarree()
@@ -312,14 +315,19 @@ class TestHoles(PolygonTests):
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         assert len(multi_polygon) == 2
-        assert len(multi_polygon[0].interiors) == 1
-        assert len(multi_polygon[1].interiors) == 0
+
+        poly1, poly2 = multi_polygon
+        # The order of these polygons is not guaranteed, so figure out
+        # which is appropriate
+        if not len(poly1.interiors) == 1:
+            poly1, poly2 = poly2, poly1
+
+        assert len(poly1.interiors) == 1
+        assert len(poly2.interiors) == 0
         # Check the rough shape
-        polygon = multi_polygon[0]
-        self._assert_bounds(polygon.bounds, 110, -47, 180, 47)
-        self._assert_bounds(polygon.interiors[0].bounds, 130, -21, 170, 21)
-        polygon = multi_polygon[1]
-        self._assert_bounds(polygon.bounds, -180, -43, -170, 43)
+        self._assert_bounds(poly1.bounds, 110, -47, 180, 47)
+        self._assert_bounds(poly1.interiors[0].bounds, 130, -21, 170, 21)
+        self._assert_bounds(poly2.bounds, -180, -43, -170, 43)
 
     def test_wrapped_poly_wrapped_hole(self):
         proj = ccrs.PlateCarree(-180)

@@ -22,7 +22,6 @@ import re
 import warnings
 
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import six
 
@@ -31,13 +30,13 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
-_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.1
+_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
 if MPL_VERSION >= '2':
     _STREAMPLOT_IMAGE = 'streamplot'
-elif MPL_VERSION >= '1.5':
-    _STREAMPLOT_IMAGE = 'streamplot_1.5'
+elif MPL_VERSION >= '1.4.3':
+    _STREAMPLOT_IMAGE = 'streamplot_1.4.3'
 else:
-    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.5'
+    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.4.3'
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -77,8 +76,8 @@ def test_global_contourf_wrap_no_transform():
 
 
 global_pcolor_wrap = ('global_pcolor_wrap'
-                      if mpl.__version__ >= '1.5' else
-                      'global_pcolor_wrap_pre_mpl_1.5')
+                      if MPL_VERSION >= '1.4.3' else
+                      'global_pcolor_wrap_pre_mpl_1.4.3')
 
 
 @ImageTesting([global_pcolor_wrap])

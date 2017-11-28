@@ -2,17 +2,21 @@ language: python
 
 env:
     matrix:
+        # These ancient versions are linked to an old libgfortran, but that version
+        # isn't pinned in the package metadata
+        # Forcing build 3 for numpy pulls in the packages from defaults, which
+        # is needed in order to work with libgfortran 1
         - PYTHON_VERSION=2.7
-          PACKAGES="numpy=1.7.1 matplotlib=1.3.1 nose scipy=0.12.0 mock"
-        - PYTHON_VERSION=3.4
-          PACKAGES="numpy=1.8.2 matplotlib=1.3.1 nose scipy=0.14.0"
+          PACKAGES="numpy=1.9.3=py27_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1 mock"
+        - PYTHON_VERSION=3.5
+          PACKAGES="numpy=1.9.3=py35_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1"
         # Remove nose from latest packages when Matplotlib 2.1 is released.
         - NAME="Latest everything."
-          PYTHON_VERSION=3.5
-          PACKAGES="numpy matplotlib nose scipy"
+          PYTHON_VERSION=3.6
+          PACKAGES="numpy matplotlib<2.1 nose scipy"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
-          PACKAGES="numpy matplotlib nose scipy mock"
+          PACKAGES="numpy matplotlib<2.1 nose scipy mock"
 
 
 sudo: false
@@ -26,9 +30,9 @@ install:
   # Install miniconda
   # -----------------
   - if [[ "$PYTHON_VERSION" == 2* ]]; then
-      wget http://repo.continuum.io/miniconda/Miniconda-3.7.0-Linux-x86_64.sh -O miniconda.sh;
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
-      wget http://repo.continuum.io/miniconda/Miniconda3-3.7.0-Linux-x86_64.sh -O miniconda.sh;
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"

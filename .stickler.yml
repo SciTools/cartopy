@@ -1,5 +1,2 @@
 linters:
-    flake8:
-        ignore: 'W28'
-        max-line-length: 80
-        max-complexity: 20
+  flake8: {  }

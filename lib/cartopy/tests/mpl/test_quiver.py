@@ -41,6 +41,7 @@ class TestQuiverShapes(object):
         self.v = np.cos(2. * np.deg2rad(self.x2d))
         self.rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
         self.pc = ccrs.PlateCarree()
+        self.fig = plt.figure()
         self.ax = plt.axes(projection=self.pc)
 
     @cleanup
