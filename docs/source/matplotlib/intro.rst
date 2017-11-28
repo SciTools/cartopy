@@ -43,7 +43,7 @@ previous example, we used the
 to add coastlines to the map.
 
 To save the figure, use matplotlib's savefig method:
-:meth:`~matplotlib.pyplot.savefig`.
+:func:`~matplotlib.pyplot.savefig`.
 
 Lets create another map in a different projection, and make use of the
 :meth:`~cartopy.mpl.geoaxes.GeoAxes.stock_img` method to add an underlay
