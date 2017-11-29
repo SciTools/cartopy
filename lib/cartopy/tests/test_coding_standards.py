@@ -24,8 +24,6 @@ import os
 import re
 import subprocess
 
-import pep8
-
 import cartopy
 
 
