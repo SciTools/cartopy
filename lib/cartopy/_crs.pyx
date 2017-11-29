@@ -254,7 +254,7 @@ cdef class CRS:
         * x - the x coordinate, in ``src_crs`` coordinates, to transform
         * y - the y coordinate, in ``src_crs`` coordinates, to transform
         * src_crs - instance of :class:`CRS` that represents the coordinate
-                    system of ``x`` and ``y`` (this must be a :class:`CRS`).
+                    system of ``x`` and ``y``.
         * trap - Whether proj.4 errors for "latitude or longitude exceeded limits" and
                  "tolerance condition error" should be trapped.
 
@@ -293,7 +293,7 @@ cdef class CRS:
         transform_points(src_crs, x, y[, z])
 
         Transform the given coordinates, in the given source
-        projection (``src_crs``), to this coordinate system.
+        coordinate system (``src_crs``), to this coordinate system.
 
         Args:
 
