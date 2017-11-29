@@ -242,21 +242,19 @@ cdef class CRS:
     cpdef is_geodetic(self):
         return bool(pj_is_latlong(self.proj4))
 
-    def transform_point(self, double x, double y, CRS src_proj not None, trap=True):
+    def transform_point(self, double x, double y, CRS src_crs not None, trap=True):
         """
-        transform_point(x, y, src_proj)
+        transform_point(x, y, src_crs)
 
         Transform the given float64 coordinate pair, in the given source
-        coordinate system (``src_proj``), to this coordinate system.
+        coordinate system (``src_crs``), to this coordinate system.
 
         Args:
 
         * x - the x coordinate, in ``src_crs`` coordinates, to transform
         * y - the y coordinate, in ``src_crs`` coordinates, to transform
-        * src_proj - instance of :class:`CRS` that represents the coordinate
-                    system of ``x`` and ``y`` (this must be a
-                    :class:`CRS.Projection` as it uses attributes
-                    from the :class:`cartopy.CRS.Projection` class).
+        * src_crs - instance of :class:`CRS` that represents the coordinate
+                    system of ``x`` and ``y`` (this must be a :class:`CRS`).
         * trap - Whether proj.4 errors for "latitude or longitude exceeded limits" and
                  "tolerance condition error" should be trapped.
 
@@ -270,10 +268,10 @@ cdef class CRS:
             int status
         cx = x
         cy = y
-        if src_proj.is_geodetic():
+        if src_crs.is_geodetic():
             cx *= DEG_TO_RAD
             cy *= DEG_TO_RAD
-        status = pj_transform(src_proj.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
+        status = pj_transform(src_crs.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
 
         if trap and status == -14 or status == -20:
             # -14 => "latitude or longitude exceeded limits"
@@ -287,25 +285,25 @@ cdef class CRS:
             cy *= RAD_TO_DEG
         return (cx, cy)
 
-    def transform_points(self, CRS src_proj not None,
+    def transform_points(self, CRS src_crs not None,
                                 np.ndarray x not None,
                                 np.ndarray y not None,
                                 np.ndarray z=None):
         """
-        transform_points(src_proj, x, y[, z])
+        transform_points(src_crs, x, y[, z])
 
         Transform the given coordinates, in the given source
-        projection (``src_proj``), to this coordinate system.
+        projection (``src_crs``), to this coordinate system.
 
         Args:
 
-        * src_proj - instance of :class:`CRS.Projection` that represents the
+        * src_crs - instance of :class:`CRS` that represents the
                     coordinate system of ``x``, ``y`` and ``z``.
-        * x - the x coordinates (array), in ``src_proj`` coordinates,
+        * x - the x coordinates (array), in ``src_crs`` coordinates,
               to transform.  May be 1 or 2 dimensional.
-        * y - the y coordinates (array), in ``src_proj`` coordinates,
+        * y - the y coordinates (array), in ``src_crs`` coordinates,
               to transform
-        * z - (optional) the z coordinates (array), in ``src_proj``
+        * z - (optional) the z coordinates (array), in ``src_crs``
               coordinates, to transform.
 
         Returns:
@@ -338,7 +336,7 @@ cdef class CRS:
         npts = x.shape[0]
 
         result = np.empty([npts, 3], dtype=np.double)
-        if src_proj.is_geodetic():
+        if src_crs.is_geodetic():
             result[:, 0] = np.deg2rad(x)
             result[:, 1] = np.deg2rad(y)
         else:
@@ -352,7 +350,7 @@ cdef class CRS:
             result[:, 2] = z
 
         # call proj.4. The result array is modified in place.
-        status = pj_transform(src_proj.proj4, self.proj4, npts, 3,
+        status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
                               &result[0, 0], &result[0, 1], &result[0, 2])
 
         if self.is_geodetic():
