@@ -249,9 +249,9 @@ def test_pcolormesh_global_with_wrap1():
 @ImageTesting(['pcolormesh_global_wrap2'])
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
-    nx = 36
+    nx, ny = 36, 18
     xbnds, xstep = np.linspace(0, 360, nx - 1, retstep=True, endpoint=True)
-    ybnds, ystep = np.linspace(-90, 90, nx - 1, retstep=True, endpoint=True)
+    ybnds, ystep = np.linspace(-90, 90, ny - 1, retstep=True, endpoint=True)
     xbnds -= xstep / 2
     ybnds -= ystep / 2
     xbnds = np.append(xbnds, xbnds[-1] + xstep)
