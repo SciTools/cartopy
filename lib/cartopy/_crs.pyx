@@ -242,19 +242,21 @@ cdef class CRS:
     cpdef is_geodetic(self):
         return bool(pj_is_latlong(self.proj4))
 
-    def transform_point(self, double x, double y, CRS src_crs not None, trap=True):
+    def transform_point(self, double x, double y, CRS src_proj not None, trap=True):
         """
-        transform_point(x, y, src_crs)
+        transform_point(x, y, src_proj)
 
         Transform the given float64 coordinate pair, in the given source
-        coordinate system (``src_crs``), to this coordinate system.
+        coordinate system (``src_proj``), to this coordinate system.
 
         Args:
 
         * x - the x coordinate, in ``src_crs`` coordinates, to transform
         * y - the y coordinate, in ``src_crs`` coordinates, to transform
-        * src_crs - instance of :class:`CRS` that represents the coordinate
-                    system of ``x`` and ``y``.
+        * src_proj - instance of :class:`CRS` that represents the coordinate
+                    system of ``x`` and ``y`` (this must be a
+                    :class:`CRS.Projection` as it uses attributes
+                    from the :class:`cartopy.CRS.Projection` class).
         * trap - Whether proj.4 errors for "latitude or longitude exceeded limits" and
                  "tolerance condition error" should be trapped.
 
@@ -268,10 +270,10 @@ cdef class CRS:
             int status
         cx = x
         cy = y
-        if src_crs.is_geodetic():
+        if src_proj.is_geodetic():
             cx *= DEG_TO_RAD
             cy *= DEG_TO_RAD
-        status = pj_transform(src_crs.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
+        status = pj_transform(src_proj.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
 
         if trap and status == -14 or status == -20:
             # -14 => "latitude or longitude exceeded limits"
@@ -285,25 +287,25 @@ cdef class CRS:
             cy *= RAD_TO_DEG
         return (cx, cy)
 
-    def transform_points(self, CRS src_crs not None,
+    def transform_points(self, CRS src_proj not None,
                                 np.ndarray x not None,
                                 np.ndarray y not None,
                                 np.ndarray z=None):
         """
-        transform_points(src_crs, x, y[, z])
+        transform_points(src_proj, x, y[, z])
 
         Transform the given coordinates, in the given source
-        coordinate system (``src_crs``), to this coordinate system.
+        projection (``src_proj``), to this coordinate system.
 
         Args:
 
-        * src_crs - instance of :class:`CRS` that represents the coordinate
-                    system of ``x``, ``y`` and ``z``.
-        * x - the x coordinates (array), in ``src_crs`` coordinates,
+        * src_proj - instance of :class:`CRS.Projection` that represents the
+                    coordinate system of ``x``, ``y`` and ``z``.
+        * x - the x coordinates (array), in ``src_proj`` coordinates,
               to transform.  May be 1 or 2 dimensional.
-        * y - the y coordinates (array), in ``src_crs`` coordinates,
+        * y - the y coordinates (array), in ``src_proj`` coordinates,
               to transform
-        * z - (optional) the z coordinates (array), in ``src_crs``
+        * z - (optional) the z coordinates (array), in ``src_proj``
               coordinates, to transform.
 
         Returns:
@@ -336,7 +338,7 @@ cdef class CRS:
         npts = x.shape[0]
 
         result = np.empty([npts, 3], dtype=np.double)
-        if src_crs.is_geodetic():
+        if src_proj.is_geodetic():
             result[:, 0] = np.deg2rad(x)
             result[:, 1] = np.deg2rad(y)
         else:
@@ -350,7 +352,7 @@ cdef class CRS:
             result[:, 2] = z
 
         # call proj.4. The result array is modified in place.
-        status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
+        status = pj_transform(src_proj.proj4, self.proj4, npts, 3,
                               &result[0, 0], &result[0, 1], &result[0, 2])
 
         if self.is_geodetic():
@@ -363,22 +365,23 @@ cdef class CRS:
 
         return result
 
-    def transform_vectors(self, src_crs, x, y, u, v):
+    def transform_vectors(self, src_proj, x, y, u, v):
         """
-        transform_vectors(src_crs, x, y, u, v)
+        transform_vectors(src_proj, x, y, u, v)
 
         Transform the given vector components, with coordinates in the
-        given source coordinate system (``src_crs``), to this coordinate
+        given source coordinate system (``src_proj``), to this coordinate
         system. The vector components must be given relative to the
-        source coordinate system (grid eastward and grid northward).
+        source projection's coordinate reference system (grid eastward and
+        grid northward).
 
         Args:
 
-        * src_crs:
-            The :class:`CRS` that represents the coordinate system the
-            vectors are defined in.
+        * src_proj:
+            The :class:`CRS.Projection` that represents the coordinate system
+            the vectors are defined in.
         * x, y:
-            The x and y coordinates, in the source CRS coordinates,
+            The x and y coordinates, in the source projection coordinates,
             where the vector components are located. May be 1 or 2
             dimensional, but must have matching shapes.
         * u, v:
@@ -403,7 +406,7 @@ cdef class CRS:
         if x.ndim not in (1, 2):
             raise ValueError('x, y, u and v must be 1 or 2 dimensional')
         # Transform the coordinates to the target projection.
-        proj_xyz = self.transform_points(src_crs, x, y)
+        proj_xyz = self.transform_points(src_proj, x, y)
         target_x, target_y = proj_xyz[..., 0], proj_xyz[..., 1]
         # Rotate the input vectors to the projection.
         #
@@ -415,7 +418,7 @@ cdef class CRS:
         #    the poles the point may have to be in the opposite direction
         #    to be valid).
         factor = 360000.
-        delta = (src_crs.x_limits[1] - src_crs.x_limits[0]) / factor
+        delta = (src_proj.x_limits[1] - src_proj.x_limits[0]) / factor
         x_perturbations = delta * np.cos(vector_angles)
         y_perturbations = delta * np.sin(vector_angles)
         # 3: Handle points that are invalid. These come from picking a new
@@ -426,15 +429,15 @@ cdef class CRS:
         #    valid x-domain and fix them. After that do the same for points
         #    that are outside the valid y-domain, which may reintroduce some
         #    points outside of the valid x-domain
-        proj_xyz = src_crs.transform_points(src_crs, x, y)
+        proj_xyz = src_proj.transform_points(src_proj, x, y)
         source_x, source_y = proj_xyz[..., 0], proj_xyz[..., 1]
         #    Detect all the coordinates where the perturbation takes the point
         #    outside of the valid x-domain, and reverse the direction of the
         #    perturbation to fix this.
         eps = 1e-9
         invalid_x = np.logical_or(
-            source_x + x_perturbations < src_crs.x_limits[0]-eps,
-            source_x + x_perturbations > src_crs.x_limits[1]+eps)
+            source_x + x_perturbations < src_proj.x_limits[0]-eps,
+            source_x + x_perturbations > src_proj.x_limits[1]+eps)
         if invalid_x.any():
             x_perturbations[invalid_x] *= -1
             y_perturbations[invalid_x] *= -1
@@ -443,8 +446,8 @@ cdef class CRS:
         #    that will be outside the x-domain when the perturbation is
         #    applied.
         invalid_y = np.logical_or(
-            source_y + y_perturbations < src_crs.y_limits[0]-eps,
-            source_y + y_perturbations > src_crs.y_limits[1]+eps)
+            source_y + y_perturbations < src_proj.y_limits[0]-eps,
+            source_y + y_perturbations > src_proj.y_limits[1]+eps)
         if invalid_y.any():
             x_perturbations[invalid_y] *= -1
             y_perturbations[invalid_y] *= -1
@@ -455,8 +458,8 @@ cdef class CRS:
         #    of the perturbation to get the perturbed point within the valid
         #    domain of the projection, and issue a warning if there are.
         problem_points = np.logical_or(
-            source_x + x_perturbations < src_crs.x_limits[0]-eps,
-            source_x + x_perturbations > src_crs.x_limits[1]+eps)
+            source_x + x_perturbations < src_proj.x_limits[0]-eps,
+            source_x + x_perturbations > src_proj.x_limits[1]+eps)
         if problem_points.any():
             warnings.warn('Some vectors at source domain corners '
                           'may not have been transformed correctly')
@@ -464,7 +467,7 @@ cdef class CRS:
         #    find the angle between the base point and the perturbed point
         #    in the projection coordinates (reversing the direction at any
         #    points where the original was reversed in step 3).
-        proj_xyz = self.transform_points(src_crs,
+        proj_xyz = self.transform_points(src_proj,
                                          source_x + x_perturbations,
                                          source_y + y_perturbations)
         target_x_perturbed = proj_xyz[..., 0]
