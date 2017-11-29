@@ -16,4 +16,6 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
-from cartopy.geodesic._geodesic import Geodesic  # noqa: F401  (unused import)
+
+# NOTE: noqa for flake8 = unused import
+from cartopy.geodesic._geodesic import Geodesic  # noqa: F401

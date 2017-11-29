@@ -108,4 +108,4 @@ except ImportError:
 # Commonly used sub-modules. Imported here to provide end-user
 # convenience.
 import cartopy.crs
-import cartopy.feature  # noqa: F401  (imported but not used)
+import cartopy.feature  # noqa: F401  (flake8 = unused import)

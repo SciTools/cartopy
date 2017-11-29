@@ -1,4 +1,4 @@
-__tags__ = ['Miscellanea']  # noqa
+__tags__ = ['Miscellanea']
 """
 Using Cartopy and AxesGrid toolkit
 ----------------------------------

@@ -114,8 +114,8 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
 
     """
     # XXX assigned to avoid a ValueError inside the mpl C code...
-    a = (transform, remove_nans, clip,  # noqa: F841  (assigned + unused)
-         quantize, simplify, curves)
+    a = (transform,  # noqa: F841  (flake8 = assigned + unused : see above)
+         remove_nans, clip, quantize, simplify, curves)
 
     # Series of cleanups and conversions to the path e.g. it
     # can convert curved segments to line segments.

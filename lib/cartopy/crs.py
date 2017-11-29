@@ -34,7 +34,7 @@ from shapely.prepared import prep
 import six
 
 from cartopy._crs import CRS, Geodetic, Globe, PROJ4_VERSION
-from cartopy._crs import Geocentric  # noqa: F401  (unused import)
+from cartopy._crs import Geocentric  # noqa: F401 (flake8 = unused import)
 import cartopy.trace
 
 
