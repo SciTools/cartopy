@@ -13,11 +13,12 @@ def sample_data(shape=(73, 145)):
     lons, lats = np.meshgrid(lons, lats)
     wave = 0.75 * (np.sin(2 * lats) ** 8) * np.cos(4 * lons)
     mean = 0.5 * np.cos(2 * lats) * ((np.sin(2 * lats)) ** 2 + 2)
-
-    lats = np.rad2deg(lats)
-    lons = np.rad2deg(lons)
     data = wave + mean
-
+    
+    lats = np.linspace(90, -90, nlats)
+    lons = np.linspace(-180, 180, nlons)
+    lons, lats = np.meshgrid(lons, lats)
+    
     return lons, lats, data
 
 
@@ -29,7 +30,7 @@ def main():
 
     ax.contourf(lons, lats, data,
                 transform=ccrs.PlateCarree(),
-                cmap='spectral')
+                cmap='nipy_spectral')
     ax.coastlines()
     ax.set_global()
     plt.show()
