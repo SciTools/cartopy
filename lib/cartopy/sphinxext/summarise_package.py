@@ -25,8 +25,6 @@ import sysconfig
 import warnings
 import six
 
-import cartopy.tests
-
 
 def walk_module(mod_name, exclude_folders=None):
     """

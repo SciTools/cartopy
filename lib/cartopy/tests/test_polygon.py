@@ -45,7 +45,7 @@ class TestBoundary(object):
         projection = ccrs.Robinson(170.6)
         # This will raise an exception if the polygon/boundary intersection
         # fails.
-        multi_polygon = projection.project_geometry(polygon)
+        projection.project_geometry(polygon)
 
     def test_out_of_bounds(self):
         # Check that a polygon that is completely out of the map boundary
@@ -74,7 +74,7 @@ class TestMisc(object):
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90)
         polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
-        multi_polygon = projection.project_geometry(polygon)
+        projection.project_geometry(polygon)
 
     def test_small(self):
         projection = ccrs.Mercator()

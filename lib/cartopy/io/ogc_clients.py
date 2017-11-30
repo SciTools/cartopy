@@ -693,7 +693,6 @@ class WFSGeometrySource(object):
                            'across all features (typenames).')
             else:
                 default_urn = default_urn.pop()
-                default_srs = default_urn.id
 
             if six.text_type(default_urn) not in _URN_TO_CRS:
                 raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '

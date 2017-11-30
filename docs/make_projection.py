@@ -78,8 +78,10 @@ if __name__ == '__main__':
     for line in notes.split('\n'):
         table.write(line.strip() + '\n')
 
-    prj_class_sorter = lambda cls: (PRJ_SORT_ORDER.get(cls.__name__, 100),
-                                    cls.__name__)
+    def prj_class_sorter(cls):
+        return (PRJ_SORT_ORDER.get(cls.__name__, 100),
+                cls.__name__)
+
     for prj in sorted(find_projections(), key=prj_class_sorter):
         name = prj.__name__
 

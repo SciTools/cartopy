@@ -81,6 +81,7 @@ def _north_south_formatted(latitude, num_format='g'):
                              hemisphere=_lat_heimisphere(latitude),
                              degree=_DEGREE_SYMBOL)
 
+
 #: A formatter which turns longitude values into nice longitudes such as 110W
 LONGITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                             _east_west_formatted(v))
@@ -335,9 +336,10 @@ class Gridliner(object):
         if self.xlines:
             lines = []
             for x in x_gridline_points:
-                l = list(zip(np.zeros(n_steps) + x,
-                         np.linspace(min(y_ticks), max(y_ticks), n_steps)))
-                lines.append(l)
+                ticks = list(zip(
+                    np.zeros(n_steps) + x,
+                    np.linspace(min(y_ticks), max(y_ticks), n_steps)))
+                lines.append(ticks)
 
             x_lc = mcollections.LineCollection(lines, **collection_kwargs)
             self.xline_artists.append(x_lc)
@@ -346,9 +348,10 @@ class Gridliner(object):
         if self.ylines:
             lines = []
             for y in y_ticks:
-                l = list(zip(np.linspace(min(x_ticks), max(x_ticks), n_steps),
-                             np.zeros(n_steps) + y))
-                lines.append(l)
+                ticks = list(zip(
+                    np.linspace(min(x_ticks), max(x_ticks), n_steps),
+                    np.zeros(n_steps) + y))
+                lines.append(ticks)
 
             y_lc = mcollections.LineCollection(lines, **collection_kwargs)
             self.yline_artists.append(y_lc)

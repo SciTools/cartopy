@@ -128,7 +128,7 @@ def test_regrid_image():
                                 target_proj, target_x, target_y)
 
     # Plot
-    fig = plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(10, 10))
     gs = mpl.gridspec.GridSpec(nrows=4, ncols=1,
                                hspace=1.5, wspace=0.5)
     # Set up axes and title

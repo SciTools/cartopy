@@ -120,7 +120,7 @@ class TestMisc(object):
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.PlateCarree(180.0)
         try:
-            _ = target_proj.project_geometry(linear_ring, src_proj)
+            target_proj.project_geometry(linear_ring, src_proj)
         except ValueError:
             pytest.fail("Failed to project LinearRing.")
 

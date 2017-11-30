@@ -76,4 +76,4 @@ class Test_add_cyclic_point(object):
 
     def test_invalid_axis(self):
         with pytest.raises(ValueError):
-            c_data = add_cyclic_point(self.data2d, axis=-3)
+            add_cyclic_point(self.data2d, axis=-3)
