@@ -43,7 +43,7 @@ def plot_city_lights():
 
     # Plot WMTS data on a rotated map, over the same nominal region.
     ax = fig.add_subplot(1, 2, 2, projection=rotated_crs)
-    ax.set_extent((-6, 3, 48, 58), crs=plain_crs)
+    ax.set_extent((-6, 3, 48, 58), crs=ccrs.PlateCarree())
     ax.coastlines(resolution='50m', color='yellow')
     ax.gridlines(color='lightgrey', linestyle='-')
     # Add WMTS imaging.
