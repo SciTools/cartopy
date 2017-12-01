@@ -5,7 +5,6 @@ import cartopy.crs as ccrs
 from cartopy.examples.arrows import sample_data
 
 
-
 def main():
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
