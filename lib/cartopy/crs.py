@@ -157,11 +157,29 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return minlon, maxlon
 
     def _repr_html_(self):
+        """
+        Make a visual representation of the projection and return it as an
+        html element.
+
+        """
+        # Imports.
+        import base64
+        from io import BytesIO
         import matplotlib.pyplot as plt
+        # Produce a visual repr of the Projection instance.
         ax = plt.axes(projection=self)
         ax.set_global()
         ax.coastlines('110m')
-        plt.show()
+        # "Save" to a bytestring.
+        fmt = 'png'
+        buf = BytesIO()
+        plt.savefig(buf, format=fmt)
+        plt.close()
+        buf.seek(0)  # "Rewind" the buffer to the start.
+        img_str = base64.b64encode(buf.getvalue()).decode()
+        # Produce html output.
+        html = '<img src="data:image/{fmt};base64,{img_str}" />'
+        return html.format(fmt=fmt, img_str=img_str)
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
