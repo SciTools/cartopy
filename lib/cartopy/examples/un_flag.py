@@ -1,6 +1,6 @@
 __tags__ = ['Miscellanea']
 import cartopy.crs as ccrs
-import cartopy.feature
+import cartopy.feature as cfeature
 import matplotlib.pyplot as plt
 from matplotlib.patches import PathPatch
 import matplotlib.path
@@ -113,7 +113,7 @@ def main():
 
     if filled_land:
         ax.add_feature(
-            cartopy.feature.LAND, facecolor='white', edgecolor='none')
+            cfeature.LAND, facecolor='white', edgecolor='none')
     else:
         ax.stock_img()
 
