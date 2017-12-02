@@ -1,7 +1,6 @@
 __tags__ = ['Miscellanea']
 """
-This example demonstrates adding adding Tissot's 
-indicatrix to maps.
+This example demonstrates adding adding Tissot's indicatrix to maps.
 """
 import matplotlib.pyplot as plt
 
