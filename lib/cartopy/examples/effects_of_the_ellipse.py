@@ -16,7 +16,7 @@ coastlines are shifted as a result of referencing the incorrect ellipse.
 """
 __tags__ = ['Lines and polygons']
 import cartopy.crs as ccrs
-import cartopy.feature
+import cartopy.feature as cfeature
 from cartopy.io.img_tiles import StamenTerrain
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D as Line
@@ -55,9 +55,9 @@ def main():
     # Define the coordinate system of the data we have from Natural Earth and
     # acquire the 1:10m physical coastline shapefile.
     geodetic = ccrs.Geodetic(globe=ccrs.Globe(datum='WGS84'))
-    dataset = cartopy.feature.NaturalEarthFeature(category='physical',
-                                                  name='coastline',
-                                                  scale='10m')
+    dataset = cfeature.NaturalEarthFeature(category='physical',
+                                           name='coastline',
+                                           scale='10m')
 
     # Create a Stamen map tiler instance, and use its CRS for the GeoAxes.
     tiler = StamenTerrain()
@@ -67,7 +67,7 @@ def main():
 
     # Pick the area of interest. In our case, roughly the Solomon Islands, and
     # get hold of the coastlines for that area.
-    extent = (155, 163, -11.5, -6)
+    extent = [155, 163, -11.5, -6]
     ax.set_extent(extent, geodetic)
     geoms = list(dataset.intersecting_geometries(extent))
 
@@ -104,7 +104,7 @@ def main():
     sub_ax.outline_patch.set_path_effects([effect])
 
     # Add the land, coastlines and the extent of the Solomon Islands.
-    sub_ax.add_feature(cartopy.feature.LAND)
+    sub_ax.add_feature(cfeature.LAND)
     sub_ax.coastlines()
     extent_box = sgeom.box(extent[0], extent[2], extent[1], extent[3])
     sub_ax.add_geometries([extent_box], ccrs.PlateCarree(), color='none',
