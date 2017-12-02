@@ -44,7 +44,7 @@ def geos_image():
     img_handle = BytesIO(urlopen(url).read())
     img = plt.imread(img_handle)
     img_proj = ccrs.Geostationary(satellite_height=35786000)
-    img_extent = (-5500000, 5500000, -5500000, 5500000)
+    img_extent = [-5500000, 5500000, -5500000, 5500000]
     return img, img_proj, img_extent, 'upper'
 
 
