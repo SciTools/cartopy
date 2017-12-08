@@ -1,4 +1,3 @@
-__tags__ = ['Miscellanea']
 """
 Using Cartopy and AxesGrid toolkit
 ----------------------------------
