@@ -44,7 +44,7 @@ For example::
 .. _How to cite and describe software: http://software.ac.uk/so-exactly-what-software-did-you-use
 
 
-.. [Jackson] Jackson, M. 2012. `How to cite and describe software`_. Accessed 2013-03-06.
+.. [Jackson]_ Jackson, M. 2012. `How to cite and describe software`_. Accessed 2013-03-06.
 
 
 .. _referencing_copyright:

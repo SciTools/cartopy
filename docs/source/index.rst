@@ -95,6 +95,7 @@ subjects prefixed with "cartopy: ".
     :glob:
     :hidden:
 
+    gallery/index
     citation
     copyright
     contributors
