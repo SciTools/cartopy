@@ -309,7 +309,8 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global()  # make sure everything is visible
 
 
-@ImageTesting(['pcolormesh_limited_area_wrap'], tolerance=0.7)
+@ImageTesting(['pcolormesh_limited_area_wrap'],
+              tolerance=1.41 if MPL_VERSION >= '2.1.0' else 0.7)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
