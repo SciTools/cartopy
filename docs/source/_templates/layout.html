@@ -12,8 +12,8 @@
 
 {% block rootrellink %}
         <li><a href="{{ pathto('index') }}">home</a>|&nbsp;</li>
-        <li><a href="{{ pathto('gallery') }}">gallery</a>|&nbsp;</li>
-        
+        <li><a href="{{ pathto('gallery/index') }}">gallery</a>|&nbsp;</li>
+
 {% endblock %}
 
 
@@ -28,7 +28,7 @@
 
 {% block sidebarlogo %}
 <a href="{{ pathto('index') }}">
-<img src="{{pathto("_static/cartopy.png", 1) }}" 
+<img src="{{pathto("_static/cartopy.png", 1) }}"
 border="0" alt="Cartopy" style="margin-left: -60px;"/>
 </a>
 

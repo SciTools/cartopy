@@ -18,3 +18,19 @@ h1 {
     padding: 20px 0px 20px 75px;
     margin: 15px 0 10px 0;
    }
+
+/* Sphinx Gallery */
+
+div#cartopy-gallery.section {
+    overflow: hidden;
+}
+
+div.section div.figure {
+  padding-left: 0 !important;
+  text-align: center;
+}
+
+/* hack to make the __init__.py files not display in SG*/
+div.dontshow {
+  display: none !important;
+}

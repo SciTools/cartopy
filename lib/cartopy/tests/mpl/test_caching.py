@@ -34,7 +34,7 @@ from cartopy.io.ogc_clients import WMTSRasterSource, _OWSLIB_AVAILABLE
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
-from cartopy.examples.waves import sample_data
+from cartopy.examples.scalar_data.waves import sample_data
 
 
 class CallCounter(object):
