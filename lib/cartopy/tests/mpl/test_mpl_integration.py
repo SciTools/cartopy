@@ -31,10 +31,12 @@ from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
-if MPL_VERSION >= '2':
+if MPL_VERSION >= '2.1.0':
     _STREAMPLOT_IMAGE = 'streamplot'
+elif MPL_VERSION >= '2':
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_2'
 elif MPL_VERSION >= '1.4.3':
-    _STREAMPLOT_IMAGE = 'streamplot_1.4.3'
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
 else:
     _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.4.3'
 
