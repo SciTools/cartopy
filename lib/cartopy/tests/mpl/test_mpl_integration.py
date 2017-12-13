@@ -31,10 +31,12 @@ from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
-if MPL_VERSION >= '2':
+if MPL_VERSION >= '2.1.0':
     _STREAMPLOT_IMAGE = 'streamplot'
+elif MPL_VERSION >= '2':
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_2'
 elif MPL_VERSION >= '1.4.3':
-    _STREAMPLOT_IMAGE = 'streamplot_1.4.3'
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
 else:
     _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.4.3'
 
@@ -309,7 +311,8 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global()  # make sure everything is visible
 
 
-@ImageTesting(['pcolormesh_limited_area_wrap'], tolerance=0.7)
+@ImageTesting(['pcolormesh_limited_area_wrap'],
+              tolerance=1.41 if MPL_VERSION >= '2.1.0' else 0.7)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
