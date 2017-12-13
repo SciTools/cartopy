@@ -9,8 +9,8 @@ Plotting arrows.
 import matplotlib.pyplot as plt
 import numpy as np
 
-import cartopy
 import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 
 def sample_data(shape=(20, 30)):
@@ -37,8 +37,8 @@ def main():
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Orthographic(-10, 45))
 
-    ax.add_feature(cartopy.feature.OCEAN, zorder=0)
-    ax.add_feature(cartopy.feature.LAND, zorder=0, edgecolor='black')
+    ax.add_feature(cfeature.OCEAN, zorder=0)
+    ax.add_feature(cfeature.LAND, zorder=0, edgecolor='black')
 
     ax.set_global()
     ax.gridlines()
