@@ -17,10 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import numpy as np
-import matplotlib.pyplot as plt
 import cartopy.feature as cfeature
-import cartopy.crs as ccrs
 
 small_extent = (-6, -8, 56, 59)
 medium_extent = (-20, 20, 20, 60)
@@ -42,18 +39,18 @@ class TestFeatures(object):
         # Check that autoscale variants can be passed as the scale
         # argument
         autoscale_borders = cfeature.NaturalEarthFeature(
-           'cultural', 'admin_0_boundary_lines_land',
-           'autoscale')
+                                   'cultural', 'admin_0_boundary_lines_land',
+                                   'autoscale')
 
         a_coastline = cfeature.NaturalEarthFeature('physical', 'coastline',
-                                             'a')
+                                                   'a')
 
         assert autoscale_borders.scale == 'autoscale'
-        assert autoscale_borders.autoscale == True
+        assert autoscale_borders.autoscale is True
         assert a_coastline.scale == 'a'
-        assert a_coastline.autoscale == True
+        assert a_coastline.autoscale is True
         assert auto_land.scale == 'auto'
-        assert auto_land.autoscale == True
+        assert auto_land.autoscale is True
 
     def test_autoscale_default(self):
         # Check that autoscaling is not used by default.
@@ -69,13 +66,13 @@ class TestFeatures(object):
                                                        '110m')
 
         assert cfeature.LAKES.scale == '110m'
-        assert cfeature.LAKES.autoscale == False
+        assert not cfeature.LAKES.autoscale
         assert ten_borders.scale == '10m'
-        assert ten_borders.autoscale == False
+        assert ten_borders.autoscale is False
         assert fifty_coastline.scale == '50m'
-        assert fifty_coastline.autoscale == False
+        assert fifty_coastline.autoscale is False
         assert hundredten_land.scale == '110m'
-        assert hundredten_land.autoscale == False
+        assert hundredten_land.autoscale is False
 
     def test_scale_from_extent(self):
         # Check that _scale_from_extent produces the appropriate
