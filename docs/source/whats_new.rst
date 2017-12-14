@@ -93,6 +93,12 @@ Features
 * If Fiona is installed on a user's system, this will now be the default
   shapefile reader, adding significant speed improvements. (:pull:`1000`)
 
+* The :class:`cartopy.feature.NaturalEarthFeature` class now allows the
+`scale` argument to be set to `'auto'`. This will automatically choose the
+appropriate feature scale from the GeoAxes extent. This can also be used
+interactively while panning and zooming in a figure.
+
+
 What's New in cartopy 0.15
 ==========================
 
