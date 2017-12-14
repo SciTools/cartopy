@@ -90,6 +90,10 @@ Features
 * Mahé Perrette and Ryan May collaborated to improve the
   :class:`~cartopy.crs.Stereographic` projection. (:pull:`929`)
 
+* The :class:`cartopy.feature.NaturalEarthFeature` class now allows the
+`scale` argument to be set to `'auto'`. This will automatically choose the
+appropriate feature scale from the GeoAxes extent. This can also be used
+interactively while panning and zooming in a figure.
 
 
 What's New in cartopy 0.15
