@@ -118,7 +118,7 @@ class Feature(six.with_metaclass(ABCMeta)):
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
             return (geom for geom in self.geometries() if
-                    extent_geom.intersects(geom))
+                    geom is not None and extent_geom.intersects(geom))
         else:
             return self.geometries()
 
@@ -205,7 +205,7 @@ class NaturalEarthFeature(Feature):
             geometries = _NATURAL_EARTH_GEOM_CACHE[key]
 
         return iter(geometries)
-    
+
     def intersecting_geometries(self, extent):
         """
         Returns an iterator of shapely geometries that intersect with
@@ -224,7 +224,7 @@ class NaturalEarthFeature(Feature):
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
             return (geom for geom in self.geometries() if
-                    extent_geom.intersects(geom))
+                    geom is not None and extent_geom.intersects(geom))
         else:
             return self.geometries()
 
