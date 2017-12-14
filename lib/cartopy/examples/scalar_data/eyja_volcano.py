@@ -29,7 +29,7 @@ def main():
     ax = fig.add_subplot(1, 1, 1, projection=stamen_terrain.crs)
 
     # Limit the extent of the map to a small longitude/latitude range.
-    ax.set_extent([-22, -15, 63, 65])
+    ax.set_extent([-22, -15, 63, 65], crs=ccrs.Geodetic())
 
     # Add the Stamen data at zoom level 8.
     ax.add_image(stamen_terrain, 8)

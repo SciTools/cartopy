@@ -41,7 +41,7 @@ def main():
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=imagery.crs)
-    ax.set_extent((-0.14, -0.1, 51.495, 51.515))
+    ax.set_extent([-0.14, -0.1, 51.495, 51.515], ccrs.PlateCarree())
 
     # Construct concentric circles and a rectangle,
     # suitable for a London Underground logo.

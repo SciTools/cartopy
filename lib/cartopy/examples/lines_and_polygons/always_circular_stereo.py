@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import cartopy.crs as ccrs
-import cartopy.feature
+import cartopy.feature as cfeature
 
 
 def main():
@@ -23,14 +23,14 @@ def main():
     # Limit the map to -60 degrees latitude and below.
     ax1.set_extent([-180, 180, -90, -60], ccrs.PlateCarree())
 
-    ax1.add_feature(cartopy.feature.LAND)
-    ax1.add_feature(cartopy.feature.OCEAN)
+    ax1.add_feature(cfeature.LAND)
+    ax1.add_feature(cfeature.OCEAN)
 
     ax1.gridlines()
     ax2.gridlines()
 
-    ax2.add_feature(cartopy.feature.LAND)
-    ax2.add_feature(cartopy.feature.OCEAN)
+    ax2.add_feature(cfeature.LAND)
+    ax2.add_feature(cfeature.OCEAN)
 
     # Compute a circle in axes coordinates, which we can use as a boundary
     # for the map. We can pan/zoom as much as we like - the boundary will be

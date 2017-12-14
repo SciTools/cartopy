@@ -113,7 +113,7 @@ class Feature(six.with_metaclass(ABCMeta)):
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
             return (geom for geom in self.geometries() if
-                    extent_geom.intersects(geom))
+                    geom is not None and extent_geom.intersects(geom))
         else:
             return self.geometries()
 
@@ -377,13 +377,13 @@ LAKES = NaturalEarthFeature('physical', 'lakes', '110m',
 
 LAND = NaturalEarthFeature('physical', 'land', '110m',
                            edgecolor='face',
-                           facecolor=COLORS['land'])
+                           facecolor=COLORS['land'], zorder=-1)
 """Small scale (1:110m) land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
                             edgecolor='face',
-                            facecolor=COLORS['water'])
+                            facecolor=COLORS['water'], zorder=-1)
 """Small scale (1:110m) ocean polygons."""
 
 
