@@ -37,4 +37,4 @@ class TestCoastline(object):
         # for geometry in geometries:
         for i, geometry in enumerate(geometries[93:]):
             for line_string in geometry:
-                multi_line_string = projection.project_geometry(line_string)
+                projection.project_geometry(line_string)

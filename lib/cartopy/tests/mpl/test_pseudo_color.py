@@ -75,7 +75,7 @@ def test_savefig_tight():
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
 
-    ax = plt.subplot(211, projection=ccrs.Robinson())
+    plt.subplot(211, projection=ccrs.Robinson())
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight')

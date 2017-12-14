@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2016, Met Office
+# (C) British Crown Copyright 2015 - 2017, Met Office
 #
 # This file is part of cartopy.
 #
@@ -16,4 +16,6 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
-from cartopy.geodesic._geodesic import Geodesic
+
+# NOTE: noqa for flake8 = unused import
+from cartopy.geodesic._geodesic import Geodesic  # noqa: F401

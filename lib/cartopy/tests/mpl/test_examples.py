@@ -43,5 +43,5 @@ class ExampleImageTesting(ImageTesting):
 @ExampleImageTesting(['global_map'],
                      tolerance=4 if MPL_VERSION < '2' else 0)
 def test_global_map():
-    import cartopy.examples.global_map as c
+    import cartopy.examples.lines_and_polygons.global_map as c
     c.main()

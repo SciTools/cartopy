@@ -21,7 +21,6 @@ from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-import pytest
 
 import cartopy.crs as ccrs
 
@@ -33,14 +32,14 @@ def test_extents():
     uk = [-12.5, 4, 49, 60]
     uk_crs = ccrs.Geodetic()
 
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax = plt.axes(projection=ccrs.PlateCarree(), label='pc')
     ax.set_extent(uk, crs=uk_crs)
     # enable to see what is going on (and to make sure it is a plot of the uk)
     # ax.coastlines()
     assert_array_almost_equal(ax.viewLim.get_points(),
                               np.array([[-12.5, 49.], [4., 60.]]))
 
-    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    ax = plt.axes(projection=ccrs.NorthPolarStereo(), label='npstere')
     ax.set_extent(uk, crs=uk_crs)
     # enable to see what is going on (and to make sure it is a plot of the uk)
     # ax.coastlines()
@@ -51,7 +50,7 @@ def test_extents():
 
     # given that we know the PolarStereo coordinates of the UK, try using
     # those in a PlateCarree plot
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax = plt.axes(projection=ccrs.PlateCarree(), label='pc')
     ax.set_extent([-1034046, 333263, -4765889, -3345219],
                   crs=ccrs.NorthPolarStereo())
     # enable to see what is going on (and to make sure it is a plot of the uk)

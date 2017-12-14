@@ -45,6 +45,7 @@ clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	python add_noshow.py
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 

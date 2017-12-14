@@ -32,7 +32,6 @@ from six.moves import cPickle as pickle
 from cartopy import config
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.img_nest as cimg_nest
-import cartopy.tests as tests
 
 
 #: An integer version which should be increased if the test data needs

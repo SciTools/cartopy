@@ -22,7 +22,6 @@ import re
 import warnings
 
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import six
 
@@ -31,13 +30,13 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
-_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.1
+_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
 if MPL_VERSION >= '2':
     _STREAMPLOT_IMAGE = 'streamplot'
-elif MPL_VERSION >= '1.5':
-    _STREAMPLOT_IMAGE = 'streamplot_1.5'
+elif MPL_VERSION >= '1.4.3':
+    _STREAMPLOT_IMAGE = 'streamplot_1.4.3'
 else:
-    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.5'
+    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.4.3'
 
 
 @ImageTesting(['global_contour_wrap'])
@@ -77,8 +76,8 @@ def test_global_contourf_wrap_no_transform():
 
 
 global_pcolor_wrap = ('global_pcolor_wrap'
-                      if mpl.__version__ >= '1.5' else
-                      'global_pcolor_wrap_pre_mpl_1.5')
+                      if MPL_VERSION >= '1.4.3' else
+                      'global_pcolor_wrap_pre_mpl_1.4.3')
 
 
 @ImageTesting([global_pcolor_wrap])
@@ -123,7 +122,7 @@ def test_global_scatter_wrap_no_transform():
 @ImageTesting(['global_map'],
               tolerance=16 if ccrs.PROJ4_VERSION < (4, 9) else 0.1)
 def test_global_map():
-    ax = plt.axes(projection=ccrs.Robinson())
+    plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
 #    ax.gridlines(5)
 
@@ -252,7 +251,7 @@ def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
     xbnds, xstep = np.linspace(0, 360, nx - 1, retstep=True, endpoint=True)
-    ybnds, ystep = np.linspace(-90, 90, nx - 1, retstep=True, endpoint=True)
+    ybnds, ystep = np.linspace(-90, 90, ny - 1, retstep=True, endpoint=True)
     xbnds -= xstep / 2
     ybnds -= ystep / 2
     xbnds = np.append(xbnds, xbnds[-1] + xstep)
@@ -483,7 +482,6 @@ def test_barbs():
     x2d, y2d = np.meshgrid(x, y)
     u = 40 * np.cos(np.deg2rad(y2d))
     v = 40 * np.cos(2. * np.deg2rad(x2d))
-    mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
     plt.figure(figsize=(6, 6))
     # plot on native projection
