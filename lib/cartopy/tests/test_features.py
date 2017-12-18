@@ -46,11 +46,11 @@ class TestFeatures(object):
                                                    'a')
 
         assert autoscale_borders.scale == 'autoscale'
-        assert autoscale_borders.autoscale is True
+        assert autoscale_borders.autoscale
         assert a_coastline.scale == 'a'
-        assert a_coastline.autoscale is True
+        assert a_coastline.autoscale
         assert auto_land.scale == 'auto'
-        assert auto_land.autoscale is True
+        assert auto_land.autoscale
 
     def test_autoscale_default(self):
         # Check that autoscaling is not used by default.
@@ -68,11 +68,11 @@ class TestFeatures(object):
         assert cfeature.LAKES.scale == '110m'
         assert not cfeature.LAKES.autoscale
         assert ten_borders.scale == '10m'
-        assert ten_borders.autoscale is False
+        assert not ten_borders.autoscale
         assert fifty_coastline.scale == '50m'
-        assert fifty_coastline.autoscale is False
+        assert not fifty_coastline.autoscale
         assert hundredten_land.scale == '110m'
-        assert hundredten_land.autoscale is False
+        assert not hundredten_land.autoscale
 
     def test_scale_from_extent(self):
         # Check that _scale_from_extent produces the appropriate
