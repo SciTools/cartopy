@@ -169,7 +169,8 @@ class NaturalEarthFeature(Feature):
         scale
             The dataset scale, i.e. one of '10m', '50m', or '110m'.
             Corresponding to 1:10,000,000, 1:50,000,000, and 1:110,000,000
-            respectively. If set to 'auto', autoscaling is used.
+            respectively. If set to 'auto', the scale will be automatically
+            set based on the extent of the axes.
 
         Other Parameters
         ----------------
@@ -249,7 +250,7 @@ class NaturalEarthFeature(Feature):
         expressed in CRS of the feature (PlateCarree()).
 
         """
-        # Default to 1:10,000,000 scale
+        # Default to 1:110,000,000 scale
         scale = '110m'
 
         if extent is not None:
@@ -447,13 +448,13 @@ LAKES = NaturalEarthFeature('physical', 'lakes', '110m',
 
 LAND = NaturalEarthFeature('physical', 'land', '110m',
                            edgecolor='face',
-                           facecolor=COLORS['land'])
+                           facecolor=COLORS['land'], zorder=-1)
 """Small scale (1:110m) land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
                             edgecolor='face',
-                            facecolor=COLORS['water'])
+                            facecolor=COLORS['water'], zorder=-1)
 """Small scale (1:110m) ocean polygons."""
 
 
