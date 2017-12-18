@@ -12,7 +12,8 @@ installing cartopy can be done with::
 
 Additional options include:
  * `Enthought Canopy <https://www.enthought.com/products/canopy/>`_.
- * `Christoph Gohlke <http://www.lfd.uci.edu/~gohlke/pythonlibs/>`_ maintains unofficial Windows binaries of cartopy.
+ * Christoph Gohlke (https://www.lfd.uci.edu/~gohlke/pythonlibs/)
+   maintains unofficial Windows binaries of cartopy.
  * `OSGeo Live <https://live.osgeo.org>`_.
 
 
