@@ -51,7 +51,7 @@ matplotlib interface the
 :class:`cartopy.mpl.slippy_image_artist.SlippyImageArtist`
 class feeds the appropriate information to the
 :class:`~cartopy.io.RasterSource` and visualises it on a map.
-The orchestration in matplotlib is made more convenient
+The orchestration in Matplotlib is made more convenient
 to the user of a :class:`~cartopy.mpl.geoaxes.GeoAxes` through the
 :class:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method. Anything which exposes
 the ``validate_projection`` and ``fetch_raster`` methods in the form described

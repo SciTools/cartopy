@@ -17,7 +17,7 @@
 """
 This module defines the :class:`GeoAxes` class, for use with matplotlib.
 
-When a matplotlib figure contains a GeoAxes the plotting commands can transform
+When a Matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.
 
 """
@@ -145,12 +145,12 @@ class InterProjectionTransform(mtransforms.Transform):
 
         Args:
 
-            * src_path - A matplotlib :class:`~matplotlib.path.Path` object
+            * src_path - A Matplotlib :class:`~matplotlib.path.Path` object
                          with vertices in source coordinates.
 
         Returns
 
-            * A matplotlib :class:`~matplotlib.path.Path` with vertices
+            * A Matplotlib :class:`~matplotlib.path.Path` with vertices
               in target coordinates.
 
         """
@@ -211,7 +211,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
     def inverted(self):
         """
-        Return a matplotlib :class:`~matplotlib.transforms.Transform`
+        Return a Matplotlib :class:`~matplotlib.transforms.Transform`
         from target to source coordinates.
 
         """
@@ -224,7 +224,7 @@ class GeoAxes(matplotlib.axes.Axes):
     A subclass of :class:`matplotlib.axes.Axes` which represents a
     map :class:`~cartopy.crs.Projection`.
 
-    This class replaces the matplotlib :class:`~matplotlib.axes.Axes` class
+    This class replaces the Matplotlib :class:`~matplotlib.axes.Axes` class
     when created with the *projection* keyword. For example::
 
         # Set up a standard map for latlon data.
@@ -234,7 +234,7 @@ class GeoAxes(matplotlib.axes.Axes):
         geo_axes = pyplot.subplot(2, 2, 1, projection=cartopy.crs.OSGB())
 
     When a source projection is provided to one of it's plotting methods,
-    using the *transform* keyword, the standard matplotlib plot result is
+    using the *transform* keyword, the standard Matplotlib plot result is
     transformed from source coordinates to the target projection. For example::
 
         # Plot latlon data on an OSGB map.
@@ -337,7 +337,7 @@ class GeoAxes(matplotlib.axes.Axes):
         Extends the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
 
         Draws grid lines and image factory results before invoking standard
-        matplotlib drawing. A global range is used if no limits have yet
+        Matplotlib drawing. A global range is used if no limits have yet
         been set.
 
         """
@@ -396,7 +396,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return result
 
     def format_coord(self, x, y):
-        """Return a string formatted for the matplotlib GUI status bar."""
+        """Return a string formatted for the Matplotlib GUI status bar."""
         lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
 
         ns = 'N' if lat >= 0.0 else 'S'
@@ -520,7 +520,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Kwargs:
             Keyword arguments to be used when drawing the feature. This allows
-            standard matplotlib control over aspects such as 'facecolor',
+            standard Matplotlib control over aspects such as 'facecolor',
             'alpha', etc.
 
         Returns:
@@ -1031,7 +1031,7 @@ class GeoAxes(matplotlib.axes.Axes):
         Parameters
         ----------
 
-        transform : :class:`~cartopy.crs.Projection` or matplotlib transform
+        transform : :class:`~cartopy.crs.Projection` or Matplotlib transform
             The coordinate system in which the given image is rectangular.
         regrid_shape : int or pair of ints
             The shape of the desired image if it needs to be transformed.
@@ -1407,7 +1407,7 @@ class GeoAxes(matplotlib.axes.Axes):
         A temporary, modified duplicate of
         :func:`~matplotlib.pyplot.pcolormesh'.
 
-        This function contains a workaround for a matplotlib issue
+        This function contains a workaround for a Matplotlib issue
         and will be removed once the issue has been resolved.
         https://github.com/matplotlib/matplotlib/pull/1314
 
@@ -1618,7 +1618,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Extra Kwargs:
 
-        * transform: :class:`cartopy.crs.Projection` or matplotlib transform
+        * transform: :class:`cartopy.crs.Projection` or Matplotlib transform
             The coordinate system in which the vectors are defined.
 
         * regrid_shape: int or 2-tuple of ints
@@ -1689,7 +1689,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Extra Kwargs:
 
-        * transform: :class:`cartopy.crs.Projection` or matplotlib transform
+        * transform: :class:`cartopy.crs.Projection` or Matplotlib transform
             The coordinate system in which the vectors are defined.
 
         * regrid_shape: int or 2-tuple of ints
@@ -1760,7 +1760,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Extra Kwargs:
 
-        * transform: :class:`cartopy.crs.Projection` or matplotlib transform
+        * transform: :class:`cartopy.crs.Projection` or Matplotlib transform
             The coordinate system in which the vector field is defined.
 
         See :func:`matplotlib.pyplot.streamplot` for details on arguments

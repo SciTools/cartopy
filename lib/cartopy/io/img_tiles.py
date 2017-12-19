@@ -19,7 +19,7 @@
 Implements image tile identification and fetching from various sources.
 
 
-The matplotlib interface can make use of tile objects (defined below) via the
+The Matplotlib interface can make use of tile objects (defined below) via the
 :meth:`cartopy.mpl.geoaxes.GeoAxes.add_image` method. For example, to add a
 :class:`MapQuest Open Aerial tileset <MapQuestOpenAerial>` to an existing axes
 at zoom level 2, do ``ax.add_image(MapQuestOpenAerial(), 2)``. An example of

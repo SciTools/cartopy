@@ -128,7 +128,7 @@ def fill_dark_side(ax, time=None, *args, **kwargs):
 
     Parameters
     ----------
-        ax : matplotlib axes
+        ax : Matplotlib axes
             The axes to plot on.
         time : datetime
             The time to calculate terminator for. Defaults to datetime.utcnow()

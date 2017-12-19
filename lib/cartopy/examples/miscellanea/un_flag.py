@@ -20,7 +20,7 @@ filled_land = True
 
 def olive_path():
     """
-    Returns a matplotlib path representing a single olive branch from the
+    Returns a Matplotlib path representing a single olive branch from the
     UN Flag. The path coordinates were extracted from the SVG at
     https://commons.wikimedia.org/wiki/File:Flag_of_the_United_Nations.svg.
 

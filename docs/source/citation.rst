@@ -13,7 +13,7 @@ For example::
 
  @manual{Cartopy,
  author = {{Met Office}},
- title = {Cartopy: a cartographic python library with a matplotlib interface},
+ title = {Cartopy: a cartographic python library with a Matplotlib interface},
  year = {2010 - 2015},
  address = {Exeter, Devon },
  url = {http://scitools.org.uk/cartopy}
