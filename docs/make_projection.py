@@ -27,7 +27,7 @@ import cartopy.crs as ccrs
 SPECIAL_CASES = {
     ccrs.PlateCarree: [{}, {'central_longitude': 180}],
     ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
-    ccrs.UTM: [{'zone': 30}],
+    ccrs.UTM: [{'zone': 30}, {'zone': 50}],
     ccrs.AzimuthalEquidistant: [{'central_latitude': 90}],
     ccrs.NearsidePerspective: [{
         'central_longitude': -3.53, 'central_latitude': 50.72,
