@@ -99,11 +99,7 @@ sphinx_gallery_conf = {
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
     'doc_module': ('cartopy',),
-    'reference_url': {'matplotlib': 'http://matplotlib.org',
-                      'numpy': 'http://docs.scipy.org/doc/numpy/reference',
-                      'scipy': 'http://docs.scipy.org/doc/scipy/reference',
-                      'shapely': 'http://toblerity.org/shapely',
-                      'cartopy': None},
+    'reference_url': {'cartopy': None},
     'backreferences_dir': 'api/_as_gen',
     # Not currently used but kept for future
 }

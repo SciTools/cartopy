@@ -3,7 +3,7 @@
 The cartopy Feature interface
 =============================
 
-The :ref:`data copyright, license and attribution  <referencing_copyright>` can be blended on the map using `text annotations (mpl docs) <http://matplotlib.org/users/annotations_intro.html>`_ as shown in `feature_creation <../gallery/lines_and_polygons/feature_creation.html>`_.
+The :ref:`data copyright, license and attribution  <referencing_copyright>` can be blended on the map using `text annotations (mpl docs) <https://matplotlib.org/users/annotations_intro.html>`_ as shown in `feature_creation <../gallery/lines_and_polygons/feature_creation.html>`_.
 
 .. currentmodule:: cartopy.feature
 

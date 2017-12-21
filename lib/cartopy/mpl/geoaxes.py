@@ -99,8 +99,8 @@ class InterProjectionTransform(mtransforms.Transform):
 
         Args:
 
-            * source_projection - A :class:`~cartopy.crs.CRS`.
-            * target_projection - A :class:`~cartopy.crs.CRS`.
+            * source_projection: A :class:`~cartopy.crs.CRS`.
+            * target_projection: A :class:`~cartopy.crs.CRS`.
 
         """
         # assert target_projection is cartopy.crs.Projection
@@ -120,7 +120,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
         Args:
 
-            * xy - An (n,2) array of points in source coordinates.
+            * xy: An (n,2) array of points in source coordinates.
 
         Returns:
 
@@ -145,7 +145,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
         Args:
 
-            * src_path - A Matplotlib :class:`~matplotlib.path.Path` object
+            * src_path: A Matplotlib :class:`~matplotlib.path.Path` object
                          with vertices in source coordinates.
 
         Returns
@@ -249,7 +249,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Kwargs:
 
-            * map_projection - The target :class:`~cartopy.crs.Projection` of
+            * map_projection: The target :class:`~cartopy.crs.Projection` of
                                this Axes object.
 
         All other args and keywords are passed through to

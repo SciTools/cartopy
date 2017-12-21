@@ -356,13 +356,13 @@ class WMTSRasterSource(RasterSource):
         """
         Args:
 
-            * wmts - The URL of the WMTS, or an
-                     owslib.wmts.WebMapTileService instance.
-            * layer_name - The name of the layer to use.
+            * wmts: The URL of the WMTS, or an
+                    owslib.wmts.WebMapTileService instance.
+            * layer_name: The name of the layer to use.
 
         Kwargs:
 
-            * gettile_extra_kwargs : dict or None
+            * gettile_extra_kwargs: dict or None
                 Extra keywords (e.g. time) to pass through to the
                 service's gettile method.
 
@@ -555,12 +555,12 @@ class WMTSRasterSource(RasterSource):
 
         Args:
 
-            * wmts - The owslib.wmts.WebMapTileService providing the tiles.
-            * layer - The owslib.wmts.ContentMetadata (aka. layer) to draw.
-            * matrix_set_name - The name of the matrix set to use.
-            * extent - Tuple of (left, right, bottom, top) in Axes coordinates.
-            * max_pixel_span - Preferred maximum pixel width or height
-                               in Axes coordinates.
+            * wmts: The owslib.wmts.WebMapTileService providing the tiles.
+            * layer: The owslib.wmts.ContentMetadata (aka. layer) to draw.
+            * matrix_set_name: The name of the matrix set to use.
+            * extent: Tuple of (left, right, bottom, top) in Axes coordinates.
+            * max_pixel_span: Preferred maximum pixel width or height in
+            Axes coordinates.
 
         """
 
