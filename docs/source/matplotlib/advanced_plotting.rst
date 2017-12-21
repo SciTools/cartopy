@@ -5,7 +5,7 @@ From the outset, cartopy's purpose has been to simplify and improve the quality 
 mapping visualisations available for scientific data. Thanks to the simplicity of the cartopy
 interface, in many cases the hardest part of producing such visualisations is getting
 hold of the data in the first place. To address this, a Python package,
-`Iris <http://scitools.org.uk/iris/>`_, has been created to make loading and saving data from a
+`Iris <https://scitools.org.uk/iris/>`_, has been created to make loading and saving data from a
 variety of gridded datasets easier. Some of the following examples make use of the Iris
 loading capabilities, while others use the netCDF4 Python package so as to show a range
 of different approaches to data loading.

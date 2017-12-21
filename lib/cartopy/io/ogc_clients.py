@@ -96,8 +96,8 @@ _URN_TO_CRS = collections.OrderedDict([
 ])
 
 # XML namespace definitions
-_MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
-_GML_NS = '{http://www.opengis.net/gml}'
+_MAP_SERVER_NS = '{https://mapserver.gis.umn.edu/mapserver}'
+_GML_NS = '{https://www.opengis.net/gml}'
 
 
 def _warped_located_image(image, source_projection, source_extent,
@@ -824,7 +824,7 @@ class WFSGeometrySource(object):
         * find_str: string
             A search string used to match subelements that contain
             the coordinates of interest, for example:
-            './/{http://www.opengis.net/gml}LineString'
+            './/{https://www.opengis.net/gml}LineString'
 
         Returns:
             A list of (srsName, x_vals, y_vals) tuples.
