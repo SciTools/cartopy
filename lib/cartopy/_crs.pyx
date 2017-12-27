@@ -348,6 +348,15 @@ cdef class CRS:
             result[:, 2] = 0
         else:
             result[:, 2] = z
+        # Catch restricted area CRS instances and reset central lons and lats
+        # This reduces proj4 out-of-bounds errors
+        if self.__class__ in ['Geostationary',
+                              'Gnomonic',
+                              'Orthographic',
+                              'TransverseMercator']:
+            target_lon_0 = (np.max(x) - np.min(x))/2
+            target_lat_0 = (np.max(y) - np.min(y))/2
+            self.proj4_params.update(lon_0=target_lon_0, lat_0=target_lat_0)
 
         # call proj.4. The result array is modified in place.
         status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
