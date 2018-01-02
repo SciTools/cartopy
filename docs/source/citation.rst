@@ -16,7 +16,7 @@ For example::
  title = {Cartopy: a cartographic python library with a Matplotlib interface},
  year = {2010 - 2015},
  address = {Exeter, Devon },
- url = {https://scitools.org.uk/cartopy}
+ url = {http://scitools.org.uk/cartopy}
  } 
 
 
