@@ -52,11 +52,11 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         Args:
 
             * filename: Filename of the image tile.
-            * extent: The (x_lower, x_upper, y_lower, y_upper) extent of the image
-            in units of the native projection.
+            * extent: The (x_lower, x_upper, y_lower, y_upper) extent of the
+            image in units of the native projection.
             * origin: Name of the origin.
-            * pixel_size: The (x_scale, y_scale) pixel width, in units of the native
-            projection per pixel.
+            * pixel_size: The (x_scale, y_scale) pixel width, in units of the
+            native projection per pixel.
 
         .. note::
             API is likely to change in the future to include a CRS.
@@ -228,7 +228,8 @@ class ImageCollection(object):
 
             * glob_pattern: The image filename glob pattern to search with.
             Defaults to '*.tif'.
-            * img_class: The class used to construct each image in the Collection.
+            * img_class: The class used to construct each image in the
+            Collection.
 
         .. note::
             Does not recursively search sub-directories.
@@ -334,7 +335,8 @@ class NestedImageCollection(object):
         Args:
 
             * target_domain: A :class:`~shapely.geometry.linestring.LineString`
-            instance that specifies the target location requiring image coverage.
+            instance that specifies the target location requiring image
+            coverage.
             * target_z: The name of the target
             :class`~cartopy.io.img_nest.ImageCollection` which specifies the
             target zoom level (resolution) of the required images.

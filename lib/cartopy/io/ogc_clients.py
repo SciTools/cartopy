@@ -93,11 +93,11 @@ _URN_TO_CRS = collections.OrderedDict([
         central_longitude=-45,
         central_latitude=90,
         true_scale_latitude=70))
-])
+    ])
 
 # XML namespace definitions
-_MAP_SERVER_NS = '{https://mapserver.gis.umn.edu/mapserver}'
-_GML_NS = '{https://www.opengis.net/gml}'
+_MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
+_GML_NS = '{http://www.opengis.net/gml}'
 
 
 def _warped_located_image(image, source_projection, source_extent,
