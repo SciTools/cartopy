@@ -193,6 +193,27 @@ class TestMisc(object):
         assert 81330 < area < 81340, \
             'Got area {}, expecting ~81336'.format(area)
 
+    def test_same_points_on_boundary_1(self):
+        source = ccrs.PlateCarree()
+        target = ccrs.PlateCarree(central_longitude=180)
+
+        geom = sgeom.Polygon([(-20, -20), (20, -20), (20, 20), (-20, 20)],
+                             [[(-10, 0), (0, 20), (10, 0), (0, -20)]])
+        projected = target.project_geometry(geom, source)
+
+        assert abs(1200 - projected.area) < 1e-5
+
+    def test_same_points_on_boundary_2(self):
+        source = ccrs.PlateCarree()
+        target = ccrs.PlateCarree(central_longitude=180)
+
+        geom = sgeom.Polygon([(-20, -20), (20, -20), (20, 20), (-20, 20)],
+                             [[(0, 0), (-10, 10), (0, 20), (10, 10)],
+                              [(0, 0), (10, -10), (0, -20), (-10, -10)]])
+        projected = target.project_geometry(geom, source)
+
+        assert abs(1200 - projected.area) < 1e-5
+
 
 class TestQuality(object):
     def setup_class(self):

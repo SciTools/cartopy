@@ -429,6 +429,11 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     ax.text(coords[-1, 0], coords[-1, 1],
                             '{}.'.format(thing.data[0]))
 
+        def filter_last(t):
+            return t.kind or t.data[1] == 'first'
+
+        edge_things = list(filter(filter_last, edge_things))
+
         processed_ls = []
         while remaining_ls:
             # Rename line_string to current_ls
@@ -441,16 +446,6 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                 print()
                 print('Processing: %s, %s' % (i, current_ls))
 
-            # We only want to consider boundary-points, the starts-and-ends of
-            # all other line-strings, or the start-point of the current
-            # line-string.
-            def filter_fn(t):
-                return (t.kind or
-                        t.data[0] != i or
-                        t.data[1] != 'last')
-
-            edge_things = list(filter(filter_fn, edge_things))
-
             added_linestring = set()
             while True:
                 # Find out how far around this linestring's last
@@ -459,7 +454,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                 d_last = boundary_distance(current_ls.coords[-1])
                 if debug:
                     print('   d_last: {!r}'.format(d_last))
-                next_thing = _find_first_gt(edge_things, d_last)
+                next_thing = _find_first_ge(edge_things, d_last)
                 # Remove this boundary point from the edge.
                 edge_things.remove(next_thing)
                 if debug:
@@ -473,7 +468,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                                        [(boundary_point.x, boundary_point.y)])
                     current_ls = sgeom.LineString(combined_coords)
 
-                elif next_thing.data[0] == i and next_thing.data[1] == 'first':
+                elif next_thing.data[0] == i:
                     # We've gone all the way around and are now back at the
                     # first boundary thing.
                     if debug:
@@ -493,8 +488,6 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                         remaining_ls.pop(j)
                     coords_to_append = list(line_to_append.coords)
 
-                    if next_thing.data[1] == 'last':
-                        coords_to_append = coords_to_append[::-1]
                     # Build up the linestring.
                     current_ls = sgeom.LineString((list(current_ls.coords) +
                                                    coords_to_append))
@@ -1937,9 +1930,9 @@ class _BoundaryPoint(object):
                                                self.data)
 
 
-def _find_first_gt(a, x):
+def _find_first_ge(a, x):
     for v in a:
-        if v.distance > x:
+        if v.distance >= x:
             return v
     # We've gone all the way around, so pick the first point again.
     return a[0]
