@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -48,6 +48,7 @@ try:
     from owslib.wfs import WebFeatureService
     import owslib.util
     import owslib.wmts
+
     _OWSLIB_AVAILABLE = True
 except ImportError:
     WebMapService = None
@@ -58,7 +59,6 @@ import cartopy.crs as ccrs
 from cartopy.io import LocatedImage, RasterSource
 from cartopy.img_transform import warp_array
 
-
 _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 
 # Hardcode some known EPSG codes for now.
@@ -66,7 +66,8 @@ _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 _CRS_TO_OGC_SRS = collections.OrderedDict(
     [(ccrs.PlateCarree(), 'EPSG:4326'),
      (ccrs.Mercator.GOOGLE, 'EPSG:900913'),
-     (ccrs.OSGB(), 'EPSG:27700')])
+     (ccrs.OSGB(), 'EPSG:27700')
+     ])
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
 METERS_PER_PIXEL = 0.28e-3
@@ -81,19 +82,19 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:EPSG::3413': 1
 }
 
-_URN_TO_CRS = collections.OrderedDict([
-    ('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
-    ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
-    ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
-    ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
-    ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
-        central_latitude=-90,
-        true_scale_latitude=-71)),
-    ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
-        central_longitude=-45,
-        central_latitude=90,
-        true_scale_latitude=70))
-    ])
+_URN_TO_CRS = collections.OrderedDict(
+    [('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
+     ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
+     ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
+     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
+     ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
+         central_latitude=-90,
+         true_scale_latitude=-71)),
+     ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
+         central_longitude=-45,
+         central_latitude=90,
+         true_scale_latitude=70))
+     ])
 
 # XML namespace definitions
 _MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
@@ -509,7 +510,7 @@ class WMTSRasterSource(RasterSource):
 
     def _tile_span(self, tile_matrix, meters_per_unit):
         pixel_span = tile_matrix.scaledenominator * (
-            METERS_PER_PIXEL / meters_per_unit)
+                METERS_PER_PIXEL / meters_per_unit)
         tile_span_x = tile_matrix.tilewidth * pixel_span
         tile_span_y = tile_matrix.tileheight * pixel_span
         return tile_span_x, tile_span_y
