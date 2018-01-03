@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,12 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 __version__ = '0.15.0'
 __document_these__ = ['config']
-
-# Enable shapely performance enhancements
-import shapely.speedups
-if shapely.speedups.available:
-    shapely.speedups.enable()
-
 
 # Configuration
 import os.path
