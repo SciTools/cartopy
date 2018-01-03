@@ -131,6 +131,13 @@ cdef class CRS:
     Defines a Coordinate Reference System using proj.4.
 
     """
+    def __cinit__(self):
+        self.proj4 = NULL
+
+    def __dealloc__(self):
+        if self.proj4 != NULL:
+            pj_free(self.proj4)
+
     def __init__(self, proj4_params, globe=None):
         """
         Parameters
@@ -162,6 +169,8 @@ cdef class CRS:
                 init_items.append('+{}'.format(k))
         self.proj4_init = ' '.join(init_items) + ' +no_defs'
         proj4_init_bytes = six.b(self.proj4_init)
+        if self.proj4 != NULL:
+            pj_free(self.proj4)
         self.proj4 = pj_init_plus(proj4_init_bytes)
         if not self.proj4:
             raise Proj4Error()
