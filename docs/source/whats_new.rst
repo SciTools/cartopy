@@ -1,3 +1,18 @@
+What's New in cartopy 0.16
+==========================
+
+:Release: 0.16.0
+:Date: ??? 2018
+
+Features
+--------
+
+* We are very pleased to announce that Ryan May has been added to the cartopy
+  core development team. Ryan (@dopplershift) brings a wealth of experience,
+  and has already made significant contributions to the Matplotlib interface,
+  extended projections, and helped modernise the development infrastructure.
+
+
 What's New in cartopy 0.15
 ==========================
 
