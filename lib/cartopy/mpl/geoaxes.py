@@ -95,12 +95,14 @@ class InterProjectionTransform(mtransforms.Transform):
 
     def __init__(self, source_projection, target_projection):
         """
-        Create the transform object from the given projections.
+        Creates the transform object from the given projections.
 
-        Args:
-
-            * source_projection: A :class:`~cartopy.crs.CRS`.
-            * target_projection: A :class:`~cartopy.crs.CRS`.
+        Parameters
+        ----------
+        source_projection
+            A :class:`~cartopy.crs.CRS`.
+        target_projection
+            A :class:`~cartopy.crs.CRS`.
 
         """
         # assert target_projection is cartopy.crs.Projection
@@ -118,13 +120,14 @@ class InterProjectionTransform(mtransforms.Transform):
         """
         Transforms from source to target coordinates.
 
-        Args:
+        Parameters
+        ----------
+        xy
+            An (n,2) array of points in source coordinates.
 
-            * xy: An (n,2) array of points in source coordinates.
-
-        Returns:
-
-            * An (n,2) array of transformed points in target coordinates.
+        Returns
+        -------
+            An (n,2) array of transformed points in target coordinates.
 
         """
         prj = self.target_projection
@@ -143,15 +146,16 @@ class InterProjectionTransform(mtransforms.Transform):
         Caches results, so subsequent calls with the same *src_path* argument
         (and the same source and target projections) are faster.
 
-        Args:
-
-            * src_path: A Matplotlib :class:`~matplotlib.path.Path` object
-                         with vertices in source coordinates.
+        Parameters
+        ----------
+        src_path
+            A Matplotlib :class:`~matplotlib.path.Path` object
+            with vertices in source coordinates.
 
         Returns
-
-            * A Matplotlib :class:`~matplotlib.path.Path` with vertices
-              in target coordinates.
+        -------
+            A Matplotlib :class:`~matplotlib.path.Path` with vertices
+            in target coordinates.
 
         """
         mapping = _PATH_TRANSFORM_CACHE.get(src_path)
@@ -211,8 +215,10 @@ class InterProjectionTransform(mtransforms.Transform):
 
     def inverted(self):
         """
-        Return a Matplotlib :class:`~matplotlib.transforms.Transform`
-        from target to source coordinates.
+        Returns
+        -------
+            A Matplotlib :class:`~matplotlib.transforms.Transform`
+            from target to source coordinates.
 
         """
         return InterProjectionTransform(self.target_projection,
@@ -244,13 +250,14 @@ class GeoAxes(matplotlib.axes.Axes):
     """
     def __init__(self, *args, **kwargs):
         """
-        Create a GeoAxes object using standard matplotlib
+        Creates a GeoAxes object using standard matplotlib
         :class:`~matplotlib.axes.Axes` args and kwargs.
 
-        Kwargs:
+        Parameters
+        ----------
+        map_projection: optional
+            The target :class:`~cartopy.crs.Projection` of this Axes object.
 
-            * map_projection: The target :class:`~cartopy.crs.Projection` of
-                               this Axes object.
 
         All other args and keywords are passed through to
         :class:`matplotlib.axes.Axes`.
@@ -274,17 +281,20 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Adds an image "factory" to the Axes.
 
-        Any image "factory" added, will be asked to retrieve an image
+        Any image "factory" added will be asked to retrieve an image
         with associated metadata for a given bounding box at draw time.
         The advantage of this approach is that the limits of the map
         do not need to be known when adding the image factory, but can
         be deferred until everything which can effect the limits has been
         added.
 
-        Currently an image "factory" is just an object with
-        a ``image_for_domain`` method. Examples of image factories
-        are :class:`cartopy.io.img_nest.NestedImageCollection` and
-        :class:`cartopy.io.image_tiles.GoogleTiles`.
+        Parameters
+        ----------
+        factory
+            Currently an image "factory" is just an object with
+            an ``image_for_domain`` method. Examples of image factories
+            are :class:`cartopy.io.img_nest.NestedImageCollection` and
+            :class:`cartopy.io.image_tiles.GoogleTiles`.
 
         """
         if hasattr(factory, 'image_for_domain'):
@@ -307,15 +317,15 @@ class GeoAxes(matplotlib.axes.Axes):
     @contextlib.contextmanager
     def hold_limits(self, hold=True):
         """
-        Keep track of the original view and data limits for the life of this
+        Keeps track of the original view and data limits for the life of this
         context manager, optionally reverting any changes back to the original
         values after the manager exits.
 
-        Args:
-
-            * hold: bool (default True)
-                    Whether to revert the data and view limits after the
-                    context manager exits.
+        Parameters
+        ----------
+        hold: bool, optional
+            Whether to revert the data and view limits after the
+            context manager exits.  Defaults to True.
 
         """
         data_lim = self.dataLim.frozen().get_points()
@@ -396,7 +406,12 @@ class GeoAxes(matplotlib.axes.Axes):
         return result
 
     def format_coord(self, x, y):
-        """Return a string formatted for the Matplotlib GUI status bar."""
+        """
+        Returns
+        -------
+        A string formatted for the Matplotlib GUI status bar.
+
+        """
         lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
 
         ns = 'N' if lat >= 0.0 else 'S'
@@ -410,11 +425,11 @@ class GeoAxes(matplotlib.axes.Axes):
         Adds coastal **outlines** to the current axes from the Natural Earth
         "coastline" shapefile collection.
 
-        Kwargs:
-
-            * resolution: a named resolution to use from the Natural Earth
-                          dataset. Currently can be one of "110m", "50m", and
-                          "10m".
+        Parameters
+        ----------
+        resolution
+            A named resolution to use from the Natural Earth
+            dataset. Currently can be one of "110m", "50m", and "10m".
 
         """
         kwargs['edgecolor'] = color
@@ -427,17 +442,22 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Adds Tissot's indicatrices to the axes.
 
-        Kwargs:
+        Parameters
+        ----------
+        rad_km
+            The radius in km of the the circles to be drawn.
+        lons
+            A numpy.ndarray, list or tuple of longitude values that
+            locate the centre of each circle. Specifying more than one
+            dimension allows individual points to be drawn whereas a
+            1D array produces a grid of points.
+        lats
+            A numpy.ndarray, list or tuple of latitude values that
+            that locate the centre of each circle. See lons.
+        n_samples
+            Integer number of points sampled around the circumference of
+            each circle.
 
-            * rad_km: The radius in km of the the circles to be drawn.
-            * lons: A numpy.ndarray, list or tuple of longitude values that
-                    locate the centre of each circle. Specifying more than one
-                    dimension allows individual points to be drawn whereas a
-                    1D array produces a grid of points.
-            * lats: A numpy.ndarray, list or tuple of latitude values that
-                    that locate the centre of each circle. See lons.
-            * n_samples: Integer number of points sampled around the
-                         circumference of each circle.
 
         ``**kwargs`` are passed through to `class:ShapelyFeature`.
 
@@ -478,13 +498,25 @@ class GeoAxes(matplotlib.axes.Axes):
         Adds the geometries from the specified Natural Earth shapefile to the
         Axes as a :class:`~matplotlib.collections.PathCollection`.
 
+        Parameters
+        ----------
+        name: optional
+            Name of the shapefile geometry to add.  Defaults to 'land'.
+        resolution: optional
+            Resolution of shapefile geometry to add.  Defaults to '110m'.
+        category: optional
+            Category of shapefile geometry to add.  Defaults to 'physical'.
+
+
         ``**kwargs`` are passed through to the
         :class:`~matplotlib.collections.PathCollection` constructor.
 
-        Returns the created :class:`~matplotlib.collections.PathCollection`.
+        Returns
+        -------
+            The created :class:`~matplotlib.collections.PathCollection`.
 
-        .. note::
-
+        Notes
+        -----
             Currently no clipping is done on the geometries before adding them
             to the axes. This means, if very high resolution geometries are
             being used, performance is likely to be severely effected. This
@@ -503,19 +535,21 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Adds the given :class:`~cartopy.feature.Feature` instance to the axes.
 
-        Args:
-
-        * feature:
+        Parameters
+        ----------
+        feature
             An instance of :class:`~cartopy.feature.Feature`.
 
-        Kwargs:
-            Keyword arguments to be used when drawing the feature. This allows
-            standard Matplotlib control over aspects such as 'facecolor',
-            'alpha', etc.
+        Returns
+        -------
+        A :class:`cartopy.mpl.feature_artist.FeatureArtist` instance
+            The instance responsible for drawing the feature.
 
-        Returns:
-            * A :class:`cartopy.mpl.feature_artist.FeatureArtist`
-              instance responsible for drawing the feature.
+        Notes
+        -----
+        Matplotlib keyword arguments can be used when drawing the feature.
+        This allows standard Matplotlib control over aspects such as
+        'facecolor', 'alpha', etc.
 
         """
         # Instantiate an artist to draw the feature and add it to the axes.
@@ -524,21 +558,26 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_geometries(self, geoms, crs, **kwargs):
         """
-        Add the given shapely geometries (in the given crs) to the axes.
+        Adds the given shapely geometries (in the given crs) to the axes.
 
-        Args:
-
-        * geoms:
+        Parameters
+        ----------
+        geoms
             A collection of shapely geometries.
-        * crs:
+        crs
             The cartopy CRS in which the provided geometries are defined.
 
-        Kwargs:
-            Keyword arguments to be used when drawing this feature.
+        Returns
+        -------
+        A :class:`cartopy.mpl.feature_artist.FeatureArtist` instance
+            The instance responsible for drawing the feature.
 
-        Returns:
-             A :class:`cartopy.mpl.feature_artist.FeatureArtist`
-             instance responsible for drawing the geometries.
+        Notes
+        -----
+        Matplotlib keyword arguments can be used when drawing the feature.
+        This allows standard Matplotlib control over aspects such as
+        'facecolor', 'alpha', etc.
+
 
         """
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
@@ -546,7 +585,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def get_extent(self, crs=None):
         """
-        Get the extent (x0, x1, y0, y1) of the map in the given coordinate
+        Gets the extent (x0, x1, y0, y1) of the map in the given coordinate
         system.
 
         If no crs is given, the returned extents' coordinate system will be
@@ -607,11 +646,16 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_extent(self, extents, crs=None):
         """
-        Set the extent (x0, x1, y0, y1) of the map in the given
+        Sets the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
 
         If no crs is given, the extents' coordinate system will be assumed
         to be the Geodetic version of this axes' projection.
+
+        Parameters
+        ----------
+        extent
+            Tuple of floats representing the required extent (x0, x1, y0, y1).
 
         """
         # TODO: Implement the same semantics as plt.xlim and
@@ -657,10 +701,10 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_global(self):
         """
-        Set the extent of the Axes to the limits of the projection.
+        Sets the extent of the Axes to the limits of the projection.
 
-        .. note::
-
+        Notes
+        -----
             In some cases where the projection has a limited sensible range
             the ``set_global`` method does not actually make the whole globe
             visible. Instead, the most appropriate extents will be used (e.g.
@@ -687,26 +731,26 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_xticks(self, ticks, minor=False, crs=None):
         """
-        Set the x ticks.
+        Sets the x ticks.
 
-        Args:
+        Parameters
+        ----------
+        ticks
+            List of floats denoting the desired position of x ticks.
+        minor: optional
+            flag indicating whether the ticks should be minor
+            ticks i.e. small and unlabelled (defaults to False).
+        crs: optional
+            An instance of :class:`~cartopy.crs.CRS` indicating the
+            coordinate system of the provided tick values. If no
+            coordinate system is specified then the values are assumed
+            to be in the coordinate system of the projection.
+            Only transformations from one rectangular coordinate system
+            to another rectangular coordinate system are supported (defaults
+            to None).
 
-            * ticks: list of floats denoting the desired position of x ticks.
-
-        Kwargs:
-
-            * minor: boolean flag indicating whether the ticks should be minor
-                     ticks i.e. small and unlabelled (default is False).
-
-            * crs: An instance of :class:`~cartopy.crs.CRS` indicating the
-                   coordinate system of the provided tick values. If no
-                   coordinate system is specified then the values are assumed
-                   to be in the coordinate system of the projection.
-                   Only transformations from one rectangular coordinate system
-                   to another rectangular coordinate system are supported.
-
-        .. note::
-
+        Notes
+        -----
             This interface is subject to change whilst functionality is added
             to support other map projections.
 
@@ -734,26 +778,26 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_yticks(self, ticks, minor=False, crs=None):
         """
-        Set the y ticks.
+        Sets the y ticks.
 
-        Args:
+        Parameters
+        ----------
+        ticks
+            List of floats denoting the desired position of y ticks.
+        minor: optional
+            flag indicating whether the ticks should be minor
+            ticks i.e. small and unlabelled (defaults to False).
+        crs: optional
+            An instance of :class:`~cartopy.crs.CRS` indicating the
+            coordinate system of the provided tick values. If no
+            coordinate system is specified then the values are assumed
+            to be in the coordinate system of the projection.
+            Only transformations from one rectangular coordinate system
+            to another rectangular coordinate system are supported (defaults
+            to None).
 
-            * ticks: list of floats denoting the desired position of y ticks.
-
-        Kwargs:
-
-            * minor: boolean flag indicating whether the ticks should be minor
-                     ticks i.e. small and unlabelled (default is False).
-
-            * crs: An instance of :class:`~cartopy.crs.CRS` indicating the
-                   coordinate system of the provided tick values. If no
-                   coordinate system is specified then the values are assumed
-                   to be in the coordinate system of the projection.
-                   Only transformations from one rectangular coordinate system
-                   to another rectangular coordinate system are supported.
-
-        .. note::
-
+        Notes
+        -----
             This interface is subject to change whilst functionality is added
             to support other map projections.
 
@@ -781,7 +825,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def stock_img(self, name='ne_shaded'):
         """
-        Add a standard image to the map.
+        Adds a standard image to the map.
 
         Currently, the only (and default) option is a downsampled version of
         the Natural Earth shaded relief raster.
@@ -809,32 +853,34 @@ class GeoAxes(matplotlib.axes.Axes):
         func:`self.read_user_background_images` and needs to contain a JSON
         file which defines for the image metadata.
 
-        Kwargs:
+        Parameters
+        ----------
+        name: optional
+            The name of the image to read according to the contents
+            of the JSON file. A typical file might have, for instance:
+            'ne_shaded' : Natural Earth Shaded Relief
+            'ne_grey' : Natural Earth Grey Earth.
+        resolution: optional
+            The resolution of the image to read, according to
+            the contents of the JSON file. A typical file might
+            have the following for each name of the image:
+            'low', 'med', 'high', 'vhigh', 'full'.
+        extent: optional
+            Using a high resolution background image zoomed into
+            a small area will take a very long time to render as
+            the image is prepared globally, even though only a small
+            area is used. Adding the extent will only render a
+            particular geographic region. Specified as
+            [longitude start, longitude end,
+            latitude start, latitude end].
 
-            * name: the name of the image to read according to the contents
-                    of the JSON file. A typical file might have, for instance:
-                    'ne_shaded' : Natural Earth Shaded Relief
-                    'ne_grey' : Natural Earth Grey Earth
+                  e.g. [-11, 3, 48, 60] for the UK
+                  or [167.0, 193.0, 47.0, 68.0] to cross the date line.
 
-            * resolution: the resolution of the image to read, according to
-                          the contents of the JSON file. A typical file might
-                          have the following for each name of the image:
-                          'low', 'med', 'high', 'vhigh', 'full'.
-
-            * extent: using a high resolution background image, zoomed into
-                      a small area, will take a very long time to render as
-                      the image is prepared globally, even though only a small
-                      area is used. Adding the extent will only render a
-                      particular geographic region. Specified as
-                      [longitude start, longitude end,
-                      latitude start, latitude end].
-
-                      e.g. [-11, 3, 48, 60] for the UK
-                      or [167.0, 193.0, 47.0, 68.0] to cross the date line.
-
-            * cache: logical flag as to whether or not to cache the loaded
-                     images into memory. The images are stored before the
-                     extent is used.
+        cache: optional
+            Logical flag as to whether or not to cache the loaded
+            images into memory. The images are stored before the
+            extent is used.
 
         """
         # read in the user's background image directory:
@@ -979,19 +1025,20 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
-        Add the given raster source to the GeoAxes.
+        Adds the given raster source to the GeoAxes.
 
-        Args:
-
-            * raster_source: :class:`cartopy.io.RasterSource` like instance
-                             ``raster_source`` may be any object which
-                             implements the RasterSource interface, including
-                             instances of objects such as
-                             :class:`~cartopy.io.ogc_clients.WMSRasterSource`
-                             and
-                             :class:`~cartopy.io.ogc_clients.WMTSRasterSource`.
-                             Note that image retrievals are done at draw time,
-                             not at creation time.
+        Parameters
+        ----------
+        raster_source:
+            :class:`cartopy.io.RasterSource` like instance
+             ``raster_source`` may be any object which
+             implements the RasterSource interface, including
+             instances of objects such as
+             :class:`~cartopy.io.ogc_clients.WMSRasterSource`
+             and
+             :class:`~cartopy.io.ogc_clients.WMTSRasterSource`.
+             Note that image retrievals are done at draw time,
+             not at creation time.
 
         """
         # Allow a fail-fast error if the raster source cannot provide
@@ -1020,38 +1067,38 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def imshow(self, img, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
+        Adds the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
 
-        Args:
+        Parameters
+        ----------
+        img
+            The image to be displayed.
 
-            * img: the image to be displayed.
-
-        Kwargs:
-
-            * transform: :class:`~cartopy.crs.Projection` or matplotlib
-                         transform
-                         The coordinate system in which the given image is
-                         rectangular.
-            * regrid_shape: int or pair of ints
-                            The shape of the desired image if it needs to be
-                            transformed.  If a single integer is given then
-                            that will be used as the minimum length dimension,
-                            while the other dimension will be scaled up
-                            according to the target extent's aspect ratio.
-                            The default is for the minimum dimension of a
-                            transformed image to have length 750, so for an
-                            image being transformed into a global PlateCarree
-                            projection the resulting transformed image would
-                            have a shape of ``(750, 1500)``.
-            * extent: tuple
-                      The corner coordinates of the image in the form
-                      ``(left, right, bottom, top)``. The coordinates should
-                      be in the coordinate system passed to the transform
-                      keyword.
-            * origin: {'lower', 'upper'}
-                      The origin of the vertical pixels. See
-                      :func:`matplotlib.pyplot.imshow` for further details.
-                      Default is ``'lower'``.
+        Other Parameters
+        ----------------
+        transform: :class:`~cartopy.crs.Projection` or matplotlib transform
+            The coordinate system in which the given image is
+            rectangular.
+        regrid_shape: int or pair of ints
+            The shape of the desired image if it needs to be
+            transformed.  If a single integer is given then
+            that will be used as the minimum length dimension,
+            while the other dimension will be scaled up
+            according to the target extent's aspect ratio.
+            The default is for the minimum dimension of a
+            transformed image to have length 750, so for an
+            image being transformed into a global PlateCarree
+            projection the resulting transformed image would
+            have a shape of ``(750, 1500)``.
+        extent: tuple
+            The corner coordinates of the image in the form
+            ``(left, right, bottom, top)``. The coordinates should
+            be in the coordinate system passed to the transform
+            keyword.
+        origin: {'lower', 'upper'}
+            The origin of the vertical pixels. See
+            :func:`matplotlib.pyplot.imshow` for further details.
+            Default is ``'lower'``.
 
         """
         transform = kwargs.pop('transform', None)
@@ -1128,30 +1175,34 @@ class GeoAxes(matplotlib.axes.Axes):
         Automatically adds gridlines to the axes, in the given coordinate
         system, at draw time.
 
-        Kwargs:
+        Parameters
+        ----------
+        crs: optional
+            The :class:`cartopy._crs.CRS` defining the coordinate system in
+            which gridlines are drawn.
+            Defaults to :class:`cartopy.crs.PlateCarree`.
+        draw_labels: optional
+            Label gridlines like axis ticks, around the edge.
+        xlocs: optional
+            An iterable of gridline locations or a
+            :class:`matplotlib.ticker.Locator` instance which will be
+            used to determine the locations of the gridlines in the
+            x-coordinate of the given CRS. Defaults to None, which
+            implies automatic locating of the gridlines.
+        ylocs: optional
+            An iterable of gridline locations or a
+            :class:`matplotlib.ticker.Locator` instance which will be
+            used to determine the locations of the gridlines in the
+            y-coordinate of the given CRS. Defaults to None, which
+            implies automatic locating of the gridlines.
 
-        * crs: The :class:`cartopy._crs.CRS` defining the coordinate system in
-               which gridlines are drawn.
-               Default is :class:`cartopy.crs.PlateCarree`.
-
-        * draw_labels: Label gridlines like axis ticks, around the edge.
-
-        * xlocs: An iterable of gridline locations or a
-                 :class:`matplotlib.ticker.Locator` instance which will be
-                 used to determine the locations of the gridlines in the
-                 x-coordinate of the given CRS. Defaults to None, which
-                 implies automatic locating of the gridlines.
-
-        * ylocs: An iterable of gridline locations or a
-                 :class:`matplotlib.ticker.Locator` instance which will be
-                 used to determine the locations of the gridlines in the
-                 y-coordinate of the given CRS. Defaults to None, which
-                 implies automatic locating of the gridlines.
-
-        Returns:
-
+        Returns
+        -------
+        gridliner
             A :class:`cartopy.mpl.gridliner.Gridliner` instance.
 
+        Notes
+        -----
         All other keywords control line properties.  These are passed through
         to :class:`matplotlib.collections.Collection`.
 
@@ -1185,12 +1236,12 @@ class GeoAxes(matplotlib.axes.Axes):
         Adds the map's boundary to this GeoAxes, attaching the appropriate
         artists to :data:`.outline_patch` and :data:`.background_patch`.
 
-        .. note::
-
-            The boundary is not the ``axes.patch``. ``axes.patch``
-            is made invisible by this method - its only remaining
-            purpose is to provide a rectilinear clip patch for
-            all Axes artists.
+        Notes
+        -----
+        The boundary is not the ``axes.patch``. ``axes.patch``
+        is made invisible by this method - its only remaining
+        purpose is to provide a rectilinear clip patch for
+        all Axes artists.
 
         """
         # Hide the old "background" patch used by matplotlib - it is not
@@ -1217,27 +1268,24 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_boundary(self, path, transform=None, use_as_clip_path=True):
         """
-        Given a path, update the :data:`.outline_patch` and
+        Given a path, updates the :data:`.outline_patch` and
         :data:`.background_patch` to take its shape.
 
-        Args:
-
-            * path: :class:`matplotlib.path.Path`
-                    The path of the desired boundary.
-
-        Kwargs:
-
-            * transform: None or :class:`matplotlib.transforms.Transform`
-                         The coordinate system of the given path. Currently
-                         this must be convertible to data coordinates, and
-                         therefore cannot extend beyond the limits of the
-                         axes' projection.
-            * use_as_clip_path : bool
-                                 Whether axes.patch should be updated.
-                                 Updating axes.patch means that any artists
-                                 subsequently created will inherit clipping
-                                 from this path, rather than the standard unit
-                                 square in axes coordinates.
+        Parameters
+        ----------
+        path: :class:`matplotlib.path.Path`
+            The path of the desired boundary.
+        transform: None or :class:`matplotlib.transforms.Transform`, optional
+            The coordinate system of the given path. Currently
+            this must be convertible to data coordinates, and
+            therefore cannot extend beyond the limits of the
+            axes' projection.
+        use_as_clip_path : bool, optional
+            Whether axes.patch should be updated.
+            Updating axes.patch means that any artists
+            subsequently created will inherit clipping
+            from this path, rather than the standard unit
+            square in axes coordinates.
 
         """
         if transform is None:
@@ -1293,9 +1341,10 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contour'.
 
-        Extra kwargs:
-
-            * transform: a :class:`~cartopy.crs.Projection`.
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
 
         """
         t = kwargs.get('transform', None)
@@ -1318,9 +1367,10 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf'.
 
-        Extra kwargs:
-
-            * transform: a :class:`~cartopy.crs.Projection`.
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
 
         """
         t = kwargs.get('transform', None)
@@ -1358,9 +1408,10 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter'.
 
-        Extra kwargs:
-
-            * transform: a :class:`~cartopy.crs.Projection`.
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
 
         """
         t = kwargs.get('transform', None)
@@ -1387,9 +1438,10 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh'.
 
-        Extra kwargs:
-
-            * transform: a :class:`~cartopy.crs.Projection`.
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
 
         """
         t = kwargs.get('transform', None)
@@ -1590,11 +1642,12 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def pcolor(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
+        Adds the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
 
-        Extra kwargs:
-
-            * transform: a :class:`~cartopy.crs.Projection`.
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
 
         """
         t = kwargs.get('transform', None)
@@ -1616,14 +1669,24 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def quiver(self, x, y, u, v, *args, **kwargs):
         """
-        Plot a field of arrows.
+        Plots a field of arrows.
 
-        Extra Kwargs:
+        Parameters
+        ----------
+        x
+            An array containing the x-positions of data points.
+        y
+            An array containing the y-positions of data points.
+        u
+            An array of vector data in the u-direction.
+        v
+            An array of vector data in the v-direction.
 
-        * transform: :class:`cartopy.crs.Projection` or Matplotlib transform
+        Other Parameters
+        ----------------
+        transform: :class:`cartopy.crs.Projection` or Matplotlib transform
             The coordinate system in which the vectors are defined.
-
-        * regrid_shape: int or 2-tuple of ints
+        regrid_shape: int or 2-tuple of ints
             If given, specifies that the points where the arrows are
             located will be interpolated onto a regular grid in
             projection space. If a single integer is given then that
@@ -1632,19 +1695,19 @@ class GeoAxes(matplotlib.axes.Axes):
             extent's aspect ratio. If a pair of ints are given they
             determine the grid length in the x and y directions
             respectively.
-
-        * target_extent: 4-tuple
+        target_extent: 4-tuple
             If given, specifies the extent in the target CRS that the
             regular grid defined by *regrid_shape* will have. Defaults
             to the current extent of the map projection.
 
+
         See :func:`matplotlib.pyplot.quiver` for details on arguments
         and other keyword arguments.
 
-        .. note::
-
-           The vector components must be defined as grid eastward and
-           grid northward.
+        Notes
+        -----
+        The vector components must be defined as grid eastward and
+        grid northward.
 
         """
         t = kwargs.get('transform', None)
@@ -1687,14 +1750,25 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
-        Plot a field of barbs.
+        Plots a field of barbs.
 
-        Extra Kwargs:
+        Parameters
+        ----------
+        x
+            An array containing the x-positions of data points.
+        y
+            An array containing the y-positions of data points.
+        u
+            An array of vector data in the u-direction.
+        v
+            An array of vector data in the v-direction.
 
-        * transform: :class:`cartopy.crs.Projection` or Matplotlib transform
+        Other Parameters
+        ----------------
+        transform: :class:`cartopy.crs.Projection` or Matplotlib transform
             The coordinate system in which the vectors are defined.
-        * regrid_shape: int or 2-tuple of ints
-            If given, specifies that the points where the arrows are
+        regrid_shape: int or 2-tuple of ints
+            If given, specifies that the points where the barbs are
             located will be interpolated onto a regular grid in
             projection space. If a single integer is given then that
             will be used as the minimum grid length dimension, while the
@@ -1702,18 +1776,19 @@ class GeoAxes(matplotlib.axes.Axes):
             extent's aspect ratio. If a pair of ints are given they
             determine the grid length in the x and y directions
             respectively.
-        * target_extent: 4-tuple
+        target_extent: 4-tuple
             If given, specifies the extent in the target CRS that the
             regular grid defined by *regrid_shape* will have. Defaults
             to the current extent of the map projection.
 
+
         See :func:`matplotlib.pyplot.barbs` for details on arguments
-        and keyword arguments.
+        and other keyword arguments.
 
-        .. note::
-
-           The vector components must be defined as grid eastward and
-           grid northward.
+        Notes
+        -----
+        The vector components must be defined as grid eastward and
+        grid northward.
 
         """
         t = kwargs.get('transform', None)
@@ -1756,20 +1831,32 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def streamplot(self, x, y, u, v, **kwargs):
         """
-        Draws streamlines of a vector flow.
+        Plots streamlines of a vector flow.
 
-        Extra Kwargs:
+        Parameters
+        ----------
+        x
+            An array containing the x-positions of data points.
+        y
+            An array containing the y-positions of data points.
+        u
+            An array of vector data in the u-direction.
+        v
+            An array of vector data in the v-direction.
 
-        * transform: :class:`cartopy.crs.Projection` or Matplotlib transform
+        Other Parameters
+        ----------------
+        transform: :class:`cartopy.crs.Projection` or Matplotlib transform.
             The coordinate system in which the vector field is defined.
+
 
         See :func:`matplotlib.pyplot.streamplot` for details on arguments
         and keyword arguments.
 
-        .. note::
-
-           The vector components must be defined as grid eastward and
-           grid northward.
+        Notes
+        -----
+        The vector components must be defined as grid eastward and
+        grid northward.
 
         """
         t = kwargs.pop('transform', None)
@@ -1824,21 +1911,21 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
         """
-        Add the specified WMTS layer to the axes.
+        Adds the specified WMTS layer to the axes.
 
         This function requires owslib and PIL to work.
 
-        Args:
+        Parameters
+        ----------
+        wmts
+            The URL of the WMTS, or an owslib.wmts.WebMapTileService instance.
+        layer_name
+            The name of the layer to use.
+        wmts_kwargs: dict or None, optional
+            Passed through to the
+            :class:`~cartopy.io.ogc_clients.WMTSRasterSource` constructor's
+            ``gettile_extra_kwargs`` (e.g. time).
 
-            * wmts: The URL of the WMTS, or an
-                    owslib.wmts.WebMapTileService instance.
-            * layer_name: The name of the layer to use.
-
-        Kwargs:
-
-            * wmts_kwargs: dict or None. Passed through to the
-                :class:`~cartopy.io.ogc_clients.WMTSRasterSource`
-                constructor's ``gettile_extra_kwargs`` (e.g. time).
 
         All other keywords are passed through to the construction of the
         image artist. See :meth:`~matplotlib.axes.Axes.imshow()` for
@@ -1852,24 +1939,22 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):
         """
-        Add the specified WMS layer to the axes.
+        Adds the specified WMS layer to the axes.
 
         This function requires owslib and PIL to work.
 
-        Args:
+        Parameters
+        ----------
+        wms: string or :class:`owslib.wms.WebMapService` instance
+            The web map service URL or owslib WMS instance to use.
+        layers: string or iterable of string
+            The name of the layer(s) to use.
+        wms_kwargs: dict or None, optional
+            Passed through to the
+            :class:`~cartopy.io.ogc_clients.WMSRasterSource`
+            constructor's ``getmap_extra_kwargs`` for defining
+            getmap time keyword arguments.
 
-            * wms: string or :class:`owslib.wms.WebMapService` instance
-                   The web map service URL or owslib WMS instance to use.
-            * layers: string or iterable of string
-                      The name of the layer(s) to use.
-
-        Kwargs:
-
-            * wms_kwargs: dict or None
-                          Passed through to the
-                          :class:`~cartopy.io.ogc_clients.WMSRasterSource`
-                          constructor's ``getmap_extra_kwargs`` for defining
-                          getmap time keyword arguments.
 
         All other keywords are passed through to the construction of the
         image artist. See :meth:`~matplotlib.axes.Axes.imshow()` for

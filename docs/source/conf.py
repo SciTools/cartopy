@@ -39,7 +39,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-# needs_sphinx = '1.0'
+needs_sphinx = '1.6'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -61,8 +61,8 @@ extensions = [
               # to benefit from cached rebuilds of plots.
               'sphinxext.plot_directive',
               'sphinx_gallery.gen_gallery',
-              'sphinx.ext.napoleon',
-              'numpydoc'
+              'sphinx.ext.napoleon'
+#              'numpydoc'
               ]
 
 import matplotlib
@@ -199,7 +199,7 @@ html_static_path = ['_static']
 # html_show_sourcelink = True
 
 # If true, "Created using Sphinx" is shown in the HTML footer. Default is True.
-html_show_sphinx = False
+html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
 # html_show_copyright = True
@@ -398,3 +398,8 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = False
 
+# # Numpydoc settings
+# numpydoc_show_class_members = True
+# numpydoc_show_inherited_class_members = False
+# numpydoc_class_members_toctree = False
+# numpydoc_use_blockquotes = True
