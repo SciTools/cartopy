@@ -185,7 +185,7 @@ class NaturalEarthFeature(Feature):
         self.scale = scale
 
         # Use autoscaling if scale == 'a', 'auto' or 'autoscale'
-        if scale.lower() in ('a', 'auto', 'autoscale'):
+        if scale == 'auto':
             self.autoscale = True
         else:
             self.autoscale = False
@@ -213,13 +213,10 @@ class NaturalEarthFeature(Feature):
         the given extent.
         The extent is assumed to be in the CRS of the feature.
         If extent is None, the method returns all geometries for this dataset.
-
         """
 
         if self.autoscale:
             self.scale = self._scale_from_extent(extent)
-        else:
-            self.scale = self.scale
 
         if extent is not None:
             extent_geom = sgeom.box(extent[0], extent[2],
