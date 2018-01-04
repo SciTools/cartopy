@@ -10,7 +10,6 @@ import os
 
 import matplotlib.pyplot as plt
 from netCDF4 import Dataset as netcdf_dataset
-import numpy as np
 
 from cartopy import config
 import cartopy.crs as ccrs
