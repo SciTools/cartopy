@@ -26,14 +26,16 @@ def clip_path_python(subject, clip, point_inside_clip_path):
     Clip the subject path with the given clip path using the
     Sutherland-Hodgman polygon clipping algorithm.
 
-    Args:
-
-    * subject - The subject path to be clipped. Must be a simple, single
-                polygon path with straight line segments only.
-    * clip - The clip path to use. Must be a simple, single
-             polygon path with straight line segments only.
-    * point_inside_clip_path - a point which can be found inside the clip path
-                               polygon.
+    Parameters
+    ----------
+    subject
+        The subject path to be clipped. Must be a simple, single
+        polygon path with straight line segments only.
+    clip
+        The clip path to use. Must be a simple, single
+        polygon path with straight line segments only.
+    point_inside_clip_path
+        A point which can be found inside the clip path polygon.
 
     """
     inside_pt = point_inside_clip_path
@@ -82,7 +84,9 @@ def clip_path_python(subject, clip, point_inside_clip_path):
 
 def intersection_point(p0, p1, p2, p3):
     """
-    Return the intersection point of the two infinite lines that pass through
+    Returns
+    -------
+    The intersection point of the two infinite lines that pass through
     point p0->p1 and p2->p3 respectively.
 
     """
@@ -131,7 +135,10 @@ else:
 
 def lines_intersect(p0, p1, p2, p3):
     """
-    Return whether the two lines defined by p0->p1 and p2->p3 intersect.
+    Returns
+    -------
+    Boolean indicating whether the two lines defined by p0->p1 and p2->p3
+    intersect.
     """
     x_1, y_1 = p0
     x_2, y_2 = p1
@@ -146,7 +153,7 @@ def lines_intersect(p0, p1, p2, p3):
 
 def bbox_to_path(bbox):
     """
-    Turn the given :class:`matplotlib.transforms.Bbox` instance into
+    Turns the given :class:`matplotlib.transforms.Bbox` instance into
     a :class:`matplotlib.path.Path` instance.
 
     """
