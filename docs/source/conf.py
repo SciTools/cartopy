@@ -61,7 +61,8 @@ extensions = [
               # to benefit from cached rebuilds of plots.
               'sphinxext.plot_directive',
               'sphinx_gallery.gen_gallery',
-              'sphinx.ext.napoleon'
+              'sphinx.ext.napoleon',
+              'numpydoc'
               ]
 
 import matplotlib
