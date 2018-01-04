@@ -2,10 +2,10 @@
 Gridline Features
 -----------------
 
-This example makes use of many of the features of the
-:class:`~cartopy.mpl.Gridliner` class to produce customized gridlines
-and tick labels.
+Show how to produce customized gridlines and tick labels with the
+:class:`~cartopy.mpl.gridliner.Gridliner` class.
 
+.. _examples-gridliner:
 """
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
