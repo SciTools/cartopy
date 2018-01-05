@@ -49,14 +49,16 @@ class GoogleTiles(object):
                  url=('https://mts0.google.com/vt/lyrs={style}'
                       '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
         """
-        Args:
-
-            * desired_tile_form: Defaults to 'RGB'.
-            * style: The style for the Google Maps tiles.  One of 'street',
+        Parameters
+        ----------
+        desired_tile_form: optional
+            Defaults to 'RGB'.
+        style: optional
+            The style for the Google Maps tiles.  One of 'street',
             'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
-            * url: url pointing to a tile source and containing {x}, {y},
-            and {z}. Such as:
-            ('https://server.arcgisonline.com/ArcGIS/rest/services/'
+        url: optional
+            URL pointing to a tile source and containing {x}, {y}, and {z}.
+            Such as: ('https://server.arcgisonline.com/ArcGIS/rest/services/'
             'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
 
         """
@@ -133,15 +135,19 @@ class GoogleTiles(object):
         Returns the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
         tile position.
 
-        Args:
-
-            * x, y, z: The x, y, z tile coordinates in the Google tile
+        Parameters
+        ----------
+        x, y, z
+            The x, y, z tile coordinates in the Google tile
             numbering system (with y=0 being at the north pole), unless
             `y0_at_north_pole` is set to ``False``, in which case `y` is in
             the TMS numbering system (with y=0 being at the south pole).
-            * y0_at_north_pole: Whether the numbering of the y coordinate
-            starts at the north pole (as is the convention for Google tiles),
-            or the south pole (as is the convention for TMS).
+        y0_at_north_pole: optional
+            Boolean representing whether the numbering of the y coordinate
+            starts at the north pole (as is the convention for Google tiles)
+            or not (in which case it will start at the south pole, as is the
+            convention for TMS). Defaults to True.
+
 
         """
         n = 2 ** z
@@ -278,15 +284,17 @@ class MapboxTiles(GoogleTiles):
     """
     def __init__(self, access_token, map_id):
         """
-        Set up a new Mapbox tiles instance.
+        Sets up a new Mapbox tiles instance.
 
         Access to Mapbox web services requires an access token and a map ID.
         See https://www.mapbox.com/api-documentation/ for details.
 
-        Args:
-
-            * access_token: A valid Mapbox API access token.
-            * zmap_id: A map ID for a publically accessible map. This is the
+        Parameters
+        ----------
+        access_token
+            A valid Mapbox API access token.
+        zmap_id
+            A map ID for a publically accessible map. This is the
             map whose tiles will be retrieved through this process.
 
         """
@@ -372,7 +380,7 @@ class QuadtreeTiles(GoogleTiles):
 
     def find_images(self, target_domain, target_z, start_tile=None):
         """
-        Find all the quadtree's at the given target zoom, in the given
+        Finds all the quadtrees at the given target zoom, in the given
         target domain.
 
         target_z must be a value >= 1.
@@ -394,7 +402,7 @@ class QuadtreeTiles(GoogleTiles):
 
 
 def _merge_tiles(tiles):
-    """Return a single image, merging the given images."""
+    """Returns a single image, merging the given images."""
     if not tiles:
         raise ValueError('A non-empty list of tiles should '
                          'be provided to merge.')
