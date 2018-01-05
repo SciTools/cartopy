@@ -35,7 +35,7 @@ _DEGREE_SYMBOL = u'\u00B0'
 
 def _fix_lons(lons):
     """
-    Fix the given longitudes into the range ``[-180, 180]``.
+    Fixes the given longitudes into the range ``[-180, 180]``.
 
     """
     lons = np.array(lons, copy=False, ndmin=1)
@@ -46,7 +46,7 @@ def _fix_lons(lons):
 
 
 def _lon_heimisphere(longitude):
-    """Return the hemisphere (E, W or '' for 0) for the given longitude."""
+    """Returns the hemisphere (E, W or '' for 0) for the given longitude."""
     longitude = _fix_lons(longitude)
     if longitude > 0:
         hemisphere = 'E'
@@ -58,7 +58,7 @@ def _lon_heimisphere(longitude):
 
 
 def _lat_heimisphere(latitude):
-    """Return the hemisphere (N, S or '' for 0) for the given latitude."""
+    """Returns the hemisphere (N, S or '' for 0) for the given latitude."""
     if latitude > 0:
         hemisphere = 'N'
     elif latitude < 0:
@@ -101,34 +101,29 @@ class Gridliner(object):
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
 
-        Args:
-
-        * axes
+        Parameters
+        ----------
+        axes
             The :class:`cartopy.mpl.geoaxes.GeoAxes` object to be drawn on.
-
-        * crs
+        crs
             The :class:`cartopy.crs.CRS` defining the coordinate system that
             the gridlines are drawn in.
-
-        * draw_labels
+        draw_labels: optional
             Toggle whether to draw labels. For finer control, attributes of
-            :class:`Gridliner` may be modified individually.
-
-        * xlocator
+            :class:`Gridliner` may be modified individually. Defaults to False.
+        xlocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the x-coordinate of
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
-
-        * ylocator
+        ylocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the y-coordinate of
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
-
-        * collection_kwargs
+        collection_kwargs: optional
             Dictionary controlling line properties, passed to
-            :class:`matplotlib.collections.Collection`.
+            :class:`matplotlib.collections.Collection`. Defaults to None.
 
         """
         self.axes = axes
@@ -211,11 +206,12 @@ class Gridliner(object):
 
     def _crs_transform(self):
         """
-        Get the drawing transform for our gridlines.
+        Gets the drawing transform for our gridlines.
 
-        .. note::
-            this depends on the transform of our 'axes', so it may change
-            dynamically.
+        Notes
+        -----
+        The drawing transform depends on the transform of our 'axes', so
+        it may change dynamically.
 
         """
         transform = self.crs
@@ -225,18 +221,16 @@ class Gridliner(object):
 
     def _add_gridline_label(self, value, axis, upper_end):
         """
-        Create a Text artist on our axes for a gridline label.
+        Creates a Text artist on our axes for a gridline label.
 
-        Args:
-
-        * value
+        Parameters
+        ----------
+        value
             Coordinate value of this gridline.  The text contains this
             value, and is positioned centred at that point.
-
-        * axis
-            which axis the label is on: 'x' or 'y'.
-
-        * upper_end
+        axis
+            Which axis the label is on: 'x' or 'y'.
+        upper_end: bool
             If True, place at the maximum of the "other" coordinate (Axes
             coordinate == 1.0).  Else 'lower' end (Axes coord = 0.0).
 
@@ -301,7 +295,7 @@ class Gridliner(object):
         self.axes.add_artist(text_artist)
 
     def _draw_gridliner(self, nx=None, ny=None, background_patch=None):
-        """Create Artists for all visible elements and add to our Axes."""
+        """Creates Artists for all visible elements and add to our Axes."""
         x_lim, y_lim = self._axes_domain(nx=nx, ny=ny,
                                          background_patch=background_patch)
 
@@ -388,7 +382,7 @@ class Gridliner(object):
 
     def _assert_can_draw_ticks(self):
         """
-        Check to see if ticks can be drawn. Either returns True or raises
+        Checks to see if ticks can be drawn. Either returns True or raises
         an exception.
 
         """
