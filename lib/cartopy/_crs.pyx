@@ -85,16 +85,24 @@ class Globe(object):
                  flattening=None, inverse_flattening=None,
                  towgs84=None, nadgrids=None):
         """
-        Kwargs:
-
-            * datum: Proj4 "datum" definiton. Default to no datum.
-            * ellipse: Proj4 "ellps" definiton. Default to 'WGS84'.
-            * semimajor_axis: Semimajor axis of the spheroid / ellipsoid.
-            * semiminor_axis: Semiminor axis of the ellipsoid.
-            * flattening: Flattening of the ellipsoid.
-            * inverse_flattening: Inverse flattening of the ellipsoid.
-            * towgs84: Passed through to the Proj4 definition.
-            * nadgrids: Passed through to the Proj4 definition.
+        Parameters
+        ----------
+        datum
+            Proj4 "datum" definiton. Defaults to None.
+        ellipse
+            Proj4 "ellps" definiton. Defaults to 'WGS84'.
+        semimajor_axis
+            Semimajor axis of the spheroid / ellipsoid.  Defaults to None.
+        semiminor_axis
+            Semiminor axis of the ellipsoid.  Defaults to None.
+        flattening
+            Flattening of the ellipsoid.  Defaults to None.
+        inverse_flattening
+            Inverse flattening of the ellipsoid.  Defaults to None.
+        towgs84
+            Passed through to the Proj4 definition.  Defaults to None.
+        nadgrids
+            Passed through to the Proj4 definition.  Defaults to None.
 
         """
         self.datum = datum
@@ -108,7 +116,7 @@ class Globe(object):
 
     def to_proj4_params(self):
         """
-        Create an OrderedDict of key value pairs which represents this globe
+        Creates an OrderedDict of key value pairs which represents this globe
         in terms of proj4 params.
 
         """
@@ -126,21 +134,18 @@ cdef class CRS:
     """
     def __init__(self, proj4_params, globe=None):
         """
-        Args:
-
-            * proj4_params: iterable of key-value pairs
-                            The proj4 parameters required to define the
-                            desired CRS.  The parameters should not describe
-                            the desired elliptic model, instead create an
-                            appropriate Globe instance. The ``proj4_params``
-                            parameters will override any parameters that the
-                            Globe defines.
-
-        Kwargs:
-
-            * globe: :class:`~cartopy.crs.Globe` instance, optional
-                     If omitted, the default Globe instance will be created.
-                     See :class:`~cartopy.crs.Globe` for details.
+        Parameters
+        ----------
+        proj4_params: iterable of key-value pairs
+            The proj4 parameters required to define the
+            desired CRS.  The parameters should not describe
+            the desired elliptic model, instead create an
+            appropriate Globe instance. The ``proj4_params``
+            parameters will override any parameters that the
+            Globe defines.
+        globe: :class:`~cartopy.crs.Globe` instance, optional
+            If omitted, the default Globe instance will be created.
+            See :class:`~cartopy.crs.Globe` for details.
 
         """
         self.globe = globe or Globe()
@@ -252,18 +257,22 @@ cdef class CRS:
         Transform the given float64 coordinate pair, in the given source
         coordinate system (``src_crs``), to this coordinate system.
 
-        Args:
+        Parameters
+        ----------
+        x
+            the x coordinate, in ``src_crs`` coordinates, to transform
+        y
+            the y coordinate, in ``src_crs`` coordinates, to transform
+        src_crs
+            instance of :class:`CRS` that represents the coordinate
+            system of ``x`` and ``y``.
+        trap
+            Whether proj.4 errors for "latitude or longitude exceeded
+            limits" and "tolerance condition error" should be trapped.
 
-            * x: the x coordinate, in ``src_crs`` coordinates, to transform
-            * y: the y coordinate, in ``src_crs`` coordinates, to transform
-            * src_crs: instance of :class:`CRS` that represents the coordinate
-                       system of ``x`` and ``y``.
-            * trap: Whether proj.4 errors for "latitude or longitude exceeded
-                    limits" and "tolerance condition error" should be trapped.
-
-        Returns:
-
-            (x, y): in this coordinate system
+        Returns
+        -------
+        (x, y) in this coordinate system
 
         """
         cdef:
@@ -298,19 +307,23 @@ cdef class CRS:
         Transform the given coordinates, in the given source
         coordinate system (``src_crs``), to this coordinate system.
 
-        Args:
+        Parameters
+        ----------
+        src_crs
+            instance of :class:`CRS` that represents the
+            coordinate system of ``x``, ``y`` and ``z``.
+        x
+            the x coordinates (array), in ``src_crs`` coordinates,
+            to transform.  May be 1 or 2 dimensional.
+        y
+            the y coordinates (array), in ``src_crs`` coordinates,
+            to transform
+        z: optional
+            the z coordinates (array), in ``src_crs`` coordinates, to
+            transform.  Defaults to None.
 
-            * src_crs: instance of :class:`CRS` that represents the
-              coordinate system of ``x``, ``y`` and ``z``.
-            * x: the x coordinates (array), in ``src_crs`` coordinates,
-              to transform.  May be 1 or 2 dimensional.
-            * y: the y coordinates (array), in ``src_crs`` coordinates,
-              to transform
-            * z: (optional) the z coordinates (array), in ``src_crs``
-              coordinates, to transform.
-
-        Returns:
-
+        Returns
+        -------
             Array of shape ``x.shape + (3, )`` in this coordinate system.
 
         """
@@ -377,23 +390,26 @@ cdef class CRS:
         source projection's coordinate reference system (grid eastward and
         grid northward).
 
-        Args:
+        Parameters
+        ----------
+        src_proj
+            The :class:`CRS.Projection` that represents the coordinate system
+            the vectors are defined in.
+        x, y
+            The x and y coordinates, in the source projection
+            coordinates, where the vector components are located.
+            May be 1 or 2 dimensional, but must have matching shapes.
+        u, v
+            The grid eastward and grid northward components of the
+            vector field respectively. Their shape must match the shape
+            of the x and y coordinates.
 
-            * src_proj: The :class:`CRS.Projection` that represents the
-                        coordinate system the vectors are defined in.
-            * x, y: The x and y coordinates, in the source projection
-                    coordinates, where the vector components are located.
-                    May be 1 or 2 dimensional, but must have matching shapes.
-            * u, v: The grid eastward and grid northward components of the
-                    vector field respectively. Their shape must match the shape
-                    of the x and y coordinates.
+        Returns
+        -------
+            ut, vt: The transformed vector components.
 
-        Returns:
-
-            * ut, vt: The transformed vector components.
-
-        .. note::
-
+        Notes
+        -----
            The algorithm used to transform vectors is an approximation
            rather than an exact transform, but the accuracy should be
            good enough for visualization purposes.
@@ -489,10 +505,10 @@ class Geodetic(CRS):
     """
     def __init__(self, globe=None):
         """
-        Kwargs:
-
-            * globe: A :class:`cartopy.crs.Globe`.
-                      Defaults to a "WGS84" datum.
+        Parameters
+        ----------
+        globe: A :class:`cartopy.crs.Globe`, optional
+            Defaults to a "WGS84" datum.
 
         """
         proj4_params = [('proj', 'lonlat')]
@@ -511,10 +527,10 @@ class Geocentric(CRS):
     """
     def __init__(self, globe=None):
         """
-        Kwargs:
-
-            * globe: A :class:`cartopy.crs.Globe`.
-                      Defaults to a "WGS84" datum.
+        Parameters
+        ----------
+        globe: A :class:`cartopy.crs.Globe`, optional
+            Defaults to a "WGS84" datum.
 
         """
         proj4_params = [('proj', 'geocent')]
