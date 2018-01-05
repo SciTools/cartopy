@@ -61,11 +61,13 @@ class Feature(six.with_metaclass(ABCMeta)):
     Represents a collection of points, lines and polygons with convenience
     methods for common drawing and filtering operations.
 
-    Args:
+    Parameters
+    ----------
+    crs
+        The coordinate reference system of this Feature
 
-        * crs - the coordinate reference system of this Feature
-
-    Kwargs:
+    Other Parameters
+    ----------------
         Keyword arguments to be used when drawing this feature.
 
     .. seealso::
@@ -126,14 +128,15 @@ class ShapelyFeature(Feature):
     """
     def __init__(self, geometries, crs, **kwargs):
         """
-        Args:
-
-        * geometries:
+        Parameters
+        ----------
+        geometries:
             A collection of shapely geometries.
-        * crs:
+        crs
             The cartopy CRS in which the provided geometries are defined.
 
-        Kwargs:
+        Other Parameters
+        ----------------
             Keyword arguments to be used when drawing this feature.
 
         """
@@ -153,18 +156,19 @@ class NaturalEarthFeature(Feature):
     """
     def __init__(self, category, name, scale, **kwargs):
         """
-        Args:
-
-        * category:
+        Parameters
+        ----------
+        category
             The category of the dataset, i.e. either 'cultural' or 'physical'.
-        * name:
+        name
             The name of the dataset, e.g. 'admin_0_boundary_lines_land'.
-        * scale:
+        scale
             The dataset scale, i.e. one of '10m', '50m', or '110m'.
             Corresponding to 1:10,000,000, 1:50,000,000, and 1:110,000,000
             respectively.
 
-        Kwargs:
+        Other Parameters
+        ----------------
             Keyword arguments to be used when drawing this feature.
 
         """
@@ -189,11 +193,11 @@ class NaturalEarthFeature(Feature):
 
     def with_scale(self, new_scale):
         """
-        Return a copy of the feature with a new scale.
+        Returns a copy of the feature with a new scale.
 
-        Args:
-
-        * new_scale:
+        Parameters
+        ----------
+        new_scale
             The new dataset scale, i.e. one of '10m', '50m', or '110m'.
             Corresponding to 1:10,000,000, 1:50,000,000, and 1:110,000,000
             respectively.
@@ -209,16 +213,17 @@ class GSHHSFeature(Feature):
 
     See https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html
 
-    Args:
-
-    * scale:
+    Parameters
+    ----------
+    scale
         The dataset scale. One of 'auto', 'coarse', 'low', 'intermediate',
         'high, or 'full' (default is 'auto').
-    * levels:
+    levels
         A list of integers 1-4 corresponding to the desired GSHHS feature
         levels to draw (default is [1] which corresponds to coastlines).
 
-    Kwargs:
+    Other Parameters
+    ----------------
         Keyword arguments to be used when drawing the feature. Defaults
         are edgecolor='black' and facecolor='none'.
 
@@ -316,17 +321,17 @@ class WFSFeature(Feature):
     """
     def __init__(self, wfs, features, **kwargs):
         """
-        Args:
-
-        * wfs: string or :class:`owslib.wfs.WebFeatureService` instance
+        Parameters
+        ----------
+        wfs: string or :class:`owslib.wfs.WebFeatureService` instance
             The WebFeatureService instance, or URL of a WFS service, from which
             to retrieve the geometries.
-
-        * features: string or list of strings
+        features: string or list of strings
             The typename(s) of features available from the web service that
             will be retrieved. Somewhat analogous to layers in WMS/WMTS.
 
-        Kwargs:
+        Other Parameters
+        ----------------
             Keyword arguments to be used when drawing this feature.
 
         """
