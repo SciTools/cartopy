@@ -66,9 +66,12 @@ class Feature(six.with_metaclass(ABCMeta)):
     crs
         The coordinate reference system of this Feature
 
+
     Other Parameters
     ----------------
+    kwargs
         Keyword arguments to be used when drawing this feature.
+
 
     .. seealso::
 
@@ -130,13 +133,14 @@ class ShapelyFeature(Feature):
         """
         Parameters
         ----------
-        geometries:
+        geometries
             A collection of shapely geometries.
         crs
             The cartopy CRS in which the provided geometries are defined.
 
         Other Parameters
         ----------------
+        kwargs
             Keyword arguments to be used when drawing this feature.
 
         """
@@ -169,6 +173,7 @@ class NaturalEarthFeature(Feature):
 
         Other Parameters
         ----------------
+        kwargs
             Keyword arguments to be used when drawing this feature.
 
         """
@@ -224,6 +229,7 @@ class GSHHSFeature(Feature):
 
     Other Parameters
     ----------------
+    kwargs
         Keyword arguments to be used when drawing the feature. Defaults
         are edgecolor='black' and facecolor='none'.
 
@@ -332,6 +338,7 @@ class WFSFeature(Feature):
 
         Other Parameters
         ----------------
+        kwargs
             Keyword arguments to be used when drawing this feature.
 
         """

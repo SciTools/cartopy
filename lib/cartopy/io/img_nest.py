@@ -357,6 +357,7 @@ class NestedImageCollection(object):
 
         Returns
         -------
+        img, extent, origin
             A tuple containing three items, consisting of the target
             location :class:`numpy.ndarray` image data, the
             (x-lower, x-upper, y-lower, y-upper) extent of the image, and the
@@ -411,6 +412,7 @@ class NestedImageCollection(object):
 
         Returns
         -------
+        generator
             A generator tuple pair composed of a
             :class:`~cartopy.io.img_nest.ImageCollection` name and an
             :class:`~cartopy.io.img_nest.Img` instance.
@@ -453,6 +455,7 @@ class NestedImageCollection(object):
 
         Returns
         -------
+        iterator
             An iterator of tuple pairs containing the higher resolution child
             :class:`~cartopy.io.img_nest.ImageCollection` name and
             :class:`~cartopy.io.img_nest.Img` instance that compose the parent.
@@ -475,6 +478,7 @@ class NestedImageCollection(object):
 
         Returns
         -------
+        img_data, img.extent, img.origin
             A tuple containing three items, consisting of the associated image
             file data, the (x_lower, x_upper, y_lower, y_upper) extent of the
             image, and the image origin.

@@ -127,6 +127,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
         Returns
         -------
+        x, y
             An (n,2) array of transformed points in target coordinates.
 
         """
@@ -154,6 +155,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
         Returns
         -------
+        result
             A Matplotlib :class:`~matplotlib.path.Path` with vertices
             in target coordinates.
 
@@ -217,6 +219,7 @@ class InterProjectionTransform(mtransforms.Transform):
         """
         Returns
         -------
+        InterProjectionTransform
             A Matplotlib :class:`~matplotlib.transforms.Transform`
             from target to source coordinates.
 
@@ -513,7 +516,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Returns
         -------
-            The created :class:`~matplotlib.collections.PathCollection`.
+        The created :class:`~matplotlib.collections.PathCollection`.
 
         Notes
         -----

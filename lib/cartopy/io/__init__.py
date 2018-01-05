@@ -53,7 +53,8 @@ def fh_getter(fh, mode='r', needs_filename=False):
 
     Returns
     -------
-    (file handle, filename), opened in the given mode.
+    file handle, filename
+        Opened in the given mode.
 
     """
     if mode != 'r':
@@ -374,7 +375,8 @@ class RasterSource(object):
 
         Returns
         -------
-        A sequence of :class:`LocatedImage` instances.
+        images
+            A sequence of :class:`LocatedImage` instances.
 
         """
         raise NotImplementedError()

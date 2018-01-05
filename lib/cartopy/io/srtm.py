@@ -289,7 +289,8 @@ def fill_gaps(elevation, max_distance=10):
 
     Returns
     -------
-    SRTM elevation data with filled gaps.
+    elevation
+        SRTM elevation data with filled gaps.
 
     """
     warnings.warn("The fill_gaps function has been deprecated. "

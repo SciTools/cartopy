@@ -30,14 +30,13 @@ def walk_module(mod_name, exclude_folders=None):
     """
     Recursively walks the given module name.
 
-    Returns:
-
-        A generator of::
-
-            (fully_qualified_import_name,
-             root_directory_of_subpackage,
-             fname_in_root_directory,
-             sub_folders_in_root_directory)
+    Returns
+    -------
+    generator of:
+        (fully_qualified_import_name,
+         root_directory_of_subpackage,
+         fname_in_root_directory,
+         sub_folders_in_root_directory)
 
     """
     __import__(mod_name)

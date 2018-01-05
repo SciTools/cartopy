@@ -108,6 +108,7 @@ def _warped_located_image(image, source_projection, source_extent,
 
     Returns
     -------
+    LocatedImage
         A reprojected LocatedImage, the extent of which is >= the requested
         'output_extent'.
 
@@ -723,6 +724,7 @@ class WFSGeometrySource(object):
 
         Returns
         -------
+        geoms
             A list of Shapely geometries.
 
         """
@@ -772,6 +774,7 @@ class WFSGeometrySource(object):
 
         Returns
         -------
+        geoms_by_srs
             A dictionary containing geometries, with key-value pairs of
             the form {srsname: [geoms]}.
 
@@ -828,6 +831,7 @@ class WFSGeometrySource(object):
 
         Returns
         -------
+        data
             A list of (srsName, x_vals, y_vals) tuples.
 
         """

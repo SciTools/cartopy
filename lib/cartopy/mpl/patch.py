@@ -54,6 +54,7 @@ def geos_to_path(shape):
 
     Returns
     -------
+    paths
         A list of :class:`matplotlib.path.Path` objects.
 
     """
@@ -105,11 +106,13 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
 
     Other Parameters
     ----------------
+    kwargs
         See :func:`matplotlib.path.iter_segments` for details of the keyword
         arguments.
 
     Returns
     -------
+    vertices, codes
         A (vertices, codes) tuple, where vertices is a numpy array of
         coordinates, and codes is a numpy array of matplotlib path codes.
         See :class:`matplotlib.path.Path` for information on the types of
@@ -161,9 +164,10 @@ def path_to_geos(path, force_ccw=False):
 
     Returns
     -------
-        A list of :class:`shapely.geometry.polygon.Polygon`,
+    A list of instances of the following type(s):
+        :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.linestring.LineString` and/or
-        :class:`shapely.geometry.multilinestring.MultiLineString` instances.
+        :class:`shapely.geometry.multilinestring.MultiLineString`.
 
     """
     # Convert path into numpy array of vertices (and associated codes)

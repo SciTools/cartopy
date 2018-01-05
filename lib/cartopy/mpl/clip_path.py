@@ -86,8 +86,9 @@ def intersection_point(p0, p1, p2, p3):
     """
     Returns
     -------
-    The intersection point of the two infinite lines that pass through
-    point p0->p1 and p2->p3 respectively.
+    x, y
+        The intersection point of the two infinite lines that pass through
+        point p0->p1 and p2->p3 respectively.
 
     """
     x_1, y_1 = p0
@@ -137,8 +138,9 @@ def lines_intersect(p0, p1, p2, p3):
     """
     Returns
     -------
-    Boolean indicating whether the two lines defined by p0->p1 and p2->p3
-    intersect.
+    bool
+        Boolean indicating whether the two lines defined by p0->p1 and p2->p3
+        intersect.
     """
     x_1, y_1 = p0
     x_2, y_2 = p1

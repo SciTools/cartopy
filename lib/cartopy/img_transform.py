@@ -55,7 +55,8 @@ def mesh_projection(projection, nx, ny,
 
     Returns
     -------
-        A tuple of three items. The x-direction sample points
+    A tuple of three items.
+        The x-direction sample points
         :class:`numpy.ndarray` of shape (nx, ny), y-direction
         sample points :class:`numpy.ndarray` of shape (nx, ny),
         and the extent of the projection range as
@@ -152,6 +153,7 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
 
     Returns
     -------
+    array, extent
         A tuple of the regridded :class:`numpy.ndarray` in the target
         projection and the (x-lower, x-upper, y-lower, y-upper) target
         projection extent.
@@ -248,6 +250,7 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     Returns
     -------
+    new_array
         The data array regridded in the target projection.
 
     """
