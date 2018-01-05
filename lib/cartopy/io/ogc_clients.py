@@ -104,9 +104,10 @@ _GML_NS = '{http://www.opengis.net/gml}'
 def _warped_located_image(image, source_projection, source_extent,
                           output_projection, output_extent, target_resolution):
     """
-    Reproject an Image from one source-projection and extent to another.
+    Reprojects an Image from one source-projection and extent to another.
 
-    Returns:
+    Returns
+    -------
         A reprojected LocatedImage, the extent of which is >= the requested
         'output_extent'.
 
@@ -152,7 +153,7 @@ def _warped_located_image(image, source_projection, source_extent,
 
 def _target_extents(extent, requested_projection, available_projection):
     """
-    Translate the requested extent in the display projection into a list of
+    Translates the requested extent in the display projection into a list of
     extents in the projection available from the service (multiple if it
     crosses seams).
 
@@ -200,41 +201,37 @@ class WMSRasterSource(RasterSource):
     """
     A WMS imagery retriever which can be added to a map.
 
-    .. note:: Requires owslib and Pillow to work.
+    Notes
+    -----
+    Requires owslib and Pillow to work.
 
-    .. note::
+    No caching of retrieved maps is done with this WMSRasterSource.
 
-        No caching of retrieved maps is done with this WMSRasterSource.
+    To reduce load on the WMS server it is encouraged to tile
+    map requests and subsequently stitch them together to recreate
+    a single raster, thus allowing for a more aggressive caching scheme,
+    but this WMSRasterSource does not currently implement WMS tile
+    fetching.
 
-        To reduce load on the WMS server it is encouraged to tile
-        map requests and subsequently stitch them together to recreate
-        a single raster, thus allowing for a more aggressive caching scheme,
-        but this WMSRasterSource does not currently implement WMS tile
-        fetching.
-
-        Whilst not the same service, there is also a WMTSRasterSource which
-        makes use of tiles and comes with built-in caching for fast repeated
-        map retrievals.
+    Whilst not the same service, there is also a WMTSRasterSource which
+    makes use of tiles and comes with built-in caching for fast repeated
+    map retrievals.
 
     """
 
     def __init__(self, service, layers, getmap_extra_kwargs=None):
         """
-        Args:
-
-            * service: string or WebMapService instance
-                       The WebMapService instance, or URL of a WMS service,
-                       from whence to retrieve the image.
-            * layers: string or list of strings
-                      The name(s) of layers to use from the WMS service.
-
-        Kwargs:
-
-            * getmap_extra_kwargs: dict or None
-                                   Extra keywords to pass through to the
-                                   service's getmap method.
-                                   If None, a dictionary with
-                                   ``{'transparent': True}`` will be defined.
+        Parameters
+        ----------
+        service: string or WebMapService instance
+            The WebMapService instance, or URL of a WMS service,
+            from whence to retrieve the image.
+        layers: string or list of strings
+            The name(s) of layers to use from the WMS service.
+        getmap_extra_kwargs: dict, optional
+            Extra keywords to pass through to the service's getmap method.
+            If None, a dictionary with ``{'transparent': True}`` will be
+            defined.
 
         """
         if WebMapService is None:
@@ -272,7 +269,7 @@ class WMSRasterSource(RasterSource):
 
     def _fallback_proj_and_srs(self):
         """
-        Return a :class:`cartopy.crs.Projection` and corresponding
+        Returns a :class:`cartopy.crs.Projection` and corresponding
         SRS string in which the WMS service can supply the requested
         layers.
 
@@ -337,7 +334,9 @@ class WMTSRasterSource(RasterSource):
 
     Uses tile caching for fast repeated map retrievals.
 
-    .. note:: Requires owslib and Pillow to work.
+    Notes
+    -----
+    Requires owslib and Pillow to work.
 
     """
 
@@ -355,17 +354,15 @@ class WMTSRasterSource(RasterSource):
 
     def __init__(self, wmts, layer_name, gettile_extra_kwargs=None):
         """
-        Args:
-
-            * wmts: The URL of the WMTS, or an
-                    owslib.wmts.WebMapTileService instance.
-            * layer_name: The name of the layer to use.
-
-        Kwargs:
-
-            * gettile_extra_kwargs: dict or None
-                Extra keywords (e.g. time) to pass through to the
-                service's gettile method.
+        Parameters
+        ----------
+        wmts
+            The URL of the WMTS, or an owslib.wmts.WebMapTileService instance.
+        layer_name
+            The name of the layer to use.
+        gettile_extra_kwargs: dict, optional
+            Extra keywords (e.g. time) to pass through to the
+            service's gettile method.
 
         """
         if WebMapService is None:
@@ -546,7 +543,7 @@ class WMTSRasterSource(RasterSource):
     def _wmts_images(self, wmts, layer, matrix_set_name, extent,
                      max_pixel_span):
         """
-        Add images from the specified WMTS layer and matrix set to cover
+        Adds images from the specified WMTS layer and matrix set to cover
         the specified extent at an appropriate resolution.
 
         The zoom level (aka. tile matrix) is chosen to give the lowest
@@ -554,14 +551,18 @@ class WMTSRasterSource(RasterSource):
         If insufficient resolution is available, the highest available
         resolution is used.
 
-        Args:
-
-            * wmts: The owslib.wmts.WebMapTileService providing the tiles.
-            * layer: The owslib.wmts.ContentMetadata (aka. layer) to draw.
-            * matrix_set_name: The name of the matrix set to use.
-            * extent: Tuple of (left, right, bottom, top) in Axes coordinates.
-            * max_pixel_span: Preferred maximum pixel width or height in
-            Axes coordinates.
+        Parameters
+        ----------
+        wmts
+            The owslib.wmts.WebMapTileService providing the tiles.
+        layer
+            The owslib.wmts.ContentMetadata (aka. layer) to draw.
+        matrix_set_name
+            The name of the matrix set to use.
+        extent
+            Tuple of (left, right, bottom, top) in Axes coordinates.
+        max_pixel_span
+            Preferred maximum pixel width or height in Axes coordinates.
 
         """
 
@@ -643,19 +644,17 @@ class WFSGeometrySource(object):
 
     def __init__(self, service, features, getfeature_extra_kwargs=None):
         """
-        Args:
-
-        * service:
+        Parameters
+        ----------
+        service
             The URL of a WFS, or an instance of
             :class:`owslib.wfs.WebFeatureService`.
-        * features:
+        features
             The typename(s) of the features from the WFS that
             will be retrieved and made available as geometries.
-
-        Kwargs:
-
-        * getfeature_extra_kwargs:
+        getfeature_extra_kwargs: optional
             Extra keyword args to pass to the service's `getfeature` call.
+            Defaults to None
 
         """
         if WebFeatureService is None:
@@ -685,7 +684,7 @@ class WFSGeometrySource(object):
 
     def default_projection(self):
         """
-        Return a :class:`cartopy.crs.Projection` in which the WFS
+        Returns a :class:`cartopy.crs.Projection` in which the WFS
         service can supply the requested features.
 
         """
@@ -709,21 +708,21 @@ class WFSGeometrySource(object):
 
     def fetch_geometries(self, projection, extent):
         """
-        Return any Point, Linestring or LinearRing geometries available
+        Returns any Point, Linestring or LinearRing geometries available
         from the WFS that lie within the specified extent.
 
-        Args:
-
-        * projection: :class:`cartopy.crs.Projection`
+        Parameters
+        ----------
+        projection: :class:`cartopy.crs.Projection`
             The projection in which the extent is specified and in
             which the geometries should be returned. Only the default
             (native) projection is supported.
-
-        * extent: four element tuple
+        extent: four element tuple
             (min_x, max_x, min_y, max_y) tuple defining the geographic extent
             of the geometries to obtain.
 
-        Returns:
+        Returns
+        -------
             A list of Shapely geometries.
 
         """
@@ -763,15 +762,16 @@ class WFSGeometrySource(object):
 
     def _to_shapely_geoms(self, response):
         """
-        Convert polygon coordinate strings in WFS response XML to Shapely
+        Converts polygon coordinate strings in WFS response XML to Shapely
         geometries.
 
-        Args:
-
-        * response: (file-like object)
+        Parameters
+        ----------
+        response: (file-like object)
             WFS response XML data.
 
-        Returns:
+        Returns
+        -------
             A dictionary containing geometries, with key-value pairs of
             the form {srsname: [geoms]}.
 
@@ -814,20 +814,20 @@ class WFSGeometrySource(object):
 
     def _find_polygon_coords(self, node, find_str):
         """
-        Return the x, y coordinate values for all the geometries in
+        Returns the x, y coordinate values for all the geometries in
         a given`node`.
 
-        Args:
-
-        * node: :class:`xml.etree.ElementTree.Element`
+        Parameters
+        ----------
+        node: :class:`xml.etree.ElementTree.Element`
             Node of the parsed XML response.
-
-        * find_str: string
+        find_str: string
             A search string used to match subelements that contain
             the coordinates of interest, for example:
             './/{https://www.opengis.net/gml}LineString'
 
-        Returns:
+        Returns
+        -------
             A list of (srsName, x_vals, y_vals) tuples.
 
         """
@@ -862,7 +862,7 @@ class WFSGeometrySource(object):
     @staticmethod
     def _node_has_child(node, find_str):
         """
-        Return whether `node` contains (at any sub-level), a node with name
+        Returns whether `node` contains (at any sub-level), a node with name
         equal to `find_str`.
 
         """
