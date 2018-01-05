@@ -62,7 +62,6 @@ extensions = [
               'sphinxext.plot_directive',
               'sphinx_gallery.gen_gallery',
               'sphinx.ext.napoleon'
-#              'numpydoc'
               ]
 
 import matplotlib
@@ -386,7 +385,7 @@ plot_formats = [('thumb.png', 20),
 autoclass_content = 'both'
 
 # Napoleon settings
-#napoleon_google_docstring = True
+# napoleon_google_docstring = True
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = False
 napoleon_include_private_with_doc = False

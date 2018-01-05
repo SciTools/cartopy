@@ -337,7 +337,8 @@ class NestedImageCollection(object):
 
     def image_for_domain(self, target_domain, target_z):
         """
-        Determines the image that provides complete coverage of target location.
+        Determines the image that provides complete coverage of target
+        location.
 
         The composed image is merged from one or more image tiles that overlay
         the target location and provide complete image coverage of the target
