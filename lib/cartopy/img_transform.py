@@ -38,28 +38,23 @@ def mesh_projection(projection, nx, ny,
     The range of the x-direction and y-direction sample points will be
     within the bounds of the projection or specified extents.
 
-    Args:
-
-    * projection:
+    Parameters
+    ----------
+    projection
         A :class:`~cartopy.crs.Projection` instance.
-
-    * nx:
+    nx
         The number of sample points in the projection x-direction.
-
-    * ny:
+    ny
         The number of sample points in the projection y-direction.
-
-    Kwargs:
-
-    * x_extents:
+    x_extents: optional
         The (lower, upper) x-direction extent of the projection.
         Defaults to the :attribute:`~cartopy.crs.Projection.x_limits`.
-
-    * y_extents:
+    y_extents: optional
         The (lower, upper) y-direction extent of the projection.
         Defaults to the :attribute:`~cartopy.crs.Projection.y_limits`.
 
-    Returns:
+    Returns
+    -------
         A tuple of three items. The x-direction sample points
         :class:`numpy.ndarray` of shape (nx, ny), y-direction
         sample points :class:`numpy.ndarray` of shape (nx, ny),
@@ -102,21 +97,16 @@ def warp_img(fname, target_proj, source_proj=None, target_res=(400, 200)):
     """
     Regrid the image file from the source projection to the target projection.
 
-    Args:
-
-    * fname:
+    Parameters
+    ----------
+    fname
         Image filename to be loaded and warped.
-
-    * target_proj:
+    target_proj
         The target :class:`~cartopy.crs.Projection` instance for the image.
-
-    Kwargs:
-
-    * source_proj:
+    source_proj: optional
         The source :class:`~cartopy.crs.Projection` instance of the image.
         Defaults to a :class:`~cartopy.crs.PlateCarree` projection.
-
-    * target_res:
+    target_res: optional
         The (nx, ny) resolution of the target projection. Where nx defaults to
         400 sample points, and ny defaults to 200 sample points.
 
@@ -132,45 +122,36 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
                source_extent=None, target_extent=None,
                mask_extrapolated=False):
     """
-    Regrid the data array from the source projection to the target projection.
+    Regrids the data array from the source projection to the target projection.
 
     Also see, :function:`~cartopy.img_transform.regrid`.
 
-    Args:
-
-    * array:
+    Parameters
+    ----------
+    array
         The :class:`numpy.ndarray` of data to be regridded to the target
         projection.
-
-    * target_proj:
+    target_proj
         The target :class:`~cartopy.crs.Projection` instance for the data.
-
-    Kwargs:
-
-    * source_proj:
+    source_proj: optional
         The source :class:`~cartopy.crs.Projection' instance of the data.
         Defaults to a :class:`~cartopy.crs.PlateCarree` projection.
-
-    * target_res:
+    target_res: optional
         The (nx, ny) resolution of the target projection. Where nx defaults to
         400 sample points, and ny defaults to 200 sample points.
-
-    * source_extent:
+    source_extent: optional
         The (x-lower, x-upper, y-lower, y-upper) extent in native
         source projection coordinates.
-
-    * target_extent:
+    target_extent: optional
         The (x-lower, x-upper, y-lower, y-upper) extent in native
         target projection coordinates.
-
-    Kwargs:
-
-    * mask_extrapolated:
+    mask_extrapolated: optional
         Assume that the source coordinate is rectilinear and so mask the
         resulting target grid values which lie outside the source grid
         domain.
 
-    Returns:
+    Returns
+    -------
         A tuple of the regridded :class:`numpy.ndarray` in the target
         projection and the (x-lower, x-upper, y-lower, y-upper) target
         projection extent.
@@ -239,41 +220,34 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     """
     Regrid the data array from the source projection to the target projection.
 
-    Args:
-
-    * array:
+    Parameters
+    ----------
+    array
         The :class:`numpy.ndarray` of data to be regridded to the
         target projection.
-
-    * source_x_coords:
+    source_x_coords
         A 2-dimensional source projection :class:`numpy.ndarray` of
         x-direction sample points.
-
-    * source_y_coords:
+    source_y_coords
         A 2-dimensional source projection :class:`numpy.ndarray` of
         y-direction sample points.
-
-    * source_cs:
+    source_cs
         The source :class:`~cartopy.crs.Projection` instance.
-
-    * target_cs:
+    target_cs
         The target :class:`~cartopy.crs.Projection` instance.
-
-    * target_x_points:
+    target_x_points
         A 2-dimensional target projection :class:`numpy.ndarray` of
         x-direction sample points.
-
-    * target_y_points:
+    target_y_points
         A 2-dimensional target projection :class:`numpy.ndarray` of
         y-direction sample points.
-
-    Kwargs:
-
-    * mask_extrapolated:
+    mask_extrapolated: optional
         Assume that the source coordinate is rectilinear and so mask the
         resulting target grid values which lie outside the source grid domain.
+        Defaults to False.
 
-    Returns:
+    Returns
+    -------
         The data array regridded in the target projection.
 
     """
