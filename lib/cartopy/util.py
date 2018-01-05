@@ -31,33 +31,28 @@ def add_cyclic_point(data, coord=None, axis=-1):
     Add a cyclic point to an array and optionally a corresponding
     coordinate.
 
-    Args:
-
-    * data:
+    Parameters
+    ----------
+    data
         An n-dimensional array of data to add a cyclic point to.
-
-    Kwargs:
-
-    * coord:
+    coord: optional
         A 1-dimensional array which specifies the coordinate values for
         the dimension the cyclic point is to be added to. The coordinate
-        values must be regularly spaced.
-
-    * axis:
+        values must be regularly spaced. Defaults to None.
+    axis: optional
         Specifies the axis of the data array to add the cyclic point to.
         Defaults to the right-most axis.
 
-    Returns:
-
-    * cyclic_data:
+    Returns
+    -------
+    cyclic_data
         The data array with a cyclic point added.
-
-    * cyclic_coord:
+    cyclic_coord
         The coordinate with a cyclic point, only returned if the coord
         keyword was supplied.
 
-    Examples:
-
+    Examples
+    --------
     Adding a cyclic point to a data array, where the cyclic dimension is
     the right-most dimension
 
