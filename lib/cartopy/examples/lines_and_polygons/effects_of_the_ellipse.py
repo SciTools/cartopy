@@ -82,8 +82,8 @@ def main():
 
     # Using these differently referenced geometries, assume that they are
     # both referenced to WGS84.
-    ax.add_geometries(wgs84_geoms, wgs84, edgecolor='white', color='none')
-    ax.add_geometries(sphere_geoms, wgs84, edgecolor='gray', color='none')
+    ax.add_geometries(wgs84_geoms, wgs84, edgecolor='white', facecolor='none')
+    ax.add_geometries(sphere_geoms, wgs84, edgecolor='gray', facecolor='none')
 
     # Create a legend for the coastlines.
     legend_artists = [Line([0], [0], color=color, linewidth=3)
@@ -106,7 +106,7 @@ def main():
     sub_ax.add_feature(cfeature.LAND)
     sub_ax.coastlines()
     extent_box = sgeom.box(extent[0], extent[2], extent[1], extent[3])
-    sub_ax.add_geometries([extent_box], ccrs.PlateCarree(), color='none',
+    sub_ax.add_geometries([extent_box], ccrs.PlateCarree(), facecolor='none',
                           edgecolor='blue', linewidth=2)
 
     plt.show()
