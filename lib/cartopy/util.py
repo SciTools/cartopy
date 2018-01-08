@@ -77,7 +77,7 @@ def add_cyclic_point(data, coord=None, axis=-1):
      [0. 1. 2. 3. 4. 5. 0.]
      [0. 1. 2. 3. 4. 5. 0.]]
     >>> print(cyclic_lons)
-    [0 60 120 180 240 300 360]
+    [  0  60 120 180 240 300 360]
 
     """
     if coord is not None:
