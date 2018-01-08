@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -42,17 +42,19 @@ def fh_getter(fh, mode='r', needs_filename=False):
     """
     Convenience function for opening files.
 
-    Args:
+    Parameters
+    ----------
+    fh
+        File handle, filename or (file handle, filename) tuple.
+    mode: optional
+        Open mode. Defaults to "r".
+    needs_filename: optional
+        Defaults to False
 
-        * fh - File handle, filename or (file handle, filename) tuple
-
-    Kwargs:
-
-        * mode - Open mode. Defaults to "r".
-
-    Returns:
-
-        * (file handle, filename), opened in the given mode.
+    Returns
+    -------
+    file handle, filename
+        Opened in the given mode.
 
     """
     if mode != 'r':
@@ -91,38 +93,32 @@ class Downloader(object):
     :class:`Downloader` instance the :func:`Downloader.from_config` static
     method should be considered.
 
-    .. note:
+    Parameters
+    ----------
+    url_template
+        The template of the full URL representing this
+        resource.
 
-            All ``*_template`` arguments should be formattable using the
-            standard :meth:`string.format` rules. The formatting itself
-            is not done until a call to a subsequent method (such as
-            :meth:`Downloader.path`).
+    target_path_template
+        The template of the full path to the file
+        that this Downloader represents. Typically the path will be a
+        subdirectory of ``config['data_dir']``, but this is not a strict
+        requirement. If the file does not exist when calling
+        :meth:`Downloader.path` it will be downloaded to this location.
 
-    Args:
+    pre_downloaded_path_template: optional
+        The template of a full path of a file which has been downloaded
+        outside of this Downloader which should be used as the file that
+        this resource represents. If the file does not exist when
+        :meth:`Downloader.path` is called it will not be downloaded
+        to this location (unlike the ``target_path_template`` argument).
 
-        ``url_template`` - The template of the full URL representing this
-                           resource.
-
-        ``target_path_template`` - The template of the full path to the file
-                                   that this Downloader represents. Typically
-                                   the path will be a subdirectory of
-                                   ``config['data_dir']``, but this is not a
-                                   strict requirement. If the file does not
-                                   exist when calling :meth:`Downloader.path`
-                                   it will be downloaded to this location.
-
-        Kwargs:
-
-        ``pre_downloaded_path_template`` - The template of a full path of a
-                                           file which has been downloaded
-                                           outside of this Downloader which
-                                           should be used as the file that
-                                           this resource represents. If the
-                                           file does not exist when
-                                           :meth:`Downloader.path` is called
-                                           it will not be downloaded to this
-                                           location (unlike the
-                                           ``target_path_template`` argument).
+    Notes
+    -----
+    All ``*_template`` arguments should be formattable using the
+    standard :meth:`string.format` rules. The formatting itself
+    is not done until a call to a subsequent method (such as
+    :meth:`Downloader.path`).
 
     """
 
@@ -149,12 +145,12 @@ class Downloader(object):
         """
         The full URL that this resource represents.
 
-        Args:
-
-            ``format_dict`` - The dictionary which is used to replace
-                              certain template variables. Subclasses should
-                              document which keys are expected as a minimum
-                              in their ``FORMAT_KEYS`` class attribute.
+        Parameters
+        ----------
+        format_dict
+            The dictionary which is used to replace certain
+            template variables. Subclasses should document which keys are
+            expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
         return self._formatter.format(self.url_template, **format_dict)
@@ -165,12 +161,12 @@ class Downloader(object):
         either exist, or be writable by the current user. This method
         does not check either of these conditions.
 
-        Args:
-
-            ``format_dict`` - The dictionary which is used to replace
-                              certain template variables. Subclasses should
-                              document which keys are expected as a minimum
-                              in their ``FORMAT_KEYS`` class attribute.
+        Parameters
+        ----------
+        format_dict
+            The dictionary which is used to replace certain
+            template variables. Subclasses should document which keys are
+            expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
         return self._formatter.format(self.target_path_template,
@@ -182,12 +178,12 @@ class Downloader(object):
         not exist, then no further action will be taken with this path, and all
         further processing will be done using :meth:`target_path` instead.
 
-        Args:
-
-            ``format_dict`` - The dictionary which is used to replace
-                              certain template variables. Subclasses should
-                              document which keys are expected as a minimum
-                              in their ``FORMAT_KEYS`` class attribute.
+        Parameters
+        ----------
+        format_dict
+            The dictionary which is used to replace certain
+            template variables. Subclasses should document which keys are
+            expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
         return self._formatter.format(self.pre_downloaded_path_template,
@@ -206,12 +202,12 @@ class Downloader(object):
         allowing implementors of new Downloaders to specialise
         :meth:`acquire_resource`.
 
-        Args:
-
-            ``format_dict`` - The dictionary which is used to replace
-                              certain template variables. Subclasses should
-                              document which keys are expected as a minimum
-                              in their ``FORMAT_KEYS`` class attribute.
+        Parameters
+        ----------
+        format_dict
+            The dictionary which is used to replace certain
+            template variables. Subclasses should document which keys are
+            expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
         pre_downloaded_path = self.pre_downloaded_path(format_dict)
@@ -232,12 +228,12 @@ class Downloader(object):
         Downloads, via HTTP, the file that this resource represents.
         Subclasses will typically override this method.
 
-        Args:
-
-            ``format_dict`` - The dictionary which is used to replace
-                              certain template variables. Subclasses should
-                              document which keys are expected as a minimum
-                              in their ``FORMAT_KEYS`` class attribute.
+        Parameters
+        ----------
+        format_dict
+            The dictionary which is used to replace certain
+            template variables. Subclasses should document which keys are
+            expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
         target_dir = os.path.dirname(target_path)
@@ -256,7 +252,7 @@ class Downloader(object):
 
     def _urlopen(self, url):
         """
-        Return a file handle to the given HTTP resource URL.
+        Returns a file handle to the given HTTP resource URL.
 
         Caller should close the file handle when finished with it.
 
@@ -270,20 +266,17 @@ class Downloader(object):
         The ``from_config`` static method implements the logic for acquiring a
         Downloader (sub)class instance from the config dictionary.
 
-        Args:
-
-            ``specification`` - should be iterable, as it will be traversed
-                                in reverse order to find the most appropriate
-                                Downloader instance for this specification.
-                                An example specification is
-                                ``('shapefiles', 'natural_earth')`` for the
-                                Natural Earth shapefiles.
-
-        Kwargs:
-
-            ``config_dict`` - typically this is left as None to use the
-                              default ``cartopy.config`` "downloaders"
-                              dictionary.
+        Parameters
+        ----------
+        specification
+            Should be iterable, as it will be traversed in
+            reverse order to find the most appropriate Downloader instance
+            for this specification.  An example specification is
+            ``('shapefiles', 'natural_earth')`` for the Natural Earth
+            shapefiles.
+        config_dict: optional
+            typically this is left as None to use the
+            default ``cartopy.config`` "downloaders" dictionary.
 
         Example:
 
@@ -345,15 +338,17 @@ class RasterSource(object):
     make use of the interface for functionality such as interactive image
     retrieval with pan and zoom functionality.
 
+    .. _raster-source-interface:
+
     """
     def validate_projection(self, projection):
         """
-        Raise an error if this raster source cannot provide images in the
+        Raises an error if this raster source cannot provide images in the
         specified projection.
 
         Parameters
         ----------
-        projection : :class:`cartopy.crs.Projection`
+        projection: :class:`cartopy.crs.Projection`
             The desired projection of the image.
 
         """
@@ -366,20 +361,22 @@ class RasterSource(object):
 
         Parameters
         ----------
-        projection : :class:`cartopy.crs.Projection`
+        projection: :class:`cartopy.crs.Projection`
             The desired projection of the image.
-        extent : iterable of length 4
-            The extent of the requested image in projected coordinates. The
-            resulting image may not be defined exactly by these extents, and
-            so the extent of the resulting image is also returned. The extents
-            must be defined in the form ``(min_x, max_x, min_y, max_y)``.
-        target_resolution : iterable of length 2
-            The desired resolution of the image as ``(width, height)``
-            in pixels.
+        extent: iterable of length 4
+            The extent of the requested image in projected coordinates.
+            The resulting image may not be defined exactly by these extents,
+            and so the extent of the resulting image is also returned. The
+            extents must be defined in the form
+            ``(min_x, max_x, min_y, max_y)``.
+        target_resolution: iterable of length 2
+            The desired resolution of the image as ``(width, height)`` in
+            pixels.
 
         Returns
         -------
-        A sequence of :class:`LocatedImage` instances.
+        images
+            A sequence of :class:`LocatedImage` instances.
 
         """
         raise NotImplementedError()
@@ -395,8 +392,9 @@ class RasterSourceContainer(RasterSource):
         """
         Parameters
         ----------
-        contained_source : :class:`RasterSource` instance.
+        contained_source: :class:`RasterSource` instance.
             The source of the raster that this container is wrapping.
+
         """
         self._source = contained_source
 
@@ -418,13 +416,14 @@ class PostprocessedRasterSource(RasterSourceContainer):
         """
         Parameters
         ----------
-        contained_source : :class:`RasterSource` instance.
+        contained_source: :class:`RasterSource` instance.
             The source of the raster that this container is wrapping.
-        img_post_process : callable
+        img_post_process: callable
             Called after each `fetch_raster` call which yields a non-None
             image result. The callable must accept the :class:`LocatedImage`
             from the contained fetch_raster as its only argument, and must
             return a single LocatedImage.
+
         """
         super(PostprocessedRasterSource, self).__init__(contained_source)
         self._post_fetch_fn = img_post_process

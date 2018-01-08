@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -49,14 +49,18 @@ class GoogleTiles(object):
                  url=('https://mts0.google.com/vt/lyrs={style}'
                       '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
         """
-        :param desired_tile_form:
-        :param style: The style for the Google Maps tiles. One of 'street',
-            'satellite', 'terrain', and 'only_streets'.
-            Defaults to 'street'.
-        :param url: str url pointing to a tile source and containing {x},
-                    {y}, and {z}. Such as:
-                    ('https://server.arcgisonline.com/ArcGIS/rest/services/'
-                     'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
+        Parameters
+        ----------
+        desired_tile_form: optional
+            Defaults to 'RGB'.
+        style: optional
+            The style for the Google Maps tiles.  One of 'street',
+            'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
+        url: optional
+            URL pointing to a tile source and containing {x}, {y}, and {z}.
+            Such as: ('https://server.arcgisonline.com/ArcGIS/rest/services/'
+            'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
+
         """
         # Only streets are partly transparent tiles that can be overlayed over
         # the satellite map to create the known hybrid style from google.
@@ -133,15 +137,17 @@ class GoogleTiles(object):
 
         Parameters
         ----------
-        x, y, z : int
-            The x, y, z tile coordinates in the Google tile numbering system
-            (with y=0 being at the north pole), unless `y0_at_north_pole` is
-            set to ``False``, in which case `y` is in the TMS numbering system
-            (with y=0 being at the south pole).
-        y0_at_north_pole : bool
-            Whether the numbering of the y coordinate starts at the north
-            pole (as is the convention for Google tiles), or the south
-            pole (as is the convention for TMS).
+        x, y, z
+            The x, y, z tile coordinates in the Google tile
+            numbering system (with y=0 being at the north pole), unless
+            `y0_at_north_pole` is set to ``False``, in which case `y` is in
+            the TMS numbering system (with y=0 being at the south pole).
+        y0_at_north_pole: optional
+            Boolean representing whether the numbering of the y coordinate
+            starts at the north pole (as is the convention for Google tiles)
+            or not (in which case it will start at the south pole, as is the
+            convention for TMS). Defaults to True.
+
 
         """
         n = 2 ** z
@@ -256,10 +262,11 @@ class StamenTerrain(GoogleTiles):
     of flat, dark green.
 
     Additional info:
-    http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
-    http://maps.stamen.com/#terrain/12/37.6902/-122.3600
+    https://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+    https://maps.stamen.com/
     https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
     https://github.com/migurski/DEM-Tools
+
     """
     def _image_url(self, tile):
         x, y, z = tile
@@ -277,18 +284,18 @@ class MapboxTiles(GoogleTiles):
     """
     def __init__(self, access_token, map_id):
         """
-        Set up a new Mapbox tiles instance.
+        Sets up a new Mapbox tiles instance.
 
         Access to Mapbox web services requires an access token and a map ID.
-        See https://www.mapbox.com/developers/api/ for details.
+        See https://www.mapbox.com/api-documentation/ for details.
 
         Parameters
         ----------
-        access_token: str
+        access_token
             A valid Mapbox API access token.
-        map_id: str
-            A map ID for a publically accessible map. This is the map whose
-            tiles will be retrieved through this process.
+        zmap_id
+            A map ID for a publically accessible map. This is the
+            map whose tiles will be retrieved through this process.
 
         """
         self.access_token = access_token
@@ -373,10 +380,11 @@ class QuadtreeTiles(GoogleTiles):
 
     def find_images(self, target_domain, target_z, start_tile=None):
         """
-        Find all the quadtree's at the given target zoom, in the given
+        Finds all the quadtrees at the given target zoom, in the given
         target domain.
 
         target_z must be a value >= 1.
+
         """
         if target_z == 0:
             raise ValueError('The empty quadtree cannot be returned.')
@@ -394,7 +402,7 @@ class QuadtreeTiles(GoogleTiles):
 
 
 def _merge_tiles(tiles):
-    """Return a single image, merging the given images."""
+    """Returns a single image, merging the given images."""
     if not tiles:
         raise ValueError('A non-empty list of tiles should '
                          'be provided to merge.')

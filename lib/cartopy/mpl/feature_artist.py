@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -33,7 +33,7 @@ import cartopy.mpl.patch as cpatch
 
 class _GeomKey(object):
     """
-    Provide id() based equality and hashing for geometries.
+    Provides id() based equality and hashing for geometries.
 
     Instances of this class must be treated as immutable for the caching
     to operate correctly.
@@ -78,12 +78,15 @@ class FeatureArtist(matplotlib.artist.Artist):
 
     def __init__(self, feature, **kwargs):
         """
-        Args:
+        Parameters
+        ----------
+        feature
+            An instance of :class:`cartopy.feature.Feature` to draw.
 
-        * feature:
-            an instance of :class:`cartopy.feature.Feature` to draw.
-        * kwargs:
-            keyword arguments to be used when drawing the feature. These
+        Other Parameters
+        ----------------
+        kwargs
+            Keyword arguments to be used when drawing the feature. These
             will override those shared with the feature.
 
         """

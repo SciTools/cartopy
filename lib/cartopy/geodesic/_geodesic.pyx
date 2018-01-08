@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2017, Met Office
+# (C) British Crown Copyright 2015 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -51,18 +51,19 @@ cdef class Geodesic:
 
     def __cinit__(self, radius=6378137.0, flattening=1/298.257223563):
         """
-        Create an ellipsoid with a given radius and flattening.
+        Creates an ellipsoid with a given radius and flattening.
 
-        Kwargs:
+        Parameters
+        ----------
+        radius: optional
+            Equatorial radius (metres). Defaults to the WGS84 semimajor axis
+            (6378137.0 metres).
 
-            * radius  - Equatorial radius (metres). Defaults to the WGS84
-                        semimajor axis (6378137.0 metres).
-
-            * flattening - Flattening of ellipsoid.
-                           Setting flattening = 0 gives a sphere. Negative
-                           flattening gives a prolate ellipsoid. If
-                           flattening > 1, set flattening to 1/flattening.
-                           Defaults to the WGS84 flattening (1/298.257223563).
+        flattening: optional
+            Flattening of ellipsoid.  Setting flattening = 0 gives a sphere.
+            Negative flattening gives a prolate ellipsoid. If flattening > 1,
+            set flattening to 1/flattening.
+            Defaults to the WGS84 flattening (1/298.257223563).
 
         """
         # allocate some memory (filled with random data)
@@ -91,21 +92,24 @@ cdef class Geodesic:
         single start point and distance, an array of different azimuths can be
         supplied to locate multiple endpoints.
 
-        Args:
+        Parameters
+        ----------
+        points
+            An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat
+            points.  The starting point(s) from which to travel.
 
-            * points - An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat
-                       points.
-                       The starting point(s) from which to travel.
+        azimuths
+            A length n (or 1) numpy.ndarray or list of azimuth
+            values (degrees).
 
-            * azimuths - A length n (or 1) numpy.ndarray or list of azimuth
-                         values (degrees).
+        distances
+            A length n (or 1) numpy.ndarray or list of distances
+            values (metres).
 
-            * distances - A length n (or 1) numpy.ndarray or list of distances
-                          values (metres).
-
-        Returns:
-            An n by 3 np.ndarray of lons, lats, and forward azimuths of the
-            located endpoint(s).
+        Returns
+        -------
+        An n by 3 np.ndarray of lons, lats, and forward azimuths of the
+        located endpoint(s).
 
         """
 
@@ -152,25 +156,26 @@ cdef class Geodesic:
     @cython.boundscheck(False)
     def inverse(self, points, endpoints):
         """
-        Solve the inverse geodesic problem.
+        Solves the inverse geodesic problem.
 
         Can accept and broadcast length 1 arguments. For example, given a
         single start point, an array of different endpoints can be supplied to
         find multiple distances.
 
-        Args:
+        Parameters
+        ----------
+        points
+            An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat points.
+            The starting point(s) from which to travel.
 
-            * points - An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat
-                       points.
-                       The starting point(s) from which to travel.
+        endpoints:
+            An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat points.
+            The point(s) to travel to.
 
-            * endpoints - An n (or 1) by 2 numpy.ndarray, list or tuple of
-                          lon-lat points.
-                          The point(s) to travel to.
-
-        Returns:
-            An n by 3 np.ndarray of distances, and the (forward) azimuths of
-            the start and end points.
+        Returns
+        -------
+        An n by 3 np.ndarray of distances, and the (forward) azimuths of
+        the start and end points.
 
         """
 
@@ -212,26 +217,26 @@ cdef class Geodesic:
     def circle(self, double lon, double lat, double radius, int n_samples=180,
                endpoint=False):
         """
-        Find a geodesic circle of given radius at a given point.
+        Finds a geodesic circle of given radius at a given point.
 
-        Args:
+        Parameters
+        ----------
+        lon
+            Longitude coordinate of the centre.
+        lat
+            Latitude coordinate of the centre.
+        radius
+            The radius of the circle (metres).
+        n_samples: optional
+            Integer number of sample points of circle.
+        endpoint: optional
+            Boolean for whether to repeat endpoint at the end of returned
+            array.
 
-            * lon - Longitude coordinate of the centre.
-
-            * lat - Latitude coordinate of the centre.
-
-            * radius - The radius of the circle (metres).
-
-        Kwargs:
-
-            * n_samples - Integer number of sample points of circle.
-
-            * endpoint - Boolean for whether to repeat endpoint at the end of
-                         returned array.
-
-        Returns:
-            An n_samples by 2 np.ndarray of evenly spaced lon-lat points on the
-            circle.
+        Returns
+        -------
+        An n_samples by 2 np.ndarray of evenly spaced lon-lat points on the
+        circle.
 
         """
 

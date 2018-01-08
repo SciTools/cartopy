@@ -23,7 +23,7 @@ Helper functions for shapefile acquisition
 
 Cartopy provides an interface for access to frequently used data such as the
 `GSHHS <https://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html>`_ dataset and from
-the `NaturalEarthData <http://www.naturalearthdata.com/>`_ website. 
+the `NaturalEarthData <http://www.naturalearthdata.com/>`_ website.
 These interfaces allow the user to define the data programmatically, and if the data does not exist
 on disk, it will be retrieved from the appropriate source (normally by
 downloading the data from the internet). Currently the interfaces available are:
@@ -38,7 +38,7 @@ Using the shapereader
 ---------------------
 
 We can acquire the countries dataset from Natural Earth found at
-http://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/
+https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/
 by using the :func:`natural_earth` function:
 
 

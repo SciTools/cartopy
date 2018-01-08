@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -106,30 +106,29 @@ class LatitudeFormatter(_PlateCarreeFormatter):
         The axis must be part of an axes defined on a rectangular
         projection (e.g. Plate Carree, Mercator).
 
-        .. note::
 
-           A formatter can only be used for one axis. A new formatter
-           must be created for every axis that needs formatted labels.
-
-        Kwargs:
-
-        * degree_symbol (string):
+        Parameters
+        ----------
+        degree_symbol: optional
             The character(s) used to represent the degree symbol in the
             tick labels. Defaults to u'\u00B0' which is the unicode
             degree symbol. Can be an empty string if no degree symbol is
             desired.
-
-        * number_format (string):
+        number_format: optional
             Format string to represent the tick values. Defaults to 'g'.
-
-        * transform_precision (float):
+        transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
 
-        Examples:
+        Notes
+        -----
+        A formatter can only be used for one axis. A new formatter
+        must be created for every axis that needs formatted labels.
 
+        Examples
+        --------
         Label latitudes from -90 to 90 on a Plate Carree projection::
 
             ax = plt.axes(projection=PlateCarree())
@@ -178,46 +177,44 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  number_format='g',
                  transform_precision=1e-8):
         """
-        Create a formatter for longitude values.
+        Creates a formatter for longitude values.
 
         The axis must be part of an axes defined on a rectangular
         projection (e.g. Plate Carree, Mercator).
 
-        .. note::
-
-           A formatter can only be used for one axis. A new formatter
-           must be created for every axis that needs formatted labels.
-
-        Kwargs:
-
-        * zero_direction_label (False | True):
+        Parameters
+        ----------
+        zero_direction_label: optional
+            Boolean flag.
             If *True* a direction label (E or W) will be drawn next to
             longitude labels with the value 0. If *False* then these
             labels will not be drawn. Defaults to *False* (no direction
             labels).
-
-        * dateline_direction_label (False | True):
+        dateline_direction_label: optional
+            Boolean flag.
             If *True* a direction label (E or W) will be drawn next to
             longitude labels with the value 180. If *False* then these
             labels will not be drawn. Defaults to *False* (no direction
             labels).
-
-        * degree_symbol (string):
+        degree_symbol: optional
             The symbol used to represent degrees. Defaults to u'\u00B0'
             which is the unicode degree symbol.
-
-        * number_format (string):
+        number_format: optional
             Format string to represent the longitude values. Defaults to
             'g'.
-
-        * transform_precision (float):
+        transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
 
-        Examples:
+        Notes
+        -----
+        A formatter can only be used for one axis. A new formatter
+        must be created for every axis that needs formatted labels.
 
+        Examples
+        --------
         Label longitudes from -180 to 180 on a Plate Carree projection
         with a central longitude of 0::
 

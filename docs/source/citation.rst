@@ -41,7 +41,7 @@ For example::
 
  Cartopy. Met Office. git@github.com:SciTools/cartopy.git. 2015-02-18. 7b2242e.
 
-.. _How to cite and describe software: http://software.ac.uk/so-exactly-what-software-did-you-use
+.. _How to cite and describe software: https://software.ac.uk/so-exactly-what-software-did-you-use
 
 
 [Jackson] Jackson, M. 2012. `How to cite and describe software`_. Accessed 2013-03-06.

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -47,19 +47,19 @@ class _SRTMSource(RasterSource):
     def __init__(self, resolution, downloader, max_nx, max_ny):
         """
         Parameters
-        ==========
-        resolution : int
-            The resolution of SRTM to download, in arc-seconds. Data is
-            available at resolutions of 3 and 1 arc-seconds.
-        downloader : :class:`cartopy.io.Downloader` instance or None
+        ----------
+        resolution
+            The resolution of SRTM to download, in integer arc-seconds.
+            Data is available at resolutions of 3 and 1 arc-seconds.
+        downloader: :class:`cartopy.io.Downloader` instance or None
             The downloader to use for the SRTM dataset. If None, the
             downloader will be taken using
             :class:`cartopy.io.Downloader.from_config` with ('SRTM',
             'SRTM{resolution}') as the target.
-        max_nx : int
+        max_nx
             The maximum number of x tiles to be combined when producing a
             wider composite for this RasterSource.
-        max_ny : int
+        max_ny
             The maximum number of y tiles to be combined when producing a
             taller composite for this RasterSource.
 
@@ -92,7 +92,7 @@ class _SRTMSource(RasterSource):
 
     def fetch_raster(self, projection, extent, target_resolution):
         """
-        Fetch SRTM elevation for the given projection and approximate extent.
+        Fetches SRTM elevation for the given projection and approximate extent.
 
         """
         if not self.validate_projection(projection):
@@ -125,7 +125,7 @@ class _SRTMSource(RasterSource):
 
     def srtm_fname(self, lon, lat):
         """
-        Return the filename for the given lon/lat SRTM tile (downloading if
+        Returns the filename for the given lon/lat SRTM tile (downloading if
         necessary), or None if no such tile exists (i.e. the tile would be
         entirely over water, or out of latitude range).
 
@@ -150,7 +150,7 @@ class _SRTMSource(RasterSource):
 
     def combined(self, lon_min, lat_min, nx, ny):
         """
-        Return an image and its extent for the group of nx by ny tiles
+        Returns an image and its extent for the group of nx by ny tiles
         starting at the given bottom left location.
 
         """
@@ -191,18 +191,18 @@ class SRTM3Source(_SRTMSource):
     def __init__(self, downloader=None, max_nx=3, max_ny=3):
         """
         Parameters
-        ==========
-        downloader : :class:`cartopy.io.Downloader` instance or None
+        ----------
+        downloader: :class:`cartopy.io.Downloader` instance or None
             The downloader to use for the SRTM3 dataset. If None, the
             downloader will be taken using
             :class:`cartopy.io.Downloader.from_config` with ('SRTM', 'SRTM3')
             as the target.
-        max_nx : int
-            The maximum number of x tiles to be combined when producing a
-            wider composite for this RasterSource.
-        max_ny : int
-            The maximum number of y tiles to be combined when producing a
-            taller composite for this RasterSource.
+        max_nx
+            The maximum number of x tiles to be combined when
+            producing a wider composite for this RasterSource.
+        max_ny
+            The maximum number of y tiles to be combined when
+            producing a taller composite for this RasterSource.
 
         """
         super(SRTM3Source, self).__init__(resolution=3, downloader=downloader,
@@ -218,18 +218,18 @@ class SRTM1Source(_SRTMSource):
     def __init__(self, downloader=None, max_nx=3, max_ny=3):
         """
         Parameters
-        ==========
-        downloader : :class:`cartopy.io.Downloader` instance or None
+        ----------
+        downloader: :class:`cartopy.io.Downloader` instance or None
             The downloader to use for the SRTM1 dataset. If None, the
             downloader will be taken using
             :class:`cartopy.io.Downloader.from_config` with ('SRTM', 'SRTM1')
             as the target.
-        max_nx : int
-            The maximum number of x tiles to be combined when producing a
-            wider composite for this RasterSource.
-        max_ny : int
-            The maximum number of y tiles to be combined when producing a
-            taller composite for this RasterSource.
+        max_nx
+            The maximum number of x tiles to be combined when
+            producing a wider composite for this RasterSource.
+        max_ny
+            The maximum number of y tiles to be combined when
+            producing a taller composite for this RasterSource.
 
         """
         super(SRTM1Source, self).__init__(resolution=1, downloader=downloader,
@@ -238,7 +238,7 @@ class SRTM1Source(_SRTMSource):
 
 def srtm(lon, lat):
     """
-    Return (elevation, crs, extent) for the given longitude latitude.
+    Returns (elevation, crs, extent) for the given longitude latitude.
     Elevation is in meters.
     """
     warnings.warn("This method has been deprecated. "
@@ -250,15 +250,16 @@ def add_shading(elevation, azimuth, altitude):
     """Adds shading to SRTM elevation data, using azimuth and altitude
     of the sun.
 
-    :type elevation: numpy.ndarray
-    :param elevation: SRTM elevation data (in meters)
-    :type azimuth: float
-    :param azimuth: azimuth of the Sun (in degrees)
-    :type altitude: float
-    :param altitude: altitude of the Sun (in degrees)
+    Parameters
+    ----------
+    elevation
+        SRTM elevation data (in meters)
+    azimuth
+        Azimuth of the Sun (in degrees)
+    altitude
+        Altitude of the Sun (in degrees)
 
-    :rtype: numpy.ndarray
-    :return: shaded SRTM relief map.
+    Returns shaded SRTM relief map.
     """
     azimuth = np.deg2rad(azimuth)
     altitude = np.deg2rad(altitude)
@@ -278,14 +279,19 @@ def fill_gaps(elevation, max_distance=10):
 
     This function requires osgeo/gdal to work.
 
-    :type elevation: numpy.ndarray
-    :param elevation: SRTM elevation data (in meters)
-    :type max_distance: int
-    :param max_distance: maximal distance (in pixels) between a missing point
-    and the nearest valid one.
+    Parameters
+    ----------
+    elevation
+        SRTM elevation data (in meters)
+    max_distance
+        Maximal distance (in pixels) between a missing point
+        and the nearest valid one.
 
-    :rtype: numpy.ndarray
-    :return: SRTM elevation data with filled gaps..
+    Returns
+    -------
+    elevation
+        SRTM elevation data with filled gaps.
+
     """
     warnings.warn("The fill_gaps function has been deprecated. "
                   "See the \"What's new\" section for v0.14.")
@@ -314,25 +320,25 @@ def srtm_composite(lon_min, lat_min, nx, ny):
 
 def read_SRTM(fh):
     """
-    Read the array of (y, x) elevation data from the given named file-handle.
+    Reads the array of (y, x) elevation data from the given named file-handle.
 
     Parameters
-    ==========
-    fh : file-handle like
+    ----------
+    fh
         A named file-like as passed through to :func:`cartopy.io.fh_getter`.
         The filename is used to determine the extent of the resulting array.
 
     Returns
-    =======
-    elevation : numpy array
-        The elevation values from the SRTM file. Data is flipped vertically
-        such that the higher the y-index, the further north the data. Data
-        shape is automatically determined by the size of data read from file,
-        and is either (1201, 1201) for 3 arc-second data or (3601, 3601) for 1
-        arc-second data.
-    crs : :class:`cartopy.crs.CRS`
+    -------
+    elevation
+        The elevation values from the SRTM file. Data is flipped
+        vertically such that the higher the y-index, the further north the
+        data. Data shape is automatically determined by the size of data read
+        from file, and is either (1201, 1201) for 3 arc-second data or
+        (3601, 3601) for 1 arc-second data.
+    crs: :class:`cartopy.crs.CRS`
         The coordinate reference system of the extents.
-    extents : 4-tuple (x0, x1, y0, y1)
+    extents: 4-tuple (x0, x1, y0, y1)
         The boundaries of the returned elevation array.
 
     """
@@ -369,7 +375,7 @@ read_SRTM1 = read_SRTM
 
 def SRTM3_retrieve(lon, lat):
     """
-    Return the path of a .hgt file for the given SRTM location.
+    Returns the path of a .hgt file for the given SRTM location.
 
     If no such .hgt file exists (because it is over the ocean)
     None will be returned.
@@ -387,8 +393,8 @@ class SRTMDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'resolution', 'x', 'y')
 
-    _SRTM_BASE_URL = ('http://e4ftl01.cr.usgs.gov/SRTM/SRTMGL{resolution}.003/'
-                      '2000.02.11/')
+    _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/SRTM/SRTMGL{resolution}.'
+                      '003/2000.02.11/')
     _SRTM_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
                                       'srtm.npz')
     _SRTM_LOOKUP_MASK = np.load(_SRTM_LOOKUP_CACHE)['mask']

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2016, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -89,14 +89,14 @@ def project_linear(geometry not None, CRS src_crs not None,
     Returns the MultiLineString which results from projecting the given
     geometry from the source projection into the destination projection.
 
-    Args:
-
-    * line_string:
+    Parameters
+    ----------
+    line_string
         A shapely LineString or LinearRing to be projected.
-    * src_crs:
+    src_crs
         The cartopy.crs.CRS defining the coordinate system of the line
         to be projected.
-    * dest_projection:
+    dest_projection
         The cartopy.crs.Projection defining the projection for the
         resulting projected line.
 

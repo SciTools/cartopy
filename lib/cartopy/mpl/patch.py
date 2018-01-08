@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -39,9 +39,9 @@ def geos_to_path(shape):
     Creates a list of :class:`matplotlib.path.Path` objects that describe
     a shape.
 
-    Args:
-
-    * shape
+    Parameters
+    ----------
+    shape
         A list, tuple or single instance of any of the following
         types: :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
@@ -52,7 +52,9 @@ def geos_to_path(shape):
         :class:`shapely.geometry.collection.GeometryCollection`,
         or any type with a _as_mpl_path() method.
 
-    Returns:
+    Returns
+    -------
+    paths
         A list of :class:`matplotlib.path.Path` objects.
 
     """
@@ -97,16 +99,20 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
     Creates an array of vertices and a corresponding array of codes from a
     :class:`matplotlib.path.Path`.
 
-    Args:
-
-    * path
+    Parameters
+    ----------
+    path
         A :class:`matplotlib.path.Path` instance.
 
-    Kwargs:
+    Other Parameters
+    ----------------
+    kwargs
         See :func:`matplotlib.path.iter_segments` for details of the keyword
         arguments.
 
-    Returns:
+    Returns
+    -------
+    vertices, codes
         A (vertices, codes) tuple, where vertices is a numpy array of
         coordinates, and codes is a numpy array of matplotlib path codes.
         See :class:`matplotlib.path.Path` for information on the types of
@@ -145,21 +151,23 @@ def path_to_geos(path, force_ccw=False):
     Creates a list of Shapely geometric objects from a
     :class:`matplotlib.path.Path`.
 
-    Args:
-
-    * path
+    Parameters
+    ----------
+    path
         A :class:`matplotlib.path.Path` instance.
 
-    Kwargs:
-
-    * force_ccw
+    Other Parameters
+    ----------------
+    force_ccw
         Boolean flag determining whether the path can be inverted to enforce
-        ccw.
+        ccw. Defaults to False.
 
-    Returns:
-        A list of :class:`shapely.geometry.polygon.Polygon`,
+    Returns
+    -------
+    A list of instances of the following type(s):
+        :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.linestring.LineString` and/or
-        :class:`shapely.geometry.multilinestring.MultiLineString` instances.
+        :class:`shapely.geometry.multilinestring.MultiLineString`.
 
     """
     # Convert path into numpy array of vertices (and associated codes)

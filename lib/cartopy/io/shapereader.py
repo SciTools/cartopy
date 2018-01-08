@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -153,8 +153,7 @@ class Record(object):
     @property
     def bounds(self):
         """
-        The bounds of this Record's
-        :meth:`~Record.geometry`.
+        The bounds of this Record's :meth:`~Record.geometry`.
 
         """
         if self._bounds is None:
@@ -245,8 +244,8 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     https://github.com/nvkelso/natural-earth-vector/tree/master/zips to
     see the actual files which will be downloaded.
 
-    .. note::
-
+    Notes
+    -----
         Some of the Natural Earth shapefiles have special features which are
         described in the name. For example, the 110m resolution
         "admin_0_countries" data also has a sibling shapefile called
@@ -449,8 +448,8 @@ class GSHHSShpDownloader(Downloader):
         Downloads the zip file and extracts the files listed in
         :meth:`zip_file_contents` to the target path.
 
-        .. note:
-
+        Notes
+        -----
             Because some of the GSHSS data is available with the cartopy
             repository, scales of "l" or "c" will not be downloaded if they
             exist in the ``cartopy.config['repo_data_dir']`` directory.
