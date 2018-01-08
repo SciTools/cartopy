@@ -1,0 +1,3 @@
+[submodule "docs/scipy-sphinx-theme"]
+	path = docs/scipy-sphinx-theme
+	url = git@github.com:corinnebosley/scipy-sphinx-theme.git
