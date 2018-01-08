@@ -53,6 +53,12 @@ import six
 
 from cartopy.io import Downloader
 from cartopy import config
+_HAS_FIONA = False
+try:
+    import fiona
+    _HAS_FIONA = True
+except ImportError:
+    pass
 
 
 __all__ = ['Reader', 'Record']
@@ -175,7 +181,20 @@ class Record(object):
         return self._geometry
 
 
-class Reader(object):
+class FionaRecord(Record):
+    """
+    A single logical entry from a shapefile, combining the attributes with
+    their associated geometry. This extends the standard Record to work
+    with the FionaReader.
+
+    """
+    def __init__(self, geometry, attributes):
+        self._geometry = geometry
+        self.attributes = attributes
+        self._bounds = geometry.bounds
+
+
+class BasicReader(object):
     """
     Provide an interface for accessing the contents of a shapefile.
 
@@ -232,6 +251,82 @@ class Reader(object):
             attributes = dict(zip(field_names, shape_record.record))
             yield Record(shape_record.shape, geometry_factory, attributes,
                          fields)
+
+
+class FionaReader(object):
+    """
+    Provides an interface for accessing the contents of a shapefile
+    with the fiona library, which has a much faster reader than pyshp.
+
+    The primary methods used on a Reader instance are
+    :meth:`~Reader.records` and :meth:`~Reader.geometries`.
+
+    """
+    def __init__(self, filename, bbox=None):
+        self._data = []
+
+        with fiona.open(filename) as f:
+            if bbox is not None:
+                assert len(bbox) == 4
+                features = f.filter(bbox=bbox)
+            else:
+                features = f
+
+            # Handle feature collections
+            if hasattr(features, "__geo_interface__"):
+                fs = features.__geo_interface__
+            else:
+                fs = features
+
+            if isinstance(fs, dict) and fs.get('type') == 'FeatureCollection':
+                features_lst = fs['features']
+            else:
+                features_lst = features
+
+            for feature in features_lst:
+                if hasattr(f, "__geo_interface__"):
+                    feature = feature.__geo_interface__
+                else:
+                    feature = feature
+
+                d = {'geometry': sgeom.shape(feature['geometry'])
+                     if feature['geometry'] else None}
+                d.update(feature['properties'])
+                self._data.append(d)
+
+    def __len__(self):
+        return len(self._data)
+
+    def geometries(self):
+        """
+        Returns an iterator of shapely geometries from the shapefile.
+
+        This interface is useful for accessing the geometries of the
+        shapefile where knowledge of the associated metadata is desired.
+        In the case where further metadata is needed use the
+        :meth:`~Reader.records`
+        interface instead, extracting the geometry from the record with the
+        :meth:`~Record.geometry` method.
+
+        """
+        for item in self._data:
+            yield item['geometry']
+
+    def records(self):
+        """
+        Returns an iterator of :class:`~Record` instances.
+
+        """
+        for item in self._data:
+            yield FionaRecord(item['geometry'],
+                              {key: value for key, value in
+                               item.items() if key != 'geometry'})
+
+
+if _HAS_FIONA:
+    Reader = FionaReader
+else:
+    Reader = BasicReader
 
 
 def natural_earth(resolution='110m', category='physical', name='coastline'):
