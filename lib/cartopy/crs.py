@@ -302,7 +302,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def _project_polygon(self, polygon, src_crs):
         """
-        Returns the projected polygon(s) derived from the given polygon.
+        Return the projected polygon(s) derived from the given polygon.
 
         """
         # Determine orientation of polygon.
@@ -334,7 +334,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def _attach_lines_to_boundary(self, multi_line_strings, is_ccw):
         """
-        Returns a list of LinearRings by attaching the ends of the given lines
+        Return a list of LinearRings by attaching the ends of the given lines
         to the boundary, paying attention to the traversal directions of the
         lines and boundary.
 
@@ -686,7 +686,7 @@ class PlateCarree(_CylindricalProjection):
 
     def _bbox_and_offset(self, other_plate_carree):
         """
-        Returns a pair of (xmin, xmax) pairs and an offset which can be used
+        Return a pair of (xmin, xmax) pairs and an offset which can be used
         for identification of whether data in ``other_plate_carree`` needs
         to be transformed to wrap appropriately.
 
@@ -1977,7 +1977,7 @@ def _find_first_gt(a, x):
 
 def epsg(code):
     """
-    Returns the projection which corresponds to the given EPSG code.
+    Return the projection which corresponds to the given EPSG code.
 
     The EPSG code must correspond to a "projected coordinate system",
     so EPSG codes such as 4326 (WGS-84) which define a "geodetic coordinate

@@ -225,7 +225,7 @@ class Downloader(object):
 
     def acquire_resource(self, target_path, format_dict):
         """
-        Downloads, via HTTP, the file that this resource represents.
+        Download, via HTTP, the file that this resource represents.
         Subclasses will typically override this method.
 
         Parameters
@@ -319,7 +319,7 @@ class Downloader(object):
 
 class LocatedImage(collections.namedtuple('LocatedImage', 'image, extent')):
     """
-    Defines an image and associated extent in the form:
+    Define an image and associated extent in the form:
        ``image, (min_x, max_x, min_y, max_y)``
 
     """
@@ -327,7 +327,7 @@ class LocatedImage(collections.namedtuple('LocatedImage', 'image, extent')):
 
 class RasterSource(object):
     """
-    Defines the cartopy raster fetching interface.
+    Define the cartopy raster fetching interface.
 
     A :class:`RasterSource` instance is able to supply images and
     associated extents (as a sequence of :class:`LocatedImage` instances)
@@ -343,7 +343,7 @@ class RasterSource(object):
     """
     def validate_projection(self, projection):
         """
-        Raises an error if this raster source cannot provide images in the
+        Raise an error if this raster source cannot provide images in the
         specified projection.
 
         Parameters
@@ -356,7 +356,7 @@ class RasterSource(object):
 
     def fetch_raster(self, projection, extent, target_resolution):
         """
-        Return a sequence of images with extents given some constraining
+        Returns a sequence of images with extents given some constraining
         information.
 
         Parameters

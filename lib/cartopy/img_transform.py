@@ -32,7 +32,7 @@ def mesh_projection(projection, nx, ny,
                     x_extents=[None, None],
                     y_extents=[None, None]):
     """
-    Returns sample points in the given projection which span the entire
+    Return sample points in the given projection which span the entire
     projection range evenly.
 
     The range of the x-direction and y-direction sample points will be

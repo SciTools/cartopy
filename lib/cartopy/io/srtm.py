@@ -92,7 +92,7 @@ class _SRTMSource(RasterSource):
 
     def fetch_raster(self, projection, extent, target_resolution):
         """
-        Fetches SRTM elevation for the given projection and approximate extent.
+        Fetch SRTM elevation for the given projection and approximate extent.
 
         """
         if not self.validate_projection(projection):
@@ -125,7 +125,7 @@ class _SRTMSource(RasterSource):
 
     def srtm_fname(self, lon, lat):
         """
-        Returns the filename for the given lon/lat SRTM tile (downloading if
+        Return the filename for the given lon/lat SRTM tile (downloading if
         necessary), or None if no such tile exists (i.e. the tile would be
         entirely over water, or out of latitude range).
 
@@ -150,7 +150,7 @@ class _SRTMSource(RasterSource):
 
     def combined(self, lon_min, lat_min, nx, ny):
         """
-        Returns an image and its extent for the group of nx by ny tiles
+        Return an image and its extent for the group of nx by ny tiles
         starting at the given bottom left location.
 
         """
@@ -238,7 +238,7 @@ class SRTM1Source(_SRTMSource):
 
 def srtm(lon, lat):
     """
-    Returns (elevation, crs, extent) for the given longitude latitude.
+    Return (elevation, crs, extent) for the given longitude latitude.
     Elevation is in meters.
     """
     warnings.warn("This method has been deprecated. "
@@ -247,7 +247,7 @@ def srtm(lon, lat):
 
 
 def add_shading(elevation, azimuth, altitude):
-    """Adds shading to SRTM elevation data, using azimuth and altitude
+    """Add shading to SRTM elevation data, using azimuth and altitude
     of the sun.
 
     Parameters
@@ -259,7 +259,7 @@ def add_shading(elevation, azimuth, altitude):
     altitude
         Altitude of the Sun (in degrees)
 
-    Returns shaded SRTM relief map.
+    Return shaded SRTM relief map.
     """
     azimuth = np.deg2rad(azimuth)
     altitude = np.deg2rad(altitude)
@@ -274,7 +274,7 @@ def add_shading(elevation, azimuth, altitude):
 
 
 def fill_gaps(elevation, max_distance=10):
-    """Fills gaps in SRTM elevation data for which the distance from
+    """Fill gaps in SRTM elevation data for which the distance from
     missing pixel to nearest existing one is smaller than `max_distance`.
 
     This function requires osgeo/gdal to work.
@@ -320,7 +320,7 @@ def srtm_composite(lon_min, lat_min, nx, ny):
 
 def read_SRTM(fh):
     """
-    Reads the array of (y, x) elevation data from the given named file-handle.
+    Read the array of (y, x) elevation data from the given named file-handle.
 
     Parameters
     ----------
@@ -375,7 +375,7 @@ read_SRTM1 = read_SRTM
 
 def SRTM3_retrieve(lon, lat):
     """
-    Returns the path of a .hgt file for the given SRTM location.
+    Return the path of a .hgt file for the given SRTM location.
 
     If no such .hgt file exists (because it is over the ocean)
     None will be returned.
@@ -388,7 +388,7 @@ def SRTM3_retrieve(lon, lat):
 
 class SRTMDownloader(Downloader):
     """
-    Provides a SRTM download mechanism.
+    Provide a SRTM download mechanism.
 
     """
     FORMAT_KEYS = ('config', 'resolution', 'x', 'y')
@@ -463,7 +463,7 @@ class SRTMDownloader(Downloader):
     @staticmethod
     def _create_srtm_mask(resolution, filename=None):
         """
-        Returns a NumPy mask of available lat/lon.
+        Return a NumPy mask of available lat/lon.
 
         This is slow as it must query the SRTM server to identify the
         continent from which the tile comes. Hence a NumPy file with this
@@ -515,7 +515,7 @@ class SRTMDownloader(Downloader):
     @classmethod
     def default_downloader(cls):
         """
-        Returns a typical downloader for this class. In general, this static
+        Return a typical downloader for this class. In general, this static
         method is used to create the default configuration in cartopy.config
 
         """

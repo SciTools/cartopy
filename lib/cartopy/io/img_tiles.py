@@ -40,7 +40,7 @@ import cartopy.crs as ccrs
 
 class GoogleTiles(object):
     """
-    Implements web tile retrieval using the Google WTS coordinate system.
+    Implement web tile retrieval using the Google WTS coordinate system.
 
     A "tile" in this class refers to the coordinates (x, y, z).
 
@@ -132,7 +132,7 @@ class GoogleTiles(object):
 
     def tile_bbox(self, x, y, z, y0_at_north_pole=True):
         """
-        Returns the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
+        Return the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
         tile position.
 
         Parameters
@@ -174,7 +174,7 @@ class GoogleTiles(object):
         return n_xs, n_ys
 
     def tileextent(self, x_y_z):
-        """Returns extent tuple ``(x0,x1,y0,y1)`` in Mercator coordinates."""
+        """Return extent tuple ``(x0,x1,y0,y1)`` in Mercator coordinates."""
         x, y, z = x_y_z
         x_lim, y_lim = self.tile_bbox(x, y, z, y0_at_north_pole=True)
         return tuple(x_lim) + tuple(y_lim)
@@ -262,8 +262,8 @@ class StamenTerrain(GoogleTiles):
     of flat, dark green.
 
     Additional info:
-    https://mike.teczno.com/notes/osm-us-terrain-layer/background.html
-    https://maps.stamen.com/
+    http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+    http://maps.stamen.com/
     https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
     https://github.com/migurski/DEM-Tools
 
@@ -277,14 +277,14 @@ class StamenTerrain(GoogleTiles):
 
 class MapboxTiles(GoogleTiles):
     """
-    Implements web tile retrieval from Mapbox.
+    Implement web tile retrieval from Mapbox.
 
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
     def __init__(self, access_token, map_id):
         """
-        Sets up a new Mapbox tiles instance.
+        Set up a new Mapbox tiles instance.
 
         Access to Mapbox web services requires an access token and a map ID.
         See https://www.mapbox.com/api-documentation/ for details.
@@ -313,7 +313,7 @@ class MapboxTiles(GoogleTiles):
 
 class QuadtreeTiles(GoogleTiles):
     """
-    Implements web tile retrieval using the Microsoft WTS quadkey coordinate
+    Implement web tile retrieval using the Microsoft WTS quadkey coordinate
     system.
 
     A "tile" in this class refers to a quadkey such as "1", "14" or "141"
@@ -380,7 +380,7 @@ class QuadtreeTiles(GoogleTiles):
 
     def find_images(self, target_domain, target_z, start_tile=None):
         """
-        Finds all the quadtrees at the given target zoom, in the given
+        Find all the quadtrees at the given target zoom, in the given
         target domain.
 
         target_z must be a value >= 1.
@@ -402,7 +402,7 @@ class QuadtreeTiles(GoogleTiles):
 
 
 def _merge_tiles(tiles):
-    """Returns a single image, merging the given images."""
+    """Return a single image, merging the given images."""
     if not tiles:
         raise ValueError('A non-empty list of tiles should '
                          'be provided to merge.')

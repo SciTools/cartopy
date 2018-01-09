@@ -101,14 +101,14 @@ class Feature(six.with_metaclass(ABCMeta)):
     @abstractmethod
     def geometries(self):
         """
-        Returns an iterator of (shapely) geometries for this feature.
+        Return an iterator of (shapely) geometries for this feature.
 
         """
         pass
 
     def intersecting_geometries(self, extent):
         """
-        Returns an iterator of shapely geometries that intersect with
+        Return an iterator of shapely geometries that intersect with
         the given extent. The extent is assumed to be in the CRS of
         the feature. If extent is None, the method returns all
         geometries for this dataset.
@@ -198,7 +198,7 @@ class NaturalEarthFeature(Feature):
 
     def with_scale(self, new_scale):
         """
-        Returns a copy of the feature with a new scale.
+        Return a copy of the feature with a new scale.
 
         Parameters
         ----------
@@ -267,7 +267,7 @@ class GSHHSFeature(Feature):
 
     def _scale_from_extent(self, extent):
         """
-        Returns the appropriate scale (e.g. 'i') for the given extent
+        Return the appropriate scale (e.g. 'i') for the given extent
         expressed in PlateCarree CRS.
 
         """

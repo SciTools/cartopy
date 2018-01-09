@@ -104,7 +104,7 @@ _GML_NS = '{http://www.opengis.net/gml}'
 def _warped_located_image(image, source_projection, source_extent,
                           output_projection, output_extent, target_resolution):
     """
-    Reprojects an Image from one source-projection and extent to another.
+    Reproject an Image from one source-projection and extent to another.
 
     Returns
     -------
@@ -154,7 +154,7 @@ def _warped_located_image(image, source_projection, source_extent,
 
 def _target_extents(extent, requested_projection, available_projection):
     """
-    Translates the requested extent in the display projection into a list of
+    Translate the requested extent in the display projection into a list of
     extents in the projection available from the service (multiple if it
     crosses seams).
 
@@ -270,7 +270,7 @@ class WMSRasterSource(RasterSource):
 
     def _fallback_proj_and_srs(self):
         """
-        Returns a :class:`cartopy.crs.Projection` and corresponding
+        Return a :class:`cartopy.crs.Projection` and corresponding
         SRS string in which the WMS service can supply the requested
         layers.
 
@@ -544,7 +544,7 @@ class WMTSRasterSource(RasterSource):
     def _wmts_images(self, wmts, layer, matrix_set_name, extent,
                      max_pixel_span):
         """
-        Adds images from the specified WMTS layer and matrix set to cover
+        Add images from the specified WMTS layer and matrix set to cover
         the specified extent at an appropriate resolution.
 
         The zoom level (aka. tile matrix) is chosen to give the lowest
@@ -685,7 +685,7 @@ class WFSGeometrySource(object):
 
     def default_projection(self):
         """
-        Returns a :class:`cartopy.crs.Projection` in which the WFS
+        Return a :class:`cartopy.crs.Projection` in which the WFS
         service can supply the requested features.
 
         """
@@ -709,7 +709,7 @@ class WFSGeometrySource(object):
 
     def fetch_geometries(self, projection, extent):
         """
-        Returns any Point, Linestring or LinearRing geometries available
+        Return any Point, Linestring or LinearRing geometries available
         from the WFS that lie within the specified extent.
 
         Parameters
@@ -764,7 +764,7 @@ class WFSGeometrySource(object):
 
     def _to_shapely_geoms(self, response):
         """
-        Converts polygon coordinate strings in WFS response XML to Shapely
+        Convert polygon coordinate strings in WFS response XML to Shapely
         geometries.
 
         Parameters
@@ -817,7 +817,7 @@ class WFSGeometrySource(object):
 
     def _find_polygon_coords(self, node, find_str):
         """
-        Returns the x, y coordinate values for all the geometries in
+        Return the x, y coordinate values for all the geometries in
         a given`node`.
 
         Parameters
@@ -866,7 +866,7 @@ class WFSGeometrySource(object):
     @staticmethod
     def _node_has_child(node, find_str):
         """
-        Returns whether `node` contains (at any sub-level), a node with name
+        Return whether `node` contains (at any sub-level), a node with name
         equal to `find_str`.
 
         """

@@ -71,7 +71,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
 
     def __getstate__(self):
         """
-        Overrides the default to ensure when pickling that any new attributes
+        Override the default to ensure when pickling that any new attributes
         introduced are included in the pickled object.
 
         """
@@ -79,7 +79,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
 
     def bbox(self):
         """
-        Returns a :class:`~shapely.geometry.polygon.Polygon` instance for
+        Return a :class:`~shapely.geometry.polygon.Polygon` instance for
         this image's extents.
 
         """
@@ -91,7 +91,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
     @staticmethod
     def world_files(fname):
         """
-        Determines potential world filename combinations, without checking
+        Determine potential world filename combinations, without checking
         their existence.
 
         For example, a '*.tif' file may have one of the following
@@ -161,7 +161,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
     @classmethod
     def from_world_file(cls, img_fname, world_fname):
         """
-        Returns an Img instance from the given image filename and
+        Return an Img instance from the given image filename and
         worldfile filename.
 
         """
@@ -175,7 +175,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
     @staticmethod
     def world_file_extent(worldfile_handle, im_shape):
         """
-        Returns the extent ``(x0, x1, y0, y1)`` and pixel size
+        Return the extent ``(x0, x1, y0, y1)`` and pixel size
         ``(x_width, y_width)`` as defined in the given worldfile file handle
         and associated image shape ``(x, y)``.
 
@@ -225,7 +225,7 @@ class ImageCollection(object):
     def scan_dir_for_imgs(self, directory, glob_pattern='*.tif',
                           img_class=Img):
         """
-        Searches the given directory for the associated world files
+        Search the given directory for the associated world files
         of the image files.
 
         Parameters
@@ -324,7 +324,7 @@ class NestedImageCollection(object):
     @staticmethod
     def _is_parent(parent, child):
         """
-        Returns whether the given Image is the parent of image.
+        Return whether the given Image is the parent of image.
         Used by __init__.
 
         """
@@ -337,7 +337,7 @@ class NestedImageCollection(object):
 
     def image_for_domain(self, target_domain, target_z):
         """
-        Determines the image that provides complete coverage of target
+        Determine the image that provides complete coverage of target
         location.
 
         The composed image is merged from one or more image tiles that overlay
@@ -444,7 +444,7 @@ class NestedImageCollection(object):
 
     def subtiles(self, collection_image):
         """
-        Finds the higher resolution image tiles that compose this parent
+        Find the higher resolution image tiles that compose this parent
         image tile.
 
         Parameters
@@ -467,7 +467,7 @@ class NestedImageCollection(object):
 
     def get_image(self, collection_image):
         """
-        Retrieves the data of the target image from file.
+        Retrieve the data of the target image from file.
 
         Parameters
         ----------
@@ -500,7 +500,7 @@ class NestedImageCollection(object):
                            glob_pattern='*.tif',
                            img_class=Img):
         """
-        Creates a :class:`~cartopy.io.img_nest.NestedImageCollection` instance
+        Create a :class:`~cartopy.io.img_nest.NestedImageCollection` instance
         given the list of image collection name and directory path pairs.
 
         This is very convenient functionality for simple configuration level

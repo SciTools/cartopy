@@ -17,7 +17,7 @@
 
 
 """
-Combines the shapefile access of pyshp with the
+Combine the shapefile access of pyshp with the
 geometry representation of shapely:
 
     >>> import cartopy.io.shapereader as shapereader
@@ -174,7 +174,7 @@ class Record(object):
 
 class Reader(object):
     """
-    Provides an interface for accessing the contents of a shapefile.
+    Provide an interface for accessing the contents of a shapefile.
 
     The primary methods used on a Reader instance are
     :meth:`~Reader.records` and :meth:`~Reader.geometries`.
@@ -200,7 +200,7 @@ class Reader(object):
 
     def geometries(self):
         """
-        Returns an iterator of shapely geometries from the shapefile.
+        Return an iterator of shapely geometries from the shapefile.
 
         This interface is useful for accessing the geometries of the
         shapefile where knowledge of the associated metadata is desired.
@@ -217,7 +217,7 @@ class Reader(object):
 
     def records(self):
         """
-        Returns an iterator of :class:`~Record` instances.
+        Return an iterator of :class:`~Record` instances.
 
         """
         geometry_factory = self._geometry_factory
@@ -233,7 +233,7 @@ class Reader(object):
 
 def natural_earth(resolution='110m', category='physical', name='coastline'):
     """
-    Returns the path to the requested natural earth shapefile,
+    Return the path to the requested natural earth shapefile,
     downloading and unziping if necessary.
 
     To identify valid components for this function, either browse
@@ -264,7 +264,7 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
 
 class NEShpDownloader(Downloader):
     """
-    Specialises :class:`cartopy.io.Downloader` to download the zipped
+    Specialise :class:`cartopy.io.Downloader` to download the zipped
     Natural Earth shapefiles and extract them to the defined location
     (typically user configurable).
 
@@ -292,7 +292,7 @@ class NEShpDownloader(Downloader):
 
     def zip_file_contents(self, format_dict):
         """
-        Returns a generator of the filenames to be found in the downloaded
+        Return a generator of the filenames to be found in the downloaded
         natural earth zip file.
 
         """
@@ -302,7 +302,7 @@ class NEShpDownloader(Downloader):
 
     def acquire_resource(self, target_path, format_dict):
         """
-        Downloads the zip file and extracts the files listed in
+        Download the zip file and extracts the files listed in
         :meth:`zip_file_contents` to the target path.
 
         """
@@ -333,7 +333,7 @@ class NEShpDownloader(Downloader):
     @staticmethod
     def default_downloader():
         """
-        Returns a generic, standard, NEShpDownloader instance.
+        Return a generic, standard, NEShpDownloader instance.
 
         Typically, a user will not need to call this staticmethod.
 
@@ -363,7 +363,7 @@ config['downloaders'].setdefault(_ne_key,
 
 def gshhs(scale='c', level=1):
     """
-    Returns the path to the requested GSHHS shapefile,
+    Return the path to the requested GSHHS shapefile,
     downloading and unziping if necessary.
 
     """
@@ -378,7 +378,7 @@ def gshhs(scale='c', level=1):
 
 class GSHHSShpDownloader(Downloader):
     """
-    Specialises :class:`cartopy.io.Downloader` to download the zipped
+    Specialise :class:`cartopy.io.Downloader` to download the zipped
     GSHHS shapefiles and extract them to the defined location.
 
     The keys which should be passed through when using the ``format_dict``
@@ -402,7 +402,7 @@ class GSHHSShpDownloader(Downloader):
 
     def zip_file_contents(self, format_dict):
         """
-        Returns a generator of the filenames to be found in the downloaded
+        Return a generator of the filenames to be found in the downloaded
         GSHHS zip file for the specified resource.
 
         """
@@ -442,7 +442,7 @@ class GSHHSShpDownloader(Downloader):
 
     def acquire_resource(self, target_path, format_dict):
         """
-        Downloads the zip file and extracts the files listed in
+        Download the zip file and extracts the files listed in
         :meth:`zip_file_contents` to the target path.
 
         Notes
@@ -469,7 +469,7 @@ class GSHHSShpDownloader(Downloader):
     @staticmethod
     def default_downloader():
         """
-        Returns a GSHHSShpDownloader instance that expects (and if necessary
+        Return a GSHHSShpDownloader instance that expects (and if necessary
         downloads and installs) shapefiles in the data directory of the
         cartopy installation.
 
