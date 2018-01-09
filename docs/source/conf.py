@@ -175,7 +175,7 @@ if 'sphinx.ext.pngmath' in extensions:
 plot_html_show_formats = False
 plot_html_show_source_link = True
 
-############Looks like LaTex stuff to me...####################################
+# -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
                     # The paper size ('letterpaper' or 'a4paper').
