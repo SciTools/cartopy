@@ -86,7 +86,7 @@ cdef shapely_from_geos(GEOSGeometry *geom):
 def project_linear(geometry not None, CRS src_crs not None,
                    dest_projection not None):
     """
-    Returns the MultiLineString which results from projecting the given
+    Return the MultiLineString which results from projecting the given
     geometry from the source projection into the destination projection.
 
     Parameters

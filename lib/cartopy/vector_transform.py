@@ -28,7 +28,7 @@ from scipy.interpolate import griddata
 
 def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
     """
-    Interpolates two vector components and zero or more scalar fields,
+    Interpolate two vector components and zero or more scalar fields,
     which can be irregular, to a regular grid.
 
     Parameters
@@ -70,7 +70,7 @@ def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
 def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
                           *scalars, **kwargs):
     """
-    Transforms and interpolates a vector field to a regular grid in the
+    Transform and interpolate a vector field to a regular grid in the
     target projection.
 
     Parameters

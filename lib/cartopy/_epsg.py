@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 """
-Provides support for converting EPSG codes to Projection instances.
+Provide support for converting EPSG codes to Projection instances.
 
 """
 

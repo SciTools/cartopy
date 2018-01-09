@@ -47,7 +47,7 @@ WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 class RotatedGeodetic(CRS):
     """
-    Defines a rotated latitude/longitude coordinate system with spherical
+    Define a rotated latitude/longitude coordinate system with spherical
     topology and geographical distance.
 
     Coordinates are measured in degrees.
@@ -56,7 +56,7 @@ class RotatedGeodetic(CRS):
     def __init__(self, pole_longitude, pole_latitude,
                  central_rotated_longitude=0.0, globe=None):
         """
-        Creates a RotatedGeodetic CRS.
+        Create a RotatedGeodetic CRS.
 
         The class uses proj4 to perform an ob_tran operation, using the
         pole_longitude to set a lon_0 then performing two rotations based on
@@ -89,7 +89,7 @@ class RotatedGeodetic(CRS):
 
 class Projection(six.with_metaclass(ABCMeta, CRS)):
     """
-    Defines a projected coordinate system with flat topology and Euclidean
+    Define a projected coordinate system with flat topology and Euclidean
     distance.
 
     """
@@ -152,7 +152,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def project_geometry(self, geometry, src_crs=None):
         """
-        Projects the given geometry into this projection.
+        Project the given geometry into this projection.
 
         Parameters
         ----------
@@ -185,7 +185,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def _project_linear_ring(self, linear_ring, src_crs):
         """
-        Projects the given LinearRing from the src_crs into this CRS and
+        Project the given LinearRing from the src_crs into this CRS and
         returns a list of LinearRings and a single MultiLineString.
 
         """
@@ -594,7 +594,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def quick_vertices_transform(self, vertices, src_crs):
         """
-        Where possible, returns a vertices array transformed to this CRS from
+        Where possible, return a vertices array transformed to this CRS from
         the given vertices array of shape ``(n, 2)`` and the source CRS.
 
         Notes
@@ -655,7 +655,7 @@ class _CylindricalProjection(six.with_metaclass(ABCMeta,
 
 def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
     """
-    Defines a projection boundary using an ellipse.
+    Define a projection boundary using an ellipse.
 
     This type of boundary is used by several projections.
 
@@ -1243,7 +1243,7 @@ class Miller(_RectangularProjection):
 
 class RotatedPole(_CylindricalProjection):
     """
-    Defines a rotated latitude/longitude projected coordinate system
+    Define a rotated latitude/longitude projected coordinate system
     with cylindrical topology and projected distance.
 
     Coordinates are measured in projection metres.
@@ -1253,7 +1253,7 @@ class RotatedPole(_CylindricalProjection):
     def __init__(self, pole_longitude=0.0, pole_latitude=90.0,
                  central_rotated_longitude=0.0, globe=None):
         """
-        Creates a RotatedPole CRS.
+        Create a RotatedPole CRS.
 
         The class uses proj4 to perform an ob_tran operation, using the
         pole_longitude to set a lon_0 then performing two rotations based on
@@ -1497,7 +1497,7 @@ class Robinson(_WarpedRectangularProjection):
 
     def transform_point(self, x, y, src_crs):
         """
-        Captures and handles any input NaNs, else invokes parent function,
+        Capture and handle any input NaNs, else invoke parent function,
         :meth:`_WarpedRectangularProjection.transform_point`.
 
         Needed because input NaNs can trigger a fatal error in the underlying
@@ -1517,7 +1517,7 @@ class Robinson(_WarpedRectangularProjection):
 
     def transform_points(self, src_crs, x, y, z=None):
         """
-        Captures and handles NaNs in input points -- else as parent function,
+        Capture and handle NaNs in input points -- else as parent function,
         :meth:`_WarpedRectangularProjection.transform_points`.
 
         Needed because input NaNs can trigger a fatal error in the underlying

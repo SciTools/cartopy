@@ -123,7 +123,7 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
                source_extent=None, target_extent=None,
                mask_extrapolated=False):
     """
-    Regrids the data array from the source projection to the target projection.
+    Regrid the data array from the source projection to the target projection.
 
     Also see, :function:`~cartopy.img_transform.regrid`.
 

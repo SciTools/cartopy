@@ -63,7 +63,7 @@ class Proj4Error(Exception):
     """
     Raised when there has been an exception calling proj.4.
 
-    Adds a ``status`` attribute to the exception which has the
+    Add a ``status`` attribute to the exception which has the
     proj.4 error reference.
 
     """
@@ -77,7 +77,7 @@ class Proj4Error(Exception):
 
 class Globe(object):
     """
-    Defines an ellipsoid and, optionally, how to relate it to the real world.
+    Define an ellipsoid and, optionally, how to relate it to the real world.
 
     """
     def __init__(self, datum=None, ellipse='WGS84',
@@ -116,7 +116,7 @@ class Globe(object):
 
     def to_proj4_params(self):
         """
-        Creates an OrderedDict of key value pairs which represents this globe
+        Create an OrderedDict of key value pairs which represents this globe
         in terms of proj4 params.
 
         """
@@ -129,7 +129,7 @@ class Globe(object):
 
 cdef class CRS:
     """
-    Defines a Coordinate Reference System using proj.4.
+    Define a Coordinate Reference System using proj.4.
 
     """
     def __init__(self, proj4_params, globe=None):
@@ -183,12 +183,12 @@ cdef class CRS:
         return result
 
     def __hash__(self):
-        """Hashes the CRS based on its proj4_init string."""
+        """Hash the CRS based on its proj4_init string."""
         return hash(self.proj4_init)
 
     def __reduce__(self):
         """
-        Implements the __reduce__ API so that unpickling produces a stateless
+        Implement the __reduce__ API so that unpickling produces a stateless
         instance of this class (e.g. an empty tuple). The state will then be
         added via __getstate__ and __setstate__.
 
@@ -196,7 +196,7 @@ cdef class CRS:
         return self.__class__, tuple()
 
     def __getstate__(self):
-        """Returns the full state of this instance for reconstruction
+        """Return the full state of this instance for reconstruction
         in ``__setstate__``.
 
         """
@@ -204,7 +204,7 @@ cdef class CRS:
 
     def __setstate__(self, state):
         """
-        Takes the dictionary created by ``__getstate__`` and passes it
+        Take the dictionary created by ``__getstate__`` and passes it
         through to the class's __init__ method.
 
         """
@@ -216,7 +216,7 @@ cdef class CRS:
 
     def _as_mpl_transform(self, axes=None):
         """
-        Casts this CRS instance into a :class:`matplotlib.axes.Axes` using
+        Cast this CRS instance into a :class:`matplotlib.axes.Axes` using
         the Matplotlib ``_as_mpl_transform`` interface.
 
         """
@@ -233,7 +233,7 @@ cdef class CRS:
 
     def as_geocentric(self):
         """
-        Returns a new Geocentric CRS with the same ellipse/datum as this
+        Return a new Geocentric CRS with the same ellipse/datum as this
         CRS.
 
         """
@@ -241,7 +241,7 @@ cdef class CRS:
 
     def as_geodetic(self):
         """
-        Returns a new Geodetic CRS with the same ellipse/datum as this
+        Return a new Geodetic CRS with the same ellipse/datum as this
         CRS.
 
         """
@@ -499,7 +499,7 @@ cdef class CRS:
 
 class Geodetic(CRS):
     """
-    Defines a latitude/longitude coordinate system with spherical topology,
+    Define a latitude/longitude coordinate system with spherical topology,
     geographical distance and coordinates are measured in degrees.
 
     """
@@ -521,7 +521,7 @@ class Geodetic(CRS):
 
 class Geocentric(CRS):
     """
-    Defines a Geocentric coordinate system, where x, y, z are Cartesian
+    Define a Geocentric coordinate system, where x, y, z are Cartesian
     coordinates from the center of the Earth.
 
     """
