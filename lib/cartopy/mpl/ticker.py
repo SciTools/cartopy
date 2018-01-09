@@ -78,7 +78,7 @@ class _PlateCarreeFormatter(Formatter):
     def _apply_transform(self, value, target_proj, source_crs):
         """
         Given a single value, a target projection and a source CRS,
-        transforms the value from the source CRS to the target
+        transform the value from the source CRS to the target
         projection, returning a single value.
 
         """
@@ -87,7 +87,7 @@ class _PlateCarreeFormatter(Formatter):
     def _hemisphere(self, value, value_source_crs):
         """
         Given both a tick value in the Plate Carree projection and the
-        same value in the source CRS returns a string indicating the
+        same value in the source CRS, return a string indicating the
         hemisphere that the value is in.
 
         Must be over-ridden by the derived class.
@@ -177,7 +177,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  number_format='g',
                  transform_precision=1e-8):
         """
-        Creates a formatter for longitude values.
+        Create a formatter for longitude values.
 
         The axis must be part of an axes defined on a rectangular
         projection (e.g. Plate Carree, Mercator).

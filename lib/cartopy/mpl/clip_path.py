@@ -155,7 +155,7 @@ def lines_intersect(p0, p1, p2, p3):
 
 def bbox_to_path(bbox):
     """
-    Turns the given :class:`matplotlib.transforms.Bbox` instance into
+    Turn the given :class:`matplotlib.transforms.Bbox` instance into
     a :class:`matplotlib.path.Path` instance.
 
     """

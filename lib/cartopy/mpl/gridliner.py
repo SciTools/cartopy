@@ -35,7 +35,7 @@ _DEGREE_SYMBOL = u'\u00B0'
 
 def _fix_lons(lons):
     """
-    Fixes the given longitudes into the range ``[-180, 180]``.
+    Fix the given longitudes into the range ``[-180, 180]``.
 
     """
     lons = np.array(lons, copy=False, ndmin=1)
@@ -46,7 +46,7 @@ def _fix_lons(lons):
 
 
 def _lon_heimisphere(longitude):
-    """Returns the hemisphere (E, W or '' for 0) for the given longitude."""
+    """Return the hemisphere (E, W or '' for 0) for the given longitude."""
     longitude = _fix_lons(longitude)
     if longitude > 0:
         hemisphere = 'E'
@@ -58,7 +58,7 @@ def _lon_heimisphere(longitude):
 
 
 def _lat_heimisphere(latitude):
-    """Returns the hemisphere (N, S or '' for 0) for the given latitude."""
+    """Return the hemisphere (N, S or '' for 0) for the given latitude."""
     if latitude > 0:
         hemisphere = 'N'
     elif latitude < 0:
@@ -206,7 +206,7 @@ class Gridliner(object):
 
     def _crs_transform(self):
         """
-        Gets the drawing transform for our gridlines.
+        Get the drawing transform for our gridlines.
 
         Notes
         -----
@@ -221,7 +221,7 @@ class Gridliner(object):
 
     def _add_gridline_label(self, value, axis, upper_end):
         """
-        Creates a Text artist on our axes for a gridline label.
+        Create a Text artist on our axes for a gridline label.
 
         Parameters
         ----------
@@ -295,7 +295,7 @@ class Gridliner(object):
         self.axes.add_artist(text_artist)
 
     def _draw_gridliner(self, nx=None, ny=None, background_patch=None):
-        """Creates Artists for all visible elements and add to our Axes."""
+        """Create Artists for all visible elements and add to our Axes."""
         x_lim, y_lim = self._axes_domain(nx=nx, ny=ny,
                                          background_patch=background_patch)
 
@@ -382,7 +382,7 @@ class Gridliner(object):
 
     def _assert_can_draw_ticks(self):
         """
-        Checks to see if ticks can be drawn. Either returns True or raises
+        Check to see if ticks can be drawn. Either returns True or raises
         an exception.
 
         """
@@ -400,7 +400,7 @@ class Gridliner(object):
         return True
 
     def _axes_domain(self, nx=None, ny=None, background_patch=None):
-        """Returns x_range, y_range"""
+        """Return x_range, y_range"""
         DEBUG = False
 
         transform = self._crs_transform()

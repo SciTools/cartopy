@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 """
-Provides shapely geometry <-> matplotlib path support.
+Provide shapely geometry <-> matplotlib path support.
 
 
 See also `Shapely Geometric Objects <see_also_shapely>`_
@@ -36,7 +36,7 @@ import shapely.geometry as sgeom
 
 def geos_to_path(shape):
     """
-    Creates a list of :class:`matplotlib.path.Path` objects that describe
+    Create a list of :class:`matplotlib.path.Path` objects that describe
     a shape.
 
     Parameters
@@ -96,7 +96,7 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
                   quantize=False, simplify=False, curves=False,
                   stroke_width=1.0, snap=False):
     """
-    Creates an array of vertices and a corresponding array of codes from a
+    Create an array of vertices and a corresponding array of codes from a
     :class:`matplotlib.path.Path`.
 
     Parameters
@@ -148,7 +148,7 @@ if hasattr(matplotlib.path.Path, 'cleaned'):
 
 def path_to_geos(path, force_ccw=False):
     """
-    Creates a list of Shapely geometric objects from a
+    Create a list of Shapely geometric objects from a
     :class:`matplotlib.path.Path`.
 
     Parameters

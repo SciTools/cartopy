@@ -84,7 +84,7 @@ CARTOPY_USER_BACKGROUNDS environment variable.
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
     """
-    Transforms coordinates from the source_projection to
+    Transform coordinates from the source_projection to
     the ``target_projection``.
 
     """
@@ -95,7 +95,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
     def __init__(self, source_projection, target_projection):
         """
-        Creates the transform object from the given projections.
+        Create the transform object from the given projections.
 
         Parameters
         ----------
@@ -118,7 +118,7 @@ class InterProjectionTransform(mtransforms.Transform):
 
     def transform_non_affine(self, xy):
         """
-        Transforms from source to target coordinates.
+        Transform from source to target coordinates.
 
         Parameters
         ----------
@@ -142,9 +142,9 @@ class InterProjectionTransform(mtransforms.Transform):
 
     def transform_path_non_affine(self, src_path):
         """
-        Transforms from source to target coordinates.
+        Transform from source to target coordinates.
 
-        Caches results, so subsequent calls with the same *src_path* argument
+        Cache results, so subsequent calls with the same *src_path* argument
         (and the same source and target projections) are faster.
 
         Parameters
@@ -253,7 +253,7 @@ class GeoAxes(matplotlib.axes.Axes):
     """
     def __init__(self, *args, **kwargs):
         """
-        Creates a GeoAxes object using standard matplotlib
+        Create a GeoAxes object using standard matplotlib
         :class:`~matplotlib.axes.Axes` args and kwargs.
 
         Parameters
@@ -282,7 +282,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_image(self, factory, *args, **kwargs):
         """
-        Adds an image "factory" to the Axes.
+        Add an image "factory" to the Axes.
 
         Any image "factory" added will be asked to retrieve an image
         with associated metadata for a given bounding box at draw time.
@@ -320,7 +320,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @contextlib.contextmanager
     def hold_limits(self, hold=True):
         """
-        Keeps track of the original view and data limits for the life of this
+        Keep track of the original view and data limits for the life of this
         context manager, optionally reverting any changes back to the original
         values after the manager exits.
 
@@ -347,9 +347,9 @@ class GeoAxes(matplotlib.axes.Axes):
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
         """
-        Extends the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
+        Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
 
-        Draws grid lines and image factory results before invoking standard
+        Draw grid lines and image factory results before invoking standard
         Matplotlib drawing. A global range is used if no limits have yet
         been set.
 
@@ -388,7 +388,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return '< GeoAxes: %s >' % self.projection
 
     def cla(self):
-        """Clears the current axes and adds boundary lines."""
+        """Clear the current axes and adds boundary lines."""
         result = matplotlib.axes.Axes.cla(self)
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
@@ -425,7 +425,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def coastlines(self, resolution='110m', color='black', **kwargs):
         """
-        Adds coastal **outlines** to the current axes from the Natural Earth
+        Add coastal **outlines** to the current axes from the Natural Earth
         "coastline" shapefile collection.
 
         Parameters
@@ -443,7 +443,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def tissot(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
         """
-        Adds Tissot's indicatrices to the axes.
+        Add Tissot's indicatrices to the axes.
 
         Parameters
         ----------
@@ -498,7 +498,7 @@ class GeoAxes(matplotlib.axes.Axes):
     def natural_earth_shp(self, name='land', resolution='110m',
                           category='physical', **kwargs):
         """
-        Adds the geometries from the specified Natural Earth shapefile to the
+        Add the geometries from the specified Natural Earth shapefile to the
         Axes as a :class:`~matplotlib.collections.PathCollection`.
 
         Parameters
@@ -536,7 +536,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_feature(self, feature, **kwargs):
         """
-        Adds the given :class:`~cartopy.feature.Feature` instance to the axes.
+        Add the given :class:`~cartopy.feature.Feature` instance to the axes.
 
         Parameters
         ----------
@@ -561,7 +561,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_geometries(self, geoms, crs, **kwargs):
         """
-        Adds the given shapely geometries (in the given crs) to the axes.
+        Add the given shapely geometries (in the given crs) to the axes.
 
         Parameters
         ----------
@@ -588,7 +588,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def get_extent(self, crs=None):
         """
-        Gets the extent (x0, x1, y0, y1) of the map in the given coordinate
+        Get the extent (x0, x1, y0, y1) of the map in the given coordinate
         system.
 
         If no crs is given, the returned extents' coordinate system will be
@@ -649,7 +649,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_extent(self, extents, crs=None):
         """
-        Sets the extent (x0, x1, y0, y1) of the map in the given
+        Set the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
 
         If no crs is given, the extents' coordinate system will be assumed
@@ -704,7 +704,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_global(self):
         """
-        Sets the extent of the Axes to the limits of the projection.
+        Set the extent of the Axes to the limits of the projection.
 
         Notes
         -----
@@ -734,7 +734,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_xticks(self, ticks, minor=False, crs=None):
         """
-        Sets the x ticks.
+        Set the x ticks.
 
         Parameters
         ----------
@@ -781,7 +781,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_yticks(self, ticks, minor=False, crs=None):
         """
-        Sets the y ticks.
+        Set the y ticks.
 
         Parameters
         ----------
@@ -828,7 +828,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def stock_img(self, name='ne_shaded'):
         """
-        Adds a standard image to the map.
+        Add a standard image to the map.
 
         Currently, the only (and default) option is a downsampled version of
         the Natural Earth shaded relief raster.
@@ -850,7 +850,7 @@ class GeoAxes(matplotlib.axes.Axes):
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
                        cache=False):
         """
-        Adds a background image to the map, from a selection of pre-prepared
+        Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
         environment variable. That directory is checked with
         func:`self.read_user_background_images` and needs to contain a JSON
@@ -972,7 +972,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def read_user_background_images(self, verify=True):
         """
-        Reads the metadata in the specified CARTOPY_USER_BACKGROUNDS
+        Read the metadata in the specified CARTOPY_USER_BACKGROUNDS
         environment variable to populate the dictionaries for background_img.
 
         If CARTOPY_USER_BACKGROUNDS is not set then by default the image in
@@ -1028,7 +1028,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
-        Adds the given raster source to the GeoAxes.
+        Add the given raster source to the GeoAxes.
 
         Parameters
         ----------
@@ -1070,7 +1070,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def imshow(self, img, *args, **kwargs):
         """
-        Adds the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
 
         Parameters
         ----------
@@ -1175,7 +1175,7 @@ class GeoAxes(matplotlib.axes.Axes):
     def gridlines(self, crs=None, draw_labels=False, xlocs=None,
                   ylocs=None, **kwargs):
         """
-        Automatically adds gridlines to the axes, in the given coordinate
+        Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
 
         Parameters
@@ -1236,7 +1236,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _boundary(self):
         """
-        Adds the map's boundary to this GeoAxes, attaching the appropriate
+        Add the map's boundary to this GeoAxes, attaching the appropriate
         artists to :data:`.outline_patch` and :data:`.background_patch`.
 
         Notes
@@ -1271,7 +1271,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_boundary(self, path, transform=None, use_as_clip_path=True):
         """
-        Given a path, updates the :data:`.outline_patch` and
+        Given a path, update the :data:`.outline_patch` and
         :data:`.background_patch` to take its shape.
 
         Parameters
@@ -1645,7 +1645,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def pcolor(self, *args, **kwargs):
         """
-        Adds the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
 
         Other Parameters
         ----------------
@@ -1672,7 +1672,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def quiver(self, x, y, u, v, *args, **kwargs):
         """
-        Plots a field of arrows.
+        Plot a field of arrows.
 
         Parameters
         ----------
@@ -1753,7 +1753,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
-        Plots a field of barbs.
+        Plot a field of barbs.
 
         Parameters
         ----------
@@ -1834,7 +1834,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def streamplot(self, x, y, u, v, **kwargs):
         """
-        Plots streamlines of a vector flow.
+        Plot streamlines of a vector flow.
 
         Parameters
         ----------
@@ -1914,7 +1914,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
         """
-        Adds the specified WMTS layer to the axes.
+        Add the specified WMTS layer to the axes.
 
         This function requires owslib and PIL to work.
 
@@ -1942,7 +1942,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):
         """
-        Adds the specified WMS layer to the axes.
+        Add the specified WMS layer to the axes.
 
         This function requires owslib and PIL to work.
 
@@ -1983,7 +1983,7 @@ except AttributeError:
 
 def _trigger_patch_reclip(event):
     """
-    Defines an event callback for a GeoAxes which forces the outline and
+    Define an event callback for a GeoAxes which forces the outline and
     background patches to be re-clipped next time they are drawn.
 
     """

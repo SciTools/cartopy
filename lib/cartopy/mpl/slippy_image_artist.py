@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 """
-Defines the SlippyImageArtist class, which interfaces with
+Define the SlippyImageArtist class, which interfaces with
 :class:`cartopy.io.RasterSource` instances at draw time, for interactive
 dragging and zooming of raster data.
 

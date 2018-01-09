@@ -33,7 +33,7 @@ import cartopy.mpl.patch as cpatch
 
 class _GeomKey(object):
     """
-    Provides id() based equality and hashing for geometries.
+    Provide id() based equality and hashing for geometries.
 
     Instances of this class must be treated as immutable for the caching
     to operate correctly.
@@ -117,7 +117,7 @@ class FeatureArtist(matplotlib.artist.Artist):
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
         """
-        Draws the geometries of the feature that intersect with the extent of
+        Draw the geometries of the feature that intersect with the extent of
         the :class:`cartopy.mpl.GeoAxes` instance to which this
         object has been added.
 
