@@ -42,7 +42,7 @@ cdef extern from "geodesic.h":
 
 cdef class Geodesic:
     """
-    Defines an ellipsoid on which to solve geodesic problems.
+    Define an ellipsoid on which to solve geodesic problems.
 
     """
     cdef geod_geodesic* geod
@@ -51,7 +51,7 @@ cdef class Geodesic:
 
     def __cinit__(self, radius=6378137.0, flattening=1/298.257223563):
         """
-        Creates an ellipsoid with a given radius and flattening.
+        Create an ellipsoid with a given radius and flattening.
 
         Parameters
         ----------
@@ -156,7 +156,7 @@ cdef class Geodesic:
     @cython.boundscheck(False)
     def inverse(self, points, endpoints):
         """
-        Solves the inverse geodesic problem.
+        Solve the inverse geodesic problem.
 
         Can accept and broadcast length 1 arguments. For example, given a
         single start point, an array of different endpoints can be supplied to
@@ -217,7 +217,7 @@ cdef class Geodesic:
     def circle(self, double lon, double lat, double radius, int n_samples=180,
                endpoint=False):
         """
-        Finds a geodesic circle of given radius at a given point.
+        Find a geodesic circle of given radius at a given point.
 
         Parameters
         ----------

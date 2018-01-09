@@ -16,7 +16,7 @@ import cartopy.crs as ccrs
 
 def sample_data(shape=(20, 30)):
     """
-    Returns ``(x, y, u, v, crs)`` of some vector data
+    Return ``(x, y, u, v, crs)`` of some vector data
     computed mathematically. The returned CRS will be a North Polar
     Stereographic projection, meaning that the vectors will be unevenly
     spaced in a PlateCarree projection.

@@ -28,7 +28,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 def aurora_forecast():
     """
-    Gets the latest Aurora Forecast from http://swpc.noaa.gov.
+    Get the latest Aurora Forecast from http://swpc.noaa.gov.
 
     Returns
     -------

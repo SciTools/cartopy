@@ -16,7 +16,7 @@ from cartopy.io.img_tiles import OSM
 
 def tube_locations():
     """
-    Returns an (n, 2) array of selected London Tube locations in Ordnance
+    Return an (n, 2) array of selected London Tube locations in Ordnance
     Survey GB coordinates.
 
     Source: http://www.doogal.co.uk/london_stations.php
