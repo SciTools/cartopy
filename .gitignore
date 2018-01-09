@@ -27,7 +27,7 @@ docs/source/api
 # some data files:
 lib/cartopy/data/SRTM3
 lib/cartopy/data/gshhs
-#lib/cartopy/data/shapefiles
+lib/cartopy/data/shapefiles
 
 # some configuration files which aren't part of cartopy repo
 lib/cartopy/tests/.pep8_test_exclude.txt
