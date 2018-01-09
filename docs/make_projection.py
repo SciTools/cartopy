@@ -27,7 +27,7 @@ import cartopy.crs as ccrs
 SPECIAL_CASES = {
     ccrs.PlateCarree: [{}, {'central_longitude': 180}],
     ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
-    ccrs.UTM: [{'zone': 30}, {'zone': 50}],
+    ccrs.UTM: [{'zone': 30}],
     ccrs.AzimuthalEquidistant: [{'central_latitude': 90}],
     ccrs.NearsidePerspective: [{
         'central_longitude': -3.53, 'central_latitude': 50.72,
@@ -91,19 +91,37 @@ if __name__ == '__main__':
         table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
         for instance_args in SPECIAL_CASES.get(prj, [{}]):
-            prj_inst = prj(**instance_args)
-            aspect = (np.diff(prj_inst.x_limits) /
-                      np.diff(prj_inst.y_limits))[0]
-            width = 3 * aspect
-            width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
+            if name is "UTM":
+                code = """
+.. plot::
 
-            instance_params = ',\n        '.join(
-                '{}={}'.format(k, v)
-                for k, v in sorted(instance_args.items()))
-            if instance_params:
-                instance_params = '\n        ' + instance_params
-            instance_creation_code = '{}({})'.format(name, instance_params)
-            code = """
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+    zones = range(1, 61)
+    fig = plt.figure(figsize=(10, 3))
+    for zone in zones:
+        ax = fig.add_subplot(1, len(zones), zone,
+                             projection=ccrs.UTM(zone=zone,
+                                                 southern_hemisphere=True))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
+
+\n"""
+
+            else:
+                prj_inst = prj(**instance_args)
+                aspect = (np.diff(prj_inst.x_limits) /
+                          np.diff(prj_inst.y_limits))[0]
+                width = 3 * aspect
+                width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
+
+                instance_params = ',\n        '.join(
+                    '{}={}'.format(k, v)
+                    for k, v in sorted(instance_args.items()))
+                if instance_params:
+                    instance_params = '\n        ' + instance_params
+                instance_creation_code = '{}({})'.format(name, instance_params)
+                code = """
 .. plot::
 
     import matplotlib.pyplot as plt

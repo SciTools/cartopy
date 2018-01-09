@@ -241,12 +241,14 @@ UTM
 
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
-
-    plt.figure(figsize=(0.1286, 3))
-    ax = plt.axes(projection=ccrs.UTM(
-        zone=30))
-    ax.coastlines(resolution='110m')
-    ax.gridlines()
+    zones = range(1, 61)
+    fig = plt.figure(figsize=(10, 3))
+    for zone in zones:
+        ax = fig.add_subplot(1, len(zones), zone,
+                             projection=ccrs.UTM(zone=zone,
+                                                 southern_hemisphere=True))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
 
 
 InterruptedGoodeHomolosine
