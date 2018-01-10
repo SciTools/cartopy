@@ -405,7 +405,7 @@ What's new in cartopy 0.9
   (with video) <https://conference.scipy.org/scipy2013/presentation_detail.php?id=132>`_,
   `Thomas Lecocq's tutorial at EuroSciPy
   <https://www.euroscipy.org/2013/schedule/presentation/27/>`_
-  and a forthcoming `talk at FOSS4G <https://2013.foss4g.org/conf/programme/presentations/29/>`_.
+  and a forthcoming `talk at FOSS4G <http://2013.foss4g.org/conf/programme/presentations/29/>`_.
 * Christoph Gohlke updated cartopy to support Windows 7.
 * The Plate Carree projection was updated to fully handle arbitrary globe definitions.
 * Peter Killick updated the Mercator class' default globe to WGS84. His refactor paved the way

@@ -827,7 +827,7 @@ class WFSGeometrySource(object):
         find_str: string
             A search string used to match subelements that contain
             the coordinates of interest, for example:
-            './/{https://www.opengis.net/gml}LineString'
+            './/{http://www.opengis.net/gml}LineString'
 
         Returns
         -------

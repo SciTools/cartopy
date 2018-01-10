@@ -449,7 +449,8 @@ class NestedImageCollection(object):
 
         Parameters
         ----------
-        collection_image: A tuple pair containing the parent
+        collection_image
+            A tuple pair containing the parent
             :class:`~cartopy.io.img_nest.ImageCollection` name and
             :class:`~cartopy.io.img_nest.Img` instance.
 

@@ -28,7 +28,7 @@ Natural Earth or GSHHS shapefiles.
 
 To simplify some very common cases, some pre-defined Features exist as :mod:`cartopy.feature`
 constants. The pre-defined Features are all small-scale (1:110m)
-`Natural Earth <https://www.naturalearthdata.com>`_ datasets, and can be added with methods
+`Natural Earth <http://www.naturalearthdata.com>`_ datasets, and can be added with methods
 such as :func:`GeoAxes.add_feature <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
 
 =======================================  ==================================================

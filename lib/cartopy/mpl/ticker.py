@@ -185,13 +185,11 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         Parameters
         ----------
         zero_direction_label: optional
-            Boolean flag.
             If *True* a direction label (E or W) will be drawn next to
             longitude labels with the value 0. If *False* then these
             labels will not be drawn. Defaults to *False* (no direction
             labels).
         dateline_direction_label: optional
-            Boolean flag.
             If *True* a direction label (E or W) will be drawn next to
             longitude labels with the value 180. If *False* then these
             labels will not be drawn. Defaults to *False* (no direction

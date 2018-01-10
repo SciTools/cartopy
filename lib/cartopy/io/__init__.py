@@ -356,7 +356,7 @@ class RasterSource(object):
 
     def fetch_raster(self, projection, extent, target_resolution):
         """
-        Returns a sequence of images with extents given some constraining
+        Return a sequence of images with extents given some constraining
         information.
 
         Parameters

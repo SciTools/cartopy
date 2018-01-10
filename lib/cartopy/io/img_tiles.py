@@ -293,7 +293,7 @@ class MapboxTiles(GoogleTiles):
         ----------
         access_token
             A valid Mapbox API access token.
-        zmap_id
+        map_id
             A map ID for a publically accessible map. This is the
             map whose tiles will be retrieved through this process.
 

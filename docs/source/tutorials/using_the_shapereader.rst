@@ -38,7 +38,7 @@ Using the shapereader
 ---------------------
 
 We can acquire the countries dataset from Natural Earth found at
-https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/
+http://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/
 by using the :func:`natural_earth` function:
 
 
