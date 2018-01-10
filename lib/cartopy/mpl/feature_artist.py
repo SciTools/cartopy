@@ -85,7 +85,7 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         Other Parameters
         ----------------
-        kwargs
+        **kwargs
             Keyword arguments to be used when drawing the feature. These
             will override those shared with the feature.
 

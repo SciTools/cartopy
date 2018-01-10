@@ -69,7 +69,7 @@ class Feature(six.with_metaclass(ABCMeta)):
 
     Other Parameters
     ----------------
-    kwargs
+    **kwargs
         Keyword arguments to be used when drawing this feature.
 
 
@@ -140,7 +140,7 @@ class ShapelyFeature(Feature):
 
         Other Parameters
         ----------------
-        kwargs
+        **kwargs
             Keyword arguments to be used when drawing this feature.
 
         """
@@ -173,7 +173,7 @@ class NaturalEarthFeature(Feature):
 
         Other Parameters
         ----------------
-        kwargs
+        **kwargs
             Keyword arguments to be used when drawing this feature.
 
         """
@@ -229,7 +229,7 @@ class GSHHSFeature(Feature):
 
     Other Parameters
     ----------------
-    kwargs
+    **kwargs
         Keyword arguments to be used when drawing the feature. Defaults
         are edgecolor='black' and facecolor='none'.
 
@@ -338,7 +338,7 @@ class WFSFeature(Feature):
 
         Other Parameters
         ----------------
-        kwargs
+        **kwargs
             Keyword arguments to be used when drawing this feature.
 
         """
