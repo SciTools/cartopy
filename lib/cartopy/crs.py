@@ -2458,6 +2458,81 @@ class EquidistantConic(Projection):
         return self._y_limits
 
 
+class RectangularHealpix(Projection):
+    """
+    Also known as rHEALPix in proj.4, this projection is an extension of the
+    Healpix projection to present rectangles, rather than triangles, at the north
+    and south poles.
+    Parameters
+    ----------
+    central_longitude
+    north_square: int
+        The position for the north pole square. Must be one of 0, 1, 2 or 3.
+        0 would have the north pole square aligned with the left-most square,
+        and 3 would be aligned with the right-most.
+    south_square: int
+        The position for the south pole square. Must be one of 0, 1, 2 or 3.
+    """
+    def __init__(self, central_longitude=0, north_square=0, south_square=0):
+        valid_square = [0, 1, 2, 3]
+        if north_square not in valid_square:
+            raise ValueError('north_square must be one of '
+                             '{}'.format(valid_square))
+        if south_square not in valid_square:
+            raise ValueError('south_square must be one of {}'
+                             ''.format(valid_square))
+
+        proj4_params = [('proj', 'rhealpix'),
+                        ('north_square', north_square),
+                        ('south_square', south_square),
+                        ('lon_0', central_longitude)]
+        super(RectangularHealpix, self).__init__(proj4_params)
+
+        # Boundary is based on units of m, with a standard spherical ellipse.
+        # The hard-coded scale is the reason for not accepting the globe
+        # keyword. The scale changes based on the size of the semi-major axis.
+        nrth_x_pos = (north_square - 2) * 1e7
+        sth_x_pos = (south_square - 2) * 1e7
+        top = 5.03e6
+        max_v = 2e7
+
+        points = [[max_v, -5e6],
+                  [max_v, top],
+                  [nrth_x_pos + 1e7, top],
+                  [nrth_x_pos + 1e7, 1.5e7],
+                  [nrth_x_pos, 1.5e7],
+                  [nrth_x_pos, top],
+                  [-max_v, top]]
+        if south_square != 0:
+            points.append([-max_v, -top])
+        points.extend([[sth_x_pos, -5e6],
+                       [sth_x_pos, -1.5e7],
+                       [sth_x_pos + 1e7, -1.5e7],
+                       [sth_x_pos + 1e7, -5e6]])
+        self._boundary = sgeom.LineString(points[::-1])
+
+        xs, ys = zip(*points)
+        self._x_limits = min(xs), max(xs)
+        self._y_limits = min(ys), max(ys)
+        self._threshold = (self.x_limits[1] - self.x_limits[0]) / 1e4
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
 class _BoundaryPoint(object):
     def __init__(self, distance, kind, data):
         """

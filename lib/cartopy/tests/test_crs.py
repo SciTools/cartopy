@@ -234,6 +234,24 @@ class TestCRS(object):
                              decimal=1)
 
 
+def test_rHEALPix_defaults():
+    crs = ccrs.rHEALPix()
+    assert sorted(crs.proj4_params.items()) == [('ellps', 'WGS84'),
+                                                ('lon_0', 0),
+                                                ('north_square', 0),
+                                                ('proj', 'rhealpix'),
+                                                ('south_square', 0)]
+
+
+def test_rHEALPix_params():
+    crs = ccrs.rHEALPix(central_longitude=20, north_square=1, south_square=2)
+    assert sorted(crs.proj4_params.items()) == [('ellps', 'WGS84'),
+                                                ('lon_0', 20),
+                                                ('north_square', 1),
+                                                ('proj', 'rhealpix'),
+                                                ('south_square', 2)]
+
+
 def test_pickle():
     # check that we can pickle a simple CRS
     fh = BytesIO()
