@@ -1497,8 +1497,8 @@ class Robinson(_WarpedRectangularProjection):
         Needed because input NaNs can trigger a fatal error in the underlying
         implementation of the Robinson projection.
 
-        Notes
-        -----
+        Note
+        ----
             Although the original can in fact translate (nan, lat) into
             (nan, y-value), this patched version doesn't support that.
 
@@ -1517,8 +1517,8 @@ class Robinson(_WarpedRectangularProjection):
         Needed because input NaNs can trigger a fatal error in the underlying
         implementation of the Robinson projection.
 
-        Notes
-        -----
+        Note
+        ----
             Although the original can in fact translate (nan, lat) into
             (nan, y-value), this patched version doesn't support that.
             Instead, we invalidate any of the points that contain a NaN.

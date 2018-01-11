@@ -208,10 +208,10 @@ class Gridliner(object):
         """
         Get the drawing transform for our gridlines.
 
-        Notes
-        -----
-        The drawing transform depends on the transform of our 'axes', so
-        it may change dynamically.
+        Note
+        ----
+            The drawing transform depends on the transform of our 'axes', so
+            it may change dynamically.
 
         """
         transform = self.crs

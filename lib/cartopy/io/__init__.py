@@ -113,12 +113,12 @@ class Downloader(object):
         :meth:`Downloader.path` is called it will not be downloaded
         to this location (unlike the ``target_path_template`` argument).
 
-    Notes
-    -----
-    All ``*_template`` arguments should be formattable using the
-    standard :meth:`string.format` rules. The formatting itself
-    is not done until a call to a subsequent method (such as
-    :meth:`Downloader.path`).
+    Note
+    ----
+        All ``*_template`` arguments should be formattable using the
+        standard :meth:`string.format` rules. The formatting itself
+        is not done until a call to a subsequent method (such as
+        :meth:`Downloader.path`).
 
     """
 

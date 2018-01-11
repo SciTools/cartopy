@@ -122,10 +122,10 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
 
-        Notes
-        -----
-        A formatter can only be used for one axis. A new formatter
-        must be created for every axis that needs formatted labels.
+        Note
+        ----
+            A formatter can only be used for one axis. A new formatter
+            must be created for every axis that needs formatted labels.
 
         Examples
         --------
@@ -206,10 +206,10 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
 
-        Notes
-        -----
-        A formatter can only be used for one axis. A new formatter
-        must be created for every axis that needs formatted labels.
+        Note
+        ----
+            A formatter can only be used for one axis. A new formatter
+            must be created for every axis that needs formatted labels.
 
         Examples
         --------
