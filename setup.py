@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -62,7 +62,7 @@ HERE = os.path.dirname(__file__)
 
 def file_walk_relative(top, remove=''):
     """
-    Returns a generator of files from the top of the tree, removing
+    Return a generator of files from the top of the tree, removing
     the given prefix from the root/file result.
 
     """
@@ -75,7 +75,7 @@ def file_walk_relative(top, remove=''):
 
 def find_package_tree(root_path, root_package):
     """
-    Returns the package and all its sub-packages.
+    Return the package and all its sub-packages.
 
     Automated package discovery - extracted/modified from Distutils Cookbook:
     https://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery

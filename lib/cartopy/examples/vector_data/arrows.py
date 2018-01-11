@@ -15,7 +15,7 @@ import cartopy.feature as cfeature
 
 def sample_data(shape=(20, 30)):
     """
-    Returns ``(x, y, u, v, crs)`` of some vector data
+    Return ``(x, y, u, v, crs)`` of some vector data
     computed mathematically. The returned crs will be a rotated
     pole CRS, meaning that the vectors will be unevenly spaced in
     regular PlateCarree space.

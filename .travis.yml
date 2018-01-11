@@ -69,7 +69,11 @@ script:
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
-  - CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest --doctest-modules --pyargs cartopy
+  - if [[ "$NAME" == "Latest everything"* ]]; then
+      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest --doctest-modules --pyargs cartopy;
+    else
+      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest --pyargs cartopy;
+    fi
 
 after_failure:
   - source activate test-environment

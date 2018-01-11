@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -78,12 +78,15 @@ class FeatureArtist(matplotlib.artist.Artist):
 
     def __init__(self, feature, **kwargs):
         """
-        Args:
+        Parameters
+        ----------
+        feature
+            An instance of :class:`cartopy.feature.Feature` to draw.
 
-        * feature:
-            an instance of :class:`cartopy.feature.Feature` to draw.
-        * kwargs:
-            keyword arguments to be used when drawing the feature. These
+        Other Parameters
+        ----------------
+        **kwargs
+            Keyword arguments to be used when drawing the feature. These
             will override those shared with the feature.
 
         """
@@ -114,7 +117,7 @@ class FeatureArtist(matplotlib.artist.Artist):
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
         """
-        Draws the geometries of the feature that intersect with the extent of
+        Draw the geometries of the feature that intersect with the extent of
         the :class:`cartopy.mpl.GeoAxes` instance to which this
         object has been added.
 

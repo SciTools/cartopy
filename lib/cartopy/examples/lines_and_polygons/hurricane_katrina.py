@@ -13,7 +13,7 @@ import cartopy.io.shapereader as shpreader
 
 def sample_data():
     """
-    Returns a list of latitudes and a list of longitudes (lons, lats)
+    Return a list of latitudes and a list of longitudes (lons, lats)
     for Hurricane Katrina (2005).
 
     The data was originally sourced from the HURDAT2 dataset from AOML/NOAA:

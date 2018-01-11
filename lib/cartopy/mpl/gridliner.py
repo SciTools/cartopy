@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -101,34 +101,29 @@ class Gridliner(object):
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
 
-        Args:
-
-        * axes
+        Parameters
+        ----------
+        axes
             The :class:`cartopy.mpl.geoaxes.GeoAxes` object to be drawn on.
-
-        * crs
+        crs
             The :class:`cartopy.crs.CRS` defining the coordinate system that
             the gridlines are drawn in.
-
-        * draw_labels
+        draw_labels: optional
             Toggle whether to draw labels. For finer control, attributes of
-            :class:`Gridliner` may be modified individually.
-
-        * xlocator
+            :class:`Gridliner` may be modified individually. Defaults to False.
+        xlocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the x-coordinate of
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
-
-        * ylocator
+        ylocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the y-coordinate of
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
-
-        * collection_kwargs
+        collection_kwargs: optional
             Dictionary controlling line properties, passed to
-            :class:`matplotlib.collections.Collection`.
+            :class:`matplotlib.collections.Collection`. Defaults to None.
 
         """
         self.axes = axes
@@ -213,9 +208,10 @@ class Gridliner(object):
         """
         Get the drawing transform for our gridlines.
 
-        .. note::
-            this depends on the transform of our 'axes', so it may change
-            dynamically.
+        Notes
+        -----
+        The drawing transform depends on the transform of our 'axes', so
+        it may change dynamically.
 
         """
         transform = self.crs
@@ -227,16 +223,14 @@ class Gridliner(object):
         """
         Create a Text artist on our axes for a gridline label.
 
-        Args:
-
-        * value
+        Parameters
+        ----------
+        value
             Coordinate value of this gridline.  The text contains this
             value, and is positioned centred at that point.
-
-        * axis
-            which axis the label is on: 'x' or 'y'.
-
-        * upper_end
+        axis
+            Which axis the label is on: 'x' or 'y'.
+        upper_end: bool
             If True, place at the maximum of the "other" coordinate (Axes
             coordinate == 1.0).  Else 'lower' end (Axes coord = 0.0).
 
@@ -406,7 +400,7 @@ class Gridliner(object):
         return True
 
     def _axes_domain(self, nx=None, ny=None, background_patch=None):
-        """Returns x_range, y_range"""
+        """Return x_range, y_range"""
         DEBUG = False
 
         transform = self._crs_transform()
