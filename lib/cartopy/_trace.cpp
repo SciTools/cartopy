@@ -63,7 +63,7 @@ Point CartesianInterpolator::project(const Point &src_xy)
     xy.v = src_xy.y;
 
     int status = pj_transform(m_src_proj, m_dest_proj, 1, 1, &xy.u, &xy.v, NULL);
-    if (status == -14 || status == -20)
+    if (status == -14 || status == -20 || status == -15)
     {
         // -14 => "latitude or longitude exceeded limits"
         // -20 => "tolerance condition error"
