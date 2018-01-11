@@ -518,13 +518,6 @@ class GeoAxes(matplotlib.axes.Axes):
         -------
         The created :class:`~matplotlib.collections.PathCollection`.
 
-        Note
-        ----
-            Currently no clipping is done on the geometries before adding them
-            to the axes. This means, if very high resolution geometries are
-            being used, performance is likely to be severely effected. This
-            should be resolved transparently by v0.5.
-
         """
         warnings.warn('This method has been deprecated.'
                       ' Please use `add_feature` instead.')
