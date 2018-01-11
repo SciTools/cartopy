@@ -404,11 +404,13 @@ cdef class CRS:
         src_proj
             The :class:`CRS.Projection` that represents the coordinate system
             the vectors are defined in.
-        x, y
+        x
+        y
             The x and y coordinates, in the source projection
             coordinates, where the vector components are located.
             May be 1 or 2 dimensional, but must have matching shapes.
-        u, v
+        u
+        v
             The grid eastward and grid northward components of the
             vector field respectively. Their shape must match the shape
             of the x and y coordinates.
@@ -417,8 +419,8 @@ cdef class CRS:
         -------
             ut, vt: The transformed vector components.
 
-        Notes
-        -----
+        Note
+        ----
            The algorithm used to transform vectors is an approximation
            rather than an exact transform, but the accuracy should be
            good enough for visualization purposes.

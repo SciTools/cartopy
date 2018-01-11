@@ -278,7 +278,8 @@ class Downloader(object):
             typically this is left as None to use the
             default ``cartopy.config`` "downloaders" dictionary.
 
-        Example:
+        Example
+        -------
 
         >>> from cartopy.io import Downloader
         >>>

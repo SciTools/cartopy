@@ -137,7 +137,9 @@ class GoogleTiles(object):
 
         Parameters
         ----------
-        x, y, z
+        x
+        y
+        z
             The x, y, z tile coordinates in the Google tile
             numbering system (with y=0 being at the north pole), unless
             `y0_at_north_pole` is set to ``False``, in which case `y` is in
