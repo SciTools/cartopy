@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -49,23 +49,21 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         """
         Represents a simple geo-located image.
 
-        Args:
-
-        * filename:
+        Parameters
+        ----------
+        filename
             Filename of the image tile.
-
-        * extent:
-            The (x_lower, x_upper, y_lower, y_upper) extent of the image
-            in units of the native projection.
-
-        * origin:
+        extent
+            The (x_lower, x_upper, y_lower, y_upper) extent of the
+            image in units of the native projection.
+        origin
             Name of the origin.
+        pixel_size
+            The (x_scale, y_scale) pixel width, in units of the
+            native projection per pixel.
 
-        * pixel_size:
-            The (x_scale, y_scale) pixel width, in units of the native
-            projection per pixel.
-
-        .. note::
+        Notes
+        -----
             API is likely to change in the future to include a CRS.
 
         """
@@ -106,16 +104,18 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         'map.tfw', 'map.TIFW', 'map.TFW', 'MAP.tifw', 'MAP.tfw', 'MAP.TIFW'
         and 'MAP.TFW'.
 
-        Args:
-
-        * fname:
+        Parameters
+        ----------
+        fname
             Name of the file for which to get all the possible world
             filename combinations.
 
-        Returns:
+        Returns
+        -------
             A list of possible world filename combinations.
 
-        Examples:
+        Examples
+        --------
 
         >>> from cartopy.io.img_nest import Img
         >>> Img.world_files('img.png')[:6]
@@ -207,18 +207,15 @@ class ImageCollection(object):
 
         Typically these are images at the same zoom level or resolution.
 
-        Args:
-
-        * name:
+        Parameters
+        ----------
+        name
             The name of the image collection.
-
-        * crs:
+        crs
             The :class:`~cartopy.crs.Projection` instance.
-
-        Kwargs:
-
-        * images:
-            A list of one or more :class:`~cartopy.io.img_nest.Img` instances.
+        images: optional
+            A list of one or more :class:`~cartopy.io.img_nest.Img`
+            instances. Defaults to None.
 
         """
         self.name = name
@@ -231,21 +228,18 @@ class ImageCollection(object):
         Search the given directory for the associated world files
         of the image files.
 
-        Args:
-
-        * directory:
+        Parameters
+        ----------
+        directory
             The directory path to search for image files.
-
-        Kwargs:
-
-        * glob_pattern:
+        glob_pattern: optional
             The image filename glob pattern to search with.
             Defaults to '*.tif'.
-
-        * img_class
+        img_class: optional
             The class used to construct each image in the Collection.
 
-        .. note::
+        Notes
+        -----
             Does not recursively search sub-directories.
 
         """
@@ -279,16 +273,14 @@ class NestedImageCollection(object):
         There is a simplified creation interface for NestedImageCollection
         ``from_configuration`` for more detail.
 
-        Args:
-
-        * name:
+        Parameters
+        ----------
+        name
             The name of the nested image collection.
-
-        * crs:
+        crs
             The native :class:`~cartopy.crs.Projection` of all the image
             collections.
-
-        * collections:
+        collections
             A list of one or more :class:`~cartopy.io.img_nest.ImageCollection`
             instances.
 
@@ -332,7 +324,7 @@ class NestedImageCollection(object):
     @staticmethod
     def _is_parent(parent, child):
         """
-        Returns whether the given Image is the parent of image.
+        Return whether the given Image is the parent of image.
         Used by __init__.
 
         """
@@ -345,24 +337,27 @@ class NestedImageCollection(object):
 
     def image_for_domain(self, target_domain, target_z):
         """
-        Determine the image that provides complete coverage of target location.
+        Determine the image that provides complete coverage of target
+        location.
 
         The composed image is merged from one or more image tiles that overlay
         the target location and provide complete image coverage of the target
         location.
 
-        Args:
+        Parameters
+        ----------
+        target_domain
+            A :class:`~shapely.geometry.linestring.LineString`
+            instance that specifies the target location requiring image
+            coverage.
+        target_z
+            The name of the target :class`~cartopy.io.img_nest.ImageCollection`
+            which specifies the target zoom level (resolution) of the required
+            images.
 
-        * target_domain:
-            A :class:`~shapely.geometry.linestring.LineString` instance that
-            specifies the target location requiring image coverage.
-
-        * target_z:
-            The name of the target
-            :class`~cartopy.io.img_nest.ImageCollection` which specifies the
-            target zoom level (resolution) of the required images.
-
-        Returns:
+        Returns
+        -------
+        img, extent, origin
             A tuple containing three items, consisting of the target
             location :class:`numpy.ndarray` image data, the
             (x-lower, x-upper, y-lower, y-upper) extent of the image, and the
@@ -399,26 +394,25 @@ class NestedImageCollection(object):
         A generator that finds all images that overlap the bounded
         target location.
 
-        Args:
-
-        * target_domain:
+        Parameters
+        ----------
+        target_domain
             A :class:`~shapely.geometry.linestring.LineString` instance that
             specifies the target location requiring image coverage.
 
-        * target_z:
+        target_z
             The name of the target
             :class:`~cartopy.io.img_nest.ImageCollection` which specifies
             the target zoom level (resolution) of the required images.
-
-        Kwargs:
-
-        * start_tiles:
+        start_tiles: optional
             A list of one or more tuple pairs, composed of a
             :class:`~cartopy.io.img_nest.ImageCollection` name and an
             :class:`~cartopy.io.img_nest.Img` instance, from which to search
             for the target images.
 
-        Returns:
+        Returns
+        -------
+        generator
             A generator tuple pair composed of a
             :class:`~cartopy.io.img_nest.ImageCollection` name and an
             :class:`~cartopy.io.img_nest.Img` instance.
@@ -453,14 +447,16 @@ class NestedImageCollection(object):
         Find the higher resolution image tiles that compose this parent
         image tile.
 
-        Args:
-
-        * collection_image:
+        Parameters
+        ----------
+        collection_image
             A tuple pair containing the parent
             :class:`~cartopy.io.img_nest.ImageCollection` name and
             :class:`~cartopy.io.img_nest.Img` instance.
 
-        Returns:
+        Returns
+        -------
+        iterator
             An iterator of tuple pairs containing the higher resolution child
             :class:`~cartopy.io.img_nest.ImageCollection` name and
             :class:`~cartopy.io.img_nest.Img` instance that compose the parent.
@@ -474,22 +470,25 @@ class NestedImageCollection(object):
         """
         Retrieve the data of the target image from file.
 
-        .. note::
-          The format of the retrieved image file data is controlled by
-          :attr:`~cartopy.io.img_nest.NestedImageCollection.desired_tile_form`,
-          which defaults to 'RGB' format.
-
-        Args:
-
-        * collection_image:
+        Parameters
+        ----------
+        collection_image:
             A tuple pair containing the target
             :class:`~cartopy.io.img_nest.ImageCollection` name and
             :class:`~cartopy.io.img_nest.Img` instance.
 
-        Returns:
+        Returns
+        -------
+        img_data, img.extent, img.origin
             A tuple containing three items, consisting of the associated image
             file data, the (x_lower, x_upper, y_lower, y_upper) extent of the
             image, and the image origin.
+
+        Notes
+        -----
+          The format of the retrieved image file data is controlled by
+          :attr:`~cartopy.io.img_nest.NestedImageCollection.desired_tile_form`,
+          which defaults to 'RGB' format.
 
         """
         img = collection_image[1]
@@ -502,7 +501,7 @@ class NestedImageCollection(object):
                            glob_pattern='*.tif',
                            img_class=Img):
         """
-        Creates a :class:`~cartopy.io.img_nest.NestedImageCollection` instance
+        Create a :class:`~cartopy.io.img_nest.NestedImageCollection` instance
         given the list of image collection name and directory path pairs.
 
         This is very convenient functionality for simple configuration level
@@ -518,34 +517,29 @@ class NestedImageCollection(object):
                                                          ccrs.OSGB(),
                                                          files)
 
-        .. important::
+        Parameters
+        ----------
+        name
+            The name for the
+            :class:`~cartopy.io.img_nest.NestedImageCollection` instance.
+        crs
+            The :class:`~cartopy.crs.Projection` of the image collection.
+        name_dir_pairs
+            A list of image collection name and directory path pairs.
+        glob_pattern: optional
+            The image collection filename glob pattern. Defaults to '*.tif'.
+        img_class: optional
+            The class of images created in the image collection.
+
+        Returns
+        -------
+        A :class:`~cartopy.io.img_nest.NestedImageCollection` instance.
+
+        Warnings
+        --------
             The list of image collection name and directory path pairs must be
             given in increasing resolution order i.e. from low resolution to
             high resolution.
-
-        Args:
-
-        * name:
-            The name for the
-            :class:`~cartopy.io.img_nest.NestedImageCollection` instance.
-
-        * crs:
-            The :class:`~cartopy.crs.Projection` of the image collection.
-
-        * name_dir_pairs:
-            A list of image collection name and directory path pairs.
-
-        Kwargs:
-
-        * glob_pattern:
-            The image collection filename glob pattern.
-            Defaults to '*.tif'.
-
-        * img_class:
-            The class of images created in the image collection.
-
-        Returns:
-            A :class:`~cartopy.io.img_nest.NestedImageCollection` instance.
 
         """
         collections = []

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -48,6 +48,7 @@ try:
     from owslib.wfs import WebFeatureService
     import owslib.util
     import owslib.wmts
+
     _OWSLIB_AVAILABLE = True
 except ImportError:
     WebMapService = None
@@ -58,7 +59,6 @@ import cartopy.crs as ccrs
 from cartopy.io import LocatedImage, RasterSource
 from cartopy.img_transform import warp_array
 
-
 _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 
 # Hardcode some known EPSG codes for now.
@@ -66,7 +66,8 @@ _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 _CRS_TO_OGC_SRS = collections.OrderedDict(
     [(ccrs.PlateCarree(), 'EPSG:4326'),
      (ccrs.Mercator.GOOGLE, 'EPSG:900913'),
-     (ccrs.OSGB(), 'EPSG:27700')])
+     (ccrs.OSGB(), 'EPSG:27700')
+     ])
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
 METERS_PER_PIXEL = 0.28e-3
@@ -81,23 +82,23 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:EPSG::3413': 1
 }
 
-_URN_TO_CRS = collections.OrderedDict([
-    ('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
-    ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
-    ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
-    ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
-    ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
-        central_latitude=-90,
-        true_scale_latitude=-71)),
-    ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
-        central_longitude=-45,
-        central_latitude=90,
-        true_scale_latitude=70))
-])
+_URN_TO_CRS = collections.OrderedDict(
+    [('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
+     ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
+     ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
+     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
+     ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
+         central_latitude=-90,
+         true_scale_latitude=-71)),
+     ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
+         central_longitude=-45,
+         central_latitude=90,
+         true_scale_latitude=70))
+     ])
 
 # XML namespace definitions
-_MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
-_GML_NS = '{http://www.opengis.net/gml}'
+_MAP_SERVER_NS = '{https://mapserver.gis.umn.edu/mapserver}'
+_GML_NS = '{https://www.opengis.net/gml}'
 
 
 def _warped_located_image(image, source_projection, source_extent,
@@ -105,7 +106,9 @@ def _warped_located_image(image, source_projection, source_extent,
     """
     Reproject an Image from one source-projection and extent to another.
 
-    Returns:
+    Returns
+    -------
+    LocatedImage
         A reprojected LocatedImage, the extent of which is >= the requested
         'output_extent'.
 
@@ -199,21 +202,21 @@ class WMSRasterSource(RasterSource):
     """
     A WMS imagery retriever which can be added to a map.
 
-    .. note:: Requires owslib and Pillow to work.
+    Notes
+    -----
+    Requires owslib and Pillow to work.
 
-    .. note::
+    No caching of retrieved maps is done with this WMSRasterSource.
 
-        No caching of retrieved maps is done with this WMSRasterSource.
+    To reduce load on the WMS server it is encouraged to tile
+    map requests and subsequently stitch them together to recreate
+    a single raster, thus allowing for a more aggressive caching scheme,
+    but this WMSRasterSource does not currently implement WMS tile
+    fetching.
 
-        To reduce load on the WMS server it is encouraged to tile
-        map requests and subsequently stitch them together to recreate
-        a single raster, thus allowing for a more aggressive caching scheme,
-        but this WMSRasterSource does not currently implement WMS tile
-        fetching.
-
-        Whilst not the same service, there is also a WMTSRasterSource which
-        makes use of tiles and comes with built-in caching for fast repeated
-        map retrievals.
+    Whilst not the same service, there is also a WMTSRasterSource which
+    makes use of tiles and comes with built-in caching for fast repeated
+    map retrievals.
 
     """
 
@@ -221,15 +224,15 @@ class WMSRasterSource(RasterSource):
         """
         Parameters
         ----------
-        service : string or WebMapService instance
-            The WebMapService instance, or URL of a WMS service, from whence
-            to retrieve the image.
-        layers : string or list of strings
+        service: string or WebMapService instance
+            The WebMapService instance, or URL of a WMS service,
+            from whence to retrieve the image.
+        layers: string or list of strings
             The name(s) of layers to use from the WMS service.
-        getmap_extra_kwargs : dict or None
+        getmap_extra_kwargs: dict, optional
             Extra keywords to pass through to the service's getmap method.
-            If None, a dictionary with ``{'transparent': True}`` will
-            be defined.
+            If None, a dictionary with ``{'transparent': True}`` will be
+            defined.
 
         """
         if WebMapService is None:
@@ -332,7 +335,9 @@ class WMTSRasterSource(RasterSource):
 
     Uses tile caching for fast repeated map retrievals.
 
-    .. note:: Requires owslib and Pillow to work.
+    Notes
+    -----
+    Requires owslib and Pillow to work.
 
     """
 
@@ -350,17 +355,15 @@ class WMTSRasterSource(RasterSource):
 
     def __init__(self, wmts, layer_name, gettile_extra_kwargs=None):
         """
-        Args:
-
-            * wmts - The URL of the WMTS, or an
-                     owslib.wmts.WebMapTileService instance.
-            * layer_name - The name of the layer to use.
-
-        Kwargs:
-
-            * gettile_extra_kwargs : dict or None
-                Extra keywords (e.g. time) to pass through to the
-                service's gettile method.
+        Parameters
+        ----------
+        wmts
+            The URL of the WMTS, or an owslib.wmts.WebMapTileService instance.
+        layer_name
+            The name of the layer to use.
+        gettile_extra_kwargs: dict, optional
+            Extra keywords (e.g. time) to pass through to the
+            service's gettile method.
 
         """
         if WebMapService is None:
@@ -505,7 +508,7 @@ class WMTSRasterSource(RasterSource):
 
     def _tile_span(self, tile_matrix, meters_per_unit):
         pixel_span = tile_matrix.scaledenominator * (
-            METERS_PER_PIXEL / meters_per_unit)
+                METERS_PER_PIXEL / meters_per_unit)
         tile_span_x = tile_matrix.tilewidth * pixel_span
         tile_span_y = tile_matrix.tileheight * pixel_span
         return tile_span_x, tile_span_y
@@ -549,14 +552,18 @@ class WMTSRasterSource(RasterSource):
         If insufficient resolution is available, the highest available
         resolution is used.
 
-        Args:
-
-            * wmts - The owslib.wmts.WebMapTileService providing the tiles.
-            * layer - The owslib.wmts.ContentMetadata (aka. layer) to draw.
-            * matrix_set_name - The name of the matrix set to use.
-            * extent - Tuple of (left, right, bottom, top) in Axes coordinates.
-            * max_pixel_span - Preferred maximum pixel width or height
-                               in Axes coordinates.
+        Parameters
+        ----------
+        wmts
+            The owslib.wmts.WebMapTileService providing the tiles.
+        layer
+            The owslib.wmts.ContentMetadata (aka. layer) to draw.
+        matrix_set_name
+            The name of the matrix set to use.
+        extent
+            Tuple of (left, right, bottom, top) in Axes coordinates.
+        max_pixel_span
+            Preferred maximum pixel width or height in Axes coordinates.
 
         """
 
@@ -638,19 +645,17 @@ class WFSGeometrySource(object):
 
     def __init__(self, service, features, getfeature_extra_kwargs=None):
         """
-        Args:
-
-        * service:
+        Parameters
+        ----------
+        service
             The URL of a WFS, or an instance of
             :class:`owslib.wfs.WebFeatureService`.
-        * features:
+        features
             The typename(s) of the features from the WFS that
             will be retrieved and made available as geometries.
-
-        Kwargs:
-
-        * getfeature_extra_kwargs:
+        getfeature_extra_kwargs: optional
             Extra keyword args to pass to the service's `getfeature` call.
+            Defaults to None
 
         """
         if WebFeatureService is None:
@@ -707,18 +712,19 @@ class WFSGeometrySource(object):
         Return any Point, Linestring or LinearRing geometries available
         from the WFS that lie within the specified extent.
 
-        Args:
-
-        * projection: :class:`cartopy.crs.Projection`
+        Parameters
+        ----------
+        projection: :class:`cartopy.crs.Projection`
             The projection in which the extent is specified and in
             which the geometries should be returned. Only the default
             (native) projection is supported.
-
-        * extent: four element tuple
+        extent: four element tuple
             (min_x, max_x, min_y, max_y) tuple defining the geographic extent
             of the geometries to obtain.
 
-        Returns:
+        Returns
+        -------
+        geoms
             A list of Shapely geometries.
 
         """
@@ -761,12 +767,14 @@ class WFSGeometrySource(object):
         Convert polygon coordinate strings in WFS response XML to Shapely
         geometries.
 
-        Args:
-
-        * response: (file-like object)
+        Parameters
+        ----------
+        response: (file-like object)
             WFS response XML data.
 
-        Returns:
+        Returns
+        -------
+        geoms_by_srs
             A dictionary containing geometries, with key-value pairs of
             the form {srsname: [geoms]}.
 
@@ -812,17 +820,18 @@ class WFSGeometrySource(object):
         Return the x, y coordinate values for all the geometries in
         a given`node`.
 
-        Args:
-
-        * node: :class:`xml.etree.ElementTree.Element`
+        Parameters
+        ----------
+        node: :class:`xml.etree.ElementTree.Element`
             Node of the parsed XML response.
-
-        * find_str: string
+        find_str: string
             A search string used to match subelements that contain
             the coordinates of interest, for example:
-            './/{http://www.opengis.net/gml}LineString'
+            './/{https://www.opengis.net/gml}LineString'
 
-        Returns:
+        Returns
+        -------
+        data
             A list of (srsName, x_vals, y_vals) tuples.
 
         """

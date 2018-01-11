@@ -92,14 +92,13 @@ Features
   consistent, fixing several missing tiles, and the data is void-filled.
   Consequently, the :func:`cartopy.srtm.fill_gaps` function has been deprecated
   as it has no purpose within the STRM context. The
-  :ref:`SRTM example<examples-srtm_shading>` has also
-  been updated to skip the void-filling step. Additionally, this data source
-  provides SRTM at a higher resolution of 1 arc-second, which may be accessed
-  via :class:`cartopy.io.srtm.SRTM1Source`.
+  SRTM example has also been updated to skip the void-filling step.
+  Additionally, this data source provides SRTM at a higher resolution of
+  1 arc-second, which may be accessed via :class:`cartopy.io.srtm.SRTM1Source`.
 
 * All downloaders will use secure connections where available. Not
-  every service supports this method, and so those will use non-secured HTTP connections
-  instead. (See :pull:`736` for full details.)
+  every service supports this method, and so those will use non-secured
+  HTTP connections instead. (See :pull:`736` for full details.)
 
 * Cartopy now supports, and is tested against, Matplotlib 1.3 and 1.5 as well as
   numpy 1.7, 1.8 and 1.10.
@@ -248,8 +247,7 @@ Features
 
 * A new SRTM3 RasterSource has been implemented allowing interactive pan/zoom
   of 3 arc-second elevation data from the Shuttle Radar Topography Mission.
-  The :ref:`SRTM example<examples-srtm_shading>` has also been updated to use the
-  new interface.
+  The SRTM example has also been updated to use the new interface.
 
 * New additions to the gallery:
 
@@ -419,10 +417,10 @@ What's new in cartopy 0.9
   "Iris & Cartopy" <https://www.euroscipy.org/2013/schedule/presentation/35/>`_
   was voted best talk of the conference.
 * Other talks and tutorials during this release cycle include Phil Elson's `talk at SciPy'13
-  (with video) <http://conference.scipy.org/scipy2013/presentation_detail.php?id=132>`_,
+  (with video) <https://conference.scipy.org/scipy2013/presentation_detail.php?id=132>`_,
   `Thomas Lecocq's tutorial at EuroSciPy
   <https://www.euroscipy.org/2013/schedule/presentation/27/>`_
-  and a forthcoming `talk at FOSS4G <http://2013.foss4g.org/conf/programme/presentations/29/>`_.
+  and a forthcoming `talk at FOSS4G <https://2013.foss4g.org/conf/programme/presentations/29/>`_.
 * Christoph Gohlke updated cartopy to support Windows 7.
 * The Plate Carree projection was updated to fully handle arbitrary globe definitions.
 * Peter Killick updated the Mercator class' default globe to WGS84. His refactor paved the way

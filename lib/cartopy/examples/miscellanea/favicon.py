@@ -22,7 +22,7 @@ def main():
 
     def on_draw(event=None):
         """
-        Hooks into matplotlib's event mechanism to define the clip path of the
+        Hook into matplotlib's event mechanism to define the clip path of the
         background image.
 
         """

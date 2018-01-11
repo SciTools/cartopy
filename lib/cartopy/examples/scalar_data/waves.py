@@ -10,7 +10,7 @@ import cartopy.crs as ccrs
 
 
 def sample_data(shape=(73, 145)):
-    """Returns ``lons``, ``lats`` and ``data`` of some fake data."""
+    """Return ``lons``, ``lats`` and ``data`` of some fake data."""
     nlats, nlons = shape
     lats = np.linspace(-np.pi / 2, np.pi / 2, nlats)
     lons = np.linspace(0, 2 * np.pi, nlons)

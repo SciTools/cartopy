@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -47,7 +47,7 @@ WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 class RotatedGeodetic(CRS):
     """
-    Defines a rotated latitude/longitude coordinate system with spherical
+    Define a rotated latitude/longitude coordinate system with spherical
     topology and geographical distance.
 
     Coordinates are measured in degrees.
@@ -66,17 +66,16 @@ class RotatedGeodetic(CRS):
         globe, then rotating this new CRS about it's pole using the
         central_rotated_longitude value.
 
-        Args:
-
-            * pole_longitude - Pole longitude position, in unrotated degrees.
-            * pole_latitude - Pole latitude position, in unrotated degrees.
-            * central_rotated_longitude - Longitude rotation about the new
-                                          pole, in degrees.
-
-        Kwargs:
-
-            * globe - An optional :class:`cartopy.crs.Globe`.
-                      Defaults to a "WGS84" datum.
+        Parameters
+        ----------
+        pole_longitude
+            Pole longitude position, in unrotated degrees.
+        pole_latitude
+            Pole latitude position, in unrotated degrees.
+        central_rotated_longitude
+            Longitude rotation about the new pole, in degrees.
+        globe: optional
+            A :class:`cartopy.crs.Globe`.  Defaults to a "WGS84" datum.
 
         """
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
@@ -90,7 +89,7 @@ class RotatedGeodetic(CRS):
 
 class Projection(six.with_metaclass(ABCMeta, CRS)):
     """
-    Defines a projected coordinate system with flat topology and Euclidean
+    Define a projected coordinate system with flat topology and Euclidean
     distance.
 
     """
@@ -153,11 +152,14 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def project_geometry(self, geometry, src_crs=None):
         """
-        Projects the given geometry into this projection.
+        Project the given geometry into this projection.
 
-        :param geometry: The geometry to (re-)project.
-        :param src_crs: The source CRS, or geodetic CRS if None.
-        :rtype: Shapely geometry.
+        Parameters
+        ----------
+        geometry
+            The geometry to (re-)project.
+        src_crs: optional
+            The source CRS.  Defaults to None.
 
         If src_crs is None, the source CRS is assumed to be a geodetic
         version of the target CRS.
@@ -183,7 +185,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def _project_linear_ring(self, linear_ring, src_crs):
         """
-        Projects the given LinearRing from the src_crs into this CRS and
+        Project the given LinearRing from the src_crs into this CRS and
         returns a list of LinearRings and a single MultiLineString.
 
         """
@@ -300,7 +302,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def _project_polygon(self, polygon, src_crs):
         """
-        Returns the projected polygon(s) derived from the given polygon.
+        Return the projected polygon(s) derived from the given polygon.
 
         """
         # Determine orientation of polygon.
@@ -332,7 +334,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     def _attach_lines_to_boundary(self, multi_line_strings, is_ccw):
         """
-        Returns a list of LinearRings by attaching the ends of the given lines
+        Return a list of LinearRings by attaching the ends of the given lines
         to the boundary, paying attention to the traversal directions of the
         lines and boundary.
 
@@ -588,8 +590,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         Where possible, return a vertices array transformed to this CRS from
         the given vertices array of shape ``(n, 2)`` and the source CRS.
 
-        .. important::
-
+        Notes
+        -----
             This method may return None to indicate that the vertices cannot
             be transformed quickly, and a more complex geometry transformation
             is required (see :meth:`cartopy.crs.Projection.project_geometry`).
@@ -646,7 +648,7 @@ class _CylindricalProjection(six.with_metaclass(ABCMeta,
 
 def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
     """
-    Defines a projection boundary using an ellipse.
+    Define a projection boundary using an ellipse.
 
     This type of boundary is used by several projections.
 
@@ -677,7 +679,7 @@ class PlateCarree(_CylindricalProjection):
 
     def _bbox_and_offset(self, other_plate_carree):
         """
-        Returns a pair of (xmin, xmax) pairs and an offset which can be used
+        Return a pair of (xmin, xmax) pairs and an offset which can be used
         for identification of whether data in ``other_plate_carree`` needs
         to be transformed to wrap appropriately.
 
@@ -692,8 +694,8 @@ class PlateCarree(_CylindricalProjection):
         The returned values are longitudes in ``other_plate_carree``'s
         coordinate system.
 
-        .. important::
-
+        Warning
+        -------
             The two CRSs must be identical in every way, other than their
             central longitudes. No checking of this is done.
 
@@ -765,20 +767,22 @@ class TransverseMercator(Projection):
                  false_easting=0.0, false_northing=0.0,
                  scale_factor=1.0, globe=None):
         """
-        Kwargs:
-
-            * central_longitude - The true longitude of the central meridian in
-                                  degrees. Defaults to 0.
-            * central_latitude - The true latitude of the planar origin in
-                                 degrees. Defaults to 0.
-            * false_easting - X offset from the planar origin in metres.
-                              Defaults to 0.
-            * false_northing - Y offset from the planar origin in metres.
-                               Defaults to 0.
-            * scale_factor - Scale factor at the central meridian. Defaults
-                             to 1.
-            * globe - An instance of :class:`cartopy.crs.Globe`. If omitted, a
-                      default globe is created.
+        Parameters
+        ----------
+        central_longitude: optional
+            The true longitude of the central meridian in degrees.
+            Defaults to 0.
+        central_latitude: optional
+            The true latitude of the planar origin in degrees. Defaults to 0.
+        false_easting: optional
+            X offset from the planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from the planar origin in metres. Defaults to 0.
+        scale_factor: optional
+            Scale factor at the central meridian. Defaults to 1.
+        globe: optional
+            An instance of :class:`cartopy.crs.Globe`. If omitted, a default
+            globe is created.
 
         """
         proj4_params = [('proj', 'tmerc'), ('lon_0', central_longitude),
@@ -864,15 +868,16 @@ class UTM(Projection):
     """
     def __init__(self, zone, southern_hemisphere=False, globe=None):
         """
-        Kwargs:
-
-            * zone - the numeric zone of the UTM required.
-
-            * globe - An instance of :class:`cartopy.crs.Globe`. If omitted, a
-                      default globe is created.
-
-            * southern_hemisphere - set to True if the zone is in the southern
-                                    hemisphere, defaults to False.
+        Parameters
+        ----------
+        zone
+            The numeric zone of the UTM required.
+        southern_hemisphere: optional
+            Set to True if the zone is in the southern hemisphere. Defaults to
+            False.
+        globe: optional
+            An instance of :class:`cartopy.crs.Globe`. If omitted, a default
+            globe is created.
 
         """
         proj4_params = [('proj', 'utm'),
@@ -937,17 +942,20 @@ class Mercator(Projection):
                  min_latitude=-80.0, max_latitude=84.0,
                  globe=None, latitude_true_scale=0.0):
         """
-        Kwargs:
-
-            * central_longitude - the central longitude. Defaults to 0.
-            * min_latitude - the maximum southerly extent of the projection.
-                             Defaults to -80 degrees.
-            * max_latitude - the maximum northerly extent of the projection.
-                             Defaults to 84 degrees.
-            * globe - A :class:`cartopy.crs.Globe`.
-                      If omitted, a default globe is created.
-            * latitude_true_scale - the latitude where the scale is 1.
-                                    Defaults to 0 degrees.
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        min_latitude: optional
+            The maximum southerly extent of the projection. Defaults
+            to -80 degrees.
+        max_latitude: optional
+            The maximum northerly extent of the projection. Defaults
+            to 84 degrees.
+        globe: A :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+        latitude_true_scale: optional
+            The latitude where the scale is 1. Defaults to 0 degrees.
 
         """
         proj4_params = [('proj', 'merc'),
@@ -1033,22 +1041,29 @@ class LambertConformal(Projection):
                  secant_latitudes=None, standard_parallels=None,
                  globe=None, cutoff=-30):
         """
-        Kwargs:
-
-            * central_longitude - The central longitude. Defaults to -96.
-            * central_latitude - The central latitude. Defaults to 39.
-            * false_easting - X offset from planar origin in metres.
-                              Defaults to 0.
-            * false_northing - Y offset from planar origin in metres.
-                               Defaults to 0.
-            * standard_parallels - Standard parallel latitude(s).
-                                   Defaults to (33, 45).
-            * globe - A :class:`cartopy.crs.Globe`.
-                      If omitted, a default globe is created.
-            * cutoff - Latitude of map cutoff.
-                       The map extends to infinity opposite the central pole
-                       so we must cut off the map drawing before then.
-                       A value of 0 will draw half the globe. Defaults to -30.
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to -96.
+        central_latitude: optional
+            The central latitude. Defaults to 39.
+        false_easting: optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from planar origin in metres. Defaults to 0.
+        secant_latitudes: optional
+            Secant latitudes. This keyword is deprecated in v0.12 and directly
+            replaced by ``standard parallels``. Defaults to None.
+        standard_parallels: optional
+            Standard parallel latitude(s). Defaults to (33, 45).
+        globe: optional
+            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
+            created.
+        cutoff: optional
+            Latitude of map cutoff.
+            The map extends to infinity opposite the central pole
+            so we must cut off the map drawing before then.
+            A value of 0 will draw half the globe. Defaults to -30.
 
         """
         proj4_params = [('proj', 'lcc'),
@@ -1155,16 +1170,19 @@ class LambertAzimuthalEqualArea(Projection):
                  false_easting=0.0, false_northing=0.0,
                  globe=None):
         """
-        Kwargs:
-
-            * central_longitude - The central longitude. Defaults to 0.
-            * central_latitude - The central latitude. Defaults to 0.
-            * false_easting - X offset from planar origin in metres.
-                              Defaults to 0.
-            * false_northing - Y offset from planar origin in metres.
-                               Defaults to 0.
-            * globe - A :class:`cartopy.crs.Globe`.
-                      If omitted, a default globe is created.
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        central_latitude: optional
+            The central latitude. Defaults to 0.
+        false_easting: optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: optional
+            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
+            created.
 
         """
         proj4_params = [('proj', 'laea'),
@@ -1218,7 +1236,7 @@ class Miller(_RectangularProjection):
 
 class RotatedPole(_CylindricalProjection):
     """
-    Defines a rotated latitude/longitude projected coordinate system
+    Define a rotated latitude/longitude projected coordinate system
     with cylindrical topology and projected distance.
 
     Coordinates are measured in projection metres.
@@ -1238,17 +1256,17 @@ class RotatedPole(_CylindricalProjection):
         globe, then rotating this new CRS about it's pole using the
         central_rotated_longitude value.
 
-        Args:
-
-            * pole_longitude - Pole longitude position, in unrotated degrees.
-            * pole_latitude - Pole latitude position, in unrotated degrees.
-            * central_rotated_longitude - Longitude rotation about the new
-                                          pole, in degrees.
-
-        Kwargs:
-
-            * globe - An optional :class:`cartopy.crs.Globe`.
-                      Defaults to a "WGS84" datum.
+        Parameters
+        ----------
+        pole_longitude: optional
+            Pole longitude position, in unrotated degrees. Defaults to 0.
+        pole_latitude: optional
+            Pole latitude position, in unrotated degrees. Defaults to 0.
+        central_rotated_longitude: optional
+            Longitude rotation about the new pole, in degrees. Defaults to 0.
+        globe: optional
+            An optional :class:`cartopy.crs.Globe`. Defaults to a "WGS84"
+            datum.
 
         """
 
@@ -1478,8 +1496,8 @@ class Robinson(_WarpedRectangularProjection):
         Needed because input NaNs can trigger a fatal error in the underlying
         implementation of the Robinson projection.
 
-        .. note::
-
+        Notes
+        -----
             Although the original can in fact translate (nan, lat) into
             (nan, y-value), this patched version doesn't support that.
 
@@ -1498,8 +1516,8 @@ class Robinson(_WarpedRectangularProjection):
         Needed because input NaNs can trigger a fatal error in the underlying
         implementation of the Robinson projection.
 
-        .. note::
-
+        Notes
+        -----
             Although the original can in fact translate (nan, lat) into
             (nan, y-value), this patched version doesn't support that.
             Instead, we invalidate any of the points that contain a NaN.
@@ -1685,24 +1703,28 @@ class AlbersEqualArea(Projection):
 
     This projection is conic and equal-area, and is commonly used for maps of
     the conterminous United States.
+
     """
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
                  standard_parallels=(20.0, 50.0), globe=None):
         """
-        Kwargs:
-
-            * central_longitude - The central longitude. Defaults to 0.
-            * central_latitude - The central latitude. Defaults to 0.
-            * false_easting - X offset from planar origin in metres.
-                              Defaults to 0.
-            * false_northing - Y offset from planar origin in metres.
-                               Defaults to 0.
-            * standard_parallels - The one or two latitudes of correct scale.
-                                   Defaults to (20, 50).
-            * globe - A :class:`cartopy.crs.Globe`.
-                      If omitted, a default globe is created.
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        central_latitude: optional
+            The central latitude. Defaults to 0.
+        false_easting:
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from planar origin in metres. Defaults to 0.
+        standard_parallels: optional
+            The one or two latitudes of correct scale. Defaults to (20, 50).
+        globe: optional
+            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
+            created.
 
         """
         proj4_params = [('proj', 'aea'),
@@ -1770,18 +1792,21 @@ class AzimuthalEquidistant(Projection):
                  false_easting=0.0, false_northing=0.0,
                  globe=None):
         """
-        Kwargs:
-
-            * central_longitude - The true longitude of the central meridian in
-                                  degrees. Defaults to 0.
-            * central_latitude - The true latitude of the planar origin in
-                                 degrees. Defaults to 0.
-            * false_easting - X offset from the planar origin in metres.
-                              Defaults to 0.
-            * false_northing - Y offset from the planar origin in metres.
-                               Defaults to 0.
-            * globe - An instance of :class:`cartopy.crs.Globe`. If omitted, a
-                      default globe is created.
+        Parameters
+        ----------
+        central_longitude: optional
+            The true longitude of the central meridian in degrees.
+            Defaults to 0.
+        central_latitude: optional
+            The true latitude of the planar origin in degrees.
+            Defaults to 0.
+        false_easting: optional
+            X offset from the planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from the planar origin in metres. Defaults to 0.
+        globe: optional
+            An instance of :class:`cartopy.crs.Globe`. If omitted, a default
+            globe is created.
 
         """
         # Warn when using Azimuthal Equidistant with proj4 < 4.9.2 due to
@@ -1836,20 +1861,24 @@ class Sinusoidal(Projection):
     A Sinusoidal projection.
 
     This projection is equal-area.
+
     """
 
     def __init__(self, central_longitude=0.0, false_easting=0.0,
                  false_northing=0.0, globe=None):
         """
-        Kwargs:
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        false_easting: optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: optional
+            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
+            created.
 
-            * central_longitude - The central longitude. Defaults to 0.
-            * false_easting - X offset from planar origin in metres.
-                              Defaults to 0.
-            * false_northing - Y offset from planar origin in metres.
-                               Defaults to 0.
-            * globe - A :class:`cartopy.crs.Globe`.
-                      If omitted, a default globe is created.
         """
         proj4_params = [('proj', 'sinu'),
                         ('lon_0', central_longitude),
@@ -1911,15 +1940,16 @@ class _BoundaryPoint(object):
         connected to the boundary.
 
         Parameters
-        ==========
-        distance - float
+        ----------
+        distance: float
             The distance along the boundary that this object
             can be found.
-        kind - bool
-            Whether this object represents a point from the pre-computed
-            boundary.
-        data - point or namedtuple
+        kind: bool
+            Whether this object represents a point from the
+            pre-computed boundary.
+        data: point or namedtuple
             The actual data that this boundary object represents.
+
         """
         self.distance = distance
         self.kind = kind
@@ -1946,7 +1976,8 @@ def epsg(code):
     so EPSG codes such as 4326 (WGS-84) which define a "geodetic coordinate
     system" will not work.
 
-    .. note::
+    Notes
+    -----
         The conversion is performed by querying https://epsg.io/ so a
         live internet connection is required.
 

@@ -28,7 +28,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 def aurora_forecast():
     """
-    Gets the latest Aurora Forecast from http://swpc.noaa.gov.
+    Get the latest Aurora Forecast from http://swpc.noaa.gov.
 
     Returns
     -------
@@ -98,14 +98,15 @@ def sun_pos(dt=None):
 
     Parameters
     ----------
-        dt: datetime
-            Defaults to datetime.utcnow()
+    dt: datetime
+        Defaults to datetime.utcnow()
 
     Returns
     -------
-        lat, lng: tuple of floats
-            Approximate coordinates of the point where the sun is
-            in zenith at the time dt.
+    lat, lng: tuple of floats
+        Approximate coordinates of the point where the sun is
+        in zenith at the time dt.
+
     """
     if dt is None:
         dt = datetime.utcnow()

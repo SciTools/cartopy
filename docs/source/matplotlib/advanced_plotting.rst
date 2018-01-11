@@ -54,6 +54,7 @@ Block plots
     :include-source:
 
     import iris
+    import iris_sample_data
     import matplotlib.pyplot as plt
 
     import cartopy.crs as ccrs

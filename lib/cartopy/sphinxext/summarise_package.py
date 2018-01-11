@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -28,16 +28,15 @@ import six
 
 def walk_module(mod_name, exclude_folders=None):
     """
-    Recursively walks the given module name.
+    Recursively walk the given module name.
 
-    Returns:
-
-        A generator of::
-
-            (fully_qualified_import_name,
-             root_directory_of_subpackage,
-             fname_in_root_directory,
-             sub_folders_in_root_directory)
+    Returns
+    -------
+    generator of:
+        (fully_qualified_import_name,
+         root_directory_of_subpackage,
+         fname_in_root_directory,
+         sub_folders_in_root_directory)
 
     """
     __import__(mod_name)
@@ -87,7 +86,7 @@ def walk_module(mod_name, exclude_folders=None):
 
 def objects_to_document(module_name):
     """
-    Creates a generator of (obj_name, obj) that the given module of the
+    Create a generator of (obj_name, obj) that the given module of the
     given name should document.
 
     The module name may be any importable, including submodules
@@ -164,7 +163,7 @@ def main(package_name, exclude_folders=None):
 
 def gen_summary_rst(app):
     """
-    Creates the rst file to summarise the desired packages.
+    Create the rst file to summarise the desired packages.
 
     """
     package_names = app.config.summarise_package_names

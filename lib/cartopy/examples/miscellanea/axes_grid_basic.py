@@ -18,7 +18,7 @@ import numpy as np
 
 
 def sample_data_3d(shape):
-    """Returns `lons`, `lats`, `times` and fake `data`"""
+    """Return `lons`, `lats`, `times` and fake `data`"""
     ntimes, nlats, nlons = shape
     lats = np.linspace(-np.pi / 2, np.pi / 2, nlats)
     lons = np.linspace(0, 2 * np.pi, nlons)

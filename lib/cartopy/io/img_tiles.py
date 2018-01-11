@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -40,7 +40,7 @@ import cartopy.crs as ccrs
 
 class GoogleTiles(object):
     """
-    Implements web tile retrieval using the Google WTS coordinate system.
+    Implement web tile retrieval using the Google WTS coordinate system.
 
     A "tile" in this class refers to the coordinates (x, y, z).
 
@@ -49,14 +49,18 @@ class GoogleTiles(object):
                  url=('https://mts0.google.com/vt/lyrs={style}'
                       '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
         """
-        :param desired_tile_form:
-        :param style: The style for the Google Maps tiles. One of 'street',
-            'satellite', 'terrain', and 'only_streets'.
-            Defaults to 'street'.
-        :param url: str url pointing to a tile source and containing {x},
-                    {y}, and {z}. Such as:
-                    ('https://server.arcgisonline.com/ArcGIS/rest/services/'
-                     'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
+        Parameters
+        ----------
+        desired_tile_form: optional
+            Defaults to 'RGB'.
+        style: optional
+            The style for the Google Maps tiles.  One of 'street',
+            'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
+        url: optional
+            URL pointing to a tile source and containing {x}, {y}, and {z}.
+            Such as: ('https://server.arcgisonline.com/ArcGIS/rest/services/'
+            'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
+
         """
         # Only streets are partly transparent tiles that can be overlayed over
         # the satellite map to create the known hybrid style from google.
@@ -128,20 +132,22 @@ class GoogleTiles(object):
 
     def tile_bbox(self, x, y, z, y0_at_north_pole=True):
         """
-        Returns the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
+        Return the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
         tile position.
 
         Parameters
         ----------
-        x, y, z : int
-            The x, y, z tile coordinates in the Google tile numbering system
-            (with y=0 being at the north pole), unless `y0_at_north_pole` is
-            set to ``False``, in which case `y` is in the TMS numbering system
-            (with y=0 being at the south pole).
-        y0_at_north_pole : bool
-            Whether the numbering of the y coordinate starts at the north
-            pole (as is the convention for Google tiles), or the south
-            pole (as is the convention for TMS).
+        x, y, z
+            The x, y, z tile coordinates in the Google tile
+            numbering system (with y=0 being at the north pole), unless
+            `y0_at_north_pole` is set to ``False``, in which case `y` is in
+            the TMS numbering system (with y=0 being at the south pole).
+        y0_at_north_pole: optional
+            Boolean representing whether the numbering of the y coordinate
+            starts at the north pole (as is the convention for Google tiles)
+            or not (in which case it will start at the south pole, as is the
+            convention for TMS). Defaults to True.
+
 
         """
         n = 2 ** z
@@ -168,7 +174,7 @@ class GoogleTiles(object):
         return n_xs, n_ys
 
     def tileextent(self, x_y_z):
-        """Returns extent tuple ``(x0,x1,y0,y1)`` in Mercator coordinates."""
+        """Return extent tuple ``(x0,x1,y0,y1)`` in Mercator coordinates."""
         x, y, z = x_y_z
         x_lim, y_lim = self.tile_bbox(x, y, z, y0_at_north_pole=True)
         return tuple(x_lim) + tuple(y_lim)
@@ -257,9 +263,10 @@ class StamenTerrain(GoogleTiles):
 
     Additional info:
     http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
-    http://maps.stamen.com/#terrain/12/37.6902/-122.3600
+    http://maps.stamen.com/
     https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
     https://github.com/migurski/DEM-Tools
+
     """
     def _image_url(self, tile):
         x, y, z = tile
@@ -270,7 +277,7 @@ class StamenTerrain(GoogleTiles):
 
 class MapboxTiles(GoogleTiles):
     """
-    Implements web tile retrieval from Mapbox.
+    Implement web tile retrieval from Mapbox.
 
     For terms of service, see https://www.mapbox.com/tos/.
 
@@ -280,15 +287,15 @@ class MapboxTiles(GoogleTiles):
         Set up a new Mapbox tiles instance.
 
         Access to Mapbox web services requires an access token and a map ID.
-        See https://www.mapbox.com/developers/api/ for details.
+        See https://www.mapbox.com/api-documentation/ for details.
 
         Parameters
         ----------
-        access_token: str
+        access_token
             A valid Mapbox API access token.
-        map_id: str
-            A map ID for a publically accessible map. This is the map whose
-            tiles will be retrieved through this process.
+        map_id
+            A map ID for a publically accessible map. This is the
+            map whose tiles will be retrieved through this process.
 
         """
         self.access_token = access_token
@@ -306,7 +313,7 @@ class MapboxTiles(GoogleTiles):
 
 class QuadtreeTiles(GoogleTiles):
     """
-    Implements web tile retrieval using the Microsoft WTS quadkey coordinate
+    Implement web tile retrieval using the Microsoft WTS quadkey coordinate
     system.
 
     A "tile" in this class refers to a quadkey such as "1", "14" or "141"
@@ -373,10 +380,11 @@ class QuadtreeTiles(GoogleTiles):
 
     def find_images(self, target_domain, target_z, start_tile=None):
         """
-        Find all the quadtree's at the given target zoom, in the given
+        Find all the quadtrees at the given target zoom, in the given
         target domain.
 
         target_z must be a value >= 1.
+
         """
         if target_z == 0:
             raise ValueError('The empty quadtree cannot be returned.')
