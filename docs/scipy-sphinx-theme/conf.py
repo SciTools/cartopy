@@ -1,3 +1,6 @@
+import math
+
+
 needs_sphinx = '1.1'
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'numpydoc',
@@ -14,11 +17,11 @@ release = '0.1'
 exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
-# -- Options for HTML output ---------------------------------------------------
+# -- Options for HTML output --------------------------------------------------
 
 html_theme = 'scipy'
 html_theme_path = ['_theme']
-#html_logo = '_static/scipyshiny_small.png'
+# html_logo = '_static/scipyshiny_small.png'
 html_static_path = ['_static']
 html_theme_options = {
     "edit_link": "true",
@@ -36,9 +39,9 @@ pngmath_latex_preamble = r"""
 pngmath_use_preview = True
 pngmath_dvipng_args = ['-gamma 1.5', '-D 96', '-bg Transparent']
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Plot style
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 plot_pre_code = """
 import numpy as np
@@ -49,7 +52,6 @@ plot_include_source = True
 plot_formats = [('png', 96), 'pdf']
 plot_html_show_formats = False
 
-import math
 phi = (math.sqrt(5) + 1)/2
 
 font_size = 13*72/96.0  # 13 px
