@@ -1,0 +1,143 @@
+# Circle CI configuration file
+# https://circleci.com/docs/
+
+version: 2
+
+
+###########################################
+# Define some common steps as YAML anchors.
+#
+
+apt-run:  &apt-install
+  name: Install apt packages
+  command: |
+    apt-get -qq update
+    apt-get install -y \
+      gcc \
+      g++ \
+      make
+
+env-run:  &env-setup
+  # Create the basic testing environment
+  # Mixing conda-forge and defaults in root is a recipe for trouble, so create
+  # a separate environment.
+  name: Setup conda environment
+  command: |
+    conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
+    conda create -n test-environment python=$PYTHON_VERSION
+    conda config --add channels conda-forge
+
+deps-run: &deps-install
+  name: Install Python dependencies
+  command: |
+    source activate test-environment
+    conda install --quiet \
+        numpy \
+        matplotlib \
+        scipy \
+        cython \
+        pillow \
+        proj4 \
+        pyshp \
+        shapely \
+        six \
+        requests \
+        pyepsg \
+        owslib \
+        $EXTRA_PACKAGES
+    conda install --quiet --file docs/doc-requirements.txt
+    conda list
+
+cp-run: &cp-install
+  name: Install Cartopy
+  command: |
+    source activate test-environment
+    pip install -ve .
+
+doc-run: &doc-build
+  name: Build documentation
+  command: |
+    source activate test-environment
+    make html
+  working_directory: docs
+
+doc-bundle-run: &doc-bundle
+  name: Bundle sphinx-gallery documentation artifacts
+  command: |
+    tar cf docs/build/sphinx-gallery-files.tar.gz \
+        docs/source/api \
+        docs/source/cartopy_outline.rst \
+        docs/source/gallery
+  when: always
+
+
+##########################################
+# Here is where the real jobs are defined.
+#
+
+jobs:
+  docs-python3:
+    docker:
+      - image: continuumio/miniconda3:latest
+    steps:
+      - checkout
+
+      - run: *apt-install
+      - run:
+          <<: *env-setup
+          environment:
+            PYTHON_VERSION: 3
+      - run: *deps-install
+      - run: *cp-install
+
+      - run: *doc-build
+
+      - run: *doc-bundle
+      - store_artifacts:
+          path: docs/build/sphinx-gallery-files.tar.gz
+
+      - store_artifacts:
+          path: docs/build/html
+
+      - run:
+          name: "Built documentation is available at:"
+          command: echo "${CIRCLE_BUILD_URL}/artifacts/${CIRCLE_NODE_INDEX}/${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}/docs/build/html/index.html"
+
+  docs-python2:
+    docker:
+      - image: continuumio/miniconda:latest
+    steps:
+      - checkout
+
+      - run: *apt-install
+      - run:
+          <<: *env-setup
+          environment:
+            PYTHON_VERSION: 2
+      - run: *deps-install
+      - run: *cp-install
+
+      - run: *doc-build
+
+      - run: *doc-bundle
+      - store_artifacts:
+          path: docs/build/sphinx-gallery-files.tar.gz
+
+      - store_artifacts:
+          path: docs/build/html
+
+      - run:
+          name: "Built documentation is available at:"
+          command: echo "${CIRCLE_BUILD_URL}/artifacts/${CIRCLE_NODE_INDEX}/${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}/docs/build/html/index.html"
+
+
+#########################################
+# Defining workflows gets us parallelism.
+#
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - docs-python3
+      - docs-python2
