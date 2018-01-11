@@ -10,13 +10,13 @@ env:
           PACKAGES="numpy=1.9.3=py27_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1 mock"
         - PYTHON_VERSION=3.5
           PACKAGES="numpy=1.9.3=py35_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1"
-        # Remove nose from latest packages when Matplotlib 2.1 is released.
+        # New FreeType causes changes in text output.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
-          PACKAGES="numpy matplotlib<2.1 nose scipy"
+          PACKAGES="numpy matplotlib freetype<2.8 scipy"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
-          PACKAGES="numpy matplotlib<2.1 nose scipy mock"
+          PACKAGES="numpy matplotlib freetype<2.8 scipy mock"
 
 
 sudo: false
