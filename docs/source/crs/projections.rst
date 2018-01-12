@@ -556,3 +556,19 @@ SouthPolarStereo
     ax.gridlines()
 
 
+rHEALPix
+--------
+
+.. autoclass:: cartopy.crs.rHEALPix
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(4, 3))
+    ax = plt.axes(projection=ccrs.rHEALPix())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+

@@ -317,6 +317,7 @@ cdef class CRS:
 
         if trap and status in [-14, -15, -20]:
             # -14 => "latitude or longitude exceeded limits"
+            # -15 => "invalid x or y" (often from rHEALPix)
             # -20 => "tolerance condition error"
             cx = cy = NAN
         elif trap and status != 0:

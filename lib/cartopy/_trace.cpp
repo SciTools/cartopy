@@ -66,6 +66,7 @@ Point CartesianInterpolator::project(const Point &src_xy)
     if (status == -14 || status == -20 || status == -15)
     {
         // -14 => "latitude or longitude exceeded limits"
+        // -15 => "invalid x or y" (often from rHEALPix)
         // -20 => "tolerance condition error"
         xy.u = xy.v = HUGE_VAL;
     }
