@@ -1,5 +1,4 @@
 # (C) British Crown Copyright 2011 - 2018, Met Office
-
 #
 # This file is part of cartopy.
 #
@@ -285,12 +284,12 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     desired_ny, desired_nx = target_x_points.shape
 
     # Squash the first two dims of the source array into one
-    flat_array = array.reshape((-1,) + array.shape[2:])
+    temp_array = array.reshape((-1,) + array.shape[2:])
     if np.any(mask):
-        new_array = np.ma.array(flat_array[indices])
+        new_array = np.ma.array(temp_array[indices])
         new_array[mask] = np.ma.masked
     else:
-        new_array = flat_array[indices]
+        new_array = temp_array[indices]
     new_array.shape = (desired_ny, desired_nx) + (array.shape[2:])
 
     # Do double transform to clip points that do not map back and forth
@@ -313,9 +312,9 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     y_extent = np.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
 
     non_self_inverse_points = (((np.abs(target_x_points - back_to_target_x) /
-                                x_extent) > FRACTIONAL_OFFSET_THRESHOLD) |
+                                 x_extent) > FRACTIONAL_OFFSET_THRESHOLD) |
                                ((np.abs(target_y_points - back_to_target_y) /
-                                y_extent) > FRACTIONAL_OFFSET_THRESHOLD))
+                                 y_extent) > FRACTIONAL_OFFSET_THRESHOLD))
     if np.any(non_self_inverse_points):
         if not np.ma.isMaskedArray(new_array):
             new_array = np.ma.array(new_array, mask=False)
