@@ -138,12 +138,12 @@ class GoogleTiles(object):
         Parameters
         ----------
         x
+            The x tile coordinate in the Google tile numbering system.
         y
+            The y tile coordinate in the Google tile numbering system.
         z
-            The x, y, z tile coordinates in the Google tile
-            numbering system (with y=0 being at the north pole), unless
-            `y0_at_north_pole` is set to ``False``, in which case `y` is in
-            the TMS numbering system (with y=0 being at the south pole).
+            The z tile coordinate in the Google tile numbering system.
+
         y0_at_north_pole: optional
             Boolean representing whether the numbering of the y coordinate
             starts at the north pole (as is the convention for Google tiles)

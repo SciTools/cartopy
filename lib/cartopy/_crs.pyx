@@ -326,10 +326,11 @@ cdef class CRS:
             to transform.  May be 1 or 2 dimensional.
         y
             the y coordinates (array), in ``src_crs`` coordinates,
-            to transform
+            to transform.  Its shape must match that of x.
         z: optional
             the z coordinates (array), in ``src_crs`` coordinates, to
             transform.  Defaults to None.
+            If supplied, its shape must match that of x.
 
         Returns
         -------
@@ -405,15 +406,18 @@ cdef class CRS:
             The :class:`CRS.Projection` that represents the coordinate system
             the vectors are defined in.
         x
+            The x coordinates of the vectors in the source projection.
         y
-            The x and y coordinates, in the source projection
-            coordinates, where the vector components are located.
-            May be 1 or 2 dimensional, but must have matching shapes.
+            The y coordinates of the vectors in the source projection.
         u
+            The grid-eastward components of the vectors.
         v
-            The grid eastward and grid northward components of the
-            vector field respectively. Their shape must match the shape
-            of the x and y coordinates.
+            The grid-northward components of the vectors.
+
+        Note
+        ----
+            x, y, u and v may be 1 or 2 dimensional, but must all have matching
+            shapes.
 
         Returns
         -------
