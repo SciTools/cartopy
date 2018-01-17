@@ -279,38 +279,18 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     distances, indices = kdtree.query(target_xyz, k=1)
     mask = np.isinf(distances)
+    indices[mask] = 0
 
     desired_ny, desired_nx = target_x_points.shape
-    if array.ndim == 1:
-        if np.any(mask):
-            array_1d = np.ma.array(array[indices], mask=mask)
-        else:
-            array_1d = array[indices]
-        new_array = array_1d.reshape(desired_ny, desired_nx)
-    elif array.ndim == 2:
-        # Handle missing neighbours using a masked array
-        if np.any(mask):
-            indices = np.where(np.logical_not(mask), indices, 0)
-            array_1d = np.ma.array(array.reshape(-1)[indices], mask=mask)
-        else:
-            array_1d = array.reshape(-1)[indices]
 
-        new_array = array_1d.reshape(desired_ny, desired_nx)
-    elif array.ndim == 3:
-        # Handle missing neighbours using a masked array
-        if np.any(mask):
-            indices = np.where(np.logical_not(mask), indices, 0)
-            array_2d = array.reshape(-1, array.shape[-1])[indices]
-            mask, array_2d = np.broadcast_arrays(
-                mask.reshape(-1, 1), array_2d)
-            array_2d = np.ma.array(array_2d, mask=mask)
-        else:
-            array_2d = array.reshape(-1, array.shape[-1])[indices]
-
-        new_array = array_2d.reshape(desired_ny, desired_nx, array.shape[-1])
+    # Squash the first two dims of the source array into one
+    temp_array = array.reshape((-1,) + array.shape[2:])
+    if np.any(mask):
+        new_array = np.ma.array(temp_array[indices])
+        new_array[mask] = np.ma.masked
     else:
-        raise ValueError(
-            'Expected array.ndim to be 1, 2 or 3, got {}'.format(array.ndim))
+        new_array = temp_array[indices]
+    new_array.shape = (desired_ny, desired_nx) + (array.shape[2:])
 
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.
@@ -331,25 +311,15 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     x_extent = np.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
     y_extent = np.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
 
-    non_self_inverse_points = (np.abs(target_x_points - back_to_target_x) /
-                               x_extent) > FRACTIONAL_OFFSET_THRESHOLD
+    non_self_inverse_points = (((np.abs(target_x_points - back_to_target_x) /
+                                 x_extent) > FRACTIONAL_OFFSET_THRESHOLD) |
+                               ((np.abs(target_y_points - back_to_target_y) /
+                                 y_extent) > FRACTIONAL_OFFSET_THRESHOLD))
     if np.any(non_self_inverse_points):
-        if np.ma.isMaskedArray(new_array):
-            new_array[non_self_inverse_points] = np.ma.masked
-        else:
+        if not np.ma.isMaskedArray(new_array):
             new_array = np.ma.array(new_array, mask=False)
-            if new_array.ndim == 3:
-                for i in range(new_array.shape[2]):
-                    new_array[non_self_inverse_points, i] = np.ma.masked
-            else:
-                new_array[non_self_inverse_points] = np.ma.masked
-    non_self_inverse_points = (np.abs(target_y_points - back_to_target_y) /
-                               y_extent) > FRACTIONAL_OFFSET_THRESHOLD
-    if np.any(non_self_inverse_points):
-        if np.ma.isMaskedArray(new_array):
-            new_array[non_self_inverse_points] = np.ma.masked
-        else:
-            new_array = np.ma.array(new_array, mask=non_self_inverse_points)
+
+        new_array[non_self_inverse_points] = np.ma.masked
 
     # Transform the target points to the source projection and mask any points
     # that fall outside the original source domain.
@@ -370,14 +340,9 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                        (target_in_source_x >= bound_x[0]))
         outside_source_domain = outside_source_domain | ~tmp_inside
 
-        if np.ma.isMaskedArray(new_array):
-            if np.any(outside_source_domain):
-                new_array[outside_source_domain] = np.ma.masked
-        else:
-            new_array = np.ma.array(new_array, mask=False)
-            if new_array.ndim == 3:
-                for i in range(new_array.shape[2]):
-                    new_array[outside_source_domain, i] = np.ma.masked
-            else:
-                new_array[outside_source_domain] = np.ma.masked
+        if np.any(outside_source_domain):
+            if not np.ma.isMaskedArray(new_array):
+                new_array = np.ma.array(new_array, mask=False)
+            new_array[outside_source_domain] = np.ma.masked
+
     return new_array
