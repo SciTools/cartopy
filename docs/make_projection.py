@@ -25,15 +25,18 @@ import cartopy.crs as ccrs
 
 
 SPECIAL_CASES = {
-    ccrs.PlateCarree: [{}, {'central_longitude': 180}],
+    ccrs.PlateCarree: [{'central_longitude': '180*plot'}],
     ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
-    ccrs.UTM: [{'zone': 30}],
+    ccrs.UTM: [{'zone': 'plot'}],
     ccrs.AzimuthalEquidistant: [{'central_latitude': 90}],
     ccrs.NearsidePerspective: [{
         'central_longitude': -3.53, 'central_latitude': 50.72,
         'satellite_height': 10.0e6}],
 }
 
+N_SUBPLOTS = {
+    ccrs.PlateCarree: 2,
+    ccrs.UTM: 60}
 
 COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
                         ccrs.OSGB: '50m',
@@ -90,49 +93,51 @@ if __name__ == '__main__':
 
         table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
-        for instance_args in SPECIAL_CASES.get(prj, [{}]):
-            if name is "UTM":
-                code = """
+        # Get instance arguments and number of plots
+        instance_args = SPECIAL_CASES.get(prj, [{}])[0]
+        nplots = N_SUBPLOTS.get(prj, 1)
+
+        # Format instance arguments into strings
+        instance_params = ',\n                             '.join(
+            '{}={}'.format(k, v)
+            for k, v in sorted(instance_args.items()))
+
+        if instance_params:
+            instance_params = '\n                             ' \
+                              + instance_params
+
+        instance_creation_code = '{}({})'.format(name, instance_params)
+
+        # Calculate aspect ratio and width of plot
+        for k, v in sorted(instance_args.items()):
+            if type(v) == str:
+                instance_args[k] = 1
+
+        prj_inst = prj(**instance_args)
+
+        aspect = (np.diff(prj_inst.x_limits) /
+                  np.diff(prj_inst.y_limits))[0]
+
+        width = 3 * nplots * aspect
+        width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
+
+        # Generate plotting code
+        code = """
 .. plot::
 
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
-    zones = range(1, 61)
-    fig = plt.figure(figsize=(10, 3))
-    for zone in zones:
-        ax = fig.add_subplot(1, len(zones), zone,
-                             projection=ccrs.UTM(zone=zone,
-                                                 southern_hemisphere=True))
-        ax.coastlines(resolution='110m')
+
+    plots = range(1, {nplots})
+    fig = plt.figure(figsize=({width}, 3))
+    for plot in plots:
+        ax = fig.add_subplot(1, len(plots), plot,
+                             projection=ccrs.{proj_constructor}
+        ax.coastlines(resolution={coastline_resolution!r})
         ax.gridlines()
 
-\n"""
-
-            else:
-                prj_inst = prj(**instance_args)
-                aspect = (np.diff(prj_inst.x_limits) /
-                          np.diff(prj_inst.y_limits))[0]
-                width = 3 * aspect
-                width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
-
-                instance_params = ',\n        '.join(
-                    '{}={}'.format(k, v)
-                    for k, v in sorted(instance_args.items()))
-                if instance_params:
-                    instance_params = '\n        ' + instance_params
-                instance_creation_code = '{}({})'.format(name, instance_params)
-                code = """
-.. plot::
-
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
-    plt.figure(figsize=({width}, 3))
-    ax = plt.axes(projection=ccrs.{proj_constructor})
-    ax.coastlines(resolution={coastline_resolution!r})
-    ax.gridlines()
-
-\n""".format(width=width, proj_constructor=instance_creation_code,
+\n""".format(nplots=nplots+1, width=width,
+             proj_constructor=instance_creation_code,
              coastline_resolution=COASTLINE_RESOLUTION.get(prj, '110m'))
 
-            table.write(code)
+        table.write(code)
