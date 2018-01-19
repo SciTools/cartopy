@@ -19,28 +19,52 @@ from __future__ import (absolute_import, division, print_function)
 
 import os
 
+import inspect
+
+import textwrap
+
 import numpy as np
 
 import cartopy.crs as ccrs
 
 
-SPECIAL_CASES = {
-    ccrs.PlateCarree: [{'central_longitude': '180*plot'}],
-    ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
-    ccrs.UTM: [{'zone': 'plot'}],
-    ccrs.AzimuthalEquidistant: [{'central_latitude': 90}],
-    ccrs.NearsidePerspective: [{
+#: A dictionary to allow examples to use non-default parameters to the CRS
+#: constructor.
+SPECIFIC_PROJECTION_KWARGS = {
+    ccrs.RotatedPole: {'pole_longitude': 177.5, 'pole_latitude': 37.5},
+    ccrs.AzimuthalEquidistant: {'central_latitude': 90},
+    ccrs.NearsidePerspective: {
         'central_longitude': -3.53, 'central_latitude': 50.72,
-        'satellite_height': 10.0e6}],
+        'satellite_height': 10.0e6},
 }
 
-N_SUBPLOTS = {
-    ccrs.PlateCarree: 2,
-    ccrs.UTM: 60}
+
+def plate_carree_plot(i, nplots):
+    central_longitude = 0 if i == 1 else 180
+    ax = fig.add_subplot(1, nplots-1, i,
+                         projection=ccrs.PlateCarree(
+                         central_longitude=central_longitude))
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+def utm_plot(i, nplots):
+    ax = fig.add_subplot(1, nplots-1, i,
+                         projection=ccrs.UTM(zone=i, southern_hemisphere=True))
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+MULTI_PLOT_CASES = {
+    ccrs.PlateCarree: [2, plate_carree_plot],
+    ccrs.UTM: [60, utm_plot],
+}
+
 
 COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
                         ccrs.OSGB: '50m',
                         ccrs.EuroPP: '50m'}
+
 
 PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
@@ -61,6 +85,25 @@ def find_projections():
             yield o
 
 
+def create_instance(prj_cls, instance_args):
+    name = prj_cls.__name__
+
+    # Format instance arguments into strings
+    instance_params = ',\n                             '.join(
+        '{}={}'.format(k, v)
+        for k, v in sorted(instance_args.items()))
+
+    if instance_params:
+        instance_params = '\n                             ' \
+                          + instance_params
+
+    instance_creation_code = '{}({})'.format(name, instance_params)
+
+    prj_inst = prj(**instance_args)
+
+    return prj_inst, instance_creation_code
+
+
 if __name__ == '__main__':
     fname = os.path.join(os.path.dirname(__file__), 'source',
                          'crs', 'projections.rst')
@@ -78,8 +121,7 @@ if __name__ == '__main__':
         =======================
 
         """
-    for line in notes.split('\n'):
-        table.write(line.strip() + '\n')
+    table.write(textwrap.dedent(notes))
 
     def prj_class_sorter(cls):
         return (PRJ_SORT_ORDER.get(cls.__name__, 100),
@@ -93,51 +135,58 @@ if __name__ == '__main__':
 
         table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
-        # Get instance arguments and number of plots
-        instance_args = SPECIAL_CASES.get(prj, [{}])[0]
-        nplots = N_SUBPLOTS.get(prj, 1)
 
-        # Format instance arguments into strings
-        instance_params = ',\n                             '.join(
-            '{}={}'.format(k, v)
-            for k, v in sorted(instance_args.items()))
+        if prj not in MULTI_PLOT_CASES:
+            # Get instance arguments and number of plots
+            instance_args = SPECIFIC_PROJECTION_KWARGS.get(prj, {})
 
-        if instance_params:
-            instance_params = '\n                             ' \
-                              + instance_params
+            prj_inst, instance_repr = create_instance(prj, instance_args)
 
-        instance_creation_code = '{}({})'.format(name, instance_params)
+            aspect = (np.diff(prj_inst.x_limits) /
+                      np.diff(prj_inst.y_limits))[0]
 
-        # Calculate aspect ratio and width of plot
-        for k, v in sorted(instance_args.items()):
-            if type(v) == str:
-                instance_args[k] = 1
+            width = 3 * aspect
+            width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
 
-        prj_inst = prj(**instance_args)
+            # Generate plotting code
+            code = textwrap.dedent("""
+            .. plot::
+            
+                import matplotlib.pyplot as plt
+                import cartopy.crs as ccrs
+            
+                plt.figure(figsize=({width}, 3))
+                ax = plt.axes(projection=ccrs.{proj_constructor})
+                ax.coastlines(resolution={coastline_resolution!r})
+                ax.gridlines()
 
-        aspect = (np.diff(prj_inst.x_limits) /
-                  np.diff(prj_inst.y_limits))[0]
 
-        width = 3 * nplots * aspect
-        width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
+            """).format(width=width,
+                        proj_constructor=instance_repr,
+                        coastline_resolution=COASTLINE_RESOLUTION.get(prj,
+                                                                      '110m'))
 
-        # Generate plotting code
-        code = """
-.. plot::
+        else:
+            nplots, func = MULTI_PLOT_CASES[prj]
 
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
+            lines = inspect.getsourcelines(func)
+            func_code = "    ".join(lines[0])
 
-    plots = range(1, {nplots})
-    fig = plt.figure(figsize=({width}, 3))
-    for plot in plots:
-        ax = fig.add_subplot(1, len(plots), plot,
-                             projection=ccrs.{proj_constructor}
-        ax.coastlines(resolution={coastline_resolution!r})
-        ax.gridlines()
+            code = textwrap.dedent("""
+            .. plot::
+            
+                import matplotlib.pyplot as plt
+                import cartopy.crs as ccrs
 
-\n""".format(nplots=nplots+1, width=width,
-             proj_constructor=instance_creation_code,
-             coastline_resolution=COASTLINE_RESOLUTION.get(prj, '110m'))
+                fig = plt.figure(figsize=(10, 3))
+            
+                {func_code}
+                
+                for i in range(1, {nplots}):
+                    {func_name}(i, {nplots})
+
+
+            """).format(nplots=nplots+1,
+                       func_code=func_code, func_name=func.__name__)
 
         table.write(code)
