@@ -1,0 +1,15 @@
+*.pyc
+*.swp
+*.pyd
+*.so
+*.o
+*.lo
+*.la
+*~
+*.bak
+*.swp
+.\#*
+.deps
+.libs
+.tox
+/_build
