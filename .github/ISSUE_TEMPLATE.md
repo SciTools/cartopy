@@ -3,8 +3,9 @@
 
 
 <!--
-If reporting a bug, attach the *entire* traceback from Python.
-If proposing an enhancement/new feature, provide links to related articles, reference examples, etc.
+If you are reporting a bug, attach the *entire* traceback from Python.
+
+If you are proposing an enhancement/new feature, provide links to related articles, reference examples, etc.
 
 If you are asking a question, please ask on StackOverflow and use the cartopy tag. All cartopy
 questions on StackOverflow can be found at https://stackoverflow.com/questions/tagged/cartopy
@@ -25,7 +26,7 @@ questions on StackOverflow can be found at https://stackoverflow.com/questions/t
 <details>
  <summary>Full environment definition</summary>
 
-<!- fill in the following information as appropriate -->
+<!-- fill in the following information as appropriate -->
 
 ### Operating system
 
