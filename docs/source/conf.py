@@ -96,7 +96,7 @@ release = cartopy.__version__
 
 # Sphinx gallery configuration
 sphinx_gallery_conf = {
-    'examples_dirs': ['../../lib/cartopy/examples'],
+    'examples_dirs': ['../../cartopy/examples'],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
     'doc_module': ('cartopy',),

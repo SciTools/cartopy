@@ -4,20 +4,20 @@ build
 docs/build
 
 # cartopy build files
-lib/cartopy/trace.cpp
-lib/cartopy/trace.so
-lib/cartopy/trace.*.so
-lib/cartopy/trace.pyd
-lib/cartopy/_crs.c
-lib/cartopy/_crs.so
-lib/cartopy/_crs.*.so
-lib/cartopy/_crs.pyd
-lib/cartopy/geodesic/_geodesic.c
-lib/cartopy/geodesic/_geodesic.so
-lib/cartopy/geodesic/_geodesic.*.so
-lib/cartopy/geodesic/_geodesic.pyd
+cartopy/trace.cpp
+cartopy/trace.so
+cartopy/trace.*.so
+cartopy/trace.pyd
+cartopy/_crs.c
+cartopy/_crs.so
+cartopy/_crs.*.so
+cartopy/_crs.pyd
+cartopy/geodesic/_geodesic.c
+cartopy/geodesic/_geodesic.so
+cartopy/geodesic/_geodesic.*.so
+cartopy/geodesic/_geodesic.pyd
 docs/build
-lib/cartopy/tests/mpl/output/
+cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
 docs/source/examples
 docs/source/gallery.rst
@@ -25,13 +25,13 @@ docs/source/gallery
 docs/source/api
 
 # some data files:
-lib/cartopy/data/SRTM3
-lib/cartopy/data/gshhs
-lib/cartopy/data/shapefiles
+cartopy/data/SRTM3
+cartopy/data/gshhs
+cartopy/data/shapefiles
 
 # some configuration files which aren't part of cartopy repo
-lib/cartopy/tests/.pep8_test_exclude.txt
-lib/cartopy/siteconfig.py
+cartopy/tests/.pep8_test_exclude.txt
+cartopy/siteconfig.py
 
 # pydev files
 .project
@@ -50,5 +50,5 @@ lib/cartopy/siteconfig.py
 __pycache__/
 
 # Egg that gets created with 'pip install -v -e .'
-lib/Cartopy.egg-info/
+Cartopy.egg-info/
 .eggs/

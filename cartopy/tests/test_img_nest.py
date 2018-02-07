@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -194,7 +194,7 @@ def _tile_from_img(img):
     Turns an img into the appropriate x, y, z tile based on its filename.
 
     Imgs have a filename attribute which is something
-    like "lib/cartopy/data/wmts/aerial/z_0/x_0_y0.png"
+    like "cartopy/data/wmts/aerial/z_0/x_0_y0.png"
 
     """
     _, z = os.path.basename(os.path.dirname(img.filename)).split('_')

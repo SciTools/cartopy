@@ -976,7 +976,7 @@ class GeoAxes(matplotlib.axes.Axes):
         environment variable to populate the dictionaries for background_img.
 
         If CARTOPY_USER_BACKGROUNDS is not set then by default the image in
-        lib/cartopy/data/raster/natural_earth/ will be made available.
+        cartopy/data/raster/natural_earth/ will be made available.
 
         The metadata should be a standard JSON file which specifies a two
         level dictionary. The first level is the image type.

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2017, Met Office
+# (C) British Crown Copyright 2012 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -125,7 +125,7 @@ class TestLicenseHeaders(object):
                             'docs/build/*',
                             'docs/source/examples/*.py',
                             'docs/source/sphinxext/*.py',
-                            'lib/cartopy/examples/*.py')
+                            'cartopy/examples/*.py')
 
         try:
             last_change_by_fname = self.last_change_by_fname()

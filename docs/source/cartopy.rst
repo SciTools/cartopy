@@ -4,7 +4,7 @@ The cartopy module
 The top level cartopy module contains the :attr:`~cartopy.config` dictionary which controls various aspects of cartopy's behaviour.
 
 ..
-    n.b. cartopy.config docstring should be mirrored in lib/cartopy/__init__.py.
+    n.b. cartopy.config docstring should be mirrored in cartopy/__init__.py.
 
 
 .. py:data:: cartopy.config
