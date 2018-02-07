@@ -22,6 +22,7 @@ This module defines the :class:`FeatureArtist` class, for drawing
 
 from __future__ import (absolute_import, division, print_function)
 
+from collections import defaultdict
 import warnings
 import weakref
 
@@ -82,6 +83,9 @@ class FeatureArtist(matplotlib.artist.Artist):
         ----------
         feature
             An instance of :class:`cartopy.feature.Feature` to draw.
+        styler
+            A callable that given a gemometry, returns matplotlib styling
+            parameters.
 
         Other Parameters
         ----------------
@@ -94,6 +98,7 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         if kwargs is None:
             kwargs = {}
+        self._styler = kwargs.pop('styler', None)
         self._kwargs = dict(kwargs)
 
         # Set default zorder so that features are drawn before
@@ -136,8 +141,24 @@ class FeatureArtist(matplotlib.artist.Artist):
             warnings.warn('Unable to determine extent. Defaulting to global.')
         geoms = self._feature.intersecting_geometries(extent)
 
+        # Combine all the keyword args in priority order
+        prepared_kwargs = dict(self._feature.kwargs)
+        prepared_kwargs.update(self._kwargs)
+        prepared_kwargs.update(kwargs)
+
+        def freeze(obj):
+            if isinstance(obj, dict):
+                obj = frozenset(((k, freeze(v)) for k, v in obj.items()))
+            elif isinstance(obj, list):
+                obj = tuple(freeze(item) for item in obj)
+            return obj
+
+        # Freeze the kwargs so that we can use them as a dict key. We will
+        # need to unfreeze this with dict(frozen) before passing to mpl.
+        prepared_kwargs = freeze(prepared_kwargs)
+
         # Project (if necessary) and convert geometries to matplotlib paths.
-        paths = []
+        stylised_paths = defaultdict(list)
         key = ax.projection
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
@@ -165,17 +186,30 @@ class FeatureArtist(matplotlib.artist.Artist):
                     projected_geom = geom
                 geom_paths = cpatch.geos_to_path(projected_geom)
                 mapping[key] = geom_paths
-            paths.extend(geom_paths)
+
+            if not self._styler:
+                style = prepared_kwargs
+            else:
+                style = dict(prepared_kwargs)
+                style.update(self._styler(geom))
+                style = freeze(style)
+
+            stylised_paths[style].extend(geom_paths)
 
         # Build path collection and draw it.
         transform = ax.projection._as_mpl_transform(ax)
-        # Combine all the keyword args in priority order
-        final_kwargs = dict(self._feature.kwargs)
-        final_kwargs.update(self._kwargs)
-        final_kwargs.update(kwargs)
-        c = matplotlib.collections.PathCollection(paths,
-                                                  transform=transform,
-                                                  **final_kwargs)
-        c.set_clip_path(ax.patch)
-        c.set_figure(ax.figure)
-        return c.draw(renderer)
+
+        # Draw one PathCollection per style. We could instead pass an array
+        # of style items through to a single PathCollection, but that
+        # complexity does not yet justify the effort.
+        for style, paths in stylised_paths.items():
+            c = matplotlib.collections.PathCollection(
+                    paths,
+                    transform=transform,
+                    **dict(style))
+            c.set_clip_path(ax.patch)
+            c.set_figure(ax.figure)
+            c.draw(renderer)
+
+        # n.b. matplotlib.collection.Collection.draw returns None
+        return None

@@ -562,7 +562,9 @@ class GeoAxes(matplotlib.axes.Axes):
             A collection of shapely geometries.
         crs
             The cartopy CRS in which the provided geometries are defined.
-
+        styler
+            A callable that returns matplotlib patch styling given a geometry.
+            
         Returns
         -------
         A :class:`cartopy.mpl.feature_artist.FeatureArtist` instance
@@ -576,8 +578,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
 
         """
+        styler = kwargs.pop('styler', None)
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
-        return self.add_feature(feature)
+        return self.add_feature(feature, styler=styler)
 
     def get_extent(self, crs=None):
         """
