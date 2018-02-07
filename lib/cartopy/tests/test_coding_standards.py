@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2012 - 2017, Met Office
+# (C) British Crown Copyright 2012 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -125,8 +125,10 @@ class TestLicenseHeaders(object):
                             'docs/build/*',
                             'docs/source/examples/*.py',
                             'docs/source/sphinxext/*.py',
-                            'lib/cartopy/examples/*.py')
-
+                            'lib/cartopy/examples/*.py',
+                            'lib/cartopy/_version.py',
+                            'versioneer.py',
+                            )
         try:
             last_change_by_fname = self.last_change_by_fname()
         except ValueError as e:
@@ -166,6 +168,7 @@ class TestFutureImports(object):
         '*/cartopy/_crs.py',   # A file created by setuptools for so loading.
         '*/cartopy/trace.py',  # Ditto.
         '*/cartopy/geodesic/_geodesic.py',
+        '*/cartopy/_version.py',
     )
 
     future_imports_pattern = re.compile(

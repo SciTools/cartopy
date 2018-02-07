@@ -33,6 +33,8 @@ import subprocess
 import sys
 import warnings
 
+import versioneer
+
 
 # Ensure build-time dependencies are available.
 # See https://stackoverflow.com/a/12061891
@@ -96,19 +98,6 @@ def find_package_tree(root_path, root_package):
             packages.extend(['.'.join([root_package] + prefix + [dir_name])
                              for dir_name in dir_names])
     return packages
-
-
-def extract_version():
-    version = None
-    fdir = os.path.dirname(__file__)
-    fnme = os.path.join(fdir, 'lib', 'cartopy', '__init__.py')
-    with open(fnme) as fd:
-        for line in fd:
-            if (line.startswith('__version__')):
-                _, version = line.split('=')
-                version = version.strip()[1:-1]  # Remove quotation characters
-                break
-    return version
 
 
 class MissingHeaderError(Exception):
@@ -346,11 +335,16 @@ else:
 with open(os.path.join(HERE, 'README.rst'), 'r') as fh:
     description = ''.join(fh.readlines())
 
+
+cmdclass = versioneer.get_cmdclass()
+cmdclass.update({'build_ext': build_ext})
+
+
 # Main setup
 # ==========
 setup(
     name='Cartopy',
-    version=extract_version(),
+    version=versioneer.get_version(),
     url='http://scitools.org.uk/cartopy/docs/latest/',
     download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',
@@ -416,7 +410,7 @@ setup(
         ),
     ],
 
-    cmdclass={'build_ext': build_ext},
+    cmdclass=cmdclass,
     classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: GNU Lesser General Public License v3 '
