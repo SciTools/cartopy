@@ -61,7 +61,7 @@ install:
   # Install cartopy
   # ---------------
   - pip install --no-deps .
-  - python -c "import cartopy; print('Version: ', cartopy.__version__)" && python setup.py version
+  - python -c "import cartopy; print('Version ', cartopy.__version__)" && python setup.py version
 
 script:
   - mkdir ../test_folder
