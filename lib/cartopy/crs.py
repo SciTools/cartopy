@@ -52,28 +52,26 @@ class RotatedGeodetic(CRS):
 
     Coordinates are measured in degrees.
 
+    The class uses proj4 to perform an ob_tran operation, using the
+    pole_longitude to set a lon_0 then performing two rotations based on
+    pole_latitude and central_rotated_longitude.
+    This is equivalent to setting the new pole to a location defined by
+    the pole_latitude and pole_longitude values in the GeogCRS defined by
+    globe, then rotating this new CRS about it's pole using the
+    central_rotated_longitude value.
+
     """
     def __init__(self, pole_longitude, pole_latitude,
                  central_rotated_longitude=0.0, globe=None):
         """
-        Create a RotatedGeodetic CRS.
-
-        The class uses proj4 to perform an ob_tran operation, using the
-        pole_longitude to set a lon_0 then performing two rotations based on
-        pole_latitude and central_rotated_longitude.
-        This is equivalent to setting the new pole to a location defined by
-        the pole_latitude and pole_longitude values in the GeogCRS defined by
-        globe, then rotating this new CRS about it's pole using the
-        central_rotated_longitude value.
-
         Parameters
         ----------
         pole_longitude
             Pole longitude position, in unrotated degrees.
         pole_latitude
             Pole latitude position, in unrotated degrees.
-        central_rotated_longitude
-            Longitude rotation about the new pole, in degrees.
+        central_rotated_longitude: optional
+            Longitude rotation about the new pole, in degrees.  Defaults to 0.
         globe: optional
             A :class:`cartopy.crs.Globe`.  Defaults to a "WGS84" datum.
 
@@ -161,8 +159,13 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         src_crs: optional
             The source CRS.  Defaults to None.
 
-        If src_crs is None, the source CRS is assumed to be a geodetic
-        version of the target CRS.
+            If src_crs is None, the source CRS is assumed to be a geodetic
+            version of the target CRS.
+
+        Returns
+        -------
+        geometry
+            The projected result (a shapely geometry).
 
         """
         if src_crs is None:
@@ -590,8 +593,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         Where possible, return a vertices array transformed to this CRS from
         the given vertices array of shape ``(n, 2)`` and the source CRS.
 
-        Notes
-        -----
+        Note
+        ----
             This method may return None to indicate that the vertices cannot
             be transformed quickly, and a more complex geometry transformation
             is required (see :meth:`cartopy.crs.Projection.project_geometry`).
@@ -1236,26 +1239,24 @@ class Miller(_RectangularProjection):
 
 class RotatedPole(_CylindricalProjection):
     """
-    Define a rotated latitude/longitude projected coordinate system
+    A rotated latitude/longitude projected coordinate system
     with cylindrical topology and projected distance.
 
     Coordinates are measured in projection metres.
+
+    The class uses proj4 to perform an ob_tran operation, using the
+    pole_longitude to set a lon_0 then performing two rotations based on
+    pole_latitude and central_rotated_longitude.
+    This is equivalent to setting the new pole to a location defined by
+    the pole_latitude and pole_longitude values in the GeogCRS defined by
+    globe, then rotating this new CRS about it's pole using the
+    central_rotated_longitude value.
 
     """
 
     def __init__(self, pole_longitude=0.0, pole_latitude=90.0,
                  central_rotated_longitude=0.0, globe=None):
         """
-        Create a RotatedPole CRS.
-
-        The class uses proj4 to perform an ob_tran operation, using the
-        pole_longitude to set a lon_0 then performing two rotations based on
-        pole_latitude and central_rotated_longitude.
-        This is equivalent to setting the new pole to a location defined by
-        the pole_latitude and pole_longitude values in the GeogCRS defined by
-        globe, then rotating this new CRS about it's pole using the
-        central_rotated_longitude value.
-
         Parameters
         ----------
         pole_longitude: optional
@@ -1517,8 +1518,8 @@ class Robinson(_WarpedRectangularProjection):
         Needed because input NaNs can trigger a fatal error in the underlying
         implementation of the Robinson projection.
 
-        Notes
-        -----
+        Note
+        ----
             Although the original can in fact translate (nan, lat) into
             (nan, y-value), this patched version doesn't support that.
 
@@ -1537,8 +1538,8 @@ class Robinson(_WarpedRectangularProjection):
         Needed because input NaNs can trigger a fatal error in the underlying
         implementation of the Robinson projection.
 
-        Notes
-        -----
+        Note
+        ----
             Although the original can in fact translate (nan, lat) into
             (nan, y-value), this patched version doesn't support that.
             Instead, we invalidate any of the points that contain a NaN.
@@ -1737,7 +1738,7 @@ class AlbersEqualArea(Projection):
             The central longitude. Defaults to 0.
         central_latitude: optional
             The central latitude. Defaults to 0.
-        false_easting:
+        false_easting: optional
             X offset from planar origin in metres. Defaults to 0.
         false_northing: optional
             Y offset from planar origin in metres. Defaults to 0.
@@ -1997,8 +1998,8 @@ def epsg(code):
     so EPSG codes such as 4326 (WGS-84) which define a "geodetic coordinate
     system" will not work.
 
-    Notes
-    -----
+    Note
+    ----
         The conversion is performed by querying https://epsg.io/ so a
         live internet connection is required.
 

@@ -244,8 +244,8 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     https://github.com/nvkelso/natural-earth-vector/tree/master/zips to
     see the actual files which will be downloaded.
 
-    Notes
-    -----
+    Note
+    ----
         Some of the Natural Earth shapefiles have special features which are
         described in the name. For example, the 110m resolution
         "admin_0_countries" data also has a sibling shapefile called
@@ -448,8 +448,8 @@ class GSHHSShpDownloader(Downloader):
         Download the zip file and extracts the files listed in
         :meth:`zip_file_contents` to the target path.
 
-        Notes
-        -----
+        Note
+        ----
             Because some of the GSHSS data is available with the cartopy
             repository, scales of "l" or "c" will not be downloaded if they
             exist in the ``cartopy.config['repo_data_dir']`` directory.

@@ -62,8 +62,8 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
             The (x_scale, y_scale) pixel width, in units of the
             native projection per pixel.
 
-        Notes
-        -----
+        Note
+        ----
             API is likely to change in the future to include a CRS.
 
         """
@@ -238,8 +238,8 @@ class ImageCollection(object):
         img_class: optional
             The class used to construct each image in the Collection.
 
-        Notes
-        -----
+        Note
+        ----
             Does not recursively search sub-directories.
 
         """
@@ -484,8 +484,8 @@ class NestedImageCollection(object):
             file data, the (x_lower, x_upper, y_lower, y_upper) extent of the
             image, and the image origin.
 
-        Notes
-        -----
+        Note
+        ----
           The format of the retrieved image file data is controlled by
           :attr:`~cartopy.io.img_nest.NestedImageCollection.desired_tile_form`,
           which defaults to 'RGB' format.

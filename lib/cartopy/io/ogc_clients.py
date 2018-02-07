@@ -202,9 +202,9 @@ class WMSRasterSource(RasterSource):
     """
     A WMS imagery retriever which can be added to a map.
 
-    Notes
-    -----
-    Requires owslib and Pillow to work.
+    Note
+    ----
+        Requires owslib and Pillow to work.
 
     No caching of retrieved maps is done with this WMSRasterSource.
 
@@ -335,9 +335,9 @@ class WMTSRasterSource(RasterSource):
 
     Uses tile caching for fast repeated map retrievals.
 
-    Notes
-    -----
-    Requires owslib and Pillow to work.
+    Note
+    ----
+        Requires owslib and Pillow to work.
 
     """
 

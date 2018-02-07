@@ -518,13 +518,6 @@ class GeoAxes(matplotlib.axes.Axes):
         -------
         The created :class:`~matplotlib.collections.PathCollection`.
 
-        Notes
-        -----
-            Currently no clipping is done on the geometries before adding them
-            to the axes. This means, if very high resolution geometries are
-            being used, performance is likely to be severely effected. This
-            should be resolved transparently by v0.5.
-
         """
         warnings.warn('This method has been deprecated.'
                       ' Please use `add_feature` instead.')
@@ -548,11 +541,11 @@ class GeoAxes(matplotlib.axes.Axes):
         A :class:`cartopy.mpl.feature_artist.FeatureArtist` instance
             The instance responsible for drawing the feature.
 
-        Notes
-        -----
-        Matplotlib keyword arguments can be used when drawing the feature.
-        This allows standard Matplotlib control over aspects such as
-        'facecolor', 'alpha', etc.
+        Note
+        ----
+            Matplotlib keyword arguments can be used when drawing the feature.
+            This allows standard Matplotlib control over aspects such as
+            'facecolor', 'alpha', etc.
 
         """
         # Instantiate an artist to draw the feature and add it to the axes.
@@ -575,11 +568,11 @@ class GeoAxes(matplotlib.axes.Axes):
         A :class:`cartopy.mpl.feature_artist.FeatureArtist` instance
             The instance responsible for drawing the feature.
 
-        Notes
-        -----
-        Matplotlib keyword arguments can be used when drawing the feature.
-        This allows standard Matplotlib control over aspects such as
-        'facecolor', 'alpha', etc.
+        Note
+        ----
+            Matplotlib keyword arguments can be used when drawing the feature.
+            This allows standard Matplotlib control over aspects such as
+            'facecolor', 'alpha', etc.
 
 
         """
@@ -706,8 +699,8 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Set the extent of the Axes to the limits of the projection.
 
-        Notes
-        -----
+        Note
+        ----
             In some cases where the projection has a limited sensible range
             the ``set_global`` method does not actually make the whole globe
             visible. Instead, the most appropriate extents will be used (e.g.
@@ -752,8 +745,8 @@ class GeoAxes(matplotlib.axes.Axes):
             to another rectangular coordinate system are supported (defaults
             to None).
 
-        Notes
-        -----
+        Note
+        ----
             This interface is subject to change whilst functionality is added
             to support other map projections.
 
@@ -799,8 +792,8 @@ class GeoAxes(matplotlib.axes.Axes):
             to another rectangular coordinate system are supported (defaults
             to None).
 
-        Notes
-        -----
+        Note
+        ----
             This interface is subject to change whilst functionality is added
             to support other map projections.
 
@@ -1204,10 +1197,10 @@ class GeoAxes(matplotlib.axes.Axes):
         gridliner
             A :class:`cartopy.mpl.gridliner.Gridliner` instance.
 
-        Notes
-        -----
-        All other keywords control line properties.  These are passed through
-        to :class:`matplotlib.collections.Collection`.
+        Note
+        ----
+            All other keywords control line properties.  These are passed
+            through to :class:`matplotlib.collections.Collection`.
 
         """
         if crs is None:
@@ -1239,12 +1232,12 @@ class GeoAxes(matplotlib.axes.Axes):
         Add the map's boundary to this GeoAxes, attaching the appropriate
         artists to :data:`.outline_patch` and :data:`.background_patch`.
 
-        Notes
-        -----
-        The boundary is not the ``axes.patch``. ``axes.patch``
-        is made invisible by this method - its only remaining
-        purpose is to provide a rectilinear clip patch for
-        all Axes artists.
+        Note
+        ----
+            The boundary is not the ``axes.patch``. ``axes.patch``
+            is made invisible by this method - its only remaining
+            purpose is to provide a rectilinear clip patch for
+            all Axes artists.
 
         """
         # Hide the old "background" patch used by matplotlib - it is not
@@ -1707,10 +1700,10 @@ class GeoAxes(matplotlib.axes.Axes):
         See :func:`matplotlib.pyplot.quiver` for details on arguments
         and other keyword arguments.
 
-        Notes
-        -----
-        The vector components must be defined as grid eastward and
-        grid northward.
+        Note
+        ----
+            The vector components must be defined as grid eastward and
+            grid northward.
 
         """
         t = kwargs.get('transform', None)
@@ -1788,10 +1781,10 @@ class GeoAxes(matplotlib.axes.Axes):
         See :func:`matplotlib.pyplot.barbs` for details on arguments
         and other keyword arguments.
 
-        Notes
-        -----
-        The vector components must be defined as grid eastward and
-        grid northward.
+        Note
+        ----
+            The vector components must be defined as grid eastward and
+            grid northward.
 
         """
         t = kwargs.get('transform', None)
@@ -1856,10 +1849,10 @@ class GeoAxes(matplotlib.axes.Axes):
         See :func:`matplotlib.pyplot.streamplot` for details on arguments
         and keyword arguments.
 
-        Notes
-        -----
-        The vector components must be defined as grid eastward and
-        grid northward.
+        Note
+        ----
+            The vector components must be defined as grid eastward and
+            grid northward.
 
         """
         t = kwargs.pop('transform', None)
