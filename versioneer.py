@@ -1515,8 +1515,9 @@ def render_pep440_branch_based(pieces):
     # 1: no tags. 0.0.0.devDISTANCE[+gHEX]
 
     replacements = {' ': '.', '(': '', ')': ''}
-    [branch_name] = [pieces.get('branch').replace(old, new)
-                     for old, new in replacements.items()]
+    branch_name = pieces.get('branch')
+    for old, new in replacements.items():
+        branch_name = branch_name.replace(old, new)
     master = branch_name == 'master'
     maint = re.match(default_maint_branch_regexp,
                      branch_name or '')

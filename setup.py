@@ -32,6 +32,7 @@ import os
 import subprocess
 import sys
 import warnings
+
 import versioneer
 
 
@@ -413,7 +414,7 @@ setup(
     classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: GNU Lesser General Public License v3 '
-             'or later (LGPLv3+)',
+            'or later (LGPLv3+)',
             'Operating System :: MacOS :: MacOS X',
             'Operating System :: Microsoft :: Windows',
             'Operating System :: POSIX',
