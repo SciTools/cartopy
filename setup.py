@@ -23,8 +23,7 @@ Distribution definition for Cartopy.
 
 import setuptools
 from setuptools import setup, Extension
-from setuptools import Command
-from setuptools import convert_path
+from setuptools import Command, convert_path, find_packages
 from distutils.spawn import find_executable
 from distutils.sysconfig import get_config_var
 import fnmatch
@@ -73,35 +72,10 @@ def file_walk_relative(top, remove=''):
             yield os.path.join(root, file).replace(remove, '')
 
 
-def find_package_tree(root_path, root_package):
-    """
-    Return the package and all its sub-packages.
-
-    Automated package discovery - extracted/modified from Distutils Cookbook:
-    https://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery
-
-    """
-    packages = [root_package]
-    # Accept a root_path with Linux path separators.
-    root_path = root_path.replace('/', os.path.sep)
-    root_count = len(root_path.split(os.path.sep))
-    for (dir_path, dir_names, _) in os.walk(convert_path(root_path)):
-        # Prune dir_names *in-place* to prevent unwanted directory recursion
-        for dir_name in list(dir_names):
-            if not os.path.isfile(os.path.join(dir_path, dir_name,
-                                               '__init__.py')):
-                dir_names.remove(dir_name)
-        if dir_names:
-            prefix = dir_path.split(os.path.sep)[root_count:]
-            packages.extend(['.'.join([root_package] + prefix + [dir_name])
-                             for dir_name in dir_names])
-    return packages
-
-
 def extract_version():
     version = None
     fdir = os.path.dirname(__file__)
-    fnme = os.path.join(fdir, 'lib', 'cartopy', '__init__.py')
+    fnme = os.path.join(fdir, 'cartopy', '__init__.py')
     with open(fnme) as fd:
         for line in fd:
             if (line.startswith('__version__')):
@@ -134,7 +108,7 @@ class HeaderCheck(Command):
                         './build/*',
                         './docs/build/*',
                         './dist/*',
-                        './lib/cartopy/examples/*.py')
+                        './cartopy/examples/*.py')
 
     def initialize_options(self):
         pass
@@ -346,6 +320,7 @@ else:
 with open(os.path.join(HERE, 'README.rst'), 'r') as fh:
     description = ''.join(fh.readlines())
 
+
 # Main setup
 # ==========
 setup(
@@ -365,23 +340,22 @@ setup(
     extras_require=extras_require,
     tests_require=tests_require,
 
-    packages=find_package_tree('lib/cartopy', 'cartopy'),
-    package_dir={'': 'lib'},
-    package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/'
+    packages=[pkg for pkg in find_packages('.') if pkg.startswith('cartopy')],
+    package_data={'cartopy': list(file_walk_relative('cartopy/tests/'
                                                      'mpl/baseline_images/',
-                                                     remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/raster',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/netcdf',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/wmts',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/'
+                                                     remove='cartopy/')) +
+                  list(file_walk_relative('cartopy/data/raster',
+                                          remove='cartopy/')) +
+                  list(file_walk_relative('cartopy/data/netcdf',
+                                          remove='cartopy/')) +
+                  list(file_walk_relative('cartopy/data/wmts',
+                                          remove='cartopy/')) +
+                  list(file_walk_relative('cartopy/data/'
                                           'shapefiles/natural_earth',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/'
+                                          remove='cartopy/')) +
+                  list(file_walk_relative('cartopy/data/'
                                           'shapefiles/gshhs',
-                                          remove='lib/cartopy/')) +
+                                          remove='cartopy/')) +
                   ['io/srtm.npz']},
 
 
@@ -389,9 +363,9 @@ setup(
     ext_modules=[
         Extension(
             'cartopy.trace',
-            ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
+            ['cartopy/trace.pyx', 'cartopy/_trace.cpp'],
             include_dirs=[include_dir,
-                          './lib/cartopy'] + proj_includes + geos_includes,
+                          './cartopy'] + proj_includes + geos_includes,
             libraries=proj_libraries + geos_libraries,
             library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
             language='c++',
@@ -399,7 +373,7 @@ setup(
         ),
         Extension(
             'cartopy._crs',
-            ['lib/cartopy/_crs.pyx'],
+            ['cartopy/_crs.pyx'],
             include_dirs=[include_dir, np.get_include()] + proj_includes,
             libraries=proj_libraries,
             library_dirs=[library_dir] + proj_library_dirs,
@@ -408,7 +382,7 @@ setup(
         # Requires proj4 v4.9
         Extension(
             'cartopy.geodesic._geodesic',
-            ['lib/cartopy/geodesic/_geodesic.pyx'],
+            ['cartopy/geodesic/_geodesic.pyx'],
             include_dirs=[include_dir, np.get_include()] + proj_includes,
             libraries=proj_libraries,
             library_dirs=[library_dir] + proj_library_dirs,
