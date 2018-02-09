@@ -25,10 +25,81 @@ from __future__ import (absolute_import, division, print_function)
 import warnings
 import weakref
 
+import six
 import matplotlib.artist
 import matplotlib.collections
+import matplotlib.cbook as cbook
+import matplotlib.colors as mcolors
 
 import cartopy.mpl.patch as cpatch
+
+# MPL Parameters to collections that can be in list form,
+# i.e. one per artist in the collection. Both plural and
+# singular forms
+color_parameters = {
+    'edgecolor', 'edgecolors',
+    'facecolor', 'facecolors',
+    'color'}
+
+other_parameters = {
+    'linewidth', 'linewidths', 'lw',
+    'linestyle', 'linestyles', 'dashes'
+    'antialiased', 'antialiaseds',
+    'offsets'}
+
+all_parameters = color_parameters | other_parameters
+
+
+def _is_custom_linestyle(value):
+    """
+    Return True if value is a custom MPL linestyle
+
+    >>> _is_custom_linestyle((0, (1, 2, 3)))
+    True
+    >>> _is_custom_linestyle((0, [1, 2, 3]))
+    True
+    >>> _is_custom_linestyle([0, (1, 2, 3)])
+    False
+    >>> _is_custom_linestyle('dotted')
+    False
+    """
+    if isinstance(value, tuple):
+        try:
+            offset, onoffseq = value
+        except ValueError:
+            pass
+        else:
+            return (isinstance(offset, int) and
+                    isinstance(onoffseq, (tuple, list)))
+    return False
+
+
+def _is_iterable_parameter(name, value):
+    """
+    Return True if parameter is iterable
+
+    Args:
+
+    * name
+        Parameter name
+
+    * value
+        Parameter value
+
+    >>> _is_iterable_parameter('facecolor', ['white', 'black'])
+    True
+    >>> _is_iterable_parameter('facecolor', 'white')
+    False
+    """
+    string = isinstance(value, six.string_types)
+    color = (name in color_parameters and
+             mcolors.is_color_like(value))
+    linestyle = (name in {'linestyle', 'linestyles'} and
+                 _is_custom_linestyle(value))
+    return (cbook.iterable(value) and
+            not string and
+            not color and
+            not linestyle)
 
 
 class _GeomKey(object):
@@ -134,12 +205,14 @@ class FeatureArtist(matplotlib.artist.Artist):
             extent = ax.get_extent(feature_crs)
         except ValueError:
             warnings.warn('Unable to determine extent. Defaulting to global.')
-        geoms = self._feature.intersecting_geometries(extent)
+        geoms = self._feature.intersecting_geometries(
+            extent, return_indices=True)
 
         # Project (if necessary) and convert geometries to matplotlib paths.
         paths = []
+        indices = []
         key = ax.projection
-        for geom in geoms:
+        for i, geom in geoms:
             # As Shapely geometries cannot be relied upon to be
             # hashable, we have to use a WeakValueDictionary to manage
             # their weak references. The key can then be a simple,
@@ -166,6 +239,7 @@ class FeatureArtist(matplotlib.artist.Artist):
                 geom_paths = cpatch.geos_to_path(projected_geom)
                 mapping[key] = geom_paths
             paths.extend(geom_paths)
+            indices.extend([i] * len(geom_paths))
 
         # Build path collection and draw it.
         transform = ax.projection._as_mpl_transform(ax)
@@ -173,6 +247,16 @@ class FeatureArtist(matplotlib.artist.Artist):
         final_kwargs = dict(self._feature.kwargs)
         final_kwargs.update(self._kwargs)
         final_kwargs.update(kwargs)
+
+        # Filter the list parameters to match the remaining geoms
+        # MPL accepts plural and singular forms
+        for name in all_parameters & set(final_kwargs):
+            value = final_kwargs[name]
+            if _is_iterable_parameter(name, value):
+                # MPL does not accept iterator values, we do not
+                # deal with them.
+                final_kwargs[name] = [value[i] for i in indices]
+
         c = matplotlib.collections.PathCollection(paths,
                                                   transform=transform,
                                                   **final_kwargs)

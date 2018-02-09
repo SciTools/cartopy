@@ -9,6 +9,7 @@ import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
+from cartopy.feature import ShapelyFeature
 
 
 def sample_data():
@@ -43,7 +44,8 @@ def main():
     shapename = 'admin_1_states_provinces_lakes_shp'
     states_shp = shpreader.natural_earth(resolution='110m',
                                          category='cultural', name=shapename)
-
+    feature = ShapelyFeature(shpreader.Reader(states_shp).geometries(),
+                             ccrs.PlateCarree())
     lons, lats = sample_data()
 
     # to get the effect of having just the states without a map "background"
@@ -61,20 +63,20 @@ def main():
     # distance)
     track_buffer = track.buffer(2)
 
-    for state in shpreader.Reader(states_shp).geometries():
-        # pick a default color for the land with a black outline,
-        # this will change if the storm intersects with our track
-        facecolor = [0.9375, 0.9375, 0.859375]
-        edgecolor = 'black'
-
+    # pick a default color for the land with a black outline,
+    # this will change if the storm intersects with our track
+    facecolor = []
+    for state in feature.geometries():
         if state.intersects(track):
-            facecolor = 'red'
+            _facecolor = 'red'
         elif state.intersects(track_buffer):
-            facecolor = '#FF7E00'
+            _facecolor = '#FF7E00'
+        else:
+            _facecolor = [0.9375, 0.9375, 0.859375]
+        facecolor.append(_facecolor)
 
-        ax.add_geometries([state], ccrs.PlateCarree(),
-                          facecolor=facecolor, edgecolor=edgecolor)
-
+    # Add artists
+    ax.add_feature(feature, facecolor=facecolor, edgecolor='black')
     ax.add_geometries([track_buffer], ccrs.PlateCarree(),
                       facecolor='#C8A2C8', alpha=0.5)
     ax.add_geometries([track], ccrs.PlateCarree(),
