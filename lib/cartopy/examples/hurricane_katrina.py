@@ -63,8 +63,8 @@ def main():
     # distance)
     track_buffer = track.buffer(2)
 
-    def color_red_if_intersects(geometry):
-        facecolor = [0.9375, 0.9375, 0.859375]
+    def colorize_state(geometry):
+        facecolor = (0.9375, 0.9375, 0.859375)
         if geometry.intersects(track):
             facecolor = 'red'
         elif geometry.intersects(track_buffer):
@@ -74,7 +74,7 @@ def main():
     ax.add_geometries(
         shpreader.Reader(states_shp).geometries(),
         ccrs.PlateCarree(),
-        styler=color_red_if_intersects)   
+        styler=colorize_state)
 
     ax.add_geometries([track_buffer], ccrs.PlateCarree(),
                       facecolor='#C8A2C8', alpha=0.5)

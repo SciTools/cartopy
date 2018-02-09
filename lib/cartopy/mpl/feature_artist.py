@@ -22,10 +22,11 @@ This module defines the :class:`FeatureArtist` class, for drawing
 
 from __future__ import (absolute_import, division, print_function)
 
-from collections import defaultdict
+from collections import OrderedDict
 import warnings
 import weakref
 
+import numpy as np
 import matplotlib.artist
 import matplotlib.collections
 
@@ -50,6 +51,21 @@ class _GeomKey(object):
 
     def __hash__(self):
         return hash(self._id)
+
+
+def _freeze(obj):
+    """
+    Recursively freeze the given object so that it might be suitable for
+    use as a hashable.
+
+    """
+    if isinstance(obj, dict):
+        obj = frozenset(((k, _freeze(v)) for k, v in obj.items()))
+    elif isinstance(obj, list):
+        obj = tuple(_freeze(item) for item in obj)
+    elif isinstance(obj, np.ndarray):
+        obj = tuple(obj)
+    return obj
 
 
 class FeatureArtist(matplotlib.artist.Artist):
@@ -141,24 +157,17 @@ class FeatureArtist(matplotlib.artist.Artist):
             warnings.warn('Unable to determine extent. Defaulting to global.')
         geoms = self._feature.intersecting_geometries(extent)
 
-        # Combine all the keyword args in priority order
+        # Combine all the keyword args in priority order.
         prepared_kwargs = dict(self._feature.kwargs)
         prepared_kwargs.update(self._kwargs)
         prepared_kwargs.update(kwargs)
 
-        def freeze(obj):
-            if isinstance(obj, dict):
-                obj = frozenset(((k, freeze(v)) for k, v in obj.items()))
-            elif isinstance(obj, list):
-                obj = tuple(freeze(item) for item in obj)
-            return obj
-
         # Freeze the kwargs so that we can use them as a dict key. We will
         # need to unfreeze this with dict(frozen) before passing to mpl.
-        prepared_kwargs = freeze(prepared_kwargs)
+        prepared_kwargs = _freeze(prepared_kwargs)
 
         # Project (if necessary) and convert geometries to matplotlib paths.
-        stylised_paths = defaultdict(list)
+        stylised_paths = OrderedDict()
         key = ax.projection
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
@@ -190,19 +199,20 @@ class FeatureArtist(matplotlib.artist.Artist):
             if not self._styler:
                 style = prepared_kwargs
             else:
+                # Unfreeze, then add the computed style, and then re-freeze.
                 style = dict(prepared_kwargs)
                 style.update(self._styler(geom))
-                style = freeze(style)
+                style = _freeze(style)
 
-            stylised_paths[style].extend(geom_paths)
+            stylised_paths.setdefault(style, []).extend(geom_paths)
 
-        # Build path collection and draw it.
         transform = ax.projection._as_mpl_transform(ax)
 
         # Draw one PathCollection per style. We could instead pass an array
         # of style items through to a single PathCollection, but that
         # complexity does not yet justify the effort.
         for style, paths in stylised_paths.items():
+            # Build path collection and draw it.
             c = matplotlib.collections.PathCollection(
                     paths,
                     transform=transform,

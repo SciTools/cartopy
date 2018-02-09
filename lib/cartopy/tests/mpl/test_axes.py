@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -20,11 +20,15 @@ from __future__ import (absolute_import, division, print_function)
 from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.mpl.geoaxes import InterProjectionTransform
+from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
 from cartopy.tests.mpl.test_caching import CallCounter
 
 
@@ -79,6 +83,51 @@ def test_transform_PlateCarree_shortcut():
     with counter:
         trans.transform_path(pth3)
         assert counter.count == 2
+
+
+class Test_InterProjectionTransform():
+    def pc_2_pc(self):
+        return InterProjectionTransform(
+            ccrs.PlateCarree(), ccrs.PlateCarree())
+
+    def pc_2_rob(self):
+        return InterProjectionTransform(ccrs.PlateCarree(), ccrs.Robinson())
+
+    def rob_2_rob_shifted(self):
+        return InterProjectionTransform(
+            ccrs.Robinson(), ccrs.Robinson(central_longitude=0))
+
+    def test_eq(self):
+        assert self.pc_2_pc() == self.pc_2_pc()
+        assert self.pc_2_rob() == self.pc_2_rob()
+        assert self.rob_2_rob_shifted() == self.rob_2_rob_shifted()
+
+        assert not self.pc_2_rob() == self.rob_2_rob_shifted()
+        assert not self.pc_2_pc() == 'not a transform obj'
+
+    def test_ne(self):
+        assert not self.pc_2_pc() != self.pc_2_pc()
+        print(self.pc_2_pc() != self.pc_2_rob())
+        assert self.pc_2_pc() != self.pc_2_rob()
+
+
+class Test_Axes_add_geometries():
+    def teardown_method(self):
+        plt.close()
+
+    @mock.patch('cartopy.mpl.geoaxes.GeoAxes.add_feature')
+    @mock.patch('cartopy.feature.ShapelyFeature')
+    def test_styler_kwarg(self, ShapelyFeature, add_feature_method):
+        ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
+                     map_projection=ccrs.Robinson())
+        ax.add_geometries(mock.sentinel.geometries, mock.sentinel.crs,
+                          styler=mock.sentinel.styler, wibble='wobble')
+
+        ShapelyFeature.assert_called_once_with(
+            mock.sentinel.geometries, mock.sentinel.crs, wibble='wobble')
+
+        add_feature_method.assert_called_once_with(
+            ShapelyFeature(), styler=mock.sentinel.styler)
 
 
 @cleanup
