@@ -111,4 +111,3 @@ class _PROJ4Projection(ccrs.Projection):
     def threshold(self):
         x0, x1, y0, y1 = self.bounds
         return min(x1 - x0, y1 - y0) / 100.
-
