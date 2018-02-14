@@ -22,42 +22,19 @@ Provide support for converting EPSG codes to Projection instances.
 from __future__ import (absolute_import, division, print_function)
 
 import cartopy.crs as ccrs
+from cartopy._proj4 import _PROJ4Projection
 import numpy as np
 import pyepsg
-import shapely.geometry as sgeom
 
 
-_GLOBE_PARAMS = {'datum': 'datum',
-                 'ellps': 'ellipse',
-                 'a': 'semimajor_axis',
-                 'b': 'semiminor_axis',
-                 'f': 'flattening',
-                 'rf': 'inverse_flattening',
-                 'towgs84': 'towgs84',
-                 'nadgrids': 'nadgrids'}
-
-
-class _EPSGProjection(ccrs.Projection):
+class _EPSGProjection(_PROJ4Projection):
     def __init__(self, code):
         projection = pyepsg.get(code)
         if not isinstance(projection, pyepsg.ProjectedCRS):
             raise ValueError('EPSG code does not define a projection')
 
         self.epsg_code = code
-
-        proj4_str = projection.as_proj4().strip()
-        terms = [term.strip('+').split('=') for term in proj4_str.split(' ')]
-        globe_terms = filter(lambda term: term[0] in _GLOBE_PARAMS, terms)
-        globe = ccrs.Globe(**{_GLOBE_PARAMS[name]: value for name, value in
-                              globe_terms})
-        other_terms = []
-        for term in terms:
-            if term[0] not in _GLOBE_PARAMS:
-                if len(term) == 1:
-                    other_terms.append([term[0], None])
-                else:
-                    other_terms.append(term)
-        super(_EPSGProjection, self).__init__(other_terms, globe)
+        super(_EPSGProjection, self).__init__(projection.as_proj4().strip())
 
         # Convert lat/lon bounds to projected bounds.
         # GML defines gmd:EX_GeographicBoundingBox as:
@@ -77,23 +54,3 @@ class _EPSGProjection(ccrs.Projection):
     def __repr__(self):
         return '_EPSGProjection({})'.format(self.epsg_code)
 
-    @property
-    def boundary(self):
-        x0, x1, y0, y1 = self.bounds
-        return sgeom.LineString([(x0, y0), (x0, y1), (x1, y1), (x1, y0),
-                                 (x0, y0)])
-
-    @property
-    def x_limits(self):
-        x0, x1, y0, y1 = self.bounds
-        return (x0, x1)
-
-    @property
-    def y_limits(self):
-        x0, x1, y0, y1 = self.bounds
-        return (y0, y1)
-
-    @property
-    def threshold(self):
-        x0, x1, y0, y1 = self.bounds
-        return min(x1 - x0, y1 - y0) / 100.

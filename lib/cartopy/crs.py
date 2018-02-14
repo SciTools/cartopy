@@ -102,6 +102,11 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         'MultiPolygon': '_project_multipolygon',
     }
 
+    @classmethod
+    def from_proj4(cls, proj4_dict, **kwargs):
+        raise NotImplementedError("This projection can not be created from a "
+                                  "PROJ.4 description.")
+
     @abstractproperty
     def boundary(self):
         pass
@@ -1134,6 +1139,37 @@ class LambertConformal(Projection):
         self._x_limits = bounds[0], bounds[2]
         self._y_limits = bounds[1], bounds[3]
 
+    @classmethod
+    def from_proj4(cls, proj4_dict, **kwargs):
+        from cartopy._proj4 import _globe_from_proj4
+        globe = _globe_from_proj4(proj4_dict)
+        p_kwargs = {'globe': globe}
+
+        if 'no_defs' in proj4_dict:
+            lat_1 = proj4_dict.get('lat_1')
+            lat_2 = proj4_dict.get('lat_2')
+        else:
+            lat_1 = proj4_dict.get('lat_1', 33.)
+            lat_2 = proj4_dict.get('lat_2', 45.)
+        if lat_1 is not None and lat_2 is not None:
+            p_kwargs['standard_parallels'] = (float(lat_1), float(lat_2))
+        elif lat_1 is not None:
+            p_kwargs['standard_parallels'] = (float(lat_1),)
+        elif lat_2 is not None:
+            raise ValueError("'lat_2' specified without 'lat_1'")
+
+        if 'lon_0' in proj4_dict:
+            p_kwargs['central_longitude'] = float(proj4_dict['lon_0'])
+        if 'lat_0' in proj4_dict:
+            p_kwargs['central_latitude'] = float(proj4_dict['lat_0'])
+        if 'x_0' in proj4_dict:
+            p_kwargs['false_easting'] = float(proj4_dict['x_0'])
+        if 'y_0' in proj4_dict:
+            p_kwargs['false_northing'] = float(proj4_dict['y_0'])
+
+        kwargs.update(p_kwargs)
+        return cls(**kwargs)
+
     def __eq__(self, other):
         res = super(LambertConformal, self).__eq__(other)
         if hasattr(other, "cutoff"):
@@ -1355,6 +1391,30 @@ class Stereographic(Projection):
                                        false_easting, false_northing, 91)
             self._boundary = sgeom.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
+
+    @classmethod
+    def from_proj4(cls, proj4_dict, **kwargs):
+        from cartopy._proj4 import _globe_from_proj4
+        globe = _globe_from_proj4(proj4_dict)
+        p_kwargs = {'globe': globe}
+
+        if 'lon_0' in proj4_dict:
+            p_kwargs['central_longitude'] = float(proj4_dict['lon_0'])
+        if 'lat_0' in proj4_dict and cls is Stereographic:
+            # forced by North and South specific classes
+            p_kwargs['central_latitude'] = float(proj4_dict['lat_0'])
+        if 'lat_ts' in proj4_dict:
+            p_kwargs['true_scale_latitude'] = float(proj4_dict['lat_ts'])
+        if 'k_0' in proj4_dict:
+            p_kwargs['scale_factor'] = float(proj4_dict['k_0'])
+        if 'x_0' in proj4_dict:
+            p_kwargs['false_easting'] = float(proj4_dict['x_0'])
+        if 'y_0' in proj4_dict:
+            p_kwargs['false_northing'] = float(proj4_dict['y_0'])
+
+        kwargs.update(p_kwargs)
+        return cls(**kwargs)
+
 
     @property
     def boundary(self):
@@ -2006,3 +2066,28 @@ def epsg(code):
     """
     import cartopy._epsg
     return cartopy._epsg._EPSGProjection(code)
+
+
+def from_proj4(proj4_terms, globe=None, bounds=None):
+    from cartopy._proj4 import get_proj4_dict, _PROJ4Projection
+    proj4_dict = get_proj4_dict(proj4_terms)
+
+    proj_to_crs = {
+        'lcc': LambertConformal,
+        'stere': NorthPolarStereo,
+    }
+    proj = proj4_dict['proj']
+    crs_class = proj_to_crs.get(proj)
+
+    # special cases
+    if proj == 'stere' and float(proj4_dict['lat_0']) < 0:
+        crs_class = SouthPolarStereo
+
+    # couldn't find a known CRS class
+    if crs_class is None and bounds is None:
+        raise ValueError("'bounds' must be specified for unknown CRS "
+                         "'{}'".format(proj))
+    elif crs_class is None:
+        return _PROJ4Projection(proj4_dict, globe=globe, bounds=bounds)
+
+    return crs_class.from_proj4(proj4_dict)

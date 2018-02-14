@@ -225,6 +225,46 @@ class TestCRS(object):
                              decimal=1)
 
 
+class TestFromPROJ4(object):
+    def test_lcc(self):
+        p_str1 = "+proj=lcc +datum=WGS84 +lat_0=25 +lat_1=25 +lon_0=-95"
+        crs1 = ccrs.from_proj4(p_str1)
+        p_str2 = "+proj=lcc +datum=WGS84 +lat_0=25 +lat_1=25 +lon_0=-95 " \
+                 "+lat_2=45"
+        crs2 = ccrs.from_proj4(p_str2)
+        p_str3 = "+proj=lcc +datum=WGS84 +lat_0=25 +lat_1=25 +lon_0=-95 " \
+                 "+no_defs"
+        crs3 = ccrs.from_proj4(p_str3)
+
+        assert isinstance(crs1, ccrs.LambertConformal)
+        assert isinstance(crs2, ccrs.LambertConformal)
+        assert isinstance(crs3, ccrs.LambertConformal)
+        x, y = crs1.transform_point(-135.0, 42., ccrs.PlateCarree())
+        assert_arr_almost_eq([x, y],
+                             [-3199404.236416136, 2517302.7077927846])
+        # crs2 should have the same parameters as crs1 through defaults
+        x, y = crs2.transform_point(-135.0, 42., ccrs.PlateCarree())
+        assert_arr_almost_eq([x, y],
+                             [-3199404.236416136, 2517302.7077927846])
+
+        assert crs1 == crs2
+
+    def test_stereographic(self):
+        p_str1 = "+proj=stere +datum=WGS84 +lat_0=90 +lat_ts=45 +lon_0=-150"
+        crs1 = ccrs.from_proj4(p_str1)
+        assert isinstance(crs1, ccrs.NorthPolarStereo)
+        p_str2 = "+proj=stere +datum=WGS84 +lat_0=-90 +lat_ts=45 +lon_0=-150"
+        crs2 = ccrs.from_proj4(p_str2)
+        assert isinstance(crs2, ccrs.SouthPolarStereo)
+        p_str3 = "+proj=stere +datum=WGS84 +lat_0=80 +lat_ts=45 +lon_0=-150"
+        crs3 = ccrs.from_proj4(p_str3)
+        assert isinstance(crs3, ccrs.Stereographic)
+
+        x, y = crs1.transform_point(-145., 74., ccrs.PlateCarree())
+        assert_arr_almost_eq([x, y],
+                             [133820.7681726163, -1529578.3794087067])
+
+
 def test_pickle():
     # check that we can pickle a simple CRS
     fh = BytesIO()
