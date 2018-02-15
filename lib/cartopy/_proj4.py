@@ -57,7 +57,7 @@ def get_proj4_dict(proj4_terms):
             if len(parts) == 1:
                 terms.append((parts[0], None))
             else:
-                terms.append(parts)
+                terms.append(tuple(parts[:2]))
     else:
         # assume list of key value pairs
         terms = proj4_terms
