@@ -34,7 +34,8 @@ class _EPSGProjection(_PROJ4Projection):
             raise ValueError('EPSG code does not define a projection')
 
         self.epsg_code = code
-        super(_EPSGProjection, self).__init__(projection.as_proj4().strip())
+        proj4_str = str(projection.as_proj4().strip())
+        super(_EPSGProjection, self).__init__(proj4_str)
 
         # Convert lat/lon bounds to projected bounds.
         # GML defines gmd:EX_GeographicBoundingBox as:
