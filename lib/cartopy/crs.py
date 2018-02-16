@@ -104,8 +104,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
 
     @classmethod
     def from_proj4(cls, proj4_dict, **kwargs):
-        raise NotImplementedError("This projection can not be created from a "
-                                  "PROJ.4 description.")
+        raise NotImplementedError("'{}' can not be created from a "
+                                  "PROJ.4 description.".format(cls.__name__))
 
     @abstractproperty
     def boundary(self):
@@ -1044,6 +1044,8 @@ class LambertConformal(Projection):
 
     """
 
+    _proj4_proj = 'lcc'
+
     def __init__(self, central_longitude=-96.0, central_latitude=39.0,
                  false_easting=0.0, false_northing=0.0,
                  secant_latitudes=None, standard_parallels=None,
@@ -1141,9 +1143,7 @@ class LambertConformal(Projection):
 
     @classmethod
     def from_proj4(cls, proj4_dict, **kwargs):
-        from cartopy._proj4 import _globe_from_proj4
-        globe = _globe_from_proj4(proj4_dict)
-        p_kwargs = {'globe': globe}
+        p_kwargs = {}
 
         if 'no_defs' in proj4_dict:
             lat_1 = proj4_dict.get('lat_1')
@@ -1345,6 +1345,9 @@ class Gnomonic(Projection):
 
 
 class Stereographic(Projection):
+
+    _proj4_proj = 'stere'
+
     def __init__(self, central_latitude=0.0, central_longitude=0.0,
                  false_easting=0.0, false_northing=0.0,
                  true_scale_latitude=None,
@@ -1394,15 +1397,10 @@ class Stereographic(Projection):
 
     @classmethod
     def from_proj4(cls, proj4_dict, **kwargs):
-        from cartopy._proj4 import _globe_from_proj4
-        globe = _globe_from_proj4(proj4_dict)
-        p_kwargs = {'globe': globe}
+        p_kwargs = {}
 
         if 'lon_0' in proj4_dict:
             p_kwargs['central_longitude'] = float(proj4_dict['lon_0'])
-        if 'lat_0' in proj4_dict and cls is Stereographic:
-            # forced by North and South specific classes
-            p_kwargs['central_latitude'] = float(proj4_dict['lat_0'])
         if 'lat_ts' in proj4_dict:
             p_kwargs['true_scale_latitude'] = float(proj4_dict['lat_ts'])
         if 'k_0' in proj4_dict:
@@ -1411,6 +1409,15 @@ class Stereographic(Projection):
             p_kwargs['false_easting'] = float(proj4_dict['x_0'])
         if 'y_0' in proj4_dict:
             p_kwargs['false_northing'] = float(proj4_dict['y_0'])
+        if 'lat_0' in proj4_dict:
+            # forced by North and South specific classes
+            lat_0 = float(proj4_dict['lat_0'])
+            if lat_0 == -90.:
+                cls = SouthPolarStereo
+            elif lat_0 == 90.:
+                cls = NorthPolarStereo
+            else:
+                p_kwargs['central_latitude'] = lat_0
 
         kwargs.update(p_kwargs)
         return cls(**kwargs)
@@ -2069,25 +2076,5 @@ def epsg(code):
 
 
 def from_proj4(proj4_terms, globe=None, bounds=None):
-    from cartopy._proj4 import get_proj4_dict, _PROJ4Projection
-    proj4_dict = get_proj4_dict(proj4_terms)
-
-    proj_to_crs = {
-        'lcc': LambertConformal,
-        'stere': NorthPolarStereo,
-    }
-    proj = proj4_dict['proj']
-    crs_class = proj_to_crs.get(proj)
-
-    # special cases
-    if proj == 'stere' and float(proj4_dict['lat_0']) < 0:
-        crs_class = SouthPolarStereo
-
-    # couldn't find a known CRS class
-    if crs_class is None and bounds is None:
-        raise ValueError("'bounds' must be specified for unknown CRS "
-                         "'{}'".format(proj))
-    elif crs_class is None:
-        return _PROJ4Projection(proj4_dict, globe=globe, bounds=bounds)
-
-    return crs_class.from_proj4(proj4_dict)
+    from cartopy._proj4 import from_proj4
+    return from_proj4(proj4_terms, globe, bounds)

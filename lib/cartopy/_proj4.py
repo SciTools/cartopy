@@ -32,6 +32,7 @@ _GLOBE_PARAMS = {'datum': 'datum',
                  'rf': 'inverse_flattening',
                  'towgs84': 'towgs84',
                  'nadgrids': 'nadgrids'}
+PROJ_TO_CRS = {}
 
 
 def get_proj4_dict(proj4_terms):
@@ -65,25 +66,32 @@ def get_proj4_dict(proj4_terms):
     return dict(terms)
 
 
-def _globe_from_proj4(proj4_terms):
+def _split_globe_parameters(proj4_dict):
+    projection_terms = {}
+    globe_terms = {}
+    for name, value in proj4_dict.items():
+        if name in _GLOBE_PARAMS:
+            globe_terms[name] = value
+        else:
+            projection_terms[name] = value
+    return projection_terms, globe_terms
+
+
+def _globe_from_proj4(globe_terms):
     """Create a `Globe` object from PROJ.4 parameters."""
-    globe_terms = filter(lambda term: term[0] in _GLOBE_PARAMS,
-                         proj4_terms.items())
     globe = ccrs.Globe(**{_GLOBE_PARAMS[name]: value for name, value in
-                          globe_terms})
+                          globe_terms.items()})
     return globe
 
 
 class _PROJ4Projection(ccrs.Projection):
     def __init__(self, proj4_terms, globe=None, bounds=None):
         terms = get_proj4_dict(proj4_terms)
-        globe = _globe_from_proj4(terms) if globe is None else globe
+        projection_terms, globe_terms = _split_globe_parameters(terms)
+        if globe is None:
+            globe = _globe_from_proj4(globe_terms)
 
-        other_terms = []
-        for term in terms.items():
-            if term[0] not in _GLOBE_PARAMS:
-                other_terms.append(term)
-        super(_PROJ4Projection, self).__init__(other_terms, globe)
+        super(_PROJ4Projection, self).__init__(projection_terms, globe)
 
         # FIXME: Can we guess at the bounds if not provided? Maybe transform
         #        an array of points and take the min/max of the result?
@@ -113,3 +121,34 @@ class _PROJ4Projection(ccrs.Projection):
     def threshold(self):
         x0, x1, y0, y1 = self.bounds
         return min(x1 - x0, y1 - y0) / 100.
+
+
+def all_subclasses(cls):
+    return cls.__subclasses__() + [g for s in cls.__subclasses__()
+                                   for g in all_subclasses(s)]
+
+
+def from_proj4(proj4_terms, globe=None, bounds=None):
+    proj4_dict = get_proj4_dict(proj4_terms)
+
+    if not PROJ_TO_CRS:
+        # initialize this here instead of at import
+        for crs_class in all_subclasses(ccrs.CRS):
+            cls_proj = getattr(crs_class, '_proj4_proj', None)
+            if cls_proj is not None and cls_proj not in PROJ_TO_CRS:
+                PROJ_TO_CRS[cls_proj] = crs_class
+
+    proj = proj4_dict['proj']
+    crs_class = PROJ_TO_CRS.get(proj)
+
+    # couldn't find a known CRS class
+    if crs_class is None:
+        # return _PROJ4Projection(proj4_dict, globe=globe, bounds=bounds)
+        # we don't want to allow non-CRS/generic Projection classes
+        raise ValueError("Projection '{}' is not implemented yet.".format(
+            proj))
+
+    projection_dict, globe_dict = _split_globe_parameters(proj4_dict)
+    if globe is None:
+        globe = _globe_from_proj4(globe_dict)
+    return crs_class.from_proj4(projection_dict, globe=globe)

@@ -256,7 +256,7 @@ class TestFromPROJ4(object):
         p_str2 = "+proj=stere +datum=WGS84 +lat_0=-90 +lat_ts=45 +lon_0=-150"
         crs2 = ccrs.from_proj4(p_str2)
         assert isinstance(crs2, ccrs.SouthPolarStereo)
-        p_str3 = "+proj=stere +datum=WGS84 +lat_0=80 +lat_ts=45 +lon_0=-150"
+        p_str3 = "+proj=stere +datum=WGS84 +lat_0=80 +lon_0=-150"
         crs3 = ccrs.from_proj4(p_str3)
         assert isinstance(crs3, ccrs.Stereographic)
 
