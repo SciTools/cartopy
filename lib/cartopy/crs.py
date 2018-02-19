@@ -1485,6 +1485,16 @@ class Mollweide(_WarpedRectangularProjection):
     def threshold(self):
         return 1e5
 
+class Hammer(_WarpedRectangularProjection):
+    def __init__(self, central_longitude=0, globe=None):
+        proj4_params = [('proj', 'hammer'), ('lon_0', central_longitude)]
+        super(Hammer, self).__init__(proj4_params, central_longitude,
+                                     globe=globe)
+
+    @property
+    def threshold(self):
+        return 1e5
+
 
 class Robinson(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0, globe=None):
