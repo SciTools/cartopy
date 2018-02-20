@@ -135,9 +135,9 @@ Vector plotting
 
 Cartopy comes with powerful vector field plotting functionality. There are 3 distinct options for
 visualising vector fields:
-:meth:`quivers <cartopy.mpl.geoaxes.GeoAxes.quiver>` (:ref:`example <examples-arrows>`),
-:meth:`barbs <cartopy.mpl.geoaxes.GeoAxes.barbs>` (:ref:`example <examples-barbs>`) and
-:meth:`streamplots <cartopy.mpl.geoaxes.GeoAxes.streamplot>` (:ref:`example <examples-streamplot>`)
+:meth:`quivers <cartopy.mpl.geoaxes.GeoAxes.quiver>` (:ref:`example <sphx_glr_gallery_arrows.py>`),
+:meth:`barbs <cartopy.mpl.geoaxes.GeoAxes.barbs>` (:ref:`example <sphx_glr_gallery_barbs.py>`) and
+:meth:`streamplots <cartopy.mpl.geoaxes.GeoAxes.streamplot>` (:ref:`example <sphx_glr_gallery_streamplot.py>`)
 each with their own benefits for displaying certain vector field forms.
 
 .. figure:: ../gallery/images/sphx_glr_arrows_001.png

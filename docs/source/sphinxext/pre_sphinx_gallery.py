@@ -47,13 +47,12 @@ def example_groups(src_dir):
 
     for fname in sorted_listdir:
         fpath = os.path.join(src_dir, fname)
-        __tags__ = []
         with open(fpath, 'r') as fh:
             for line in fh:
                 # Crudely remove the __tags__ line.
                 if line.startswith('__tags__ = '):
                     exec(line.strip(), locals(), globals())
-                    for tag in __tags__:
+                    for tag in __tags__:  # noqa:
                         tagged_examples.setdefault(tag, []).append(fname)
                     break
             else:

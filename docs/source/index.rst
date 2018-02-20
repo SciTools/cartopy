@@ -11,7 +11,7 @@ Introduction
 
 Cartopy is a Python package designed for geospatial data processing in order to produce maps and other geospatial data analyses.
 
-Cartopy makes use of the powerful PROJ.4, numpy and shapely libraries and includes an programatic interface
+Cartopy makes use of the powerful PROJ.4, numpy and shapely libraries and includes a programatic interface
 built on top of Matplotlib for the creation of publication quality maps.
 
 Key features of cartopy are its object oriented :ref:`projection definitions <cartopy_projections>`, and its
