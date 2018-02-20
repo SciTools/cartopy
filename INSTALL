@@ -50,7 +50,7 @@ you may need to install the development packages (look for a "-dev"
 suffix) in addition to the core packages.  
 
 Many of these dependencies are built as part of Cartopy's conda distribution.
-The recipes for these can be found at https://github.com/SciTools/conda-recipes-scitools.
+The recipes for these can be found at `https://github.com/conda-forge/feedstocks`_.
 
 
 **Python** 2.7 or later (https://www.python.org/)
