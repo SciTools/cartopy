@@ -44,18 +44,18 @@ Features
 
 * New additions to the gallery:
 
-.. figure:: gallery/miscellanea/images/sphx_glr_axes_grid_basic_001.png
-   :target: gallery/miscellanea/axes_grid_basic.html
+.. figure:: gallery/images/sphx_glr_axes_grid_basic_001.png
+   :target: gallery/axes_grid_basic.html
    :align: center
    :scale: 70
 
-.. figure:: gallery/web_services/images/sphx_glr_reprojected_wmts_001.png
-   :target: gallery/miscellanea/reprojected_wmts.html
+.. figure:: gallery/images/sphx_glr_reprojected_wmts_001.png
+   :target: gallery/reprojected_wmts.html
    :align: center
    :scale: 70
 
-.. figure:: gallery/web_services/images/sphx_glr_wmts_time_001.png
-   :target: gallery/miscellanea/wmts_time.html
+.. figure:: gallery/images/sphx_glr_wmts_time_001.png
+   :target: gallery/wmts_time.html
    :align: center
    :scale: 70
 
@@ -82,8 +82,8 @@ Features
   convenience function that returns geodetic circles. This is used by
   :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot` which draws Tissot's indicatrices on the axes.
 
-  .. figure:: gallery/miscellanea/images/sphx_glr_tissot_001.png
-     :target: gallery/miscellanea/tissot.html
+  .. figure:: gallery/images/sphx_glr_tissot_001.png
+     :target: gallery/tissot.html
      :align: center
      :scale: 70
 
@@ -105,8 +105,8 @@ Features
 
 * Daniel Eriksson added a new example to the gallery:
 
-  .. figure:: gallery/scalar_data/images/sphx_glr_aurora_forecast_001.png
-     :target: gallery/miscellanea/aurora_forecast.html
+  .. figure:: gallery/images/sphx_glr_aurora_forecast_001.png
+     :target: gallery/aurora_forecast.html
      :align: center
      :scale: 70
 
@@ -149,8 +149,8 @@ Features
 
 * A new example was added to the gallery:
 
-  .. figure:: gallery/miscellanea/images/sphx_glr_eccentric_ellipse_001.png
-     :target: gallery/miscellanea/eccentric_ellipse.html
+  .. figure:: gallery/images/sphx_glr_eccentric_ellipse_001.png
+     :target: gallery/eccentric_ellipse.html
      :align: center
      :scale: 70
 
@@ -192,8 +192,8 @@ Features
   Goode Homolosine map - unsurprisingly this WMS service does not provide IGH imagery, so
   cartopy has had to reproject them from a projection the WMS does support:
 
-  .. figure:: gallery/web_services/images/sphx_glr_wms_001.png
-     :target: gallery/web_services/wms.html
+  .. figure:: gallery/images/sphx_glr_wms_001.png
+     :target: gallery/wms.html
      :align: center
      :scale: 70
 
@@ -204,8 +204,8 @@ Features
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_image` method. The following example demonstrates the
   interface for another source of imagery:
 
-  .. figure:: gallery/web_services/images/sphx_glr_image_tiles_001.png
-     :target: gallery/web_services/image_tiles.html
+  .. figure:: gallery/images/sphx_glr_image_tiles_001.png
+     :target: gallery/image_tiles.html
      :align: center
      :scale: 70
 
@@ -240,8 +240,8 @@ Features
   :class:`matplotlib Path<matplotlib.path.Path>` object, which means that
   arbitrary shaped edges can be achieved:
 
-  .. figure:: gallery/miscellanea/images/sphx_glr_star_shaped_boundary_001.png
-     :target: gallery/miscellanea/star_shaped_boundary.html
+  .. figure:: gallery/images/sphx_glr_star_shaped_boundary_001.png
+     :target: gallery/star_shaped_boundary.html
      :align: center
      :scale: 70
 
@@ -252,28 +252,28 @@ Features
 * New additions to the gallery:
 
 
-  .. figure:: gallery/miscellanea/images/sphx_glr_un_flag_001.png
-     :target: gallery/miscellanea/un_flag.html
+  .. figure:: gallery/images/sphx_glr_un_flag_001.png
+     :target: gallery/un_flag.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/lines_and_polygons/images/sphx_glr_always_circular_stereo_001.png
-     :target: gallery/lines_and_polygons/always_circular_stereo.html
+  .. figure:: gallery/images/sphx_glr_always_circular_stereo_001.png
+     :target: gallery/always_circular_stereo.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/miscellanea/images/sphx_glr_tube_stations_001.png
-     :target: gallery/miscellanea/tube_stations.html
+  .. figure:: gallery/images/sphx_glr_tube_stations_001.png
+     :target: gallery/tube_stations.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/web_services/images/sphx_glr_wms_001.png
-     :target: gallery/web_services/wms.html
+  .. figure:: gallery/images/sphx_glr_wms_001.png
+     :target: gallery/wms.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/web_services/images/sphx_glr_image_tiles_001.png
-     :target: gallery/web_services/image_tiles.html
+  .. figure:: gallery/images/sphx_glr_image_tiles_001.png
+     :target: gallery/image_tiles.html
      :align: center
      :scale: 70
 
@@ -332,8 +332,8 @@ What's new in cartopy 0.11
   with the target projection and chooses the zoom level to best match the pixel
   density in the rendered image.
 
-  .. figure:: gallery/web_services/images/sphx_glr_wmts_001.png
-     :target: gallery/web_services/wmts.html
+  .. figure:: gallery/images/sphx_glr_wmts_001.png
+     :target: gallery/wmts.html
      :align: center
      :scale: 70
 
@@ -358,8 +358,8 @@ What's new in cartopy 0.11
   rectangular projections. The formatters are customizable and can be used to produce
   nice tick labels in a variety of styles:
 
-  .. figure:: gallery/miscellanea/images/sphx_glr_tick_labels_001.png
-     :target: gallery/miscellanea/tick_labels.html
+  .. figure:: gallery/images/sphx_glr_tick_labels_001.png
+     :target: gallery/tick_labels.html
      :align: center
      :scale: 70
 
@@ -397,8 +397,8 @@ capabilities, including:
   the ability to draw streamlines in any projection from a vector field in
   any other projection.
 
-  .. figure:: gallery/vector_data/images/sphx_glr_barbs_001.png
-     :target: gallery/vector_data/barbs.html
+  .. figure:: gallery/images/sphx_glr_barbs_001.png
+     :target: gallery/barbs.html
      :align: center
      :scale: 70
 
@@ -427,16 +427,16 @@ What's new in cartopy 0.9
   for some follow on work to fully implement the Google Spherical Mercator (EPSG:3857) projection.
 
 
-    .. figure:: gallery/scalar_data/images/sphx_glr_eyja_volcano_001.png
-       :target: gallery/scalar_data/eyja_volcano.html
+    .. figure:: gallery/images/sphx_glr_eyja_volcano_001.png
+       :target: gallery/eyja_volcano.html
        :align: center
        :scale: 70
 
 * The TransverseMercator class saw a tidy up to include several common arguments (:pull:`pull request <309>`)
 * Bill Little added the Geostationary projection to allow geolocation of satellite imagery.
 
-  .. figure:: gallery/scalar_data/images/sphx_glr_geostationary_001.png
-     :target: gallery/scalar_data/geostationary.html
+  .. figure:: gallery/images/sphx_glr_geostationary_001.png
+     :target: gallery/geostationary.html
      :align: center
      :scale: 70
 
@@ -498,9 +498,9 @@ What's new in cartopy 0.6
 * Phil Elson and Carwyn Pelley extended the cartopy documentation to include
   new tutorials such as :ref:`using_the_shapereader`.
 
-* Ian Edwards :doc:`added a new example <gallery/miscellanea/favicon>` to create a favicon for cartopy.
+* Ian Edwards :doc:`added a new example <gallery/favicon>` to create a favicon for cartopy.
 
-* Phil Elson :doc:`added a new example <gallery/lines_and_polygons/hurricane_katrina>` to show polygon analysis
+* Phil Elson :doc:`added a new example <gallery/hurricane_katrina>` to show polygon analysis
   and visualisation with Shapely and cartopy.
 
 * Edward Campbell added a new :py:class:`cartopy.crs.EuroPP` projection for UTM zone 32.
@@ -567,7 +567,7 @@ Feature API
 
 A new features api is now available, see :doc:`tutorials/using_the_shapereader`.
 
-.. figure:: gallery/lines_and_polygons/images/sphx_glr_features_001.png
-   :target: gallery/lines_and_polygons/features.html
+.. figure:: gallery/images/sphx_glr_features_001.png
+   :target: gallery/features.html
    :align: center
    :scale: 70

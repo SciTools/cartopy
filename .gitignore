@@ -21,7 +21,6 @@ lib/cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
 docs/source/gallery
 docs/source/matplotlib/coastlines.p??
-docs/source/api/_as_gen
 
 # some data files:
 lib/cartopy/data/SRTM3

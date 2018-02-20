@@ -5,13 +5,16 @@ implementation, hence the explicit version checking.
 
 """
 from collections import OrderedDict
+import os.path
+import shutil
 import tempfile
 import textwrap
 
 import sphinx_gallery.gen_gallery
 import sphinx_gallery.gen_rst
-from sphinx_gallery.gen_rst import *
-from sphinx_gallery.gen_rst import _thumbnail_div
+from sphinx_gallery.gen_rst import (
+    write_backreferences, extract_intro, _thumbnail_div,
+    generate_file_rst, sphinx_compatibility)
 
 
 if sphinx_gallery.__version__ not in ['0.1.12']:
@@ -27,9 +30,9 @@ GALLERY_HEADER = textwrap.dedent("""
     ---------------
 
     The following visual examples demonstrate some of the functionality of
-    Cartopy, particularly its matplotlib interface. 
-    
-    For a structured introduction to cartopy, including some of these 
+    Cartopy, particularly its matplotlib interface.
+
+    For a structured introduction to cartopy, including some of these
     examples, see :ref:`getting-started-with-cartopy`.
 
 """)
@@ -44,6 +47,7 @@ def example_groups(src_dir):
 
     for fname in sorted_listdir:
         fpath = os.path.join(src_dir, fname)
+        __tags__ = []
         with open(fpath, 'r') as fh:
             for line in fh:
                 # Crudely remove the __tags__ line.
@@ -72,7 +76,7 @@ def order_examples(tagged_examples):
             index = preferred_tag_order.index(tag)
         except ValueError:
             index = len(preferred_tag_order) + 1
-        
+
         return (index, tag.lower())
     sorted_items = sorted(tagged_examples.items(), key=sort_key)
     return OrderedDict(sorted_items)
@@ -93,12 +97,12 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     """Generate the gallery reStructuredText for an example directory"""
 
     fhindex = GALLERY_HEADER
-   
+
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
     tagged_examples = example_groups(src_dir)
     tagged_examples = order_examples(tagged_examples)
-    
+
     computation_times = []
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
 
@@ -115,8 +119,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             length=len(sorted_listdir))
         for fname in iterator:
             write_example(os.path.join(src_dir, fname), tmp_dir)
-            amount_of_code, time_elapsed = generate_file_rst(fname, target_dir,
-                                                             tmp_dir, gallery_conf)
+            amount_of_code, time_elapsed = generate_file_rst(
+                fname, target_dir, tmp_dir, gallery_conf)
 
             if fname not in seen:
                 seen.add(fname)
@@ -130,8 +134,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
                    :hidden:
 
                    /%s
-                   
-                   """) % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')
+
+                   """) % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')  # noqa: E501
 
             entries_text.append((amount_of_code, this_entry))
 
@@ -152,13 +156,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         """.format(tag=tag, tag_underline='-' * len(tag)))
 
         for _, entry_text in entries_text:
-            fhindex += entry_text
+            fhindex += '\n    '.join(entry_text.split('\n'))
 
         # clear at the end of the section
         fhindex += """.. raw:: html\n
         <div style='clear:both'></div>\n\n"""
 
-    # Clean up the temporary files.
+    # Tidy up the temp directory
     shutil.rmtree(tmp_dir)
 
     return fhindex, computation_times
@@ -167,6 +171,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 # Monkey-patch sphinx_gallery to handle cartopy's example format.
 sphinx_gallery.gen_rst.generate_dir_rst = generate_dir_rst
 sphinx_gallery.gen_gallery.generate_dir_rst = generate_dir_rst
+
 
 def setup(app):
     pass
