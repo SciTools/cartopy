@@ -26,8 +26,11 @@ and is at version |version|. You can find the source code for cartopy on
 `our github page <https://github.com/SciTools/cartopy>`_.
 
 
+.. _getting-started-with-cartopy:
+
 Getting started
 ===============
+
 
 The :ref:`installation guide <installing>` provides information on getting up and running, and
 cartopy's documentation is arranged userguide form with reference documentation available inline.
