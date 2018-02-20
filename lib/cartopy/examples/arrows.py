@@ -4,8 +4,9 @@ Arrows
 
 Plotting arrows.
 
-.. _examples-arrows:
 """
+__tags__ = ['Vector data']
+
 import matplotlib.pyplot as plt
 import numpy as np
 

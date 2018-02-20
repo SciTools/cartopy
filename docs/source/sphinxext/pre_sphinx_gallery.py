@@ -60,7 +60,12 @@ def example_groups(src_dir):
 
 def order_examples(tagged_examples):
     """Order the tags and their examples."""
-    preferred_tag_order = ['Lines and polygons', 'Miscellanea']
+    preferred_tag_order = ['Introductory',
+                           'Lines and polygons',
+                           'Scalar data',
+                           'Vector data',
+                           'Web services']
+
     def sort_key(item):
         tag = item[0]
         try:

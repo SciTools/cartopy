@@ -4,9 +4,9 @@ Barbs
 
 Plotting barbs.
 
-.. _examples-barbs:
-
 """
+__tags__ = ['Vector data']
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

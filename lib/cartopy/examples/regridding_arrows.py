@@ -7,7 +7,10 @@ equivalent functionality in :meth:`cartopy.mpl.geoaxes.GeoAxes.barbs`).
 
 Regridding can be an effective way of visualising a vector field, particularly
 if the data is dense or warped.
+
 """
+__tags__ = ['Vector data']
+
 import matplotlib.pyplot as plt
 import numpy as np
 

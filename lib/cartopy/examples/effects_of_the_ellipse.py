@@ -14,6 +14,8 @@ that they are both referenced to the WGS84 ellipse and compare how the
 coastlines are shifted as a result of referencing the incorrect ellipse.
 
 """
+__tags__ = ['Lines and polygons']
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.io.img_tiles import StamenTerrain
