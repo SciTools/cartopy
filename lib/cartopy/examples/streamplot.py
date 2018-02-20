@@ -9,7 +9,7 @@ Generating a vector-based streamplot.
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
-from cartopy.examples.vector_data.arrows import sample_data
+from cartopy.examples.arrows import sample_data
 
 
 def main():
