@@ -3,7 +3,10 @@ Tissot's Indicatrix
 -------------------
 
 Visualize Tissot's indicatrix on a map.
+
 """
+__tags__ = ['Lines and polygons']
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

@@ -18,6 +18,7 @@ and Atmospheric Administration (NOAA).
 Downloading and plotting tiles
 ==============================
 """
+__tags__ = ['Web services']
 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs

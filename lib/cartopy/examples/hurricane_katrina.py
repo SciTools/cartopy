@@ -3,6 +3,8 @@ Hurricane Katrina
 -----------------
 
 """
+__tags__ = ['Lines and polygons']
+
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import shapely.geometry as sgeom

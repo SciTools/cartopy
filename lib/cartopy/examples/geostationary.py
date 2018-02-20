@@ -11,6 +11,8 @@ the data's native Geostationary coordinate system - it is then projected by
 cartopy into a global Miller map.
 
 """
+__tags__ = ["Scalar data"]
+
 try:
     from urllib2 import urlopen
 except ImportError:

@@ -61,15 +61,6 @@ doc-run: &doc-build
     make html
   working_directory: docs
 
-doc-bundle-run: &doc-bundle
-  name: Bundle sphinx-gallery documentation artifacts
-  command: |
-    tar cf docs/build/sphinx-gallery-files.tar.gz \
-        docs/source/api \
-        docs/source/cartopy_outline.rst \
-        docs/source/gallery
-  when: always
-
 
 ##########################################
 # Here is where the real jobs are defined.
@@ -91,10 +82,6 @@ jobs:
       - run: *cp-install
 
       - run: *doc-build
-
-      - run: *doc-bundle
-      - store_artifacts:
-          path: docs/build/sphinx-gallery-files.tar.gz
 
       - store_artifacts:
           path: docs/build/html
@@ -118,10 +105,6 @@ jobs:
       - run: *cp-install
 
       - run: *doc-build
-
-      - run: *doc-bundle
-      - store_artifacts:
-          path: docs/build/sphinx-gallery-files.tar.gz
 
       - store_artifacts:
           path: docs/build/html

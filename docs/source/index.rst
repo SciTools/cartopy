@@ -26,6 +26,8 @@ and is at version |version|. You can find the source code for cartopy on
 `our github page <https://github.com/SciTools/cartopy>`_.
 
 
+.. _getting-started-with-cartopy:
+
 Getting started
 ===============
 

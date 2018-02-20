@@ -19,10 +19,8 @@ lib/cartopy/geodesic/_geodesic.pyd
 docs/build
 lib/cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
-docs/source/examples
-docs/source/gallery.rst
 docs/source/gallery
-docs/source/api
+docs/source/matplotlib/coastlines.p??
 
 # some data files:
 lib/cartopy/data/SRTM3

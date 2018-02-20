@@ -16,6 +16,7 @@ The imagery was collected by the Suomi National Polar-orbiting Partnership
 and Atmospheric Administration (NOAA).
 
 """
+__tags__ = ['Web services']
 
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs

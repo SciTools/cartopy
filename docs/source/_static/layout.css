@@ -1,6 +1,3 @@
-.gallery-images img { border: none;}
-.gallery-images p { display: inline;}
-
 .inline-paragraphs p {display: inline;}
 
 .highlight {background: none;}
@@ -21,16 +18,12 @@ h1 {
 
 /* Sphinx Gallery */
 
-div#cartopy-gallery.section {
-    overflow: hidden;
+.sphx-glr-download a {
+    background-image: none !important;
+    background-color: white !important;
 }
 
 div.section div.figure {
   padding-left: 0 !important;
   text-align: center;
-}
-
-/* hack to make the __init__.py files not display in SG*/
-div.dontshow {
-  display: none !important;
 }

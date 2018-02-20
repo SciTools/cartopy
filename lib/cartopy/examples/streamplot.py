@@ -4,12 +4,13 @@ Streamplot
 
 Generating a vector-based streamplot.
 
-.. _examples-streamplot:
 """
+__tags__ = ['Vector data']
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
-from cartopy.examples.vector_data.arrows import sample_data
+from cartopy.examples.arrows import sample_data
 
 
 def main():

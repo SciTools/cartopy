@@ -3,7 +3,10 @@ Keep Boundary Circular
 ----------------------
 
 Setting the boundary of an image to be circular.
+
 """
+__tags__ = ['Lines and polygons']
+
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np

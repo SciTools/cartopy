@@ -1,4 +1,0 @@
-Lines and polygons
-------------------
-
-

@@ -6,6 +6,8 @@ This example demonstrates how imagery from a tile
 providing web service can be accessed.
 
 """
+__tags__ = ['Web services']
+
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 

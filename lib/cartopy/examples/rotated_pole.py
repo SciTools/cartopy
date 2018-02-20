@@ -9,6 +9,7 @@ Try changing the ``box_top`` to ``44``, ``46`` and ``75`` to see the effect
 that including the pole in the polygon has.
 
 """
+__tags__ = ['Lines and polygons']
 
 import matplotlib.pyplot as plt
 

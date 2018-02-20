@@ -7,11 +7,12 @@ Demonstrates cartopy's ability to draw map tiles which are downloaded on
 demand from the Stamen tile server. Internally these tiles are then combined
 into a single image and displayed in the cartopy GeoAxes.
 
-.. _examples-eyja_volcano:
-
 Grabbing the map tiles
 ======================
+
 """
+__tags__ = ["Scalar data"]
+
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
 

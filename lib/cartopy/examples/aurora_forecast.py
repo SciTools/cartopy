@@ -12,6 +12,7 @@ published for the coming 30 minutes. The data is provided as a
 data spaced equally in degrees from -180 to 180 and -90 to 90.
 
 """
+__tags__ = ["Scalar data"]
 try:
     from urllib2 import urlopen
 except ImportError:
