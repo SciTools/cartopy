@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -43,5 +43,5 @@ class ExampleImageTesting(ImageTesting):
 @ExampleImageTesting(['global_map'],
                      tolerance=4 if MPL_VERSION < '2' else 0)
 def test_global_map():
-    import cartopy.examples.lines_and_polygons.global_map as c
+    import cartopy.examples.global_map as c
     c.main()
