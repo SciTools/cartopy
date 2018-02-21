@@ -1,6 +1,8 @@
 """
-Logo
-----
+Cartopy Logo
+------------
+
+The actual code to produce cartopy's logo.
 
 """
 import cartopy.crs as ccrs

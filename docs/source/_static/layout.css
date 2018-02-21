@@ -4,7 +4,20 @@
 
 pre {max-width: 70em;}
 
-div.section dl, div.section ul { max-width: 80em;}
+
+div.section dl, div.section ul {
+    max-width: 80em;
+}
+
+div.section {
+    /* Paragraph sections (e.g. in what's new) */
+    padding-bottom: 1em;
+}
+
+dl.class {
+    /* Sphinx documented classes. */
+    padding-bottom: 1.5em;
+}
 
 div.figure { padding-left: 5em; }
 

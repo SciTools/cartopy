@@ -1,6 +1,8 @@
 """
-Waves
------
+Filled contours
+---------------
+
+An example of contourf on manufactured data.
 
 """
 __tags__ = ['Scalar data']

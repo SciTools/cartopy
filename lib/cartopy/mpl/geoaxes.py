@@ -1292,10 +1292,10 @@ class GeoAxes(matplotlib.axes.Axes):
 
         if self.background_patch is None:
             background = mpatches.PathPatch(path, edgecolor='none',
-                                            facecolor='white', zorder=-1,
+                                            facecolor='white', zorder=-2,
                                             clip_on=False, transform=transform)
         else:
-            background = mpatches.PathPatch(path, zorder=-1, clip_on=False)
+            background = mpatches.PathPatch(path, zorder=-2, clip_on=False)
             background.update_from(self.background_patch)
             self.background_patch.remove()
             background.set_transform(transform)

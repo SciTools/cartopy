@@ -2,6 +2,9 @@
 Hurricane Katrina
 -----------------
 
+This example uses the power of Shapely to illustrate states that are likely to
+have been significantly impacted by Hurricane Katrina.
+
 """
 __tags__ = ['Lines and polygons']
 

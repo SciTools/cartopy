@@ -2,6 +2,16 @@
 Feature Creation
 ----------------
 
+This example manually instantiates a
+:class:`cartopy.feature.NaturalEarthFeature` to access administrative
+boundaries (states and provinces).
+
+Note that this example is intended to illustrate the ability to construct
+Natural Earth features that cartopy does not necessarily know about
+*a priori*.
+In this instance however, it would be possible to make use of the
+pre-defined :data:`cartopy.feature.STATES` constant.
+
 """
 __tags__ = ['Lines and polygons']
 

@@ -1,8 +1,13 @@
 """
-Keep Boundary Circular
-----------------------
+Custom Boundary Shape
+---------------------
 
-Setting the boundary of an image to be circular.
+This example demonstrates how a custom shape geometry may be used
+instead of the projection's default boundary.
+
+In this instance, we define the boundary as a circle in axes coordinates.
+This means that no matter the extent of the map itself, the boundary will
+always be a circle.
 
 """
 __tags__ = ['Lines and polygons']

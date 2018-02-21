@@ -2,7 +2,7 @@
 Rotated pole boxes
 ------------------
 
-This example demonstrates the way a box is warped when it is defined
+A demonstration of the way a box is warped when it is defined
 in a rotated pole coordinate system.
 
 Try changing the ``box_top`` to ``44``, ``46`` and ``75`` to see the effect
