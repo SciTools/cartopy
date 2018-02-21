@@ -1621,6 +1621,7 @@ class Kav7(_WarpedRectangularProjection):
             result[input_point_nans] = np.nan
         return result
 
+
 class InterruptedGoodeHomolosine(Projection):
     def __init__(self, central_longitude=0, globe=None):
         proj4_params = [('proj', 'igh'), ('lon_0', central_longitude)]
