@@ -21,8 +21,11 @@ Natural Earth or GSHHS shapefiles.
 .. autoclass:: ShapelyFeature
 
 .. autoclass:: NaturalEarthFeature
+    :members: with_scale
 
 .. autoclass:: GSHHSFeature
+
+.. autoclass:: WFSFeature
 
 ----------
 
@@ -34,17 +37,29 @@ such as :func:`GeoAxes.add_feature <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
 =======================================  ==================================================
 Name                                     Description
 =======================================  ==================================================
-.. py:data:: cartopy.feature.BORDERS     Country boundaries.
-.. py:data:: cartopy.feature.COASTLINE   Coastline, including major islands.
-.. py:data:: cartopy.feature.LAKES       Natural and artificial lakes.
-.. py:data:: cartopy.feature.LAND        Land polygons, including major islands.
-.. py:data:: cartopy.feature.OCEAN       Ocean polygons.
-.. py:data:: cartopy.feature.RIVERS      Single-line drainages, including lake centerlines.
+.. py:data:: BORDERS                     Country boundaries.
+
+.. py:data:: COASTLINE                   Coastline, including major islands.
+
+.. py:data:: LAKES                       Natural and artificial lakes.
+
+.. py:data:: LAND                        Land polygons, including major islands.
+
+.. py:data:: OCEAN                       Ocean polygons.
+
+.. py:data:: RIVERS                      Single-line drainages, including lake centerlines.
+
+.. py:data:: STATES                      Internal, first-order administrative boundaries
+                                         (limited to the United States at this scale).
+                                         Natural Earth have first-order admin boundaries
+                                         for most countries at 10m scale which may be
+                                         accessed with
+                                         ``cartopy.feature.STATES.with_scale('10m')`` 
 =======================================  ==================================================
 
 .. note::
 
-    Any Natural Earth dataset can easily be used by creating an
+    Any Natural Earth dataset can be used by creating an
     instance of :class:`cartopy.feature.NaturalEarthFeature`. For
     example::
 
