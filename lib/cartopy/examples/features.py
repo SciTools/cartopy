@@ -2,6 +2,9 @@
 Features
 --------
 
+A demonstration of some of the built-in Natural Earth features found
+in cartopy.
+
 """
 __tags__ = ['Lines and polygons']
 

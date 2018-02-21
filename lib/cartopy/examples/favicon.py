@@ -1,6 +1,8 @@
 """
-Favicon
--------
+Cartopy Favicon
+---------------
+
+The actual code to generate cartopy's favicon.
 
 """
 import cartopy.crs as ccrs

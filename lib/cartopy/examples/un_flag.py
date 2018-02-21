@@ -2,6 +2,9 @@
 UN Flag
 -------
 
+A demonstration of the power of Matplotlib combined with cartopy's Azimuthal
+Equidistant projection to reproduce the UN flag.
+
 """
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature

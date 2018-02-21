@@ -2,6 +2,9 @@
 Global Map
 ----------
 
+An example of a simple map that compares Geodetic and Plate Carree lines
+between two locations.
+
 """
 __tags__ = ['Lines and polygons']
 
