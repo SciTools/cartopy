@@ -27,3 +27,8 @@ div.section div.figure {
   padding-left: 0 !important;
   text-align: center;
 }
+
+pre a {
+    // Prevent code examples showing underlines.
+    text-decoration: none !important;
+}
