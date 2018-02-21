@@ -1566,8 +1566,7 @@ class Robinson(_WarpedRectangularProjection):
 class Kav7(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0, globe=None):
         proj4_params = [('proj', 'kav7'), ('lon_0', central_longitude)]
-        super(Kav7, self).__init__(proj4_params, central_longitude,
-                                       globe=globe)
+        super(Kav7, self).__init__(proj4_params, central_longitude, globe=globe)
 
     @property
     def threshold(self):
