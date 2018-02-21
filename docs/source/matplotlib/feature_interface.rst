@@ -34,28 +34,27 @@ constants. The pre-defined Features are all small-scale (1:110m)
 `Natural Earth <http://www.naturalearthdata.com>`_ datasets, and can be added with methods
 such as :func:`GeoAxes.add_feature <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
 
-=======================================  ==================================================
-Name                                     Description
-=======================================  ==================================================
-.. py:data:: BORDERS                     Country boundaries.
+=======================  ================================================================
+Name                     Description
+=======================  ================================================================
+.. py:data:: BORDERS     Country boundaries.
 
-.. py:data:: COASTLINE                   Coastline, including major islands.
+.. py:data:: COASTLINE   Coastline, including major islands.
 
-.. py:data:: LAKES                       Natural and artificial lakes.
+.. py:data:: LAKES       Natural and artificial lakes.
 
-.. py:data:: LAND                        Land polygons, including major islands.
+.. py:data:: LAND        Land polygons, including major islands.
 
-.. py:data:: OCEAN                       Ocean polygons.
+.. py:data:: OCEAN       Ocean polygons.
 
-.. py:data:: RIVERS                      Single-line drainages, including lake centerlines.
+.. py:data:: RIVERS      Single-line drainages, including lake centerlines.
 
-.. py:data:: STATES                      Internal, first-order administrative boundaries
-                                         (limited to the United States at this scale).
-                                         Natural Earth have first-order admin boundaries
-                                         for most countries at 10m scale which may be
-                                         accessed with
-                                         ``cartopy.feature.STATES.with_scale('10m')`` 
-=======================================  ==================================================
+.. py:data:: STATES      Internal, first-order administrative boundaries (limited to the
+                         United States at this scale).
+                         Natural Earth have first-order admin boundaries for most
+                         countries at the 1:10,000,000 scale; these may be
+                         accessed with ``cartopy.feature.STATES.with_scale('10m')`` 
+=======================  ================================================================
 
 .. note::
 

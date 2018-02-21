@@ -20,11 +20,11 @@ Features
   ``sweep_angle_axis`` keyword argument. (:pull:`890`, :pull:`897`) 
 
 * Elliott Sales de Andrade made a number of micro-optimisations to the
-  matplotlib interface, fixed a number of documentation issues with
-  python 3 and added matplotlib 2.0 & 2.1 compatibility. (:pull:`886`,
+  Matplotlib interface, fixed a number of documentation issues with
+  Python 3 and added Matplotlib 2.0 & 2.1 compatibility. (:pull:`886`,
   :pull:`901`, :pull:`780`, :pull:`773`, :pull:`977`)
 
-* Tick padding was added to the to gridliner.
+* Tick padding was added to the gridliner.
   :data:`cartopy.mpl.gridliner.Gridliner.xpadding` and
   :data:`~cartopy.mpl.gridliner.Gridliner.ypadding` relate. (:pull:`783`)
 
@@ -39,7 +39,7 @@ Features
   (:pull:`898`)
 
 * Daryl Herzmann and Robert Redl improved cartopy's internal conversion
-  between shapely objects and matplotlib Paths. (:pull:`885` & :pull:`1021`)
+  between shapely objects and Matplotlib Paths. (:pull:`885` & :pull:`1021`)
 
 * Åsmund Steen Skjæveland fixed :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot`
   to use the documented units of kilometres, where before it had been using
@@ -56,7 +56,7 @@ Features
   stability of polygon transformation. The changes reduce the frequency
   of messages such as
   ``Unidentified problem with geometry, linestring being re-added`` and
-  ``Self-intersection at or near point <X> <Y>`` occuring.
+  ``Self-intersection at or near point <X> <Y>`` occurring.
   (:pull:`974` and :pull:`903`)
 
 * Chris Holdgraf and Corinne Bosley worked collaboratively to bring
