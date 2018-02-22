@@ -12,8 +12,8 @@ Features
   and has already made significant contributions to the Matplotlib interface,
   extended projections, and helped modernise the development infrastructure.
 
-* The :ref:`gnomonic-projection` was brought up-to-date to include the
-  ``central_longitude`` argument. (:pull:`855`)
+* The :class:`~cartopy.crs.Gnomonic` projection was brought up-to-date to
+  include the ``central_longitude`` argument. (:pull:`855`)
 
 * Ryan May improved the formulation of the boundary ellipse for the
   :class:`~cartopy.crs.Geostationary` projection and added the

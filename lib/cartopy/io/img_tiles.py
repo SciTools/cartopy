@@ -23,7 +23,8 @@ The Matplotlib interface can make use of tile objects (defined below) via the
 :meth:`cartopy.mpl.geoaxes.GeoAxes.add_image` method. For example, to add a
 :class:`MapQuest Open Aerial tileset <MapQuestOpenAerial>` to an existing axes
 at zoom level 2, do ``ax.add_image(MapQuestOpenAerial(), 2)``. An example of
-using tiles in this way can be found at :ref:`examples-eyja_volcano`.
+using tiles in this way can be found at the
+:ref:`sphx_glr_gallery_eyja_volcano.py` example.
 
 """
 
