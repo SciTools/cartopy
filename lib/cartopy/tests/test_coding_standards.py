@@ -24,6 +24,8 @@ import os
 import re
 import subprocess
 
+import pytest
+
 import cartopy
 
 
@@ -133,8 +135,8 @@ class TestLicenseHeaders(object):
             last_change_by_fname = self.last_change_by_fname()
         except ValueError as e:
             # Caught the case where this is not a git repo.
-            return self.skipTest('cartopy installation did not look like a '
-                                 'git repo: ' + str(e))
+            return pytest.skip('cartopy installation did not look like a git '
+                               'repo: ' + str(e))
 
         failed = False
         for fname, last_change in sorted(last_change_by_fname.items()):
