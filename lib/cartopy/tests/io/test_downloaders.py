@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -107,6 +107,7 @@ def test_from_config():
         assert r is land_downloader
 
 
+@pytest.mark.network
 def test_downloading_simple_ascii(download_to_temp):
     # downloads a file from the Google APIs. (very high uptime and file will
     # always be there - if this goes down, most of the internet would break!)
@@ -139,6 +140,7 @@ def test_downloading_simple_ascii(download_to_temp):
     assert counter.count == 0, 'Item was re-downloaded.'
 
 
+@pytest.mark.network
 def test_natural_earth_downloader(tmpdir):
     # downloads a file to a temporary location, and uses that temporary
     # location, then:

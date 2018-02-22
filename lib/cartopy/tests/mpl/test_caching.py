@@ -187,6 +187,7 @@ def test_contourf_transform_path_counting():
     plt.close()
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache

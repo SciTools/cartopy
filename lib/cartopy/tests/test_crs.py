@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -85,6 +85,7 @@ class TestCRS(object):
     def test_osgb(self):
         self._check_osgb(ccrs.OSGB())
 
+    @pytest.mark.network
     @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
     def test_epsg(self):
         uk = ccrs.epsg(27700)

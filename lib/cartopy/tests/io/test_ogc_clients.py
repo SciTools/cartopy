@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -41,6 +41,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 RESOLUTION = (30, 30)
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWMSRasterSource(object):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
@@ -144,6 +145,7 @@ class TestWMSRasterSource(object):
         assert img.shape == (40, 20, 4)
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWMTSRasterSource(object):
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
@@ -217,6 +219,7 @@ class TestWMTSRasterSource(object):
         assert im2.extent == extent
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWFSGeometrySource(object):
     URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'

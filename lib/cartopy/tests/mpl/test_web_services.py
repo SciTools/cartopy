@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -25,6 +25,7 @@ import cartopy.crs as ccrs
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @ImageTesting(['wmts'], tolerance=7.56 if MPL_VERSION < '2' else 0)
 def test_wmts():
@@ -34,6 +35,7 @@ def test_wmts():
     ax.add_wmts(url, 'MODIS_Water_Mask')
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @ImageTesting(['wms'], tolerance=7.76 if MPL_VERSION < '2' else 0)
 def test_wms():
