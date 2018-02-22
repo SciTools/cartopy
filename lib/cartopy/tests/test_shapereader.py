@@ -23,16 +23,11 @@ from numpy.testing import assert_array_almost_equal
 import cartopy.io.shapereader as shp
 
 
-LAKES_PATH = shp.natural_earth(resolution='110m',
-                               category='physical',
-                               name='lakes')
-RIVERS_PATH = shp.natural_earth(resolution='110m',
-                                category='physical',
-                                name='rivers_lake_centerlines')
-
-
 class TestLakes(object):
     def setup_class(self):
+        LAKES_PATH = shp.natural_earth(resolution='110m',
+                                       category='physical',
+                                       name='lakes')
         self.reader = shp.Reader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small lake
@@ -85,6 +80,9 @@ class TestLakes(object):
 
 class TestRivers(object):
     def setup_class(self):
+        RIVERS_PATH = shp.natural_earth(resolution='110m',
+                                        category='physical',
+                                        name='rivers_lake_centerlines')
         self.reader = shp.Reader(RIVERS_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small river
