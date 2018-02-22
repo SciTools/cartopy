@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,6 +23,7 @@ import warnings
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pytest
 import six
 
 import cartopy.crs as ccrs
@@ -41,6 +42,7 @@ else:
     _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.4.3'
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['global_contour_wrap'])
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -50,6 +52,7 @@ def test_global_contour_wrap_new_transform():
     plt.contour(x, y, data, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['global_contour_wrap'])
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -59,6 +62,7 @@ def test_global_contour_wrap_no_transform():
     plt.contour(x, y, data)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['global_contourf_wrap'])
 def test_global_contourf_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -68,6 +72,7 @@ def test_global_contourf_wrap_new_transform():
     plt.contourf(x, y, data, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['global_contourf_wrap'])
 def test_global_contourf_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -82,6 +87,7 @@ global_pcolor_wrap = ('global_pcolor_wrap'
                       'global_pcolor_wrap_pre_mpl_1.4.3')
 
 
+@pytest.mark.natural_earth
 @ImageTesting([global_pcolor_wrap])
 def test_global_pcolor_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -91,6 +97,7 @@ def test_global_pcolor_wrap_new_transform():
     plt.pcolor(x, y, data, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.natural_earth
 @ImageTesting([global_pcolor_wrap])
 def test_global_pcolor_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -100,6 +107,7 @@ def test_global_pcolor_wrap_no_transform():
     plt.pcolor(x, y, data)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -112,6 +120,7 @@ def test_global_scatter_wrap_new_transform():
     plt.scatter(x, y, c=data, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -137,6 +146,7 @@ def test_global_map():
              transform=ccrs.Geodetic())
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['simple_global'])
 def test_simple_global():
     plt.axes(projection=ccrs.PlateCarree())
@@ -144,6 +154,7 @@ def test_simple_global():
     # produces a global map, despite not having needed to set the limits
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['multiple_projections1'])
 def test_multiple_projections():
 
@@ -206,6 +217,7 @@ def test_cursor_values():
     plt.close()
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['natural_earth_interface'], tolerance=_ROB_TOL)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
@@ -226,6 +238,7 @@ def test_axes_natural_earth_interface():
         assert 'add_feature' in msg
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_global_wrap1'])
 def test_pcolormesh_global_with_wrap1():
     # make up some realistic data with bounds (such as data from the UM)
@@ -248,6 +261,7 @@ def test_pcolormesh_global_with_wrap1():
     ax.set_global()  # make sure everything is visible
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_global_wrap2'])
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
@@ -274,6 +288,7 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global()  # make sure everything is visible
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_global_wrap3'], tolerance=_ROB_TOL)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
@@ -311,6 +326,7 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global()  # make sure everything is visible
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_limited_area_wrap'],
               tolerance=1.41 if MPL_VERSION >= '2.1.0' else 0.7)
 def test_pcolormesh_limited_area_wrap():
@@ -349,6 +365,7 @@ def test_pcolormesh_limited_area_wrap():
     ax.coastlines()
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_single_column_wrap'], tolerance=0.7)
 def test_pcolormesh_single_column_wrap():
     # Check a wrapped mesh like test_pcolormesh_limited_area_wrap, but only use
@@ -371,6 +388,7 @@ def test_pcolormesh_single_column_wrap():
     ax.set_global()
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_goode_wrap'])
 def test_pcolormesh_goode_wrap():
     # global data on an Interrupted Goode Homolosine projection
@@ -385,6 +403,7 @@ def test_pcolormesh_goode_wrap():
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_mercator_wrap'])
 def test_pcolormesh_mercator_wrap():
     x = np.linspace(0, 360, 73)
@@ -397,6 +416,7 @@ def test_pcolormesh_mercator_wrap():
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['quiver_plate_carree'])
 def test_quiver_plate_carree():
     x = np.arange(-60, 42.5, 2.5)
@@ -419,6 +439,7 @@ def test_quiver_plate_carree():
     ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['quiver_rotated_pole'])
 def test_quiver_rotated_pole():
     nx, ny = 22, 36
@@ -443,6 +464,7 @@ def test_quiver_rotated_pole():
     ax.quiver(x, y, u, v, mag, transform=rp)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['quiver_regrid'])
 def test_quiver_regrid():
     x = np.arange(-60, 42.5, 2.5)
@@ -460,6 +482,7 @@ def test_quiver_regrid():
               regrid_shape=30)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['quiver_regrid_with_extent'])
 def test_quiver_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
@@ -478,6 +501,7 @@ def test_quiver_regrid_with_extent():
               regrid_shape=10, target_extent=target_extent)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['barbs_plate_carree'])
 def test_barbs():
     x = np.arange(-60, 45, 5)
@@ -499,6 +523,7 @@ def test_barbs():
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['barbs_regrid'])
 def test_barbs_regrid():
     x = np.arange(-60, 42.5, 2.5)
@@ -516,6 +541,7 @@ def test_barbs_regrid():
              length=4, linewidth=.4, regrid_shape=20)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['barbs_regrid_with_extent'])
 def test_barbs_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
@@ -535,6 +561,7 @@ def test_barbs_regrid_with_extent():
              target_extent=target_extent)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['barbs_1d'])
 def test_barbs_1d():
     x = np.array([20., 30., -17., 15.])
@@ -550,6 +577,7 @@ def test_barbs_1d():
              length=8, linewidth=1, color='#7f7f7f')
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['barbs_1d_transformed'])
 def test_barbs_1d_transformed():
     x = np.array([20., 30., -17., 15.])
@@ -565,6 +593,7 @@ def test_barbs_1d_transformed():
              length=8, linewidth=1, color='#7f7f7f')
 
 
+@pytest.mark.natural_earth
 @ImageTesting([_STREAMPLOT_IMAGE])
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)

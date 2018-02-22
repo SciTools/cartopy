@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -27,6 +27,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['natural_earth'])
 def test_natural_earth():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -40,6 +41,7 @@ def test_natural_earth():
     ax.set_ylim((-40, 40))
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['natural_earth_custom'])
 def test_natural_earth_custom():
     ax = plt.axes(projection=ccrs.PlateCarree())

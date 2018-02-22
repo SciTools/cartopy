@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -61,6 +61,7 @@ else:
     ticks_tolerance = 0.5
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['xticks_no_transform' + test_fn_suffix],
               tolerance=ticks_tolerance)
 def test_set_xticks_no_transform():
@@ -72,6 +73,7 @@ def test_set_xticks_no_transform():
     ax.set_xticks([-135, -45, 45, 135], minor=True)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['xticks_cylindrical' + test_fn_suffix],
               tolerance=ticks_tolerance)
 def test_set_xticks_cylindrical():
@@ -95,6 +97,7 @@ def test_set_xticks_non_cylindrical():
     plt.close()
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['yticks_no_transform' + test_fn_suffix],
               tolerance=ticks_tolerance)
 def test_set_yticks_no_transform():
@@ -106,6 +109,7 @@ def test_set_yticks_no_transform():
     ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['yticks_cylindrical' + test_fn_suffix],
               tolerance=ticks_tolerance)
 def test_set_yticks_cylindrical():
@@ -129,6 +133,7 @@ def test_set_yticks_non_cylindrical():
     plt.close()
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['xyticks' + test_fn_suffix], tolerance=ticks_tolerance)
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))

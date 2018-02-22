@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,10 +19,12 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+import pytest
 
 import cartopy.io.shapereader as shp
 
 
+@pytest.mark.natural_earth
 class TestLakes(object):
     def setup_class(self):
         LAKES_PATH = shp.natural_earth(resolution='110m',
@@ -78,6 +80,7 @@ class TestLakes(object):
             'The geometry was loaded in order to create the bounds.'
 
 
+@pytest.mark.natural_earth
 class TestRivers(object):
     def setup_class(self):
         RIVERS_PATH = shp.natural_earth(resolution='110m',

@@ -76,6 +76,7 @@ class CallCounter(object):
         setattr(self.parent, self.function_name, self.orig_fn)
 
 
+@pytest.mark.natural_earth
 def test_coastline_loading_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added coastline caching.
     # This test ensures it is working.
@@ -99,6 +100,7 @@ def test_coastline_loading_cache():
     plt.close()
 
 
+@pytest.mark.natural_earth
 def test_shapefile_transform_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
     # geometry caching based on geometry object id. This test ensures
