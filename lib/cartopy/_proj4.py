@@ -32,6 +32,7 @@ _GLOBE_PARAMS = {'datum': 'datum',
                  'rf': 'inverse_flattening',
                  'towgs84': 'towgs84',
                  'nadgrids': 'nadgrids'}
+# Map PROJ.4 'proj' parameter to CRS class
 PROJ_TO_CRS = {}
 
 
@@ -123,32 +124,33 @@ class _PROJ4Projection(ccrs.Projection):
         return min(x1 - x0, y1 - y0) / 100.
 
 
-def all_subclasses(cls):
+def _all_subclasses(cls):
     return cls.__subclasses__() + [g for s in cls.__subclasses__()
-                                   for g in all_subclasses(s)]
+                                   for g in _all_subclasses(s)]
 
 
-def from_proj4(proj4_terms, globe=None, bounds=None):
+def from_proj4(proj4_terms):
     proj4_dict = get_proj4_dict(proj4_terms)
 
     if not PROJ_TO_CRS:
         # initialize this here instead of at import
-        for crs_class in all_subclasses(ccrs.CRS):
+        for crs_class in _all_subclasses(ccrs.CRS):
             cls_proj = getattr(crs_class, '_proj4_proj', None)
             if cls_proj is not None and cls_proj not in PROJ_TO_CRS:
                 PROJ_TO_CRS[cls_proj] = crs_class
+
+    if 'proj' not in proj4_dict:
+        raise ValueError("Missing PROJ.4 parameter: proj")
 
     proj = proj4_dict['proj']
     crs_class = PROJ_TO_CRS.get(proj)
 
     # couldn't find a known CRS class
     if crs_class is None:
-        # return _PROJ4Projection(proj4_dict, globe=globe, bounds=bounds)
         # we don't want to allow non-CRS/generic Projection classes
         raise ValueError("Projection '{}' is not implemented yet.".format(
             proj))
 
     projection_dict, globe_dict = _split_globe_parameters(proj4_dict)
-    if globe is None:
-        globe = _globe_from_proj4(globe_dict)
+    globe = _globe_from_proj4(globe_dict)
     return crs_class.from_proj4(projection_dict, globe=globe)

@@ -1143,6 +1143,7 @@ class LambertConformal(Projection):
 
     @classmethod
     def from_proj4(cls, proj4_dict, **kwargs):
+        assert proj4_dict.get('proj') == 'lcc'
         p_kwargs = {}
 
         if 'no_defs' in proj4_dict:
@@ -1397,6 +1398,7 @@ class Stereographic(Projection):
 
     @classmethod
     def from_proj4(cls, proj4_dict, **kwargs):
+        assert proj4_dict.get('proj') == 'stere'
         p_kwargs = {}
 
         if 'lon_0' in proj4_dict:
@@ -2075,6 +2077,6 @@ def epsg(code):
     return cartopy._epsg._EPSGProjection(code)
 
 
-def from_proj4(proj4_terms, globe=None, bounds=None):
+def from_proj4(proj4_terms):
     from cartopy._proj4 import from_proj4
-    return from_proj4(proj4_terms, globe, bounds)
+    return from_proj4(proj4_terms)
