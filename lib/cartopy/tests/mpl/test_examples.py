@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import matplotlib.pyplot as plt
+import pytest
 
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
@@ -40,6 +41,7 @@ class ExampleImageTesting(ImageTesting):
         return new_fn
 
 
+@pytest.mark.natural_earth
 @ExampleImageTesting(['global_map'],
                      tolerance=4 if MPL_VERSION < '2' else 0)
 def test_global_map():

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -141,6 +141,7 @@ def test_tile_find_images():
             [(7, 4, 4), (7, 5, 4), (8, 4, 4), (8, 5, 4)])
 
 
+@pytest.mark.network
 def test_image_for_domain():
     gt = cimgt.GoogleTiles()
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)

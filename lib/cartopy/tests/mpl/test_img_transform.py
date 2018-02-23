@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -101,6 +101,7 @@ else:
     regrid_tolerance = 0
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['regrid_image'],
               tolerance=regrid_tolerance)
 def test_regrid_image():

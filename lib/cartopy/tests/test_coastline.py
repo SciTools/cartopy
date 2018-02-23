@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,14 +17,17 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import pytest
+
 import cartopy
 import cartopy.io.shapereader as shp
 
-COASTLINE_PATH = shp.natural_earth()
 
-
+@pytest.mark.natural_earth
 class TestCoastline(object):
     def test_robust(self):
+        COASTLINE_PATH = shp.natural_earth()
+
         # Make sure all the coastlines can be projected without raising any
         # exceptions.
         projection = cartopy.crs.TransverseMercator(central_longitude=-90)
