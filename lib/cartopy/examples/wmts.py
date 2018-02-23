@@ -13,10 +13,6 @@ The imagery was collected by the Suomi National Polar-orbiting Partnership
 (Suomi NPP) weather satellite operated by the United States National Oceanic
 and Atmospheric Administration (NOAA).
 
-.. _examples-wmts:
-
-Downloading and plotting tiles
-==============================
 """
 __tags__ = ['Web services']
 
