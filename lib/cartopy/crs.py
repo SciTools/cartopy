@@ -2455,7 +2455,7 @@ class EquidistantConic(Projection):
 
     @property
     def y_limits(self):
-        return self._y_limits
+      return self._y_limits
 
 
 class RectangularHealpix(Projection):

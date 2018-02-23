@@ -234,8 +234,8 @@ class TestCRS(object):
                              decimal=1)
 
 
-def test_rHEALPix_defaults():
-    crs = ccrs.rHEALPix()
+def test_RectangularHealpix_defaults():
+    crs = ccrs.RectangularHealpix()
     assert crs.proj4_params == {'ellps': 'WGS84',
                                 'lon_0': 0,
                                 'north_square': 0,
@@ -243,8 +243,9 @@ def test_rHEALPix_defaults():
                                 'south_square': 0}
 
 
-def test_rHEALPix_params():
-    crs = ccrs.rHEALPix(central_longitude=20, north_square=1, south_square=2)
+def test_RectangularHealpix_params():
+    crs = ccrs.RectangularHealpix(central_longitude=20, north_square=1,
+                                  south_square=2)
     assert crs.proj4_params == {'ellps': 'WGS84',
                                 'lon_0': 20,
                                 'north_square': 1,

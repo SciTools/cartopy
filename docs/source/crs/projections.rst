@@ -540,6 +540,22 @@ OSNI
     ax.gridlines()
 
 
+RectangularHealpix
+------------------
+
+.. autoclass:: cartopy.crs.RectangularHealpix
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(4, 3))
+    ax = plt.axes(projection=ccrs.RectangularHealpix())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
 SouthPolarStereo
 ----------------
 
@@ -552,22 +568,6 @@ SouthPolarStereo
 
     plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.SouthPolarStereo())
-    ax.coastlines(resolution='110m')
-    ax.gridlines()
-
-
-rHEALPix
---------
-
-.. autoclass:: cartopy.crs.rHEALPix
-
-.. plot::
-
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
-    plt.figure(figsize=(4, 3))
-    ax = plt.axes(projection=ccrs.rHEALPix())
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
