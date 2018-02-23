@@ -1563,11 +1563,13 @@ class Robinson(_WarpedRectangularProjection):
         return result
 
 
-class Kav7(_WarpedRectangularProjection):
+class KavrayskiyVII(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0, globe=None):
         proj4_params = [('proj', 'kav7'), ('lon_0', central_longitude)]
-        super(Kav7, self).__init__(proj4_params, central_longitude,
-        globe=globe)
+        super(KavrayskiyVII, self).__init__(
+            proj4_params,
+            central_longitude,
+            globe=globe)
 
     @property
     def threshold(self):
@@ -1587,7 +1589,7 @@ class Kav7(_WarpedRectangularProjection):
         if np.isnan(x) or np.isnan(y):
             result = (np.nan, np.nan)
         else:
-            result = super(Kav7, self).transform_point(x, y, src_crs)
+            result = super(KavrayskiyVII, self).transform_point(x, y, src_crs)
         return result
 
     def transform_points(self, src_crs, x, y, z=None):
@@ -1612,12 +1614,13 @@ class Kav7(_WarpedRectangularProjection):
             y[input_point_nans] = 0.0
             if z is not None:
                 z[input_point_nans] = 0.0
-        result = super(Kav7, self).transform_points(src_crs, x, y, z)
+        result = super(KavrayskiyVII, self).transform_points(src_crs, x, y, z)
         if handle_nans:
             # Result always has shape (N, 3).
             # Blank out each (whole) point where we had a NaN in the input.
             result[input_point_nans] = np.nan
         return result
+
 
 class InterruptedGoodeHomolosine(Projection):
     def __init__(self, central_longitude=0, globe=None):
