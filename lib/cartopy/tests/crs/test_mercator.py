@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -25,8 +25,8 @@ import cartopy.crs as ccrs
 def test_default():
     crs = ccrs.Mercator()
 
-    assert crs.proj4_init == ('+ellps=WGS84 +proj=merc +lon_0=0.0 +lat_ts=0.0 '
-                              '+units=m +no_defs')
+    assert crs.proj4_init == ('+ellps=WGS84 +proj=merc +lon_0=0.0 +x_0=0.0 '
+                              '+y_0=0.0 +units=m +no_defs')
     assert_almost_equal(crs.boundary.bounds,
                         [-20037508, -15496571, 20037508, 18764656], decimal=0)
 
@@ -36,7 +36,7 @@ def test_eccentric_globe():
                        ellipse=None)
     crs = ccrs.Mercator(globe=globe, min_latitude=-40, max_latitude=40)
     assert crs.proj4_init == ('+a=10000 +b=5000 +proj=merc +lon_0=0.0 '
-                              '+lat_ts=0.0 +units=m +no_defs')
+                              '+x_0=0.0 +y_0=0.0 +units=m +no_defs')
 
     assert_almost_equal(crs.boundary.bounds,
                         [-31415.93, -2190.5, 31415.93, 2190.5], decimal=2)
@@ -60,7 +60,7 @@ def test_equality():
 def test_central_longitude():
     cl = 10.0
     crs = ccrs.Mercator(central_longitude=cl)
-    proj4_str = ('+ellps=WGS84 +proj=merc +lon_0={} +lat_ts=0.0 '
+    proj4_str = ('+ellps=WGS84 +proj=merc +lon_0={} +x_0=0.0 +y_0=0.0 '
                  '+units=m +no_defs'.format(cl))
     assert crs.proj4_init == proj4_str
 
@@ -71,9 +71,35 @@ def test_central_longitude():
 def test_latitude_true_scale():
     lat_ts = 20.0
     crs = ccrs.Mercator(latitude_true_scale=lat_ts)
-    proj4_str = ('+ellps=WGS84 +proj=merc +lon_0=0.0 +lat_ts={} '
-                 '+units=m +no_defs'.format(lat_ts))
+    proj4_str = ('+ellps=WGS84 +proj=merc +lon_0=0.0 +x_0=0.0 +y_0=0.0 '
+                 '+units=m +lat_ts={} +no_defs'.format(lat_ts))
     assert crs.proj4_init == proj4_str
 
     assert_almost_equal(crs.boundary.bounds,
                         [-18836475, -14567718, 18836475, 17639917], decimal=0)
+
+
+def test_easting_northing():
+    false_easting = 1000000
+    false_northing = -2000000
+    crs = ccrs.Mercator(false_easting=false_easting,
+                        false_northing=false_northing)
+    proj4_str = ('+ellps=WGS84 +proj=merc +lon_0=0.0 +x_0={} +y_0={} '
+                 '+units=m +no_defs'.format(false_easting, false_northing))
+    assert crs.proj4_init == proj4_str
+
+    assert_almost_equal(crs.boundary.bounds,
+                        [-19037508, -17496571, 21037508, 16764656], decimal=0)
+
+
+def test_scale_factor():
+    # Should be same as lat_ts=20 for a sphere
+    scale_factor = 0.939692620786
+    crs = ccrs.Mercator(scale_factor=scale_factor,
+                        globe=ccrs.Globe(ellipse='sphere'))
+    proj4_str = ('+ellps=sphere +proj=merc +lon_0=0.0 +x_0=0.0 +y_0=0.0 '
+                 '+units=m +k_0={:.12f} +no_defs'.format(scale_factor))
+    assert crs.proj4_init == proj4_str
+
+    assert_almost_equal(crs.boundary.bounds,
+                        [-18808021, -14585266, 18808021, 17653216], decimal=0)
