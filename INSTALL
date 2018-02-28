@@ -58,7 +58,7 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 
 **Cython** 0.15.1 or later (https://pypi.python.org/pypi/Cython/)
 
-**NumPy** 1.6 or later (http://www.numpy.org/)
+**NumPy** 1.10 or later (http://www.numpy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
