@@ -1956,14 +1956,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
 # Define the GeoAxesSubplot class, so that a type(ax) will emanate from
 # cartopy.mpl.geoaxes, not matplotlib.axes.
-class GeoAxesSubplot(matplotlib.axes.SubplotBase, GeoAxes):
-    _axes_class = GeoAxes
-
-
-try:
-    matplotlib.axes._subplots._subplot_classes[GeoAxes] = GeoAxesSubplot
-except AttributeError:
-    matplotlib.axes._subplot_classes[GeoAxes] = GeoAxesSubplot
+GeoAxesSubplot = matplotlib.axes.subplot_class_factory(GeoAxes)
+GeoAxesSubplot.__module__ = GeoAxes.__module__
 
 
 def _trigger_patch_reclip(event):
