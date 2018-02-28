@@ -28,13 +28,11 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 import cartopy.mpl.patch as cpatch
 
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['poly_interiors'
-               if MPL_VERSION >= '1.5' else
-               'poly_interiors_pre_mpl_1.5'])
+@ImageTesting(['poly_interiors'])
 def test_polygon_interiors():
 
     ax = plt.subplot(211, projection=ccrs.PlateCarree())

@@ -7,9 +7,9 @@ env:
         # Forcing build 3 for numpy pulls in the packages from defaults, which
         # is needed in order to work with libgfortran 1
         - PYTHON_VERSION=2.7
-          PACKAGES="numpy=1.9.3=py27_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1 mock"
+          PACKAGES="numpy=1.9.3=py27_3 matplotlib=1.5.1 nose scipy=0.16.0 libgfortran=1 mock"
         - PYTHON_VERSION=3.5
-          PACKAGES="numpy=1.9.3=py35_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1"
+          PACKAGES="numpy=1.9.3=py35_3 matplotlib=1.5.1 nose scipy=0.16.0 libgfortran=1"
         # New FreeType causes changes in text output.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
