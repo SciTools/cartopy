@@ -1312,7 +1312,7 @@ class Stereographic(Projection):
     def __init__(self, central_latitude=0.0, central_longitude=0.0,
                  false_easting=0.0, false_northing=0.0,
                  true_scale_latitude=None,
-                 scale_factor=None, globe=None):
+                 globe=None, scale_factor=None):
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
