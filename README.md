@@ -13,7 +13,13 @@ It features:
  * object oriented projection definitions
  * point, line, polygon and image transformations between projections
  * integration to expose advanced mapping in Matplotlib with a simple and intuitive interface
- * powerful vector data handling by integrating shapefile reading with Shapely capabilities 
+ * powerful vector data handling by integrating shapefile reading with Shapely capabilities
+ 
+Get in touch
+------------
+ * Ask usage questions on [StackOverflow](https://stackoverflow.com/questions/tagged/cartopy).
+ * For less well defined questions, ideas, general discussion or announcements of related projects use the [Google Group](https://groups.google.com/forum/#!forum/scitools-iris).
+ * Report bugs, suggest features or view the source code on [GitHub](https://github.com/SciTools/cartopy).
 
 Licence
 -------
