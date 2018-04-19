@@ -38,6 +38,7 @@ geometry representation of shapely:
     >>> geoms = list(reader.geometries())
     >>> print(type(geoms[0]))
     <class 'shapely.geometry.point.Point'>
+    >>> reader.close()
 
 """
 
@@ -232,6 +233,25 @@ class Reader(object):
             attributes = dict(zip(field_names, shape_record.record))
             yield Record(shape_record.shape, geometry_factory, attributes,
                          fields)
+
+    def close(self):
+        """
+        Close a shapefile and its siblings (.shx and .dbf).
+        """
+        if hasattr(self._reader, 'close'):
+            self._reader.close()
+        else:
+            try:
+                if hasattr(self._reader.shp, 'close'):
+                    self._reader.shp.close()
+                if hasattr(self._reader.shx, 'close'):
+                    self._reader.shx.close()
+                if hasattr(self._reader.dbf, 'close'):
+                    self._reader.dbf.close()
+            except IOError:
+                pass
+        self._reader = None
+        self._fields = None
 
 
 def natural_earth(resolution='110m', category='physical', name='coastline'):
