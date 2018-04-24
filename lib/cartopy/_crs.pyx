@@ -376,9 +376,11 @@ cdef class CRS:
         else:
             result[:, 2] = z
 
-        # call proj.4. The result array is modified in place.
-        status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
-                              &result[0, 0], &result[0, 1], &result[0, 2])
+        # call proj.4. The result array is modified in place. This is only
+        # safe if npts is not 0.
+        if npts:
+            status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
+                                  &result[0, 0], &result[0, 1], &result[0, 2])
 
         if self.is_geodetic():
             result[:, :2] = np.rad2deg(result[:, :2])
