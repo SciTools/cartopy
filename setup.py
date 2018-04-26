@@ -40,7 +40,7 @@ import versioneer
 # See https://stackoverflow.com/a/12061891
 setuptools.dist.Distribution(
     dict(
-        setup_requires=['Cython>=0.15.1', 'numpy>=1.6']))
+        setup_requires=['Cython>=0.15.1', 'numpy>=1.10']))
 
 
 try:
@@ -50,7 +50,7 @@ except ImportError:
 try:
     import numpy as np
 except ImportError:
-    raise ImportError('NumPy 1.6+ is required to install cartopy.')
+    raise ImportError('NumPy 1.10+ is required to install cartopy.')
 
 
 PY3 = (sys.version_info[0] == 3)

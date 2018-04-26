@@ -58,7 +58,7 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 
 **Cython** 0.15.1 or later (https://pypi.python.org/pypi/Cython/)
 
-**NumPy** 1.6 or later (http://www.numpy.org/)
+**NumPy** 1.10 or later (http://www.numpy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
@@ -85,7 +85,7 @@ Optional Dependencies
 These are optional packages which you may want to install to enable
 additional Cartopy functionality.
 
-**matplotlib** 1.3.0 or later (https://matplotlib.org/)
+**Matplotlib** 1.5.1 or later (https://matplotlib.org/)
     Python package for 2D plotting.  This package is required for any
     graphical capability.
 

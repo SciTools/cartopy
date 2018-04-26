@@ -36,10 +36,8 @@ if MPL_VERSION >= '2.1.0':
     _STREAMPLOT_IMAGE = 'streamplot'
 elif MPL_VERSION >= '2':
     _STREAMPLOT_IMAGE = 'streamplot_mpl_2'
-elif MPL_VERSION >= '1.4.3':
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
 else:
-    _STREAMPLOT_IMAGE = 'streamplot_pre_mpl_1.4.3'
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
 
 
 @pytest.mark.natural_earth
@@ -82,13 +80,8 @@ def test_global_contourf_wrap_no_transform():
     plt.contourf(x, y, data)
 
 
-global_pcolor_wrap = ('global_pcolor_wrap'
-                      if MPL_VERSION >= '1.4.3' else
-                      'global_pcolor_wrap_pre_mpl_1.4.3')
-
-
 @pytest.mark.natural_earth
-@ImageTesting([global_pcolor_wrap])
+@ImageTesting(['global_pcolor_wrap'])
 def test_global_pcolor_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -98,7 +91,7 @@ def test_global_pcolor_wrap_new_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([global_pcolor_wrap])
+@ImageTesting(['global_pcolor_wrap'])
 def test_global_pcolor_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()

@@ -92,9 +92,7 @@ def geos_to_path(shape):
         raise ValueError('Unsupported shape type {}.'.format(type(shape)))
 
 
-def path_segments(path, transform=None, remove_nans=False, clip=None,
-                  quantize=False, simplify=False, curves=False,
-                  stroke_width=1.0, snap=False):
+def path_segments(path, **kwargs):
     """
     Create an array of vertices and a corresponding array of codes from a
     :class:`matplotlib.path.Path`.
@@ -119,31 +117,8 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
         codes and their meanings.
 
     """
-    # XXX assigned to avoid a ValueError inside the mpl C code...
-    a = (transform,  # noqa: F841  (flake8 = assigned + unused : see above)
-         remove_nans, clip, quantize, simplify, curves)
-
-    # Series of cleanups and conversions to the path e.g. it
-    # can convert curved segments to line segments.
-    vertices, codes = matplotlib.path.cleanup_path(path, transform,
-                                                   remove_nans, clip,
-                                                   snap, stroke_width,
-                                                   simplify, curves)
-
-    # Remove the final vertex (with code 0)
-    return vertices[:-1, :], codes[:-1]
-
-
-# Matplotlib v1.3+ deprecates the use of matplotlib.path.cleanup_path. Instead
-# there is a method on a Path instance to simplify this.
-if hasattr(matplotlib.path.Path, 'cleaned'):
-    _path_segments_doc = path_segments.__doc__
-
-    def path_segments(path, **kwargs):
-        pth = path.cleaned(**kwargs)
-        return pth.vertices[:-1, :], pth.codes[:-1]
-
-    path_segments.__doc__ = _path_segments_doc
+    pth = path.cleaned(**kwargs)
+    return pth.vertices[:-1, :], pth.codes[:-1]
 
 
 def path_to_geos(path, force_ccw=False):

@@ -52,8 +52,8 @@ from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
-assert mpl.__version__ >= '1.3', ('Cartopy is only supported with '
-                                  'Matplotlib 1.3 or greater.')
+assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
+                                    'Matplotlib 1.5.1 or greater.')
 
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
@@ -307,14 +307,7 @@ class GeoAxes(matplotlib.axes.Axes):
             # Args and kwargs not allowed.
             assert not bool(args) and not bool(kwargs)
             image = factory
-            try:
-                super(GeoAxes, self).add_image(image)
-            except AttributeError:
-                # If add_image method doesn't exist (only available from
-                # v1.4 onwards) we implement it ourselves.
-                self._set_artist_props(image)
-                self.images.append(image)
-                image._remove_method = lambda h: self.images.remove(h)
+            super(GeoAxes, self).add_image(image)
             return image
 
     @contextlib.contextmanager
@@ -1391,11 +1384,10 @@ class GeoAxes(matplotlib.axes.Axes):
         result = matplotlib.axes.Axes.contourf(self, *args, **kwargs)
 
         # We need to compute the dataLim correctly for contours.
-        if matplotlib.__version__ >= '1.4':
-            extent = mtransforms.Bbox.union([col.get_datalim(self.transData)
-                                             for col in result.collections
-                                             if col.get_paths()])
-            self.dataLim.update_from_data_xy(extent.get_points())
+        extent = mtransforms.Bbox.union([col.get_datalim(self.transData)
+                                         for col in result.collections
+                                         if col.get_paths()])
+        self.dataLim.update_from_data_xy(extent.get_points())
 
         self.autoscale_view()
         return result
@@ -1964,14 +1956,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
 # Define the GeoAxesSubplot class, so that a type(ax) will emanate from
 # cartopy.mpl.geoaxes, not matplotlib.axes.
-class GeoAxesSubplot(matplotlib.axes.SubplotBase, GeoAxes):
-    _axes_class = GeoAxes
-
-
-try:
-    matplotlib.axes._subplots._subplot_classes[GeoAxes] = GeoAxesSubplot
-except AttributeError:
-    matplotlib.axes._subplot_classes[GeoAxes] = GeoAxesSubplot
+GeoAxesSubplot = matplotlib.axes.subplot_class_factory(GeoAxes)
+GeoAxesSubplot.__module__ = GeoAxes.__module__
 
 
 def _trigger_patch_reclip(event):

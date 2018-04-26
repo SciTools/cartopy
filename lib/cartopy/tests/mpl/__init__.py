@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -28,12 +28,9 @@ import warnings
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.testing import setup as mpl_setup
 import matplotlib.testing.compare as mcompare
 import matplotlib._pylab_helpers as pyplot_helpers
-try:
-    from matplotlib.testing import setup as mpl_setup
-except ImportError:
-    from matplotlib.tests import setup as mpl_setup
 
 
 MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
@@ -96,8 +93,7 @@ class ImageTesting(object):
             image_output_directory = os.path.join(os.getcwd(),
                                                   'cartopy_test_output')
 
-    def __init__(self, img_names,
-                 tolerance=(0.1 if MPL_VERSION < '1.4' else 0.5)):
+    def __init__(self, img_names, tolerance=0.5):
         # With matplotlib v1.3 the tolerance keyword is an RMS of the pixel
         # differences, as computed by matplotlib.testing.compare.calculate_rms
         self.img_names = img_names

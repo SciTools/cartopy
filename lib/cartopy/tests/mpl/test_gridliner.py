@@ -107,10 +107,8 @@ def test_gridliner_specified_lines():
 # of text objects. A new testing strategy is needed for this kind of test.
 if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
-elif MPL_VERSION >= '1.5':
-    grid_label_image = 'gridliner_labels_1.5'
 else:
-    grid_label_image = 'gridliner_labels_pre_mpl_1.5'
+    grid_label_image = 'gridliner_labels_1.5'
 
 
 @pytest.mark.natural_earth
