@@ -345,11 +345,11 @@ class NEShpDownloader(Downloader):
             >>> ne_dnldr = NEShpDownloader.default_downloader()
             >>> print(ne_dnldr.target_path_template)
             {config[data_dir]}/shapefiles/natural_earth/{category}/\
-{resolution}_{name}.shp
+ne_{resolution}_{name}.shp
 
         """
         default_spec = ('shapefiles', 'natural_earth', '{category}',
-                        '{resolution}_{name}.shp')
+                        'ne_{resolution}_{name}.shp')
         ne_path_template = os.path.join('{config[data_dir]}', *default_spec)
         pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
                                          *default_spec)
