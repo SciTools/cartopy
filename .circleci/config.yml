@@ -23,6 +23,8 @@ env-run:  &env-setup
   # a separate environment.
   name: Setup conda environment
   command: |
+    # Update conda to fix https://github.com/conda/conda/issues/6811
+    conda install -n base conda
     conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
     conda create -n test-environment python=$PYTHON_VERSION
     conda config --add channels conda-forge
