@@ -21,9 +21,9 @@ Combine the shapefile access of pyshp with the
 geometry representation of shapely:
 
     >>> import cartopy.io.shapereader as shapereader
-    >>> filename = natural_earth(resolution='110m',
-    ...                          category='physical',
-    ...                          name='geography_regions_points')
+    >>> filename = shapereader.natural_earth(resolution='110m',
+    ...                                      category='physical',
+    ...                                      name='geography_regions_points')
     >>> reader = shapereader.Reader(filename)
     >>> len(reader)
     3
