@@ -17,6 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import warnings
+
 import matplotlib
 import matplotlib.collections as mcollections
 import matplotlib.text as mtext
@@ -83,11 +85,27 @@ def _north_south_formatted(latitude, num_format='g'):
 
 
 #: A formatter which turns longitude values into nice longitudes such as 110W
-LONGITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
-                                            _east_west_formatted(v))
+_LONGITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
+                                             _east_west_formatted(v))
 #: A formatter which turns longitude values into nice longitudes such as 45S
-LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
-                                           _north_south_formatted(v))
+_LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
+                                            _north_south_formatted(v))
+
+
+def deprecated_formatter(old_formatter, old_formatter_name,
+                         new_formatter_name):
+    warnings.warn("{} has been deprecated. Please use {} instead".format(
+        old_formatter_name, new_formatter_name),
+                  DeprecationWarning)
+    return old_formatter
+
+
+LONGITUDE_FORMATTER = deprecated_formatter(
+    _LONGITUDE_FORMATTER, 'LONGITUDE_FORMATTER',
+    'cartopy.mpl.ticker.LongitudeFormatter')
+LATITUDE_FORMATTER = deprecated_formatter(
+    _LATITUDE_FORMATTER, 'LATITUDE_FORMATTER',
+    'cartopy.mpl.ticker.LatitudeFormatter')
 
 
 class Gridliner(object):
