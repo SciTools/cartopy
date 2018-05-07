@@ -4,6 +4,8 @@ Cartopy
 -------
 [![Build Status](https://api.travis-ci.org/repositories/SciTools/cartopy.svg?branch=master)](https://travis-ci.org/SciTools/cartopy/branches)
 
+[![DOI](https://zenodo.org/badge/5282596.svg)](https://zenodo.org/badge/latestdoi/5282596)
+
 Cartopy is a Python package designed to make drawing maps for data analysis and visualisation easy.
 
 It features:

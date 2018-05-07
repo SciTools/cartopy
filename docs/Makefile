@@ -41,11 +41,10 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
-	-rm -rf source/examples/* source/cartopy_outline.rst source/gallery.rst
+	-rm -rf source/cartopy_outline.rst source/gallery source/matplotlib/coastlines.p??
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	python add_noshow.py
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 

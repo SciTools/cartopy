@@ -5,7 +5,7 @@ The :class:`cartopy.crs.CRS` class is the very core of cartopy, all coordinate r
 in cartopy have :class:`~cartopy.crs.CRS` as a parent class, meaning all projections have
 the interface described below.
 
-.. autoclass:: cartopy.crs.CRS(proj4_params, globe=None)
+.. autoclass:: cartopy.crs.CRS()
    :members:
 
    .. data:: globe

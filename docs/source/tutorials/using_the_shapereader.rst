@@ -4,8 +4,18 @@ Using the cartopy shapereader
 =============================
 
 Cartopy provides an object oriented shapefile reader based on top of the 
-`pyshp <https://github.com/GeospatialPython/pyshp>`_ module to provide easy,
-programmatic, access to standard vector datasets.
+`pyshp`_ module to provide easy, programmatic, access to standard vector datasets.
+
+Cartopy's wrapping of pyshp has the benefit of being pure python, and is therefore
+easy to install and extremely portable. However, for heavy duty shapefile I/O `Fiona`_ and
+`GeoPandas`_ are highly recommended.
+
+.. _pyshp: https://github.com/GeospatialPython/pyshp
+.. _Fiona: http://toblerity.org/fiona/
+.. _GeoPandas: http://geopandas.org/
+
+
+
 
 .. currentmodule:: cartopy.io.shapereader
 

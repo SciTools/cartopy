@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -34,7 +34,7 @@ from cartopy.io.ogc_clients import WMTSRasterSource, _OWSLIB_AVAILABLE
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
-from cartopy.examples.scalar_data.waves import sample_data
+from cartopy.examples.waves import sample_data
 
 
 class CallCounter(object):
@@ -76,6 +76,7 @@ class CallCounter(object):
         setattr(self.parent, self.function_name, self.orig_fn)
 
 
+@pytest.mark.natural_earth
 def test_coastline_loading_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added coastline caching.
     # This test ensures it is working.
@@ -99,6 +100,7 @@ def test_coastline_loading_cache():
     plt.close()
 
 
+@pytest.mark.natural_earth
 def test_shapefile_transform_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
     # geometry caching based on geometry object id. This test ensures
@@ -185,6 +187,7 @@ def test_contourf_transform_path_counting():
     plt.close()
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache

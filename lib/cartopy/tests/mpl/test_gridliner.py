@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -33,6 +33,7 @@ from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['gridliner1'])
 def test_gridliner():
     ny, nx = 2, 4
@@ -106,12 +107,11 @@ def test_gridliner_specified_lines():
 # of text objects. A new testing strategy is needed for this kind of test.
 if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
-elif MPL_VERSION >= '1.5':
-    grid_label_image = 'gridliner_labels_1.5'
 else:
-    grid_label_image = 'gridliner_labels_pre_mpl_1.5'
+    grid_label_image = 'gridliner_labels_1.5'
 
 
+@pytest.mark.natural_earth
 @ImageTesting([grid_label_image])
 def test_grid_labels():
     plt.figure(figsize=(8, 10))

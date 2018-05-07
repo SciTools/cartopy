@@ -1,13 +1,23 @@
-.gallery-images img { border: none;}
-.gallery-images p { display: inline;}
-
 .inline-paragraphs p {display: inline;}
 
 .highlight {background: none;}
 
 pre {max-width: 70em;}
 
-div.section dl, div.section ul { max-width: 80em;}
+
+div.section dl, div.section ul {
+    max-width: 80em;
+}
+
+div.section {
+    /* Paragraph sections (e.g. in what's new) */
+    padding-bottom: 1em;
+}
+
+dl.class {
+    /* Sphinx documented classes. */
+    padding-bottom: 1.5em;
+}
 
 div.figure { padding-left: 5em; }
 
@@ -21,8 +31,9 @@ h1 {
 
 /* Sphinx Gallery */
 
-div#cartopy-gallery.section {
-    overflow: hidden;
+.sphx-glr-download a {
+    background-image: none !important;
+    background-color: white !important;
 }
 
 div.section div.figure {
@@ -30,7 +41,7 @@ div.section div.figure {
   text-align: center;
 }
 
-/* hack to make the __init__.py files not display in SG*/
-div.dontshow {
-  display: none !important;
+pre a {
+    // Prevent code examples showing underlines.
+    text-decoration: none !important;
 }

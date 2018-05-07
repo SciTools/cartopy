@@ -21,14 +21,15 @@ Provide support for converting EPSG codes to Projection instances.
 
 from __future__ import (absolute_import, division, print_function)
 
-import cartopy.crs as ccrs
 from cartopy._proj4 import _PROJ4Projection
 import numpy as np
-import pyepsg
+
+import cartopy.crs as ccrs
 
 
 class _EPSGProjection(_PROJ4Projection):
     def __init__(self, code):
+        import pyepsg
         projection = pyepsg.get(code)
         if not isinstance(projection, pyepsg.ProjectedCRS):
             raise ValueError('EPSG code does not define a projection')

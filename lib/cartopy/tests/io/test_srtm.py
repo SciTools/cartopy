@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -27,7 +27,8 @@ import cartopy.crs as ccrs
 import cartopy.io.srtm
 
 
-pytestmark = pytest.mark.skip('SRTM login not supported')
+pytestmark = [pytest.mark.skip('SRTM login not supported'),
+              pytest.mark.network]
 
 
 class TestRetrieve(object):
