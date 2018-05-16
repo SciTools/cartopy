@@ -612,8 +612,8 @@ class WMTSRasterSource(RasterSource):
                         tile = wmts.gettile(
                             layer=layer.id,
                             tilematrixset=matrix_set_name,
-                            tilematrix=tile_matrix_id,
-                            row=row, column=col,
+                            tilematrix=str(tile_matrix_id),
+                            row=str(row), column=str(col),
                             **self.gettile_extra_kwargs)
                     except owslib.util.ServiceException as exception:
                         if ('TileOutOfRange' in exception.message and
