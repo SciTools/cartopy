@@ -332,7 +332,7 @@ else:
 # Description
 # ===========
 
-with open(os.path.join(HERE, 'README.rst'), 'r') as fh:
+with open(os.path.join(HERE, 'README.md'), 'r') as fh:
     description = ''.join(fh.readlines())
 
 
@@ -351,6 +351,7 @@ setup(
     description='A cartographic python library with Matplotlib support for '
                 'visualisation',
     long_description=description,
+    long_description_content_type='text/markdown',
     license="LGPLv3",
     keywords="cartography map transform projection proj.4 geos shapely "
              "shapefile",
