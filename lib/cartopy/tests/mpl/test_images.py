@@ -84,7 +84,7 @@ def test_web_tiles():
 @pytest.mark.natural_earth
 @pytest.mark.network
 @ImageTesting(['image_merge'],
-              tolerance=3.6 if MPL_VERSION < '2' else 0)
+              tolerance=3.6 if MPL_VERSION < '2' else 0.01)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []

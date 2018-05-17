@@ -458,7 +458,7 @@ def test_quiver_rotated_pole():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_regrid'])
+@ImageTesting(['quiver_regrid'], tolerance=1.3)
 def test_quiver_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
