@@ -26,7 +26,7 @@ def test_default():
     crs = ccrs.Mercator()
 
     assert crs.proj4_init == ('+ellps=WGS84 +proj=merc +lon_0=0.0 +lat_ts=0.0 '
-                              '+units=m +no_defs')
+                              '+units=m +over +no_defs')
     assert_almost_equal(crs.boundary.bounds,
                         [-20037508, -15496571, 20037508, 18764656], decimal=0)
 
@@ -36,7 +36,7 @@ def test_eccentric_globe():
                        ellipse=None)
     crs = ccrs.Mercator(globe=globe, min_latitude=-40, max_latitude=40)
     assert crs.proj4_init == ('+a=10000 +b=5000 +proj=merc +lon_0=0.0 '
-                              '+lat_ts=0.0 +units=m +no_defs')
+                              '+lat_ts=0.0 +units=m +over +no_defs')
 
     assert_almost_equal(crs.boundary.bounds,
                         [-31415.93, -2190.5, 31415.93, 2190.5], decimal=2)
@@ -61,7 +61,7 @@ def test_central_longitude():
     cl = 10.0
     crs = ccrs.Mercator(central_longitude=cl)
     proj4_str = ('+ellps=WGS84 +proj=merc +lon_0={} +lat_ts=0.0 '
-                 '+units=m +no_defs'.format(cl))
+                 '+units=m +over +no_defs'.format(cl))
     assert crs.proj4_init == proj4_str
 
     assert_almost_equal(crs.boundary.bounds,
@@ -72,7 +72,7 @@ def test_latitude_true_scale():
     lat_ts = 20.0
     crs = ccrs.Mercator(latitude_true_scale=lat_ts)
     proj4_str = ('+ellps=WGS84 +proj=merc +lon_0=0.0 +lat_ts={} '
-                 '+units=m +no_defs'.format(lat_ts))
+                 '+units=m +over +no_defs'.format(lat_ts))
     assert crs.proj4_init == proj4_str
 
     assert_almost_equal(crs.boundary.bounds,

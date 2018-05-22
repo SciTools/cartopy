@@ -964,7 +964,8 @@ class Mercator(Projection):
         proj4_params = [('proj', 'merc'),
                         ('lon_0', central_longitude),
                         ('lat_ts', latitude_true_scale),
-                        ('units', 'm')]
+                        ('units', 'm'),
+                        ('over', None)]
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
         # Calculate limits.
