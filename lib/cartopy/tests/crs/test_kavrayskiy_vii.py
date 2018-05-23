@@ -24,5 +24,5 @@ class TestKavrayskiyVII(object):
     def test_default(self):
         ''' testing that the proj4 params are right '''
         crs = ccrs.KavrayskiyVII()
-        expected = ('+ellps=WGS84 +proj=kav7 +lon_0=0 +no_defs)
+        expected = ('+ellps=WGS84 +proj=kav7 +lon_0=0 +no_defs')
         assert crs.proj4_init == expected
