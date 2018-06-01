@@ -39,8 +39,9 @@ install:
   # ------------------------------------
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda update conda
-  - conda create -n test-environment python=$PYTHON_VERSION
-  - source activate test-environment
+  - ENV_NAME="test-environment"
+  - conda create -n $ENV_NAME python=$PYTHON_VERSION
+  - source activate $ENV_NAME
 
   # Customise the testing environment
   # ---------------------------------
@@ -50,7 +51,9 @@ install:
 
   # Conda debug
   # -----------
-  - conda list
+  - conda list -n $ENV_NAME
+  - conda list -n $ENV_NAME --explicit
+  - conda info -a
 
   - MPL_CONFIG_DIR=~/.config/matplotlib
   - mkdir -p $MPL_CONFIG_DIR
@@ -75,5 +78,5 @@ script:
     fi
 
 after_failure:
-  - source activate test-environment
+  - source activate $ENV_NAME
   - python -c "from __future__ import print_function; import cartopy.tests.mpl; print(cartopy.tests.mpl.failed_images_html())"
