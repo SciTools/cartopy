@@ -56,15 +56,17 @@ def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
     target_extent = kwargs.get('target_extent', None)
     if target_extent is None:
         target_extent = (x.min(), x.max(), y.min(), y.max())
-    points = np.array([x.ravel(), y.ravel()]).T
     x0, x1, y0, y1 = target_extent
-    x_grid, y_grid = np.meshgrid(np.linspace(x0, x1, nx),
-                                 np.linspace(y0, y1, ny))
+    xr = x1 - x0
+    yr = y1 - y0
+    points = np.column_stack([(x.ravel() - x0) / xr, (y.ravel() - y0) / yr])
+    x_grid, y_grid = np.meshgrid(np.linspace(0, 1, nx),
+                                 np.linspace(0, 1, ny))
     s_grid_tuple = tuple()
     for s in scalars:
         s_grid_tuple += (griddata(points, s.ravel(), (x_grid, y_grid),
                                   method='linear'),)
-    return (x_grid, y_grid) + s_grid_tuple
+    return (x_grid * xr + x0, y_grid * yr + y0) + s_grid_tuple
 
 
 def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
