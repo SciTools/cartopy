@@ -17,6 +17,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import os.path
+
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pytest
@@ -27,12 +29,12 @@ import cartopy.io.shapereader as shp
 @pytest.mark.natural_earth
 class TestLakes(object):
     def setup_class(self):
-        LAKES_PATH = shp.natural_earth(resolution='110m',
-                                       category='physical',
-                                       name='lakes')
+        LAKES_PATH = os.path.join(os.path.dirname(__file__),
+                                  'lakes_shapefile', 'ne_110m_lakes.shp')
         self.reader = shp.Reader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small lake
+        print([name for name in names if 'Nicaragua' in name])
         self.lake_name = 'Lago de\rNicaragua'
         self.lake_index = names.index(self.lake_name)
         self.test_lake_geometry = \
@@ -120,11 +122,6 @@ class TestRivers(object):
                                'name_en': self.river_name,
                                'scalerank': 2}
         for key, value in river_record.attributes.items():
-            if key == 'name_alt':
-                # This value changed between pyshp 1.2.10 and 1.2.11, test it
-                # as a special case, it should be an empty string once the
-                # leading/trailing space is removed:
-                assert not len(value.strip())
-            else:
+            if key in expected_attributes:
                 assert value == expected_attributes[key]
         assert river_record.geometry == self.test_river_geometry
