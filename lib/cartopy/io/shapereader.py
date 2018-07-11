@@ -31,8 +31,7 @@ geometry representation of shapely:
     >>> print(type(records[0]))
     <class 'cartopy.io.shapereader.Record'>
     >>> print(sorted(records[0].attributes.keys()))
-    ['comment', 'featurecla', 'lat_y', 'long_x', 'min_zoom', 'name', \
-'name_alt', 'region', 'scalerank', 'subregion']
+    ['comment', ... 'name', 'name_alt', ... 'region', ...]
     >>> print(records[0].attributes['name'])
     Niagara Falls
     >>> geoms = list(reader.geometries())
