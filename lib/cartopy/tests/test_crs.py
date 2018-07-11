@@ -90,11 +90,11 @@ class TestCRS(object):
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        assert_almost_equal(uk.x_limits,
-                            (-84667.135022467062, 676354.14167904819))
-        assert_almost_equal(uk.y_limits,
-                            (-2957.1831134535023, 1242951.4397385279))
-        assert_almost_equal(uk.threshold, 7610.2127670151531)
+        assert_almost_equal(
+            uk.x_limits, (-118365.7408171,  751581.564796))
+        assert_almost_equal(
+            uk.y_limits, (-5268.1797977,  1272227.798124))
+        assert_almost_equal(uk.threshold, 8699.47, decimal=2)
         self._check_osgb(uk)
 
     def test_europp(self):
