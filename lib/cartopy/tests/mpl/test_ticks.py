@@ -57,7 +57,7 @@ if MPL_VERSION < '2.0.0':
 elif '2.0.0' <= MPL_VERSION < '2.0.1':
     ticks_tolerance = 9
 else:
-    ticks_tolerance = 0.5
+    ticks_tolerance = 7
 
 
 @pytest.mark.natural_earth
