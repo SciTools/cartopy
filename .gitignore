@@ -2,6 +2,8 @@
 *.py[co]
 build
 docs/build
+dist
+.pytest_cache/
 
 # cartopy build files
 lib/cartopy/trace.cpp
@@ -31,6 +33,8 @@ lib/cartopy/data/shapefiles
 lib/cartopy/tests/.pep8_test_exclude.txt
 lib/cartopy/siteconfig.py
 
+cartopy_test_output
+
 # pydev files
 .project
 .pydevproject
@@ -48,5 +52,5 @@ lib/cartopy/siteconfig.py
 __pycache__/
 
 # Egg that gets created with 'pip install -v -e .'
-lib/Cartopy.egg-info/
+*.egg-info/
 .eggs/

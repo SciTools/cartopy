@@ -368,13 +368,10 @@ setup(
                                           remove='lib/cartopy/')) +
                   list(file_walk_relative('lib/cartopy/data/netcdf',
                                           remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/wmts',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/'
-                                          'shapefiles/natural_earth',
-                                          remove='lib/cartopy/')) +
                   list(file_walk_relative('lib/cartopy/data/'
                                           'shapefiles/gshhs',
+                                          remove='lib/cartopy/')) +
+                  list(file_walk_relative('lib/cartopy/tests/lakes_shapefile',
                                           remove='lib/cartopy/')) +
                   ['io/srtm.npz']},
 
