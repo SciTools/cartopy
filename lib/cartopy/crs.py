@@ -945,7 +945,8 @@ class Mercator(Projection):
 
     def __init__(self, central_longitude=0.0,
                  min_latitude=-80.0, max_latitude=84.0,
-                 globe=None, latitude_true_scale=0.0):
+                 globe=None, latitude_true_scale=None,
+                 false_easting=0.0, false_northing=0.0, scale_factor=None):
         """
         Parameters
         ----------
@@ -961,12 +962,34 @@ class Mercator(Projection):
             If omitted, a default globe is created.
         latitude_true_scale: optional
             The latitude where the scale is 1. Defaults to 0 degrees.
+        false_easting: optional
+            X offset from the planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from the planar origin in metres. Defaults to 0.
+        scale_factor: optional
+            Scale factor at natural origin. Defaults to unused.
 
+        Only one of ``latitude_true_scale`` and ``scale_factor`` should
+        be included.
         """
         proj4_params = [('proj', 'merc'),
                         ('lon_0', central_longitude),
-                        ('lat_ts', latitude_true_scale),
+                        ('x_0', false_easting),
+                        ('y_0', false_northing),
                         ('units', 'm')]
+
+        # If it's None, we don't pass it to Proj4, in which case its default
+        # of 0.0 will be used.
+        if latitude_true_scale is not None:
+            proj4_params.append(('lat_ts', latitude_true_scale))
+
+        if scale_factor is not None:
+            if latitude_true_scale is not None:
+                raise ValueError('It does not make sense to provide both '
+                                 '"scale_factor" and "latitude_true_scale". ')
+            else:
+                proj4_params.append(('k_0', scale_factor))
+
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
         # Calculate limits.
