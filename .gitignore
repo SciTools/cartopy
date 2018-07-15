@@ -45,11 +45,15 @@ cartopy_test_output
 \.\#*
 *.swp
 .ipynb_checkpoints/
+.idea/
 
 # Operating system files
 \.DS_Store
 .cache/
 __pycache__/
+
+# PyTest cache files
+.pytest_cache
 
 # Egg that gets created with 'pip install -v -e .'
 *.egg-info/
