@@ -178,12 +178,6 @@ class Gridliner(object):
 
         self.crs = crs
 
-        # if the user specifies tick labels at this point, check if they can
-        # be drawn. The same check will take place at draw time in case
-        # public attributes are changed after instantiation.
-        if draw_labels:
-            self._assert_can_draw_ticks()
-
         #: The number of interpolation points which are used to draw the
         #: gridlines.
         self.n_steps = 30
@@ -219,7 +213,7 @@ class Gridliner(object):
             transform = transform._as_mpl_transform(self.axes)
         return transform
 
-    def _add_gridline_label(self, value, axis, upper_end):
+    def _add_gridline_label(self, value, axis, upper_end, inline_coord=None):
         """
         Create a Text artist on our axes for a gridline label.
 
@@ -236,15 +230,23 @@ class Gridliner(object):
 
         """
         transform = self._crs_transform()
+
         if upper_end:
             shift_scale = 1
         else:
             shift_scale = -1
+
         if axis == 'x':
             x = value
-            y = 1.0 if upper_end else 0.0
+            if inline_coord is not None:
+                y = inline_coord
+            else:
+                y = 1.0 if upper_end else 0.0
             h_align = 'center'
-            v_align = 'bottom' if upper_end else 'top'
+            if inline_coord is not None:
+                v_align = 'center'
+            else:
+                v_align = 'bottom' if upper_end else 'top'
             tr_x = transform
             tr_y = self.axes.transAxes + \
                 mtrans.ScaledTranslation(
@@ -255,12 +257,18 @@ class Gridliner(object):
             user_label_style = self.xlabel_style
         elif axis == 'y':
             y = value
-            x = 1.0 if upper_end else 0.0
+            if inline_coord is not None:
+                x = inline_coord
+            else:
+                x = 1.0 if upper_end else 0.0
             if matplotlib.__version__ > '2.0':
                 v_align = 'center_baseline'
             else:
                 v_align = 'center'
-            h_align = 'left' if upper_end else 'right'
+            if inline_coord is not None:
+                h_align = 'center'
+            else:
+                h_align = 'left' if upper_end else 'right'
             tr_y = transform
             tr_x = self.axes.transAxes + \
                 mtrans.ScaledTranslation(
@@ -276,17 +284,25 @@ class Gridliner(object):
         # Make a 'blended' transform for label text positioning.
         # One coord is geographic, and the other a plain Axes
         # coordinate with an appropriate offset.
-        label_transform = mtrans.blended_transform_factory(
-            x_transform=tr_x, y_transform=tr_y)
+        if inline_coord is None:
+            label_transform = mtrans.blended_transform_factory(
+                x_transform=tr_x, y_transform=tr_y)
+            clip_on = False
+            alpha = 1
+        else:
+            label_transform = cartopy.crs.PlateCarree()
+            clip_on = True
+            alpha = 0.7
 
         label_style = {'verticalalignment': v_align,
                        'horizontalalignment': h_align,
+                       'alpha': alpha
                        }
         label_style.update(user_label_style)
 
         # Create and add a Text artist with these properties
         text_artist = mtext.Text(x, y, str_value,
-                                 clip_on=False,
+                                 clip_on=clip_on,
                                  transform=label_transform, **label_style)
         if axis == 'x':
             self.xlabel_artists.append(text_artist)
@@ -307,6 +323,12 @@ class Gridliner(object):
 
         x_ticks = self.xlocator.tick_values(x_lim[0], x_lim[1])
         y_ticks = self.ylocator.tick_values(y_lim[0], y_lim[1])
+
+        if not isinstance(self.axes.projection,
+                          (cartopy.crs.PlateCarree, cartopy.crs.Mercator)):
+            inline = True
+        else:
+            inline = False
 
         # XXX this bit is cartopy specific. (for circular longitudes)
         # Purpose: omit plotting the last x line, as it may overlap the first.
@@ -362,42 +384,49 @@ class Gridliner(object):
         x_label_points = [x for x in x_ticks if x_lim[0] <= x <= x_lim[1]]
         y_label_points = [y for y in y_ticks if y_lim[0] <= y <= y_lim[1]]
 
+        # the inline labels for these projections are quite cramped
+        if inline and isinstance(self.axes.projection, (
+                cartopy.crs.OSGB, cartopy.crs.OSNI, cartopy.crs.Gnomonic,
+                cartopy.crs.NorthPolarStereo, cartopy.crs.SouthPolarStereo)):
+            x_label_points = x_label_points[::2]
+            y_label_points = y_label_points[::2]
+
         if self.xlabels_bottom or self.xlabels_top:
-            self._assert_can_draw_ticks()
             self.xformatter.set_locs(x_label_points)
             for x in x_label_points:
+                if inline:
+                    if x == -180:
+                        continue
+                    inline_coord = np.median(y_label_points)
+                else:
+                    inline_coord = None
                 if self.xlabels_bottom:
-                    self._add_gridline_label(x, axis='x', upper_end=False)
-                if self.xlabels_top:
-                    self._add_gridline_label(x, axis='x', upper_end=True)
+                    self._add_gridline_label(x, axis='x', upper_end=False,
+                        inline_coord=inline_coord)
+                if self.xlabels_top and not inline:
+                    self._add_gridline_label(x, axis='x', upper_end=True,
+                        inline_coord=inline_coord)
 
         if self.ylabels_left or self.ylabels_right:
-            self._assert_can_draw_ticks()
             self.yformatter.set_locs(y_label_points)
             for y in y_label_points:
+                if inline:
+                    if y == 0:
+                        continue
+                    if isinstance(self.axes.projection, cartopy.crs.RotatedPole):
+                        # so the labels aren't all the way to the left
+                        inline_coord = np.median(
+                            x_label_points[:int(len(x_label_points) / 2) - 1])
+                    else:
+                        inline_coord = np.median(x_label_points)
+                else:
+                    inline_coord = None
                 if self.ylabels_left:
-                    self._add_gridline_label(y, axis='y', upper_end=False)
-                if self.ylabels_right:
-                    self._add_gridline_label(y, axis='y', upper_end=True)
-
-    def _assert_can_draw_ticks(self):
-        """
-        Check to see if ticks can be drawn. Either returns True or raises
-        an exception.
-
-        """
-        # Check labelling is supported, currently a limited set of options.
-        if not isinstance(self.crs, cartopy.crs.PlateCarree):
-            raise TypeError('Cannot label {crs.__class__.__name__} gridlines.'
-                            ' Only PlateCarree gridlines are currently '
-                            'supported.'.format(crs=self.crs))
-        if not isinstance(self.axes.projection,
-                          (cartopy.crs.PlateCarree, cartopy.crs.Mercator)):
-            raise TypeError('Cannot label gridlines on a '
-                            '{prj.__class__.__name__} plot.  Only PlateCarree'
-                            ' and Mercator plots are currently '
-                            'supported.'.format(prj=self.axes.projection))
-        return True
+                    self._add_gridline_label(y, axis='y', upper_end=False,
+                        inline_coord=inline_coord)
+                if self.ylabels_right and not inline:
+                    self._add_gridline_label(y, axis='y', upper_end=True,
+                        inline_coord=inline_coord)
 
     def _axes_domain(self, nx=None, ny=None, background_patch=None):
         """Return x_range, y_range"""
