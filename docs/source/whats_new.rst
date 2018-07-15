@@ -17,7 +17,7 @@ Features
 
 * Ryan May improved the formulation of the boundary ellipse for the
   :class:`~cartopy.crs.Geostationary` projection and added the
-  ``sweep_angle_axis`` keyword argument. (:pull:`890`, :pull:`897`) 
+  ``sweep_angle_axis`` keyword argument. (:pull:`890`, :pull:`897`)
 
 * Elliott Sales de Andrade made a number of micro-optimisations to the
   Matplotlib interface, fixed a number of documentation issues with
@@ -90,7 +90,8 @@ Features
 * Mahé Perrette and Ryan May collaborated to improve the
   :class:`~cartopy.crs.Stereographic` projection. (:pull:`929`)
 
-
+* If Fiona is installed on a user's system, this will now be the default
+  shapefile reader, adding significant speed improvements. (:pull:`1000`)
 
 What's New in cartopy 0.15
 ==========================

@@ -605,8 +605,10 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         if self == src_crs:
             x = vertices[:, 0]
             y = vertices[:, 1]
-            x_limits = self.x_limits
-            y_limits = self.y_limits
+            # Extend the limits a tiny amount to allow for precision mistakes
+            epsilon = 1.e-10
+            x_limits = (self.x_limits[0] - epsilon, self.x_limits[1] + epsilon)
+            y_limits = (self.y_limits[0] - epsilon, self.y_limits[1] + epsilon)
             if (x.min() >= x_limits[0] and x.max() <= x_limits[1] and
                     y.min() >= y_limits[0] and y.max() <= y_limits[1]):
                 return_value = vertices
