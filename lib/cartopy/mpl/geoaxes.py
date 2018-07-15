@@ -426,6 +426,7 @@ class GeoAxes(matplotlib.axes.Axes):
         resolution
             A named resolution to use from the Natural Earth
             dataset. Currently can be one of "110m", "50m", and "10m".
+            If set to 'auto', autoscaling is used.
 
         """
         kwargs['edgecolor'] = color

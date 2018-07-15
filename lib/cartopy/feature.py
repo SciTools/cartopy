@@ -169,7 +169,8 @@ class NaturalEarthFeature(Feature):
         scale
             The dataset scale, i.e. one of '10m', '50m', or '110m'.
             Corresponding to 1:10,000,000, 1:50,000,000, and 1:110,000,000
-            respectively.
+            respectively. If set to 'auto', the scale will be automatically
+            set based on the extent of the axes.
 
         Other Parameters
         ----------------
@@ -183,7 +184,17 @@ class NaturalEarthFeature(Feature):
         self.name = name
         self.scale = scale
 
+        # Use autoscaling if scale == 'a', 'auto' or 'autoscale'
+        if scale == 'auto':
+            self.autoscale = True
+        else:
+            self.autoscale = False
+
     def geometries(self):
+        """
+        Returns an iterator of (shapely) geometries for this feature.
+
+        """
         key = (self.name, self.category, self.scale)
         if key not in _NATURAL_EARTH_GEOM_CACHE:
             path = shapereader.natural_earth(resolution=self.scale,
@@ -195,6 +206,25 @@ class NaturalEarthFeature(Feature):
             geometries = _NATURAL_EARTH_GEOM_CACHE[key]
 
         return iter(geometries)
+
+    def intersecting_geometries(self, extent):
+        """
+        Returns an iterator of shapely geometries that intersect with
+        the given extent.
+        The extent is assumed to be in the CRS of the feature.
+        If extent is None, the method returns all geometries for this dataset.
+        """
+
+        if self.autoscale:
+            self.scale = self._scale_from_extent(extent)
+
+        if extent is not None:
+            extent_geom = sgeom.box(extent[0], extent[2],
+                                    extent[1], extent[3])
+            return (geom for geom in self.geometries() if
+                    geom is not None and extent_geom.intersects(geom))
+        else:
+            return self.geometries()
 
     def with_scale(self, new_scale):
         """
@@ -210,6 +240,32 @@ class NaturalEarthFeature(Feature):
         """
         return NaturalEarthFeature(self.category, self.name, new_scale,
                                    **self.kwargs)
+
+    def _scale_from_extent(self, extent):
+        """
+        Returns the appropriate scale (e.g. '50m') for the given extent
+        expressed in CRS of the feature (PlateCarree()).
+
+        """
+        # Default to 1:110,000,000 scale
+        scale = '110m'
+
+        if extent is not None:
+            # Upper limit on extent in degrees.
+            scale_limits = (('110m', 50.0),
+                            ('50m', 15.0),
+                            ('10m', 0.0))
+
+            width = abs(extent[1] - extent[0])
+            height = abs(extent[3] - extent[2])
+            min_extent = min(width, height)
+
+            if min_extent != 0:
+                for scale, limit in scale_limits:
+                    if min_extent > limit:
+                        break
+
+        return scale
 
 
 class GSHHSFeature(Feature):
