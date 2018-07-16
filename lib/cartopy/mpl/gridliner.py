@@ -109,8 +109,8 @@ class Gridliner(object):
     # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
     # determination on zoom/pan.
-    def __init__(self, axes, crs, draw_labels=False, inline=False, xlocator=None,
-                 ylocator=None, collection_kwargs=None):
+    def __init__(self, axes, crs, draw_labels=False, inline=False,
+                 xlocator=None, ylocator=None, collection_kwargs=None):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -413,11 +413,11 @@ class Gridliner(object):
             if self.xlocator == degree_locator:
                 # reduce cramping, especially for those projections
                 if (isinstance(proj, _CRAMPED_PROJS) or
-                    np.diff(x_label_points).mean() < 9):
+                        np.diff(x_label_points).mean() < 9):
                     x_label_points = x_label_points[1::2]
             if self.ylocator == degree_locator:
                 if (isinstance(proj, _CRAMPED_PROJS) or
-                    np.diff(y_label_points).mean() < 9):
+                        np.diff(y_label_points).mean() < 9):
                     y_label_points = y_label_points[::2]
 
             # prevent overlap with existing inline coordinates
@@ -487,8 +487,8 @@ class Gridliner(object):
                             ' currently supported.'.format(crs=self.crs))
         if not isinstance(self.axes.projection, _SUPPORTED_PROJS):
             raise TypeError('Cannot label gridlines on a'
-                            ' {prj.__class__.__name__} plot unless inline=True.'
-                            ' Only {sup} plots are currently'
+                            ' {prj.__class__.__name__} plot unless'
+                            ' inline=True. Only {sup} plots are currently'
                             ' supported.'.format(prj=self.axes.projection,
                                                  sup=', '.join(map(
                                                     str, _SUPPORTED_PROJS))
