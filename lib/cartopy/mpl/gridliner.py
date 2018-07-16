@@ -407,8 +407,8 @@ class Gridliner(object):
         x_label_points = [x for x in x_ticks if x_lim[0] <= x <= x_lim[1]]
         y_label_points = [y for y in y_ticks if y_lim[0] <= y <= y_lim[1]]
 
+        proj = self.axes.projection
         if self.inline:
-            proj = self.axes.projection
             # if it's default, then modify; if not, don't touch
             if self.xlocator == degree_locator:
                 # reduce cramping, especially for those projections
@@ -441,6 +441,9 @@ class Gridliner(object):
                             existing_coords.append((-x, other_value))
                             existing_coords.append((0, other_value))
                 else:
+                    if (isinstance(proj, cartopy.crs.RotatedPole) and
+                        x == -180):
+                        continue
                     other_value = None
 
                 if self.xlabels_bottom:
