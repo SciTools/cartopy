@@ -442,7 +442,7 @@ class Gridliner(object):
                             existing_coords.append((0, other_value))
                 else:
                     if (isinstance(proj, cartopy.crs.RotatedPole) and
-                        x == -180):
+                            x == -180):
                         continue
                     other_value = None
 
