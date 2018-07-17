@@ -509,10 +509,10 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                                            're-added. Please raise an issue.')
 
         # filter out any non-valid linear rings
-        processed_ls = [linear_ring for linear_ring in processed_ls if
-                        len(linear_ring.coords) > 2]
-
-        linear_rings = [sgeom.LinearRing(line) for line in processed_ls]
+        linear_rings = [
+            sgeom.LinearRing(linear_ring)
+            for linear_ring in processed_ls
+            if len(linear_ring.coords) > 2 and linear_ring.is_valid]
 
         if debug:
             print('   DONE')
