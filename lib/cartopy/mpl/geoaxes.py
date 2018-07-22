@@ -1212,7 +1212,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return result
 
-    def gridlines(self, crs=None, draw_labels=False, inline=False,
+    def gridlines(self, crs=None, draw_labels=False,
+                  auto=True, x_inline=False, y_inline=False,
                   xlocs=None, ylocs=None, **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
@@ -1226,8 +1227,13 @@ class GeoAxes(matplotlib.axes.Axes):
             Defaults to :class:`cartopy.crs.PlateCarree`.
         draw_labels: optional
             Label gridlines like axis ticks, around the edge.
-        inline: optional
-            Toggle whether the labels drawn should be inline.
+        auto: optional
+            Set x_inline and y_inline automatically based on projection
+        x_inline: optional
+            Toggle whether the x labels drawn should be inline.
+            Currently offers support for relatively more projections.
+        y_inline: optional
+            Toggle whether the y labels drawn should be inline.
             Currently offers support for relatively more projections.
         xlocs: optional
             An iterable of gridline locations or a
@@ -1261,8 +1267,10 @@ class GeoAxes(matplotlib.axes.Axes):
         if ylocs is not None and not isinstance(ylocs, mticker.Locator):
             ylocs = mticker.FixedLocator(ylocs)
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels, inline=inline,
-            xlocator=xlocs, ylocator=ylocs, collection_kwargs=kwargs)
+            self, crs=crs, draw_labels=draw_labels,
+            x_inline=x_inline, y_inline=y_inline,
+            xlocator=xlocs, ylocator=ylocs,
+            collection_kwargs=kwargs)
         self._gridliners.append(gl)
         return gl
 
