@@ -1223,7 +1223,12 @@ class LambertAzimuthalEqualArea(Projection):
                                                         globe=globe)
 
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        lon, lat = central_longitude + 180, - central_latitude + 0.01
+
+        # Find the antipode, and shift it a small amount in latitude to
+        # approximate the extent of the projection:
+        lon = central_longitude + 180
+        sign = np.sign(central_latitude) or 1
+        lat = -central_latitude + sign * 0.01
         x, max_y = self.transform_point(lon, lat, PlateCarree())
 
         coords = _ellipse_boundary(a * 1.9999, max_y - false_northing,
