@@ -106,7 +106,7 @@ def add_cyclic_point(data, coord=None, axis=-1):
     except IndexError:
         raise ValueError('The specified axis does not correspond to an '
                          'array dimension.')
-    new_data = ma.concatenate((data, data[slicer]), axis=axis)
+    new_data = ma.concatenate((data, data[tuple(slicer)]), axis=axis)
     if coord is None:
         return_value = new_data
     else:
