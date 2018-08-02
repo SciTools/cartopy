@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2017, Met Office
+# (C) British Crown Copyright 2015 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,6 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -59,3 +60,10 @@ class TestLambertAzimuthalEqualArea(object):
         assert crs_offset.proj4_init == expected
         assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
         assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
+
+    @pytest.mark.parametrize("latitude", [-90, 90])
+    def test_extrema(self, latitude):
+        crs = ccrs.LambertAzimuthalEqualArea(central_latitude=latitude)
+        expected = ('+ellps=WGS84 +proj=laea +lon_0=0.0 +lat_0={} '
+                    '+x_0=0.0 +y_0=0.0 +no_defs'.format(latitude))
+        assert crs.proj4_init == expected
