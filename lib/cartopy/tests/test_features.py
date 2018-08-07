@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2017, Met Office
+# (C) British Crown Copyright 2017 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,7 +23,10 @@ small_extent = (-6, -8, 56, 59)
 medium_extent = (-20, 20, 20, 60)
 large_extent = (-40, 40, 0, 80)
 
-auto_land = cfeature.NaturalEarthFeature('physical', 'land', 'auto')
+auto_scaler = cfeature.AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
+
+auto_land = cfeature.NaturalEarthFeature('physical', 'land', auto_scaler)
+
 
 class TestFeatures(object):
     def test_change_scale(self):
@@ -35,52 +38,12 @@ class TestFeatures(object):
         assert new_lakes.category == cfeature.LAKES.category
         assert new_lakes.name == cfeature.LAKES.name
 
-    def test_autoscale_keyword(self):
-        # Check that autoscale variants can be passed as the scale
-        # argument
-        autoscale_borders = cfeature.NaturalEarthFeature(
-                                   'cultural', 'admin_0_boundary_lines_land',
-                                   'autoscale')
-
-        a_coastline = cfeature.NaturalEarthFeature('physical', 'coastline',
-                                                   'a')
-
-        assert autoscale_borders.scale == 'autoscale'
-        assert autoscale_borders.autoscale
-        assert a_coastline.scale == 'a'
-        assert a_coastline.autoscale
-        assert auto_land.scale == 'auto'
-        assert auto_land.autoscale
-
-    def test_autoscale_default(self):
-        # Check that autoscaling is not used by default.
-        ten_borders = cfeature.NaturalEarthFeature(
-           'cultural', 'admin_0_boundary_lines_land',
-           '10m')
-
-        fifty_coastline = cfeature.NaturalEarthFeature('physical',
-                                                       'coastline',
-                                                       '50m')
-
-        hundredten_land = cfeature.NaturalEarthFeature('physical', 'land',
-                                                       '110m')
-
-        assert cfeature.LAKES.scale == '110m'
-        assert not cfeature.LAKES.autoscale
-        assert ten_borders.scale == '10m'
-        assert not ten_borders.autoscale
-        assert fifty_coastline.scale == '50m'
-        assert not fifty_coastline.autoscale
-        assert hundredten_land.scale == '110m'
-        assert not hundredten_land.autoscale
-
     def test_scale_from_extent(self):
-        # Check that _scale_from_extent produces the appropriate
+        # Check that scaler.scale_from_extent returns the appropriate
         # scales.
-        small_scale = auto_land._scale_from_extent(small_extent)
-        medium_scale = auto_land._scale_from_extent(medium_extent)
-        large_scale = auto_land._scale_from_extent(large_extent)
-        assert auto_land.scale == 'auto'
+        small_scale = auto_land.scaler.scale_from_extent(small_extent)
+        medium_scale = auto_land.scaler.scale_from_extent(medium_extent)
+        large_scale = auto_land.scaler.scale_from_extent(large_extent)
         assert small_scale == '10m'
         assert medium_scale == '50m'
         assert large_scale == '110m'

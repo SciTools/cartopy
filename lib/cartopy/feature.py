@@ -123,6 +123,89 @@ class Feature(six.with_metaclass(ABCMeta)):
             return self.geometries()
 
 
+class Scaler(object):
+    """
+    General object for handling the scale of the geometries used in a Feature.
+    """
+    def __init__(self, scale):
+        self._scale = scale
+
+    @property
+    def scale(self):
+        return self._scale
+
+    def scale_from_extent(self, extent):
+        """
+        Given an extent, update the scale.
+
+        Parameters
+        ----------
+        extent
+            The boundaries of the plotted area of a projection. The
+            coordinate system of the extent should be constant, and at the
+            same scale as the scales argument in the constructor.
+
+        """
+        # Note: Implementation does nothing. For subclasses to specialise.
+        return self._scale
+
+
+class AdaptiveScaler(Scaler):
+    """
+    Object for changing scales of geometries based on extent of axes used to
+    plot geometries.
+    """
+    def __init__(self, default_scale, limits):
+        """
+        Parameters
+        ----------
+        default_scale
+            Coarsest scale used as default when plot is at maximum extent.
+
+        limits
+            Scale-extent pairs at which scale of geometries change. Must be a
+            tuple of tuples ordered from coarsest to finest scales. Limit
+            values are the upper bounds for their corresponding scale.
+
+        Example:
+
+        >>> s = AdaptiveScaler('coarse',
+        ...           (('intermediate', 30), ('fine', 10)))
+        >>> s.scale_from_extent([-180, 180, -90, 90])
+        'coarse'
+        >>> s.scale_from_extent([-5, 6, 45, 56])
+        'intermediate'
+        >>> s.scale_from_extent([-5, 5, 45, 56])
+        'fine'
+
+        """
+        super(AdaptiveScaler, self).__init__(default_scale)
+        self._default_scale = default_scale
+        # Upper limit on extent in degrees.
+        self._limits = limits
+
+    def scale_from_extent(self, extent):
+        scale = self._default_scale
+
+        if extent is not None:
+            width = abs(extent[1] - extent[0])
+            height = abs(extent[3] - extent[2])
+            min_extent = min(width, height)
+
+            if min_extent != 0:
+                for scale_candidate, upper_bound in self._limits:
+                    if min_extent <= upper_bound:
+                        # It is a valid scale, so track it.
+                        scale = scale_candidate
+                    else:
+                        # This scale is not valid and we can stop looking.
+                        # We use the last (valid) scale that we saw.
+                        break
+
+        self._scale = scale
+        return self._scale
+
+
 class ShapelyFeature(Feature):
     """
     A class capable of drawing a collection of
@@ -167,10 +250,9 @@ class NaturalEarthFeature(Feature):
         name
             The name of the dataset, e.g. 'admin_0_boundary_lines_land'.
         scale
-            The dataset scale, i.e. one of '10m', '50m', or '110m'.
-            Corresponding to 1:10,000,000, 1:50,000,000, and 1:110,000,000
-            respectively. If set to 'auto', the scale will be automatically
-            set based on the extent of the axes.
+            The dataset scale, i.e. one of '10m', '50m', or '110m',
+            or Scaler object. Dataset scales correspond to 1:10,000,000,
+            1:50,000,000, and 1:110,000,000 respectively.
 
         Other Parameters
         ----------------
@@ -182,13 +264,16 @@ class NaturalEarthFeature(Feature):
                                                   **kwargs)
         self.category = category
         self.name = name
-        self.scale = scale
 
-        # Use autoscaling if scale == 'a', 'auto' or 'autoscale'
-        if scale == 'auto':
-            self.autoscale = True
-        else:
-            self.autoscale = False
+        # Cast the given scale to a (constant) Scaler if a string is passed.
+        if isinstance(scale, six.string_types):
+            scale = Scaler(scale)
+
+        self.scaler = scale
+
+    @property
+    def scale(self):
+        return self.scaler.scale
 
     def geometries(self):
         """
@@ -214,17 +299,8 @@ class NaturalEarthFeature(Feature):
         The extent is assumed to be in the CRS of the feature.
         If extent is None, the method returns all geometries for this dataset.
         """
-
-        if self.autoscale:
-            self.scale = self._scale_from_extent(extent)
-
-        if extent is not None:
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
-            return (geom for geom in self.geometries() if
-                    geom is not None and extent_geom.intersects(geom))
-        else:
-            return self.geometries()
+        self.scaler.scale_from_extent(extent)
+        return super(NaturalEarthFeature, self).intersecting_geometries(extent)
 
     def with_scale(self, new_scale):
         """
@@ -240,32 +316,6 @@ class NaturalEarthFeature(Feature):
         """
         return NaturalEarthFeature(self.category, self.name, new_scale,
                                    **self.kwargs)
-
-    def _scale_from_extent(self, extent):
-        """
-        Returns the appropriate scale (e.g. '50m') for the given extent
-        expressed in CRS of the feature (PlateCarree()).
-
-        """
-        # Default to 1:110,000,000 scale
-        scale = '110m'
-
-        if extent is not None:
-            # Upper limit on extent in degrees.
-            scale_limits = (('110m', 50.0),
-                            ('50m', 15.0),
-                            ('10m', 0.0))
-
-            width = abs(extent[1] - extent[0])
-            height = abs(extent[3] - extent[2])
-            min_extent = min(width, height)
-
-            if min_extent != 0:
-                for scale, limit in scale_limits:
-                    if min_extent > limit:
-                        break
-
-        return scale
 
 
 class GSHHSFeature(Feature):

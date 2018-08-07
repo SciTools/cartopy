@@ -425,15 +425,17 @@ class GeoAxes(matplotlib.axes.Axes):
         ----------
         resolution
             A named resolution to use from the Natural Earth
-            dataset. Currently can be one of "110m", "50m", and "10m".
-            If set to 'auto', autoscaling is used.
+            dataset. Currently can be one of "110m", "50m", and "10m",
+            or a Scaler object.
 
         """
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
-        feature = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
-                                                      resolution, **kwargs)
-        return self.add_feature(feature)
+        feature = cartopy.feature.COASTLINE
+        if resolution != 'auto':
+            feature = feature.with_scale(resolution)
+
+        return self.add_feature(feature, **kwargs)
 
     def tissot(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
         """
