@@ -251,10 +251,9 @@ class NaturalEarthFeature(Feature):
         name
             The name of the dataset, e.g. 'admin_0_boundary_lines_land'.
         scaler
-            The dataset scale, i.e. one of '10m', '50m', or '110m'.
-            Corresponding to 1:10,000,000, 1:50,000,000, and 1:110,000,000
-            respectively. If set to 'auto', the scale will be automatically
-            set based on the extent of the axes.
+            The dataset scale, i.e. one of '10m', '50m', or '110m',
+            or Scaler object. Dataset scales correspond to 1:10,000,000,
+            1:50,000,000, and 1:110,000,000 respectively.
 
         Other Parameters
         ----------------
