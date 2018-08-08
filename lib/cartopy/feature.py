@@ -141,7 +141,7 @@ class Scaler(object):
         Parameters
         ----------
         extent
-            The extent over which we should choose a scale. The
+            The boundaries of the plotted area of a projection. The
             coordinate system of the extent should be constant, and at the
             same scale as the scales argument in the constructor.
 
@@ -160,13 +160,12 @@ class AdaptiveScaler(Scaler):
         Parameters
         ----------
         default_scale
-            Coursest scale used as default when plot is at maximum extent.
+            Coarsest scale used as default when plot is at maximum extent.
 
         limits
             Scale-extent pairs at which scale of geometries change. Must be a
-            tuple of tuples ordered from coursest to finest scales. Limit
-            values are the upper bounds for their corresponding scale
-            (in degrees).
+            tuple of tuples ordered from coarsest to finest scales. Limit
+            values are the upper bounds for their corresponding scale.
 
         Example:
 
@@ -242,7 +241,7 @@ class NaturalEarthFeature(Feature):
     See http://www.naturalearthdata.com/
 
     """
-    def __init__(self, category, name, scaler, **kwargs):
+    def __init__(self, category, name, scale, **kwargs):
         """
         Parameters
         ----------
@@ -250,7 +249,7 @@ class NaturalEarthFeature(Feature):
             The category of the dataset, i.e. either 'cultural' or 'physical'.
         name
             The name of the dataset, e.g. 'admin_0_boundary_lines_land'.
-        scaler
+        scale
             The dataset scale, i.e. one of '10m', '50m', or '110m',
             or Scaler object. Dataset scales correspond to 1:10,000,000,
             1:50,000,000, and 1:110,000,000 respectively.
@@ -266,10 +265,11 @@ class NaturalEarthFeature(Feature):
         self.category = category
         self.name = name
 
-        if isinstance(scaler, six.string_types):
-            scaler = Scaler(scaler)
+        # Cast the given scale to a (constant) Scaler if a string is passed.
+        if isinstance(scale, six.string_types):
+            scale = Scaler(scale)
 
-        self.scaler = scaler
+        self.scaler = scale
 
     @property
     def scale(self):
@@ -299,7 +299,6 @@ class NaturalEarthFeature(Feature):
         The extent is assumed to be in the CRS of the feature.
         If extent is None, the method returns all geometries for this dataset.
         """
-
         self.scaler.scale_from_extent(extent)
 
         if extent is not None:
