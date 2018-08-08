@@ -147,7 +147,7 @@ class Scaler(object):
 
         """
         # Note: Implementation does nothing. For subclasses to specialise.
-        return self.scale
+        return self._scale
 
 
 class AdaptiveScaler(Scaler):
