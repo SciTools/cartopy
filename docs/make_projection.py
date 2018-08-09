@@ -150,10 +150,10 @@ if __name__ == '__main__':
             # Generate plotting code
             code = textwrap.dedent("""
             .. plot::
-            
+
                 import matplotlib.pyplot as plt
                 import cartopy.crs as ccrs
-            
+
                 plt.figure(figsize=({width}, 3))
                 ax = plt.axes(projection=ccrs.{proj_constructor})
                 ax.coastlines(resolution={coastline_resolution!r})
@@ -173,14 +173,14 @@ if __name__ == '__main__':
 
             code = textwrap.dedent("""
             .. plot::
-            
+
                 import matplotlib.pyplot as plt
                 import cartopy.crs as ccrs
 
                 fig = plt.figure(figsize=(10, 3))
-            
+
                 {func_code}
-                
+
                 for i in range(1, {nplots}):
                     {func_name}(i, {nplots})
 
