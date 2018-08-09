@@ -533,7 +533,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat),
                                                          ns, abs(lon), ew)
 
-    def coastlines(self, resolution='110m', color='black', **kwargs):
+    def coastlines(self, resolution='auto', color='black', **kwargs):
         """
         Add coastal **outlines** to the current axes from the Natural Earth
         "coastline" shapefile collection.
