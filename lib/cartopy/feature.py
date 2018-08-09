@@ -300,14 +300,7 @@ class NaturalEarthFeature(Feature):
         If extent is None, the method returns all geometries for this dataset.
         """
         self.scaler.scale_from_extent(extent)
-
-        if extent is not None:
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
-            return (geom for geom in self.geometries() if
-                    geom is not None and extent_geom.intersects(geom))
-        else:
-            return self.geometries()
+        return super(NaturalEarthFeature, self).intersecting_geometries(extent)
 
     def with_scale(self, new_scale):
         """
