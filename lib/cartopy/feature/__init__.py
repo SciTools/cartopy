@@ -364,9 +364,9 @@ class GSHHSFeature(Feature):
 
         if scale in ['auto', 'a']:
             scale = AdaptiveScaler('c', (('l', 20),
-                                        ('i', 10),
-                                        ('h', 2),
-                                        ('f', 0.5)))
+                                         ('i', 10),
+                                         ('h', 2),
+                                         ('f', 0.5)))
         elif isinstance(scale, six.string_types):
             scale = Scaler(scale)
 
