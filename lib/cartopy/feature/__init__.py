@@ -344,10 +344,23 @@ class GSHHSFeature(Feature):
     def __init__(self, scale='auto', levels=None, **kwargs):
         super(GSHHSFeature, self).__init__(cartopy.crs.PlateCarree(), **kwargs)
 
-        if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
-                         'intermediate', 'i', 'high', 'h', 'full', 'f'):
+        if not isinstance(scale, Scaler) and scale not in ('auto', 'a',
+                                                           'coarse', 'c',
+                                                           'low', 'l',
+                                                           'intermediate', 'i',
+                                                           'high', 'h',
+                                                           'full', 'f'):
             raise ValueError("Unknown GSHHS scale '{}'.".format(scale))
-        self._scale = scale
+
+        if scale in ['auto', 'a']:
+            scale = AdaptiveScaler('c', (('l', 20),
+                                        ('i', 10),
+                                        ('h', 2),
+                                        ('f', 0.5)))
+        elif isinstance(scale, six.string_types):
+            scale = Scaler(scale)
+
+        self.scaler = scale
 
         if levels is None:
             levels = [1]
@@ -361,41 +374,11 @@ class GSHHSFeature(Feature):
         self._kwargs.setdefault('edgecolor', 'black')
         self._kwargs.setdefault('facecolor', 'none')
 
-    def _scale_from_extent(self, extent):
-        """
-        Return the appropriate scale (e.g. 'i') for the given extent
-        expressed in PlateCarree CRS.
-
-        """
-        # Default to coarse scale
-        scale = 'c'
-
-        if extent is not None:
-            # Upper limit on extent in degrees.
-            scale_limits = (('c', 20.0),
-                            ('l', 10.0),
-                            ('i', 2.0),
-                            ('h', 0.5),
-                            ('f', 0.1))
-
-            width = abs(extent[1] - extent[0])
-            height = abs(extent[3] - extent[2])
-            min_extent = min(width, height)
-            if min_extent != 0:
-                for scale, limit in scale_limits:
-                    if min_extent > limit:
-                        break
-
-        return scale
-
     def geometries(self):
         return self.intersecting_geometries(extent=None)
 
     def intersecting_geometries(self, extent):
-        if self._scale == 'auto':
-            scale = self._scale_from_extent(extent)
-        else:
-            scale = self._scale[0]
+        scale = self.scaler.scale_from_extent(extent)
 
         if extent is not None:
             extent_geom = sgeom.box(extent[0], extent[2],
