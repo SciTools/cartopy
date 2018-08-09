@@ -43,7 +43,7 @@ def plate_carree_plot(i, nplots):
     central_longitude = 0 if i == 1 else 180
     ax = fig.add_subplot(1, nplots-1, i,
                          projection=ccrs.PlateCarree(
-                         central_longitude=central_longitude))
+                                    central_longitude=central_longitude))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -135,7 +135,6 @@ if __name__ == '__main__':
 
         table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
-
         if prj not in MULTI_PLOT_CASES:
             # Get instance arguments and number of plots
             instance_args = SPECIFIC_PROJECTION_KWARGS.get(prj, {})
@@ -187,6 +186,7 @@ if __name__ == '__main__':
 
 
             """).format(nplots=nplots+1,
-                       func_code=func_code, func_name=func.__name__)
+                        func_code=func_code,
+                        func_name=func.__name__)
 
         table.write(code)
