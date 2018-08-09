@@ -39,7 +39,7 @@ SPECIFIC_PROJECTION_KWARGS = {
 }
 
 
-def plate_carree_plot(i, nplots):
+def plate_carree_plot(i, nplots, fig):
     central_longitude = 0 if i == 1 else 180
     ax = fig.add_subplot(1, nplots-1, i,
                          projection=ccrs.PlateCarree(
@@ -48,7 +48,7 @@ def plate_carree_plot(i, nplots):
     ax.gridlines()
 
 
-def utm_plot(i, nplots):
+def utm_plot(i, nplots, fig):
     ax = fig.add_subplot(1, nplots-1, i,
                          projection=ccrs.UTM(zone=i, southern_hemisphere=True))
     ax.coastlines(resolution='110m')
@@ -182,7 +182,7 @@ if __name__ == '__main__':
                 {func_code}
 
                 for i in range(1, {nplots}):
-                    {func_name}(i, {nplots})
+                    {func_name}(i, {nplots}, fig)
 
 
             """).format(nplots=nplots+1,
