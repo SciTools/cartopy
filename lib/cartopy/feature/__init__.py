@@ -475,8 +475,8 @@ class WFSFeature(Feature):
 
 
 auto_scaler = AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
-"""AdaptiveScaler for NaturalEarthFeature. Default scale is '110m'. 
-'110m' is used above 50 degrees, '50m' for 50-15 degrees and '10m' below 15 
+"""AdaptiveScaler for NaturalEarthFeature. Default scale is '110m'.
+'110m' is used above 50 degrees, '50m' for 50-15 degrees and '10m' below 15
 degrees."""
 
 
