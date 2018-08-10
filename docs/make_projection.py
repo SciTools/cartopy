@@ -33,26 +33,42 @@ SPECIFIC_PROJECTION_KWARGS = {
 }
 
 
-def plate_carree_plot(i, nplots, fig):
-    central_longitude = 0 if i == 0 else 180
-    ax = fig.add_subplot(1, nplots, i+1,
-                         projection=ccrs.PlateCarree(
-                                    central_longitude=central_longitude))
-    ax.coastlines(resolution='110m')
-    ax.gridlines()
+def plate_carree_plot():
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    nplots = 2
+
+    fig = plt.figure(figsize=(6, 6))
+
+    for i in range(0, nplots):
+        central_longitude = 0 if i == 0 else 180
+        ax = fig.add_subplot(nplots, 1, i+1,
+                             projection=ccrs.PlateCarree(
+                                        central_longitude=central_longitude))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
 
 
-def utm_plot(i, nplots, fig):
-    ax = fig.add_subplot(1, nplots, i+1,
-                         projection=ccrs.UTM(zone=i+1,
-                                             southern_hemisphere=True))
-    ax.coastlines(resolution='110m')
-    ax.gridlines()
+def utm_plot():
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    nplots = 60
+
+    fig = plt.figure(figsize=(10, 3))
+
+    for i in range(0, nplots):
+        ax = fig.add_subplot(1, nplots, i+1,
+                             projection=ccrs.UTM(zone=i+1,
+                                                 southern_hemisphere=True))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
 
 
 MULTI_PLOT_CASES = {
-    ccrs.PlateCarree: [2, plate_carree_plot],
-    ccrs.UTM: [60, utm_plot],
+    ccrs.PlateCarree: plate_carree_plot,
+    ccrs.UTM: utm_plot,
 }
 
 
@@ -161,27 +177,16 @@ if __name__ == '__main__':
                                                                       '110m'))
 
         else:
-            nplots, func = MULTI_PLOT_CASES[prj]
+            func = MULTI_PLOT_CASES[prj]
 
             lines = inspect.getsourcelines(func)
-            func_code = "    ".join(lines[0])
+            func_code = lines[0][1:]
 
             code = textwrap.dedent("""
             .. plot::
 
-                import matplotlib.pyplot as plt
-                import cartopy.crs as ccrs
+            {func_code}
 
-                fig = plt.figure(figsize=(10, 3))
-
-                {func_code}
-
-                for i in range(0, {nplots}):
-                    {func_name}(i, {nplots}, fig)
-
-
-            """).format(nplots=nplots,
-                        func_code=func_code,
-                        func_name=func.__name__)
+            """).format(func_code=func_code)
 
         table.write(code)

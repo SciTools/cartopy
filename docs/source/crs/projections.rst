@@ -19,19 +19,17 @@ PlateCarree
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    fig = plt.figure(figsize=(10, 3))
+    nplots = 2
 
-    def plate_carree_plot(i, nplots, fig):
+    fig = plt.figure(figsize=(6, 6))
+
+    for i in range(0, nplots):
         central_longitude = 0 if i == 0 else 180
-        ax = fig.add_subplot(1, nplots, i+1,
+        ax = fig.add_subplot(nplots, 1, i+1,
                              projection=ccrs.PlateCarree(
                                         central_longitude=central_longitude))
         ax.coastlines(resolution='110m')
         ax.gridlines()
-
-
-    for i in range(0, 2):
-        plate_carree_plot(i, 2, fig)
 
 
 AlbersEqualArea
@@ -237,18 +235,16 @@ UTM
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
+    nplots = 60
+
     fig = plt.figure(figsize=(10, 3))
 
-    def utm_plot(i, nplots, fig):
+    for i in range(0, nplots):
         ax = fig.add_subplot(1, nplots, i+1,
                              projection=ccrs.UTM(zone=i+1,
                                                  southern_hemisphere=True))
         ax.coastlines(resolution='110m')
         ax.gridlines()
-
-
-    for i in range(0, 60):
-        utm_plot(i, 60, fig)
 
 
 InterruptedGoodeHomolosine
