@@ -180,7 +180,7 @@ if __name__ == '__main__':
             func = MULTI_PLOT_CASES[prj]
 
             lines = inspect.getsourcelines(func)
-            func_code = lines[0][1:]
+            func_code = "".join(lines[0][1:])
 
             code = textwrap.dedent("""
             .. plot::
