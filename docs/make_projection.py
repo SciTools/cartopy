@@ -16,17 +16,11 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
-
 import os
-
 import inspect
-
 import textwrap
-
 import numpy as np
-
 import cartopy.crs as ccrs
-
 
 #: A dictionary to allow examples to use non-default parameters to the CRS
 #: constructor.
@@ -40,8 +34,8 @@ SPECIFIC_PROJECTION_KWARGS = {
 
 
 def plate_carree_plot(i, nplots, fig):
-    central_longitude = 0 if i == 1 else 180
-    ax = fig.add_subplot(1, nplots-1, i,
+    central_longitude = 0 if i == 0 else 180
+    ax = fig.add_subplot(1, nplots, i+1,
                          projection=ccrs.PlateCarree(
                                     central_longitude=central_longitude))
     ax.coastlines(resolution='110m')
@@ -49,8 +43,9 @@ def plate_carree_plot(i, nplots, fig):
 
 
 def utm_plot(i, nplots, fig):
-    ax = fig.add_subplot(1, nplots-1, i,
-                         projection=ccrs.UTM(zone=i, southern_hemisphere=True))
+    ax = fig.add_subplot(1, nplots, i+1,
+                         projection=ccrs.UTM(zone=i+1,
+                                             southern_hemisphere=True))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -89,12 +84,12 @@ def create_instance(prj_cls, instance_args):
     name = prj_cls.__name__
 
     # Format instance arguments into strings
-    instance_params = ',\n                             '.join(
+    instance_params = ',\n                            '.join(
         '{}={}'.format(k, v)
         for k, v in sorted(instance_args.items()))
 
     if instance_params:
-        instance_params = '\n                             ' \
+        instance_params = '\n                            ' \
                           + instance_params
 
     instance_creation_code = '{}({})'.format(name, instance_params)
@@ -181,11 +176,11 @@ if __name__ == '__main__':
 
                 {func_code}
 
-                for i in range(1, {nplots}):
+                for i in range(0, {nplots}):
                     {func_name}(i, {nplots}, fig)
 
 
-            """).format(nplots=nplots+1,
+            """).format(nplots=nplots,
                         func_code=func_code,
                         func_name=func.__name__)
 

@@ -22,16 +22,16 @@ PlateCarree
     fig = plt.figure(figsize=(10, 3))
 
     def plate_carree_plot(i, nplots, fig):
-        central_longitude = 0 if i == 1 else 180
-        ax = fig.add_subplot(1, nplots-1, i,
+        central_longitude = 0 if i == 0 else 180
+        ax = fig.add_subplot(1, nplots, i+1,
                              projection=ccrs.PlateCarree(
                                         central_longitude=central_longitude))
         ax.coastlines(resolution='110m')
         ax.gridlines()
 
 
-    for i in range(1, 3):
-        plate_carree_plot(i, 3, fig)
+    for i in range(0, 2):
+        plate_carree_plot(i, 2, fig)
 
 
 AlbersEqualArea
@@ -240,14 +240,15 @@ UTM
     fig = plt.figure(figsize=(10, 3))
 
     def utm_plot(i, nplots, fig):
-        ax = fig.add_subplot(1, nplots-1, i,
-                             projection=ccrs.UTM(zone=i, southern_hemisphere=True))
+        ax = fig.add_subplot(1, nplots, i+1,
+                             projection=ccrs.UTM(zone=i+1,
+                                                 southern_hemisphere=True))
         ax.coastlines(resolution='110m')
         ax.gridlines()
 
 
-    for i in range(1, 61):
-        utm_plot(i, 61, fig)
+    for i in range(0, 60):
+        utm_plot(i, 60, fig)
 
 
 InterruptedGoodeHomolosine
