@@ -62,7 +62,7 @@ AzimuthalEquidistant
 
     plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.AzimuthalEquidistant(
-                             central_latitude=90))
+                            central_latitude=90))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -279,8 +279,8 @@ RotatedPole
 
     plt.figure(figsize=(6, 3))
     ax = plt.axes(projection=ccrs.RotatedPole(
-                             pole_latitude=37.5,
-                             pole_longitude=177.5))
+                            pole_latitude=37.5,
+                            pole_longitude=177.5))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -345,9 +345,9 @@ NearsidePerspective
 
     plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.NearsidePerspective(
-                             central_latitude=50.72,
-                             central_longitude=-3.53,
-                             satellite_height=10000000.0))
+                            central_latitude=50.72,
+                            central_longitude=-3.53,
+                            satellite_height=10000000.0))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
