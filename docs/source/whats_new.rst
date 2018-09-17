@@ -7,11 +7,18 @@ What's New in cartopy 0.17
 Features
 --------
 * The :class:`cartopy.feature.NaturalEarthFeature` class now allows a
-:class:`cartopy.feature.AdaptiveScaler` object to be passed as the `scale`
-argument. This will automatically choose the appropriate feature scale from
-the GeoAxes extent. This can also be used interactively while panning and
-zooming in a figure. :data:`cartopy.feature.NaturalEarthFeature.scale` is
-now read-only. (:pull:`1102`, :pull:`983`)
+  :class:`cartopy.feature.AdaptiveScaler` object to be passed as the `scale`
+  argument. This will automatically choose the appropriate feature scale from
+  the GeoAxes extent. This can also be used interactively while panning and
+  zooming in a figure. :data:`cartopy.feature.NaturalEarthFeature.scale` is
+  now read-only. (:pull:`1102`, :pull:`983`)
+
+* The :class:`cartopy.feature.GSHHSFeature` class now disk caching in addition
+  to the in-memory caching, when geometries are extracted within an ``extent``.
+  This speeds up alot the loading of geometries in a given area, especially
+  for high resolutions.
+  Caching is based on the scale, level and extent, are all geometries that
+  intersect this extent are dumped to the disk.
 
 --------
 

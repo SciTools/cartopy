@@ -26,17 +26,24 @@ __document_these__ = ['config']
 # Configuration
 import os.path
 
-# for the writable data directory (i.e. the one where new data goes), follow
-# the XDG guidelines found at
+# for the writable data  and cache directories (i.e. the one where new
+# data goes), follow the XDG guidelines found at
 # https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
-_writable_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
-_data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
+_writable_data_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
+_data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_data_dir),
+                         'cartopy')
+_writable_cache_dir = os.path.join(os.path.expanduser('~'), '.cache')
+_cache_dir = os.path.join(os.environ.get("XDG_CACHE_HOME",
+                                         _writable_cache_dir),
                          'cartopy')
 
 config = {'pre_existing_data_dir': '',
           'data_dir': _data_dir,
           'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
+          'cache_dir': _cache_dir,
+          'allow_disk_caching': False,
+          'max_cache_usage': 100,
           }
 """
 The config dictionary stores global configuration values for cartopy.
@@ -78,10 +85,24 @@ Keys in the config dictionary:
     :class:`~cartopy.io.Downloader`. For further documentation and an example
     see :func:`cartopy.io.Downloader.from_config`.
 
+``allow_disk_caching``
+    A boolean to allow or not disk caching of features geometries that
+    have been extracted within a given box.
+    It is set to False by default.
+
+``cache_dir``
+    Directory where to store cache files.
+
+``max_cache_usage``
+    Max disk usage of the cache in MB. Above this value, oldest cache
+    files are removed first.
+
 """  # n.b. docstring changes should be propagated to docs/source/cartopy.rst
 
 del _data_dir
-del _writable_dir
+del _writable_data_dir
+del _cache_dir
+del _writable_cache_dir
 
 
 # Try importing a siteconfig file which exposes an update_config function,

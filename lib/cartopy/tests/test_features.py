@@ -17,7 +17,10 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import os
+import pytest
 import cartopy.feature as cfeature
+from cartopy import config
 
 small_extent = (-6, -8, 56, 59)
 medium_extent = (-20, 20, 20, 60)
@@ -65,3 +68,36 @@ class TestFeatures(object):
         # '110m' when the extent is large and autoscale is True.
         auto_land.intersecting_geometries(large_extent)
         assert auto_land.scale == '110m'
+
+    @pytest.mark.parametrize("disk_caching", [False, True])
+    def test_gshhs(self, disk_caching):
+
+        scale = 'l'
+        extent = [-10, 0, 45, 50]
+        config['allow_disk_caching'] = disk_caching
+
+        cfeature.GSHHSFeature._geometries_cache = {}
+        gshhs = cfeature.GSHHSFeature(scale, level=1)
+
+        if disk_caching:
+            cache_file = cfeature.FeatureDiskCaching(gshhs, extent,
+                                                     scale=scale,
+                                                     level=1)
+            if os.path.exists(cache_file):
+                os.remove(cache_file)
+
+        # First read
+        geoms0 = list(gshhs.intersecting_geometries(extent))
+        assert geoms0
+
+        # From mem cache
+        geoms1 = list(gshhs.intersecting_geometries(extent))
+        assert len(geoms0) == len(geoms1)
+        assert geoms0[0] is geoms1[0]
+
+        # From disk cache
+        if disk_caching:
+            assert os.path.exists(cache_file)
+            cfeature.GSHHSFeature._geometries_cache = {}
+            geoms2 = list(gshhs.intersecting_geometries(extent))
+            assert len(geoms2) == len(geoms0)

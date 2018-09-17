@@ -23,11 +23,17 @@ ax.add_feature().
 from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod
+import os
+import glob
+import cPickle
+from operator import itemgetter
+from warnings import warn
 
 import numpy as np
 import shapely.geometry as sgeom
 import six
 
+import cartopy
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
 
@@ -411,16 +417,40 @@ class GSHHSFeature(Feature):
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
         for level in self._levels:
-            geoms = GSHHSFeature._geometries_cache.get((scale, level))
+
+            # Check memory and disk caching for geoms that cross extent
+            if cartopy.config['allow_disk_caching'] and extent is not None:
+                fdc = FeatureDiskCaching(self, extent, scale=scale,
+                                         level=level)
+                geoms = GSHHSFeature._geometries_cache.get((scale, level,
+                                                            fdc.extent))
+                if geoms is None:
+                    geoms = fdc.load_geometries()
+
+            # All geometries with mem caching
+            else:
+                geoms = GSHHSFeature._geometries_cache.get((scale, level))
             if geoms is None:
                 # Load GSHHS geometries from appropriate shape file.
                 # TODO selective load based on bbox of each geom in file.
                 path = shapereader.gshhs(scale, level)
                 geoms = tuple(shapereader.Reader(path).geometries())
-                GSHHSFeature._geometries_cache[(scale, level)] = geoms
-            for geom in geoms:
-                if extent is None or extent_geom.intersects(geom):
+                GSHHSFeature._geometries_cache[(scale, level)] = list(geoms)
+
+            # If extent, mem cache and optionally disk cache
+            if cartopy.config['allow_disk_caching'] and extent is not None:
+                if not fdc.is_cached():  # crop and cache on disk
+                    geoms = [geom for geom in geoms
+                             if extent_geom.intersects(geom)]
+                    fdc.dump_geometries(geoms)
+                GSHHSFeature._geometries_cache[(scale, level, fdc.extent)] = \
+                    geoms
+                for geom in geoms:
                     yield geom
+            else:
+                for geom in geoms:
+                    if extent is None or extent_geom.intersects(geom):
+                        yield geom
 
 
 class WFSFeature(Feature):
@@ -509,3 +539,134 @@ RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
                              edgecolor=COLORS['water'],
                              facecolor='none')
 """Small scale (1:110m) single-line drainages, including lake centerlines."""
+
+
+class FeatureDiskCaching(object):
+    """
+    Utility to cache features geometries according to feature, and
+    arguments and extent
+
+    Its effects are deactived if
+    ``cartopy.config['allow_disk_caching'] is False``.
+
+    Parameters
+    ----------
+    feature_name: str or :class:`Feature` instance
+        Feature name. If a :class:`Feature` instance is provided,
+        the class name is used.
+    extent: list of integers
+        Extent as [xmi, xmax, ymin, ymax]
+    **feature_args
+        Feature parameters name and value, sorted and converted to strings
+        to form the cache file name.
+    """
+
+    cache_dir = os.path.join(cartopy.config['cache_dir'], 'features')
+
+    def __init__(self, feature_name, extent, **feature_args):
+
+        # Serialize args
+        self.extent = '-'.join([str(e) for e in extent])
+        if isinstance(feature_name, Feature):
+            feature_name = feature_name.__class__.__name__
+        keys = list(feature_args.keys())
+        keys.sort()
+        args_string = '+'.join([feature_name, self.extent] +
+                               ['{}{}'.format(key, feature_args[key])
+                               for key in keys])
+
+        # Cache file
+        self.cache_file = os.path.join(self.cache_dir, args_string + '.pyk')
+
+        # Do nothing if not allowed
+        if not cartopy.config['allow_disk_caching']:
+            return
+
+        # Check cache dir
+        if not os.path.isdir(self.cache_dir):
+            try:
+                os.makedirs(self.cache_dir)
+            except Exception:
+                cartopy.config['allow_disk_caching'] = False
+                warn('Cannot create cache dir. Deactivating caching.')
+                return
+
+    def is_cached(self):
+        """Check whether this feature is already cached with this extent and
+        its parameters"""
+        if not cartopy.config['allow_disk_caching']:
+            return False
+        return os.path.exists(self.cache_file)
+
+    def dump_geometries(self, geometries, clean=True):
+        """Dump geometries
+
+        Parameters
+        ----------
+        geometries: iterator or list of geometries
+        clean: bool, optional
+            Clean the cache using :meth:`clean_cache` once geometries
+            are dumped?
+        """
+        if not cartopy.config['allow_disk_caching'] or self.is_cached():
+            return
+
+        with open(self.cache_file, 'w') as f:
+            cPickle.dump(list(geometries), f)
+
+        if clean:
+            self.clean_cache()
+
+    def load_geometries(self):
+        """Load geometries from the cache
+
+        Return
+        ------
+        iterator or None
+        """
+        if not cartopy.config['allow_disk_caching'] or not self.is_cached():
+            return
+
+        with open(self.cache_file) as f:
+            try:
+                geometries = cPickle.load(f)
+                return iter(geometries)
+            except EOFError:
+                os.remove(self.cache_file)
+
+    @classmethod
+    def clean_cache(cls, max_usage=None):
+        """Remove some big cache files to make sure the disk usage is limited
+
+        Old files are removed first.
+
+        Parameters
+        ----------
+        max_usage: float
+            Max total disk usage of cached files, in MB.
+            It defaults to configuration value
+            ``cartopy.config[max_cache_usage']``.
+        """
+
+        if max_usage is None:
+            max_usage = cartopy.config['max_cache_usage']
+        if max_usage < 0:
+            return
+
+        usages = [(fname, os.path.getsize(fname) / 1024**2,
+                   os.stat(fname).st_atime)
+                  for fname in glob.glob(os.path.join(cls.cache_dir, '*.pyk'))]
+        usages.sort(key=itemgetter(2))
+        usage = sum([fs[1] for fs in usages])
+
+        for fname, fsize, ftime in usages:
+            if usage < max_usage:
+                return
+            try:
+                os.remove(fname)
+            except Exception:
+                warn('Error while trying to clean feature cache in: ' +
+                     cls.cache_dir)
+                cartopy.config['max_cache_usage'] = -1
+                return
+            usage -= fsize
