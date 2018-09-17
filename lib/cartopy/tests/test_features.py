@@ -82,7 +82,7 @@ class TestFeatures(object):
         if disk_caching:
             cache_file = cfeature.FeatureDiskCaching(gshhs, extent,
                                                      scale=scale,
-                                                     level=1)
+                                                     level=1).cache_file
             if os.path.exists(cache_file):
                 os.remove(cache_file)
 
