@@ -25,7 +25,7 @@ from __future__ import (absolute_import, division, print_function)
 from abc import ABCMeta, abstractmethod
 import os
 import glob
-import cPickle
+import pickle
 from operator import itemgetter
 from warnings import warn
 
@@ -612,7 +612,7 @@ class FeatureDiskCaching(object):
             return
 
         with open(self.cache_file, 'w') as f:
-            cPickle.dump(list(geometries), f)
+            pickle.dump(list(geometries), f)
 
         if clean:
             self.clean_cache()
@@ -629,7 +629,7 @@ class FeatureDiskCaching(object):
 
         with open(self.cache_file) as f:
             try:
-                geometries = cPickle.load(f)
+                geometries = pickle.load(f)
                 return iter(geometries)
             except EOFError:
                 os.remove(self.cache_file)
