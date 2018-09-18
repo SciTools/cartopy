@@ -23,6 +23,7 @@ import matplotlib.text as mtext
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
+import shapely.geometry as sgeom
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
@@ -90,6 +91,24 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                            _north_south_formatted(v))
 
 
+def _text_artists_overlaps_(artista, artistb, axis):
+    """Check that two text artists don't overlap (approximately)"""
+    xa, ya = artista.get_position()
+    xb, yb = artistb.get_position()
+    trans = artista.get_transform()
+    xa, ya = trans.transform_point((xa, ya))
+    xb, yb = trans.transform_point((xb, yb))
+    size = artista.get_size()
+    if axis == 'x':
+        factor = 0.8 if 'monospace' not in artista.get_family() else 1
+        dxa = size * len(artista.get_text()) / 2 * factor
+        dxb = size * len(artistb.get_text()) / 2 * factor
+        return not ((xa + dxa) < (xb - dxb) or (xb + dxb) < (xa - dxa))
+    dya = size / 2
+    dyb = size / 2
+    return not ((ya + dya) < (yb - dyb) or (yb + dyb) < (ya - dya))
+
+
 class Gridliner(object):
     # NOTE: In future, one of these objects will be add-able to a GeoAxes (and
     # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
@@ -137,12 +156,10 @@ class Gridliner(object):
         self.ylocator = ylocator or degree_locator
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the x labels.
-        self.xformatter = mticker.ScalarFormatter()
-        self.xformatter.create_dummy_axis()
+        self.xformatter = LONGITUDE_FORMATTER
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the y labels.
-        self.yformatter = mticker.ScalarFormatter()
-        self.yformatter.create_dummy_axis()
+        self.yformatter = LATITUDE_FORMATTER
 
         #: Whether to draw labels on the top of the map.
         self.xlabels_top = draw_labels
@@ -177,12 +194,6 @@ class Gridliner(object):
         self.ypadding = 5
 
         self.crs = crs
-
-        # if the user specifies tick labels at this point, check if they can
-        # be drawn. The same check will take place at draw time in case
-        # public attributes are changed after instantiation.
-        if draw_labels:
-            self._assert_can_draw_ticks()
 
         #: The number of interpolation points which are used to draw the
         #: gridlines.
@@ -219,7 +230,7 @@ class Gridliner(object):
             transform = transform._as_mpl_transform(self.axes)
         return transform
 
-    def _add_gridline_label(self, value, axis, upper_end):
+    def _add_gridline_label(self, loc, text, axis, edge):
         """
         Create a Text artist on our axes for a gridline label.
 
@@ -230,69 +241,60 @@ class Gridliner(object):
             value, and is positioned centred at that point.
         axis
             Which axis the label is on: 'x' or 'y'.
-        upper_end: bool
-            If True, place at the maximum of the "other" coordinate (Axes
-            coordinate == 1.0).  Else 'lower' end (Axes coord = 0.0).
+        edge: str
+            If "top" or "right", place at the maximum of the "other"
+            coordinate (Axes coordinate == 1.0).  Else 'lower' end
+            (Axes coord = 0.0).
 
         """
-        transform = self._crs_transform()
-        if upper_end:
-            shift_scale = 1
-        else:
-            shift_scale = -1
+        # Get label specs
         if axis == 'x':
-            x = value
-            y = 1.0 if upper_end else 0.0
-            h_align = 'center'
-            v_align = 'bottom' if upper_end else 'top'
-            tr_x = transform
-            tr_y = self.axes.transAxes + \
-                mtrans.ScaledTranslation(
-                    0.0,
-                    shift_scale * self.xpadding * (1.0 / 72),
-                    self.axes.figure.dpi_scale_trans)
-            str_value = self.xformatter(value)
+            x = loc
+            if edge == 'top':
+                y = 1.0
+                meth = self.axes.get_xaxis_text2_transform
+            else:
+                y = 0.0
+                meth = self.axes.get_xaxis_text1_transform
+            label_transform, v_align, h_align = meth(self.xpadding)
             user_label_style = self.xlabel_style
         elif axis == 'y':
-            y = value
-            x = 1.0 if upper_end else 0.0
+            y = loc
+            if edge == 'right':
+                x = 1.0
+                meth = self.axes.get_yaxis_text2_transform
+            else:
+                x = 0.0
+                meth = self.axes.get_yaxis_text1_transform
+            label_transform, v_align, h_align = meth(self.xpadding)
             if matplotlib.__version__ > '2.0':
                 v_align = 'center_baseline'
             else:
                 v_align = 'center'
-            h_align = 'left' if upper_end else 'right'
-            tr_y = transform
-            tr_x = self.axes.transAxes + \
-                mtrans.ScaledTranslation(
-                    shift_scale * self.ypadding * (1.0 / 72),
-                    0.0,
-                    self.axes.figure.dpi_scale_trans)
-            str_value = self.yformatter(value)
             user_label_style = self.ylabel_style
         else:
             raise ValueError(
                 "Unknown axis, {!r}, must be either 'x' or 'y'".format(axis))
 
-        # Make a 'blended' transform for label text positioning.
-        # One coord is geographic, and the other a plain Axes
-        # coordinate with an appropriate offset.
-        label_transform = mtrans.blended_transform_factory(
-            x_transform=tr_x, y_transform=tr_y)
-
+        # Create and add a Text artist with these properties
         label_style = {'verticalalignment': v_align,
                        'horizontalalignment': h_align,
                        }
         label_style.update(user_label_style)
-
-        # Create and add a Text artist with these properties
-        text_artist = mtext.Text(x, y, str_value,
+        text_artist = mtext.Text(x, y, text,
                                  clip_on=False,
                                  transform=label_transform, **label_style)
-        if axis == 'x':
-            self.xlabel_artists.append(text_artist)
-        elif axis == 'y':
-            self.ylabel_artists.append(text_artist)
+
+        # Check that this artist don't overlap this one
+        artists = getattr(self, '{}label_{}_artists'.format(axis, edge))
+        for ta in artists:
+            if _text_artists_overlaps_(ta, text_artist, axis):
+                return
+
+        # Ok, register it
+        artists.append(text_artist)
         self.axes.add_artist(text_artist)
+        return text_artist
 
     def _draw_gridliner(self, nx=None, ny=None, background_patch=None):
         """Create Artists for all visible elements and add to our Axes."""
@@ -307,6 +309,10 @@ class Gridliner(object):
 
         x_ticks = self.xlocator.tick_values(x_lim[0], x_lim[1])
         y_ticks = self.ylocator.tick_values(y_lim[0], y_lim[1])
+
+        #####################
+        # Gridlines drawing #
+        #####################
 
         # XXX this bit is cartopy specific. (for circular longitudes)
         # Purpose: omit plotting the last x line, as it may overlap the first.
@@ -327,27 +333,28 @@ class Gridliner(object):
         collection_kwargs.setdefault('linestyle', rc_params['grid.linestyle'])
         collection_kwargs.setdefault('linewidth', rc_params['grid.linewidth'])
 
-        if self.xlines:
-            lines = []
-            for x in x_gridline_points:
-                ticks = list(zip(
-                    np.zeros(n_steps) + x,
-                    np.linspace(min(y_ticks), max(y_ticks), n_steps)))
-                lines.append(ticks)
+        # Longitude lines
+        lon_lines = []
+        for x in x_gridline_points:
+            ticks = list(zip(
+                np.zeros(n_steps) + x,
+                np.linspace(min(y_ticks), max(y_ticks), n_steps)))
+            lon_lines.append(ticks)
 
-            x_lc = mcollections.LineCollection(lines, **collection_kwargs)
+        if self.xlines:
+            x_lc = mcollections.LineCollection(lon_lines, **collection_kwargs)
             self.xline_artists.append(x_lc)
             self.axes.add_collection(x_lc, autolim=False)
 
+        # Latitude lines
+        lat_lines = []
+        for y in y_ticks:
+            ticks = list(zip(
+                np.linspace(min(x_ticks), max(x_ticks), n_steps),
+                np.zeros(n_steps) + y))
+            lat_lines.append(ticks)
         if self.ylines:
-            lines = []
-            for y in y_ticks:
-                ticks = list(zip(
-                    np.linspace(min(x_ticks), max(x_ticks), n_steps),
-                    np.zeros(n_steps) + y))
-                lines.append(ticks)
-
-            y_lc = mcollections.LineCollection(lines, **collection_kwargs)
+            y_lc = mcollections.LineCollection(lat_lines, **collection_kwargs)
             self.yline_artists.append(y_lc)
             self.axes.add_collection(y_lc, autolim=False)
 
@@ -355,30 +362,68 @@ class Gridliner(object):
         # Label drawing #
         #################
 
-        # Trim outside-area points from the label coords.
-        # Tickers may round *up* the desired range to something tidy, not
-        # all of which is necessarily visible.  We must be stricter with
-        # our texts, as they are drawn *without clipping*.
-        x_label_points = [x for x in x_ticks if x_lim[0] <= x <= x_lim[1]]
-        y_label_points = [y for y in y_ticks if y_lim[0] <= y <= y_lim[1]]
+        self.xlabel_bottom_artists = []
+        self.xlabel_top_artists = []
+        self.ylabel_left_artists = []
+        self.ylabel_right_artists = []
+        if not (self.ylabels_left or self.ylabels_right or
+                self.xlabels_bottom or self.xlabels_top):
+            return
 
-        if self.xlabels_bottom or self.xlabels_top:
-            self._assert_can_draw_ticks()
-            self.xformatter.set_locs(x_label_points)
-            for x in x_label_points:
-                if self.xlabels_bottom:
-                    self._add_gridline_label(x, axis='x', upper_end=False)
-                if self.xlabels_top:
-                    self._add_gridline_label(x, axis='x', upper_end=True)
+        # Get the real map boundaries
+        x0, x1 = self.axes.get_xlim()
+        y0, y1 = self.axes.get_ylim()
+        plot_boundary = sgeom.Polygon([[x0, y0], [x1, y0],
+                                       [x1, y1], [x0, y1]])
+        map_boundary_vertices = self.axes.outline_patch.get_path().vertices
+        map_boundary = sgeom.Polygon(map_boundary_vertices)
+        map_boundaries = plot_boundary.intersection(map_boundary)
 
-        if self.ylabels_left or self.ylabels_right:
-            self._assert_can_draw_ticks()
-            self.yformatter.set_locs(y_label_points)
-            for y in y_label_points:
-                if self.ylabels_left:
-                    self._add_gridline_label(y, axis='y', upper_end=False)
-                if self.ylabels_right:
-                    self._add_gridline_label(y, axis='y', upper_end=True)
+        # Loop on longitude and latitude lines and collect what to draw
+        to_draw = {}
+        for lonlat, lines, line_ticks, formatter in (
+                ('lon', lon_lines, x_ticks, self.xformatter),
+                ('lat', lat_lines, y_ticks, self.yformatter)):
+
+            to_draw[lonlat] = {'y': {'left': [], 'right': []},
+                               'x': {'bottom': [], 'top': []}}
+
+            for line, tick_value in zip(lines, line_ticks):
+
+                ls = sgeom.LineString(line)
+                lsp = self.axes.projection.project_geometry(ls)
+
+                if lsp.intersects(map_boundaries):
+
+                    lsb = lsp.intersection(map_boundaries)
+                    if lsb.is_empty:
+                        continue
+
+                    lsb = lsb.boundary
+                    for point in lsb:
+                        x = point.x
+                        y = point.y
+                        text = formatter(tick_value)
+                        if x == x0:
+                            loc, axis, edge = y, 'y', 'left'
+                        elif x == x1:
+                            loc, axis, edge = y, 'y', 'right'
+                        elif y == y0:
+                            loc, axis, edge = x, 'x', 'bottom'
+                        elif y == y1:
+                            loc, axis, edge = x, 'x', 'top'
+                        else:
+                            continue
+
+                        if getattr(self, '{}labels_{}'.format(axis, edge)):
+                            to_draw[lonlat][axis][edge].append((loc, text))
+
+        # Draw in the prefered order
+        for lonlat, axis in (('lon', 'x'), ('lat', 'y'),
+                             ('lon', 'y'), ('lat', 'x')):
+            for edge, lts in to_draw[lonlat][axis].items():
+                for loc, text in lts:
+                    self._add_gridline_label(loc, text, axis, edge)
 
     def _assert_can_draw_ticks(self):
         """
