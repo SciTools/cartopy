@@ -611,7 +611,7 @@ class FeatureDiskCaching(object):
         if not cartopy.config['allow_disk_caching'] or self.is_cached():
             return
 
-        with open(self.cache_file, 'w') as f:
+        with open(self.cache_file, 'wb') as f:
             pickle.dump(list(geometries), f)
 
         if clean:
