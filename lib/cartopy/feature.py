@@ -627,7 +627,7 @@ class FeatureDiskCaching(object):
         if not cartopy.config['allow_disk_caching'] or not self.is_cached():
             return
 
-        with open(self.cache_file) as f:
+        with open(self.cache_file, 'rb') as f:
             try:
                 geometries = pickle.load(f)
                 return iter(geometries)
