@@ -193,7 +193,14 @@ class Gridliner(object):
         #: The padding from the map edge to the y labels in points.
         self.ypadding = 5
 
+        # Current transform
         self.crs = crs
+
+        # if the user specifies tick labels at this point, check if they can
+        # be drawn. The same check will take place at draw time in case
+        # public attributes are changed after instantiation.
+        if draw_labels:
+            self._assert_can_draw_ticks()
 
         #: The number of interpolation points which are used to draw the
         #: gridlines.
@@ -309,19 +316,14 @@ class Gridliner(object):
 
         x_ticks = self.xlocator.tick_values(x_lim[0], x_lim[1])
         y_ticks = self.ylocator.tick_values(y_lim[0], y_lim[1])
+        x_ticks = x_ticks[(x_ticks >= x_lim[0]) & (x_ticks <= x_lim[1])]
+        y_ticks = y_ticks[(y_ticks >= y_lim[0]) & (y_ticks <= y_lim[1])]
 
         #####################
         # Gridlines drawing #
         #####################
 
-        # XXX this bit is cartopy specific. (for circular longitudes)
-        # Purpose: omit plotting the last x line, as it may overlap the first.
-        x_gridline_points = x_ticks[:]
         crs = self.crs
-        if (isinstance(crs, Projection) and
-                isinstance(crs, _RectangularProjection) and
-                abs(np.diff(x_lim)) == abs(np.diff(crs.x_limits))):
-            x_gridline_points = x_gridline_points[:-1]
 
         collection_kwargs = self.collection_kwargs
         if collection_kwargs is None:
@@ -335,13 +337,20 @@ class Gridliner(object):
 
         # Longitude lines
         lon_lines = []
-        for x in x_gridline_points:
+        for x in x_ticks:
             ticks = list(zip(
                 np.zeros(n_steps) + x,
-                np.linspace(min(y_ticks), max(y_ticks), n_steps)))
+                np.linspace(min(y_lim), max(y_lim), n_steps)))
             lon_lines.append(ticks)
 
         if self.xlines:
+            nx = len(lon_lines) + 1
+            # XXX this bit is cartopy specific. (for circular longitudes)
+            # Purpose: omit plotting the last x line, as it may overlap the first.
+            if (isinstance(crs, Projection) and
+                    isinstance(crs, _RectangularProjection) and
+                    abs(np.diff(x_lim)) == abs(np.diff(crs.x_limits))):
+                nx -= 1
             x_lc = mcollections.LineCollection(lon_lines, **collection_kwargs)
             self.xline_artists.append(x_lc)
             self.axes.add_collection(x_lc, autolim=False)
@@ -350,7 +359,7 @@ class Gridliner(object):
         lat_lines = []
         for y in y_ticks:
             ticks = list(zip(
-                np.linspace(min(x_ticks), max(x_ticks), n_steps),
+                np.linspace(min(x_lim), max(x_lim), n_steps),
                 np.zeros(n_steps) + y))
             lat_lines.append(ticks)
         if self.ylines:
@@ -369,6 +378,7 @@ class Gridliner(object):
         if not (self.ylabels_left or self.ylabels_right or
                 self.xlabels_bottom or self.xlabels_top):
             return
+        self._assert_can_draw_ticks()
 
         # Get the real map boundaries
         x0, x1 = self.axes.get_xlim()
@@ -401,17 +411,19 @@ class Gridliner(object):
 
                     lsb = lsb.boundary
                     for point in lsb:
-                        x = point.x
-                        y = point.y
+                        x = round(point.x, 5)
+                        y = round(point.y, 5)
                         text = formatter(tick_value)
-                        if x == x0:
-                            loc, axis, edge = y, 'y', 'left'
-                        elif x == x1:
-                            loc, axis, edge = y, 'y', 'right'
-                        elif y == y0:
-                            loc, axis, edge = x, 'x', 'bottom'
-                        elif y == y1:
-                            loc, axis, edge = x, 'x', 'top'
+                        checks = [(x, round(x0, 5), y, 'y', 'left'),
+                                  (x, round(x1, 5), y, 'y', 'right'),
+                                  (y, round(y0, 5), x, 'x', 'bottom'),
+                                  (y, round(y1, 5), x, 'x', 'top')]
+                        if lonlat == 'lon':
+                            checks = checks[2:] + checks[:2]
+                        for xy, xy01, loc, axis, edge in checks:
+                            if xy == xy01:
+                                print(tick_value, xy, loc, axis, edge)
+                                break
                         else:
                             continue
 
@@ -436,12 +448,6 @@ class Gridliner(object):
             raise TypeError('Cannot label {crs.__class__.__name__} gridlines.'
                             ' Only PlateCarree gridlines are currently '
                             'supported.'.format(crs=self.crs))
-        if not isinstance(self.axes.projection,
-                          (cartopy.crs.PlateCarree, cartopy.crs.Mercator)):
-            raise TypeError('Cannot label gridlines on a '
-                            '{prj.__class__.__name__} plot.  Only PlateCarree'
-                            ' and Mercator plots are currently '
-                            'supported.'.format(prj=self.axes.projection))
         return True
 
     def _axes_domain(self, nx=None, ny=None, background_patch=None):

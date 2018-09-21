@@ -118,7 +118,6 @@ def test_grid_labels():
 
     crs_pc = ccrs.PlateCarree()
     crs_merc = ccrs.Mercator()
-    crs_osgb = ccrs.OSGB()
 
     ax = plt.subplot(3, 2, 1, projection=crs_pc)
     ax.coastlines()
@@ -142,13 +141,6 @@ def test_grid_labels():
     ax.coastlines()
     ax.gridlines(draw_labels=True)
 
-    # Check that labelling the gridlines on an OSGB plot gives an error.
-    # (Currently can only draw these on PlateCarree or Mercator plots.)
-    ax = plt.subplot(3, 2, 4, projection=crs_osgb)
-    ax.coastlines()
-    with pytest.raises(TypeError):
-        ax.gridlines(draw_labels=True)
-
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
     ax.coastlines()
     gl = ax.gridlines(
@@ -168,9 +160,10 @@ def test_grid_labels():
     # populated on the gridliner instance
     FigureCanvasAgg(plt.gcf()).draw()
 
-    assert len(gl.xlabel_artists) == 4
-    assert len(gl.ylabel_artists) == 5
-    assert len(gl.ylabel_artists) == 5
+    assert len(gl.xlabel_bottom_artists) == 4
+    assert len(gl.xlabel_top_artists) == 0
+    assert len(gl.ylabel_left_artists) == 0
+    assert len(gl.ylabel_right_artists) != 0
     assert len(gl.xline_artists) == 0
 
     ax = plt.subplot(3, 2, 5, projection=crs_pc)
