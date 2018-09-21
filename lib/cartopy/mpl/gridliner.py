@@ -346,7 +346,8 @@ class Gridliner(object):
         if self.xlines:
             nx = len(lon_lines) + 1
             # XXX this bit is cartopy specific. (for circular longitudes)
-            # Purpose: omit plotting the last x line, as it may overlap the first.
+            # Purpose: omit plotting the last x line,
+            # as it may overlap the first.
             if (isinstance(crs, Projection) and
                     isinstance(crs, _RectangularProjection) and
                     abs(np.diff(x_lim)) == abs(np.diff(crs.x_limits))):
