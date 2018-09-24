@@ -48,7 +48,7 @@ LICENSE_TEMPLATE = """
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.""".strip()
 
 
-LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE).replace('\{YEARS\}', '(.*?)')
+LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE).replace(r'\{YEARS\}', '(.*?)')
 # Add shebang possibility or C comment starter to the LICENSE_RE_PATTERN
 LICENSE_RE_PATTERN = r'((\#\!.*|\/\*)\n)?' + LICENSE_RE_PATTERN
 LICENSE_RE = re.compile(LICENSE_RE_PATTERN, re.MULTILINE)
@@ -107,12 +107,13 @@ class TestLicenseHeaders(object):
 
         # Call "git whatchanged" to get the details of all the files and when
         # they were last changed.
-        output = subprocess.check_output(['git', 'ls-tree', '-r',
+        output = subprocess.check_output(['git', 'ls-tree', '-z', '-r',
                                           '--name-only', 'HEAD'],
                                          cwd=REPO_DIR)
-        output = output.decode().split('\n')
+        output = output.rstrip(b'\0').split(b'\0')
         res = {}
         for fname in output:
+            fname = fname.decode()
             dt = subprocess.check_output(['git', 'log', '-1', '--pretty=%ct',
                                           '--', fname],
                                          cwd=REPO_DIR)
