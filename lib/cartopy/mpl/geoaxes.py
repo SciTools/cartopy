@@ -1460,7 +1460,8 @@ class GeoAxes(matplotlib.axes.Axes):
         import matplotlib.colors as mcolors
         import matplotlib.collections as mcoll
 
-        if not self._hold:
+        # Remove this check when only MPL >= 3.0 is supported.
+        if not getattr(self, '_hold', True):
             self.cla()
 
         alpha = kwargs.pop('alpha', None)
