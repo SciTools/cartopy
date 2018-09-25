@@ -8,6 +8,7 @@ env:
           PACKAGES="numpy=1.10.0 matplotlib=1.5.1 nose scipy=0.16.0 libgfortran=1 mock"
         - PYTHON_VERSION=3.5
           PACKAGES="numpy=1.10.0 matplotlib=1.5.1 nose scipy=0.16.0 libgfortran=1"
+          PYTHONHASHSEED=0  # So pytest-xdist works.
         # New FreeType causes changes in text output.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
