@@ -7,11 +7,11 @@ What's New in cartopy 0.17
 Features
 --------
 * The :class:`cartopy.feature.NaturalEarthFeature` class now allows a
-:class:`cartopy.feature.AdaptiveScaler` object to be passed as the `scale`
-argument. This will automatically choose the appropriate feature scale from
-the GeoAxes extent. This can also be used interactively while panning and
-zooming in a figure. :data:`cartopy.feature.NaturalEarthFeature.scale` is
-now read-only. (:pull:`1102`, :pull:`983`)
+  :class:`cartopy.feature.AdaptiveScaler` object to be passed as the `scale`
+  argument. This will automatically choose the appropriate feature scale from
+  the GeoAxes extent. This can also be used interactively while panning and
+  zooming in a figure. :data:`cartopy.feature.NaturalEarthFeature.scale` is
+  now read-only. (:pull:`1102`, :pull:`983`)
 
 --------
 
