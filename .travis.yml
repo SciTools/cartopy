@@ -5,17 +5,17 @@ env:
         # These ancient versions are linked to an old libgfortran, but that version
         # isn't pinned in the package metadata
         - PYTHON_VERSION=2.7
-          PACKAGES="numpy=1.10.0 matplotlib=1.5.1 nose scipy=0.16.0 libgfortran=1 mock"
+          PACKAGES="numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock"
         - PYTHON_VERSION=3.5
-          PACKAGES="numpy=1.10.0 matplotlib=1.5.1 nose scipy=0.16.0 libgfortran=1"
+          PACKAGES="numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
           PYTHONHASHSEED=0  # So pytest-xdist works.
         # New FreeType causes changes in text output.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
-          PACKAGES="numpy matplotlib freetype<2.8 scipy"
+          PACKAGES="numpy matplotlib freetype<2.8 proj4 scipy"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
-          PACKAGES="numpy matplotlib freetype<2.8 scipy mock"
+          PACKAGES="numpy matplotlib freetype<2.8 proj4 scipy mock"
 
 
 sudo: false
@@ -46,7 +46,7 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - conda config --add channels conda-forge
-  - PACKAGES="$PACKAGES cython pillow pytest pytest-xdist filelock pep8 proj4=4.* pyshp shapely six requests pyepsg owslib"
+  - PACKAGES="$PACKAGES cython pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
   - conda install --quiet $PACKAGES
 
   # Conda debug
