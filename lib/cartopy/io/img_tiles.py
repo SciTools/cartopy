@@ -59,8 +59,8 @@ class GoogleTiles(object):
             'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
         url: optional
             URL pointing to a tile source and containing {x}, {y}, and {z}.
-            Such as: ('https://server.arcgisonline.com/ArcGIS/rest/services/'
-            'World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg')
+            Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/\
+World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
         """
         # Only streets are partly transparent tiles that can be overlayed over
