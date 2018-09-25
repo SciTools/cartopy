@@ -969,6 +969,8 @@ class Mercator(Projection):
         scale_factor: optional
             Scale factor at natural origin. Defaults to unused.
 
+        Notes
+        -----
         Only one of ``latitude_true_scale`` and ``scale_factor`` should
         be included.
         """
