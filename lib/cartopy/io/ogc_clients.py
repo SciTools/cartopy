@@ -122,7 +122,8 @@ def _warped_located_image(image, source_projection, source_extent,
                                  source_proj=source_projection,
                                  source_extent=source_extent,
                                  target_proj=output_projection,
-                                 target_res=target_resolution,
+                                 target_res=np.asarray(target_resolution,
+                                                       dtype=int),
                                  target_extent=output_extent,
                                  mask_extrapolated=True)
 

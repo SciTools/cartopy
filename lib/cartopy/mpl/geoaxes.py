@@ -1052,9 +1052,9 @@ class GeoAxes(matplotlib.axes.Axes):
             x_range, y_range = np.diff(target_extent)[::2]
             desired_aspect = x_range / y_range
             if x_range >= y_range:
-                regrid_shape = (target_size * desired_aspect, target_size)
+                regrid_shape = (int(target_size * desired_aspect), target_size)
             else:
-                regrid_shape = (target_size, target_size / desired_aspect)
+                regrid_shape = (target_size, int(target_size / desired_aspect))
         return regrid_shape
 
     def imshow(self, img, *args, **kwargs):
