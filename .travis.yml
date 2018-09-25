@@ -38,7 +38,6 @@ install:
   # Create the basic testing environment
   # ------------------------------------
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
-  - conda update conda
   - ENV_NAME="test-environment"
   - conda create -n $ENV_NAME python=$PYTHON_VERSION
   - source activate $ENV_NAME
