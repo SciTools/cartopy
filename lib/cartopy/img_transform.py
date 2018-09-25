@@ -42,9 +42,9 @@ def mesh_projection(projection, nx, ny,
     ----------
     projection
         A :class:`~cartopy.crs.Projection` instance.
-    nx
+    nx: int
         The number of sample points in the projection x-direction.
-    ny
+    ny: int
         The number of sample points in the projection y-direction.
     x_extents: optional
         The (lower, upper) x-direction extent of the projection.
