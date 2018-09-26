@@ -32,10 +32,16 @@ from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
-if MPL_VERSION >= '2.1.0':
-    _STREAMPLOT_IMAGE = 'streamplot'
+_STREAMPLOT_STYLE = 'classic'
+if MPL_VERSION >= '3.0.0':
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
+    # Should have been the case for anything but _1.4.3, but we don't want to
+    # regenerate those images again.
+    _STREAMPLOT_STYLE = 'mpl20'
+elif MPL_VERSION >= '2.1.0':
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_2.1.0'
 elif MPL_VERSION >= '2':
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_2'
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_2.0.0'
 else:
     _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
 
@@ -601,7 +607,7 @@ def test_barbs_1d_transformed():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_STREAMPLOT_IMAGE])
+@ImageTesting([_STREAMPLOT_IMAGE], style=_STREAMPLOT_STYLE)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
