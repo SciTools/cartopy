@@ -25,6 +25,7 @@ import glob
 import shutil
 import warnings
 
+import filelock
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -156,9 +157,9 @@ class ImageTesting(object):
             if not os.path.isdir(os.path.dirname(result_path)):
                 os.makedirs(os.path.dirname(result_path))
 
-            self.save_figure(figure, result_path)
-
-            self.do_compare(result_path, expected_path, self.tolerance)
+            with filelock.FileLock(result_path + '.lock').acquire():
+                self.save_figure(figure, result_path)
+                self.do_compare(result_path, expected_path, self.tolerance)
 
     def save_figure(self, figure, result_fname):
         """
