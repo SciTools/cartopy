@@ -94,10 +94,11 @@ class ImageTesting(object):
             image_output_directory = os.path.join(os.getcwd(),
                                                   'cartopy_test_output')
 
-    def __init__(self, img_names, tolerance=0.5):
+    def __init__(self, img_names, tolerance=0.5, style='classic'):
         # With matplotlib v1.3 the tolerance keyword is an RMS of the pixel
         # differences, as computed by matplotlib.testing.compare.calculate_rms
         self.img_names = img_names
+        self.style = style
         self.tolerance = tolerance
 
     def expected_path(self, test_name, img_name, ext='.png'):
@@ -224,7 +225,7 @@ class ImageTesting(object):
                 def style_context(style, after_reset=False):
                     yield
 
-            with style_context('classic'):
+            with style_context(self.style):
                 r = test_func(*args, **kwargs)
 
                 fig_managers = pyplot_helpers.Gcf._activeQue
