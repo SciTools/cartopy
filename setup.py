@@ -45,6 +45,7 @@ setuptools.dist.Distribution(
 
 try:
     from Cython.Distutils import build_ext
+    from Cython.Build import cythonize
 except ImportError:
     raise ImportError('Cython 0.15.1+ is required to install cartopy.')
 try:
@@ -329,15 +330,50 @@ else:
     extra_extension_args = dict(
         runtime_library_dirs=[get_config_var('LIBDIR')])
 
-# Description
-# ===========
+# Enable cython coverage
+cython_coverage_enabled = os.environ.get('CYTHON_COVERAGE', None)
+if cython_coverage_enabled:
+    extra_cython_args = {'define_macros': [('CYTHON_TRACE_NOGIL', '1')]}
+    extra_extension_args.update(extra_cython_args)
 
-with open(os.path.join(HERE, 'README.md'), 'r') as fh:
-    description = ''.join(fh.readlines())
-
-
+# Set up extension building
 cmdclass = versioneer.get_cmdclass()
 cmdclass.update({'build_ext': build_ext})
+extensions = [
+        Extension(
+            'cartopy.trace',
+            ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
+            include_dirs=[include_dir,
+                          './lib/cartopy'] + proj_includes + geos_includes,
+            libraries=proj_libraries + geos_libraries,
+            library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
+            language='c++',
+            **extra_extension_args
+        ),
+        Extension(
+            'cartopy._crs',
+            ['lib/cartopy/_crs.pyx'],
+            include_dirs=[include_dir, np.get_include()] + proj_includes,
+            libraries=proj_libraries,
+            library_dirs=[library_dir] + proj_library_dirs,
+            **extra_extension_args
+        ),
+        # Requires proj4 v4.9
+        Extension(
+            'cartopy.geodesic._geodesic',
+            ['lib/cartopy/geodesic/_geodesic.pyx'],
+            include_dirs=[include_dir, np.get_include()] + proj_includes,
+            libraries=proj_libraries,
+            library_dirs=[library_dir] + proj_library_dirs,
+            **extra_extension_args
+        ),
+    ]
+
+
+# Description
+# ===========
+with open(os.path.join(HERE, 'README.md'), 'r') as fh:
+    description = ''.join(fh.readlines())
 
 
 # Main setup
@@ -377,37 +413,8 @@ setup(
                   ['io/srtm.npz']},
 
 
-    # requires proj4 headers
-    ext_modules=[
-        Extension(
-            'cartopy.trace',
-            ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
-            include_dirs=[include_dir,
-                          './lib/cartopy'] + proj_includes + geos_includes,
-            libraries=proj_libraries + geos_libraries,
-            library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
-            language='c++',
-            **extra_extension_args
-        ),
-        Extension(
-            'cartopy._crs',
-            ['lib/cartopy/_crs.pyx'],
-            include_dirs=[include_dir, np.get_include()] + proj_includes,
-            libraries=proj_libraries,
-            library_dirs=[library_dir] + proj_library_dirs,
-            **extra_extension_args
-        ),
-        # Requires proj4 v4.9
-        Extension(
-            'cartopy.geodesic._geodesic',
-            ['lib/cartopy/geodesic/_geodesic.pyx'],
-            include_dirs=[include_dir, np.get_include()] + proj_includes,
-            libraries=proj_libraries,
-            library_dirs=[library_dir] + proj_library_dirs,
-            **extra_extension_args
-        ),
-    ],
-
+    ext_modules=cythonize(extensions, compiler_directives={'linetrace': True,
+                                                           'binding': True}),
     cmdclass=cmdclass,
     classifiers=[
             'Development Status :: 4 - Beta',
