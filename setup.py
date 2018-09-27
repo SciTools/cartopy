@@ -36,13 +36,6 @@ import warnings
 import versioneer
 
 
-# Ensure build-time dependencies are available.
-# See https://stackoverflow.com/a/12061891
-setuptools.dist.Distribution(
-    dict(
-        setup_requires=['Cython>=0.15.1', 'numpy>=1.10']))
-
-
 try:
     from Cython.Distutils import build_ext
 except ImportError:
