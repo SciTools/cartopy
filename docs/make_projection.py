@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -16,28 +16,66 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
-
 import os
-
+import inspect
+import textwrap
 import numpy as np
-
 import cartopy.crs as ccrs
 
-
-SPECIAL_CASES = {
-    ccrs.PlateCarree: [{}, {'central_longitude': 180}],
-    ccrs.RotatedPole: [{'pole_longitude': 177.5, 'pole_latitude': 37.5}],
-    ccrs.UTM: [{'zone': 30}],
-    ccrs.AzimuthalEquidistant: [{'central_latitude': 90}],
-    ccrs.NearsidePerspective: [{
+#: A dictionary to allow examples to use non-default parameters to the CRS
+#: constructor.
+SPECIFIC_PROJECTION_KWARGS = {
+    ccrs.RotatedPole: {'pole_longitude': 177.5, 'pole_latitude': 37.5},
+    ccrs.AzimuthalEquidistant: {'central_latitude': 90},
+    ccrs.NearsidePerspective: {
         'central_longitude': -3.53, 'central_latitude': 50.72,
-        'satellite_height': 10.0e6}],
+        'satellite_height': 10.0e6},
+}
+
+
+def plate_carree_plot():
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    nplots = 2
+
+    fig = plt.figure(figsize=(6, 6))
+
+    for i in range(0, nplots):
+        central_longitude = 0 if i == 0 else 180
+        ax = fig.add_subplot(nplots, 1, i+1,
+                             projection=ccrs.PlateCarree(
+                                        central_longitude=central_longitude))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
+
+
+def utm_plot():
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    nplots = 60
+
+    fig = plt.figure(figsize=(10, 3))
+
+    for i in range(0, nplots):
+        ax = fig.add_subplot(1, nplots, i+1,
+                             projection=ccrs.UTM(zone=i+1,
+                                                 southern_hemisphere=True))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
+
+
+MULTI_PLOT_CASES = {
+    ccrs.PlateCarree: plate_carree_plot,
+    ccrs.UTM: utm_plot,
 }
 
 
 COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
                         ccrs.OSGB: '50m',
                         ccrs.EuroPP: '50m'}
+
 
 PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Mercator': 2, 'Mollweide': 2, 'Robinson': 2,
@@ -58,6 +96,25 @@ def find_projections():
             yield o
 
 
+def create_instance(prj_cls, instance_args):
+    name = prj_cls.__name__
+
+    # Format instance arguments into strings
+    instance_params = ',\n                            '.join(
+        '{}={}'.format(k, v)
+        for k, v in sorted(instance_args.items()))
+
+    if instance_params:
+        instance_params = '\n                            ' \
+                          + instance_params
+
+    instance_creation_code = '{}({})'.format(name, instance_params)
+
+    prj_inst = prj(**instance_args)
+
+    return prj_inst, instance_creation_code
+
+
 if __name__ == '__main__':
     fname = os.path.join(os.path.dirname(__file__), 'source',
                          'crs', 'projections.rst')
@@ -75,8 +132,7 @@ if __name__ == '__main__':
         =======================
 
         """
-    for line in notes.split('\n'):
-        table.write(line.strip() + '\n')
+    table.write(textwrap.dedent(notes))
 
     def prj_class_sorter(cls):
         return (PRJ_SORT_ORDER.get(cls.__name__, 100),
@@ -90,31 +146,47 @@ if __name__ == '__main__':
 
         table.write('.. autoclass:: cartopy.crs.%s\n' % name)
 
-        for instance_args in SPECIAL_CASES.get(prj, [{}]):
-            prj_inst = prj(**instance_args)
+        if prj not in MULTI_PLOT_CASES:
+            # Get instance arguments and number of plots
+            instance_args = SPECIFIC_PROJECTION_KWARGS.get(prj, {})
+
+            prj_inst, instance_repr = create_instance(prj, instance_args)
+
             aspect = (np.diff(prj_inst.x_limits) /
                       np.diff(prj_inst.y_limits))[0]
+
             width = 3 * aspect
             width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
 
-            instance_params = ',\n        '.join(
-                '{}={}'.format(k, v)
-                for k, v in sorted(instance_args.items()))
-            if instance_params:
-                instance_params = '\n        ' + instance_params
-            instance_creation_code = '{}({})'.format(name, instance_params)
-            code = """
-.. plot::
+            # Generate plotting code
+            code = textwrap.dedent("""
+            .. plot::
 
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
+                import matplotlib.pyplot as plt
+                import cartopy.crs as ccrs
 
-    plt.figure(figsize=({width}, 3))
-    ax = plt.axes(projection=ccrs.{proj_constructor})
-    ax.coastlines(resolution={coastline_resolution!r})
-    ax.gridlines()
+                plt.figure(figsize=({width}, 3))
+                ax = plt.axes(projection=ccrs.{proj_constructor})
+                ax.coastlines(resolution={coastline_resolution!r})
+                ax.gridlines()
 
-\n""".format(width=width, proj_constructor=instance_creation_code,
-             coastline_resolution=COASTLINE_RESOLUTION.get(prj, '110m'))
 
-            table.write(code)
+            """).format(width=width,
+                        proj_constructor=instance_repr,
+                        coastline_resolution=COASTLINE_RESOLUTION.get(prj,
+                                                                      '110m'))
+
+        else:
+            func = MULTI_PLOT_CASES[prj]
+
+            lines = inspect.getsourcelines(func)
+            func_code = "".join(lines[0][1:])
+
+            code = textwrap.dedent("""
+            .. plot::
+
+            {func_code}
+
+            """).format(func_code=func_code)
+
+        table.write(code)
