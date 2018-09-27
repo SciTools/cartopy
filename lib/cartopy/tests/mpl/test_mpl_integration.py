@@ -148,7 +148,8 @@ def test_simple_global():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections1'])
+@ImageTesting(['multiple_projections1' if ccrs.PROJ4_VERSION < (5, 0, 0)
+               else 'multiple_projections5'])
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
@@ -170,9 +171,17 @@ def test_multiple_projections():
                    ccrs.InterruptedGoodeHomolosine(),
                    ]
 
-    fig = plt.figure(figsize=(10, 10))
+    if ccrs.PROJ4_VERSION < (5, 0, 0):
+        # Produce the same sized image for old proj4, to avoid having to
+        # replace the image. If this figure is regenerated for both old and new
+        # proj4, then drop this condition.
+        rows = 5
+    else:
+        rows = np.ceil(len(projections) / 5)
+
+    fig = plt.figure(figsize=(10, 2 * rows))
     for i, prj in enumerate(projections, 1):
-        ax = fig.add_subplot(5, 5, i, projection=prj)
+        ax = fig.add_subplot(rows, 5, i, projection=prj)
 
         ax.set_global()
 
