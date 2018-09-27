@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -97,8 +97,9 @@ class TestOSNI(object):
     def test_default(self):
         proj = ccrs.OSNI()
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (275614.87105610,
-                                                   386984.15347340))
+        np.testing.assert_array_almost_equal(
+            res, (275614.26762651594, 386984.206429612),
+            decimal=0 if ccrs.PROJ4_VERSION < (5, 0, 0) else 6)
 
     def test_nan(self):
         proj = ccrs.OSNI()
