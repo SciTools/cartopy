@@ -60,7 +60,7 @@ Copyright note
 Since basemap data is taken from external sources, it is advised to cite and credit the data provider accordingly.
 
 Some data providers request or at least recommend to include a corresponding note along with the map.
-Depending on the policy, this may either be only the data source and licese or terms of use.
+Depending on the policy, this may either be only the data source and license or terms of use.
 
 The corresponding information for the data providers included in cartopy is listed in the :ref:`data_copyright_table`:
 

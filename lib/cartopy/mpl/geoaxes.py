@@ -621,7 +621,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 raise ValueError('Cannot determine extent in'
                                  ' coordinate system {!r}'.format(crs))
 
-        # Calculate intersection with boundary and project if necesary.
+        # Calculate intersection with boundary and project if necessary.
         boundary_poly = sgeom.Polygon(self.projection.boundary)
         if proj != self.projection:
             # Erode boundary by threshold to avoid transform issues.
@@ -1412,7 +1412,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
 
-        # exclude Geodetic as a vaild source CS
+        # exclude Geodetic as a valid source CS
         if (isinstance(kwargs.get('transform', None),
                        InterProjectionTransform) and
                 kwargs['transform'].source_projection.is_geodetic()):

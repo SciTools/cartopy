@@ -88,9 +88,9 @@ class Globe(object):
         Parameters
         ----------
         datum
-            Proj4 "datum" definiton. Defaults to None.
+            Proj4 "datum" definition. Defaults to None.
         ellipse
-            Proj4 "ellps" definiton. Defaults to 'WGS84'.
+            Proj4 "ellps" definition. Defaults to 'WGS84'.
         semimajor_axis
             Semimajor axis of the spheroid / ellipsoid.  Defaults to None.
         semiminor_axis
