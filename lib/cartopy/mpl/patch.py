@@ -29,7 +29,6 @@ and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-import matplotlib.path
 from matplotlib.path import Path
 import shapely.geometry as sgeom
 
