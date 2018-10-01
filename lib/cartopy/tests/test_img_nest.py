@@ -304,7 +304,7 @@ def wmts_data():
     """
     aerial = cimgt.MapQuestOpenAerial()
 
-    # get web tiles upto 3 zoom levels deep
+    # get web tiles up to 3 zoom levels deep
     tiles = [(0, 0, 0)]
     for tile in aerial.subtiles((0, 0, 0)):
         tiles.append(tile)

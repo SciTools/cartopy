@@ -63,7 +63,7 @@ class GoogleTiles(object):
 World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
         """
-        # Only streets are partly transparent tiles that can be overlayed over
+        # Only streets are partly transparent tiles that can be overlaid over
         # the satellite map to create the known hybrid style from google.
         styles = ["street", "satellite", "terrain", "only_streets"]
         style = style.lower()
@@ -297,8 +297,8 @@ class MapboxTiles(GoogleTiles):
         access_token
             A valid Mapbox API access token.
         map_id
-            A map ID for a publically accessible map. This is the
-            map whose tiles will be retrieved through this process.
+            A map ID for a publicly accessible map. This is the map whose
+            tiles will be retrieved through this process.
 
         """
         self.access_token = access_token
