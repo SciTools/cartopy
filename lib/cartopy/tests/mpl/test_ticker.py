@@ -23,10 +23,15 @@ except ImportError:
     from mock import Mock
 from matplotlib.axes import Axes
 import pytest
+import numpy as np
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
+from cartopy.mpl.ticker import (LatitudeFormatter, LongitudeFormatter,
+                                LatitudeLocator, LongitudeLocator)
+
+ONE_MIN = 1 / 60.
+ONE_SEC = 1 / 3600.
 
 
 def test_LatitudeFormatter_bad_axes():
@@ -84,7 +89,7 @@ def test_LatitudeFormatter_degree_symbol():
 
 
 def test_LatitudeFormatter_number_format():
-    formatter = LatitudeFormatter(number_format='.2f')
+    formatter = LatitudeFormatter(number_format='.2f', decimal=True)
     p = ccrs.PlateCarree()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
@@ -109,7 +114,7 @@ def test_LatitudeFormatter_mercator():
 
 
 def test_LatitudeFormatter_small_numbers():
-    formatter = LatitudeFormatter(number_format='.7f')
+    formatter = LatitudeFormatter(number_format='.7f', decimal=True)
     p = ccrs.PlateCarree()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [40.1275150, 40.1275152, 40.1275154]
@@ -127,6 +132,8 @@ def test_LongitudeFormatter_central_longitude_0():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'180\u00B0W', u'120\u00B0W', u'60\u00B0W', u'0\u00B0',
                 u'60\u00B0E', u'120\u00B0E', u'180\u00B0E']
+    print(result)
+    print(expected)
     assert result == expected
 
 
@@ -164,7 +171,7 @@ def test_LongitudeFormatter_degree_symbol():
 
 
 def test_LongitudeFormatter_number_format():
-    formatter = LongitudeFormatter(number_format='.2f',
+    formatter = LongitudeFormatter(number_format='.2f', decimal=True,
                                    dateline_direction_label=True)
     p = ccrs.PlateCarree()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
@@ -190,7 +197,7 @@ def test_LongitudeFormatter_mercator():
 
 
 def test_LongitudeFormatter_small_numbers_0():
-    formatter = LongitudeFormatter(number_format='.7f')
+    formatter = LongitudeFormatter(number_format='.7f', decimal=True)
     p = ccrs.PlateCarree(central_longitude=0)
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-17.1142343, -17.1142340, -17.1142337]
@@ -201,7 +208,7 @@ def test_LongitudeFormatter_small_numbers_0():
 
 
 def test_LongitudeFormatter_small_numbers_180():
-    formatter = LongitudeFormatter(zero_direction_label=True,
+    formatter = LongitudeFormatter(zero_direction_label=True, decimal=True,
                                    number_format='.7f')
     p = ccrs.PlateCarree(central_longitude=180)
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
@@ -210,3 +217,61 @@ def test_LongitudeFormatter_small_numbers_180():
     expected = [u'162.8857657\u00B0E', u'162.8857660\u00B0E',
                 u'162.8857663\u00B0E']
     assert result == expected
+
+
+@pytest.mark.parametrize("test_ticks,expected",
+                         [pytest.param([-3.75, -3.5],
+                                       [u"3\u00B0W45'", u"3\u00B0W30'"],
+                                       id='minutes_no_hide'),
+                          pytest.param([-3.5, -3.],
+                                       [u"30'", u"3\u00B0W"],
+                                       id='minutes_hide'),
+                          pytest.param([-3. - 2 * ONE_MIN - 30 * ONE_SEC],
+                                       [u"3\u00B0W2'30''"],
+                                       id='seconds'),
+                          ])
+def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
+    formatter = LongitudeFormatter(decimal=False, auto_hide=True)
+    formatter.set_locs(test_ticks)
+    result = [formatter(tick) for tick in test_ticks]
+    assert result == expected
+
+
+@pytest.mark.parametrize("test_ticks,expected",
+                         [pytest.param([-3.75, -3.5],
+                                       [u"3\u00B0S45'", u"3\u00B0S30'"],
+                                       id='minutes_no_hide'),
+                          ])
+def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
+    formatter = LatitudeFormatter(decimal=False, auto_hide=True)
+    formatter.set_locs(test_ticks)
+    result = [formatter(tick) for tick in test_ticks]
+    assert result == expected
+
+
+@pytest.mark.parametrize("cls,vmin,vmax,expected",
+                         [pytest.param(LongitudeLocator, -180, 180,
+                                       [-180., -120., -60., 0.,
+                                        60., 120., 180.],
+                                       id='lon_large'),
+                          pytest.param(LatitudeLocator, -180, 180,
+                                       [-90.0, -60.0, -30.0, 0.0,
+                                        30.0, 60.0, 90.0],
+                                       id='lat_large'),
+                          pytest.param(LongitudeLocator, -10, 0,
+                                       [-10.5, -9., -7.5, -6., -4.5,
+                                        -3., -1.5, 0.],
+                                       id='lon_medium'),
+                          pytest.param(LongitudeLocator, -1, 0,
+                                       np.array([-60., -50., -40., -30.,
+                                                 -20., -10.,   0.]) / 60,
+                                       id='lon_small'),
+                          pytest.param(LongitudeLocator, 0, 2 * ONE_MIN,
+                                       np.array([0., 18., 36., 54., 72., 90.,
+                                                 108., 126.]) / 3600,
+                                       id='lon_tiny'),
+                          ])
+def test_LongitudeLocator(cls, vmin, vmax, expected):
+    locator = cls()
+    result = locator.tick_values(vmin, vmax)
+    np.testing.assert_allclose(result, expected)
