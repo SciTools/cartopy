@@ -405,9 +405,14 @@ class LongitudeFormatter(_PlateCarreeFormatter):
     def _fix_lons(cls, lons):
         if isinstance(lons, list):
             return map(cls._fix_lons, lons)
-        if lons == 180:
-            return lons
-        return ((lons + 180) % 360) - 180
+        lons = ((lons + 180) % 360) - 180
+        if isinstance(lons, np.ndarray):
+            valid = lons == -180
+            if valid.any():
+                lons[valid] = 180
+        elif lons == -180:
+            lons = 180
+        return lons
 
     def set_locs(self, locs):
         _PlateCarreeFormatter.set_locs(self, self._fix_lons(locs))
