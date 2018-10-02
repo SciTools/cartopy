@@ -1161,8 +1161,8 @@ class GeoAxes(matplotlib.axes.Axes):
 #            result.set_clip_path(self.outline_patch)
         return result
 
-    def gridlines(self, crs=None, draw_labels=False, xlocs=None,
-                  ylocs=None, **kwargs):
+    def gridlines(self, crs=None, draw_labels=False, mlocs=None,
+                  plocs=None, **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1175,17 +1175,17 @@ class GeoAxes(matplotlib.axes.Axes):
             Defaults to :class:`cartopy.crs.PlateCarree`.
         draw_labels: optional
             Label gridlines like axis ticks, around the edge.
-        xlocs: optional
+        mlocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the gridlines in the
-            x-coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the meridian gridlines in the
+            coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
-        ylocs: optional
+        plocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the gridlines in the
-            y-coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the parallel gridlines in the
+            coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
 
         Returns
@@ -1202,13 +1202,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
-        if xlocs is not None and not isinstance(xlocs, mticker.Locator):
-            xlocs = mticker.FixedLocator(xlocs)
-        if ylocs is not None and not isinstance(ylocs, mticker.Locator):
-            ylocs = mticker.FixedLocator(ylocs)
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
-            ylocator=ylocs, collection_kwargs=kwargs)
+            self, crs=crs, draw_labels=draw_labels, mlocator=mlocs,
+            plocator=plocs, collection_kwargs=kwargs)
         self._gridliners.append(gl)
         return gl
 

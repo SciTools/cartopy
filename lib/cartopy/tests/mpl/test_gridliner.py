@@ -93,14 +93,16 @@ def test_gridliner():
 
 
 def test_gridliner_specified_lines():
-    xs = [0, 60, 120, 180, 240, 360]
-    ys = [-90, -60, -30, 0, 30, 60, 90]
+    ms = [0, 60, 120, 180, 240, 360]
+    ps = [-90, -60, -30, 0, 30, 60, 90]
     ax = mock.Mock(_gridliners=[], spec=GeoAxes)
-    gl = GeoAxes.gridlines(ax, xlocs=xs, ylocs=ys)
-    assert isinstance(gl.xlocator, mticker.FixedLocator)
-    assert isinstance(gl.ylocator, mticker.FixedLocator)
-    assert gl.xlocator.tick_values(None, None).tolist() == xs
-    assert gl.ylocator.tick_values(None, None).tolist() == ys
+    gl = GeoAxes.gridlines(ax, mlocs=ms, plocs=ps)
+    print(gl.mlocator)
+    print(gl.plocator)
+    assert isinstance(gl.mlocator, mticker.FixedLocator)
+    assert isinstance(gl.plocator, mticker.FixedLocator)
+    assert gl.mlocator.tick_values(None, None).tolist() == ms
+    assert gl.plocator.tick_values(None, None).tolist() == ps
 
 
 # The tolerance on this test is particularly high because of the high number
@@ -133,9 +135,9 @@ def test_grid_labels():
 
     ax.set_title('Known bug')
     gl = ax.gridlines(crs=crs_pc, draw_labels=True)
-    gl.xlabels_top = False
-    gl.ylabels_left = False
-    gl.xlines = False
+    gl.top_labels = False
+    gl.left_labels = False
+    gl.mlines = False
 
     ax = plt.subplot(3, 2, 3, projection=crs_merc)
     ax.coastlines()
@@ -145,12 +147,12 @@ def test_grid_labels():
     ax.coastlines()
     gl = ax.gridlines(
         crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle='--')
-    gl.xlabels_bottom = True
-    gl.ylabels_right = True
-    gl.xlines = False
-    gl.xlocator = mticker.FixedLocator([-180, -45, 45, 180])
-    gl.xformatter = LONGITUDE_FORMATTER
-    gl.yformatter = LATITUDE_FORMATTER
+    gl.bottom_labels = True
+    gl.right_labels = True
+    gl.mlines = False
+    gl.mlocator = mticker.FixedLocator([-180, -45, 45, 180])
+    gl.mformatter = LONGITUDE_FORMATTER
+    gl.pformatter = LATITUDE_FORMATTER
     gl.xlabel_style = {'size': 15, 'color': 'gray'}
     gl.xlabel_style = {'color': 'red'}
     gl.xpadding = 10
@@ -160,11 +162,11 @@ def test_grid_labels():
     # populated on the gridliner instance
     FigureCanvasAgg(plt.gcf()).draw()
 
-    assert len(gl.xlabel_bottom_artists) == 4
-    assert len(gl.xlabel_top_artists) == 0
-    assert len(gl.ylabel_left_artists) == 0
-    assert len(gl.ylabel_right_artists) != 0
-    assert len(gl.xline_artists) == 0
+    assert len(gl.bottom_label_artists) == 4
+    assert len(gl.top_label_artists) == 0
+    assert len(gl.left_label_artists) == 0
+    assert len(gl.right_label_artists) != 0
+    assert len(gl.mline_artists) == 0
 
     ax = plt.subplot(3, 2, 5, projection=crs_pc)
     ax.set_extent([-20, 10.0, 45.0, 70.0])
