@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2017, Met Office
+# (C) British Crown Copyright 2015 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,12 +23,18 @@ from numpy.testing import assert_almost_equal, assert_array_almost_equal
 import cartopy.crs as ccrs
 
 
+def check_proj4_params(crs, other_args):
+    expected = other_args | {'proj=aeqd', 'no_defs'}
+    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
+    assert expected == pro4_params
+
+
 class TestAzimuthalEquidistant(object):
     def test_default(self):
         aeqd = ccrs.AzimuthalEquidistant()
-        expected = ('+ellps=WGS84 +proj=aeqd +lon_0=0.0 '
-                    '+lat_0=0.0 +x_0=0.0 +y_0=0.0 +no_defs')
-        assert aeqd.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0'}
+        check_proj4_params(aeqd, other_args)
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20037508.34278924, 20037508.34278924], decimal=6)
@@ -39,9 +45,9 @@ class TestAzimuthalEquidistant(object):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
                            ellipse=None)
         aeqd = ccrs.AzimuthalEquidistant(globe=globe)
-        expected = ('+a=1000 +b=500 +proj=aeqd +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert aeqd.proj4_init == expected
+        other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0',
+                      'x_0=0.0', 'y_0=0.0'}
+        check_proj4_params(aeqd, other_args)
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-3141.59265359, 3141.59265359], decimal=6)
@@ -52,9 +58,9 @@ class TestAzimuthalEquidistant(object):
         aeqd_offset = ccrs.AzimuthalEquidistant(false_easting=1234,
                                                 false_northing=-4321)
 
-        expected = ('+ellps=WGS84 +proj=aeqd +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=1234 +y_0=-4321 +no_defs')
-        assert aeqd_offset.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=1234',
+                      'y_0=-4321'}
+        check_proj4_params(aeqd_offset, other_args)
 
         assert_almost_equal(np.array(aeqd_offset.x_limits),
                             [-20036274.34278924, 20038742.34278924], decimal=6)
@@ -70,9 +76,9 @@ class TestAzimuthalEquidistant(object):
                                          globe=globe)
         geodetic = aeqd.as_geodetic()
 
-        expected = ('+a=1.0 +b=1.0 +proj=aeqd +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert aeqd.proj4_init == expected
+        other_args = {'a=1.0', 'b=1.0', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0'}
+        check_proj4_params(aeqd, other_args)
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-3.14159265, 3.14159265], decimal=6)
@@ -139,9 +145,9 @@ class TestAzimuthalEquidistant(object):
                                          globe=globe)
         geodetic = aeqd.as_geodetic()
 
-        expected = ('+a=3.0 +b=3.0 +proj=aeqd +lon_0=-100.0 +lat_0=40.0 '
-                    '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert aeqd.proj4_init == expected
+        other_args = {'a=3.0', 'b=3.0', 'lon_0=-100.0', 'lat_0=40.0',
+                      'x_0=0.0', 'y_0=0.0'}
+        check_proj4_params(aeqd, other_args)
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-9.42477796, 9.42477796], decimal=6)
@@ -161,9 +167,9 @@ class TestAzimuthalEquidistant(object):
                                          globe=globe)
         geodetic = aeqd.as_geodetic()
 
-        expected = ('+a=6378388.0 +f=0.003367003355798981 +proj=aeqd '
-                    '+lon_0=-100.0 +lat_0=90.0 +x_0=0.0 +y_0=0.0 +no_defs')
-        assert aeqd.proj4_init == expected
+        other_args = {'a=6378388.0', 'f=0.003367003355798981', 'lon_0=-100.0',
+                      'lat_0=90.0', 'x_0=0.0', 'y_0=0.0'}
+        check_proj4_params(aeqd, other_args)
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20038296.88254529, 20038296.88254529], decimal=6)
@@ -190,10 +196,10 @@ class TestAzimuthalEquidistant(object):
                                          globe=globe)
         geodetic = aeqd.as_geodetic()
 
-        expected = ('+a=6378206.4 +f=0.003390076308689371 +proj=aeqd '
-                    '+lon_0=144.7487507055556 +lat_0=13.47246635277778 '
-                    '+x_0=50000.0 +y_0=50000.0 +no_defs')
-        assert aeqd.proj4_init == expected
+        other_args = {'a=6378206.4', 'f=0.003390076308689371',
+                      'lon_0=144.7487507055556', 'lat_0=13.47246635277778',
+                      'x_0=50000.0', 'y_0=50000.0'}
+        check_proj4_params(aeqd, other_args)
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-19987726.36931940, 20087726.36931940], decimal=6)
@@ -224,10 +230,10 @@ class TestAzimuthalEquidistant(object):
                                          globe=globe)
         geodetic = aeqd.as_geodetic()
 
-        expected = ('+a=6378206.4 +f=0.003390076308689371 +proj=aeqd '
-                    '+lon_0=145.7416588888889 +lat_0=15.18491194444444 '
-                    '+x_0=28657.52 +y_0=67199.99000000001 +no_defs')
-        assert aeqd.proj4_init == expected
+        other_args = {'a=6378206.4', 'f=0.003390076308689371',
+                      'lon_0=145.7416588888889', 'lat_0=15.18491194444444',
+                      'x_0=28657.52', 'y_0=67199.99000000001'}
+        check_proj4_params(aeqd, other_args)
 
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20009068.84931940, 20066383.88931940], decimal=6)

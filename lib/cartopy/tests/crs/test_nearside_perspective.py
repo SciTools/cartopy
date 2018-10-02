@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2017, Met Office
+# (C) British Crown Copyright 2016 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -40,11 +40,9 @@ class TestOwnSpecifics(object):
     def test_central_latitude(self):
         # Check the effect of the added 'central_latitude' key.
         geos = NearsidePerspective(central_latitude=53.7)
-        expected = ['+ellps=WGS84', 'h=35785831', 'lat_0=53.7', 'lon_0=0.0',
-                    'no_defs',
-                    'proj=nsper',
-                    'units=m', 'x_0=0', 'y_0=0']
-        check_proj4_params(geos, expected)
+        other_args = {'ellps=WGS84', 'h=35785831', 'lat_0=53.7', 'lon_0=0.0',
+                      'x_0=0', 'y_0=0'}
+        check_proj4_params('nsper', geos, other_args)
 
         assert_almost_equal(geos.boundary.bounds,
                             (-5434177.81588539, -5434177.81588539,
