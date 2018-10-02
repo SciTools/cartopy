@@ -1258,11 +1258,24 @@ class LambertAzimuthalEqualArea(Projection):
 
 
 class Miller(_RectangularProjection):
-    def __init__(self, central_longitude=0.0):
+    def __init__(self, central_longitude=0.0, globe=None):
+        if globe is None:
+            globe = Globe(semimajor_axis=math.degrees(1), ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(globe.semiminor_axis or a)
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj4 "mill" projection does not handle '
+                          'elliptical globes.')
+
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
-        globe = Globe(semimajor_axis=math.degrees(1))
-        # XXX How can we derive the vertical limit of 131.98?
-        super(Miller, self).__init__(proj4_params, 180, 131.98, globe=globe)
+        # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
+        # (lambda-lambda0)=180 and phi=90 to get limits.
+        super(Miller, self).__init__(proj4_params,
+                                     a * np.pi, a * 2.303412543376391,
+                                     globe=globe)
 
     @property
     def threshold(self):
