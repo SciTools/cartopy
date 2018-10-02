@@ -45,7 +45,6 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
-from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
@@ -353,8 +352,8 @@ class GeoAxes(matplotlib.axes.Axes):
             self.autoscale_view()
 
         if self.outline_patch.reclip or self.background_patch.reclip:
-            clipped_path = clip_path(self.outline_patch.orig_path,
-                                     self.viewLim)
+            clipped_path = self.outline_patch.orig_path.clip_to_bbox(
+                self.viewLim)
             self.outline_patch._path = clipped_path
             self.background_patch._path = clipped_path
 

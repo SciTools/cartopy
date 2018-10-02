@@ -13,6 +13,12 @@ Features
   zooming in a figure. :data:`cartopy.feature.NaturalEarthFeature.scale` is
   now read-only. (:pull:`1102`, :pull:`983`)
 
+Deprecations
+------------
+* :func:`cartopy.mpl.clip_path.clip_path` has been deprecated. It is a simple
+  wrapper for Matplotlib's path clipping, so use that instead. You can replace
+  ``clip_path(subject, clip_bbox)`` by ``subject.clip_to_bbox(clip_bbox)``.
+
 --------
 
 
