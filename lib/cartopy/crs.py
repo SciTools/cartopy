@@ -1367,6 +1367,23 @@ class Stereographic(Projection):
                  false_easting=0.0, false_northing=0.0,
                  true_scale_latitude=None,
                  scale_factor=None, globe=None):
+        # Warn when using Stereographic with proj4 < 5.0.0 due to
+        # incorrect transformation with lon_0=0 (see
+        # https://github.com/OSGeo/proj.4/issues/194).
+        if central_latitude == 0:
+            if PROJ4_VERSION != ():
+                if PROJ4_VERSION < (5, 0, 0):
+                    warnings.warn(
+                        'The Stereographic projection in Proj.4 older than '
+                        '5.0.0 incorrectly transforms points when '
+                        'central_latitude=0. Use this projection with '
+                        'caution.')
+            else:
+                warnings.warn(
+                    'Cannot determine Proj.4 version. The Stereographic '
+                    'projection may be unreliable and should be used with '
+                    'caution.')
+
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
