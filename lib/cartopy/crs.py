@@ -994,10 +994,19 @@ class Mercator(Projection):
 
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
+        # In new proj.4, using exact limits will wrap-around, so subtract a
+        # small epsilon:
+        epsilon = 1e-10
+        minlon = -180 + central_longitude
+        maxlon = 180 + central_longitude
+        if central_longitude > 0:
+            maxlon -= epsilon
+        elif central_longitude < 0:
+            minlon += epsilon
+
         # Calculate limits.
         limits = self.transform_points(Geodetic(),
-                                       np.array([-180,
-                                                 180]) + central_longitude,
+                                       np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))
         self._xlimits = tuple(limits[..., 0])
         self._ylimits = tuple(limits[..., 1])
@@ -1483,22 +1492,25 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
 
+        # In new proj.4, using exact limits will wrap-around, so subtract a
+        # small epsilon:
+        epsilon = 1.e-10
+        minlon = -180 + central_longitude
+        maxlon = 180 + central_longitude
+        if central_longitude > 0:
+            maxlon -= epsilon
+        elif central_longitude < 0:
+            minlon += epsilon
+
         # Obtain boundary points
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
         for lat in np.linspace(-90, 90, n):
-            points.append(
-                self.transform_point(180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
+            points.append(self.transform_point(maxlon, lat, geodetic_crs))
         for lat in np.linspace(90, -90, n):
-            points.append(
-                self.transform_point(-180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
-        points.append(
-            self.transform_point(180 + central_longitude, -90, geodetic_crs))
+            points.append(self.transform_point(minlon, lat, geodetic_crs))
+        points.append(self.transform_point(maxlon, -90, geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
 

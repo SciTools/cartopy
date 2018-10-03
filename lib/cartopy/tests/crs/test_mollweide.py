@@ -65,7 +65,8 @@ def test_central_longitude(lon):
     check_proj4_params(moll, other_args)
 
     assert_almost_equal(np.array(moll.x_limits),
-                        [-18040095.6961473, 18040095.6961473])
+                        [-18040095.6961473, 18040095.6961473],
+                        decimal=5)
     assert_almost_equal(np.array(moll.y_limits),
                         [-9020047.8480736, 9020047.8480736])
 
