@@ -264,7 +264,9 @@ def test_pcolormesh_global_with_wrap1():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap2'])
+@ImageTesting(
+    ['pcolormesh_global_wrap2'],
+    tolerance=1.8 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0) else 0.5)
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -291,7 +293,9 @@ def test_pcolormesh_global_with_wrap2():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap3'], tolerance=_ROB_TOL)
+@ImageTesting(
+    ['pcolormesh_global_wrap3'],
+    tolerance=2.4 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0) else _ROB_TOL)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
