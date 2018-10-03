@@ -23,6 +23,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -44,10 +45,10 @@ def test_default():
                         [-131.9758172, 131.9758172])
 
 
-def test_central_longitude():
-    cl = 10.0
-    mill = ccrs.Miller(central_longitude=cl)
-    other_args = {'a=57.29577951308232', 'lon_0={}'.format(cl)}
+@pytest.mark.parametrize('lon', [-10.0, 10.0])
+def test_central_longitude(lon):
+    mill = ccrs.Miller(central_longitude=lon)
+    other_args = {'a=57.29577951308232', 'lon_0={}'.format(lon)}
     check_proj4_params(mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),

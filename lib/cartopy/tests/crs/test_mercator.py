@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 from numpy.testing import assert_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -63,10 +64,10 @@ def test_equality():
     assert hash(crs) == hash(crs2)
 
 
-def test_central_longitude():
-    cl = 10.0
-    crs = ccrs.Mercator(central_longitude=cl)
-    other_args = {'ellps=WGS84', 'lon_0={}'.format(cl), 'x_0=0.0', 'y_0=0.0'}
+@pytest.mark.parametrize('lon', [-10.0, 10.0])
+def test_central_longitude(lon):
+    crs = ccrs.Mercator(central_longitude=lon)
+    other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'x_0=0.0', 'y_0=0.0'}
     check_proj4_params(crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
