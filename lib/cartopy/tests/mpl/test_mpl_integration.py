@@ -172,9 +172,9 @@ def test_multiple_projections():
                    ]
 
     if ccrs.PROJ4_VERSION < (5, 0, 0):
-        # Produce the same sized image for old proj4, to avoid having to
-        # replace the image. If this figure is regenerated for both old and new
-        # proj4, then drop this condition.
+        # Produce the same sized image for old proj, to avoid having to replace
+        # the image. If this figure is regenerated for both old and new proj,
+        # then drop this condition.
         rows = 5
     else:
         rows = np.ceil(len(projections) / 5)

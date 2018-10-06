@@ -52,7 +52,7 @@ class RotatedGeodetic(CRS):
 
     Coordinates are measured in degrees.
 
-    The class uses proj4 to perform an ob_tran operation, using the
+    The class uses proj to perform an ob_tran operation, using the
     pole_longitude to set a lon_0 then performing two rotations based on
     pole_latitude and central_rotated_longitude.
     This is equivalent to setting the new pole to a location defined by
@@ -994,7 +994,7 @@ class Mercator(Projection):
 
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
-        # In new proj.4, using exact limits will wrap-around, so subtract a
+        # In new proj, using exact limits will wrap-around, so subtract a
         # small epsilon:
         epsilon = 1e-10
         minlon = -180 + central_longitude
@@ -1276,7 +1276,7 @@ class Miller(_RectangularProjection):
         b = np.float(globe.semiminor_axis or a)
 
         if b != a or globe.ellipse is not None:
-            warnings.warn('The proj4 "mill" projection does not handle '
+            warnings.warn('The proj "mill" projection does not handle '
                           'elliptical globes.')
 
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
@@ -1298,7 +1298,7 @@ class RotatedPole(_CylindricalProjection):
 
     Coordinates are measured in projection metres.
 
-    The class uses proj4 to perform an ob_tran operation, using the
+    The class uses proj to perform an ob_tran operation, using the
     pole_longitude to set a lon_0 then performing two rotations based on
     pole_latitude and central_rotated_longitude.
     This is equivalent to setting the new pole to a location defined by
@@ -1367,20 +1367,20 @@ class Stereographic(Projection):
                  false_easting=0.0, false_northing=0.0,
                  true_scale_latitude=None,
                  scale_factor=None, globe=None):
-        # Warn when using Stereographic with proj4 < 5.0.0 due to
+        # Warn when using Stereographic with proj < 5.0.0 due to
         # incorrect transformation with lon_0=0 (see
         # https://github.com/OSGeo/proj.4/issues/194).
         if central_latitude == 0:
             if PROJ4_VERSION != ():
                 if PROJ4_VERSION < (5, 0, 0):
                     warnings.warn(
-                        'The Stereographic projection in Proj.4 older than '
+                        'The Stereographic projection in Proj older than '
                         '5.0.0 incorrectly transforms points when '
                         'central_latitude=0. Use this projection with '
                         'caution.')
             else:
                 warnings.warn(
-                    'Cannot determine Proj.4 version. The Stereographic '
+                    'Cannot determine Proj version. The Stereographic '
                     'projection may be unreliable and should be used with '
                     'caution.')
 
@@ -1476,7 +1476,7 @@ class Orthographic(Projection):
         b = np.float(self.globe.semiminor_axis or a)
 
         if b != a:
-            warnings.warn('The proj4 "ortho" projection does not appear to '
+            warnings.warn('The proj "ortho" projection does not appear to '
                           'handle elliptical globes.')
 
         # To stabilise the projection of geometries, we reduce the boundary by
@@ -1509,7 +1509,7 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
 
-        # In new proj.4, using exact limits will wrap-around, so subtract a
+        # In new proj, using exact limits will wrap-around, so subtract a
         # small epsilon:
         epsilon = 1.e-10
         minlon = -180 + central_longitude
@@ -1562,17 +1562,17 @@ class Mollweide(_WarpedRectangularProjection):
 
 class Robinson(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0, globe=None):
-        # Warn when using Robinson with proj4 4.8 due to discontinuity at
+        # Warn when using Robinson with proj 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://github.com/OSGeo/proj.4/issues/113).
         if PROJ4_VERSION != ():
             if (4, 8) <= PROJ4_VERSION < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '
-                              'of Proj.4 contains a discontinuity at '
+                              'of Proj contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
                               'caution.')
         else:
-            warnings.warn('Cannot determine Proj.4 version. The Robinson '
+            warnings.warn('Cannot determine Proj version. The Robinson '
                           'projection may be unreliable and should be used '
                           'with caution.')
 
@@ -1905,17 +1905,17 @@ class AzimuthalEquidistant(Projection):
             globe is created.
 
         """
-        # Warn when using Azimuthal Equidistant with proj4 < 4.9.2 due to
+        # Warn when using Azimuthal Equidistant with proj < 4.9.2 due to
         # incorrect transformation past 90 deg distance (see
         # https://github.com/OSGeo/proj.4/issues/246).
         if PROJ4_VERSION != ():
             if PROJ4_VERSION < (4, 9, 2):
-                warnings.warn('The Azimuthal Equidistant projection in Proj.4 '
+                warnings.warn('The Azimuthal Equidistant projection in Proj '
                               'older than 4.9.2 incorrectly transforms points '
                               'farther than 90 deg from the origin. Use this '
                               'projection with caution.')
         else:
-            warnings.warn('Cannot determine Proj.4 version. The Azimuthal '
+            warnings.warn('Cannot determine Proj version. The Azimuthal '
                           'Equidistant projection may be unreliable and '
                           'should be used with caution.')
 

@@ -118,7 +118,7 @@ class TestCRS(object):
         unrotated_lon = res[..., 0]
         unrotated_lat = res[..., 1]
 
-        # Solutions derived by proj4 direct.
+        # Solutions derived by proj direct.
         solx = np.array([[-16.42176094, -14.85892262, -11.90627520],
                          [-16.71055023, -14.58434624, -11.68799988]])
         soly = np.array([[46.00724251, 51.29188893, 52.59101488],
@@ -138,7 +138,7 @@ class TestCRS(object):
         unrotated_lon = res[..., 0]
         unrotated_lat = res[..., 1]
 
-        # Solutions derived by proj4 direct.
+        # Solutions derived by proj direct.
         solx = np.array([-16.42176094, -14.85892262,
                          -12.88946157, -10.35078336])
         soly = np.array([46.00724251, 51.29188893,

@@ -60,7 +60,7 @@ class TestStereographic(object):
     def test_true_scale(self):
         # The "true_scale_latitude" parameter only makes sense for
         # polar stereographic projections (#339 and #455).
-        # For now only the proj4 string creation is tested
+        # For now only the proj string creation is tested
         # See test_scale_factor for test on projection.
         globe = ccrs.Globe(ellipse='sphere')
         stereo = ccrs.NorthPolarStereo(true_scale_latitude=30, globe=globe)
