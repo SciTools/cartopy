@@ -362,7 +362,7 @@ State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
  * t_start: Interpolation parameter for the start point.
  * p_start: Projected start point.
  * t_end: Interpolation parameter for the end point.
- * p_start: Projected end point.
+ * p_end: Projected end point.
  * interpolator: Interpolator for current source line.
  * threshold: Lateral tolerance in target projection coordinates.
  * handle: Thread-local context handle for GEOS.
@@ -377,7 +377,7 @@ bool straightAndDomain(double t_start, const Point &p_start,
                        bool inside)
 {
     // Straight and in-domain (de9im[7] == 'F')
-    
+
     bool valid;
 
     // This could be optimised out of the loop.
@@ -450,10 +450,14 @@ bool straightAndDomain(double t_start, const Point &p_start,
 
         if (valid)
         {
-            if(inside)
+            if (inside)
+            {
                 valid = GEOSPreparedCovers_r(handle, gp_domain, g_segment);
+            }
             else
+            {
                 valid = GEOSPreparedDisjoint_r(handle, gp_domain, g_segment);
+            }
         }
 
         GEOSGeom_destroy_r(handle, g_segment);
@@ -485,7 +489,7 @@ void bisect(double t_start, const Point &p_start, const Point &p_end,
     // TODO: See if we can convert the 't' threshold into one based on the
     // projected coordinates - e.g. the resulting line length.
     //
-    
+
     while (fabs(t_max - t_min) > 1.0e-6)
     {
 #ifdef DEBUG
@@ -570,11 +574,17 @@ void _project_segment(GEOSContextHandle_t handle,
 #ifdef DEBUG
         std::cerr << "Working from: " << t_current << " (";
         if (state == POINT_IN)
+        {
             std::cerr << "IN";
+        }
         else if (state == POINT_OUT)
+        {
             std::cerr << "OUT";
+        }
         else
+        {
             std::cerr << "NAN";
+        }
         std::cerr << ")" << std::endl;
         std::cerr << "   " << p_current.x << ", " << p_current.y << std::endl;
         std::cerr << "   " << p_end.x << ", " << p_end.y << std::endl;
@@ -600,8 +610,10 @@ void _project_segment(GEOSContextHandle_t handle,
                 t_current = t_max;
                 p_current = p_max;
                 state = get_state(p_current, gp_domain, handle);
-                if(state == POINT_IN)
+                if (state == POINT_IN)
+                {
                     lines.new_line();
+                }
             }
         }
         else if(state == POINT_OUT)
@@ -616,8 +628,10 @@ void _project_segment(GEOSContextHandle_t handle,
                 t_current = t_max;
                 p_current = p_max;
                 state = get_state(p_current, gp_domain, handle);
-                if(state == POINT_IN)
+                if (state == POINT_IN)
+                {
                     lines.new_line();
+                }
             }
         }
         else
@@ -625,8 +639,10 @@ void _project_segment(GEOSContextHandle_t handle,
             t_current = t_max;
             p_current = p_max;
             state = get_state(p_current, gp_domain, handle);
-            if(state == POINT_IN)
+            if (state == POINT_IN)
+            {
                 lines.new_line();
+            }
         }
     }
 }
@@ -639,7 +655,6 @@ GEOSGeometry *_project_line_string(GEOSContextHandle_t handle,
     const GEOSCoordSequence *src_coords = GEOSGeom_getCoordSeq_r(handle, g_line_string);
     unsigned int src_size, src_idx;
 
-    
     const GEOSPreparedGeometry *gp_domain = GEOSPrepare_r(handle, g_domain);
 
     GEOSCoordSeq_getSize_r(handle, src_coords, &src_size); // check exceptions
