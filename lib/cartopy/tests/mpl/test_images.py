@@ -110,6 +110,9 @@ def test_image_merge():
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_imshow():
@@ -137,6 +140,9 @@ def test_imshow_projected():
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=4.15 if MPL_VERSION < '2' else 0.7)
 def test_stock_img():
@@ -144,6 +150,9 @@ def test_stock_img():
     ax.stock_img()
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_pil_Image():
@@ -154,6 +163,9 @@ def test_pil_Image():
               extent=[-180, 180, -90, 90])
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=4.2 if MPL_VERSION < '2' else 0)
 def test_background_img():

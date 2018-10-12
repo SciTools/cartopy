@@ -1467,6 +1467,17 @@ class SouthPolarStereo(Stereographic):
 class Orthographic(Projection):
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  globe=None):
+        if PROJ4_VERSION != ():
+            if (5, 0, 0) <= PROJ4_VERSION < (5, 1, 0):
+                warnings.warn(
+                    'The Orthographic projection in Proj between 5.0.0 and '
+                    '5.1.0 incorrectly transforms points. Use this projection '
+                    'with caution.')
+        else:
+            warnings.warn(
+                'Cannot determine Proj version. The Orthographic projection '
+                'may be unreliable and should be used with caution.')
+
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
         super(Orthographic, self).__init__(proj4_params, globe=globe)
