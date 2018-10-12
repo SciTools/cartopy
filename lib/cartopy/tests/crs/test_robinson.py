@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -35,7 +35,7 @@ _NAN = float('nan')
 _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
-# Increase tolerance if using older proj.4 releases
+# Increase tolerance if using older proj releases
 _TOL = -1 if ccrs.PROJ4_VERSION < (4, 9) else 7
 
 

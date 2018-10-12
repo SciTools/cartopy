@@ -73,7 +73,7 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 **pyshp** 1.1.4 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
-**PROJ.4** 4.9.0 or later (http://proj4.org/)
+**PROJ** 4.9.0 or later (https://proj4.org/)
     Cartographic Projections library.
 
 **six** 1.3.0 or later (https://pypi.python.org/pypi/six)

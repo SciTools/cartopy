@@ -16,10 +16,10 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-This module pulls together _trace.cpp, proj.4, GEOS and _crs.pyx to implement a function
-to project a LinearRing/LineString. In general, this should never be called manually,
-instead leaving the processing to be done by the :class:`cartopy.crs.Projection`
-subclasses.
+This module pulls together _trace.cpp, proj, GEOS and _crs.pyx to implement a
+function to project a LinearRing/LineString. In general, this should never be
+called manually, instead leaving the processing to be done by the
+:class:`cartopy.crs.Projection` subclasses.
 """
 
 from libc.stdint cimport uintptr_t as ptr
