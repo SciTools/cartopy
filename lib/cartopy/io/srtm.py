@@ -393,8 +393,8 @@ class SRTMDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'resolution', 'x', 'y')
 
-    _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/SRTM/SRTMGL{resolution}.'
-                      '003/2000.02.11/')
+    _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/MEASURES/'
+                      'SRTMGL{resolution}.003/2000.02.11/')
     _SRTM_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
                                       'srtm.npz')
     _SRTM_LOOKUP_MASK = np.load(_SRTM_LOOKUP_CACHE)['mask']
