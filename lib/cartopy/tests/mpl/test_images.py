@@ -46,6 +46,9 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # care that it is putting images onto the map which are roughly correct.
 @pytest.mark.natural_earth
 @pytest.mark.network
+@pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
+                   reason='Proj returns slightly different bounds.',
+                   strict=True)
 @ImageTesting(['web_tiles'],
               tolerance=12 if MPL_VERSION < '2' else 2.9)
 def test_web_tiles():
@@ -83,6 +86,9 @@ def test_web_tiles():
 
 @pytest.mark.natural_earth
 @pytest.mark.network
+@pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
+                   reason='Proj returns slightly different bounds.',
+                   strict=True)
 @ImageTesting(['image_merge'],
               tolerance=3.6 if MPL_VERSION < '2' else 0.01)
 def test_image_merge():
