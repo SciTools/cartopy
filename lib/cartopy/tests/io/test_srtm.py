@@ -30,6 +30,7 @@ from .test_downloaders import download_to_temp  # noqa: F401 (used as fixture)
 
 
 pytestmark = [pytest.mark.network,
+              pytest.mark.filterwarnings('ignore:SRTM requires an account'),
               pytest.mark.usefixtures('srtm_login_or_skip')]
 
 
