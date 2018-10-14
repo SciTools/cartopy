@@ -19,6 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -62,6 +63,20 @@ class TestSinusoidal(object):
         check_proj4_params(crs_offset, other_args)
         assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
         assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
+
+    @pytest.mark.parametrize('lon', [-10.0, 10.0])
+    def test_central_longitude(self, lon):
+        crs = ccrs.Sinusoidal(central_longitude=lon)
+        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon),
+                      'x_0=0.0', 'y_0=0.0'}
+        check_proj4_params(crs, other_args)
+
+        assert_almost_equal(np.array(crs.x_limits),
+                            [-20037508.3428, 20037508.3428],
+                            decimal=4)
+        assert_almost_equal(np.array(crs.y_limits),
+                            [-10001965.7293, 10001965.7293],
+                            decimal=4)
 
     def test_MODIS(self):
         # Testpoints verified with MODLAND Tile Calculator
