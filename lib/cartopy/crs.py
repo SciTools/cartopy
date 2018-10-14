@@ -144,6 +144,18 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             domain = self._domain = sgeom.Polygon(self.boundary)
         return domain
 
+    def _determine_longitude_bounds(self, central_longitude):
+        # In new proj, using exact limits will wrap-around, so subtract a
+        # small epsilon:
+        epsilon = 1e-10
+        minlon = -180 + central_longitude
+        maxlon = 180 + central_longitude
+        if central_longitude > 0:
+            maxlon -= epsilon
+        elif central_longitude < 0:
+            minlon += epsilon
+        return minlon, maxlon
+
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
         return geoaxes.GeoAxes, {'map_projection': self}
@@ -994,17 +1006,8 @@ class Mercator(Projection):
 
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
-        # In new proj, using exact limits will wrap-around, so subtract a
-        # small epsilon:
-        epsilon = 1e-10
-        minlon = -180 + central_longitude
-        maxlon = 180 + central_longitude
-        if central_longitude > 0:
-            maxlon -= epsilon
-        elif central_longitude < 0:
-            minlon += epsilon
-
         # Calculate limits.
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         limits = self.transform_points(Geodetic(),
                                        np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))
@@ -1520,17 +1523,8 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
 
-        # In new proj, using exact limits will wrap-around, so subtract a
-        # small epsilon:
-        epsilon = 1.e-10
-        minlon = -180 + central_longitude
-        maxlon = 180 + central_longitude
-        if central_longitude > 0:
-            maxlon -= epsilon
-        elif central_longitude < 0:
-            minlon += epsilon
-
         # Obtain boundary points
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
@@ -1654,15 +1648,8 @@ class InterruptedGoodeHomolosine(Projection):
         super(InterruptedGoodeHomolosine, self).__init__(proj4_params,
                                                          globe=globe)
 
-        # In new proj, using exact limits will wrap-around, so subtract a
-        # small epsilon:
-        epsilon = 1.e-10
-        minlon = -180 + central_longitude
-        maxlon = 180 + central_longitude
-        if central_longitude > 0:
-            maxlon -= epsilon
-        elif central_longitude < 0:
-            minlon += epsilon
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        epsilon = 1e-10
 
         # Obtain boundary points
         points = []
@@ -1856,17 +1843,8 @@ class AlbersEqualArea(Projection):
 
         super(AlbersEqualArea, self).__init__(proj4_params, globe=globe)
 
-        # In new proj, using exact limits will wrap-around, so subtract a
-        # small epsilon:
-        epsilon = 1e-10
-        minlon = -180 + central_longitude
-        maxlon = 180 + central_longitude
-        if central_longitude > 0:
-            maxlon -= epsilon
-        elif central_longitude < 0:
-            minlon += epsilon
-
         # bounds
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         n = 103
         lons = np.empty(2 * n + 1)
         lats = np.empty(2 * n + 1)
@@ -2008,17 +1986,8 @@ class Sinusoidal(Projection):
                         ('y_0', false_northing)]
         super(Sinusoidal, self).__init__(proj4_params, globe=globe)
 
-        # In new proj, using exact limits will wrap-around, so subtract a
-        # small epsilon:
-        epsilon = 1.e-10
-        minlon = -180 + central_longitude
-        maxlon = 180 + central_longitude
-        if central_longitude > 0:
-            maxlon -= epsilon
-        elif central_longitude < 0:
-            minlon += epsilon
-
         # Obtain boundary points
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
