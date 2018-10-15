@@ -22,7 +22,8 @@ Tests for the Albers Equal Area coordinate system.
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -69,6 +70,17 @@ class TestAlbersEqualArea(object):
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=1234',
                       'y_0=-4321', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj4_params(aea_offset, other_args)
+
+    @pytest.mark.parametrize('lon', [-10.0, 10.0])
+    def test_central_longitude(self, lon):
+        aea = ccrs.AlbersEqualArea()
+        aea_offset = ccrs.AlbersEqualArea(central_longitude=lon)
+        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'lat_0=0.0',
+                      'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
+        check_proj4_params(aea_offset, other_args)
+
+        assert_array_almost_equal(aea_offset.boundary, aea.boundary,
+                                  decimal=0)
 
     def test_standard_parallels(self):
         aea = ccrs.AlbersEqualArea(standard_parallels=(13, 37))

@@ -144,6 +144,18 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             domain = self._domain = sgeom.Polygon(self.boundary)
         return domain
 
+    def _determine_longitude_bounds(self, central_longitude):
+        # In new proj, using exact limits will wrap-around, so subtract a
+        # small epsilon:
+        epsilon = 1e-10
+        minlon = -180 + central_longitude
+        maxlon = 180 + central_longitude
+        if central_longitude > 0:
+            maxlon -= epsilon
+        elif central_longitude < 0:
+            minlon += epsilon
+        return minlon, maxlon
+
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
         return geoaxes.GeoAxes, {'map_projection': self}
@@ -994,17 +1006,8 @@ class Mercator(Projection):
 
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
-        # In new proj, using exact limits will wrap-around, so subtract a
-        # small epsilon:
-        epsilon = 1e-10
-        minlon = -180 + central_longitude
-        maxlon = 180 + central_longitude
-        if central_longitude > 0:
-            maxlon -= epsilon
-        elif central_longitude < 0:
-            minlon += epsilon
-
         # Calculate limits.
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         limits = self.transform_points(Geodetic(),
                                        np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))
@@ -1520,17 +1523,8 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
 
-        # In new proj, using exact limits will wrap-around, so subtract a
-        # small epsilon:
-        epsilon = 1.e-10
-        minlon = -180 + central_longitude
-        maxlon = 180 + central_longitude
-        if central_longitude > 0:
-            maxlon -= epsilon
-        elif central_longitude < 0:
-            minlon += epsilon
-
         # Obtain boundary points
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
@@ -1654,6 +1648,9 @@ class InterruptedGoodeHomolosine(Projection):
         super(InterruptedGoodeHomolosine, self).__init__(proj4_params,
                                                          globe=globe)
 
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        epsilon = 1e-10
+
         # Obtain boundary points
         points = []
         n = 31
@@ -1661,43 +1658,38 @@ class InterruptedGoodeHomolosine(Projection):
 
         # Right boundary
         for lat in np.linspace(-90, 90, n):
-            points.append(self.transform_point(180 + central_longitude,
-                                               lat, geodetic_crs))
+            points.append(self.transform_point(maxlon, lat, geodetic_crs))
 
         # Top boundary
         interrupted_lons = (-40.0,)
-        delta = 0.001
         for lon in interrupted_lons:
             for lat in np.linspace(90, 0, n):
-                points.append(self.transform_point(lon + delta +
+                points.append(self.transform_point(lon + epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
             for lat in np.linspace(0, 90, n):
-                points.append(self.transform_point(lon - delta +
+                points.append(self.transform_point(lon - epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
 
         # Left boundary
         for lat in np.linspace(90, -90, n):
-            points.append(self.transform_point(-180 + central_longitude,
-                                               lat, geodetic_crs))
+            points.append(self.transform_point(minlon, lat, geodetic_crs))
 
         # Bottom boundary
         interrupted_lons = (-100.0, -20.0, 80.0)
-        delta = 0.001
         for lon in interrupted_lons:
             for lat in np.linspace(-90, 0, n):
-                points.append(self.transform_point(lon - delta +
+                points.append(self.transform_point(lon - epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
             for lat in np.linspace(0, -90, n):
-                points.append(self.transform_point(lon + delta +
+                points.append(self.transform_point(lon + epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
 
         # Close loop
-        points.append(self.transform_point(180 + central_longitude, -90,
-                                           geodetic_crs))
+        points.append(self.transform_point(maxlon, -90, geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
 
@@ -1852,10 +1844,11 @@ class AlbersEqualArea(Projection):
         super(AlbersEqualArea, self).__init__(proj4_params, globe=globe)
 
         # bounds
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         n = 103
         lons = np.empty(2 * n + 1)
         lats = np.empty(2 * n + 1)
-        tmp = np.linspace(central_longitude - 180, central_longitude + 180, n)
+        tmp = np.linspace(minlon, maxlon, n)
         lons[:n] = tmp
         lats[:n] = 90
         lons[n:-1] = tmp[::-1]
@@ -1994,21 +1987,15 @@ class Sinusoidal(Projection):
         super(Sinusoidal, self).__init__(proj4_params, globe=globe)
 
         # Obtain boundary points
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
         for lat in np.linspace(-90, 90, n):
-            points.append(
-                self.transform_point(180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
+            points.append(self.transform_point(maxlon, lat, geodetic_crs))
         for lat in np.linspace(90, -90, n):
-            points.append(
-                self.transform_point(-180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
-        points.append(
-            self.transform_point(180 + central_longitude, -90, geodetic_crs))
+            points.append(self.transform_point(minlon, lat, geodetic_crs))
+        points.append(self.transform_point(maxlon, -90, geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
         minx, miny, maxx, maxy = self._boundary.bounds
