@@ -353,7 +353,7 @@ class GSHHSFeature(Feature):
 
         {(scale, level): geom}
 
-    This provides a perfomance boost when plotting in interactive mode or
+    This provides a performance boost when plotting in interactive mode or
     instantiating multiple GSHHS artists, by reducing repeated file IO.
 
     """

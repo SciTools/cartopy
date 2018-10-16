@@ -52,7 +52,7 @@ class RotatedGeodetic(CRS):
 
     Coordinates are measured in degrees.
 
-    The class uses proj4 to perform an ob_tran operation, using the
+    The class uses proj to perform an ob_tran operation, using the
     pole_longitude to set a lon_0 then performing two rotations based on
     pole_latitude and central_rotated_longitude.
     This is equivalent to setting the new pole to a location defined by
@@ -143,6 +143,18 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         except AttributeError:
             domain = self._domain = sgeom.Polygon(self.boundary)
         return domain
+
+    def _determine_longitude_bounds(self, central_longitude):
+        # In new proj, using exact limits will wrap-around, so subtract a
+        # small epsilon:
+        epsilon = 1e-10
+        minlon = -180 + central_longitude
+        maxlon = 180 + central_longitude
+        if central_longitude > 0:
+            maxlon -= epsilon
+        elif central_longitude < 0:
+            minlon += epsilon
+        return minlon, maxlon
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
@@ -969,6 +981,8 @@ class Mercator(Projection):
         scale_factor: optional
             Scale factor at natural origin. Defaults to unused.
 
+        Notes
+        -----
         Only one of ``latitude_true_scale`` and ``scale_factor`` should
         be included.
         """
@@ -993,9 +1007,9 @@ class Mercator(Projection):
         super(Mercator, self).__init__(proj4_params, globe=globe)
 
         # Calculate limits.
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         limits = self.transform_points(Geodetic(),
-                                       np.array([-180,
-                                                 180]) + central_longitude,
+                                       np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))
         self._xlimits = tuple(limits[..., 0])
         self._ylimits = tuple(limits[..., 1])
@@ -1256,11 +1270,24 @@ class LambertAzimuthalEqualArea(Projection):
 
 
 class Miller(_RectangularProjection):
-    def __init__(self, central_longitude=0.0):
+    def __init__(self, central_longitude=0.0, globe=None):
+        if globe is None:
+            globe = Globe(semimajor_axis=math.degrees(1), ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(globe.semiminor_axis or a)
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj "mill" projection does not handle '
+                          'elliptical globes.')
+
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
-        globe = Globe(semimajor_axis=math.degrees(1))
-        # XXX How can we derive the vertical limit of 131.98?
-        super(Miller, self).__init__(proj4_params, 180, 131.98, globe=globe)
+        # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
+        # (lambda-lambda0)=180 and phi=90 to get limits.
+        super(Miller, self).__init__(proj4_params,
+                                     a * np.pi, a * 2.303412543376391,
+                                     globe=globe)
 
     @property
     def threshold(self):
@@ -1274,7 +1301,7 @@ class RotatedPole(_CylindricalProjection):
 
     Coordinates are measured in projection metres.
 
-    The class uses proj4 to perform an ob_tran operation, using the
+    The class uses proj to perform an ob_tran operation, using the
     pole_longitude to set a lon_0 then performing two rotations based on
     pole_latitude and central_rotated_longitude.
     This is equivalent to setting the new pole to a location defined by
@@ -1343,6 +1370,23 @@ class Stereographic(Projection):
                  false_easting=0.0, false_northing=0.0,
                  true_scale_latitude=None,
                  scale_factor=None, globe=None):
+        # Warn when using Stereographic with proj < 5.0.0 due to
+        # incorrect transformation with lon_0=0 (see
+        # https://github.com/OSGeo/proj.4/issues/194).
+        if central_latitude == 0:
+            if PROJ4_VERSION != ():
+                if PROJ4_VERSION < (5, 0, 0):
+                    warnings.warn(
+                        'The Stereographic projection in Proj older than '
+                        '5.0.0 incorrectly transforms points when '
+                        'central_latitude=0. Use this projection with '
+                        'caution.')
+            else:
+                warnings.warn(
+                    'Cannot determine Proj version. The Stereographic '
+                    'projection may be unreliable and should be used with '
+                    'caution.')
+
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
@@ -1426,6 +1470,17 @@ class SouthPolarStereo(Stereographic):
 class Orthographic(Projection):
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  globe=None):
+        if PROJ4_VERSION != ():
+            if (5, 0, 0) <= PROJ4_VERSION < (5, 1, 0):
+                warnings.warn(
+                    'The Orthographic projection in Proj between 5.0.0 and '
+                    '5.1.0 incorrectly transforms points. Use this projection '
+                    'with caution.')
+        else:
+            warnings.warn(
+                'Cannot determine Proj version. The Orthographic projection '
+                'may be unreliable and should be used with caution.')
+
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
         super(Orthographic, self).__init__(proj4_params, globe=globe)
@@ -1435,7 +1490,7 @@ class Orthographic(Projection):
         b = np.float(self.globe.semiminor_axis or a)
 
         if b != a:
-            warnings.warn('The proj4 "ortho" projection does not appear to '
+            warnings.warn('The proj "ortho" projection does not appear to '
                           'handle elliptical globes.')
 
         # To stabilise the projection of geometries, we reduce the boundary by
@@ -1469,21 +1524,15 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
                                                            globe=globe)
 
         # Obtain boundary points
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
         for lat in np.linspace(-90, 90, n):
-            points.append(
-                self.transform_point(180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
+            points.append(self.transform_point(maxlon, lat, geodetic_crs))
         for lat in np.linspace(90, -90, n):
-            points.append(
-                self.transform_point(-180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
-        points.append(
-            self.transform_point(180 + central_longitude, -90, geodetic_crs))
+            points.append(self.transform_point(minlon, lat, geodetic_crs))
+        points.append(self.transform_point(maxlon, -90, geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
 
@@ -1518,17 +1567,17 @@ class Mollweide(_WarpedRectangularProjection):
 
 class Robinson(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0, globe=None):
-        # Warn when using Robinson with proj4 4.8 due to discontinuity at
+        # Warn when using Robinson with proj 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
-        # https://trac.osgeo.org/proj/ticket/113).
+        # https://github.com/OSGeo/proj.4/issues/113).
         if PROJ4_VERSION != ():
             if (4, 8) <= PROJ4_VERSION < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '
-                              'of Proj.4 contains a discontinuity at '
+                              'of Proj contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
                               'caution.')
         else:
-            warnings.warn('Cannot determine Proj.4 version. The Robinson '
+            warnings.warn('Cannot determine Proj version. The Robinson '
                           'projection may be unreliable and should be used '
                           'with caution.')
 
@@ -1599,6 +1648,9 @@ class InterruptedGoodeHomolosine(Projection):
         super(InterruptedGoodeHomolosine, self).__init__(proj4_params,
                                                          globe=globe)
 
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        epsilon = 1e-10
+
         # Obtain boundary points
         points = []
         n = 31
@@ -1606,43 +1658,38 @@ class InterruptedGoodeHomolosine(Projection):
 
         # Right boundary
         for lat in np.linspace(-90, 90, n):
-            points.append(self.transform_point(180 + central_longitude,
-                                               lat, geodetic_crs))
+            points.append(self.transform_point(maxlon, lat, geodetic_crs))
 
         # Top boundary
         interrupted_lons = (-40.0,)
-        delta = 0.001
         for lon in interrupted_lons:
             for lat in np.linspace(90, 0, n):
-                points.append(self.transform_point(lon + delta +
+                points.append(self.transform_point(lon + epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
             for lat in np.linspace(0, 90, n):
-                points.append(self.transform_point(lon - delta +
+                points.append(self.transform_point(lon - epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
 
         # Left boundary
         for lat in np.linspace(90, -90, n):
-            points.append(self.transform_point(-180 + central_longitude,
-                                               lat, geodetic_crs))
+            points.append(self.transform_point(minlon, lat, geodetic_crs))
 
         # Bottom boundary
         interrupted_lons = (-100.0, -20.0, 80.0)
-        delta = 0.001
         for lon in interrupted_lons:
             for lat in np.linspace(-90, 0, n):
-                points.append(self.transform_point(lon - delta +
+                points.append(self.transform_point(lon - epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
             for lat in np.linspace(0, -90, n):
-                points.append(self.transform_point(lon + delta +
+                points.append(self.transform_point(lon + epsilon +
                                                    central_longitude,
                                                    lat, geodetic_crs))
 
         # Close loop
-        points.append(self.transform_point(180 + central_longitude, -90,
-                                           geodetic_crs))
+        points.append(self.transform_point(maxlon, -90, geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
 
@@ -1797,10 +1844,11 @@ class AlbersEqualArea(Projection):
         super(AlbersEqualArea, self).__init__(proj4_params, globe=globe)
 
         # bounds
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         n = 103
         lons = np.empty(2 * n + 1)
         lats = np.empty(2 * n + 1)
-        tmp = np.linspace(central_longitude - 180, central_longitude + 180, n)
+        tmp = np.linspace(minlon, maxlon, n)
         lons[:n] = tmp
         lats[:n] = 90
         lons[n:-1] = tmp[::-1]
@@ -1861,17 +1909,17 @@ class AzimuthalEquidistant(Projection):
             globe is created.
 
         """
-        # Warn when using Azimuthal Equidistant with proj4 < 4.9.2 due to
+        # Warn when using Azimuthal Equidistant with proj < 4.9.2 due to
         # incorrect transformation past 90 deg distance (see
         # https://github.com/OSGeo/proj.4/issues/246).
         if PROJ4_VERSION != ():
             if PROJ4_VERSION < (4, 9, 2):
-                warnings.warn('The Azimuthal Equidistant projection in Proj.4 '
+                warnings.warn('The Azimuthal Equidistant projection in Proj '
                               'older than 4.9.2 incorrectly transforms points '
                               'farther than 90 deg from the origin. Use this '
                               'projection with caution.')
         else:
-            warnings.warn('Cannot determine Proj.4 version. The Azimuthal '
+            warnings.warn('Cannot determine Proj version. The Azimuthal '
                           'Equidistant projection may be unreliable and '
                           'should be used with caution.')
 
@@ -1939,21 +1987,15 @@ class Sinusoidal(Projection):
         super(Sinusoidal, self).__init__(proj4_params, globe=globe)
 
         # Obtain boundary points
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         points = []
         n = 91
         geodetic_crs = self.as_geodetic()
         for lat in np.linspace(-90, 90, n):
-            points.append(
-                self.transform_point(180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
+            points.append(self.transform_point(maxlon, lat, geodetic_crs))
         for lat in np.linspace(90, -90, n):
-            points.append(
-                self.transform_point(-180 + central_longitude,
-                                     lat, geodetic_crs)
-            )
-        points.append(
-            self.transform_point(180 + central_longitude, -90, geodetic_crs))
+            points.append(self.transform_point(minlon, lat, geodetic_crs))
+        points.append(self.transform_point(maxlon, -90, geodetic_crs))
 
         self._boundary = sgeom.LineString(points[::-1])
         minx, miny, maxx, maxy = self._boundary.bounds

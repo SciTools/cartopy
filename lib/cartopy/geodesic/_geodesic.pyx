@@ -16,7 +16,7 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 """
-This module defines the Geodesic class which can interface with the Proj.4.
+This module defines the Geodesic class which can interface with the Proj
 geodesic functions.
 
 """

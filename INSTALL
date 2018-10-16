@@ -73,7 +73,7 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 **pyshp** 1.1.4 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
-**PROJ.4** 4.9.0 or later (http://proj4.org/)
+**PROJ** 4.9.0 or later (https://proj4.org/)
     Cartographic Projections library.
 
 **six** 1.3.0 or later (https://pypi.python.org/pypi/six)
@@ -113,6 +113,9 @@ additional Cartopy functionality.
 Testing Dependencies
 ~~~~~~~~~~~~~~~~~~~~
 These packages are required for the full Cartopy test suite to run.
+
+**filelock** (https://filelock.readthedocs.io/)
+    A platform independent file lock for Python.
 
 **mock** 1.0.1 (https://pypi.python.org/pypi/mock/)
     Python mocking and patching package for testing. Note that this package

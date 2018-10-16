@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -254,7 +254,7 @@ class TestQuality(object):
 
         # For each region, check if the number of increasing steps is roughly
         # equal to the number of decreasing steps.
-        for i in range(boundary[0], regions.max(), 2):
+        for i in range(int(boundary[0]), regions.max(), 2):
             indices = np.where(regions == i)
             x = xy[indices, 0]
             delta = np.diff(x)

@@ -345,7 +345,7 @@ epub_copyright = u'2012, Philip Elson, Richard Hattersley'
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'matplotlib': ('https://matplotlib.org', None),
-                       'shapely': ('https://toblerity.org/shapely', None), }
+                       'shapely': ('http://toblerity.org/shapely', None), }
 
 
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2017, Met Office
+# (C) British Crown Copyright 2016 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,16 +19,22 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
+
+
+def check_proj4_params(crs, other_args):
+    expected = other_args | {'proj=sinu', 'no_defs'}
+    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
+    assert expected == pro4_params
 
 
 class TestSinusoidal(object):
     def test_default(self):
         crs = ccrs.Sinusoidal()
-        expected = ('+ellps=WGS84 +proj=sinu +lon_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert crs.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0'}
+        check_proj4_params(crs, other_args)
 
         assert_almost_equal(np.array(crs.x_limits),
                             [-20037508.3428, 20037508.3428],
@@ -41,9 +47,8 @@ class TestSinusoidal(object):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
                            ellipse=None)
         crs = ccrs.Sinusoidal(globe=globe)
-        expected = ('+a=1000 +b=500 +proj=sinu +lon_0=0.0 +x_0=0.0 '
-                    '+y_0=0.0 +no_defs')
-        assert crs.proj4_init == expected
+        other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0'}
+        check_proj4_params(crs, other_args)
 
         assert_almost_equal(np.array(crs.x_limits),
                             [-3141.59, 3141.59], decimal=2)
@@ -54,11 +59,24 @@ class TestSinusoidal(object):
         crs = ccrs.Sinusoidal()
         crs_offset = ccrs.Sinusoidal(false_easting=1234,
                                      false_northing=-4321)
-        expected = ('+ellps=WGS84 +proj=sinu +lon_0=0.0 +x_0=1234 '
-                    '+y_0=-4321 +no_defs')
-        assert crs_offset.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=1234', 'y_0=-4321'}
+        check_proj4_params(crs_offset, other_args)
         assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
         assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
+
+    @pytest.mark.parametrize('lon', [-10.0, 10.0])
+    def test_central_longitude(self, lon):
+        crs = ccrs.Sinusoidal(central_longitude=lon)
+        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon),
+                      'x_0=0.0', 'y_0=0.0'}
+        check_proj4_params(crs, other_args)
+
+        assert_almost_equal(np.array(crs.x_limits),
+                            [-20037508.3428, 20037508.3428],
+                            decimal=4)
+        assert_almost_equal(np.array(crs.y_limits),
+                            [-10001965.7293, 10001965.7293],
+                            decimal=4)
 
     def test_MODIS(self):
         # Testpoints verified with MODLAND Tile Calculator

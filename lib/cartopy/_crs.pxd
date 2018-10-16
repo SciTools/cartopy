@@ -22,7 +22,7 @@ cdef extern from "proj_api.h":
 
 cdef class CRS:
     """
-    Defines a Coordinate Reference System using proj.4.
+    Defines a Coordinate Reference System using proj.
 
     """
 

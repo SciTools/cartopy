@@ -45,7 +45,6 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
-from cartopy.mpl.clip_path import clip_path
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
@@ -353,8 +352,8 @@ class GeoAxes(matplotlib.axes.Axes):
             self.autoscale_view()
 
         if self.outline_patch.reclip or self.background_patch.reclip:
-            clipped_path = clip_path(self.outline_patch.orig_path,
-                                     self.viewLim)
+            clipped_path = self.outline_patch.orig_path.clip_to_bbox(
+                self.viewLim)
             self.outline_patch._path = clipped_path
             self.background_patch._path = clipped_path
 
@@ -621,7 +620,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 raise ValueError('Cannot determine extent in'
                                  ' coordinate system {!r}'.format(crs))
 
-        # Calculate intersection with boundary and project if necesary.
+        # Calculate intersection with boundary and project if necessary.
         boundary_poly = sgeom.Polygon(self.projection.boundary)
         if proj != self.projection:
             # Erode boundary by threshold to avoid transform issues.
@@ -1052,9 +1051,9 @@ class GeoAxes(matplotlib.axes.Axes):
             x_range, y_range = np.diff(target_extent)[::2]
             desired_aspect = x_range / y_range
             if x_range >= y_range:
-                regrid_shape = (target_size * desired_aspect, target_size)
+                regrid_shape = (int(target_size * desired_aspect), target_size)
             else:
-                regrid_shape = (target_size, target_size / desired_aspect)
+                regrid_shape = (target_size, int(target_size / desired_aspect))
         return regrid_shape
 
     def imshow(self, img, *args, **kwargs):
@@ -1412,7 +1411,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if hasattr(t, '_as_mpl_transform'):
             kwargs['transform'] = t._as_mpl_transform(self)
 
-        # exclude Geodetic as a vaild source CS
+        # exclude Geodetic as a valid source CS
         if (isinstance(kwargs.get('transform', None),
                        InterProjectionTransform) and
                 kwargs['transform'].source_projection.is_geodetic()):

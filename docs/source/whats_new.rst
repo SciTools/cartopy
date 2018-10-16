@@ -20,6 +20,13 @@ Features
   Caching is based on the scale, level and extent, are all geometries that
   intersect this extent are dumped to the disk.
 
+
+Deprecations
+------------
+
+* :func:`cartopy.mpl.clip_path.clip_path` has been deprecated. It is a simple
+  wrapper for Matplotlib's path clipping, so use that instead. You can replace
+  ``clip_path(subject, clip_bbox)`` by ``subject.clip_to_bbox(clip_bbox)``.
 --------
 
 
@@ -65,7 +72,7 @@ Features
   (:pull:`898`)
 
 * Daryl Herzmann and Robert Redl improved cartopy's internal conversion
-  between shapely objects and Matplotlib Paths. (:pull:`885` & :pull:`1021`)
+  between Shapely objects and Matplotlib Paths. (:pull:`885` & :pull:`1021`)
 
 * Åsmund Steen Skjæveland fixed :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot`
   to use the documented units of kilometres, where before it had been using
@@ -211,7 +218,7 @@ Features
   HTTP connections instead. (See :pull:`736` for full details.)
 
 * Cartopy now supports, and is tested against, Matplotlib 1.3 and 1.5 as well as
-  numpy 1.7, 1.8 and 1.10.
+  NumPy 1.7, 1.8 and 1.10.
 
 * Daniel Eriksson added a new example to the gallery:
 
