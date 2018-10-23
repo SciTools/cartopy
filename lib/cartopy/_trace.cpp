@@ -1,5 +1,5 @@
 /*
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -563,7 +563,8 @@ void _project_segment(GEOSContextHandle_t handle,
     t_current = 0.0;
     state = get_state(p_current, gp_domain, handle);
 
-    while(t_current < 1.0 && lines.size() < 500)
+    size_t old_lines_size = lines.size();
+    while(t_current < 1.0 && (lines.size() - old_lines_size) < 100)
     {
         //std::cerr << "Bisecting" << std::endl;
 #ifdef DEBUG
