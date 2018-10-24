@@ -41,18 +41,18 @@ import shutil
 import tempfile
 import textwrap
 
+import sphinx_gallery
+if sphinx_gallery.__version__ not in ['0.1.12']:  # noqa: E402
+    raise RuntimeError('not tested with this version of sphinx_gallery ({}). '
+                       'Please modify this check, and validate sphinx_gallery'
+                       ' behaves as expected.'
+                       ''.format(sphinx_gallery.__version__))
+
 import sphinx_gallery.gen_gallery
 import sphinx_gallery.gen_rst
 from sphinx_gallery.gen_rst import (
     write_backreferences, extract_intro, _thumbnail_div,
     generate_file_rst, sphinx_compatibility)
-
-
-if sphinx_gallery.__version__ not in ['0.1.12']:
-    raise RuntimeError('not tested with this version of sphinx_gallery ({}). '
-                       'Please modify this check, and validate sphinx_gallery'
-                       ' behaves as expected.'
-                       ''.format(sphinx_gallery.__version__))
 
 
 GALLERY_HEADER = textwrap.dedent("""
