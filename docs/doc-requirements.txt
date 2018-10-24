@@ -3,5 +3,5 @@ netCDF4
 iris
 iris-sample-data
 cf_units
-sphinx-gallery =0.1.12
+sphinx-gallery =0.2.0
 beautifulsoup4

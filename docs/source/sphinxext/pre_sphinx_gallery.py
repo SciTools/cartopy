@@ -42,7 +42,7 @@ import tempfile
 import textwrap
 
 import sphinx_gallery
-if sphinx_gallery.__version__ not in ['0.1.12']:  # noqa: E402
+if sphinx_gallery.__version__ not in ['0.2.0']:  # noqa: E402
     raise RuntimeError('not tested with this version of sphinx_gallery ({}). '
                        'Please modify this check, and validate sphinx_gallery'
                        ' behaves as expected.'
@@ -51,7 +51,7 @@ if sphinx_gallery.__version__ not in ['0.1.12']:  # noqa: E402
 import sphinx_gallery.gen_gallery
 import sphinx_gallery.gen_rst
 from sphinx_gallery.gen_rst import (
-    write_backreferences, extract_intro, _thumbnail_div,
+    write_backreferences, _thumbnail_div,
     generate_file_rst, sphinx_compatibility)
 
 
@@ -139,7 +139,9 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     tmp_dir = tempfile.mkdtemp()
 
     for tag, examples in tagged_examples.items():
-        sorted_listdir = examples
+        sorted_listdir = sorted(
+            examples,
+            key=gallery_conf['within_subsection_order'](src_dir))
 
         entries_text = []
         iterator = sphinx_compatibility.status_iterator(
@@ -148,15 +150,13 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             length=len(sorted_listdir))
         for fname in iterator:
             write_example(os.path.join(src_dir, fname), tmp_dir)
-            amount_of_code, time_elapsed = generate_file_rst(
+            intro, time_elapsed = generate_file_rst(
                 fname, target_dir, tmp_dir, gallery_conf)
 
             if fname not in seen:
                 seen.add(fname)
                 computation_times.append((time_elapsed, fname))
 
-            new_fname = os.path.join(src_dir, fname)
-            intro = extract_intro(new_fname)
             this_entry = _thumbnail_div(build_target_dir, fname, intro) + textwrap.dedent("""
 
                 .. toctree::
@@ -166,14 +166,11 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
                    """) % os.path.join(build_target_dir, fname[:-3]).replace(os.sep, '/')  # noqa: E501
 
-            entries_text.append((amount_of_code, this_entry))
+            entries_text.append(this_entry)
 
             if gallery_conf['backreferences_dir']:
                 write_backreferences(seen_backrefs, gallery_conf,
                                      target_dir, fname, intro)
-
-        # sort to have the smallest entries in the beginning
-        entries_text.sort()
 
         fhindex += textwrap.dedent("""
 
@@ -184,7 +181,7 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
 
         """.format(tag=tag, tag_underline='-' * len(tag)))
 
-        for _, entry_text in entries_text:
+        for entry_text in entries_text:
             fhindex += '\n    '.join(entry_text.split('\n'))
 
         # clear at the end of the section
