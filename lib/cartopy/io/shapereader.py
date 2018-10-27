@@ -418,7 +418,7 @@ class NEShpDownloader(Downloader):
         for member_path in self.zip_file_contents(format_dict):
             ext = os.path.splitext(member_path)[1]
             target = os.path.splitext(target_path)[0] + ext
-            member = zfh.getinfo(member_path)
+            member = zfh.getinfo(member_path.replace(os.sep, '/'))
             with open(target, 'wb') as fh:
                 fh.write(zfh.open(member).read())
 
@@ -531,7 +531,7 @@ class GSHHSShpDownloader(Downloader):
             for member_path in self.zip_file_contents(modified_format_dict):
                 ext = os.path.splitext(member_path)[1]
                 target = os.path.splitext(target_path)[0] + ext
-                member = zfh.getinfo(member_path)
+                member = zfh.getinfo(member_path.replace(os.sep, '/'))
                 with open(target, 'wb') as fh:
                     fh.write(zfh.open(member).read())
 
