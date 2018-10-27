@@ -26,6 +26,7 @@ import numpy as np
 cimport numpy as np
 cimport cython
 from cython.parallel cimport prange
+import shapely.geometry as sgeom
 
 cdef extern from "geodesic.h":
     # External imports of Proj4.9 functions
@@ -182,11 +183,17 @@ cdef class Geodesic:
         cdef int n_points, i
         cdef double[:, :] pts, epts, orig_pts
 
-        # Create numpy arrays from inputs, and ensure correct shape. Note:
-        # reshape(-1) returns a 1D array from a 0 dimensional array as required
-        # for broadcasting.
-        pts = np.array(points, dtype=np.float64).reshape((-1, 2))
-        epts = np.array(endpoints, dtype=np.float64).reshape((-1, 2))
+        # Create numpy arrays from inputs, and ensure correct shape.
+        points = np.array(points, dtype=np.float64)
+        endpoints = np.array(endpoints, dtype=np.float64)
+
+        if points.ndim > 2 or (points.ndim == 2 and points.shape[1] != 2):
+            raise ValueError(
+                'Expecting input points to be (N, 2), got {}'
+                ''.format(points.shape))
+
+        pts = points.reshape((-1, 2))
+        epts = endpoints.reshape((-1, 2))
 
         sizes = [pts.shape[0], epts.shape[0]]
         n_points = max(sizes)
@@ -250,3 +257,46 @@ cdef class Geodesic:
                                endpoint=endpoint).astype(np.double)
 
         return self.direct(center, azimuths, radius_m)[:, 0:2]
+
+    def geometry_length(self, geometry):
+        """
+        Return the distance (in physical meters) of the given Shapely geometry.
+
+        The geometry is assumed to be in spherical (lon, lat) coordinates.
+
+        Parameters
+        ----------
+        geometry
+            The Shapely geometry to compute the length of. For polygons, the
+            exterior length will be calculated. For multi-part geometries, the
+            sum of the parts will be computed.
+
+        """
+        result = None
+        if hasattr(geometry, 'geoms'):
+            # Multi-geometry.
+            result = sum(self.geometry_length(geom) for geom in geometry.geoms)
+
+        elif hasattr(geometry, 'exterior'):
+            # Polygon.
+            result = self.geometry_length(geometry.exterior)
+
+        elif hasattr(geometry, 'coords'):
+            coords = np.array(geometry.coords)
+
+            # LinearRings are (N, 2), whereas LineStrings are (2, N).
+            if not isinstance(geometry, sgeom.LinearRing):
+                coords = coords.T
+
+            result = self.geometry_length(coords)
+
+        elif isinstance(geometry, np.ndarray):
+            coords = geometry
+            distances, _, _ = np.array(
+                self.inverse(coords[:-1, :], coords[1:, :]).T)
+            result = distances.sum()
+
+        else:
+            raise TypeError('Unhandled type {}'.format(geometry.__class__))
+
+        return result
