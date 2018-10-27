@@ -12,7 +12,7 @@ env:
         # New FreeType causes changes in text output.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
-          PACKAGES="numpy matplotlib freetype<2.8 proj4 scipy"
+          PACKAGES="numpy matplotlib freetype<2.8 proj4 pykdtree scipy"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
           PACKAGES="numpy matplotlib freetype<2.8 proj4 scipy mock"
