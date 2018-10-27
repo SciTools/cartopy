@@ -22,7 +22,8 @@ Tests for the Equidistant Conic coordinate system.
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -69,6 +70,17 @@ class TestEquidistantConic(object):
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=1234',
                       'y_0=-4321', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj4_params(eqdc_offset, other_args)
+
+    @pytest.mark.parametrize('lon', [-10.0, 10.0])
+    def test_central_longitude(self, lon):
+        eqdc = ccrs.EquidistantConic()
+        eqdc_offset = ccrs.EquidistantConic(central_longitude=lon)
+        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'lat_0=0.0',
+                      'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
+        check_proj4_params(eqdc_offset, other_args)
+
+        assert_array_almost_equal(eqdc_offset.boundary, eqdc.boundary,
+                                  decimal=0)
 
     def test_standard_parallels(self):
         eqdc = ccrs.EquidistantConic(standard_parallels=(13, 37))

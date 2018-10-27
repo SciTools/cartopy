@@ -2072,7 +2072,8 @@ class EquidistantConic(Projection):
         n = 103
         lons = np.empty(2 * n + 1)
         lats = np.empty(2 * n + 1)
-        tmp = np.linspace(central_longitude - 180, central_longitude + 180, n)
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        tmp = np.linspace(minlon, maxlon, n)
         lons[:n] = tmp
         lats[:n] = 90
         lons[n:-1] = tmp[::-1]
