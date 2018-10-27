@@ -2027,6 +2027,89 @@ Sinusoidal.MODIS = Sinusoidal(globe=Globe(ellipse=None,
                                           semiminor_axis=6371007.181))
 
 
+class EquidistantConic(Projection):
+    """
+    An Equidistant Conic projection.
+
+    This projection is conic and equidistant, and the scale is true along all
+    meridians and along one or two specified standard parallels.
+    """
+
+    def __init__(self, central_longitude=0.0, central_latitude=0.0,
+                 false_easting=0.0, false_northing=0.0,
+                 standard_parallels=(20.0, 50.0), globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        central_latitude: optional
+            The true latitude of the planar origin in degrees. Defaults to 0.
+        false_easting: optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from planar origin in metres. Defaults to 0.
+        standard_parallels: optional
+            The one or two latitudes of correct scale. Defaults to (20, 50).
+        globe: optional
+            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
+            created.
+
+        """
+        proj4_params = [('proj', 'eqdc'),
+                        ('lon_0', central_longitude),
+                        ('lat_0', central_latitude),
+                        ('x_0', false_easting),
+                        ('y_0', false_northing)]
+        if standard_parallels is not None:
+            try:
+                proj4_params.append(('lat_1', standard_parallels[0]))
+                try:
+                    proj4_params.append(('lat_2', standard_parallels[1]))
+                except IndexError:
+                    pass
+            except TypeError:
+                proj4_params.append(('lat_1', standard_parallels))
+
+        super(EquidistantConic, self).__init__(proj4_params, globe=globe)
+
+        # bounds
+        n = 103
+        lons = np.empty(2 * n + 1)
+        lats = np.empty(2 * n + 1)
+        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        tmp = np.linspace(minlon, maxlon, n)
+        lons[:n] = tmp
+        lats[:n] = 90
+        lons[n:-1] = tmp[::-1]
+        lats[n:-1] = -90
+        lons[-1] = lons[0]
+        lats[-1] = lats[0]
+
+        points = self.transform_points(self.as_geodetic(), lons, lats)
+
+        self._boundary = sgeom.LineString(points)
+        bounds = self._boundary.bounds
+        self._x_limits = bounds[0], bounds[2]
+        self._y_limits = bounds[1], bounds[3]
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return 1e5
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
 class _BoundaryPoint(object):
     def __init__(self, distance, kind, data):
         """
