@@ -79,7 +79,9 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:EPSG::900913': 1,
     'urn:ogc:def:crs:OGC:1.3:CRS84': _WGS84_METERS_PER_UNIT,
     'urn:ogc:def:crs:EPSG::3031': 1,
-    'urn:ogc:def:crs:EPSG::3413': 1
+    'urn:ogc:def:crs:EPSG::3413': 1,
+    'urn:ogc:def:crs:EPSG::3857': 1,
+    'urn:ogc:def:crs:EPSG:6.18:3:3857': 1
 }
 
 _URN_TO_CRS = collections.OrderedDict(
@@ -93,7 +95,9 @@ _URN_TO_CRS = collections.OrderedDict(
      ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
          central_longitude=-45,
          central_latitude=90,
-         true_scale_latitude=70))
+         true_scale_latitude=70)),
+     ('urn:ogc:def:crs:EPSG::3857', ccrs.GOOGLE_MERCATOR),
+     ('urn:ogc:def:crs:EPSG:6.18:3:3857', ccrs.GOOGLE_MERCATOR)
      ])
 
 # XML namespace definitions
