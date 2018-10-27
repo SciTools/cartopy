@@ -2031,25 +2031,30 @@ class EquidistantConic(Projection):
     """
     An Equidistant Conic projection.
 
+    This projection is conic and equidistant, and the scale is true along all
+    meridians and along one or two specified standard parallels.
     """
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
                  standard_parallels=(20.0, 50.0), globe=None):
         """
-        Kwargs:
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        central_latitude: optional
+            The true latitude of the planar origin in degrees. Defaults to 0.
+        false_easting: optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from planar origin in metres. Defaults to 0.
+        standard_parallels: optional
+            The one or two latitudes of correct scale. Defaults to (20, 50).
+        globe: optional
+            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
+            created.
 
-            * central_longitude - The central longitude. Defaults to 0.
-            * central_latitude - The true latitude of the planar origin in
-                                 degrees. Defaults to 0.
-            * standard_parallels - The one or two latitudes of correct scale.
-                                   Defaults to (20, 50).
-            * false_easting - X offset from planar origin in metres.
-                              Defaults to 0.
-            * false_northing - Y offset from planar origin in metres.
-                               Defaults to 0.
-            * globe - A :class:`cartopy.crs.Globe`.
-                      If omitted, a default globe is created.
         """
         proj4_params = [('proj', 'eqdc'),
                         ('lon_0', central_longitude),
