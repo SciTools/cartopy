@@ -27,12 +27,18 @@ from numpy.testing import assert_almost_equal
 import cartopy.crs as ccrs
 
 
+def check_proj4_params(crs, other_args):
+    expected = other_args | {'proj=eqdc', 'no_defs'}
+    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
+    assert expected == pro4_params
+
+
 class TestEquidistantConic(object):
     def test_default(self):
         eqdc = ccrs.EquidistantConic()
-        expected = ('+ellps=WGS84 +proj=eqdc +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +lat_1=20.0 +lat_2=50.0 +no_defs')
-        assert eqdc.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
+        check_proj4_params(eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-22784919.35600352, 22784919.35600352),
@@ -45,9 +51,9 @@ class TestEquidistantConic(object):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
                            ellipse=None)
         eqdc = ccrs.EquidistantConic(globe=globe)
-        expected = ('+a=1000 +b=500 +proj=eqdc +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +lat_1=20.0 +lat_2=50.0 +no_defs')
-        assert eqdc.proj4_init == expected
+        other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
+        check_proj4_params(eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-3016.869847713461, 3016.869847713461),
@@ -60,25 +66,25 @@ class TestEquidistantConic(object):
         eqdc_offset = ccrs.EquidistantConic(false_easting=1234,
                                             false_northing=-4321)
 
-        expected = ('+ellps=WGS84 +proj=eqdc +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=1234 +y_0=-4321 +lat_1=20.0 +lat_2=50.0 +no_defs')
-        assert eqdc_offset.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=1234',
+                      'y_0=-4321', 'lat_1=20.0', 'lat_2=50.0'}
+        check_proj4_params(eqdc_offset, other_args)
 
     def test_standard_parallels(self):
         eqdc = ccrs.EquidistantConic(standard_parallels=(13, 37))
-        expected = ('+ellps=WGS84 +proj=eqdc +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +lat_1=13 +lat_2=37 +no_defs')
-        assert eqdc.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0', 'lat_1=13', 'lat_2=37'}
+        check_proj4_params(eqdc, other_args)
 
         eqdc = ccrs.EquidistantConic(standard_parallels=(13, ))
-        expected = ('+ellps=WGS84 +proj=eqdc +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +lat_1=13 +no_defs')
-        assert eqdc.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0', 'lat_1=13'}
+        check_proj4_params(eqdc, other_args)
 
         eqdc = ccrs.EquidistantConic(standard_parallels=13)
-        expected = ('+ellps=WGS84 +proj=eqdc +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +lat_1=13 +no_defs')
-        assert eqdc.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0', 'lat_1=13'}
+        check_proj4_params(eqdc, other_args)
 
     def test_sphere_transform(self):
         # USGS Professional Paper 1395, pg 298
@@ -87,14 +93,14 @@ class TestEquidistantConic(object):
         lat_1 = 29.5
         lat_2 = 45.5
         eqdc = ccrs.EquidistantConic(central_longitude=-96.0,
-                                     central_latitude=23,
+                                     central_latitude=23.0,
                                      standard_parallels=(lat_1, lat_2),
                                      globe=globe)
         geodetic = eqdc.as_geodetic()
 
-        expected = ('+a=1.0 +b=1.0 +proj=eqdc +lon_0=-96.0 +lat_0=23 '
-                    '+x_0=0.0 +y_0=0.0 +lat_1=29.5 +lat_2=45.5 +no_defs')
-        assert eqdc.proj4_init == expected
+        other_args = {'a=1.0', 'b=1.0', 'lon_0=-96.0', 'lat_0=23.0', 'x_0=0.0',
+                      'y_0=0.0', 'lat_1=29.5', 'lat_2=45.5'}
+        check_proj4_params(eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-3.520038619089038, 3.520038619089038),
@@ -108,7 +114,7 @@ class TestEquidistantConic(object):
         assert_almost_equal(result, (0.2952057, 0.2424021), decimal=7)
 
     def test_ellipsoid_transform(self):
-        # USGS Professional Paper 1395, p9 299--300
+        # USGS Professional Paper 1395, pp 299--300
         globe = ccrs.Globe(semimajor_axis=6378206.4,
                            flattening=1 - np.sqrt(1 - 0.00676866),
                            ellipse=None)
@@ -120,10 +126,10 @@ class TestEquidistantConic(object):
                                      globe=globe)
         geodetic = eqdc.as_geodetic()
 
-        expected = ('+a=6378206.4 +f=0.003390076308689371 +proj=eqdc '
-                    '+lon_0=-96.0 +lat_0=23.0 +x_0=0.0 +y_0=0.0 '
-                    '+lat_1=29.5 +lat_2=45.5 +no_defs')
-        assert eqdc.proj4_init == expected
+        other_args = {'a=6378206.4', 'f=0.003390076308689371', 'lon_0=-96.0',
+                      'lat_0=23.0', 'x_0=0.0', 'y_0=0.0', 'lat_1=29.5',
+                      'lat_2=45.5'}
+        check_proj4_params(eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-22421870.719894886, 22421870.719894886),
