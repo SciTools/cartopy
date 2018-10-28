@@ -1013,7 +1013,8 @@ class Mercator(Projection):
                                        np.array([min_latitude, max_latitude]))
         self._xlimits = tuple(limits[..., 0])
         self._ylimits = tuple(limits[..., 1])
-        self._threshold = np.diff(self.x_limits)[0] / 720
+        self._threshold = min(np.diff(self.x_limits)[0] / 720,
+                              np.diff(self.y_limits)[0] / 360)
 
     def __eq__(self, other):
         res = super(Mercator, self).__eq__(other)
