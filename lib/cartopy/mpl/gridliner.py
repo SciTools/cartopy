@@ -522,13 +522,13 @@ class Gridliner(object):
             raise TypeError('Cannot label {crs.__class__.__name__} gridlines.'
                             ' Only PlateCarree gridlines are'
                             ' currently supported.'.format(crs=self.crs))
-        if not isinstance(self.axes.projection, _SUPPORTED_PROJS):
+        if not isinstance(self.axes.projection, _NON_INLINE_PROJS):
             raise TypeError('Cannot label gridlines on a'
                             ' {prj.__class__.__name__} plot unless'
                             ' x_inline=True. Only {sup} plots are currently'
                             ' supported.'.format(prj=self.axes.projection,
                                                  sup=', '.join(map(
-                                                    str, _SUPPORTED_PROJS))
+                                                    str, _NON_INLINE_PROJS))
                                                  )
                             )
         return True
