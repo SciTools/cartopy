@@ -1161,8 +1161,8 @@ class GeoAxes(matplotlib.axes.Axes):
 #            result.set_clip_path(self.outline_patch)
         return result
 
-    def gridlines(self, crs=None, draw_labels=False, mlocs=None,
-                  plocs=None, **kwargs):
+    def gridlines(self, crs=None, draw_labels=False, xlocs=None,
+                  ylocs=None, **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1175,13 +1175,13 @@ class GeoAxes(matplotlib.axes.Axes):
             Defaults to :class:`cartopy.crs.PlateCarree`.
         draw_labels: optional
             Label gridlines like axis ticks, around the edge.
-        mlocs: optional
+        xlocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
             used to determine the locations of the meridian gridlines in the
             coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
-        plocs: optional
+        ylocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
             used to determine the locations of the parallel gridlines in the
@@ -1202,9 +1202,11 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
+        mlocs = kwargs.pop('mlocs', xlocs)
+        plocs = kwargs.pop('plocs', ylocs)
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels, mlocator=mlocs,
-            plocator=plocs, collection_kwargs=kwargs)
+            self, crs=crs, draw_labels=draw_labels, xlocator=mlocs,
+            ylocator=plocs, collection_kwargs=kwargs)
         self._gridliners.append(gl)
         return gl
 

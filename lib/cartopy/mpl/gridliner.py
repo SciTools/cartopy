@@ -118,9 +118,9 @@ class Gridliner(object):
     # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
     # determination on zoom/pan.
-    def __init__(self, axes, crs, draw_labels=False, mlocator=None,
-                 plocator=None, collection_kwargs=None,
-                 mformatter=None, pformatter=None):
+    def __init__(self, axes, crs, draw_labels=False, xlocator=None,
+                 ylocator=None, collection_kwargs=None,
+                 xformatter=None, yformatter=None):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -135,58 +135,62 @@ class Gridliner(object):
         draw_labels: optional
             Toggle whether to draw labels. For finer control, attributes of
             :class:`Gridliner` may be modified individually. Defaults to False.
-        mlocator: optional
+        xlocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the x-coordinate of
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
-        plocator: optional
+        ylocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the y-coordinate of
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
-        mformatter: optional
+        xformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format
             longitude labels.
-        pformatter: optional
+        yformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format
             latitude labels.
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
 
+        .. note:: Note that the "x" and "y" labels for locators and
+             formatters do not necessarily correspond to X and Y,
+             but to longitudes and latitudes: indeed, according to
+             geographical projections, meridians and parallels can
+             cross both the X axis and the Y axis.
+
         """
         self.axes = axes
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the x
         #: gridlines and labels.
-        if mlocator is not None:
-            if not isinstance(mlocator, mticker.Locator):
-                mlocator = mticker.FixedLocator(mlocator)
-                print('fixed lon')
-            self.mlocator = mlocator
+        if xlocator is not None:
+            if not isinstance(xlocator, mticker.Locator):
+                xlocator = mticker.FixedLocator(xlocator)
+            self.xlocator = xlocator
         elif isinstance(crs, cartopy.crs.PlateCarree):
-            self.mlocator = LongitudeLocator()
+            self.xlocator = LongitudeLocator()
         else:
-            self.mlocator = classic_locator
+            self.xlocator = classic_locator
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the y
         #: gridlines and labels.
-        if plocator is not None:
-            if not isinstance(plocator, mticker.Locator):
-                plocator = mticker.FixedLocator(plocator)
-                print('fixed lat')
-            self.plocator = plocator
+        if ylocator is not None:
+            if not isinstance(ylocator, mticker.Locator):
+                ylocator = mticker.FixedLocator(ylocator)
+            self.ylocator = ylocator
         elif isinstance(crs, cartopy.crs.PlateCarree):
-            self.plocator = LatitudeLocator()
+            self.ylocator = LatitudeLocator()
         else:
-            self.plocator = classic_locator
+            self.ylocator = classic_locator
 
-        #: The :class:`~matplotlib.ticker.Formatter` to use for the x labels.
-        self.mformatter = mformatter or LongitudeFormatter()
+        #: The :class:`~matplotlib.ticker.Formatter` to use for the lon labels.
+        self.xformatter = xformatter or LongitudeFormatter()
 
-        #: The :class:`~matplotlib.ticker.Formatter` to use for the y labels.
-        self.pformatter = pformatter or LatitudeFormatter()
+        #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
+        self.yformatter = yformatter or LatitudeFormatter()
 
         #: Whether to draw labels on the top of the map.
         self.top_labels = draw_labels
@@ -201,10 +205,10 @@ class Gridliner(object):
         self.right_labels = draw_labels
 
         #: Whether to draw the longitude gridlines (meridians).
-        self.mlines = True
+        self.xlines = True
 
         #: Whether to draw the latitude gridlines (parallels).
-        self.plines = True
+        self.ylines = True
 
         #: A dictionary passed through to ``ax.text`` on x label creation
         #: for styling of the text labels.
@@ -238,10 +242,10 @@ class Gridliner(object):
         self.collection_kwargs = collection_kwargs
 
         #: The x gridlines which were created at draw time.
-        self.mline_artists = []
+        self.xline_artists = []
 
         #: The y gridlines which were created at draw time.
-        self.pline_artists = []
+        self.yline_artists = []
 
     def _crs_transform(self):
         """
@@ -339,8 +343,8 @@ class Gridliner(object):
         crs = self.crs
 
         # Get nice ticks within crs domain
-        lon_ticks = self.mlocator.tick_values(lon_lim[0], lon_lim[1])
-        lat_ticks = self.plocator.tick_values(lat_lim[0], lat_lim[1])
+        lon_ticks = self.xlocator.tick_values(lon_lim[0], lon_lim[1])
+        lat_ticks = self.ylocator.tick_values(lat_lim[0], lat_lim[1])
         lon_ticks = [value for value in lon_ticks
                      if value >= crs.x_limits[0] and value <= crs.x_limits[1]]
         lat_ticks = [value for value in lat_ticks
@@ -369,7 +373,7 @@ class Gridliner(object):
                             max(lat_lim[1], lat_ticks[-1]), n_steps)))
             lon_lines.append(ticks)
 
-        if self.mlines:
+        if self.xlines:
             nx = len(lon_lines) + 1
             # XXX this bit is cartopy specific. (for circular longitudes)
             # Purpose: omit plotting the last x line,
@@ -380,7 +384,7 @@ class Gridliner(object):
                 nx -= 1
             lon_lc = mcollections.LineCollection(lon_lines,
                                                  **collection_kwargs)
-            self.mline_artists.append(lon_lc)
+            self.xline_artists.append(lon_lc)
             self.axes.add_collection(lon_lc, autolim=False)
 
         # Latitude lines
@@ -391,10 +395,10 @@ class Gridliner(object):
                             max(lon_lim[1], lon_ticks[-1]), n_steps),
                 np.zeros(n_steps) + y))
             lat_lines.append(ticks)
-        if self.plines:
+        if self.ylines:
             lat_lc = mcollections.LineCollection(lat_lines,
                                                  **collection_kwargs)
-            self.pline_artists.append(lat_lc)
+            self.yline_artists.append(lat_lc)
             self.axes.add_collection(lat_lc, autolim=False)
 
         #################
@@ -422,8 +426,8 @@ class Gridliner(object):
         # Loop on longitude and latitude lines and collect what to draw
         to_draw = {}
         for lonlat, lines, line_ticks, formatter in (
-                ('lon', lon_lines, lon_ticks, self.mformatter),
-                ('lat', lat_lines, lat_ticks, self.pformatter)):
+                ('lon', lon_lines, lon_ticks, self.xformatter),
+                ('lat', lat_lines, lat_ticks, self.yformatter)):
 
             to_draw[lonlat] = {'y': {'left': [], 'right': []},
                                'x': {'bottom': [], 'top': []}}
