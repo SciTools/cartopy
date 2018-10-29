@@ -31,7 +31,7 @@ from cartopy.crs import Projection, _RectangularProjection
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 
 _DEGREE_SYMBOL = u'\u00B0'
-_SUPPORTED_PROJS = (
+_NON_INLINE_PROJS = (
     cartopy.crs.PlateCarree,
     cartopy.crs.Mercator,
     cartopy.crs.Miller,
@@ -121,9 +121,8 @@ class Gridliner(object):
     # method on draw. This will enable automatic gridline resolution
     # determination on zoom/pan.
     def __init__(self, axes, crs, draw_labels=False,
-                 auto=True, x_inline=False, y_inline=False,
-                 xlocator=None, ylocator=None,
-                 collection_kwargs=None):
+                 xlocator=None, ylocator=None, collection_kwargs=None,
+                 x_inline=False, y_inline=False, auto_inline=True):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -138,14 +137,6 @@ class Gridliner(object):
         draw_labels: optional
             Toggle whether to draw labels. For finer control, attributes of
             :class:`Gridliner` may be modified individually. Defaults to False.
-        auto: optional
-            Set x_inline and y_inline automatically based on projection
-        x_inline: optional
-            Toggle whether the x labels drawn should be inline.
-            Currently offers support for relatively more projections.
-        y_inline: optional
-            Toggle whether the y labels drawn should be inline.
-            Currently offers support for relatively more projections.
         xlocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the x-coordinate of
@@ -159,6 +150,12 @@ class Gridliner(object):
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
+        x_inline: optional
+            Toggle whether the x labels drawn should be inline.
+        y_inline: optional
+            Toggle whether the y labels drawn should be inline.
+        auto_inline: optional
+            Set x_inline and y_inline automatically based on projection
 
         """
         self.axes = axes
@@ -191,13 +188,13 @@ class Gridliner(object):
         #: Whether to draw labels on the right hand side of the map.
         self.ylabels_right = draw_labels
 
-        if not auto:
+        if not auto_inline:
             #: Whether to draw x labels inline
             self.x_inline = x_inline
             #: Whether to draw y labels inline
             self.y_inline = y_inline
         else:
-            if isinstance(self.axes.projection, _SUPPORTED_PROJS):
+            if isinstance(self.axes.projection, _NON_INLINE_PROJS):
                 self.x_inline = False
                 self.y_inline = False
             elif isinstance(self.axes.projection, _X_INLINE_PROJS):
@@ -235,7 +232,7 @@ class Gridliner(object):
         # if the user specifies tick labels at this point, check if they can
         # be drawn. The same check will take place at draw time in case
         # public attributes are changed after instantiation.
-        if draw_labels and not (x_inline or y_inline or auto):
+        if draw_labels and not (x_inline or y_inline or auto_inline):
             self._assert_can_draw_ticks()
 
         #: The number of interpolation points which are used to draw the
@@ -291,6 +288,9 @@ class Gridliner(object):
         other_value: float
             The other coordinate value of this gridline used for inline
             positioning. So if `value` is the x, `other_value` is the y.
+            Defaults to None, but if not None, will override upper_end.
+        clip_on: bool
+            Whether to clip/hide grid line labels if it falls out of figure.
 
         """
         transform = self._crs_transform()
@@ -345,14 +345,11 @@ class Gridliner(object):
         if other_value is None:
             label_transform = mtrans.blended_transform_factory(
                 x_transform=tr_x, y_transform=tr_y)
-            alpha = 1
         else:
             label_transform = cartopy.crs.PlateCarree()
-            alpha = 0.7
 
         label_style = {'verticalalignment': v_align,
-                       'horizontalalignment': h_align,
-                       'alpha': alpha
+                       'horizontalalignment': h_align
                        }
         label_style.update(user_label_style)
 
@@ -435,7 +432,7 @@ class Gridliner(object):
         y_label_points = [y for y in y_ticks if y_lim[0] <= y <= y_lim[1]]
 
         proj = self.axes.projection
-        if self.x_inline or self.x_inline:
+        if self.x_inline:
             # if it's default, then modify; if not, don't touch
             if self.xlocator == degree_locator:
                 # reduce cramping, especially for those projections
@@ -443,7 +440,7 @@ class Gridliner(object):
                         np.diff(x_label_points).mean() <= 20):
                     x_label_points = x_label_points[1::2]
 
-        if self.y_inline or self.x_inline:
+        if self.y_inline:
             if self.ylocator == degree_locator:
                 if (isinstance(proj, _CRAMPED_PROJS) or
                         np.diff(y_label_points).mean() <= 20):
@@ -497,10 +494,6 @@ class Gridliner(object):
                         # so the labels aren't all the way to the left
                         other_value = np.median(
                             x_label_points[:int(len(x_label_points) / 2) - 2])
-                    elif isinstance(proj, cartopy.crs.RotatedPole):
-                        # so labels don't stack
-                        other_value = np.median(
-                            x_label_points[:int(len(x_label_points) / 2) + 1])
                     else:
                         other_value = np.median(x_label_points)
                     clip_on = True
