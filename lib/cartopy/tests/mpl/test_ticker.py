@@ -132,8 +132,6 @@ def test_LongitudeFormatter_central_longitude_0():
     result = [formatter(tick) for tick in test_ticks]
     expected = [u'180\u00B0W', u'120\u00B0W', u'60\u00B0W', u'0\u00B0',
                 u'60\u00B0E', u'120\u00B0E', u'180\u00B0E']
-    print(result)
-    print(expected)
     assert result == expected
 
 

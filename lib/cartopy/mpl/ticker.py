@@ -120,11 +120,9 @@ class _PlateCarreeFormatter(Formatter):
         return x, degs, mins, secs
 
     def set_locs(self, locs):
-
         Formatter.set_locs(self, locs)
         if not self._auto_hide:
             return
-
         self.locs, degs, mins, secs = self._get_dms(self.locs)
         secs = np.round(secs, self._precision-3).astype('i')
         secs0 = secs == 0
@@ -194,13 +192,14 @@ class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
     def __init__(self,
                  degree_symbol=u'\u00B0',
+                 number_format='g',
+                 transform_precision=1e-8,
                  decimal=False,
                  minute_symbol=u"'",
                  second_symbol=u"''",
-                 number_format='g',
                  seconds_number_format='g',
                  auto_hide=True,
-                 transform_precision=1e-8):
+                 ):
         """
         Tick formatter for a latitudes.
 
@@ -301,13 +300,14 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  zero_direction_label=False,
                  dateline_direction_label=False,
                  degree_symbol=u'\u00B0',
+                 number_format='g',
+                 transform_precision=1e-8,
                  decimal=False,
                  minute_symbol=u"'",
                  second_symbol=u"''",
-                 number_format='g',
                  seconds_number_format='g',
                  auto_hide=True,
-                 transform_precision=1e-8):
+                 ):
         """
         Create a formatter for longitudes.
 
@@ -404,14 +404,21 @@ class LongitudeFormatter(_PlateCarreeFormatter):
     @classmethod
     def _fix_lons(cls, lons):
         if isinstance(lons, list):
-            return map(cls._fix_lons, lons)
+            return [cls._fix_lons(lon) for lon in lons]
+        p180 = lons == 180
+        m180 = lons == -180
+
+        # Wrap
         lons = ((lons + 180) % 360) - 180
-        if isinstance(lons, np.ndarray):
-            valid = lons == -180
-            if valid.any():
-                lons[valid] = 180
-        elif lons == -180:
-            lons = 180
+
+        # Keep -180 and 180 when requested
+        for mp180, value in [(m180, -180), (p180, 180)]:
+            if np.any(mp180):
+                if isinstance(lons, np.ndarray):
+                    lons = np.where(mp180, value, lons)
+                else:
+                    lons = value
+
         return lons
 
     def set_locs(self, locs):
@@ -442,13 +449,12 @@ class LongitudeFormatter(_PlateCarreeFormatter):
 
 
 class LongitudeLocator(MaxNLocator):
-    """A locator for longitude degrees that works even at very small scale
-    on minutes and seconds
+    """A locator for longitudes that works even at very small scale
 
     Parameters
     ----------
     decimal: bool
-        Force decimal degrees so the local does not stop specifically on
+        Force decimal degrees so the locator does not stop specifically on
         fractions of minutes and seconds (False by default)
     """
 
@@ -486,13 +492,12 @@ class LongitudeLocator(MaxNLocator):
 
 
 class LatitudeLocator(LongitudeLocator):
-    """A locator for latitude degrees that works even at very small scale
-    on minutes and seconds
+    """A locator for latitudes that works even at very small scale
 
     Parameters
     ----------
     decimal: bool
-        Force decimal degrees so the local does not stop specifically on
+        Force decimal degrees so the locator does not stop specifically on
         fractions of minutes and seconds (False by default)
     """
 
