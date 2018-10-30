@@ -34,10 +34,11 @@ class _PlateCarreeFormatter(Formatter):
 
     _target_projection = ccrs.PlateCarree()
 
-    def __init__(self, degree_symbol=u'\u00B0', decimal=False,
+    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+                 transform_precision=1e-8, decimal=False,
                  minute_symbol=u"'", second_symbol=u"''",
-                 number_format='g', seconds_number_format='g',
-                 auto_hide=True, transform_precision=1e-8):
+                 seconds_number_format='g',
+                 auto_hide=True):
         """
         Base class for simpler implementation of specialised formatters
         for latitude and longitude axes.
@@ -190,18 +191,13 @@ class _PlateCarreeFormatter(Formatter):
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
-    def __init__(self,
-                 degree_symbol=u'\u00B0',
-                 number_format='g',
-                 transform_precision=1e-8,
-                 decimal=False,
-                 minute_symbol=u"'",
-                 second_symbol=u"''",
-                 seconds_number_format='g',
-                 auto_hide=True,
+    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+                 transform_precision=1e-8, decimal=False,
+                 minute_symbol=u"'", second_symbol=u"''",
+                 seconds_number_format='g', auto_hide=True,
                  ):
         """
-        Tick formatter for a latitudes.
+        Tick formatter for latitudes.
 
         When bounded to an axis, the axis must be part of an axes defined
         on a rectangular projection (e.g. Plate Carree, Mercator).
@@ -214,6 +210,14 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             tick labels. Defaults to u'\u00B0' which is the unicode
             degree symbol. Can be an empty string if no degree symbol is
             desired.
+        number_format: optional
+            Format string to represent the degrees tick values.
+            Defaults to 'g'.
+        transform_precision: optional
+            Sets the precision (in degrees) to which transformed tick
+            values are rounded. The default is 1e-7, and should be
+            suitable for most use cases. To control the appearance of
+            tick labels use the *number_format* keyword.
         decimal: bool, optional
             Wether or not formatting as decimal degrees and not as
             degrees-minutes-seconds.
@@ -221,19 +225,11 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             The character(s) used to represent the minute symbol.
         second_symbol: str, optional
             The character(s) used to represent the second symbol.
-        auto_hide: bool, optional
-            Auto-hide degrees or minutes when redondant.
-        number_format: optional
-            Format string to represent the degrees tick values.
-            Defaults to 'g'.
         seconds_number_format: optional
             Format string to represent the seconds tick values.
             Defaults to 'g'.
-        transform_precision: optional
-            Sets the precision (in degrees) to which transformed tick
-            values are rounded. The default is 1e-7, and should be
-            suitable for most use cases. To control the appearance of
-            tick labels use the *number_format* keyword.
+        auto_hide: bool, optional
+            Auto-hide degrees or minutes when redondant.
 
         Note
         ----
@@ -329,26 +325,26 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         degree_symbol: optional
             The symbol used to represent degrees. Defaults to u'\u00B0'
             which is the unicode degree symbol.
-        decimal: bool, optional
-            Wether or not formatting as decimal degrees and not as
-            degrees-minutes-seconds.
-        auto_hide: bool, optional
-            Auto-hide degrees or minutes when redondant.
-        minute_symbol: str, optional
-            The character(s) used to represent the minute symbol.
-        second_symbol: str, optional
-            The character(s) used to represent the second symbol.
         number_format: optional
             Format string to represent the degrees tick values.
-            Defaults to 'g'.
-        seconds_number_format: optional
-            Format string to represent the seconds tick values.
             Defaults to 'g'.
         transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
+        decimal: bool, optional
+            Wether or not formatting as decimal degrees and not as
+            degrees-minutes-seconds.
+        minute_symbol: str, optional
+            The character(s) used to represent the minute symbol.
+        second_symbol: str, optional
+            The character(s) used to represent the second symbol.
+        seconds_number_format: optional
+            Format string to represent the seconds tick values.
+            Defaults to 'g'.
+        auto_hide: bool, optional
+            Auto-hide degrees or minutes when redondant.
 
         Note
         ----
