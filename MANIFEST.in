@@ -3,6 +3,7 @@ include CHANGES
 include COPYING*
 include INSTALL
 include README.rst
+include pyproject.toml
 include requirements/*.txt
 include lib/cartopy/data/*
 include lib/cartopy/io/srtm.npz
