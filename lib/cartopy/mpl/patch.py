@@ -69,6 +69,7 @@ def geos_to_path(shape):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
+            codes[-1] = Path.CLOSEPOLY
             return codes
         if shape.is_empty:
             return []
