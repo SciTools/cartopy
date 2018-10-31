@@ -98,10 +98,12 @@ version = cartopy.__version__
 release = cartopy.__version__
 
 # Sphinx gallery configuration
+from sphinx_gallery.sorting import ExampleTitleSortKey
 sphinx_gallery_conf = {
     'examples_dirs': ['../../lib/cartopy/examples'],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
+    'within_subsection_order': ExampleTitleSortKey,
     'doc_module': ('cartopy',),
     'reference_url': {'cartopy': None},
     'backreferences_dir': '../build/backrefs',
