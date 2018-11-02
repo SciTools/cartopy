@@ -80,3 +80,16 @@ script:
 after_failure:
   - source activate $ENV_NAME
   - python -c "from __future__ import print_function; import cartopy.tests.mpl; print(cartopy.tests.mpl.failed_images_html())"
+
+deploy:
+  - provider: pypi
+    user: scitools-cartopy
+    # travis encrypt <password>
+    password:
+      secure: Wbc/NQkcEsWVGn3hTemLbaDond6dtAO46Q6PVSS0GiL9RU0bH6QIpLq34JV5hKRuhooFp8WaU49OJsH71iMB4Utrr1y8olkwpTuq7BBsuZGSHtStX0T4UKUCAHynlLnCEqIyBBDIWFsIy6OnLZDnKmPkqLW8IdQfk0aWl0mDv5w=
+    distributions: sdist
+    upload_docs: false
+    on:
+      repo: SciTools/cartopy
+      condition: $PYTHON_VERSION=="3.6"
+      tags: true
