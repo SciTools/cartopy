@@ -123,7 +123,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         try:
             boundary = self._cw_boundary
         except AttributeError:
-            boundary = sgeom.LineString(self.boundary)
+            boundary = sgeom.LinearRing(self.boundary)
             self._cw_boundary = boundary
         return boundary
 
@@ -132,7 +132,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         try:
             boundary = self._ccw_boundary
         except AttributeError:
-            boundary = sgeom.LineString(self.boundary.coords[::-1])
+            boundary = sgeom.LinearRing(self.boundary.coords[::-1])
             self._ccw_boundary = boundary
         return boundary
 
