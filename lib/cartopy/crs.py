@@ -1869,10 +1869,11 @@ class AlbersEqualArea(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LineString(points)
-        bounds = self._boundary.bounds
-        self._x_limits = bounds[0], bounds[2]
-        self._y_limits = bounds[1], bounds[3]
+        self._boundary = sgeom.LinearRing(points)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
@@ -2104,10 +2105,11 @@ class EquidistantConic(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LineString(points)
-        bounds = self._boundary.bounds
-        self._x_limits = bounds[0], bounds[2]
-        self._y_limits = bounds[1], bounds[3]
+        self._boundary = sgeom.LinearRing(points)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
