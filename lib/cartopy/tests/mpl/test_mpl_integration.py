@@ -149,7 +149,8 @@ def test_simple_global():
 
 @pytest.mark.natural_earth
 @ImageTesting(['multiple_projections1' if ccrs.PROJ4_VERSION < (5, 0, 0)
-               else 'multiple_projections5'])
+               else 'multiple_projections5'],
+              tolerance=0.6)
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),

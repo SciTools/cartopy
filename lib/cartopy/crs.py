@@ -671,10 +671,10 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 
     """
 
-    t = np.linspace(0, 2 * np.pi, n)
+    t = np.linspace(0, -2 * np.pi, n)  # Clockwise boundary.
     coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
     coords += ([easting], [northing])
-    return coords[:, ::-1]
+    return coords
 
 
 class PlateCarree(_CylindricalProjection):
@@ -1249,8 +1249,10 @@ class LambertAzimuthalEqualArea(Projection):
         coords = _ellipse_boundary(a * 1.9999, max_y - false_northing,
                                    false_easting, false_northing, 61)
         self._boundary = sgeom.polygon.LinearRing(coords.T)
-        self._x_limits = self._boundary.bounds[::2]
-        self._y_limits = self._boundary.bounds[1::2]
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1422,13 +1424,9 @@ class Stereographic(Projection):
                           a * x_axis_offset + false_easting)
         self._y_limits = (-b * y_axis_offset + false_northing,
                           b * y_axis_offset + false_northing)
-        if self._x_limits[1] == self._y_limits[1]:
-            point = sgeom.Point(false_easting, false_northing)
-            self._boundary = point.buffer(self._x_limits[1]).exterior
-        else:
-            coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
-                                       false_easting, false_northing, 91)
-            self._boundary = sgeom.LinearRing(coords.T)
+        coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
+                                   false_easting, false_northing, 91)
+        self._boundary = sgeom.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1498,8 +1496,10 @@ class Orthographic(Projection):
         # a tiny fraction at the cost of the extreme edges.
         coords = _ellipse_boundary(a * 0.99999, b * 0.99999, n=61)
         self._boundary = sgeom.polygon.LinearRing(coords.T)
-        self._xlim = self._boundary.bounds[::2]
-        self._ylim = self._boundary.bounds[1::2]
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._xlim = mins[0], maxs[0]
+        self._ylim = mins[1], maxs[1]
         self._threshold = np.diff(self._xlim)[0] * 0.02
 
     @property
@@ -1739,8 +1739,10 @@ class _Satellite(Projection):
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
         self._boundary = sgeom.LinearRing(coords.T)
-        self._xlim = self._boundary.bounds[::2]
-        self._ylim = self._boundary.bounds[1::2]
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._xlim = mins[0], maxs[0]
+        self._ylim = mins[1], maxs[1]
         self._threshold = np.diff(self._xlim)[0] * 0.02
 
     @property
@@ -1936,9 +1938,10 @@ class AzimuthalEquidistant(Projection):
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)
         self._boundary = sgeom.LinearRing(coords.T)
-        bounds = self._boundary.bounds
-        self._x_limits = bounds[0], bounds[2]
-        self._y_limits = bounds[1], bounds[3]
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
