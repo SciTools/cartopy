@@ -1011,23 +1011,23 @@ class Mercator(Projection):
         limits = self.transform_points(Geodetic(),
                                        np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))
-        self._xlimits = tuple(limits[..., 0])
-        self._ylimits = tuple(limits[..., 1])
+        self._x_limits = tuple(limits[..., 0])
+        self._y_limits = tuple(limits[..., 1])
         self._threshold = min(np.diff(self.x_limits)[0] / 720,
                               np.diff(self.y_limits)[0] / 360)
 
     def __eq__(self, other):
         res = super(Mercator, self).__eq__(other)
-        if hasattr(other, "_ylimits") and hasattr(other, "_xlimits"):
-            res = res and self._ylimits == other._ylimits and \
-                self._xlimits == other._xlimits
+        if hasattr(other, "_y_limits") and hasattr(other, "_x_limits"):
+            res = res and self._y_limits == other._y_limits and \
+                self._x_limits == other._x_limits
         return res
 
     def __ne__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash((self.proj4_init, self._xlimits, self._ylimits))
+        return hash((self.proj4_init, self._x_limits, self._y_limits))
 
     @property
     def threshold(self):
@@ -1043,11 +1043,11 @@ class Mercator(Projection):
 
     @property
     def x_limits(self):
-        return self._xlimits
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return self._ylimits
+        return self._y_limits
 
 
 # Define a specific instance of a Mercator projection, the Google mercator.
@@ -1499,9 +1499,9 @@ class Orthographic(Projection):
         self._boundary = sgeom.polygon.LinearRing(coords.T)
         mins = np.min(coords, axis=1)
         maxs = np.max(coords, axis=1)
-        self._xlim = mins[0], maxs[0]
-        self._ylim = mins[1], maxs[1]
-        self._threshold = np.diff(self._xlim)[0] * 0.02
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
+        self._threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
     def boundary(self):
@@ -1513,11 +1513,11 @@ class Orthographic(Projection):
 
     @property
     def x_limits(self):
-        return self._xlim
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return self._ylim
+        return self._y_limits
 
 
 class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
@@ -1749,9 +1749,9 @@ class _Satellite(Projection):
         self._boundary = sgeom.LinearRing(coords.T)
         mins = np.min(coords, axis=1)
         maxs = np.max(coords, axis=1)
-        self._xlim = mins[0], maxs[0]
-        self._ylim = mins[1], maxs[1]
-        self._threshold = np.diff(self._xlim)[0] * 0.02
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
+        self._threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
     def boundary(self):
@@ -1763,11 +1763,11 @@ class _Satellite(Projection):
 
     @property
     def x_limits(self):
-        return self._xlim
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return self._ylim
+        return self._y_limits
 
 
 class Geostationary(_Satellite):
