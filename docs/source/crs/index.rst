@@ -5,7 +5,7 @@ The :class:`cartopy.crs.CRS` class is the very core of cartopy, all coordinate r
 in cartopy have :class:`~cartopy.crs.CRS` as a parent class, meaning all projections have
 the interface described below.
 
-.. autoclass:: cartopy.crs.CRS()
+.. autoclass:: cartopy.crs.CRS
    :members:
 
    .. data:: globe
@@ -17,7 +17,7 @@ The :class:`~cartopy.crs.Globe` class is used to encapsulate the underlying sphe
 All CRSs have an associated :class:`~cartopy.crs.Globe`, though often it is just the default :class:`~cartopy.crs.Globe`
 which represents the reference ellipsoid (i.e. "wgs84").
 
-.. autoclass:: cartopy.crs.Globe(datum=None, ellipse='WGS84', semimajor_axis=None, semiminor_axis=None, flattening=None, inverse_flattening=None, towgs84=None)
+.. autoclass:: cartopy.crs.Globe
    :members:
    :exclude-members: to_proj4_params
 
@@ -34,9 +34,9 @@ all projections in the :ref:`cartopy_projections`.
 There are a few non-:class:`~cartopy.crs.Projection` subclasses. These represent
 coordinate reference systems which are 3 dimensional and could not be drawn directly on a piece of paper.
 
-.. autoclass:: cartopy.crs.Geodetic(globe=None)
+.. autoclass:: cartopy.crs.Geodetic
 
-.. autoclass:: cartopy.crs.Geocentric(globe=None)
+.. autoclass:: cartopy.crs.Geocentric
 
 .. autoclass:: cartopy.crs.RotatedGeodetic
 

@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+#
+# cython: embedsignature=True
 
 """
 This module pulls together _trace.cpp, proj, GEOS and _crs.pyx to implement a

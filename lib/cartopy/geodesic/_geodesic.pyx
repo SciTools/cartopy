@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+#
+# cython: embedsignature=True
 
 """
 This module defines the Geodesic class which can interface with the Proj
