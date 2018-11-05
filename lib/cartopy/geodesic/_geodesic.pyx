@@ -52,23 +52,25 @@ cdef class Geodesic:
     cdef double radius
     cdef double flattening
 
-    def __cinit__(self, radius=6378137.0, flattening=1/298.257223563):
+    def __init__(self, radius=6378137.0, flattening=1/298.257223563):
         """
-        Create an ellipsoid with a given radius and flattening.
-
         Parameters
         ----------
-        radius: optional
+        radius: float, optional
             Equatorial radius (metres). Defaults to the WGS84 semimajor axis
             (6378137.0 metres).
 
-        flattening: optional
+        flattening: float, optional
             Flattening of ellipsoid.  Setting flattening = 0 gives a sphere.
             Negative flattening gives a prolate ellipsoid. If flattening > 1,
             set flattening to 1/flattening.
             Defaults to the WGS84 flattening (1/298.257223563).
 
         """
+        # This method exists solely for docstrings. The __cinit__ method is
+        # where the real work happens. Make sure to keep the signatures synced.
+
+    def __cinit__(self, radius=6378137.0, flattening=1/298.257223563):
         # allocate some memory (filled with random data)
         self.geod = <geod_geodesic*> PyMem_Malloc(sizeof(geod_geodesic))
         if not self.geod:
@@ -97,22 +99,20 @@ cdef class Geodesic:
 
         Parameters
         ----------
-        points
-            An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat
-            points.  The starting point(s) from which to travel.
+        points: array_like, shape=(n *or* 1, 2)
+            The starting longitude-latitude point(s) from which to travel.
 
-        azimuths
-            A length n (or 1) numpy.ndarray or list of azimuth
-            values (degrees).
+        azimuths: float or array_like with shape=(n, )
+            List of azimuth values (degrees).
 
-        distances
-            A length n (or 1) numpy.ndarray or list of distances
-            values (metres).
+        distances : float or array_like with shape(n, )
+            List of distances values (metres).
 
         Returns
         -------
-        An n by 3 np.ndarray of lons, lats, and forward azimuths of the
-        located endpoint(s).
+        `numpy.ndarray`, shape=(n, 3)
+            The longitudes, latitudes, and forward azimuths of the located
+            endpoint(s).
 
         """
 
@@ -167,18 +167,17 @@ cdef class Geodesic:
 
         Parameters
         ----------
-        points
-            An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat points.
-            The starting point(s) from which to travel.
+        points: array_like, shape=(n *or* 1, 2)
+            The starting longitude-latitude point(s) from which to travel.
 
-        endpoints:
-            An n (or 1) by 2 numpy.ndarray, list or tuple of lon-lat points.
-            The point(s) to travel to.
+        endpoints: array_like, shape=(n *or* 1, 2)
+            The longitude-latitude point(s) to travel to.
 
         Returns
         -------
-        An n by 3 np.ndarray of distances, and the (forward) azimuths of
-        the start and end points.
+        `numpy.ndarray`, shape=(n, 3)
+            The distances, and the (forward) azimuths of the start and end
+            points.
 
         """
 
@@ -230,22 +229,21 @@ cdef class Geodesic:
 
         Parameters
         ----------
-        lon
+        lon : float
             Longitude coordinate of the centre.
-        lat
+        lat : float
             Latitude coordinate of the centre.
-        radius
+        radius : float
             The radius of the circle (metres).
-        n_samples: optional
+        n_samples: int, optional
             Integer number of sample points of circle.
-        endpoint: optional
-            Boolean for whether to repeat endpoint at the end of returned
-            array.
+        endpoint: bool, optional
+            Whether to repeat endpoint at the end of returned array.
 
         Returns
         -------
-        An n_samples by 2 np.ndarray of evenly spaced lon-lat points on the
-        circle.
+        `numpy.ndarray`, shape=(n_samples, 2)
+            The evenly spaced longitude-latitude points on the circle.
 
         """
 
@@ -268,7 +266,7 @@ cdef class Geodesic:
 
         Parameters
         ----------
-        geometry
+        geometry : `shapely.geometry.BaseGeometry`
             The Shapely geometry to compute the length of. For polygons, the
             exterior length will be calculated. For multi-part geometries, the
             sum of the parts will be computed.
