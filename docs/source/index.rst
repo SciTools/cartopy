@@ -58,6 +58,7 @@ outlines recent changes, new features, and future development plans.
     cartopy.rst
     cartopy/io/img_tiles.rst
     cartopy/io/ogc_clients.rst
+    cartopy/trace.rst
     cartopy/util/util.rst
 
 
