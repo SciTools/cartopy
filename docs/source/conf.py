@@ -124,7 +124,7 @@ sphinx_gallery_conf = {
 exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
-# default_role = None
+default_role = 'py:obj'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -347,6 +347,7 @@ epub_copyright = u'2012, Philip Elson, Richard Hattersley'
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'matplotlib': ('https://matplotlib.org', None),
+                       'numpy': ('https://docs.scipy.org/doc/numpy/', None),
                        'shapely': ('http://toblerity.org/shapely', None), }
 
 

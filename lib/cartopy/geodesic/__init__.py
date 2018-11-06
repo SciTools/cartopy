@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2017, Met Office
+# (C) British Crown Copyright 2015 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,3 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 # NOTE: noqa for flake8 = unused import
 from cartopy.geodesic._geodesic import Geodesic  # noqa: F401
+
+# Need to be explicit because it's from a 'different' module.
+__document_these__ = ['Geodesic']
