@@ -285,7 +285,7 @@ class MapboxTiles(GoogleTiles):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
-    def __init__(self, access_token, map_id):
+    def __init__(self, access_token, map_name):
         """
         Set up a new Mapbox tiles instance.
 
@@ -296,21 +296,66 @@ class MapboxTiles(GoogleTiles):
         ----------
         access_token
             A valid Mapbox API access token.
-        map_id
-            A map ID for a publicly accessible map. This is the map whose
-            tiles will be retrieved through this process.
+        map_name
+            A map name for a publicly accessible map (provided by Mapbox).
+            This is the map whose tiles will be retrieved through this process.
 
         """
         self.access_token = access_token
-        self.map_id = map_id
+        self.map_name = map_name
         super(MapboxTiles, self).__init__()
 
     def _image_url(self, tile):
         x, y, z = tile
-        url = ('https://api.tiles.mapbox.com/v4/{mapid}/{z}/{x}/{y}.png?'
-               'access_token={token}'.format(z=z, y=y, x=x,
-                                             mapid=self.map_id,
-                                             token=self.access_token))
+        url = ('https://api.mapbox.com/v4/mapbox.{name}/{z}/{x}/{y}.png'
+               '?access_token={token}'.format(z=z, y=y, x=x,
+                                              name=self.map_name,
+                                              token=self.access_token))
+        return url
+
+
+class MapboxStyleTiles(GoogleTiles):
+    """
+    Implement web tile retrieval from a user-defined Mapbox style. For more
+    details on Mapbox styles, see
+    https://www.mapbox.com/studio-manual/overview/map-styling/.
+
+    For terms of service, see https://www.mapbox.com/tos/.
+
+    """
+    def __init__(self, access_token, username, map_id):
+        """
+        Set up a new instance to retrieve tiles from a Mapbox style.
+
+        Access to Mapbox web services requires an access token and a map ID.
+        See https://www.mapbox.com/api-documentation/ for details.
+
+        Parameters
+        ----------
+        access_token
+            A valid Mapbox API access token.
+        username
+            The username for the Mapbox user who defined the Mapbox style.
+        map_id
+            A map ID for a map defined by a Mapbox style. This is the map whose
+            tiles will be retrieved through this process. Note that this style
+            may be private and if your access token does not have permissions
+            to view this style, then map tile retrieval will fail.
+
+        """
+        self.access_token = access_token
+        self.username = username
+        self.map_id = map_id
+        super(MapboxStyleTiles, self).__init__()
+
+    def _image_url(self, tile):
+        x, y, z = tile
+        url = ('https://api.mapbox.com/styles/v1/'
+               '{user}/{mapid}/tiles/256/{z}/{x}/{y}'
+               '?access_token={token}'.format(z=z, y=y, x=x,
+                                              user=self.username,
+                                              mapid=self.map_id,
+                                              token=self.access_token))
         return url
 
 
