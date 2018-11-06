@@ -29,6 +29,8 @@
 <a href="https://zenodo.org/badge/latestdoi/5282596">
 <img src="https://zenodo.org/badge/5282596.svg"
  alt="zenodo" /></a>
+<a href="https://gitter.im/SciTools/cartopy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge">
+<img src="https://badges.gitter.im/SciTools/cartopy.svg" alt="Gitter Chat" /></a>
 </p>
 <br>
 
@@ -77,6 +79,8 @@ Documentation can be found at <http://scitools.org.uk/cartopy/docs/latest/>.
   [Google Group](https://groups.google.com/forum/#!forum/scitools-iris).
 - Report bugs, suggest features or view the source code on
   [GitHub](https://github.com/SciTools/cartopy).
+- To chat with developers and other users you can use the
+  [Gitter Chat](https://gitter.im/SciTools/cartopy)
 
 ## License and copyright
 
