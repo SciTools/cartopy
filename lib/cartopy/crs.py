@@ -123,7 +123,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         try:
             boundary = self._cw_boundary
         except AttributeError:
-            boundary = sgeom.LineString(self.boundary)
+            boundary = sgeom.LinearRing(self.boundary)
             self._cw_boundary = boundary
         return boundary
 
@@ -132,7 +132,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         try:
             boundary = self._ccw_boundary
         except AttributeError:
-            boundary = sgeom.LineString(self.boundary.coords[::-1])
+            boundary = sgeom.LinearRing(self.boundary.coords[::-1])
             self._ccw_boundary = boundary
         return boundary
 
@@ -671,10 +671,10 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 
     """
 
-    t = np.linspace(0, 2 * np.pi, n)
+    t = np.linspace(0, -2 * np.pi, n)  # Clockwise boundary.
     coords = np.vstack([semimajor * np.cos(t), semiminor * np.sin(t)])
     coords += ([easting], [northing])
-    return coords[:, ::-1]
+    return coords
 
 
 class PlateCarree(_CylindricalProjection):
@@ -1011,23 +1011,23 @@ class Mercator(Projection):
         limits = self.transform_points(Geodetic(),
                                        np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))
-        self._xlimits = tuple(limits[..., 0])
-        self._ylimits = tuple(limits[..., 1])
+        self._x_limits = tuple(limits[..., 0])
+        self._y_limits = tuple(limits[..., 1])
         self._threshold = min(np.diff(self.x_limits)[0] / 720,
                               np.diff(self.y_limits)[0] / 360)
 
     def __eq__(self, other):
         res = super(Mercator, self).__eq__(other)
-        if hasattr(other, "_ylimits") and hasattr(other, "_xlimits"):
-            res = res and self._ylimits == other._ylimits and \
-                self._xlimits == other._xlimits
+        if hasattr(other, "_y_limits") and hasattr(other, "_x_limits"):
+            res = res and self._y_limits == other._y_limits and \
+                self._x_limits == other._x_limits
         return res
 
     def __ne__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash((self.proj4_init, self._xlimits, self._ylimits))
+        return hash((self.proj4_init, self._x_limits, self._y_limits))
 
     @property
     def threshold(self):
@@ -1043,11 +1043,11 @@ class Mercator(Projection):
 
     @property
     def x_limits(self):
-        return self._xlimits
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return self._ylimits
+        return self._y_limits
 
 
 # Define a specific instance of a Mercator projection, the Google mercator.
@@ -1155,24 +1155,25 @@ class LambertConformal(Projection):
 
         self.cutoff = cutoff
         n = 91
-        lons = [0]
-        lats = [plat]
-        lons.extend(np.linspace(central_longitude - 180 + 0.001,
-                                central_longitude + 180 - 0.001, n))
-        lats.extend(np.array([cutoff] * n))
-        lons.append(0)
-        lats.append(plat)
-
-        points = self.transform_points(PlateCarree(),
-                                       np.array(lons), np.array(lats))
+        lons = np.empty(n + 2)
+        lats = np.full(n + 2, cutoff)
+        lons[0] = lons[-1] = 0
+        lats[0] = lats[-1] = plat
         if plat == 90:
             # Ensure clockwise
-            points = points[::-1, :]
+            lons[1:-1] = np.linspace(central_longitude + 180 - 0.001,
+                                     central_longitude - 180 + 0.001, n)
+        else:
+            lons[1:-1] = np.linspace(central_longitude - 180 + 0.001,
+                                     central_longitude + 180 - 0.001, n)
 
-        self._boundary = sgeom.LineString(points)
-        bounds = self._boundary.bounds
-        self._x_limits = bounds[0], bounds[2]
-        self._y_limits = bounds[1], bounds[3]
+        points = self.transform_points(PlateCarree(), lons, lats)
+
+        self._boundary = sgeom.LinearRing(points)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     def __eq__(self, other):
         res = super(LambertConformal, self).__eq__(other)
@@ -1249,8 +1250,10 @@ class LambertAzimuthalEqualArea(Projection):
         coords = _ellipse_boundary(a * 1.9999, max_y - false_northing,
                                    false_easting, false_northing, 61)
         self._boundary = sgeom.polygon.LinearRing(coords.T)
-        self._x_limits = self._boundary.bounds[::2]
-        self._y_limits = self._boundary.bounds[1::2]
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1422,13 +1425,9 @@ class Stereographic(Projection):
                           a * x_axis_offset + false_easting)
         self._y_limits = (-b * y_axis_offset + false_northing,
                           b * y_axis_offset + false_northing)
-        if self._x_limits[1] == self._y_limits[1]:
-            point = sgeom.Point(false_easting, false_northing)
-            self._boundary = point.buffer(self._x_limits[1]).exterior
-        else:
-            coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
-                                       false_easting, false_northing, 91)
-            self._boundary = sgeom.LinearRing(coords.T)
+        coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
+                                   false_easting, false_northing, 91)
+        self._boundary = sgeom.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -1498,9 +1497,11 @@ class Orthographic(Projection):
         # a tiny fraction at the cost of the extreme edges.
         coords = _ellipse_boundary(a * 0.99999, b * 0.99999, n=61)
         self._boundary = sgeom.polygon.LinearRing(coords.T)
-        self._xlim = self._boundary.bounds[::2]
-        self._ylim = self._boundary.bounds[1::2]
-        self._threshold = np.diff(self._xlim)[0] * 0.02
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
+        self._threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
     def boundary(self):
@@ -1512,11 +1513,11 @@ class Orthographic(Projection):
 
     @property
     def x_limits(self):
-        return self._xlim
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return self._ylim
+        return self._y_limits
 
 
 class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
@@ -1526,21 +1527,23 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
 
         # Obtain boundary points
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
-        points = []
         n = 91
-        geodetic_crs = self.as_geodetic()
-        for lat in np.linspace(-90, 90, n):
-            points.append(self.transform_point(maxlon, lat, geodetic_crs))
-        for lat in np.linspace(90, -90, n):
-            points.append(self.transform_point(minlon, lat, geodetic_crs))
-        points.append(self.transform_point(maxlon, -90, geodetic_crs))
+        lon = np.empty(2 * n + 1)
+        lat = np.empty(2 * n + 1)
+        lon[:n] = minlon
+        lat[:n] = np.linspace(-90, 90, n)
+        lon[n:2 * n] = maxlon
+        lat[n:2 * n] = np.linspace(90, -90, n)
+        lon[-1] = minlon
+        lat[-1] = -90
+        points = self.transform_points(self.as_geodetic(), lon, lat)
 
-        self._boundary = sgeom.LineString(points[::-1])
+        self._boundary = sgeom.LinearRing(points)
 
-        x = [p[0] for p in points]
-        y = [p[1] for p in points]
-        self._x_limits = min(x), max(x)
-        self._y_limits = min(y), max(y)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
@@ -1653,51 +1656,56 @@ class InterruptedGoodeHomolosine(Projection):
         epsilon = 1e-10
 
         # Obtain boundary points
-        points = []
         n = 31
-        geodetic_crs = self.as_geodetic()
-
-        # Right boundary
-        for lat in np.linspace(-90, 90, n):
-            points.append(self.transform_point(maxlon, lat, geodetic_crs))
-
-        # Top boundary
-        interrupted_lons = (-40.0,)
-        for lon in interrupted_lons:
-            for lat in np.linspace(90, 0, n):
-                points.append(self.transform_point(lon + epsilon +
-                                                   central_longitude,
-                                                   lat, geodetic_crs))
-            for lat in np.linspace(0, 90, n):
-                points.append(self.transform_point(lon - epsilon +
-                                                   central_longitude,
-                                                   lat, geodetic_crs))
+        top_interrupted_lons = (-40.0,)
+        bottom_interrupted_lons = (80.0, -20.0, -100.0)
+        lons = np.empty(
+            (2 + 2 * len(top_interrupted_lons + bottom_interrupted_lons)) * n +
+            1)
+        lats = np.empty(
+            (2 + 2 * len(top_interrupted_lons + bottom_interrupted_lons)) * n +
+            1)
+        end = 0
 
         # Left boundary
-        for lat in np.linspace(90, -90, n):
-            points.append(self.transform_point(minlon, lat, geodetic_crs))
+        lons[end:end + n] = minlon
+        lats[end:end + n] = np.linspace(-90, 90, n)
+        end += n
+
+        # Top boundary
+        for lon in top_interrupted_lons:
+            lons[end:end + n] = lon - epsilon + central_longitude
+            lats[end:end + n] = np.linspace(90, 0, n)
+            end += n
+            lons[end:end + n] = lon + epsilon + central_longitude
+            lats[end:end + n] = np.linspace(0, 90, n)
+            end += n
+
+        # Right boundary
+        lons[end:end + n] = maxlon
+        lats[end:end + n] = np.linspace(90, -90, n)
+        end += n
 
         # Bottom boundary
-        interrupted_lons = (-100.0, -20.0, 80.0)
-        for lon in interrupted_lons:
-            for lat in np.linspace(-90, 0, n):
-                points.append(self.transform_point(lon - epsilon +
-                                                   central_longitude,
-                                                   lat, geodetic_crs))
-            for lat in np.linspace(0, -90, n):
-                points.append(self.transform_point(lon + epsilon +
-                                                   central_longitude,
-                                                   lat, geodetic_crs))
+        for lon in bottom_interrupted_lons:
+            lons[end:end + n] = lon + epsilon + central_longitude
+            lats[end:end + n] = np.linspace(-90, 0, n)
+            end += n
+            lons[end:end + n] = lon - epsilon + central_longitude
+            lats[end:end + n] = np.linspace(0, -90, n)
+            end += n
 
         # Close loop
-        points.append(self.transform_point(maxlon, -90, geodetic_crs))
+        lons[-1] = minlon
+        lats[-1] = -90
 
-        self._boundary = sgeom.LineString(points[::-1])
+        points = self.transform_points(self.as_geodetic(), lons, lats)
+        self._boundary = sgeom.LinearRing(points)
 
-        x = [p[0] for p in points]
-        y = [p[1] for p in points]
-        self._x_limits = min(x), max(x)
-        self._y_limits = min(y), max(y)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
@@ -1739,9 +1747,11 @@ class _Satellite(Projection):
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
         self._boundary = sgeom.LinearRing(coords.T)
-        self._xlim = self._boundary.bounds[::2]
-        self._ylim = self._boundary.bounds[1::2]
-        self._threshold = np.diff(self._xlim)[0] * 0.02
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
+        self._threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
     def boundary(self):
@@ -1753,11 +1763,11 @@ class _Satellite(Projection):
 
     @property
     def x_limits(self):
-        return self._xlim
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return self._ylim
+        return self._y_limits
 
 
 class Geostationary(_Satellite):
@@ -1859,10 +1869,11 @@ class AlbersEqualArea(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LineString(points)
-        bounds = self._boundary.bounds
-        self._x_limits = bounds[0], bounds[2]
-        self._y_limits = bounds[1], bounds[3]
+        self._boundary = sgeom.LinearRing(points)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
@@ -1936,9 +1947,10 @@ class AzimuthalEquidistant(Projection):
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)
         self._boundary = sgeom.LinearRing(coords.T)
-        bounds = self._boundary.bounds
-        self._x_limits = bounds[0], bounds[2]
-        self._y_limits = bounds[1], bounds[3]
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
@@ -1991,17 +2003,21 @@ class Sinusoidal(Projection):
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         points = []
         n = 91
-        geodetic_crs = self.as_geodetic()
-        for lat in np.linspace(-90, 90, n):
-            points.append(self.transform_point(maxlon, lat, geodetic_crs))
-        for lat in np.linspace(90, -90, n):
-            points.append(self.transform_point(minlon, lat, geodetic_crs))
-        points.append(self.transform_point(maxlon, -90, geodetic_crs))
+        lon = np.empty(2 * n + 1)
+        lat = np.empty(2 * n + 1)
+        lon[:n] = minlon
+        lat[:n] = np.linspace(-90, 90, n)
+        lon[n:2 * n] = maxlon
+        lat[n:2 * n] = np.linspace(90, -90, n)
+        lon[-1] = minlon
+        lat[-1] = -90
+        points = self.transform_points(self.as_geodetic(), lon, lat)
 
-        self._boundary = sgeom.LineString(points[::-1])
-        minx, miny, maxx, maxy = self._boundary.bounds
-        self._x_limits = minx, maxx
-        self._y_limits = miny, maxy
+        self._boundary = sgeom.LinearRing(points)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
         self._threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
 
     @property
@@ -2089,10 +2105,11 @@ class EquidistantConic(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LineString(points)
-        bounds = self._boundary.bounds
-        self._x_limits = bounds[0], bounds[2]
-        self._y_limits = bounds[1], bounds[3]
+        self._boundary = sgeom.LinearRing(points)
+        mins = np.min(points, axis=0)
+        maxs = np.max(points, axis=0)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
 
     @property
     def boundary(self):
