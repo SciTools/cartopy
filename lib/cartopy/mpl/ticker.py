@@ -486,6 +486,10 @@ class LongitudeLocator(MaxNLocator):
         self._guess_steps(vmin, vmax)
         return MaxNLocator._raw_ticks(self, vmin, vmax)
 
+    def bin_boundaries(self, vmin, vmax):
+        self._guess_steps(vmin, vmax)
+        return MaxNLocator.bin_boundaries(self, vmin, vmax)
+
 
 class LatitudeLocator(LongitudeLocator):
     """A locator for latitudes that works even at very small scale
