@@ -20,6 +20,7 @@ from __future__ import (absolute_import, division, print_function)
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+from matplotlib import rc, rcdefaults
 try:
     from unittest import mock
 except ImportError:
@@ -43,18 +44,18 @@ def test_gridliner():
     ax = plt.subplot(nx, ny, 1, projection=ccrs.PlateCarree())
     ax.set_global()
     ax.coastlines()
-    ax.gridlines()
+    ax.gridlines(linestyle=':')
 
     ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB())
     ax.set_global()
     ax.coastlines()
-    ax.gridlines()
+    ax.gridlines(linestyle=':')
 
     ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB())
     ax.set_global()
     ax.coastlines()
     ax.gridlines(ccrs.PlateCarree(), color='blue', linestyle='-')
-    ax.gridlines(ccrs.OSGB())
+    ax.gridlines(ccrs.OSGB(), linestyle=':')
 
     ax = plt.subplot(nx, ny, 4, projection=ccrs.PlateCarree())
     ax.set_global()
@@ -67,7 +68,7 @@ def test_gridliner():
     ax.coastlines()
     osgb = ccrs.OSGB()
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
-    ax.gridlines(osgb)
+    ax.gridlines(osgb, linestyle=':')
 
     ax = plt.subplot(nx, ny, 6, projection=ccrs.NorthPolarStereo())
     ax.set_global()
@@ -79,7 +80,7 @@ def test_gridliner():
     ax.coastlines()
     osgb = ccrs.OSGB()
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
-    ax.gridlines(osgb)
+    ax.gridlines(osgb, linestyle=':')
 
     ax = plt.subplot(nx, ny, 8,
                      projection=ccrs.Robinson(central_longitude=135))
@@ -114,6 +115,9 @@ else:
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_image])
 def test_grid_labels():
+
+    rc('font', size=9)
+
     plt.figure(figsize=(8, 10))
 
     crs_pc = ccrs.PlateCarree()
@@ -144,7 +148,7 @@ def test_grid_labels():
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
     ax.coastlines()
     gl = ax.gridlines(
-        crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle='--')
+        crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle=':')
     gl.bottom_labels = True
     gl.right_labels = True
     gl.xlines = False
@@ -178,3 +182,5 @@ def test_grid_labels():
 
     # Increase margins between plots to stop them bumping into one another.
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
+
+    rcdefaults()
