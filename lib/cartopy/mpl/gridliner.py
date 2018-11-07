@@ -298,7 +298,7 @@ class Gridliner(object):
             else:
                 x = 0.0
                 meth = self.axes.get_yaxis_text1_transform
-            label_transform, v_align, h_align = meth(self.xpadding)
+            label_transform, v_align, h_align = meth(self.ypadding)
             if matplotlib.__version__ > '2.0':
                 v_align = 'center_baseline'
             else:
