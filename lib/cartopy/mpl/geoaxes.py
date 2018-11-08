@@ -1448,19 +1448,19 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _pcolormesh_patched(self, *args, **kwargs):
         """
-        A temporary, modified duplicate of
-        :func:`~matplotlib.pyplot.pcolormesh'.
+        A modified duplicate of :func:`~matplotlib.pyplot.pcolormesh'.
 
-        This function contains a workaround for a Matplotlib issue
-        and will be removed once the issue has been resolved.
-        https://github.com/matplotlib/matplotlib/pull/1314
+        This function contains patches for Cartopy-specific behaviour, such as
+        using the transform for limit checks, applying longitude wrapping, etc.
+        See PATCH comments below.
 
         """
         import warnings
         import matplotlib.colors as mcolors
         import matplotlib.collections as mcoll
 
-        if not self._hold:
+        # Remove this check when only MPL >= 3.0 is supported.
+        if not getattr(self, '_hold', True):
             self.cla()
 
         alpha = kwargs.pop('alpha', None)
