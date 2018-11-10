@@ -1558,6 +1558,123 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
         return self._y_limits
 
 
+class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
+    """
+    An Eckert projection.
+
+    This class implements all the methods common to the Eckert family of
+    projections.
+
+    """
+
+    def __init__(self, central_longitude=0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        globe: optional
+            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
+            created.
+
+        """
+        if globe is None:
+            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = globe.semiminor_axis or a
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj "{}" projection does not handle '
+                          'elliptical globes.'.format(self._proj_name))
+
+        proj4_params = [('proj', self._proj_name),
+                        ('lon_0', central_longitude)]
+        super(_Eckert, self).__init__(proj4_params, central_longitude,
+                                      globe=globe)
+
+    @property
+    def threshold(self):
+        return 1e5
+
+
+class EckertI(_Eckert):
+    """
+    An Eckert I projection.
+
+    This projection is pseudocylindrical, but not equal-area. Both meridians
+    and parallels are straight lines. Its equal-area pair is :class:`EckertII`.
+
+    """
+    _proj_name = 'eck1'
+
+
+class EckertII(_Eckert):
+    """
+    An Eckert II projection.
+
+    This projection is pseudocylindrical, and equal-area. Both meridians and
+    parallels are straight lines. Its non-equal-area pair with equally-spaced
+    parallels is :class:`EckertI`.
+
+    """
+    _proj_name = 'eck2'
+
+
+class EckertIII(_Eckert):
+    """
+    An Eckert III projection.
+
+    This projection is pseudocylindrical, but not equal-area. Parallels are
+    equally-spaced straight lines, while meridians are elliptical arcs up to
+    semicircles on the edges. Its equal-area pair is :class:`EckertIV`.
+
+    """
+    _proj_name = 'eck3'
+
+
+class EckertIV(_Eckert):
+    """
+    An Eckert IV projection.
+
+    This projection is pseudocylindrical, and equal-area. Parallels are
+    unequally-spaced straight lines, while meridians are elliptical arcs up to
+    semicircles on the edges. Its non-equal-area pair with equally-spaced
+    parallels is :class:`EckertIII`.
+
+    It is commonly used for world maps.
+
+    """
+    _proj_name = 'eck4'
+
+
+class EckertV(_Eckert):
+    """
+    An Eckert V projection.
+
+    This projection is pseudocylindrical, but not equal-area. Parallels are
+    equally-spaced straight lines, while meridians are sinusoidal arcs. Its
+    equal-area pair is :class:`EckertVI`.
+
+    """
+    _proj_name = 'eck5'
+
+
+class EckertVI(_Eckert):
+    """
+    An Eckert VI projection.
+
+    This projection is pseudocylindrical, and equal-area. Parallels are
+    unequally-spaced straight lines, while meridians are sinusoidal arcs. Its
+    non-equal-area pair with equally-spaced parallels is :class:`EckertV`.
+
+    It is commonly used for world maps.
+
+    """
+    _proj_name = 'eck6'
+
+
 class Mollweide(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0, globe=None):
         proj4_params = [('proj', 'moll'), ('lon_0', central_longitude)]

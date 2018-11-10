@@ -364,6 +364,102 @@ NearsidePerspective
     ax.gridlines()
 
 
+EckertI
+-------
+
+.. autoclass:: cartopy.crs.EckertI
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertI())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertII
+--------
+
+.. autoclass:: cartopy.crs.EckertII
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertII())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertIII
+---------
+
+.. autoclass:: cartopy.crs.EckertIII
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertIII())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertIV
+--------
+
+.. autoclass:: cartopy.crs.EckertIV
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertIV())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertV
+-------
+
+.. autoclass:: cartopy.crs.EckertV
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertV())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertVI
+--------
+
+.. autoclass:: cartopy.crs.EckertVI
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertVI())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
 Gnomonic
 --------
 
