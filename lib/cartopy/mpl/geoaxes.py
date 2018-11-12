@@ -236,18 +236,18 @@ class GeoAxes(matplotlib.axes.Axes):
     when created with the *projection* keyword. For example::
 
         # Set up a standard map for latlon data.
-        geo_axes = pyplot.axes(projection=cartopy.crs.PlateCarree())
+        geo_axes = plt.axes(projection=cartopy.crs.PlateCarree())
 
         # Set up an OSGB map.
-        geo_axes = pyplot.subplot(2, 2, 1, projection=cartopy.crs.OSGB())
+        geo_axes = plt.subplot(2, 2, 1, projection=cartopy.crs.OSGB())
 
     When a source projection is provided to one of it's plotting methods,
     using the *transform* keyword, the standard Matplotlib plot result is
     transformed from source coordinates to the target projection. For example::
 
         # Plot latlon data on an OSGB map.
-        pyplot.axes(projection=cartopy.crs.OSGB())
-        pyplot.contourf(x, y, data, transform=cartopy.crs.PlateCarree())
+        plt.axes(projection=cartopy.crs.OSGB())
+        plt.contourf(x, y, data, transform=cartopy.crs.PlateCarree())
 
     """
     def __init__(self, *args, **kwargs):
