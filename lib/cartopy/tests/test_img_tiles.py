@@ -220,7 +220,7 @@ def test_mapbox_tiles_api_url():
     token = 'foo'
     map_name = 'bar'
     tile = [0, 1, 2]
-    exp_url = ('https://api.mapbox.com/v4/mapbox.map_name'
+    exp_url = ('https://api.mapbox.com/v4/mapbox.bar'
                '/2/0/1.png?access_token=foo')
 
     mapbox_sample = cimgt.MapboxTiles(token, map_name)
@@ -234,8 +234,8 @@ def test_mapbox_style_tiles_api_url():
     map_id = 'bar'
     tile = [0, 1, 2]
     exp_url = ('https://api.mapbox.com/styles/v1/'
-               'username/map_id/tiles/256/2/0/1'
-               '?access_token=token')
+               'baz/bar/tiles/256/2/0/1'
+               '?access_token=foo')
 
     mapbox_sample = cimgt.MapboxStyleTiles(token, username, map_id)
     url_str = mapbox_sample._image_url(tile)
