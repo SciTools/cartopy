@@ -285,7 +285,7 @@ class MapboxTiles(GoogleTiles):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
-    def __init__(self, access_token, map_name):
+    def __init__(self, access_token, map_id):
         """
         Set up a new Mapbox tiles instance.
 
@@ -296,20 +296,20 @@ class MapboxTiles(GoogleTiles):
         ----------
         access_token
             A valid Mapbox API access token.
-        map_name
-            A map name for a publicly accessible map (provided by Mapbox).
+        map_id
+            An ID for a publicly accessible map (provided by Mapbox).
             This is the map whose tiles will be retrieved through this process.
 
         """
         self.access_token = access_token
-        self.map_name = map_name
+        self.map_id = map_id
         super(MapboxTiles, self).__init__()
 
     def _image_url(self, tile):
         x, y, z = tile
-        url = ('https://api.mapbox.com/v4/mapbox.{name}/{z}/{x}/{y}.png'
+        url = ('https://api.mapbox.com/v4/mapbox.{id}/{z}/{x}/{y}.png'
                '?access_token={token}'.format(z=z, y=y, x=x,
-                                              name=self.map_name,
+                                              id=self.map_id,
                                               token=self.access_token))
         return url
 
