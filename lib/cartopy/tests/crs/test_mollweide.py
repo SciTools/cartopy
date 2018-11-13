@@ -45,6 +45,15 @@ def test_default():
                         [-9020047.8480736, 9020047.8480736])
 
 
+def test_offset():
+    crs = ccrs.Mollweide()
+    crs_offset = ccrs.Mollweide(false_easting=1234, false_northing=-4321)
+    other_args = {'a=6378137.0', 'lon_0=0', 'x_0=1234', 'y_0=-4321'}
+    check_proj4_params(crs_offset, other_args)
+    assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
+    assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
+
+
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     moll = ccrs.Mollweide(central_longitude=lon)

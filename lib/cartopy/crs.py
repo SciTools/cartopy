@@ -1521,7 +1521,12 @@ class Orthographic(Projection):
 
 
 class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
-    def __init__(self, proj4_params, central_longitude, globe=None):
+    def __init__(self, proj4_params, central_longitude,
+                 false_easting=None, false_northing=None, globe=None):
+        if false_easting is not None:
+            proj4_params += [('x_0', false_easting)]
+        if false_northing is not None:
+            proj4_params += [('y_0', false_northing)]
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
 
@@ -1567,12 +1572,17 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
 
     """
 
-    def __init__(self, central_longitude=0, globe=None):
+    def __init__(self, central_longitude=0, false_easting=None,
+                 false_northing=None, globe=None):
         """
         Parameters
         ----------
         central_longitude: optional
             The central longitude. Defaults to 0.
+        false_easting: optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: optional
+            Y offset from planar origin in metres. Defaults to 0.
         globe: :class:`cartopy.crs.Globe`, optional
             If omitted, a default globe is created.
 
@@ -1594,6 +1604,8 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
         proj4_params = [('proj', self._proj_name),
                         ('lon_0', central_longitude)]
         super(_Eckert, self).__init__(proj4_params, central_longitude,
+                                      false_easting=false_easting,
+                                      false_northing=false_northing,
                                       globe=globe)
 
     @property
@@ -1690,12 +1702,17 @@ class Mollweide(_WarpedRectangularProjection):
 
     """
 
-    def __init__(self, central_longitude=0, globe=None):
+    def __init__(self, central_longitude=0, globe=None,
+                 false_easting=None, false_northing=None):
         """
         Parameters
         ----------
         central_longitude: float, optional
             The central longitude. Defaults to 0.
+        false_easting: float, optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: float, optional
+            Y offset from planar origin in metres. Defaults to 0.
         globe: :class:`cartopy.crs.Globe`, optional
             If omitted, a default globe is created.
 
@@ -1716,6 +1733,8 @@ class Mollweide(_WarpedRectangularProjection):
 
         proj4_params = [('proj', 'moll'), ('lon_0', central_longitude)]
         super(Mollweide, self).__init__(proj4_params, central_longitude,
+                                        false_easting=false_easting,
+                                        false_northing=false_northing,
                                         globe=globe)
 
     @property
@@ -1735,12 +1754,17 @@ class Robinson(_WarpedRectangularProjection):
 
     """
 
-    def __init__(self, central_longitude=0, globe=None):
+    def __init__(self, central_longitude=0, globe=None,
+                 false_easting=None, false_northing=None):
         """
         Parameters
         ----------
         central_longitude: float, optional
             The central longitude. Defaults to 0.
+        false_easting: float, optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: float, optional
+            Y offset from planar origin in metres. Defaults to 0.
         globe: :class:`cartopy.crs.Globe`, optional
             If omitted, a default globe is created.
 
@@ -1775,6 +1799,8 @@ class Robinson(_WarpedRectangularProjection):
 
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super(Robinson, self).__init__(proj4_params, central_longitude,
+                                       false_easting=false_easting,
+                                       false_northing=false_northing,
                                        globe=globe)
 
     @property
