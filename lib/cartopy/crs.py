@@ -1678,7 +1678,31 @@ class EckertVI(_Eckert):
 
 
 class Mollweide(_WarpedRectangularProjection):
+    """
+    A Mollweide projection.
+
+    This projection is pseudocylindrical, and equal area. Parallels are
+    unequally-spaced straight lines, while meridians are elliptical arcs up to
+    semicircles on the edges. Poles are points.
+
+    It is commonly used for world maps, or interrupted with several central
+    meridians.
+
+    """
+
     def __init__(self, central_longitude=0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+            .. note::
+                This projection does not handle elliptical globes.
+
+        """
         if globe is None:
             globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
 
@@ -1700,7 +1724,30 @@ class Mollweide(_WarpedRectangularProjection):
 
 
 class Robinson(_WarpedRectangularProjection):
+    """
+    A Robinson projection.
+
+    This projection is pseudocylindrical, and a compromise that is neither
+    equal-area nor conformal. Parallels are unequally-spaced straight lines,
+    and meridians are curved lines of no particular form.
+
+    It is commonly used for "visually-appealing" world maps.
+
+    """
+
     def __init__(self, central_longitude=0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+            .. note::
+                This projection does not handle elliptical globes.
+
+        """
         # Warn when using Robinson with proj 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://github.com/OSGeo/proj.4/issues/113).
