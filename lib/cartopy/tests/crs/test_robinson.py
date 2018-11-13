@@ -22,7 +22,8 @@ Tests for Robinson projection.
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -32,6 +33,37 @@ _CRS_ROB = ccrs.Robinson()
 
 # Increase tolerance if using older proj releases
 _TOL = -1 if ccrs.PROJ4_VERSION < (4, 9) else 7
+_LIMIT_TOL = -1  # if ccrs.PROJ4_VERSION < (5, 2, 0) else 7
+
+
+def check_proj_params(crs, other_args):
+    expected = other_args | {'proj=robin', 'no_defs'}
+    proj_params = set(crs.proj4_init.lstrip('+').split(' +'))
+    assert expected == proj_params
+
+
+def test_default():
+    robin = ccrs.Robinson()
+    other_args = {'a=6378137.0', 'lon_0=0'}
+    check_proj_params(robin, other_args)
+
+    assert_almost_equal(robin.x_limits,
+                        [-17005833.3305252, 17005833.3305252])
+    assert_almost_equal(robin.y_limits,
+                        [-8625154.6651000, 8625154.6651000], _LIMIT_TOL)
+
+
+@pytest.mark.parametrize('lon', [-10.0, 10.0])
+def test_central_longitude(lon):
+    robin = ccrs.Robinson(central_longitude=lon)
+    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
+    check_proj_params(robin, other_args)
+
+    assert_almost_equal(robin.x_limits,
+                        [-17005833.3305252, 17005833.3305252],
+                        decimal=5)
+    assert_almost_equal(robin.y_limits,
+                        [-8625154.6651000, 8625154.6651000], _LIMIT_TOL)
 
 
 def test_transform_point():
