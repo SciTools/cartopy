@@ -1577,11 +1577,11 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
         """
         Parameters
         ----------
-        central_longitude: optional
+        central_longitude: float, optional
             The central longitude. Defaults to 0.
-        false_easting: optional
+        false_easting: float, optional
             X offset from planar origin in metres. Defaults to 0.
-        false_northing: optional
+        false_northing: float, optional
             Y offset from planar origin in metres. Defaults to 0.
         globe: :class:`cartopy.crs.Globe`, optional
             If omitted, a default globe is created.
