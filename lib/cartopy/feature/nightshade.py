@@ -16,7 +16,95 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import (absolute_import, division, print_function)
+
+import datetime
+
 import numpy as np
+import shapely.geometry as sgeom
+
+from . import ShapelyFeature
+from .. import crs as ccrs
+
+
+class Nightshade(ShapelyFeature):
+    def __init__(self, date=None, delta=0.1, refraction=-0.83,
+                 color="k", alpha=0.75, **kwargs):
+        """
+        Shade the darkside of the Earth, accounting for refraction.
+
+        Parameters
+        ----------
+        date
+            A UTC datetime object used to calculate the position of the sun.
+            Default: datetime.datetime.utcnow()
+        delta
+            Float (degrees), stepsize to determine the resolution of the
+            night polygon feature.
+        refraction
+            Float (degrees) to specify the adjustment due to refraction,
+            thickness of the solar disc, elevation etc...
+
+        Note
+        ----
+            Matplotlib keyword arguments can be used when drawing the feature.
+            This allows standard Matplotlib control over aspects such as
+            'color', 'alpha', etc.
+
+        """
+        if date is None:
+            date = datetime.datetime.utcnow()
+
+        # make sure date is UTC, or naive with respect to time zones
+        if date.utcoffset():
+            raise ValueError('datetime instance must be UTC, not {0}'.format(
+                             date.tzname()))
+
+        # Returns the Greenwich hour angle,
+        # need longitude (opposite direction)
+        lat, lon = solar_position(date)
+        pole_lon = lon
+        if lat > 0:
+            pole_lat = -90 + lat
+            central_lon = 180
+        else:
+            pole_lat = 90 + lat
+            central_lon = 0
+
+        rotated_pole = ccrs.RotatedPole(pole_latitude=pole_lat,
+                                        pole_longitude=pole_lon,
+                                        central_rotated_longitude=central_lon)
+
+        npts = int(180/delta)
+        x = np.empty(npts*2)
+        y = np.empty(npts*2)
+
+        # Solve the equation for sunrise/sunset:
+        # https://en.wikipedia.org/wiki/Sunrise_equation#Generalized_equation
+        # NOTE: In the generalized equation on Wikipedia,
+        #       delta == 0. in the rotated pole coordinate system.
+        #       Therefore, the max/min latitude is +/- (90+refraction)
+
+        # Fill latitudes up and then down
+        y[:npts] = np.linspace(-(90+refraction), 90+refraction, npts)
+        y[npts:] = y[:npts][::-1]
+
+        # Solve the generalized equation for omega0, which is the
+        # angle of sunrise/sunset from solar noon
+        omega0 = np.rad2deg(np.arccos(np.sin(np.deg2rad(refraction)) /
+                                      np.cos(np.deg2rad(y))))
+
+        # Fill the longitude values from the offset for midnight.
+        # This needs to be a closed loop to fill the polygon.
+        # Negative longitudes
+        x[:npts] = -(180 - omega0[:npts])
+        # Positive longitudes
+        x[npts:] = 180 - omega0[npts:]
+
+        kwargs.setdefault('facecolor', color)
+        kwargs.setdefault('alpha', alpha)
+
+        geom = sgeom.Polygon(zip(x, y))
+        return super().__init__([geom], rotated_pole, **kwargs)
 
 
 def julian_day(date):
