@@ -91,5 +91,5 @@ deploy:
     upload_docs: false
     on:
       repo: SciTools/cartopy
-      condition: $PYTHON_VERSION=="3.6"
+      condition: $NAME == "Latest everything"*
       tags: true
