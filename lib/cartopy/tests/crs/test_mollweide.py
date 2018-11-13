@@ -36,7 +36,7 @@ def check_proj4_params(crs, other_args):
 
 def test_default():
     moll = ccrs.Mollweide()
-    other_args = {'ellps=WGS84', 'lon_0=0'}
+    other_args = {'a=6378137.0', 'lon_0=0'}
     check_proj4_params(moll, other_args)
 
     assert_almost_equal(np.array(moll.x_limits),
@@ -45,23 +45,10 @@ def test_default():
                         [-9020047.8480736, 9020047.8480736])
 
 
-def test_eccentric_globe():
-    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
-                       ellipse=None)
-    moll = ccrs.Mollweide(globe=globe)
-    other_args = {'a=1000', 'b=500', 'lon_0=0'}
-    check_proj4_params(moll, other_args)
-
-    assert_almost_equal(np.array(moll.x_limits),
-                        [-2828.4271247, 2828.4271247])
-    assert_almost_equal(np.array(moll.y_limits),
-                        [-1414.2135623731, 1414.2135623731])
-
-
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     moll = ccrs.Mollweide(central_longitude=lon)
-    other_args = {'ellps=WGS84', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
     check_proj4_params(moll, other_args)
 
     assert_almost_equal(np.array(moll.x_limits),

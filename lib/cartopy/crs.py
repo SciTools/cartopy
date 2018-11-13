@@ -1573,9 +1573,11 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
         ----------
         central_longitude: optional
             The central longitude. Defaults to 0.
-        globe: optional
-            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
-            created.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+            .. note::
+                This projection does not handle elliptical globes.
 
         """
         if globe is None:
@@ -1677,6 +1679,17 @@ class EckertVI(_Eckert):
 
 class Mollweide(_WarpedRectangularProjection):
     def __init__(self, central_longitude=0, globe=None):
+        if globe is None:
+            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = globe.semiminor_axis or a
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj "moll" projection does not handle '
+                          'elliptical globes.')
+
         proj4_params = [('proj', 'moll'), ('lon_0', central_longitude)]
         super(Mollweide, self).__init__(proj4_params, central_longitude,
                                         globe=globe)
@@ -1701,6 +1714,17 @@ class Robinson(_WarpedRectangularProjection):
             warnings.warn('Cannot determine Proj version. The Robinson '
                           'projection may be unreliable and should be used '
                           'with caution.')
+
+        if globe is None:
+            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = globe.semiminor_axis or a
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj "robin" projection does not handle '
+                          'elliptical globes.')
 
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super(Robinson, self).__init__(proj4_params, central_longitude,
