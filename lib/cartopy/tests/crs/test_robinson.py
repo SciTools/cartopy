@@ -14,24 +14,19 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 Tests for Robinson projection.
 
-For now, mostly tests the workaround for a specific problem.
-Problem report in : https://github.com/SciTools/cartopy/issues/23
-Fix covered in : https://github.com/SciTools/cartopy/pull/277
-
-'''
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
+from numpy.testing import assert_array_almost_equal
 
 import cartopy.crs as ccrs
 
 
-_NAN = float('nan')
 _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
@@ -40,50 +35,63 @@ _TOL = -1 if ccrs.PROJ4_VERSION < (4, 9) else 7
 
 
 def test_transform_point():
+    """
+    Mostly tests the workaround for a specific problem.
+    Problem report in: https://github.com/SciTools/cartopy/issues/23
+    Fix covered in: https://github.com/SciTools/cartopy/pull/277
+    """
+
     # this way has always worked
     result = _CRS_ROB.transform_point(35.0, 70.0, _CRS_PC)
-    assert_arr_almost_eq(result, (2376187.27182751, 7275317.81573085), _TOL)
+    assert_array_almost_equal(result, (2376187.27182751, 7275317.81573085),
+                              _TOL)
 
     # this always did something, but result has altered
-    result = _CRS_ROB.transform_point(_NAN, 70.0, _CRS_PC)
+    result = _CRS_ROB.transform_point(np.nan, 70.0, _CRS_PC)
     assert np.all(np.isnan(result))
 
     # this used to crash + is now fixed
-    result = _CRS_ROB.transform_point(35.0, _NAN, _CRS_PC)
+    result = _CRS_ROB.transform_point(35.0, np.nan, _CRS_PC)
     assert np.all(np.isnan(result))
 
 
 def test_transform_points():
+    """
+    Mostly tests the workaround for a specific problem.
+    Problem report in: https://github.com/SciTools/cartopy/issues/23
+    Fix covered in: https://github.com/SciTools/cartopy/pull/277
+    """
+
     # these always worked
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
                                        np.array([70.0]))
-    assert_arr_almost_eq(result,
-                         [[2376187.27182751, 7275317.81573085, 0]], _TOL)
+    assert_array_almost_equal(result,
+                              [[2376187.27182751, 7275317.81573085, 0]], _TOL)
 
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
                                        np.array([70.0]),
                                        np.array([0.0]))
-    assert_arr_almost_eq(result,
-                         [[2376187.27182751, 7275317.81573085, 0]], _TOL)
+    assert_array_almost_equal(result,
+                              [[2376187.27182751, 7275317.81573085, 0]], _TOL)
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_points(_CRS_PC,
-                                       np.array([_NAN]),
+                                       np.array([np.nan]),
                                        np.array([70.0]))
     assert np.all(np.isnan(result))
 
     # this used to crash + is now fixed
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
-                                       np.array([_NAN]))
+                                       np.array([np.nan]))
     assert np.all(np.isnan(result))
 
     # multipoint case
-    x = np.array([10.0, 21.0, 0.0, 77.7, _NAN, 0.0])
-    y = np.array([10.0, _NAN, 10.0, 77.7, 55.5, 0.0])
-    z = np.array([10.0, 0.0, 0.0, _NAN, 55.5, 0.0])
+    x = np.array([10.0, 21.0, 0.0, 77.7, np.nan, 0.0])
+    y = np.array([10.0, np.nan, 10.0, 77.7, 55.5, 0.0])
+    z = np.array([10.0, 0.0, 0.0, np.nan, 55.5, 0.0])
     expect_result = np.array(
         [[9.40422591e+05, 1.06952091e+06, 1.00000000e+01],
          [11.1, 11.2, 11.3],
