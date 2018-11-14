@@ -278,30 +278,6 @@ class StamenTerrain(GoogleTiles):
         return url
 
 
-class StamenToner(GoogleTiles):
-    """
-    Implements web tile retrieval from Stamen Toner maps
-
-    """
-    def _image_url(self, tile):
-        x, y, z = tile
-        url = 'http://tile.stamen.com/toner/%s/%s/%s.png' % (
-            z, x, y)
-        return url
-
-
-class StamenWatercolor(GoogleTiles):
-    """
-    Implements web tile retrieval from Stamen Watercolor maps
-
-    """
-    def _image_url(self, tile):
-        x, y, z = tile
-        url = 'http://tile.stamen.com/watercolor/%s/%s/%s.png' % (
-            z, x, y)
-        return url
-
-
 class MapboxTiles(GoogleTiles):
     """
     Implement web tile retrieval from Mapbox.
