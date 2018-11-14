@@ -206,6 +206,29 @@ def test_multiple_projections():
                  transform=ccrs.Geodetic())
 
 
+@pytest.mark.skipif(ccrs.PROJ4_VERSION < (5, 2, 0),
+                    reason='Proj is too old.')
+@pytest.mark.natural_earth
+@ImageTesting(['multiple_projections520'])
+def test_multiple_projections_520():
+    # Test projections added in Proj 5.2.0.
+
+    fig = plt.figure(figsize=(2, 2))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.EqualEarth())
+
+    ax.set_global()
+
+    ax.coastlines()
+
+    ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
+
+    ax.plot([-0.08, 132], [51.53, 43.17], color='red',
+            transform=ccrs.PlateCarree())
+
+    ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
+            transform=ccrs.Geodetic())
+
+
 def test_cursor_values():
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
     x, y = np.array([-969100.]), np.array([-4457000.])

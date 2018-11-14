@@ -1689,6 +1689,58 @@ class EckertVI(_Eckert):
     _proj_name = 'eck6'
 
 
+class EqualEarth(_WarpedRectangularProjection):
+    u"""
+    An Equal Earth projection.
+
+    This projection is pseudocylindrical, and equal area. Parallels are
+    unequally-spaced straight lines, while meridians are equally-spaced arcs.
+
+    It is intended for world maps.
+
+    Note
+    ----
+    To use this projection, you must be using Proj 5.2.0 or newer.
+
+    References
+    ----------
+    Bojan \u0160avri\u010d, Tom Patterson & Bernhard Jenny (2018) The Equal
+    Earth map projection, International Journal of Geographical Information
+    Science, DOI: 10.1080/13658816.2018.1504949
+
+    """
+
+    def __init__(self, central_longitude=0, false_easting=None,
+                 false_northing=None, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        false_easting: float, optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: float, optional
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+        """
+        if PROJ4_VERSION < (5, 2, 0):
+            raise ValueError('The EqualEarth projection requires Proj version '
+                             '5.2.0, but you are using {}.'
+                             .format('.'.join(PROJ4_VERSION)))
+
+        proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
+        super(EqualEarth, self).__init__(proj_params, central_longitude,
+                                         false_easting=false_easting,
+                                         false_northing=false_northing,
+                                         globe=globe)
+
+    @property
+    def threshold(self):
+        return 1e5
+
+
 class Mollweide(_WarpedRectangularProjection):
     """
     A Mollweide projection.
