@@ -28,20 +28,20 @@ from .. import crs as ccrs
 
 class Nightshade(ShapelyFeature):
     def __init__(self, date=None, delta=0.1, refraction=-0.83,
-                 color="k", alpha=0.75, **kwargs):
+                 color="k", alpha=0.5, **kwargs):
         """
         Shade the darkside of the Earth, accounting for refraction.
 
         Parameters
         ----------
-        date
+        date : datetime
             A UTC datetime object used to calculate the position of the sun.
             Default: datetime.datetime.utcnow()
-        delta
-            Float (degrees), stepsize to determine the resolution of the
-            night polygon feature.
-        refraction
-            Float (degrees) to specify the adjustment due to refraction,
+        delta : float
+            Stepsize in degrees to determine the resolution of the
+            night polygon feature (``npts = 180 / delta``).
+        refraction : float
+            The adjustment in degrees due to refraction,
             thickness of the solar disc, elevation etc...
 
         Note
@@ -61,7 +61,7 @@ class Nightshade(ShapelyFeature):
 
         # Returns the Greenwich hour angle,
         # need longitude (opposite direction)
-        lat, lon = solar_position(date)
+        lat, lon = _solar_position(date)
         pole_lon = lon
         if lat > 0:
             pole_lat = -90 + lat
@@ -103,11 +103,12 @@ class Nightshade(ShapelyFeature):
         kwargs.setdefault('facecolor', color)
         kwargs.setdefault('alpha', alpha)
 
-        geom = sgeom.Polygon(zip(x, y))
-        return super().__init__([geom], rotated_pole, **kwargs)
+        geom = sgeom.Polygon(np.column_stack((x, y)))
+        return super(Nightshade, self).__init__(
+            [geom], rotated_pole, **kwargs)
 
 
-def julian_day(date):
+def _julian_day(date):
     """
     Calculate the Julian day from an input datetime.
 
@@ -146,7 +147,7 @@ def julian_day(date):
     return JD
 
 
-def solar_position(date):
+def _solar_position(date):
     """
     Calculate the latitude and longitude point where the sun is
     directly overhead for the given date.
@@ -170,7 +171,7 @@ def solar_position(date):
     #       so we need to convert the values from deg2rad when taking sin/cos
 
     # Centuries from J2000
-    T_UT1 = (julian_day(date) - 2451545.0)/36525
+    T_UT1 = (_julian_day(date) - 2451545.0)/36525
 
     # solar longitude (deg)
     lambda_M_sun = (280.460 + 36000.771*T_UT1) % 360

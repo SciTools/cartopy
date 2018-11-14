@@ -34,4 +34,4 @@ def test_nightshade_image():
     ax.coastlines()
     dt = datetime(2018, 11, 10, 0, 0)
     ax.set_global()
-    ax.add_feature(Nightshade(dt))
+    ax.add_feature(Nightshade(dt, alpha=0.75))

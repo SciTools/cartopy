@@ -21,15 +21,14 @@ from datetime import datetime
 
 import pytest
 
-import cartopy.crs as ccrs
-from cartopy.feature.nightshade import julian_day, solar_position
+from cartopy.feature.nightshade import _julian_day, _solar_position
 
 
 def test_julian_day():
     # Using Vallado 2007 "Fundamentals of Astrodynamics and Applications"
     # Example 3.4
     dt = datetime(1996, 10, 26, 14, 20)
-    jd = julian_day(dt)
+    jd = _julian_day(dt)
     assert pytest.approx(jd) == 2450383.09722222
 
 
@@ -55,6 +54,6 @@ def test_julian_day():
     (datetime(2030, 6, 21, 0, 0), (23 + 26/60), -(179 + 34/60))
     ])
 def test_solar_position(dt, true_lat, true_lon):
-    lat, lon = solar_position(dt)
+    lat, lon = _solar_position(dt)
     assert pytest.approx(true_lat, 0.1) == lat
     assert pytest.approx(true_lon, 0.1) == lon

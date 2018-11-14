@@ -15,8 +15,9 @@ from cartopy.feature.nightshade import Nightshade
 
 ax = plt.axes(projection=ccrs.PlateCarree())
 
-date = datetime.datetime(1999, 12, 31, 12, tzinfo=datetime.timezone.utc)
+date = datetime.datetime(1999, 12, 31, 12)
+
 plt.title('Night time shading for {}'.format(date))
 ax.stock_img()
-ax.add_feature(Nightshade(date))
+ax.add_feature(Nightshade(date, alpha=0.2))
 plt.show()
