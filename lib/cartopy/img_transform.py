@@ -222,6 +222,9 @@ def _determine_bounds(x_coords, y_coords, source_cs):
     return bounds
 
 
+KDTREE_CACHE = {}
+
+
 def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
            target_x_points, target_y_points, mask_extrapolated=False):
     """
@@ -276,17 +279,28 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                            target_y_points.flatten())
 
     if _is_pykdtree:
-        kdtree = pykdtree.kdtree.KDTree(xyz)
+        cache_name = 'pykdtree'
+        if cache_name in KDTREE_CACHE:
+            kdtree = KDTREE_CACHE[cache_name]
+        else:
+            kdtree = pykdtree.kdtree.KDTree(xyz)
+            KDTREE_CACHE[cache_name] = kdtree
         # Use sqr_dists=True because we don't care about distances,
         # and it saves a sqrt.
         _, indices = kdtree.query(target_xyz, k=1, sqr_dists=True)
     else:
-        # Versions of scipy >= v0.16 added the balanced_tree argument,
-        # which caused the KDTree to hang with this input.
-        try:
-            kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
-        except TypeError:
-            kdtree = scipy.spatial.cKDTree(xyz)
+        cache_name = 'ckdtree'
+        if cache_name in KDTREE_CACHE:
+            kdtree = KDTREE_CACHE[cache_name]
+        else:
+            # Versions of scipy >= v0.16 added the balanced_tree argument,
+            # which caused the KDTree to hang with this input.
+            try:
+                kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
+            except TypeError:
+                kdtree = scipy.spatial.cKDTree(xyz)
+            finally:
+                KDTREE_CACHE[cache_name] = kdtree
         _, indices = kdtree.query(target_xyz, k=1)
     mask = indices >= len(xyz)
     indices[mask] = 0

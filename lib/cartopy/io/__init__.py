@@ -36,6 +36,8 @@ else:
     from urllib2 import urlopen
 
 from cartopy import config
+from cartopy.img_transform import warp_array
+import numpy as np
 
 
 def fh_getter(fh, mode='r', needs_filename=False):
@@ -381,6 +383,43 @@ class RasterSource(object):
 
         """
         raise NotImplementedError()
+
+
+class LocatedImageRasterSource(RasterSource):
+    """Expose a simple image as a Raster Source object."""
+    def __init__(self, image, projection):
+        """
+        Create a Raster Source of a geo-located simple image.
+
+        :param image: `LocatedImage` instance
+        An image, expressed as a LocatedImage object (containing an image and
+        an extent.
+        :param projection:
+        The native projection of the image.
+
+        """
+        self.image = image
+        self.projection = projection
+
+    def validate_projection(self, projection):
+        """
+        Validate whether image is available in the target `projection`. As
+        images are regridded before being shown, this is always `True`.
+
+        """
+        return True
+
+    def fetch_raster(self, projection, extent, target_resolution):
+        target_resolution = [int(np.ceil(val)) for val in target_resolution]
+        # Convert image to numpy array (flipping so that origin is 'lower').
+        array = np.asanyarray(self.image.image)[::-1]
+        new_array, new_extent = warp_array(array, projection,
+                                           source_proj=self.projection,
+                                           target_res=target_resolution,
+                                           source_extent=self.image.extent,
+                                           target_extent=extent)
+        # Don't forget to flip the image back again!
+        return [LocatedImage(new_array[::-1], new_extent)]
 
 
 class RasterSourceContainer(RasterSource):
