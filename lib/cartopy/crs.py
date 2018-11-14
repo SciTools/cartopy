@@ -1521,7 +1521,12 @@ class Orthographic(Projection):
 
 
 class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
-    def __init__(self, proj4_params, central_longitude, globe=None):
+    def __init__(self, proj4_params, central_longitude,
+                 false_easting=None, false_northing=None, globe=None):
+        if false_easting is not None:
+            proj4_params += [('x_0', false_easting)]
+        if false_northing is not None:
+            proj4_params += [('y_0', false_northing)]
         super(_WarpedRectangularProjection, self).__init__(proj4_params,
                                                            globe=globe)
 
@@ -1567,15 +1572,22 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
 
     """
 
-    def __init__(self, central_longitude=0, globe=None):
+    def __init__(self, central_longitude=0, false_easting=None,
+                 false_northing=None, globe=None):
         """
         Parameters
         ----------
-        central_longitude: optional
+        central_longitude: float, optional
             The central longitude. Defaults to 0.
-        globe: optional
-            A :class:`cartopy.crs.Globe`. If omitted, a default globe is
-            created.
+        false_easting: float, optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: float, optional
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+            .. note::
+                This projection does not handle elliptical globes.
 
         """
         if globe is None:
@@ -1592,6 +1604,8 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
         proj4_params = [('proj', self._proj_name),
                         ('lon_0', central_longitude)]
         super(_Eckert, self).__init__(proj4_params, central_longitude,
+                                      false_easting=false_easting,
+                                      false_northing=false_northing,
                                       globe=globe)
 
     @property
@@ -1676,9 +1690,51 @@ class EckertVI(_Eckert):
 
 
 class Mollweide(_WarpedRectangularProjection):
-    def __init__(self, central_longitude=0, globe=None):
+    """
+    A Mollweide projection.
+
+    This projection is pseudocylindrical, and equal area. Parallels are
+    unequally-spaced straight lines, while meridians are elliptical arcs up to
+    semicircles on the edges. Poles are points.
+
+    It is commonly used for world maps, or interrupted with several central
+    meridians.
+
+    """
+
+    def __init__(self, central_longitude=0, globe=None,
+                 false_easting=None, false_northing=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        false_easting: float, optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: float, optional
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+            .. note::
+                This projection does not handle elliptical globes.
+
+        """
+        if globe is None:
+            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = globe.semiminor_axis or a
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj "moll" projection does not handle '
+                          'elliptical globes.')
+
         proj4_params = [('proj', 'moll'), ('lon_0', central_longitude)]
         super(Mollweide, self).__init__(proj4_params, central_longitude,
+                                        false_easting=false_easting,
+                                        false_northing=false_northing,
                                         globe=globe)
 
     @property
@@ -1687,7 +1743,35 @@ class Mollweide(_WarpedRectangularProjection):
 
 
 class Robinson(_WarpedRectangularProjection):
-    def __init__(self, central_longitude=0, globe=None):
+    """
+    A Robinson projection.
+
+    This projection is pseudocylindrical, and a compromise that is neither
+    equal-area nor conformal. Parallels are unequally-spaced straight lines,
+    and meridians are curved lines of no particular form.
+
+    It is commonly used for "visually-appealing" world maps.
+
+    """
+
+    def __init__(self, central_longitude=0, globe=None,
+                 false_easting=None, false_northing=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        false_easting: float, optional
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing: float, optional
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+            .. note::
+                This projection does not handle elliptical globes.
+
+        """
         # Warn when using Robinson with proj 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://github.com/OSGeo/proj.4/issues/113).
@@ -1702,8 +1786,21 @@ class Robinson(_WarpedRectangularProjection):
                           'projection may be unreliable and should be used '
                           'with caution.')
 
+        if globe is None:
+            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = globe.semiminor_axis or a
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj "robin" projection does not handle '
+                          'elliptical globes.')
+
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super(Robinson, self).__init__(proj4_params, central_longitude,
+                                       false_easting=false_easting,
+                                       false_northing=false_northing,
                                        globe=globe)
 
     @property

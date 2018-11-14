@@ -175,9 +175,11 @@ class TestCRS(object):
     def test_globe(self):
         # Ensure the globe affects output.
         rugby_globe = ccrs.Globe(semimajor_axis=9000000,
-                                 semiminor_axis=1000000)
+                                 semiminor_axis=9000000,
+                                 ellipse=None)
         footy_globe = ccrs.Globe(semimajor_axis=1000000,
-                                 semiminor_axis=1000000)
+                                 semiminor_axis=1000000,
+                                 ellipse=None)
 
         rugby_moll = ccrs.Mollweide(globe=rugby_globe)
         footy_moll = ccrs.Mollweide(globe=footy_globe)

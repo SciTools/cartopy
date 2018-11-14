@@ -51,6 +51,23 @@ def test_default(name, proj, lim):
     assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
 
 
+@pytest.mark.parametrize('name, proj', [
+    pytest.param('eck1', ccrs.EckertI, id='EckertI'),
+    pytest.param('eck2', ccrs.EckertII, id='EckertII'),
+    pytest.param('eck3', ccrs.EckertIII, id='EckertIII'),
+    pytest.param('eck4', ccrs.EckertIV, id='EckertIV'),
+    pytest.param('eck5', ccrs.EckertV, id='EckertV'),
+    pytest.param('eck6', ccrs.EckertVI, id='EckertVI'),
+])
+def test_offset(name, proj):
+    crs = proj()
+    crs_offset = proj(false_easting=1234, false_northing=-4321)
+    other_args = {'a=6378137.0', 'lon_0=0', 'x_0=1234', 'y_0=-4321'}
+    check_proj4_params(name, crs_offset, other_args)
+    assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
+    assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
+
+
 @pytest.mark.parametrize('name, proj, lim', [
     pytest.param('eck1', ccrs.EckertI, 18460911.739778, id='EckertI'),
     pytest.param('eck2', ccrs.EckertII, 18460911.739778, id='EckertII'),
