@@ -2,7 +2,7 @@
 Nightshade feature
 ------------------
 
-Shade areas of night terminator
+Draws a polygon where there is no sunlight for the given datetime.
 
 """
 __tags__ = ['Lines and polygons']
@@ -17,7 +17,7 @@ ax = plt.axes(projection=ccrs.PlateCarree())
 
 date = datetime.datetime(1999, 12, 31, 12)
 
-plt.title('Night time shading for {}'.format(date))
+ax.set_title('Night time shading for {}'.format(date))
 ax.stock_img()
 ax.add_feature(Nightshade(date, alpha=0.2))
 plt.show()
