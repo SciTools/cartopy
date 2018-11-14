@@ -47,8 +47,8 @@ deps-run: &deps-install
         pyepsg \
         owslib \
         pykdtree \
-        $EXTRA_PACKAGES
-    conda install --quiet --file docs/doc-requirements.txt
+        $EXTRA_PACKAGES \
+        --file docs/doc-requirements.txt
     conda list
 
 cp-run: &cp-install
