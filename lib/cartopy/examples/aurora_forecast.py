@@ -23,6 +23,7 @@ from io import StringIO
 import numpy as np
 from datetime import datetime
 import cartopy.crs as ccrs
+from cartopy.feature.nightshade import Nightshade
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -106,7 +107,7 @@ def main():
         ax.coastlines(zorder=3)
         ax.stock_img()
         ax.gridlines()
-        ax.nightshade(dt)
+        ax.add_feature(Nightshade(dt))
         ax.imshow(img, vmin=0, vmax=100, transform=crs,
                   extent=extent, origin=origin, zorder=2,
                   cmap=aurora_cmap())
