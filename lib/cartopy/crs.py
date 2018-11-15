@@ -1728,7 +1728,7 @@ class EqualEarth(_WarpedRectangularProjection):
         if PROJ4_VERSION < (5, 2, 0):
             raise ValueError('The EqualEarth projection requires Proj version '
                              '5.2.0, but you are using {}.'
-                             .format('.'.join(PROJ4_VERSION)))
+                             .format('.'.join(str(v) for v in PROJ4_VERSION)))
 
         proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
         super(EqualEarth, self).__init__(proj_params, central_longitude,
