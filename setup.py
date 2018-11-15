@@ -46,8 +46,6 @@ except ImportError:
     raise ImportError('NumPy 1.10+ is required to install cartopy.')
 
 
-PY3 = (sys.version_info[0] == 3)
-
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 3, 3)
 PROJ_MIN_VERSION = (4, 9, 0)
@@ -181,10 +179,8 @@ else:
               file=sys.stderr)
         exit(1)
 
-    if PY3:
-        geos_includes = geos_includes.decode()
-        geos_clibs = geos_clibs.decode()
-
+    geos_includes = geos_includes.decode()
+    geos_clibs = geos_clibs.decode()
     geos_includes = geos_includes.split()
     geos_libraries = []
     geos_library_dirs = []
@@ -276,10 +272,8 @@ else:
                 file=sys.stderr)
             exit(1)
 
-        if PY3:
-            proj_includes = proj_includes.decode()
-            proj_clibs = proj_clibs.decode()
-
+        proj_includes = proj_includes.decode()
+        proj_clibs = proj_clibs.decode()
         proj_includes = [proj_include[2:] if proj_include.startswith('-I') else
                          proj_include for proj_include in proj_includes.split()]      
 
@@ -410,12 +404,11 @@ setup(
             'Operating System :: POSIX :: Linux',
             'Programming Language :: C++',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3 :: Only',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: GIS',
             'Topic :: Scientific/Engineering :: Visualization',

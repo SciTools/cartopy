@@ -53,8 +53,8 @@ Many of these dependencies are built as part of Cartopy's conda distribution.
 The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 
 
-**Python** 2.7 or later (https://www.python.org/)
-    Cartopy requires Python 2.7 or later.
+**Python** 3.3 or later (https://www.python.org/)
+    Cartopy requires Python 3.3 or later.
 
 **Cython** 0.17 or later (https://pypi.python.org/pypi/Cython/)
 
