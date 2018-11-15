@@ -156,30 +156,40 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             minlon += epsilon
         return minlon, maxlon
 
-    def _repr_html_(self):
+    def _repr_svg_(self):
         """
         Make a visual representation of the projection and return it as an
         html element.
 
         """
         # Imports.
-        import base64
-        from io import BytesIO
-        import matplotlib.pyplot as plt
-        # Produce a visual repr of the Projection instance.
-        ax = plt.axes(projection=self)
-        ax.set_global()
-        ax.coastlines('110m')
-        # "Save" to a bytestring.
-        fmt = 'png'
-        buf = BytesIO()
-        plt.savefig(buf, format=fmt)
-        plt.close()
-        buf.seek(0)  # "Rewind" the buffer to the start.
-        img_str = base64.b64encode(buf.getvalue()).decode()
-        # Produce html output.
-        html = '<img src="data:image/{fmt};base64,{img_str}" />'
-        return html.format(fmt=fmt, img_str=img_str)
+        try:
+            # As matplotlib is not a core cartopy dependency, don't error
+            # if it's not available, but fall back to the default repr.
+            import matplotlib.pyplot as plt
+        except ImportError:
+            pass
+        else:
+            if six.PY2:
+                from StringIO import StringIO
+            else:
+                from io import StringIO
+            # Produce a visual repr of the Projection instance.
+            fig, ax = plt.subplots(figsize=(5, 3),
+                                   subplot_kw={'projection': self})
+            ax.set_global()
+            ax.coastlines('110m')
+            ax.gridlines()
+            # "Save" to a string buffer.
+            buf = StringIO()
+            fig.savefig(buf, format='svg')
+            plt.close(fig)
+            # "Rewind" the buffer to the start and return it as an svg string.
+            buf.seek(0)
+            return buf.read()
+        finally:
+            # Fall back to the standard repr if anything goes wrong.
+            repr(self)
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
