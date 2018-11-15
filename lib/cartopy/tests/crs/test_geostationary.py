@@ -26,14 +26,13 @@ from numpy.testing import assert_almost_equal
 import cartopy.crs as ccrs
 
 
-# Note: code here is now shared with the NearsidePerspective test.
 def check_proj4_params(name, crs, other_args):
     expected = other_args | {'proj={}'.format(name), 'units=m', 'no_defs'}
     pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
     assert expected == pro4_params
 
 
-class GeostationaryTestsMixin(object):
+class TestGeostationary(object):
     test_class = ccrs.Geostationary
     expected_proj_name = 'geos'
 
@@ -84,8 +83,6 @@ class GeostationaryTestsMixin(object):
                              10434177.81588539, 5309177.81588539),
                             decimal=4)
 
-
-class TestGeostationary(GeostationaryTestsMixin, object):
     def test_sweep(self):
         geos = ccrs.Geostationary(sweep_axis='x')
         other_args = {'ellps=WGS84', 'h=35785831', 'lat_0=0.0', 'lon_0=0.0',
