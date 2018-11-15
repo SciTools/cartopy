@@ -391,11 +391,11 @@ class LocatedImageRasterSource(RasterSource):
         """
         Create a Raster Source of a geo-located simple image.
 
-        :param image: `LocatedImage` instance
-        An image, expressed as a LocatedImage object (containing an image and
-        an extent.
+        :param image: :class:`cartopy.io.LocatedImage` instance
+            An image, expressed as a LocatedImage object (containing an image
+            and an extent).
         :param projection:
-        The native projection of the image.
+            The native projection of the image.
 
         """
         self.image = image
