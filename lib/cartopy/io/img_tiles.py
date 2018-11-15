@@ -30,16 +30,18 @@ using tiles in this way can be found at the
 
 from __future__ import (absolute_import, division, print_function)
 
+from abc import ABCMeta, abstractmethod
+import warnings
+
 from PIL import Image
 import shapely.geometry as sgeom
 import numpy as np
 import six
-import warnings
 
 import cartopy.crs as ccrs
 
 
-class GoogleWTS(object):
+class GoogleWTS(six.with_metaclass(ABCMeta, object)):
     """
     Implement web tile retrieval using the Google WTS coordinate system.
 
@@ -149,8 +151,9 @@ class GoogleWTS(object):
 
     _tileextent = tileextent
 
+    @abstractmethod
     def _image_url(self, tile):
-        raise NotImplementedError('Subclasses to implement.')
+        pass
 
     def get_image(self, tile):
         if six.PY3:
@@ -188,8 +191,6 @@ class GoogleTiles(GoogleWTS):
 World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
         """
-        # Only streets are partly transparent tiles that can be overlaid over
-        # the satellite map to create the known hybrid style from google.
         styles = ["street", "satellite", "terrain", "only_streets"]
         style = style.lower()
         self.url = url
@@ -265,6 +266,20 @@ class Stamen(GoogleWTS):
     Retrieves tiles from maps.stamen.com. Styles include
     ``terrain-background``, ``terrain``, ``toner`` and ``watercolor``.
 
+    For a full reference on the styles available please see
+    http://maps.stamen.com. Of particular note are the sub-styles
+    that are made available (e.g. ``terrain`` and ``terrain-background``).
+    To determine the name of the particular [sub-]style you want,
+    follow the link on http://maps.stamen.com to your desired style and
+    observe the style name in the URL. Your style name will be in the
+    form of: ``http://maps.stamen.com/{STYLE_NAME}/#9/37/-122``.
+
+    Except otherwise noted, the Stamen map tile sets are copyright Stamen
+    Design, under a Creative Commons Attribution (CC BY 3.0) license.
+
+    Please see the attribution notice at http://maps.stamen.com on how to
+    attribute this imagery.
+
     """
     def __init__(self, style='toner'):
         super(Stamen, self).__init__()
@@ -277,6 +292,9 @@ class Stamen(GoogleWTS):
 
 class StamenTerrain(Stamen):
     """
+    **DEPRECATED:** This class is deprecated. Please use
+    ``Stamen('terrain-background')`` instead.
+
     Terrain tiles defined for the continental United States, and include land
     color and shaded hills. The land colors are a custom palette developed by
     Gem Spear for the National Atlas 1km land cover data set, which defines
@@ -288,13 +306,18 @@ class StamenTerrain(Stamen):
     of flat, dark green.
 
     Additional info:
-    http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
-    http://maps.stamen.com/
-    https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
-    https://github.com/migurski/DEM-Tools
+     * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+     * http://maps.stamen.com/
+     * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
+     * https://github.com/migurski/DEM-Tools
+
 
     """
     def __init__(self):
+        warnings.warn(
+            "The StamenTerrain class was deprecated in v0.17. "
+            "Please use Stamen('terrain-background') instead.")
+
         # NOTE: This subclass of Stamen exists for legacy reasons.
         # No further Stamen subclasses will be accepted as
         # they can easily be created in user code with Stamen(style_name).
@@ -468,7 +491,7 @@ class QuadtreeTiles(GoogleWTS):
         for start_tile in start_tiles:
             start_tile = self.quadkey_to_tms(start_tile, google=True)
             for tile in GoogleWTS.find_images(self, target_domain, target_z,
-                                                start_tile=start_tile):
+                                              start_tile=start_tile):
                 yield self.tms_to_quadkey(tile, google=True)
 
 
