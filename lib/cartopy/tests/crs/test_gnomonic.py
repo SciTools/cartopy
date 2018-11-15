@@ -26,18 +26,13 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=gnom', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 def test_default():
     gnom = ccrs.Gnomonic()
     other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0'}
-    check_proj4_params(gnom, other_args)
+    check_proj_params('gnom', gnom, other_args)
 
     assert_almost_equal(np.array(gnom.x_limits),
                         [-5e7, 5e7])
@@ -51,7 +46,7 @@ def test_central_params(lat, lon):
     gnom = ccrs.Gnomonic(central_latitude=lat, central_longitude=lon)
     other_args = {'lat_0={}'.format(lat), 'lon_0={}'.format(lon),
                   'ellps=WGS84'}
-    check_proj4_params(gnom, other_args)
+    check_proj_params('gnom', gnom, other_args)
 
     assert_almost_equal(np.array(gnom.x_limits),
                         [-5e7, 5e7])
@@ -67,7 +62,7 @@ def test_grid():
     geodetic = gnom.as_geodetic()
 
     other_args = {'a=1.0', 'b=1.0', 'lon_0=0.0', 'lat_0=0.0'}
-    check_proj4_params(gnom, other_args)
+    check_proj_params('gnom', gnom, other_args)
 
     assert_almost_equal(np.array(gnom.x_limits),
                         [-5e7, 5e7])
@@ -109,7 +104,7 @@ def test_sphere_transform():
     geodetic = gnom.as_geodetic()
 
     other_args = {'a=1.0', 'b=1.0', 'lon_0=-100.0', 'lat_0=40.0'}
-    check_proj4_params(gnom, other_args)
+    check_proj_params('gnom', gnom, other_args)
 
     assert_almost_equal(np.array(gnom.x_limits),
                         [-5e7, 5e7])

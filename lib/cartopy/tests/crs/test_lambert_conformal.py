@@ -21,19 +21,14 @@ from numpy.testing import assert_array_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=lcc', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 def test_defaults():
     crs = ccrs.LambertConformal()
     other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0', 'x_0=0.0',
                   'y_0=0.0', 'lat_1=33', 'lat_2=45'}
-    check_proj4_params(crs, other_args)
+    check_proj_params('lcc', crs, other_args)
 
 
 def test_default_with_cutoff():
@@ -43,7 +38,7 @@ def test_default_with_cutoff():
 
     other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0', 'x_0=0.0',
                   'y_0=0.0', 'lat_1=33', 'lat_2=45'}
-    check_proj4_params(crs, other_args)
+    check_proj_params('lcc', crs, other_args)
 
     # Check the behaviour of !=, == and (not ==) for the different cutoffs.
     assert crs == crs2
@@ -66,7 +61,7 @@ def test_specific_lambert():
                                 globe=ccrs.Globe(ellipse='GRS80'))
     other_args = {'ellps=GRS80', 'lon_0=10', 'lat_0=52',
                   'x_0=4000000', 'y_0=2800000', 'lat_1=35', 'lat_2=65'}
-    check_proj4_params(crs, other_args)
+    check_proj_params('lcc', crs, other_args)
 
 
 class Test_LambertConformal_standard_parallels(object):
@@ -74,7 +69,7 @@ class Test_LambertConformal_standard_parallels(object):
         crs = ccrs.LambertConformal(standard_parallels=[1.])
         other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0',
                       'x_0=0.0', 'y_0=0.0', 'lat_1=1.0'}
-        check_proj4_params(crs, other_args)
+        check_proj_params('lcc', crs, other_args)
 
     def test_no_parallel(self):
         with pytest.raises(ValueError, message='1 or 2 standard parallels'):

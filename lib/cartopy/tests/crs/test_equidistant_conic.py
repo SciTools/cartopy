@@ -26,12 +26,7 @@ from numpy.testing import assert_almost_equal, assert_array_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=eqdc', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 class TestEquidistantConic(object):
@@ -39,7 +34,7 @@ class TestEquidistantConic(object):
         eqdc = ccrs.EquidistantConic()
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
                       'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
-        check_proj4_params(eqdc, other_args)
+        check_proj_params('eqdc', eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-22784919.35600352, 22784919.35600352),
@@ -54,7 +49,7 @@ class TestEquidistantConic(object):
         eqdc = ccrs.EquidistantConic(globe=globe)
         other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
                       'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
-        check_proj4_params(eqdc, other_args)
+        check_proj_params('eqdc', eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-3016.869847713461, 3016.869847713461),
@@ -69,7 +64,7 @@ class TestEquidistantConic(object):
 
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=1234',
                       'y_0=-4321', 'lat_1=20.0', 'lat_2=50.0'}
-        check_proj4_params(eqdc_offset, other_args)
+        check_proj_params('eqdc', eqdc_offset, other_args)
 
     @pytest.mark.parametrize('lon', [-10.0, 10.0])
     def test_central_longitude(self, lon):
@@ -77,7 +72,7 @@ class TestEquidistantConic(object):
         eqdc_offset = ccrs.EquidistantConic(central_longitude=lon)
         other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'lat_0=0.0',
                       'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
-        check_proj4_params(eqdc_offset, other_args)
+        check_proj_params('eqdc', eqdc_offset, other_args)
 
         assert_array_almost_equal(eqdc_offset.boundary, eqdc.boundary,
                                   decimal=0)
@@ -86,17 +81,17 @@ class TestEquidistantConic(object):
         eqdc = ccrs.EquidistantConic(standard_parallels=(13, 37))
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
                       'y_0=0.0', 'lat_1=13', 'lat_2=37'}
-        check_proj4_params(eqdc, other_args)
+        check_proj_params('eqdc', eqdc, other_args)
 
         eqdc = ccrs.EquidistantConic(standard_parallels=(13, ))
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
                       'y_0=0.0', 'lat_1=13'}
-        check_proj4_params(eqdc, other_args)
+        check_proj_params('eqdc', eqdc, other_args)
 
         eqdc = ccrs.EquidistantConic(standard_parallels=13)
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
                       'y_0=0.0', 'lat_1=13'}
-        check_proj4_params(eqdc, other_args)
+        check_proj_params('eqdc', eqdc, other_args)
 
     def test_sphere_transform(self):
         # USGS Professional Paper 1395, pg 298
@@ -112,7 +107,7 @@ class TestEquidistantConic(object):
 
         other_args = {'a=1.0', 'b=1.0', 'lon_0=-96.0', 'lat_0=23.0', 'x_0=0.0',
                       'y_0=0.0', 'lat_1=29.5', 'lat_2=45.5'}
-        check_proj4_params(eqdc, other_args)
+        check_proj_params('eqdc', eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-3.520038619089038, 3.520038619089038),
@@ -141,7 +136,7 @@ class TestEquidistantConic(object):
         other_args = {'a=6378206.4', 'f=0.003390076308689371', 'lon_0=-96.0',
                       'lat_0=23.0', 'x_0=0.0', 'y_0=0.0', 'lat_1=29.5',
                       'lat_2=45.5'}
-        check_proj4_params(eqdc, other_args)
+        check_proj_params('eqdc', eqdc, other_args)
 
         assert_almost_equal(np.array(eqdc.x_limits),
                             (-22421870.719894886, 22421870.719894886),

@@ -26,18 +26,13 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=mill', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 def test_default():
     mill = ccrs.Miller()
     other_args = {'a=57.29577951308232', 'lon_0=0.0'}
-    check_proj4_params(mill, other_args)
+    check_proj_params('mill', mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),
                         [-180, 180])
@@ -49,7 +44,7 @@ def test_default():
 def test_central_longitude(lon):
     mill = ccrs.Miller(central_longitude=lon)
     other_args = {'a=57.29577951308232', 'lon_0={}'.format(lon)}
-    check_proj4_params(mill, other_args)
+    check_proj_params('mill', mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),
                         [-180, 180])
@@ -64,7 +59,7 @@ def test_grid():
     geodetic = mill.as_geodetic()
 
     other_args = {'a=1.0', 'lon_0=0.0'}
-    check_proj4_params(mill, other_args)
+    check_proj_params('mill', mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),
                         [-3.14159265, 3.14159265])
@@ -91,7 +86,7 @@ def test_sphere_transform():
     geodetic = mill.as_geodetic()
 
     other_args = {'a=1.0', 'lon_0=0.0'}
-    check_proj4_params(mill, other_args)
+    check_proj_params('mill', mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),
                         [-3.14159265, 3.14159265])

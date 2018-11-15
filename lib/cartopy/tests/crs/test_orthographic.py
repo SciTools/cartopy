@@ -26,18 +26,13 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=ortho', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 def test_default():
     ortho = ccrs.Orthographic()
     other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0'}
-    check_proj4_params(ortho, other_args)
+    check_proj_params('ortho', ortho, other_args)
 
     # WGS84 radius * 0.99999
     assert_almost_equal(np.array(ortho.x_limits),
@@ -52,7 +47,7 @@ def test_central_params(lat, lon):
     ortho = ccrs.Orthographic(central_latitude=lat, central_longitude=lon)
     other_args = {'lat_0={}'.format(lat), 'lon_0={}'.format(lon),
                   'ellps=WGS84'}
-    check_proj4_params(ortho, other_args)
+    check_proj_params('ortho', ortho, other_args)
 
     # WGS84 radius * 0.99999
     assert_almost_equal(np.array(ortho.x_limits),
@@ -69,7 +64,7 @@ def test_grid():
     geodetic = ortho.as_geodetic()
 
     other_args = {'a=1.0', 'b=1.0', 'lon_0=0.0', 'lat_0=0.0'}
-    check_proj4_params(ortho, other_args)
+    check_proj_params('ortho', ortho, other_args)
 
     assert_almost_equal(np.array(ortho.x_limits),
                         [-0.99999, 0.99999])
@@ -122,7 +117,7 @@ def test_sphere_transform():
     geodetic = ortho.as_geodetic()
 
     other_args = {'a=1.0', 'b=1.0', 'lon_0=-100.0', 'lat_0=40.0'}
-    check_proj4_params(ortho, other_args)
+    check_proj_params('ortho', ortho, other_args)
 
     assert_almost_equal(np.array(ortho.x_limits),
                         [-0.99999, 0.99999])

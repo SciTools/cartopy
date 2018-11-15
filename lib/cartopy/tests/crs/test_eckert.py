@@ -26,12 +26,7 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(name, crs, other_args):
-    expected = other_args | {'proj=' + name, 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 @pytest.mark.parametrize('name, proj, lim', [
@@ -45,7 +40,7 @@ def check_proj4_params(name, crs, other_args):
 def test_default(name, proj, lim):
     eck = proj()
     other_args = {'a=6378137.0', 'lon_0=0'}
-    check_proj4_params(name, eck, other_args)
+    check_proj_params(name, eck, other_args)
 
     assert_almost_equal(eck.x_limits, [-lim, lim])
     assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
@@ -63,7 +58,7 @@ def test_offset(name, proj):
     crs = proj()
     crs_offset = proj(false_easting=1234, false_northing=-4321)
     other_args = {'a=6378137.0', 'lon_0=0', 'x_0=1234', 'y_0=-4321'}
-    check_proj4_params(name, crs_offset, other_args)
+    check_proj_params(name, crs_offset, other_args)
     assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
     assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
 
@@ -80,7 +75,7 @@ def test_offset(name, proj):
 def test_central_longitude(name, proj, lim, lon):
     eck = proj(central_longitude=lon)
     other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
-    check_proj4_params(name, eck, other_args)
+    check_proj_params(name, eck, other_args)
 
     assert_almost_equal(eck.x_limits, [-lim, lim], decimal=5)
     assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
@@ -114,7 +109,7 @@ def test_eckert_grid(name, proj, radius, expected_x, expected_y):
     geodetic = eck.as_geodetic()
 
     other_args = {'a={}'.format(radius), 'lon_0=0'}
-    check_proj4_params(name, eck, other_args)
+    check_proj_params(name, eck, other_args)
 
     assert_almost_equal(eck.x_limits, [-2, 2], decimal=5)
     assert_almost_equal(eck.y_limits, [-1, 1], decimal=5)
@@ -141,7 +136,7 @@ def test_eckert_sphere_transform(name, proj, lim, expected):
     geodetic = eck.as_geodetic()
 
     other_args = {'a=1.0', 'lon_0=-90.0'}
-    check_proj4_params(name, eck, other_args)
+    check_proj_params(name, eck, other_args)
 
     assert_almost_equal(eck.x_limits, [-lim, lim], decimal=2)
     assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
