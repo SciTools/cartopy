@@ -475,7 +475,7 @@ class WFSFeature(Feature):
 
 
 BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
-                              '110m', edgecolor='black', facecolor='none')
+                              '110m', edgecolor='black', facecolor='never')
 """Small scale (1:110m) country boundaries."""
 
 STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
@@ -483,7 +483,7 @@ STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
 """Small scale (1:110m) state and province boundaries."""
 
 COASTLINE = NaturalEarthFeature('physical', 'coastline', '110m',
-                                edgecolor='black', facecolor='none')
+                                edgecolor='black', facecolor='never')
 """Small scale (1:110m) coastline, including major islands."""
 
 
@@ -507,5 +507,5 @@ OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
 
 RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
                              edgecolor=COLORS['water'],
-                             facecolor='none')
+                             facecolor='never')
 """Small scale (1:110m) single-line drainages, including lake centerlines."""

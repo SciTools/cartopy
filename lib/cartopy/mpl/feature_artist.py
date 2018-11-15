@@ -31,6 +31,7 @@ import matplotlib.artist
 import matplotlib.collections
 
 import cartopy.mpl.patch as cpatch
+from .style import merge as style_merge, finalize as style_finalize
 
 
 class _GeomKey(object):
@@ -158,9 +159,7 @@ class FeatureArtist(matplotlib.artist.Artist):
         geoms = self._feature.intersecting_geometries(extent)
 
         # Combine all the keyword args in priority order.
-        prepared_kwargs = dict(self._feature.kwargs)
-        prepared_kwargs.update(self._kwargs)
-        prepared_kwargs.update(kwargs)
+        prepared_kwargs = style_merge(self._feature.kwargs, self._kwargs, kwargs)
 
         # Freeze the kwargs so that we can use them as a dict key. We will
         # need to unfreeze this with dict(frozen) before passing to mpl.
@@ -212,6 +211,7 @@ class FeatureArtist(matplotlib.artist.Artist):
         # of style items through to a single PathCollection, but that
         # complexity does not yet justify the effort.
         for style, paths in stylised_paths.items():
+            style = style_finalize(dict(style))
             # Build path collection and draw it.
             c = matplotlib.collections.PathCollection(
                     paths,
