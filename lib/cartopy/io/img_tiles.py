@@ -260,7 +260,22 @@ class OSM(GoogleTiles):
         return url
 
 
-class StamenTerrain(GoogleWTS):
+class Stamen(GoogleWTS):
+    """
+    Retrieves tiles from maps.stamen.com. Styles include
+    ``terrain-background``, ``terrain``, ``toner`` and ``watercolor``.
+
+    """
+    def __init__(self, style='toner'):
+        super(Stamen, self).__init__()
+        self.style = style
+
+    def _image_url(self, tile):
+        return ('http://tile.stamen.com/{self.style}/{z}/{x}/{y}.png'
+                .format(self=self, x=tile[0], y=tile[1], z=tile[2]))
+
+
+class StamenTerrain(Stamen):
     """
     Terrain tiles defined for the continental United States, and include land
     color and shaded hills. The land colors are a custom palette developed by
@@ -279,11 +294,11 @@ class StamenTerrain(GoogleWTS):
     https://github.com/migurski/DEM-Tools
 
     """
-    def _image_url(self, tile):
-        x, y, z = tile
-        url = 'http://tile.stamen.com/terrain-background/%s/%s/%s.png' % (
-            z, x, y)
-        return url
+    def __init__(self):
+        # NOTE: This subclass of Stamen exists for legacy reasons.
+        # No further Stamen subclasses will be accepted as
+        # they can easily be created in user code with Stamen(style_name).
+        return super(StamenTerrain, self).__init__(style='terrain-background')
 
 
 class MapboxTiles(GoogleTiles):
