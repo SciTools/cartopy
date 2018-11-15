@@ -115,6 +115,17 @@ class InterProjectionTransform(mtransforms.Transform):
                                                self.source_projection,
                                                self.target_projection))
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            result = NotImplemented
+        else:
+            result = (self.source_projection == other.source_projection and
+                      self.target_projection == other.target_projection)
+        return result
+
+    def __ne__(self, other):
+        return not self == other
+
     def transform_non_affine(self, xy):
         """
         Transform from source to target coordinates.
@@ -557,6 +568,8 @@ class GeoAxes(matplotlib.axes.Axes):
             A collection of shapely geometries.
         crs
             The cartopy CRS in which the provided geometries are defined.
+        styler
+            A callable that returns matplotlib patch styling given a geometry.
 
         Returns
         -------
@@ -571,8 +584,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
 
         """
+        styler = kwargs.pop('styler', None)
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
-        return self.add_feature(feature)
+        return self.add_feature(feature, styler=styler)
 
     def get_extent(self, crs=None):
         """

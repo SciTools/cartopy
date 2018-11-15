@@ -66,19 +66,18 @@ def main():
     # distance)
     track_buffer = track.buffer(2)
 
-    for state in shpreader.Reader(states_shp).geometries():
-        # pick a default color for the land with a black outline,
-        # this will change if the storm intersects with our track
-        facecolor = [0.9375, 0.9375, 0.859375]
-        edgecolor = 'black'
-
-        if state.intersects(track):
+    def colorize_state(geometry):
+        facecolor = (0.9375, 0.9375, 0.859375)
+        if geometry.intersects(track):
             facecolor = 'red'
-        elif state.intersects(track_buffer):
+        elif geometry.intersects(track_buffer):
             facecolor = '#FF7E00'
+        return {'facecolor': facecolor, 'edgecolor': 'black'}
 
-        ax.add_geometries([state], ccrs.PlateCarree(),
-                          facecolor=facecolor, edgecolor=edgecolor)
+    ax.add_geometries(
+        shpreader.Reader(states_shp).geometries(),
+        ccrs.PlateCarree(),
+        styler=colorize_state)
 
     ax.add_geometries([track_buffer], ccrs.PlateCarree(),
                       facecolor='#C8A2C8', alpha=0.5)
