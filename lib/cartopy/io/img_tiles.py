@@ -223,7 +223,7 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
         return url
 
 
-class MapQuestOSM(GoogleTiles):
+class MapQuestOSM(GoogleWTS):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     # http://devblog.mapquest.com/2016/06/15/
     # modernization-of-mapquest-results-in-changes-to-open-tile-access/
@@ -240,7 +240,7 @@ class MapQuestOSM(GoogleTiles):
         return url
 
 
-class MapQuestOpenAerial(GoogleTiles):
+class MapQuestOpenAerial(GoogleWTS):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     # The following attribution should be included in the resulting image:
     # "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture,
@@ -252,7 +252,7 @@ class MapQuestOpenAerial(GoogleTiles):
         return url
 
 
-class OSM(GoogleTiles):
+class OSM(GoogleWTS):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     def _image_url(self, tile):
         x, y, z = tile
@@ -301,7 +301,7 @@ class StamenTerrain(Stamen):
         return super(StamenTerrain, self).__init__(style='terrain-background')
 
 
-class MapboxTiles(GoogleTiles):
+class MapboxTiles(GoogleWTS):
     """
     Implement web tile retrieval from Mapbox.
 
@@ -337,7 +337,7 @@ class MapboxTiles(GoogleTiles):
         return url
 
 
-class MapboxStyleTiles(GoogleTiles):
+class MapboxStyleTiles(GoogleWTS):
     """
     Implement web tile retrieval from a user-defined Mapbox style. For more
     details on Mapbox styles, see
@@ -382,7 +382,7 @@ class MapboxStyleTiles(GoogleTiles):
         return url
 
 
-class QuadtreeTiles(GoogleTiles):
+class QuadtreeTiles(GoogleWTS):
     """
     Implement web tile retrieval using the Microsoft WTS quadkey coordinate
     system.
@@ -447,7 +447,7 @@ class QuadtreeTiles(GoogleTiles):
 
     def tileextent(self, quadkey):
         x_y_z = self.quadkey_to_tms(quadkey, google=True)
-        return GoogleTiles.tileextent(self, x_y_z)
+        return GoogleWTS.tileextent(self, x_y_z)
 
     def find_images(self, target_domain, target_z, start_tile=None):
         """
@@ -467,7 +467,7 @@ class QuadtreeTiles(GoogleTiles):
 
         for start_tile in start_tiles:
             start_tile = self.quadkey_to_tms(start_tile, google=True)
-            for tile in GoogleTiles.find_images(self, target_domain, target_z,
+            for tile in GoogleWTS.find_images(self, target_domain, target_z,
                                                 start_tile=start_tile):
                 yield self.tms_to_quadkey(tile, google=True)
 
