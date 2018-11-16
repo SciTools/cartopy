@@ -2028,20 +2028,14 @@ class _Satellite(Projection):
             proj4_params.append(('sweep', sweep_axis))
         super(_Satellite, self).__init__(proj4_params, globe=globe)
 
-        # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = np.float(self.globe.semiminor_axis or a)
-        h = np.float(satellite_height)
-        max_x = h * np.arcsin(a / (a + h))
-        max_y = h * np.arcsin(b / (a + h))
-
+    def _set_bounds(self, max_x, max_y):
+        false_easting = self.proj4_params['x_0']
+        false_northing = self.proj4_params['y_0']
         coords = _ellipse_boundary(max_x, max_y,
                                    false_easting, false_northing, 61)
         self._boundary = sgeom.LinearRing(coords.T)
-        mins = np.min(coords, axis=1)
-        maxs = np.max(coords, axis=1)
-        self._x_limits = mins[0], maxs[0]
-        self._y_limits = mins[1], maxs[1]
+        self._x_limits = -max_x + false_easting, max_x + false_easting
+        self._y_limits = -max_y + false_northing, max_y + false_northing
         self._threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
@@ -2063,12 +2057,38 @@ class _Satellite(Projection):
 
 class Geostationary(_Satellite):
     """
+    A view appropriate for satellites in Geostationary Earth orbit.
+
     Perspective view looking directly down from above a point on the equator.
+
+    In this projection, the projected coordinates are scanning angles measured
+    from the satellite looking directly downward, multiplied by the height of
+    the satellite.
 
     """
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None,
                  sweep_axis='y'):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        satellite_height: float, optional
+            The height of the satellite. Defaults to 35785831 meters
+            (true geostationary orbit).
+        false_easting:
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing:
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+        sweep_axis: 'x' or 'y', optional. Defaults to 'y'.
+            Controls which axis is scanned first, and thus which angle is
+            applied first. The default is appropriate for Meteosat, while
+            'x' should be used for GOES.
+        """
+
         super(Geostationary, self).__init__(
             projection='geos',
             satellite_height=satellite_height,
@@ -2079,15 +2099,59 @@ class Geostationary(_Satellite):
             globe=globe,
             sweep_axis=sweep_axis)
 
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(self.globe.semiminor_axis or a)
+        h = np.float(satellite_height)
+        max_x = h * np.arcsin(a / (a + h))
+        max_y = h * np.arcsin(b / (a + h))
+        self._set_bounds(max_x, max_y)
+
 
 class NearsidePerspective(_Satellite):
     """
     Perspective view looking directly down from above a point on the globe.
 
+    In this projection, the projected coordinates are x and y measured from
+    the origin of a plane tangent to the Earth directly below the perspective
+    point (e.g. a satellite).
+
     """
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        central_latitude: float, optional
+            The central latitude. Defaults to 0.
+        satellite_height: float, optional
+            The height of the satellite. Defaults to 35785831 meters
+            (true geostationary orbit).
+        false_easting:
+            X offset from planar origin in metres. Defaults to 0.
+        false_northing:
+            Y offset from planar origin in metres. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+            .. note::
+                This projection does not handle elliptical globes.
+
+        """
+        if globe is None:
+            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = globe.semiminor_axis or a
+
+        if b != a or globe.ellipse is not None:
+            warnings.warn('The proj "nsper" projection does not handle '
+                          'elliptical globes.')
+
         super(NearsidePerspective, self).__init__(
             projection='nsper',
             satellite_height=satellite_height,
@@ -2096,6 +2160,10 @@ class NearsidePerspective(_Satellite):
             false_easting=false_easting,
             false_northing=false_northing,
             globe=globe)
+
+        h = np.float(satellite_height)
+        max_x = a * np.sqrt(h / (2 * a + h))
+        self._set_bounds(max_x, max_x)
 
 
 class AlbersEqualArea(Projection):
