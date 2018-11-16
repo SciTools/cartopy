@@ -1112,6 +1112,12 @@ class GeoAxes(matplotlib.axes.Axes):
                              'imshow. To hold the data and view limits see '
                              'GeoAxes.hold_limits.')
 
+        if 'origin' not in kwargs:
+            import warnings
+            warnings.warn('The default value for the origin argument will'
+                          ' change from "lower" to "upper" in CartoPy 0.18.',
+                          FutureWarning)
+
         kwargs.setdefault('origin', 'lower')
 
         same_projection = (isinstance(transform, ccrs.Projection) and

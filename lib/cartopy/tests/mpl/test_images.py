@@ -146,6 +146,15 @@ def test_imshow_projected():
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
+def test_imshow_default_origin_warns():
+    """Test that using the default value for origin issues a warning."""
+    proj = ccrs.PlateCarree()
+    img = plt.imread(NATURAL_EARTH_IMG)
+    ax = plt.axes(projection=proj)
+    with pytest.warns(FutureWarning):
+        ax.imshow(img)
+
+
 @pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)

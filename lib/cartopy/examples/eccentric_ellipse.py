@@ -64,7 +64,7 @@ def main():
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=projection)
-    ax.imshow(img, transform=crs, extent=extent)
+    ax.imshow(img, transform=crs, extent=extent, origin='lower')
     fig.text(.075, .012, "Image credit: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA/PSI",
              bbox={'facecolor': 'w', 'edgecolor': 'k'})
     plt.show()
