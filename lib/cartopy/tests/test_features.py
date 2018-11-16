@@ -48,19 +48,25 @@ class TestFeatures(object):
         assert medium_scale == '50m'
         assert large_scale == '110m'
 
-    def test_intersecting_geometries_small(self):
+    def test_intersecting_geometries_small(self, monkeypatch):
+        # Patch so we don't actually try to download anything.
+        monkeypatch.setattr(auto_land, 'geometries', lambda: [])
         # Check that intersecting_geometries will set the scale to
         # '10m' when the extent is small and autoscale is True.
         auto_land.intersecting_geometries(small_extent)
         assert auto_land.scale == '10m'
 
-    def test_intersecting_geometries_medium(self):
+    def test_intersecting_geometries_medium(self, monkeypatch):
+        # Patch so we don't actually try to download anything.
+        monkeypatch.setattr(auto_land, 'geometries', lambda: [])
         # Check that intersecting_geometries will set the scale to
         # '50m' when the extent is medium and autoscale is True.
         auto_land.intersecting_geometries(medium_extent)
         assert auto_land.scale == '50m'
 
-    def test_intersecting_geometries_large(self):
+    def test_intersecting_geometries_large(self, monkeypatch):
+        # Patch so we don't actually try to download anything.
+        monkeypatch.setattr(auto_land, 'geometries', lambda: [])
         # Check that intersecting_geometries will set the scale to
         # '110m' when the extent is large and autoscale is True.
         auto_land.intersecting_geometries(large_extent)
