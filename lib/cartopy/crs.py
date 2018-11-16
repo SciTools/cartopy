@@ -1520,7 +1520,7 @@ class Orthographic(Projection):
 
         # To stabilise the projection of geometries, we reduce the boundary by
         # a tiny fraction at the cost of the extreme edges.
-        coords = _ellipse_boundary(a * 0.99999, b * 0.99999, n=61)
+        coords = _ellipse_boundary(a * 0.99999, a * 0.99999, n=61)
         self._boundary = sgeom.polygon.LinearRing(coords.T)
         mins = np.min(coords, axis=1)
         maxs = np.max(coords, axis=1)
