@@ -50,7 +50,6 @@ class SlippyImageArtist(AxesImage):
 
     def on_press(self, event=None):
         self.user_is_interacting = True
-        self.stale = True
 
     def on_release(self, event=None):
         self.user_is_interacting = False
