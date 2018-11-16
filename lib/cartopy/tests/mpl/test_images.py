@@ -149,7 +149,7 @@ def test_imshow_projected():
 @pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
-@ImageTesting(['imshow_natural_earth_ortho'],
+@ImageTesting(['stock_img_natural_earth_ortho'],
               tolerance=4.15 if MPL_VERSION < '2' else 0.7)
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
