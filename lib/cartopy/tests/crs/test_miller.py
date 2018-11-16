@@ -40,6 +40,51 @@ def test_default():
                         [-131.9758172, 131.9758172])
 
 
+def test_sphere_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, ellipse=None)
+    mill = ccrs.Miller(globe=globe)
+    other_args = {'a=1000', 'lon_0=0.0'}
+    check_proj_params('mill', mill, other_args)
+
+    assert_almost_equal(mill.x_limits, [-3141.5926536, 3141.5926536])
+    assert_almost_equal(mill.y_limits, [-2303.4125434, 2303.4125434])
+
+
+def test_ellipse_globe():
+    globe = ccrs.Globe(ellipse='WGS84')
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        mill = ccrs.Miller(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'ellps=WGS84', 'lon_0=0.0'}
+    check_proj_params('mill', mill, other_args)
+
+    # Limits are the same as spheres (but not the default radius) since
+    # ellipses are not supported.
+    mill_sph = ccrs.Miller(
+        globe=ccrs.Globe(semimajor_axis=ccrs.WGS84_SEMIMAJOR_AXIS,
+                         ellipse=None))
+    assert_almost_equal(mill.x_limits, mill_sph.x_limits)
+    assert_almost_equal(mill.y_limits, mill_sph.y_limits)
+
+
+def test_eccentric_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
+                       ellipse=None)
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        mill = ccrs.Miller(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'a=1000', 'b=500', 'lon_0=0.0'}
+    check_proj_params('mill', mill, other_args)
+
+    # Limits are the same as spheres since ellipses are not supported.
+    assert_almost_equal(mill.x_limits, [-3141.5926536, 3141.5926536])
+    assert_almost_equal(mill.y_limits, [-2303.4125434, 2303.4125434])
+
+
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     mill = ccrs.Miller(central_longitude=lon)

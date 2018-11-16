@@ -40,6 +40,47 @@ def test_default():
                         [-5e7, 5e7])
 
 
+def test_sphere_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, ellipse=None)
+    gnom = ccrs.Gnomonic(globe=globe)
+    other_args = {'a=1000', 'lon_0=0.0', 'lat_0=0.0'}
+    check_proj_params('gnom', gnom, other_args)
+
+    assert_almost_equal(gnom.x_limits, [-5e7, 5e7])
+    assert_almost_equal(gnom.y_limits, [-5e7, 5e7])
+
+
+def test_ellipse_globe():
+    globe = ccrs.Globe(ellipse='WGS84')
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        gnom = ccrs.Gnomonic(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0'}
+    check_proj_params('gnom', gnom, other_args)
+
+    # Limits are the same as default since ellipses are not supported.
+    assert_almost_equal(gnom.x_limits, [-5e7, 5e7])
+    assert_almost_equal(gnom.y_limits, [-5e7, 5e7])
+
+
+def test_eccentric_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
+                       ellipse=None)
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        gnom = ccrs.Gnomonic(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0'}
+    check_proj_params('gnom', gnom, other_args)
+
+    # Limits are the same as spheres since ellipses are not supported.
+    assert_almost_equal(gnom.x_limits, [-5e7, 5e7])
+    assert_almost_equal(gnom.y_limits, [-5e7, 5e7])
+
+
 @pytest.mark.parametrize('lat', [-10, 0, 10])
 @pytest.mark.parametrize('lon', [-10, 0, 10])
 def test_central_params(lat, lon):

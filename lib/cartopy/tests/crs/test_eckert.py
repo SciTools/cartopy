@@ -46,6 +46,71 @@ def test_default(name, proj, lim):
     assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
 
 
+@pytest.mark.parametrize('name, proj, lim', [
+    pytest.param('eck1', ccrs.EckertI, 2894.4050182, id='EckertI'),
+    pytest.param('eck2', ccrs.EckertII, 2894.4050182, id='EckertII'),
+    pytest.param('eck3', ccrs.EckertIII, 2653.0008564, id='EckertIII'),
+    pytest.param('eck4', ccrs.EckertIV, 2653.0008564, id='EckertIV'),
+    pytest.param('eck5', ccrs.EckertV, 2770.9649676, id='EckertV'),
+    pytest.param('eck6', ccrs.EckertVI, 2770.9649676, id='EckertVI'),
+])
+def test_sphere_globe(name, proj, lim):
+    globe = ccrs.Globe(semimajor_axis=1000, ellipse=None)
+    eck = proj(globe=globe)
+    other_args = {'a=1000', 'lon_0=0'}
+    check_proj_params(name, eck, other_args)
+
+    assert_almost_equal(eck.x_limits, [-lim, lim])
+    assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
+
+
+@pytest.mark.parametrize('name, proj, lim', [
+    # Limits are the same as default since ellipses are not supported.
+    pytest.param('eck1', ccrs.EckertI, 18460911.739778, id='EckertI'),
+    pytest.param('eck2', ccrs.EckertII, 18460911.739778, id='EckertII'),
+    pytest.param('eck3', ccrs.EckertIII, 16921202.9229432, id='EckertIII'),
+    pytest.param('eck4', ccrs.EckertIV, 16921202.9229432, id='EckertIV'),
+    pytest.param('eck5', ccrs.EckertV, 17673594.1854146, id='EckertV'),
+    pytest.param('eck6', ccrs.EckertVI, 17673594.1854146, id='EckertVI'),
+])
+def test_ellipse_globe(name, proj, lim):
+    globe = ccrs.Globe(ellipse='WGS84')
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        eck = proj(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'ellps=WGS84', 'lon_0=0'}
+    check_proj_params(name, eck, other_args)
+
+    assert_almost_equal(eck.x_limits, [-lim, lim])
+    assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
+
+
+@pytest.mark.parametrize('name, proj, lim', [
+    # Limits are the same as spheres since ellipses are not supported.
+    pytest.param('eck1', ccrs.EckertI, 2894.4050182, id='EckertI'),
+    pytest.param('eck2', ccrs.EckertII, 2894.4050182, id='EckertII'),
+    pytest.param('eck3', ccrs.EckertIII, 2653.0008564, id='EckertIII'),
+    pytest.param('eck4', ccrs.EckertIV, 2653.0008564, id='EckertIV'),
+    pytest.param('eck5', ccrs.EckertV, 2770.9649676, id='EckertV'),
+    pytest.param('eck6', ccrs.EckertVI, 2770.9649676, id='EckertVI'),
+])
+def test_eccentric_globe(name, proj, lim):
+    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
+                       ellipse=None)
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        eck = proj(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'a=1000', 'b=500', 'lon_0=0'}
+    check_proj_params(name, eck, other_args)
+
+    assert_almost_equal(eck.x_limits, [-lim, lim])
+    assert_almost_equal(eck.y_limits, [-lim / 2, lim / 2])
+
+
 @pytest.mark.parametrize('name, proj', [
     pytest.param('eck1', ccrs.EckertI, id='EckertI'),
     pytest.param('eck2', ccrs.EckertII, id='EckertII'),

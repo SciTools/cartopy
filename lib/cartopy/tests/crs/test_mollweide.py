@@ -40,6 +40,47 @@ def test_default():
                         [-9020047.8480736, 9020047.8480736])
 
 
+def test_sphere_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, ellipse=None)
+    moll = ccrs.Mollweide(globe=globe)
+    other_args = {'a=1000', 'lon_0=0'}
+    check_proj_params('moll', moll, other_args)
+
+    assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
+    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+
+
+def test_ellipse_globe():
+    globe = ccrs.Globe(ellipse='WGS84')
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        moll = ccrs.Mollweide(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'ellps=WGS84', 'lon_0=0'}
+    check_proj_params('moll', moll, other_args)
+
+    # Limits are the same as default since ellipses are not supported.
+    assert_almost_equal(moll.x_limits, [-18040095.6961473, 18040095.6961473])
+    assert_almost_equal(moll.y_limits, [-9020047.8480736, 9020047.8480736])
+
+
+def test_eccentric_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
+                       ellipse=None)
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        moll = ccrs.Mollweide(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'a=1000', 'b=500', 'lon_0=0'}
+    check_proj_params('moll', moll, other_args)
+
+    # Limits are the same as spheres since ellipses are not supported.
+    assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
+    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+
+
 def test_offset():
     crs = ccrs.Mollweide()
     crs_offset = ccrs.Mollweide(false_easting=1234, false_northing=-4321)
