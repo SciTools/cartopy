@@ -906,12 +906,59 @@ class GeoAxes(matplotlib.axes.Axes):
             # to 3 colour channels:
             img = np.repeat(img[:, :, np.newaxis], 3, axis=2)
         # now get the projection from the metadata:
-        source_proj = _USER_BG_IMGS[name]['__projection__']
+        if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
+            # currently only PlateCarree is defined:
+            source_proj = ccrs.PlateCarree()
+        else:
+            raise NotImplementedError('Background image projection undefined')
 
-        located_image = LocatedImage(img, extent)
-        raster_source = LocatedImageRasterSource(located_image,
-                                                 source_proj)
-        return self.add_raster(raster_source)
+        if extent is None:
+            # not specifying an extent, so return all of it:
+            return self.imshow(img, origin='upper',
+                               transform=source_proj,
+                               extent=[-180, 180, -90, 90])
+        else:
+            # return only a subset of the image:
+            # set up coordinate arrays:
+            d_lat = 180.0 / img.shape[0]
+            d_lon = 360.0 / img.shape[1]
+            # latitude starts at 90N for this image:
+            lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2.0)) + 90.0
+            lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2.0)) - 180.0
+
+            # which points are in range:
+            lat_in_range = np.logical_and(lat_pts >= extent[2],
+                                          lat_pts <= extent[3])
+            if extent[0] < 180 and extent[1] > 180:
+                # we have a region crossing the dateline
+                # this is the westerly side of the input image:
+                lon_in_range1 = np.logical_and(lon_pts >= extent[0],
+                                               lon_pts <= 180.0)
+                img_subset1 = img[lat_in_range, :, :][:, lon_in_range1, :]
+                # and the eastward half:
+                lon_in_range2 = lon_pts + 360. <= extent[1]
+                img_subset2 = img[lat_in_range, :, :][:, lon_in_range2, :]
+                # now join them up:
+                img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
+                # now define the extent for output that matches those points:
+                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2.0,
+                              lon_pts[lon_in_range2][-1] + d_lon / 2.0 + 360,
+                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+            else:
+                # not crossing the dateline, so just find the region:
+                lon_in_range = np.logical_and(lon_pts >= extent[0],
+                                              lon_pts <= extent[1])
+                img_subset = img[lat_in_range, :, :][:, lon_in_range, :]
+                # now define the extent for output that matches those points:
+                ret_extent = [lon_pts[lon_in_range][0] - d_lon / 2.0,
+                              lon_pts[lon_in_range][-1] + d_lon / 2.0,
+                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+
+            return self.imshow(img_subset, origin='upper',
+                               transform=source_proj,
+                               extent=ret_extent)
 
     def read_user_background_images(self, verify=True):
         """
