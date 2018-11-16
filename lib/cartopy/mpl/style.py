@@ -23,6 +23,8 @@ Handles matplotlib styling in a single consistent place.
 """
 import warnings
 
+import six
+
 
 # Define the matplotlib style aliases that cartopy can expand.
 # Note: This should not contain the plural aliases
@@ -54,9 +56,9 @@ def merge(*style_dicts):
               matplotlib), UNLESS facecolor == "never", which will be expanded
               at finalization to 'none'
 
-    >>> merge({'lw': 1, "edgecolor": "black", "facecolor": "never"},
+    >>> merge({"lw": 1, "edgecolor": "black", "facecolor": "never"},
     ...       {"linewidth": 2, "color": "gray"})
-    {'edgecolor': 'gray', 'facecolor': 'none', 'linewidth': 2}
+    {'edgecolor': 'gray', 'facecolor': 'never', 'linewidth': 2}
 
     """
     style = {}
@@ -67,20 +69,21 @@ def merge(*style_dicts):
 
         for alias_from, alias_to in _ALIASES.items():
             alias = this_style.pop(alias_from, None)
-            if alias:
+            if alias_from in orig_style:
                 # n.b. alias_from doesn't trump alias_to
                 # (e.g. 'lw' doesn't trump 'linewidth').
                 this_style.setdefault(alias_to, alias)
 
         color = this_style.pop('color', None)
-        if color:
+        if 'color' in orig_style:
             this_style['edgecolor'] = color
             this_style['facecolor'] = color
 
-        if facecolor == 'never':
-            this_style.pop('facecolor', None)
-            if 'fc' in orig_style or 'facecolor' in orig_style:
-                warnings.warn('facecolor may not be set, as it has been '
+        if isinstance(facecolor, six.string_types) and facecolor == 'never':
+            requested_color = this_style.pop('facecolor', None)
+            if ('fc' in orig_style or 'facecolor' in orig_style and
+                    requested_color != 'none'):
+                warnings.warn('facecolor will have no effect as it has been '
                               'defined as "never".')
         else:
             facecolor = this_style.get('facecolor', facecolor)

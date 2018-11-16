@@ -19,7 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import pytest
 
-from ...mpl import style
+from cartopy.mpl import style
 
 
 d = dict
@@ -51,6 +51,10 @@ d = dict
       d(linewidth=2)),
      ([d(lw=1, linewidth=2), d(lw=3)],
       d(linewidth=3)),
+     ([d(color=None), d(facecolor='red')],
+      d(facecolor='red', edgecolor=None)),
+     ([d(linewidth=1), d(lw=None)],
+      d(linewidth=None)),
      ]
 )
 def test_merge(styles, expected):
