@@ -117,6 +117,12 @@ class FeatureArtist(matplotlib.artist.Artist):
         self._styler = kwargs.pop('styler', None)
         self._kwargs = dict(kwargs)
 
+        if 'color' in self._kwargs:
+            # We want the user to be able to override both face and edge
+            # colours if the original feature already supplied it.
+            color = self._kwargs.pop('color')
+            self._kwargs['facecolor'] = self._kwargs['edgecolor'] = color
+
         # Set default zorder so that features are drawn before
         # lines e.g. contours but after images.
         # Note that the zorder of Patch, PatchCollection and PathCollection
