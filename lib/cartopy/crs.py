@@ -156,40 +156,30 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
             minlon += epsilon
         return minlon, maxlon
 
-    def _repr_svg_(self):
-        """
-        Make a visual representation of the projection and return it as an
-        html element.
-
-        """
-        # Imports.
+    def _repr_html_(self):
+        import cgi
         try:
             # As matplotlib is not a core cartopy dependency, don't error
-            # if it's not available, but fall back to the default repr.
+            # if it's not available.
             import matplotlib.pyplot as plt
         except ImportError:
-            pass
-        else:
-            if six.PY2:
-                from StringIO import StringIO
-            else:
-                from io import StringIO
-            # Produce a visual repr of the Projection instance.
-            fig, ax = plt.subplots(figsize=(5, 3),
-                                   subplot_kw={'projection': self})
-            ax.set_global()
-            ax.coastlines('110m')
-            ax.gridlines()
-            # "Save" to a string buffer.
-            buf = StringIO()
-            fig.savefig(buf, format='svg')
-            plt.close(fig)
-            # "Rewind" the buffer to the start and return it as an svg string.
-            buf.seek(0)
-            return buf.read()
-        finally:
-            # Fall back to the standard repr if anything goes wrong.
-            repr(self)
+            # We can't return an SVG of the CRS, so let Jupyter fall back to
+            # a default repr by returning None.
+            return None
+
+        # Produce a visual repr of the Projection instance.
+        fig, ax = plt.subplots(figsize=(5, 3),
+                               subplot_kw={'projection': self})
+        ax.set_global()
+        ax.coastlines('auto')
+        ax.gridlines()
+        buf = six.StringIO()
+        fig.savefig(buf, format='svg', bbox_inches='tight')
+        plt.close(fig)
+        # "Rewind" the buffer to the start and return it as an svg string.
+        buf.seek(0)
+        svg = buf.read()
+        return '{}<pre>{}</pre>'.format(svg, cgi.escape(repr(self)))
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
