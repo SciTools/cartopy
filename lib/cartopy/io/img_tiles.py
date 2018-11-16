@@ -30,58 +30,25 @@ using tiles in this way can be found at the
 
 from __future__ import (absolute_import, division, print_function)
 
+from abc import ABCMeta, abstractmethod
+import warnings
+
 from PIL import Image
 import shapely.geometry as sgeom
 import numpy as np
 import six
-import warnings
 
 import cartopy.crs as ccrs
 
 
-class GoogleTiles(object):
+class GoogleWTS(six.with_metaclass(ABCMeta, object)):
     """
     Implement web tile retrieval using the Google WTS coordinate system.
 
     A "tile" in this class refers to the coordinates (x, y, z).
 
     """
-    def __init__(self, desired_tile_form='RGB', style="street",
-                 url=('https://mts0.google.com/vt/lyrs={style}'
-                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
-        """
-        Parameters
-        ----------
-        desired_tile_form: optional
-            Defaults to 'RGB'.
-        style: optional
-            The style for the Google Maps tiles.  One of 'street',
-            'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
-        url: optional
-            URL pointing to a tile source and containing {x}, {y}, and {z}.
-            Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/\
-World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
-
-        """
-        # Only streets are partly transparent tiles that can be overlaid over
-        # the satellite map to create the known hybrid style from google.
-        styles = ["street", "satellite", "terrain", "only_streets"]
-        style = style.lower()
-        self.url = url
-        if style not in styles:
-            msg = "Invalid style '%s'. Valid styles: %s" % \
-                (style, ", ".join(styles))
-            raise ValueError(msg)
-        self.style = style
-
-        # The 'satellite' and 'terrain' styles require pillow with a jpeg
-        # decoder.
-        if self.style in ["satellite", "terrain"] and \
-                not hasattr(Image.core, "jpeg_decoder") or \
-                not Image.core.jpeg_decoder:
-            msg = "The '%s' style requires pillow with jpeg decoding support."
-            raise ValueError(msg % self.style)
-
+    def __init__(self, desired_tile_form='RGB'):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
@@ -184,18 +151,9 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
     _tileextent = tileextent
 
+    @abstractmethod
     def _image_url(self, tile):
-        style_dict = {
-            "street": "m",
-            "satellite": "s",
-            "terrain": "t",
-            "only_streets": "h"}
-        url = self.url.format(
-            style=style_dict[self.style],
-            x=tile[0], X=tile[0],
-            y=tile[1], Y=tile[1],
-            z=tile[2], Z=tile[2])
-        return url
+        pass
 
     def get_image(self, tile):
         if six.PY3:
@@ -215,7 +173,58 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
         return img, self.tileextent(tile), 'lower'
 
 
-class MapQuestOSM(GoogleTiles):
+class GoogleTiles(GoogleWTS):
+    def __init__(self, desired_tile_form='RGB', style="street",
+                 url=('https://mts0.google.com/vt/lyrs={style}'
+                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
+        """
+        Parameters
+        ----------
+        desired_tile_form: optional
+            Defaults to 'RGB'.
+        style: optional
+            The style for the Google Maps tiles.  One of 'street',
+            'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
+        url: optional
+            URL pointing to a tile source and containing {x}, {y}, and {z}.
+            Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/\
+World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
+
+        """
+        styles = ["street", "satellite", "terrain", "only_streets"]
+        style = style.lower()
+        self.url = url
+        if style not in styles:
+            msg = "Invalid style '%s'. Valid styles: %s" % \
+                (style, ", ".join(styles))
+            raise ValueError(msg)
+        self.style = style
+
+        # The 'satellite' and 'terrain' styles require pillow with a jpeg
+        # decoder.
+        if self.style in ["satellite", "terrain"] and \
+                not hasattr(Image.core, "jpeg_decoder") or \
+                not Image.core.jpeg_decoder:
+            msg = "The '%s' style requires pillow with jpeg decoding support."
+            raise ValueError(msg % self.style)
+        return super(GoogleTiles, self).__init__(
+            desired_tile_form=desired_tile_form)
+
+    def _image_url(self, tile):
+        style_dict = {
+            "street": "m",
+            "satellite": "s",
+            "terrain": "t",
+            "only_streets": "h"}
+        url = self.url.format(
+            style=style_dict[self.style],
+            x=tile[0], X=tile[0],
+            y=tile[1], Y=tile[1],
+            z=tile[2], Z=tile[2])
+        return url
+
+
+class MapQuestOSM(GoogleWTS):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     # http://devblog.mapquest.com/2016/06/15/
     # modernization-of-mapquest-results-in-changes-to-open-tile-access/
@@ -232,7 +241,7 @@ class MapQuestOSM(GoogleTiles):
         return url
 
 
-class MapQuestOpenAerial(GoogleTiles):
+class MapQuestOpenAerial(GoogleWTS):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     # The following attribution should be included in the resulting image:
     # "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture,
@@ -244,7 +253,7 @@ class MapQuestOpenAerial(GoogleTiles):
         return url
 
 
-class OSM(GoogleTiles):
+class OSM(GoogleWTS):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     def _image_url(self, tile):
         x, y, z = tile
@@ -252,8 +261,40 @@ class OSM(GoogleTiles):
         return url
 
 
-class StamenTerrain(GoogleTiles):
+class Stamen(GoogleWTS):
     """
+    Retrieves tiles from maps.stamen.com. Styles include
+    ``terrain-background``, ``terrain``, ``toner`` and ``watercolor``.
+
+    For a full reference on the styles available please see
+    http://maps.stamen.com. Of particular note are the sub-styles
+    that are made available (e.g. ``terrain`` and ``terrain-background``).
+    To determine the name of the particular [sub-]style you want,
+    follow the link on http://maps.stamen.com to your desired style and
+    observe the style name in the URL. Your style name will be in the
+    form of: ``http://maps.stamen.com/{STYLE_NAME}/#9/37/-122``.
+
+    Except otherwise noted, the Stamen map tile sets are copyright Stamen
+    Design, under a Creative Commons Attribution (CC BY 3.0) license.
+
+    Please see the attribution notice at http://maps.stamen.com on how to
+    attribute this imagery.
+
+    """
+    def __init__(self, style='toner'):
+        super(Stamen, self).__init__()
+        self.style = style
+
+    def _image_url(self, tile):
+        return ('http://tile.stamen.com/{self.style}/{z}/{x}/{y}.png'
+                .format(self=self, x=tile[0], y=tile[1], z=tile[2]))
+
+
+class StamenTerrain(Stamen):
+    """
+    **DEPRECATED:** This class is deprecated. Please use
+    ``Stamen('terrain-background')`` instead.
+
     Terrain tiles defined for the continental United States, and include land
     color and shaded hills. The land colors are a custom palette developed by
     Gem Spear for the National Atlas 1km land cover data set, which defines
@@ -264,21 +305,28 @@ class StamenTerrain(GoogleTiles):
     leave room for foreground data and break up the weirdness of large areas
     of flat, dark green.
 
-    Additional info:
-    http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
-    http://maps.stamen.com/
-    https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
-    https://github.com/migurski/DEM-Tools
+    References
+    ----------
+
+     * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+     * http://maps.stamen.com/
+     * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
+     * https://github.com/migurski/DEM-Tools
+
 
     """
-    def _image_url(self, tile):
-        x, y, z = tile
-        url = 'http://tile.stamen.com/terrain-background/%s/%s/%s.png' % (
-            z, x, y)
-        return url
+    def __init__(self):
+        warnings.warn(
+            "The StamenTerrain class was deprecated in v0.17. "
+            "Please use Stamen('terrain-background') instead.")
+
+        # NOTE: This subclass of Stamen exists for legacy reasons.
+        # No further Stamen subclasses will be accepted as
+        # they can easily be created in user code with Stamen(style_name).
+        return super(StamenTerrain, self).__init__(style='terrain-background')
 
 
-class MapboxTiles(GoogleTiles):
+class MapboxTiles(GoogleWTS):
     """
     Implement web tile retrieval from Mapbox.
 
@@ -314,7 +362,7 @@ class MapboxTiles(GoogleTiles):
         return url
 
 
-class MapboxStyleTiles(GoogleTiles):
+class MapboxStyleTiles(GoogleWTS):
     """
     Implement web tile retrieval from a user-defined Mapbox style. For more
     details on Mapbox styles, see
@@ -359,7 +407,7 @@ class MapboxStyleTiles(GoogleTiles):
         return url
 
 
-class QuadtreeTiles(GoogleTiles):
+class QuadtreeTiles(GoogleWTS):
     """
     Implement web tile retrieval using the Microsoft WTS quadkey coordinate
     system.
@@ -424,7 +472,7 @@ class QuadtreeTiles(GoogleTiles):
 
     def tileextent(self, quadkey):
         x_y_z = self.quadkey_to_tms(quadkey, google=True)
-        return GoogleTiles.tileextent(self, x_y_z)
+        return GoogleWTS.tileextent(self, x_y_z)
 
     def find_images(self, target_domain, target_z, start_tile=None):
         """
@@ -444,8 +492,8 @@ class QuadtreeTiles(GoogleTiles):
 
         for start_tile in start_tiles:
             start_tile = self.quadkey_to_tms(start_tile, google=True)
-            for tile in GoogleTiles.find_images(self, target_domain, target_z,
-                                                start_tile=start_tile):
+            for tile in GoogleWTS.find_images(self, target_domain, target_z,
+                                              start_tile=start_tile):
                 yield self.tms_to_quadkey(tile, google=True)
 
 
