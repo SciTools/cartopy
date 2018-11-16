@@ -305,7 +305,9 @@ class StamenTerrain(Stamen):
     leave room for foreground data and break up the weirdness of large areas
     of flat, dark green.
 
-    Additional info:
+    References
+    ----------
+
      * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
      * http://maps.stamen.com/
      * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
