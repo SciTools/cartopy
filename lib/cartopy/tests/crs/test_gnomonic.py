@@ -31,7 +31,7 @@ from .helpers import check_proj_params
 
 def test_default():
     gnom = ccrs.Gnomonic()
-    other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0'}
+    other_args = {'a=6378137.0', 'lon_0=0.0', 'lat_0=0.0'}
     check_proj_params('gnom', gnom, other_args)
 
     assert_almost_equal(np.array(gnom.x_limits),
@@ -45,7 +45,7 @@ def test_default():
 def test_central_params(lat, lon):
     gnom = ccrs.Gnomonic(central_latitude=lat, central_longitude=lon)
     other_args = {'lat_0={}'.format(lat), 'lon_0={}'.format(lon),
-                  'ellps=WGS84'}
+                  'a=6378137.0'}
     check_proj_params('gnom', gnom, other_args)
 
     assert_almost_equal(np.array(gnom.x_limits),

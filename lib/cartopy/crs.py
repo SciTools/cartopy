@@ -1364,6 +1364,8 @@ class RotatedPole(_CylindricalProjection):
 
 
 class Gnomonic(Projection):
+    _handles_ellipses = False
+
     def __init__(self, central_latitude=0.0,
                  central_longitude=0.0, globe=None):
         proj4_params = [('proj', 'gnom'), ('lat_0', central_latitude),
