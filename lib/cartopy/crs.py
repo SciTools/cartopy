@@ -33,16 +33,13 @@ import shapely.geometry as sgeom
 from shapely.prepared import prep
 import six
 
-from cartopy._crs import CRS, Geodetic, Globe, PROJ4_VERSION
+from cartopy._crs import (CRS, Geodetic, Globe, PROJ4_VERSION,
+                          WGS84_SEMIMAJOR_AXIS, WGS84_SEMIMINOR_AXIS)
 from cartopy._crs import Geocentric  # noqa: F401 (flake8 = unused import)
 import cartopy.trace
 
 
 __document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
-
-
-WGS84_SEMIMAJOR_AXIS = 6378137.0
-WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 
 class RotatedGeodetic(CRS):
@@ -1299,17 +1296,14 @@ class LambertAzimuthalEqualArea(Projection):
 
 
 class Miller(_RectangularProjection):
+    _handles_ellipses = False
+
     def __init__(self, central_longitude=0.0, globe=None):
         if globe is None:
             globe = Globe(semimajor_axis=math.degrees(1), ellipse=None)
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = np.float(globe.semiminor_axis or a)
-
-        if b != a or globe.ellipse is not None:
-            warnings.warn('The proj "mill" projection does not handle '
-                          'elliptical globes.')
 
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
@@ -1493,6 +1487,8 @@ class SouthPolarStereo(Stereographic):
 
 
 class Orthographic(Projection):
+    _handles_ellipses = False
+
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  globe=None):
         if PROJ4_VERSION != ():
@@ -1512,11 +1508,6 @@ class Orthographic(Projection):
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = np.float(self.globe.semiminor_axis or a)
-
-        if b != a:
-            warnings.warn('The proj "ortho" projection does not appear to '
-                          'handle elliptical globes.')
 
         # To stabilise the projection of geometries, we reduce the boundary by
         # a tiny fraction at the cost of the extreme edges.
@@ -1597,6 +1588,8 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
 
     """
 
+    _handles_ellipses = False
+
     def __init__(self, central_longitude=0, false_easting=None,
                  false_northing=None, globe=None):
         """
@@ -1615,17 +1608,6 @@ class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
                 This projection does not handle elliptical globes.
 
         """
-        if globe is None:
-            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
-
-        # TODO: Let the globe return the semimajor axis always.
-        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
-        b = globe.semiminor_axis or a
-
-        if b != a or globe.ellipse is not None:
-            warnings.warn('The proj "{}" projection does not handle '
-                          'elliptical globes.'.format(self._proj_name))
-
         proj4_params = [('proj', self._proj_name),
                         ('lon_0', central_longitude)]
         super(_Eckert, self).__init__(proj4_params, central_longitude,
@@ -1779,6 +1761,8 @@ class Mollweide(_WarpedRectangularProjection):
 
     """
 
+    _handles_ellipses = False
+
     def __init__(self, central_longitude=0, globe=None,
                  false_easting=None, false_northing=None):
         """
@@ -1797,17 +1781,6 @@ class Mollweide(_WarpedRectangularProjection):
                 This projection does not handle elliptical globes.
 
         """
-        if globe is None:
-            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
-
-        # TODO: Let the globe return the semimajor axis always.
-        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
-        b = globe.semiminor_axis or a
-
-        if b != a or globe.ellipse is not None:
-            warnings.warn('The proj "moll" projection does not handle '
-                          'elliptical globes.')
-
         proj4_params = [('proj', 'moll'), ('lon_0', central_longitude)]
         super(Mollweide, self).__init__(proj4_params, central_longitude,
                                         false_easting=false_easting,
@@ -1830,6 +1803,8 @@ class Robinson(_WarpedRectangularProjection):
     It is commonly used for "visually-appealing" world maps.
 
     """
+
+    _handles_ellipses = False
 
     def __init__(self, central_longitude=0, globe=None,
                  false_easting=None, false_northing=None):
@@ -1862,17 +1837,6 @@ class Robinson(_WarpedRectangularProjection):
             warnings.warn('Cannot determine Proj version. The Robinson '
                           'projection may be unreliable and should be used '
                           'with caution.')
-
-        if globe is None:
-            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
-
-        # TODO: Let the globe return the semimajor axis always.
-        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
-        b = globe.semiminor_axis or a
-
-        if b != a or globe.ellipse is not None:
-            warnings.warn('The proj "robin" projection does not handle '
-                          'elliptical globes.')
 
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super(Robinson, self).__init__(proj4_params, central_longitude,
@@ -2126,6 +2090,9 @@ class NearsidePerspective(_Satellite):
     point (e.g. a satellite).
 
     """
+
+    _handles_ellipses = False
+
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None):
@@ -2150,17 +2117,6 @@ class NearsidePerspective(_Satellite):
                 This projection does not handle elliptical globes.
 
         """
-        if globe is None:
-            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
-
-        # TODO: Let the globe return the semimajor axis always.
-        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
-        b = globe.semiminor_axis or a
-
-        if b != a or globe.ellipse is not None:
-            warnings.warn('The proj "nsper" projection does not handle '
-                          'elliptical globes.')
-
         super(NearsidePerspective, self).__init__(
             projection='nsper',
             satellite_height=satellite_height,
@@ -2169,6 +2125,9 @@ class NearsidePerspective(_Satellite):
             false_easting=false_easting,
             false_northing=false_northing,
             globe=globe)
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
 
         h = np.float(satellite_height)
         max_x = a * np.sqrt(h / (2 * a + h))
