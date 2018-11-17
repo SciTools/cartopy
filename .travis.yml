@@ -65,9 +65,6 @@ install:
   - python -c "import cartopy; print('Version ', cartopy.__version__)" && python setup.py version
 
 script:
-  - mkdir ../test_folder
-  - cd ../test_folder
-
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
@@ -91,5 +88,5 @@ deploy:
     upload_docs: false
     on:
       repo: SciTools/cartopy
-      condition: $NAME == "Latest everything"*
+      condition: $NAME == "Latest everything."
       tags: true
