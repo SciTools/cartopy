@@ -88,5 +88,5 @@ deploy:
     upload_docs: false
     on:
       repo: SciTools/cartopy
-      condition: $NAME == "Latest everything"*
+      condition: $NAME == "Latest everything."
       tags: true
