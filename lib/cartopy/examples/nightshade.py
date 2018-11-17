@@ -13,7 +13,8 @@ import cartopy.crs as ccrs
 from cartopy.feature.nightshade import Nightshade
 
 
-ax = plt.axes(projection=ccrs.PlateCarree())
+fig = plt.figure(figsize=(10, 5))
+ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
 date = datetime.datetime(1999, 12, 31, 12)
 
