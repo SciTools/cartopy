@@ -11,7 +11,7 @@ env:
           PYTHONHASHSEED=0  # So pytest-xdist works.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
-          PACKAGES="cython numpy matplotlib-base proj4 pykdtree scipy"
+          PACKAGES="cython numpy matplotlib-base proj4 pykdtree scipy fiona"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
           PACKAGES="cython numpy matplotlib proj4 scipy mock"
