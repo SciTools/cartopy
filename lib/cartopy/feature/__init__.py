@@ -152,8 +152,7 @@ class Scaler(object):
 
 class AdaptiveScaler(Scaler):
     """
-    Object for changing scales of geometries based on extent of axes used to
-    plot geometries.
+    Automatically select scale of geometries based on extent of plotted axes.
     """
     def __init__(self, default_scale, limits):
         """
@@ -167,7 +166,8 @@ class AdaptiveScaler(Scaler):
             tuple of tuples ordered from coarsest to finest scales. Limit
             values are the upper bounds for their corresponding scale.
 
-        Example:
+        Example
+        -------
 
         >>> s = AdaptiveScaler('coarse',
         ...           (('intermediate', 30), ('fine', 10)))

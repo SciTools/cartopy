@@ -27,6 +27,8 @@ Natural Earth or GSHHS shapefiles.
 
 .. autoclass:: WFSFeature
 
+.. autoclass:: AdaptiveScaler
+
 ----------
 
 To simplify some very common cases, some pre-defined Features exist as :mod:`cartopy.feature`
