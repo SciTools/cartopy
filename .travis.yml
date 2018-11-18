@@ -38,14 +38,14 @@ install:
   # Create the basic testing environment
   # ------------------------------------
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
+  - conda config --add channels conda-forge
+  - conda config --add channels conda-forge/label/testing
   - ENV_NAME="test-environment"
   - conda create -n $ENV_NAME python=$PYTHON_VERSION
   - source activate $ENV_NAME
 
   # Customise the testing environment
   # ---------------------------------
-  - conda config --add channels conda-forge
-  - conda config --add channels conda-forge/label/testing
   - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
   - conda install --quiet $PACKAGES
 
