@@ -59,70 +59,14 @@ try:
 except ImportError:
     pass
 
-
 __all__ = ['Reader', 'Record']
 
 
-def _create_point(shape):
-    return sgeom.Point(shape.points[0])
-
-
-def _create_polyline(shape):
-    if not shape.points:
-        return sgeom.MultiLineString()
-
-    parts = list(shape.parts) + [None]
-    bounds = zip(parts[:-1], parts[1:])
-    lines = [shape.points[slice(lower, upper)] for lower, upper in bounds]
-    return sgeom.MultiLineString(lines)
-
-
-def _create_polygon(shape):
-    if not shape.points:
-        return sgeom.MultiPolygon()
-
-    # Partition the shapefile rings into outer rings/polygons (clockwise) and
-    # inner rings/holes (anti-clockwise).
-    parts = list(shape.parts) + [None]
-    bounds = zip(parts[:-1], parts[1:])
-    outer_polygons_and_holes = []
-    inner_polygons = []
-    for lower, upper in bounds:
-        polygon = sgeom.Polygon(shape.points[slice(lower, upper)])
-        if polygon.exterior.is_ccw:
-            inner_polygons.append(polygon)
-        else:
-            outer_polygons_and_holes.append((polygon, []))
-
-    # Find the appropriate outer ring for each inner ring.
-    # aka. Group the holes with their containing polygons.
-    for inner_polygon in inner_polygons:
-        for outer_polygon, holes in outer_polygons_and_holes:
-            if outer_polygon.contains(inner_polygon):
-                holes.append(inner_polygon.exterior.coords)
-                break
-
-    polygon_defns = [(outer_polygon.exterior.coords, holes)
-                     for outer_polygon, holes in outer_polygons_and_holes]
-    return sgeom.MultiPolygon(polygon_defns)
-
-
-def _make_geometry(geometry_factory, shape):
+def _make_geometry(shape):
     geometry = None
     if shape.shapeType != shapefile.NULL:
-        geometry = geometry_factory(shape)
+        geometry = sgeom.shape(shape)
     return geometry
-
-
-# The mapping from shapefile shapeType values to geometry creation functions.
-GEOMETRY_FACTORIES = {
-    shapefile.POINT: _create_point,
-    shapefile.POINTZ: _create_point,
-    shapefile.POLYLINE: _create_polyline,
-    shapefile.POLYLINEZ: _create_polyline,
-    shapefile.POLYGON: _create_polygon,
-    shapefile.POLYGONZ: _create_polygon,
-}
 
 
 class Record(object):
@@ -131,9 +75,8 @@ class Record(object):
     their associated geometry.
 
     """
-    def __init__(self, shape, geometry_factory, attributes, fields):
+    def __init__(self, shape, attributes, fields):
         self._shape = shape
-        self._geometry_factory = geometry_factory
 
         self._bounds = None
         # if the record defines a bbox, then use that for the shape's bounds,
@@ -175,8 +118,7 @@ class Record(object):
 
         """
         if self._geometry is False:
-            self._geometry = _make_geometry(self._geometry_factory,
-                                            self._shape)
+            self._geometry = _make_geometry(self._shape)
         return self._geometry
 
 
@@ -208,12 +150,6 @@ class BasicReader(object):
             raise ValueError("Incomplete shapefile definition "
                              "in '%s'." % filename)
 
-        # Figure out how to make appropriate shapely geometry instances
-        shapeType = reader.shapeType
-        self._geometry_factory = GEOMETRY_FACTORIES.get(shapeType)
-        if self._geometry_factory is None:
-            raise ValueError('Unsupported shape type: %s' % shapeType)
-
         self._fields = self._reader.fields
 
     def __len__(self):
@@ -231,25 +167,22 @@ class BasicReader(object):
         :meth:`~Record.geometry` method.
 
         """
-        geometry_factory = self._geometry_factory
         for i in range(self._reader.numRecords):
             shape = self._reader.shape(i)
-            yield _make_geometry(geometry_factory, shape)
+            yield _make_geometry(shape)
 
     def records(self):
         """
         Return an iterator of :class:`~Record` instances.
 
         """
-        geometry_factory = self._geometry_factory
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
         field_names = [field[0] for field in fields]
         for i in range(self._reader.numRecords):
             shape_record = self._reader.shapeRecord(i)
             attributes = dict(zip(field_names, shape_record.record))
-            yield Record(shape_record.shape, geometry_factory, attributes,
-                         fields)
+            yield Record(shape_record.shape, attributes, fields)
 
 
 class FionaReader(object):
