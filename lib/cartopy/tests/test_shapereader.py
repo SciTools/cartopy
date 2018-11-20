@@ -26,7 +26,6 @@ import pytest
 import cartopy.io.shapereader as shp
 
 
-@pytest.mark.natural_earth
 class TestLakes(object):
     def setup_class(self):
         LAKES_PATH = os.path.join(os.path.dirname(__file__),
