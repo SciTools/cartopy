@@ -27,6 +27,7 @@ from cartopy.feature.nightshade import Nightshade
 from cartopy.tests.mpl import ImageTesting
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['nightshade_platecarree'])
 def test_nightshade_image():
     # Test the actual creation of the image
