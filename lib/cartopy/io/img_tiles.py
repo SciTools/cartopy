@@ -497,6 +497,40 @@ class QuadtreeTiles(GoogleWTS):
                 yield self.tms_to_quadkey(tile, google=True)
 
 
+class OrdnanceSurvey(GoogleWTS):
+    # https://developer.ordnancesurvey.co.uk/os-api-framework-agreement = for terms of use
+    # https://apidocs.os.uk/docs/os-maps-wmts
+
+    def __init__(self, apikey, layer='Road', style=True, desired_tile_form='RGB'):
+        """
+        Parameters
+        ----------
+        apikey: required
+            The authentication key provided by OS to query the maps API
+        layer: optional
+            The style of the OS map tiles. One of 'Outdoor', 'Road',
+            'Light', 'Night', 'Leisure'. Defaults to 'Road'.
+        style: optional
+            Indicates if the map should be styled. Defaults to True.
+        desired_tile_form: optional
+            Defaults to 'RGB'.
+        """
+        super(OrdnanceSurvey, self).__init__(desired_tile_form=desired_tile_form)
+        self.apikey = apikey
+        self.style = 'true' if style else 'false'
+
+        if layer not in {'Outdoor', 'Road', 'Light', 'Night', 'Leisure'}:
+            raise ValueError('Invalid layer {}'.format(layer))
+
+        self.layer = layer
+
+    def _image_url(self, tile):
+        x, y, z = tile
+        url =  'https://api2.ordnancesurvey.co.uk/mapping_api/v1/service/wmts?key={apikey}&height=256&width=256&tilematrixSet=EPSG:3857&version=1.0.0&style={style}&layer={layer} 3857&SERVICE=WMTS&REQUEST=GetTile&format=image/png&TileMatrix=EPSG:3857:{z}&TileRow={y}&TileCol={x}'.format(
+            apikey=self.apikey, style=self.style, layer=self.layer, z=z, y=y, x=x)
+        return url
+
+
 def _merge_tiles(tiles):
     """Return a single image, merging the given images."""
     if not tiles:
