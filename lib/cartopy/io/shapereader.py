@@ -62,13 +62,6 @@ except ImportError:
 __all__ = ['Reader', 'Record']
 
 
-def _make_geometry(shape):
-    geometry = None
-    if shape.shapeType != shapefile.NULL:
-        geometry = sgeom.shape(shape)
-    return geometry
-
-
 class Record(object):
     """
     A single logical entry from a shapefile, combining the attributes with
@@ -84,7 +77,7 @@ class Record(object):
         if hasattr(shape, 'bbox'):
             self._bounds = tuple(shape.bbox)
 
-        self._geometry = False
+        self._geometry = None
         """The cached geometry instance for this Record."""
 
         self.attributes = attributes
@@ -117,8 +110,8 @@ class Record(object):
         shapefile.
 
         """
-        if self._geometry is False:
-            self._geometry = _make_geometry(self._shape)
+        if not self._geometry and self._shape.shapeType != shapefile.NULL:
+            self._geometry = sgeom.shape(self._shape)
         return self._geometry
 
 
@@ -160,7 +153,7 @@ class BasicReader(object):
         Return an iterator of shapely geometries from the shapefile.
 
         This interface is useful for accessing the geometries of the
-        shapefile where knowledge of the associated metadata is desired.
+        shapefile where knowledge of the associated metadata is not necessary.
         In the case where further metadata is needed use the
         :meth:`~Reader.records`
         interface instead, extracting the geometry from the record with the
@@ -168,8 +161,7 @@ class BasicReader(object):
 
         """
         for i in range(self._reader.numRecords):
-            shape = self._reader.shape(i)
-            yield _make_geometry(shape)
+            yield sgeom.shape(self._reader.shape(i))
 
     def records(self):
         """

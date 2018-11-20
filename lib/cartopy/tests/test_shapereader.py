@@ -69,6 +69,8 @@ class TestLakes(object):
         assert actual == expected
         assert lake_record.geometry == self.test_lake_geometry
 
+    @pytest.mark.skipif(shp._HAS_FIONA,
+                        reason="Fiona reader doesn't support lazy loading.")
     def test_bounds(self):
         # tests that a file which has a record with a bbox can
         # use the bbox without first creating the geometry
