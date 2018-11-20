@@ -501,8 +501,7 @@ class OrdnanceSurvey(GoogleWTS):
     # https://developer.ordnancesurvey.co.uk/os-api-framework-agreement
     # https://apidocs.os.uk/docs/os-maps-wmts
 
-    def __init__(self, apikey, layer='Road', style=True,
-                 desired_tile_form='RGB'):
+    def __init__(self, apikey, layer='Road', desired_tile_form='RGB'):
         """
         Parameters
         ----------
@@ -511,17 +510,17 @@ class OrdnanceSurvey(GoogleWTS):
         layer: optional
             The style of the OS map tiles. One of 'Outdoor', 'Road',
             'Light', 'Night', 'Leisure'. Defaults to 'Road'.
-        style: optional
-            Indicates if the map should be styled. Defaults to True.
+            Details about the style of layer can be found at:
+             - https://apidocs.os.uk/docs/layer-information
+             - https://apidocs.os.uk/docs/map-styles
         desired_tile_form: optional
-            Defaults to 'RGB'.
+            Defaults to 'RGB'.        
         """
         super(OrdnanceSurvey, self).__init__(
             desired_tile_form=desired_tile_form)
         self.apikey = apikey
-        self.style = 'true' if style else 'false'
 
-        if layer not in {'Outdoor', 'Road', 'Light', 'Night', 'Leisure'}:
+        if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:
             raise ValueError('Invalid layer {}'.format(layer))
 
         self.layer = layer
@@ -530,15 +529,13 @@ class OrdnanceSurvey(GoogleWTS):
         x, y, z = tile
         url = ('https://api2.ordnancesurvey.co.uk/'
                'mapping_api/v1/service/wmts?'
-               'key={apikey}&height=256&width=256&tilematrixSet=EPSG:3857&'
-               'version=1.0.0&style={style}&layer={layer} 3857&'
-               'SERVICE=WMTS&REQUEST=GetTile&format=image/png&'
-               'TileMatrix=EPSG:3857:{z}&TileRow={y}&TileCol={x}'
-               .format(z=z, y=y, x=x,
-                       apikey=self.apikey,
-                       style=self.style,
-                       layer=self.layer))
-        return url
+               'key={apikey}&height=256&width=256&tilematrixSet=EPSG%3A3857&'
+               'version=1.0.0&style=true&layer={layer}%203857&'
+               'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
+               'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
+        return url.format(z=z, y=y, x=x,
+                          apikey=self.apikey,
+                          layer=self.layer)
 
 
 def _merge_tiles(tiles):
