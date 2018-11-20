@@ -268,28 +268,30 @@ def test_ordnance_survey_tile_styles():
                                  z=tile[2], y=tile[1], x=tile[0])
 
     for layer in ['Outdoor', 'Light', 'Night', 'Leisure']:
-      os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
-      url = os._image_url(tile)
-      assert url == ref_url.format(layer=layer,
-                                   z=tile[2], y=tile[1], x=tile[0])
+        os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
+        url = os._image_url(tile)
+        assert url == ref_url.format(layer=layer,
+                                     z=tile[2], y=tile[1], x=tile[0])
 
     # Exception is raised if unknown style is passed.
     with pytest.raises(ValueError):
         cimgt.OrdnanceSurvey(dummy_apikey, layer="random_style")
 
+
 @pytest.mark.network
-@pytest.mark.skipif(ORDNANCE_SURVEY_API_KEY is None, reason="No Ordnance Survey API available to test with")
+@pytest.mark.skipif(ORDNANCE_SURVEY_API_KEY is None,
+                    reason="No Ordnance Survey API available to test with")
 def test_ordnance_survey_get_image():
-    os_outdoor = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Outdoor")
-    os_night = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Night")
+    os1 = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Outdoor")
+    os2 = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Night")
 
     tile = (500, 300, 10)
 
-    img_outdoor, extent_outdoor, _ = os_outdoor.get_image(tile)
-    img_night, extent_night, _ = os_night.get_image(tile)
+    img1, extent1, _ = os1.get_image(tile)
+    img2, extent2, _ = os2.get_image(tile)
 
     # Different images for different layers
-    assert img_outdoor != img_night
+    assert img1 != img2
 
     # The extent is the same though
-    assert extent_outdoor == extent_night
+    assert extent1 == extent2

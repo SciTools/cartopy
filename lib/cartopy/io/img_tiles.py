@@ -514,7 +514,7 @@ class OrdnanceSurvey(GoogleWTS):
              - https://apidocs.os.uk/docs/layer-information
              - https://apidocs.os.uk/docs/map-styles
         desired_tile_form: optional
-            Defaults to 'RGB'.        
+            Defaults to 'RGB'.
         """
         super(OrdnanceSurvey, self).__init__(
             desired_tile_form=desired_tile_form)
