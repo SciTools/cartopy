@@ -27,6 +27,8 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
+# In order to test fetching map images from OS an API key needs to be provided
+ORDNANCE_SURVEY_API_KEY = None
 
 #: Maps Google tile coordinates to native mercator coordinates as defined
 #: by https://goo.gl/pgJi.
@@ -240,3 +242,54 @@ def test_mapbox_style_tiles_api_url():
     mapbox_sample = cimgt.MapboxStyleTiles(token, username, map_id)
     url_str = mapbox_sample._image_url(tile)
     assert url_str == exp_url
+
+
+def test_ordnance_survey_tile_styles():
+    """
+    Tests that setting the Ordnance Survey tile style works as expected.
+
+    This is essentially just assures information is properly propagated through
+    the class structure.
+    """
+    dummy_apikey = "None"
+
+    ref_url = ('https://api2.ordnancesurvey.co.uk/'
+               'mapping_api/v1/service/wmts?'
+               'key=None&height=256&width=256&tilematrixSet=EPSG%3A3857&'
+               'version=1.0.0&style=true&layer={layer}%203857&'
+               'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
+               'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
+    tile = ["1", "2", "3"]
+
+    # Default is Road.
+    os = cimgt.OrdnanceSurvey(dummy_apikey)
+    url = os._image_url(tile)
+    assert url == ref_url.format(layer="Road",
+                                 z=tile[2], y=tile[1], x=tile[0])
+
+    for layer in ['Outdoor', 'Light', 'Night', 'Leisure']:
+      os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
+      url = os._image_url(tile)
+      assert url == ref_url.format(layer=layer,
+                                   z=tile[2], y=tile[1], x=tile[0])
+
+    # Exception is raised if unknown style is passed.
+    with pytest.raises(ValueError):
+        cimgt.OrdnanceSurvey(dummy_apikey, layer="random_style")
+
+@pytest.mark.network
+@pytest.mark.skipif(ORDNANCE_SURVEY_API_KEY is None, reason="No Ordnance Survey API available to test with")
+def test_ordnance_survey_get_image():
+    os_outdoor = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Outdoor")
+    os_night = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Night")
+
+    tile = (500, 300, 10)
+
+    img_outdoor, extent_outdoor, _ = os_outdoor.get_image(tile)
+    img_night, extent_night, _ = os_night.get_image(tile)
+
+    # Different images for different layers
+    assert img_outdoor != img_night
+
+    # The extent is the same though
+    assert extent_outdoor == extent_night
