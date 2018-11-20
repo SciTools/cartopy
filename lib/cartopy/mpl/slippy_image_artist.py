@@ -40,7 +40,7 @@ class SlippyImageArtist(AxesImage):
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
         super(SlippyImageArtist, self).__init__(ax, **kwargs)
-        self.set_clip_path(ax.outline_patch)
+        self.set_clip_path(ax.background_patch)
         self.cache = []
 
         ax.figure.canvas.mpl_connect('button_press_event', self.on_press)

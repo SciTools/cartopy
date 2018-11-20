@@ -102,7 +102,7 @@ def main():
 
     # Make a nice border around the inset axes.
     effect = Stroke(linewidth=4, foreground='wheat', alpha=0.5)
-    sub_ax.outline_patch.set_path_effects([effect])
+    sub_ax.spines['geo'].set_path_effects([effect])
 
     # Add the land, coastlines and the extent of the Solomon Islands.
     sub_ax.add_feature(cfeature.LAND)
