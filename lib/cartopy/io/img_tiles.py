@@ -281,8 +281,8 @@ class Stamen(GoogleWTS):
     attribute this imagery.
 
     """
-    def __init__(self, style='toner'):
-        super(Stamen, self).__init__()
+    def __init__(self, style='toner', desired_tile_form='RGB'):
+        super(Stamen, self).__init__(desired_tile_form=desired_tile_form)
         self.style = style
 
     def _image_url(self, tile):
