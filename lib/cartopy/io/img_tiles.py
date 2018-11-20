@@ -528,14 +528,16 @@ class OrdnanceSurvey(GoogleWTS):
 
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'https://api2.ordnancesurvey.co.uk/'\
-              'mapping_api/v1/service/wmts?'\
-              'key={apikey}&height=256&width=256&tilematrixSet=EPSG:3857&'\
-              'version=1.0.0&style={style}&layer={layer} 3857&'\
-              'SERVICE=WMTS&REQUEST=GetTile&format=image/png&'\
-              'TileMatrix=EPSG:3857:{z}&TileRow={y}&TileCol={x}'.format(
-            apikey=self.apikey, style=self.style,
-            layer=self.layer, z=z, y=y, x=x)
+        url = ('https://api2.ordnancesurvey.co.uk/'
+               'mapping_api/v1/service/wmts?'
+               'key={apikey}&height=256&width=256&tilematrixSet=EPSG:3857&'
+               'version=1.0.0&style={style}&layer={layer} 3857&'
+               'SERVICE=WMTS&REQUEST=GetTile&format=image/png&'
+               'TileMatrix=EPSG:3857:{z}&TileRow={y}&TileCol={x}'
+               .format(z=z, y=y, x=x,
+                       apikey=self.apikey,
+                       style=self.style,
+                       layer=self.layer))
         return url
 
 
