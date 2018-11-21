@@ -105,7 +105,7 @@ def main():
     ax = fig.add_axes([0.25, 0.24, 0.5, 0.54], projection=az_eq)
 
     # The background patch is not needed in this example.
-    ax.background_patch.set_facecolor('none')
+    ax.patch.set_facecolor('none')
     # The Axes frame produces the outer meridian line.
     for spine in ax.spines.values():
         spine.update({'edgecolor': 'white', 'linewidth': 2})
