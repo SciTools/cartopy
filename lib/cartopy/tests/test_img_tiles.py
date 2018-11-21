@@ -278,7 +278,8 @@ def test_ordnance_survey_tile_styles():
 
 @pytest.mark.network
 def test_ordnance_survey_get_image():
-    # In order to test fetching map images from OS an API key needs to be provided
+    # In order to test fetching map images from OS
+    # an API key needs to be provided
     try:
         api_key = os.environ['ORDNANCE_SURVEY_API_KEY']
     except KeyError:
