@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import os
 import types
 
 import numpy as np
@@ -26,9 +27,6 @@ import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
-
-# In order to test fetching map images from OS an API key needs to be provided
-ORDNANCE_SURVEY_API_KEY = None
 
 #: Maps Google tile coordinates to native mercator coordinates as defined
 #: by https://goo.gl/pgJi.
@@ -279,11 +277,15 @@ def test_ordnance_survey_tile_styles():
 
 
 @pytest.mark.network
-@pytest.mark.skipif(ORDNANCE_SURVEY_API_KEY is None,
-                    reason="No Ordnance Survey API available to test with")
 def test_ordnance_survey_get_image():
-    os1 = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Outdoor")
-    os2 = cimgt.OrdnanceSurvey(ORDNANCE_SURVEY_API_KEY, layer="Night")
+    # In order to test fetching map images from OS an API key needs to be provided
+    try:
+        api_key = os.environ['ORDNANCE_SURVEY_API_KEY']
+    except KeyError:
+        pytest.skip('ORDNANCE_SURVEY_API_KEY environment variable is unset.')
+
+    os1 = cimgt.OrdnanceSurvey(api_key, layer="Outdoor")
+    os2 = cimgt.OrdnanceSurvey(api_key, layer="Night")
 
     tile = (500, 300, 10)
 
