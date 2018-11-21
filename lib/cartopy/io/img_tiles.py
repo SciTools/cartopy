@@ -498,9 +498,18 @@ class QuadtreeTiles(GoogleWTS):
 
 
 class OrdnanceSurvey(GoogleWTS):
-    # https://developer.ordnancesurvey.co.uk/os-api-framework-agreement
-    # https://apidocs.os.uk/docs/os-maps-wmts
+    """
+    Implement web tile retrieval from Ordnance Survey map data.
+    To use this tile image source you will need to obtain an
+    API key from Ordnance Survey.
 
+    For more details on Ordnance Survey layer styles, see
+    https://apidocs.os.uk/docs/map-styles.
+
+    For the API framework agreement, see
+    https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
+    """
+    # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
     def __init__(self, apikey, layer='Road', desired_tile_form='RGB'):
         """
         Parameters
@@ -508,8 +517,8 @@ class OrdnanceSurvey(GoogleWTS):
         apikey: required
             The authentication key provided by OS to query the maps API
         layer: optional
-            The style of the OS map tiles. One of 'Outdoor', 'Road',
-            'Light', 'Night', 'Leisure'. Defaults to 'Road'.
+            The style of the Ordnance Survey map tiles. One of 'Outdoor',
+            'Road', 'Light', 'Night', 'Leisure'. Defaults to 'Road'.
             Details about the style of layer can be found at:
              - https://apidocs.os.uk/docs/layer-information
              - https://apidocs.os.uk/docs/map-styles
