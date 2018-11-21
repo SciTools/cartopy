@@ -2028,14 +2028,12 @@ class _Satellite(Projection):
             proj4_params.append(('sweep', sweep_axis))
         super(_Satellite, self).__init__(proj4_params, globe=globe)
 
-    def _set_bounds(self, max_x, max_y):
-        false_easting = self.proj4_params['x_0']
-        false_northing = self.proj4_params['y_0']
-        coords = _ellipse_boundary(max_x, max_y,
-                                   false_easting, false_northing, 61)
+    def _set_boundary(self, coords):
         self._boundary = sgeom.LinearRing(coords.T)
-        self._x_limits = -max_x + false_easting, max_x + false_easting
-        self._y_limits = -max_y + false_northing, max_y + false_northing
+        mins = np.min(coords, axis=1)
+        maxs = np.max(coords, axis=1)
+        self._x_limits = mins[0], maxs[0]
+        self._y_limits = mins[1], maxs[1]
         self._threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
@@ -2101,11 +2099,22 @@ class Geostationary(_Satellite):
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = np.float(self.globe.semiminor_axis or a)
         h = np.float(satellite_height)
-        max_x = h * np.arcsin(a / (a + h))
-        max_y = h * np.arcsin(b / (a + h))
-        self._set_bounds(max_x, max_y)
+
+        # These are only exact for a spherical Earth, owing to assuming a is
+        # constant. Handling elliptical would be much harder for this.
+        sin_max_th = a / (a + h)
+        tan_max_th = a / np.sqrt((a + h) ** 2 - a ** 2)
+
+        # Using Napier's rules for right spherical triangles
+        # See R2 and R6 (x and y coords are h * b and h * a, respectively):
+        # https://en.wikipedia.org/wiki/Spherical_trigonometry
+        t = np.linspace(0, -2 * np.pi, 61)  # Clockwise boundary.
+        coords = np.vstack([np.arctan(tan_max_th * np.cos(t)),
+                            np.arcsin(sin_max_th * np.sin(t))])
+        coords *= h
+        coords += np.array([[false_easting], [false_northing]])
+        self._set_boundary(coords)
 
 
 class NearsidePerspective(_Satellite):
@@ -2163,7 +2172,9 @@ class NearsidePerspective(_Satellite):
 
         h = np.float(satellite_height)
         max_x = a * np.sqrt(h / (2 * a + h))
-        self._set_bounds(max_x, max_x)
+        coords = _ellipse_boundary(max_x, max_x,
+                                   false_easting, false_northing, 61)
+        self._set_boundary(coords)
 
 
 class AlbersEqualArea(Projection):
