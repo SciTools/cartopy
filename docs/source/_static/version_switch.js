@@ -58,7 +58,7 @@
            window.location.href = new_url;
         },
         error: function() {
-           window.location.href = 'http://scitools.org.uk/cartopy/docs/' + selected;
+           window.location.href = 'https://scitools.org.uk/cartopy/docs/' + selected;
         }
       });
     }
