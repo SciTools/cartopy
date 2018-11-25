@@ -1,5 +1,5 @@
 /*
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,6 +23,7 @@
 
 #include <iostream>
 
+#include <geodesic.h>
 #include <geos_c.h>
 #include <proj_api.h>
 
@@ -75,8 +76,8 @@ class SphericalInterpolator : public Interpolator
 
     private:
     projPJ m_src_proj, m_dest_proj;
-    Vec3 m_start3, m_perp3;
-    double m_angle;
+    geod_geodesic m_geod;
+    geod_geodesicline m_geod_line;
 };
 
 
