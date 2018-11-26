@@ -88,6 +88,10 @@ SphericalInterpolator::SphericalInterpolator(projPJ src_proj, projPJ dest_proj)
 {
     m_src_proj = src_proj;
     m_dest_proj = dest_proj;
+
+    double major_axis, eccentricity_squared;
+    pj_get_spheroid_defn(src_proj, &major_axis, &eccentricity_squared);
+    geod_init(&m_geod, major_axis, 1 - sqrt(1 - eccentricity_squared));
 }
 
 void SphericalInterpolator::set_line(const Point &start, const Point &end)
@@ -95,90 +99,31 @@ void SphericalInterpolator::set_line(const Point &start, const Point &end)
     m_start = start;
     m_end = end;
 
-    if (start.x != end.x || start.y != end.y)
-    {
-        double lon, lat;
-        double t, x, y;
-        Vec3 end3, axis3;
-
-        // Convert lon/lat to unit vectors
-        lon = start.x * DEG_TO_RAD;
-        lat = start.y * DEG_TO_RAD;
-        t = cos(lat);
-        m_start3.x = t * sin(lon);
-        m_start3.y = sin(lat);
-        m_start3.z = t * cos(lon);
-
-        lon = end.x * DEG_TO_RAD;
-        lat = end.y * DEG_TO_RAD;
-        t = cos(lat);
-        end3.x = t * sin(lon);
-        end3.y = sin(lat);
-        end3.z = t * cos(lon);
-
-        // Determine the rotation axis for the great circle.
-        // axis = ||start x end||
-        axis3.x = m_start3.y * end3.z - m_start3.z * end3.y;
-        axis3.y = m_start3.z * end3.x - m_start3.x * end3.z;
-        axis3.z = m_start3.x * end3.y - m_start3.y * end3.x;
-        t = sqrt(axis3.x * axis3.x + axis3.y * axis3.y + axis3.z * axis3.z);
-        axis3.x /= t;
-        axis3.y /= t;
-        axis3.z /= t;
-
-        // Figure out the remaining basis vector.
-        // perp = axis x start
-        m_perp3.x = axis3.y * m_start3.z - axis3.z * m_start3.y;
-        m_perp3.y = axis3.z * m_start3.x - axis3.x * m_start3.z;
-        m_perp3.z = axis3.x * m_start3.y - axis3.y * m_start3.x;
-
-        // Derive the rotation angle around the rotation axis.
-        x = m_start3.x * end3.x + m_start3.y * end3.y + m_start3.z * end3.z;
-        y = m_perp3.x * end3.x + m_perp3.y * end3.y + m_perp3.z * end3.z;
-        m_angle = atan2(y, x);
-    }
-    else
-    {
-        m_angle = 0.0;
-    }
+#if PJ_VERSION > 492
+    geod_inverseline(&m_geod_line, &m_geod,
+                     m_start.y, m_start.x, m_end.y, m_end.x,
+                     GEOD_LATITUDE | GEOD_LONGITUDE);
+#else
+    double azi1;
+    m_a13 = geod_geninverse(&m_geod,
+                            m_start.y, m_start.x, m_end.y, m_end.x,
+                            NULL, &azi1, NULL, NULL, NULL, NULL, NULL);
+    geod_lineinit(&m_geod_line, &m_geod, m_start.y, m_start.x, azi1,
+                  GEOD_LATITUDE | GEOD_LONGITUDE);
+#endif
 }
 
 Point SphericalInterpolator::interpolate(double t)
 {
     Point lonlat;
 
-    if (m_angle == 0.0)
-    {
-        lonlat = m_start;
-    }
-    else
-    {
-        double angle;
-        double c, s;
-        double x, y, z;
-        double lon, lat;
-
-        angle = t * m_angle;
-        c = cos(angle);
-        s = sin(angle);
-        x = m_start3.x * c + m_perp3.x * s;
-        y = m_start3.y * c + m_perp3.y * s;
-        z = m_start3.z * c + m_perp3.z * s;
-
-        lat = asin(y);
-        if(isnan(lat))
-        {
-            lat = y > 0.0 ? 90.0 : -90.0;
-        }
-        else
-        {
-            lat = lat * RAD_TO_DEG;
-        }
-        lon = atan2(x, z) * RAD_TO_DEG;
-
-        lonlat.x = lon;
-        lonlat.y = lat;
-    }
+#if PJ_VERSION > 492
+    geod_genposition(&m_geod_line, GEOD_ARCMODE, m_geod_line.a13 * t,
+                     &lonlat.y, &lonlat.x, NULL, NULL, NULL, NULL, NULL, NULL);
+#else
+    geod_genposition(&m_geod_line, GEOD_ARCMODE, m_a13 * t,
+                     &lonlat.y, &lonlat.x, NULL, NULL, NULL, NULL, NULL, NULL);
+#endif
 
     return project(lonlat);
 }
