@@ -54,19 +54,22 @@ class TestGeostationary(object):
                              5434177.81588539, 5434177.81588539),
                             decimal=4)
 
-    def test_eccentric_globe(self):
-        globe = ccrs.Globe(semimajor_axis=10000, semiminor_axis=5000,
-                           ellipse=None)
-        geos = self.test_class(satellite_height=50000,
-                               globe=globe)
-        other_args = {'a=10000', 'b=5000', 'h=50000', 'lat_0=0.0', 'lon_0=0.0',
-                      'x_0=0', 'y_0=0'}
+    def test_low_orbit(self):
+        geos = self.test_class(satellite_height=700000)
+        other_args = {'h=700000', 'lat_0=0.0', 'lon_0=0.0', 'x_0=0', 'y_0=0',
+                      'ellps=WGS84'}
         self.adjust_expected_params(other_args)
 
         check_proj4_params(self.expected_proj_name, geos, other_args)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-8372.4040, -4171.5043, 8372.4040, 4171.5043),
+                            (-785616.1189, -785616.1189,
+                             785616.1189, 785616.1189),
+                            decimal=4)
+
+        # Checking that this isn't just a simple elliptical border
+        assert_almost_equal(geos.boundary.coords[7],
+                            (697323.205, -453041.0626),
                             decimal=4)
 
     def test_eastings(self):
