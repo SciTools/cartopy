@@ -78,6 +78,9 @@ class SphericalInterpolator : public Interpolator
     projPJ m_src_proj, m_dest_proj;
     geod_geodesic m_geod;
     geod_geodesicline m_geod_line;
+#if PJ_VERSION < 493
+    double m_a13;
+#endif
 };
 
 

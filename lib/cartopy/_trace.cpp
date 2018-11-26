@@ -99,17 +99,31 @@ void SphericalInterpolator::set_line(const Point &start, const Point &end)
     m_start = start;
     m_end = end;
 
+#if PJ_VERSION > 492
     geod_inverseline(&m_geod_line, &m_geod,
                      m_start.y, m_start.x, m_end.y, m_end.x,
                      GEOD_LATITUDE | GEOD_LONGITUDE);
+#else
+    double azi1;
+    m_a13 = geod_geninverse(&m_geod,
+                            m_start.y, m_start.x, m_end.y, m_end.x,
+                            NULL, &azi1, NULL, NULL, NULL, NULL, NULL);
+    geod_lineinit(&m_geod_line, &m_geod, m_start.y, m_start.x, azi1,
+                  GEOD_LATITUDE | GEOD_LONGITUDE);
+#endif
 }
 
 Point SphericalInterpolator::interpolate(double t)
 {
     Point lonlat;
 
+#if PJ_VERSION > 492
     geod_genposition(&m_geod_line, GEOD_ARCMODE, m_geod_line.a13 * t,
                      &lonlat.y, &lonlat.x, NULL, NULL, NULL, NULL, NULL, NULL);
+#else
+    geod_genposition(&m_geod_line, GEOD_ARCMODE, m_a13 * t,
+                     &lonlat.y, &lonlat.x, NULL, NULL, NULL, NULL, NULL, NULL);
+#endif
 
     return project(lonlat);
 }
