@@ -362,7 +362,7 @@ State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
  * t_start: Interpolation parameter for the start point.
  * p_start: Projected start point.
  * t_end: Interpolation parameter for the end point.
- * p_start: Projected end point.
+ * p_end: Projected end point.
  * interpolator: Interpolator for current source line.
  * threshold: Lateral tolerance in target projection coordinates.
  * handle: Thread-local context handle for GEOS.
@@ -377,7 +377,7 @@ bool straightAndDomain(double t_start, const Point &p_start,
                        bool inside)
 {
     // Straight and in-domain (de9im[7] == 'F')
-    
+
     bool valid;
 
     // This could be optimised out of the loop.
@@ -391,27 +391,44 @@ bool straightAndDomain(double t_start, const Point &p_start,
     }
     else
     {
-        // TODO: Re-use geometries, instead of create-destroy!
-
-        // Create a LineString for the current end-point.
-        GEOSCoordSequence *coords = GEOSCoordSeq_create_r(handle, 2, 2);
-        GEOSCoordSeq_setX_r(handle, coords, 0, p_start.x);
-        GEOSCoordSeq_setY_r(handle, coords, 0, p_start.y);
-        GEOSCoordSeq_setX_r(handle, coords, 1, p_end.x);
-        GEOSCoordSeq_setY_r(handle, coords, 1, p_end.y);
-        GEOSGeometry *g_segment = GEOSGeom_createLineString_r(handle, coords);
-
         // Find the projected mid-point
         double t_mid = (t_start + t_end) * 0.5;
         Point p_mid = interpolator->interpolate(t_mid);
 
-        // Make it into a GEOS geometry
-        coords = GEOSCoordSeq_create_r(handle, 1, 2);
-        GEOSCoordSeq_setX_r(handle, coords, 0, p_mid.x);
-        GEOSCoordSeq_setY_r(handle, coords, 0, p_mid.y);
-        GEOSGeometry *g_mid = GEOSGeom_createPoint_r(handle, coords);
+        // Determine the closest point on the segment to the midpoint, in
+        // normalized coordinates. We could use GEOSProjectNormalized_r here,
+        // but since it's a single line segment, it's much easier to just do
+        // the math ourselves:
+        //     ○̩ (x1, y1) (assume that this is not necessarily vertical)
+        //     │
+        //     │   D
+        //    ╭├───────○ (x, y)
+        //    ┊│┘     ╱
+        //    ┊│     ╱
+        //    ┊│    ╱
+        //    L│   ╱
+        //    ┊│  ╱
+        //    ┊│θ╱
+        //    ┊│╱
+        //    ╰̍○̍
+        //  (x0, y0)
+        // The angle θ can be found by arctan2:
+        //     θ = arctan2(y1 - y0, x1 - x0) - arctan2(y - y0, x - x0)
+        // and the projection onto the line is simply:
+        //     L = hypot(x - x0, y - y0) * cos(θ)
+        // with the normalized form being:
+        //     along = L / hypot(x1 - x0, y1 - y0)
+        //
+        // Plugging those into SymPy and .expand().simplify(), we get the following
+        // equations (with a slight refactoring to reuse some intermediate values):
+        double seg_dx = p_end.x - p_start.x;
+        double seg_dy = p_end.y - p_start.y;
+        double mid_dx = p_mid.x - p_start.x;
+        double mid_dy = p_mid.y - p_start.y;
+        double seg_hypot_sq = seg_dx*seg_dx + seg_dy*seg_dy;
 
-        double along = GEOSProjectNormalized_r(handle, g_segment, g_mid);
+        double along = (seg_dx*mid_dx + seg_dy*mid_dy) / seg_hypot_sq;
+
         if(isnan(along))
         {
             valid = true;
@@ -421,8 +438,11 @@ bool straightAndDomain(double t_start, const Point &p_start,
             valid = 0.0 < along && along < 1.0;
             if (valid)
             {
-                double separation;
-                GEOSDistance_r(handle, g_segment, g_mid, &separation);
+                // For the distance of the point from the line segment, using
+                // the same geometry above, use sin instead of cos:
+                //     D = hypot(x - x0, y - y0) * sin(θ)
+                // and then simplify with SymPy again:
+                double separation = fabs(mid_dx*seg_dy - mid_dy*seg_dx) / sqrt(seg_hypot_sq);
                 if (inside)
                 {
                     // Scale the lateral threshold by the distance from
@@ -440,9 +460,7 @@ bool straightAndDomain(double t_start, const Point &p_start,
                     // To save the square-root we just use the square of
                     // the lengths, hence:
                     // 0.2 ^ 2 => 0.04
-                    double hypot_dx = p_mid.x - p_start.x;
-                    double hypot_dy = p_mid.y - p_start.y;
-                    double hypot = hypot_dx * hypot_dx + hypot_dy * hypot_dy;
+                    double hypot = mid_dx * mid_dx + mid_dy * mid_dy;
                     valid = ((separation * separation) / hypot) < 0.04;
                 }
             }
@@ -450,14 +468,27 @@ bool straightAndDomain(double t_start, const Point &p_start,
 
         if (valid)
         {
-            if(inside)
-                valid = GEOSPreparedCovers_r(handle, gp_domain, g_segment);
-            else
-                valid = GEOSPreparedDisjoint_r(handle, gp_domain, g_segment);
-        }
+            // TODO: Re-use geometries, instead of create-destroy!
 
-        GEOSGeom_destroy_r(handle, g_segment);
-        GEOSGeom_destroy_r(handle, g_mid);
+            // Create a LineString for the current end-point.
+            GEOSCoordSequence *coords = GEOSCoordSeq_create_r(handle, 2, 2);
+            GEOSCoordSeq_setX_r(handle, coords, 0, p_start.x);
+            GEOSCoordSeq_setY_r(handle, coords, 0, p_start.y);
+            GEOSCoordSeq_setX_r(handle, coords, 1, p_end.x);
+            GEOSCoordSeq_setY_r(handle, coords, 1, p_end.y);
+            GEOSGeometry *g_segment = GEOSGeom_createLineString_r(handle, coords);
+
+            if (inside)
+            {
+                valid = GEOSPreparedCovers_r(handle, gp_domain, g_segment);
+            }
+            else
+            {
+                valid = GEOSPreparedDisjoint_r(handle, gp_domain, g_segment);
+            }
+
+            GEOSGeom_destroy_r(handle, g_segment);
+        }
     }
 
     return valid;
@@ -485,7 +516,7 @@ void bisect(double t_start, const Point &p_start, const Point &p_end,
     // TODO: See if we can convert the 't' threshold into one based on the
     // projected coordinates - e.g. the resulting line length.
     //
-    
+
     while (fabs(t_max - t_min) > 1.0e-6)
     {
 #ifdef DEBUG
@@ -570,11 +601,17 @@ void _project_segment(GEOSContextHandle_t handle,
 #ifdef DEBUG
         std::cerr << "Working from: " << t_current << " (";
         if (state == POINT_IN)
+        {
             std::cerr << "IN";
+        }
         else if (state == POINT_OUT)
+        {
             std::cerr << "OUT";
+        }
         else
+        {
             std::cerr << "NAN";
+        }
         std::cerr << ")" << std::endl;
         std::cerr << "   " << p_current.x << ", " << p_current.y << std::endl;
         std::cerr << "   " << p_end.x << ", " << p_end.y << std::endl;
@@ -600,8 +637,10 @@ void _project_segment(GEOSContextHandle_t handle,
                 t_current = t_max;
                 p_current = p_max;
                 state = get_state(p_current, gp_domain, handle);
-                if(state == POINT_IN)
+                if (state == POINT_IN)
+                {
                     lines.new_line();
+                }
             }
         }
         else if(state == POINT_OUT)
@@ -616,8 +655,10 @@ void _project_segment(GEOSContextHandle_t handle,
                 t_current = t_max;
                 p_current = p_max;
                 state = get_state(p_current, gp_domain, handle);
-                if(state == POINT_IN)
+                if (state == POINT_IN)
+                {
                     lines.new_line();
+                }
             }
         }
         else
@@ -625,8 +666,10 @@ void _project_segment(GEOSContextHandle_t handle,
             t_current = t_max;
             p_current = p_max;
             state = get_state(p_current, gp_domain, handle);
-            if(state == POINT_IN)
+            if (state == POINT_IN)
+            {
                 lines.new_line();
+            }
         }
     }
 }
@@ -639,7 +682,6 @@ GEOSGeometry *_project_line_string(GEOSContextHandle_t handle,
     const GEOSCoordSequence *src_coords = GEOSGeom_getCoordSeq_r(handle, g_line_string);
     unsigned int src_size, src_idx;
 
-    
     const GEOSPreparedGeometry *gp_domain = GEOSPrepare_r(handle, g_domain);
 
     GEOSCoordSeq_getSize_r(handle, src_coords, &src_size); // check exceptions
