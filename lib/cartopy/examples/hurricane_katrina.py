@@ -41,7 +41,11 @@ def sample_data():
 
 def main():
     fig = plt.figure()
-    ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.LambertConformal())
+    # to get the effect of having just the states without a map "background"
+    # turn off the background patch and axes frame
+    ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.LambertConformal(),
+                      frameon=False)
+    ax.background_patch.set_visible(False)
 
     ax.set_extent([-125, -66.5, 20, 50], ccrs.Geodetic())
 
@@ -50,11 +54,6 @@ def main():
                                          category='cultural', name=shapename)
 
     lons, lats = sample_data()
-
-    # to get the effect of having just the states without a map "background"
-    # turn off the outline and background patches
-    ax.background_patch.set_visible(False)
-    ax.outline_patch.set_visible(False)
 
     ax.set_title('US States which intersect the track of '
                  'Hurricane Katrina (2005)')

@@ -36,6 +36,7 @@ from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
+import matplotlib.spines as mspines
 import matplotlib.ticker as mticker
 import numpy as np
 import numpy.ma as ma
@@ -238,6 +239,41 @@ class InterProjectionTransform(mtransforms.Transform):
                                         self.source_projection)
 
 
+class GeoSpine(mspines.Spine):
+    def __init__(self, axes, **kwargs):
+        self._original_path = mpath.Path(np.empty((0, 2)))
+        kwargs.setdefault('clip_on', False)
+        super(GeoSpine, self).__init__(axes, 'geo', self._original_path,
+                                       **kwargs)
+        self.set_capstyle('butt')
+
+    def set_boundary(self, path, transform):
+        self._original_path = path
+        self.set_transform(transform)
+        self.stale = True
+
+    def _adjust_location(self):
+        if self.stale:
+            self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
+
+    def get_window_extent(self, renderer=None):
+        # make sure the location is updated so that transforms etc are
+        # correct:
+        self._adjust_location()
+        return super(GeoSpine, self).get_window_extent(renderer=renderer)
+
+    @matplotlib.artist.allow_rasterization
+    def draw(self, renderer):
+        self._adjust_location()
+        ret = super(GeoSpine, self).draw(renderer)
+        self.stale = False
+        return ret
+
+    def set_position(self, position):
+        raise NotImplementedError(
+            'GeoSpine does not support changing its position.')
+
+
 class GeoAxes(matplotlib.axes.Axes):
     """
     A subclass of :class:`matplotlib.axes.Axes` which represents a
@@ -279,9 +315,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.projection = kwargs.pop('map_projection')
         """The :class:`cartopy.crs.Projection` of this GeoAxes."""
 
-        self.outline_patch = None
-        """The patch that provides the line bordering the projection."""
-
         self.background_patch = None
         """The patch that provides the filled background of the projection."""
 
@@ -289,6 +322,18 @@ class GeoAxes(matplotlib.axes.Axes):
         self._gridliners = []
         self.img_factories = []
         self._done_img_factory = False
+
+    @property
+    def outline_patch(self):
+        """
+        DEPRECATED. The patch that provides the line bordering the projection.
+
+        Use GeoAxes.spines['geo'] or default Axes properties instead.
+        """
+        warnings.warn("The outline_patch property is deprecated. Use "
+                      "GeoAxes.spines['geo'] or the default Axes properties "
+                      "instead.")
+        return self.spines['geo']
 
     def add_image(self, factory, *args, **kwargs):
         """
@@ -362,10 +407,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
-        if self.outline_patch.reclip or self.background_patch.reclip:
-            clipped_path = self.outline_patch.orig_path.clip_to_bbox(
+        if self.background_patch.reclip:
+            clipped_path = self.background_patch.orig_path.clip_to_bbox(
                 self.viewLim)
-            self.outline_patch._path = clipped_path
             self.background_patch._path = clipped_path
 
         for gl in self._gridliners:
@@ -1166,12 +1210,6 @@ class GeoAxes(matplotlib.axes.Axes):
             result = matplotlib.axes.Axes.imshow(self, img, *args,
                                                  extent=extent, **kwargs)
 
-        # clip the image. This does not work as the patch moves with mouse
-        # movement, but the clip path doesn't
-        # This could definitely be fixed in matplotlib
-#        if result.get_clip_path() in [None, self.patch]:
-#            # image does not already have clipping set, clip to axes patch
-#            result.set_clip_path(self.outline_patch)
         return result
 
     def gridlines(self, crs=None, draw_labels=False, xlocs=None,
@@ -1234,12 +1272,16 @@ class GeoAxes(matplotlib.axes.Axes):
                                                        units=units)
         for spine in spines.values():
             spine.set_visible(False)
+
+        spines['geo'] = GeoSpine(self)
         return spines
 
     def _boundary(self):
         """
-        Add the map's boundary to this GeoAxes, attaching the appropriate
-        artists to :data:`.outline_patch` and :data:`.background_patch`.
+        Add the map's boundary to this GeoAxes.
+
+        The appropriate artists are attached to :data:`.background_patch`, and
+        :data:`.spines['geo']` is updated to match.
 
         Note
         ----
@@ -1255,7 +1297,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.patch.set_edgecolor((0.5, 0.5, 0.5))
         self.patch.set_visible(False)
         self.background_patch = None
-        self.outline_patch = None
 
         path, = cpatch.geos_to_path(self.projection.boundary)
 
@@ -1273,7 +1314,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def set_boundary(self, path, transform=None, use_as_clip_path=True):
         """
-        Given a path, update the :data:`.outline_patch` and
+        Given a path, update the :data:`.spines['geo']` and
         :data:`.background_patch` to take its shape.
 
         Parameters
@@ -1309,37 +1350,24 @@ class GeoAxes(matplotlib.axes.Axes):
             self.background_patch.remove()
             background.set_transform(transform)
 
-        if self.outline_patch is None:
-            outline = mpatches.PathPatch(path, edgecolor='black',
-                                         facecolor='none', zorder=2.5,
-                                         clip_on=False, transform=transform)
-        else:
-            outline = mpatches.PathPatch(path, zorder=2.5, clip_on=False)
-            outline.update_from(self.outline_patch)
-            self.outline_patch.remove()
-            outline.set_transform(transform)
-
         # Attach the original path to the patches. This will be used each time
         # a new clipped path is calculated.
-        outline.orig_path = path
         background.orig_path = path
+        self.spines['geo'].set_boundary(path, transform)
 
         # Attach a "reclip" attribute, which determines if the patch's path is
         # reclipped before drawing. A callback is used to change the "reclip"
         # state.
-        outline.reclip = True
         background.reclip = True
 
         # Add the patches to the axes, and also make them available as
         # attributes.
         self.background_patch = background
-        self.outline_patch = outline
 
         if use_as_clip_path:
             self.patch = background
 
         with self.hold_limits():
-            self.add_patch(outline)
             self.add_patch(background)
 
     def contour(self, *args, **kwargs):
@@ -1637,7 +1665,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
             # Clip the QuadMesh to the projection boundary, which is required
             # to keep the shading inside the projection bounds.
-            collection.set_clip_path(self.outline_patch)
+            collection.set_clip_path(self.background_patch)
 
         # END OF PATCH
         ##############
@@ -1978,11 +2006,11 @@ GeoAxesSubplot.__module__ = GeoAxes.__module__
 
 def _trigger_patch_reclip(event):
     """
-    Define an event callback for a GeoAxes which forces the outline and
-    background patches to be re-clipped next time they are drawn.
+    Define an event callback for a GeoAxes which forces the background patch to
+    be re-clipped next time it is drawn.
 
     """
     axes = event.axes
     # trigger the outline and background patches to be re-clipped
-    axes.outline_patch.reclip = True
+    axes.spines['geo'].stale = True
     axes.background_patch.reclip = True
