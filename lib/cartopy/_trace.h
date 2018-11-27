@@ -105,16 +105,11 @@ class SphericalInterpolator : public Interpolator
 };
 
 
-enum State {
-    POINT_IN=1,
-    POINT_OUT,
-    POINT_NAN
-};
-
-void bisect(double t_start, const Point &p_start, const Point &p_end,
-            GEOSContextHandle_t handle,
-            const GEOSPreparedGeometry *gp_domain,
-            State &state, Interpolator *interpolator, double threshold,
-            double &t_min, Point &p_min, double &t_max, Point &p_max);
+bool straightAndDomain(double t_start, const Point &p_start,
+                       double t_end, const Point &p_end,
+                       Interpolator *interpolator, double threshold,
+                       GEOSContextHandle_t handle,
+                       const GEOSPreparedGeometry *gp_domain,
+                       bool inside);
 
 #endif // _TRACE_H

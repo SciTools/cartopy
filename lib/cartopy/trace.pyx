@@ -67,13 +67,9 @@ cdef extern from "_trace.h":
         double x
         double y
 
-    cdef enum State:
-        POINT_IN = 1,
-        POINT_OUT,
-        POINT_NAN
-
     cdef cppclass Interpolator:
         void set_line(const Point &start, const Point &end)
+        Point interpolate(double t)
         Point project(const Point &point)
 
     cdef cppclass SphericalInterpolator:
@@ -89,11 +85,12 @@ cdef extern from "_trace.h":
         void add_point_if_empty(const Point &point)
         GEOSGeometry *as_geom(GEOSContextHandle_t handle)
 
-    void bisect(double t_start, const Point &p_start, const Point &p_end,
-                GEOSContextHandle_t handle,
-                const GEOSPreparedGeometry *gp_domain,
-                State &state, Interpolator *interpolator, double threshold,
-                double &t_min, Point &p_min, double &t_max, Point &p_max)
+    bool straightAndDomain(double t_start, const Point &p_start,
+                           double t_end, const Point &p_end,
+                           Interpolator *interpolator, double threshold,
+                           GEOSContextHandle_t handle,
+                           const GEOSPreparedGeometry *gp_domain,
+                           bool inside)
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -120,6 +117,12 @@ cdef shapely_from_geos(GEOSGeometry *geom):
     return multi_line_string
 
 
+cdef enum State:
+    POINT_IN = 1,
+    POINT_OUT,
+    POINT_NAN
+
+
 cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
                      GEOSContextHandle_t handle):
     cdef State state
@@ -137,6 +140,60 @@ cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
     else:
         state = POINT_NAN
     return state
+
+
+cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
+                 GEOSContextHandle_t handle,
+                 const GEOSPreparedGeometry *gp_domain, const State &state,
+                 Interpolator *interpolator, double threshold,
+                 double &t_min, Point &p_min, double &t_max, Point &p_max):
+    cdef double t_current
+    cdef Point p_current
+    cdef bool valid
+
+    # Initialise our bisection range to the start and end points.
+    (&t_min)[0] = t_start
+    (&p_min)[0] = p_start
+    (&t_max)[0] = 1.0
+    (&p_max)[0] = p_end
+
+    # Start the search at the end.
+    t_current = t_max
+    p_current = p_max
+
+    # TODO: See if we can convert the 't' threshold into one based on the
+    # projected coordinates - e.g. the resulting line length.
+
+    while abs(t_max - t_min) > 1.0e-6:
+        if DEBUG:
+            print("t: ", t_current)
+
+        if state == POINT_IN:
+            # Straight and entirely-inside-domain
+            valid = straightAndDomain(t_start, p_start, t_current, p_current,
+                                      interpolator, threshold,
+                                      handle, gp_domain, True)
+
+        elif state == POINT_OUT:
+            # Straight and entirely-outside-domain
+            valid = straightAndDomain(t_start, p_start, t_current, p_current,
+                                      interpolator, threshold,
+                                      handle, gp_domain, False)
+        else:
+            valid = not isfinite(p_current.x) or not isfinite(p_current.y)
+
+        if DEBUG:
+            print("   => valid: ", valid)
+
+        if valid:
+            (&t_min)[0] = t_current
+            (&p_min)[0] = p_current
+        else:
+            (&t_max)[0] = t_current
+            (&p_max)[0] = p_current
+
+        t_current = (t_min + t_max) * 0.5
+        p_current = interpolator.interpolate(t_current)
 
 
 cdef void _project_segment(GEOSContextHandle_t handle,
