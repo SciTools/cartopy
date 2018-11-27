@@ -103,13 +103,4 @@ class SphericalInterpolator : public Interpolator
     double m_a13;
 #endif
 };
-
-
-bool straightAndDomain(double t_start, const Point &p_start,
-                       double t_end, const Point &p_end,
-                       Interpolator *interpolator, double threshold,
-                       GEOSContextHandle_t handle,
-                       const GEOSPreparedGeometry *gp_domain,
-                       bool inside);
-
 #endif // _TRACE_H

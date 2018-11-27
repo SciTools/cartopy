@@ -25,7 +25,8 @@ manually, instead leaving the processing to be done by the
 :class:`cartopy.crs.Projection` subclasses.
 """
 
-from libc.math cimport isfinite
+cimport cython
+from libc.math cimport isfinite, isnan, sqrt
 from libc.stdint cimport uintptr_t as ptr
 from libcpp cimport bool
 from libcpp.list cimport list
@@ -40,6 +41,7 @@ cdef extern from "geos_c.h":
     ctypedef struct GEOSPreparedGeometry
     GEOSCoordSequence *GEOSCoordSeq_create_r(GEOSContextHandle_t, unsigned int, unsigned int) nogil
     GEOSGeometry *GEOSGeom_createPoint_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
+    GEOSGeometry *GEOSGeom_createLineString_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
     void GEOSGeom_destroy_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     GEOSCoordSequence *GEOSGeom_getCoordSeq_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     int GEOSCoordSeq_getSize_r(GEOSContextHandle_t handle, const GEOSCoordSequence* s, unsigned int *size) nogil
@@ -49,6 +51,7 @@ cdef extern from "geos_c.h":
     int GEOSCoordSeq_setY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
     const GEOSPreparedGeometry *GEOSPrepare_r(GEOSContextHandle_t handle, const GEOSGeometry* g) nogil
     char GEOSPreparedCovers_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
+    char GEOSPreparedDisjoint_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
 
 from cartopy._crs cimport CRS
@@ -84,13 +87,6 @@ cdef extern from "_trace.h":
         void add_point(const Point &point)
         void add_point_if_empty(const Point &point)
         GEOSGeometry *as_geom(GEOSContextHandle_t handle)
-
-    bool straightAndDomain(double t_start, const Point &p_start,
-                           double t_end, const Point &p_end,
-                           Interpolator *interpolator, double threshold,
-                           GEOSContextHandle_t handle,
-                           const GEOSPreparedGeometry *gp_domain,
-                           bool inside)
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -135,11 +131,142 @@ cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
         GEOSCoordSeq_setX_r(handle, coords, 0, point.x)
         GEOSCoordSeq_setY_r(handle, coords, 0, point.y)
         g_point = GEOSGeom_createPoint_r(handle, coords)
-        state = POINT_IN if GEOSPreparedCovers_r(handle, gp_domain, g_point) else POINT_OUT
+        state = (POINT_IN
+                 if GEOSPreparedCovers_r(handle, gp_domain, g_point)
+                 else POINT_OUT)
         GEOSGeom_destroy_r(handle, g_point)
     else:
         state = POINT_NAN
     return state
+
+
+@cython.cdivision(True)  # Want divide-by-zero to produce NaN.
+cdef bool straightAndDomain(double t_start, const Point &p_start,
+                            double t_end, const Point &p_end,
+                            Interpolator *interpolator, double threshold,
+                            GEOSContextHandle_t handle,
+                            const GEOSPreparedGeometry *gp_domain,
+                            bool inside):
+    """
+    Return whether the given line segment is suitable as an
+    approximation of the projection of the source line.
+
+    t_start: Interpolation parameter for the start point.
+    p_start: Projected start point.
+    t_end: Interpolation parameter for the end point.
+    p_start: Projected end point.
+    interpolator: Interpolator for current source line.
+    threshold: Lateral tolerance in target projection coordinates.
+    handle: Thread-local context handle for GEOS.
+    gp_domain: Prepared polygon of target map domain.
+    inside: Whether the start point is within the map domain.
+
+    """
+    # Straight and in-domain (de9im[7] == 'F')
+    cdef bool valid
+    cdef double t_mid
+    cdef Point p_mid
+    cdef double seg_dx, seg_dy
+    cdef double mid_dx, mid_dy
+    cdef double seg_hypot_sq
+    cdef double along
+    cdef double separation
+    cdef double hypot
+    cdef GEOSCoordSequence *coords
+    cdef GEOSGeometry *g_segment
+
+    # This could be optimised out of the loop.
+    if not (isfinite(p_start.x) and isfinite(p_start.y)):
+        valid = False
+    elif not (isfinite(p_end.x) and isfinite(p_end.y)):
+        valid = False
+    else:
+        # Find the projected mid-point
+        t_mid = (t_start + t_end) * 0.5
+        p_mid = interpolator.interpolate(t_mid)
+
+        # Determine the closest point on the segment to the midpoint, in
+        # normalized coordinates. We could use GEOSProjectNormalized_r
+        # here, but since it's a single line segment, it's much easier to
+        # just do the math ourselves:
+        #     ○̩ (x1, y1) (assume that this is not necessarily vertical)
+        #     │
+        #     │   D
+        #    ╭├───────○ (x, y)
+        #    ┊│┘     ╱
+        #    ┊│     ╱
+        #    ┊│    ╱
+        #    L│   ╱
+        #    ┊│  ╱
+        #    ┊│θ╱
+        #    ┊│╱
+        #    ╰̍○̍
+        #  (x0, y0)
+        # The angle θ can be found by arctan2:
+        #     θ = arctan2(y1 - y0, x1 - x0) - arctan2(y - y0, x - x0)
+        # and the projection onto the line is simply:
+        #     L = hypot(x - x0, y - y0) * cos(θ)
+        # with the normalized form being:
+        #     along = L / hypot(x1 - x0, y1 - y0)
+        #
+        # Plugging those into SymPy and .expand().simplify(), we get the
+        # following equations (with a slight refactoring to reuse some
+        # intermediate values):
+        seg_dx = p_end.x - p_start.x
+        seg_dy = p_end.y - p_start.y
+        mid_dx = p_mid.x - p_start.x
+        mid_dy = p_mid.y - p_start.y
+        seg_hypot_sq = seg_dx*seg_dx + seg_dy*seg_dy
+
+        along = (seg_dx*mid_dx + seg_dy*mid_dy) / seg_hypot_sq
+
+        if isnan(along):
+            valid = True
+        else:
+            valid = 0.0 < along < 1.0
+            if valid:
+                # For the distance of the point from the line segment, using
+                # the same geometry above, use sin instead of cos:
+                #     D = hypot(x - x0, y - y0) * sin(θ)
+                # and then simplify with SymPy again:
+                separation = (abs(mid_dx*seg_dy - mid_dy*seg_dx) /
+                              sqrt(seg_hypot_sq))
+                if inside:
+                    # Scale the lateral threshold by the distance from
+                    # the nearest end. I.e. Near the ends the lateral
+                    # threshold is much smaller; it only has its full
+                    # value in the middle.
+                    valid = (separation <=
+                             threshold * 2.0 * (0.5 - abs(0.5 - along)))
+                else:
+                    # Check if the mid-point makes less than ~11 degree
+                    # angle with the straight line.
+                    # sin(11') => 0.2
+                    # To save the square-root we just use the square of
+                    # the lengths, hence:
+                    # 0.2 ^ 2 => 0.04
+                    hypot = mid_dx*mid_dx + mid_dy*mid_dy
+                    valid = ((separation * separation) / hypot) < 0.04
+
+        if valid:
+            # TODO: Re-use geometries, instead of create-destroy!
+
+            # Create a LineString for the current end-point.
+            coords = GEOSCoordSeq_create_r(handle, 2, 2)
+            GEOSCoordSeq_setX_r(handle, coords, 0, p_start.x)
+            GEOSCoordSeq_setY_r(handle, coords, 0, p_start.y)
+            GEOSCoordSeq_setX_r(handle, coords, 1, p_end.x)
+            GEOSCoordSeq_setY_r(handle, coords, 1, p_end.y)
+            g_segment = GEOSGeom_createLineString_r(handle, coords)
+
+            if inside:
+                valid = GEOSPreparedCovers_r(handle, gp_domain, g_segment)
+            else:
+                valid = GEOSPreparedDisjoint_r(handle, gp_domain, g_segment)
+
+            GEOSGeom_destroy_r(handle, g_segment)
+
+    return valid
 
 
 cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
