@@ -18,7 +18,6 @@
 */
 
 #include <iostream>
-#include <list>
 #include <math.h>
 #include <vector>
 
@@ -164,26 +163,6 @@ Point SphericalInterpolator::project(const Point &lonlat)
     return xy;
 }
 
-
-typedef std::list<Point> Line;
-
-class LineAccumulator
-{
-    public:
-    LineAccumulator();
-    void new_line();
-    void add_point(const Point &point);
-    void add_point_if_empty(const Point &point);
-    GEOSGeometry *as_geom(GEOSContextHandle_t handle);
-
-    std::list<Line>::size_type size() const
-    {
-        return m_lines.size();
-    }
-
-    private:
-    std::list<Line> m_lines;
-};
 
 LineAccumulator::LineAccumulator()
 {
@@ -617,29 +596,4 @@ void _project_segment(GEOSContextHandle_t handle,
             }
         }
     }
-}
-
-GEOSGeometry *_project_line_string(GEOSContextHandle_t handle,
-                                   GEOSGeometry *g_line_string,
-                                   Interpolator *interpolator,
-                                   GEOSGeometry *g_domain, double threshold)
-{
-    const GEOSCoordSequence *src_coords = GEOSGeom_getCoordSeq_r(handle, g_line_string);
-    unsigned int src_size, src_idx;
-
-    const GEOSPreparedGeometry *gp_domain = GEOSPrepare_r(handle, g_domain);
-
-    GEOSCoordSeq_getSize_r(handle, src_coords, &src_size); // check exceptions
-
-    LineAccumulator lines;
-
-    for(src_idx = 1; src_idx < src_size; src_idx++)
-    {
-        _project_segment(handle, src_coords, src_idx - 1, src_idx,
-                      interpolator, gp_domain, threshold, lines);
-    }
-
-    GEOSPreparedGeom_destroy_r(handle, gp_domain);
-
-    return lines.as_geom(handle);
 }

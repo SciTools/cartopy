@@ -32,6 +32,12 @@ cdef extern from "geos_c.h":
     ctypedef void *GEOSContextHandle_t
     ctypedef struct GEOSGeometry:
         pass
+    ctypedef struct GEOSCoordSequence
+    ctypedef struct GEOSPreparedGeometry
+    GEOSCoordSequence *GEOSGeom_getCoordSeq_r(GEOSContextHandle_t, GEOSGeometry *) nogil
+    int GEOSCoordSeq_getSize_r(GEOSContextHandle_t handle, const GEOSCoordSequence* s, unsigned int *size) nogil
+    const GEOSPreparedGeometry *GEOSPrepare_r(GEOSContextHandle_t handle, const GEOSGeometry* g) nogil
+    void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
 
 from cartopy._crs cimport CRS
 
@@ -54,12 +60,16 @@ cdef extern from "_trace.h":
     cdef cppclass CartesianInterpolator:
         CartesianInterpolator(projPJ src_proj, projPJ dest_proj)
 
-    # XXX Rename? It handles LinearRings too.
-    GEOSGeometry *_project_line_string(GEOSContextHandle_t handle,
-                                       GEOSGeometry *g_line_string,
-                                       Interpolator *interpolator,
-                                       GEOSGeometry *g_domain,
-                                       double threshold)
+    cdef cppclass LineAccumulator:
+        GEOSGeometry *as_geom(GEOSContextHandle_t handle)
+
+    void _project_segment(GEOSContextHandle_t handle,
+                          const GEOSCoordSequence *src_coords,
+                          unsigned int src_idx_from, unsigned int src_idx_to,
+                          Interpolator *interpolator,
+                          const GEOSPreparedGeometry *gp_domain,
+                          double threshold,
+                          LineAccumulator &lines)
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -113,6 +123,10 @@ def project_linear(geometry not None, CRS src_crs not None,
         GEOSGeometry *g_linear = geos_from_shapely(geometry)
         Interpolator *interpolator
         GEOSGeometry *g_domain
+        const GEOSCoordSequence *src_coords
+        unsigned int src_size, src_idx
+        const GEOSPreparedGeometry *gp_domain
+        LineAccumulator lines
         GEOSGeometry *g_multi_line_string
 
     g_domain = geos_from_shapely(dest_projection.domain)
@@ -124,8 +138,19 @@ def project_linear(geometry not None, CRS src_crs not None,
         interpolator = <Interpolator *>new CartesianInterpolator(
                 src_crs.proj4, (<CRS>dest_projection).proj4)
 
-    g_multi_line_string = _project_line_string(handle, g_linear,
-                                               interpolator, g_domain, threshold)
+    src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
+    gp_domain = GEOSPrepare_r(handle, g_domain)
+
+    GEOSCoordSeq_getSize_r(handle, src_coords, &src_size)  # check exceptions
+
+    for src_idx in range(1, src_size):
+        _project_segment(handle, src_coords, src_idx - 1, src_idx,
+                         interpolator, gp_domain, threshold, lines);
+
+    GEOSPreparedGeom_destroy_r(handle, gp_domain)
+
+    g_multi_line_string = lines.as_geom(handle)
+
     del interpolator
     multi_line_string = shapely_from_geos(g_multi_line_string)
     return multi_line_string

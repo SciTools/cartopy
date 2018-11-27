@@ -22,6 +22,7 @@
 #define _TRACE_H
 
 #include <iostream>
+#include <list>
 
 #include <geodesic.h>
 #include <geos_c.h>
@@ -38,6 +39,26 @@ typedef struct {
     double y;
     double z;
 } Vec3;
+
+typedef std::list<Point> Line;
+
+class LineAccumulator
+{
+    public:
+    LineAccumulator();
+    void new_line();
+    void add_point(const Point &point);
+    void add_point_if_empty(const Point &point);
+    GEOSGeometry *as_geom(GEOSContextHandle_t handle);
+
+    std::list<Line>::size_type size() const
+    {
+        return m_lines.size();
+    }
+
+    private:
+    std::list<Line> m_lines;
+};
 
 
 class Interpolator
@@ -84,9 +105,12 @@ class SphericalInterpolator : public Interpolator
 };
 
 
-GEOSGeometry *_project_line_string(GEOSContextHandle_t handle,
-                                   GEOSGeometry *g_line_string,
-                                   Interpolator *interpolator,
-                                   GEOSGeometry *g_domain, double threshold);
+void _project_segment(GEOSContextHandle_t handle,
+                      const GEOSCoordSequence *src_coords,
+                      unsigned int src_idx_from, unsigned int src_idx_to,
+                      Interpolator *interpolator,
+                      const GEOSPreparedGeometry *gp_domain,
+                      double threshold,
+                      LineAccumulator &lines);
 
 #endif // _TRACE_H
