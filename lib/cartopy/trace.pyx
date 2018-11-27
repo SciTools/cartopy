@@ -25,8 +25,12 @@ manually, instead leaving the processing to be done by the
 :class:`cartopy.crs.Projection` subclasses.
 """
 
+from libc.math cimport isfinite
 from libc.stdint cimport uintptr_t as ptr
+from libcpp cimport bool
+from libcpp.list cimport list
 
+cdef bool DEBUG = False
 
 cdef extern from "geos_c.h":
     ctypedef void *GEOSContextHandle_t
@@ -34,9 +38,17 @@ cdef extern from "geos_c.h":
         pass
     ctypedef struct GEOSCoordSequence
     ctypedef struct GEOSPreparedGeometry
+    GEOSCoordSequence *GEOSCoordSeq_create_r(GEOSContextHandle_t, unsigned int, unsigned int) nogil
+    GEOSGeometry *GEOSGeom_createPoint_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
+    void GEOSGeom_destroy_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     GEOSCoordSequence *GEOSGeom_getCoordSeq_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     int GEOSCoordSeq_getSize_r(GEOSContextHandle_t handle, const GEOSCoordSequence* s, unsigned int *size) nogil
+    int GEOSCoordSeq_getX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
+    int GEOSCoordSeq_getY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
+    int GEOSCoordSeq_setX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
+    int GEOSCoordSeq_setY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
     const GEOSPreparedGeometry *GEOSPrepare_r(GEOSContextHandle_t handle, const GEOSGeometry* g) nogil
+    char GEOSPreparedCovers_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
 
 from cartopy._crs cimport CRS
@@ -51,8 +63,18 @@ cdef extern from "proj_api.h":
 
 
 cdef extern from "_trace.h":
+    ctypedef struct Point:
+        double x
+        double y
+
+    cdef enum State:
+        POINT_IN = 1,
+        POINT_OUT,
+        POINT_NAN
+
     cdef cppclass Interpolator:
-        pass
+        void set_line(const Point &start, const Point &end)
+        Point project(const Point &point)
 
     cdef cppclass SphericalInterpolator:
         SphericalInterpolator(projPJ src_proj, projPJ dest_proj)
@@ -61,15 +83,17 @@ cdef extern from "_trace.h":
         CartesianInterpolator(projPJ src_proj, projPJ dest_proj)
 
     cdef cppclass LineAccumulator:
+        list.size_type size() const
+        void new_line()
+        void add_point(const Point &point)
+        void add_point_if_empty(const Point &point)
         GEOSGeometry *as_geom(GEOSContextHandle_t handle)
 
-    void _project_segment(GEOSContextHandle_t handle,
-                          const GEOSCoordSequence *src_coords,
-                          unsigned int src_idx_from, unsigned int src_idx_to,
-                          Interpolator *interpolator,
-                          const GEOSPreparedGeometry *gp_domain,
-                          double threshold,
-                          LineAccumulator &lines)
+    void bisect(double t_start, const Point &p_start, const Point &p_end,
+                GEOSContextHandle_t handle,
+                const GEOSPreparedGeometry *gp_domain,
+                State &state, Interpolator *interpolator, double threshold,
+                double &t_min, Point &p_min, double &t_max, Point &p_max)
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -94,6 +118,109 @@ cdef shapely_from_geos(GEOSGeometry *geom):
     multi_line_string.__parent__ = None
     multi_line_string._ndim = 2
     return multi_line_string
+
+
+cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
+                     GEOSContextHandle_t handle):
+    cdef State state
+    cdef GEOSCoordSequence *coords
+    cdef GEOSGeometry *g_point
+
+    if isfinite(point.x) and isfinite(point.y):
+        # TODO: Avoid create-destroy
+        coords = GEOSCoordSeq_create_r(handle, 1, 2)
+        GEOSCoordSeq_setX_r(handle, coords, 0, point.x)
+        GEOSCoordSeq_setY_r(handle, coords, 0, point.y)
+        g_point = GEOSGeom_createPoint_r(handle, coords)
+        state = POINT_IN if GEOSPreparedCovers_r(handle, gp_domain, g_point) else POINT_OUT
+        GEOSGeom_destroy_r(handle, g_point)
+    else:
+        state = POINT_NAN
+    return state
+
+
+cdef void _project_segment(GEOSContextHandle_t handle,
+                           const GEOSCoordSequence *src_coords,
+                           unsigned int src_idx_from, unsigned int src_idx_to,
+                           Interpolator *interpolator,
+                           const GEOSPreparedGeometry *gp_domain,
+                           double threshold, LineAccumulator &lines):
+    cdef Point p_current, p_min, p_max, p_end
+    cdef double t_current, t_min, t_max
+    cdef State state
+
+    GEOSCoordSeq_getX_r(handle, src_coords, src_idx_from, &p_current.x)
+    GEOSCoordSeq_getY_r(handle, src_coords, src_idx_from, &p_current.y)
+    GEOSCoordSeq_getX_r(handle, src_coords, src_idx_to, &p_end.x)
+    GEOSCoordSeq_getY_r(handle, src_coords, src_idx_to, &p_end.y)
+    if DEBUG:
+        print("Setting line:")
+        print("   ", p_current.x, ", ", p_current.y)
+        print("   ", p_end.x, ", ", p_end.y)
+
+    interpolator.set_line(p_current, p_end)
+    p_current = interpolator.project(p_current)
+    p_end = interpolator.project(p_end)
+    if DEBUG:
+        print("Projected as:")
+        print("   ", p_current.x, ", ", p_current.y)
+        print("   ", p_end.x, ", ", p_end.y)
+
+    t_current = 0.0
+    state = get_state(p_current, gp_domain, handle)
+
+    cdef size_t old_lines_size = lines.size()
+    while t_current < 1.0 and (lines.size() - old_lines_size) < 100:
+        if DEBUG:
+            print("Bisecting from: ", t_current, " (")
+            if state == POINT_IN:
+                print("IN")
+            elif state == POINT_OUT:
+                print("OUT")
+            else:
+                print("NAN")
+            print(")")
+            print("   ", p_current.x, ", ", p_current.y)
+            print("   ", p_end.x, ", ", p_end.y)
+
+        bisect(t_current, p_current, p_end, handle, gp_domain, state,
+               interpolator, threshold,
+               t_min, p_min, t_max, p_max)
+        if DEBUG:
+            print("   => ", t_min, "to", t_max)
+            print("   => (", p_min.x, ", ", p_min.y, ") to (",
+                  p_max.x, ", ", p_max.y, ")")
+
+        if state == POINT_IN:
+            lines.add_point_if_empty(p_current)
+            if t_min != t_current:
+                lines.add_point(p_min)
+                t_current = t_min
+                p_current = p_min
+            else:
+                t_current = t_max
+                p_current = p_max
+                state = get_state(p_current, gp_domain, handle)
+                if state == POINT_IN:
+                    lines.new_line()
+
+        elif state == POINT_OUT:
+            if t_min != t_current:
+                t_current = t_min
+                p_current = p_min
+            else:
+                t_current = t_max
+                p_current = p_max
+                state = get_state(p_current, gp_domain, handle)
+                if state == POINT_IN:
+                    lines.new_line()
+
+        else:
+            t_current = t_max
+            p_current = p_max
+            state = get_state(p_current, gp_domain, handle)
+            if state == POINT_IN:
+                lines.new_line()
 
 
 def project_linear(geometry not None, CRS src_crs not None,

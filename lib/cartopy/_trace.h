@@ -105,12 +105,16 @@ class SphericalInterpolator : public Interpolator
 };
 
 
-void _project_segment(GEOSContextHandle_t handle,
-                      const GEOSCoordSequence *src_coords,
-                      unsigned int src_idx_from, unsigned int src_idx_to,
-                      Interpolator *interpolator,
-                      const GEOSPreparedGeometry *gp_domain,
-                      double threshold,
-                      LineAccumulator &lines);
+enum State {
+    POINT_IN=1,
+    POINT_OUT,
+    POINT_NAN
+};
+
+void bisect(double t_start, const Point &p_start, const Point &p_end,
+            GEOSContextHandle_t handle,
+            const GEOSPreparedGeometry *gp_domain,
+            State &state, Interpolator *interpolator, double threshold,
+            double &t_min, Point &p_min, double &t_max, Point &p_max);
 
 #endif // _TRACE_H
