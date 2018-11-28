@@ -28,8 +28,6 @@ geometry representation of shapely:
     >>> len(reader)
     3
     >>> records = list(reader.records())
-    >>> print(type(records[0]))
-    <class 'cartopy.io.shapereader.Record'>
     >>> print(', '.join(str(r) for r in sorted(records[0].attributes.keys())))
     comment, ... name, name_alt, ... region, ...
     >>> print(records[0].attributes['name'])
