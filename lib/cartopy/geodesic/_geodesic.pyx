@@ -30,18 +30,8 @@ cimport cython
 from cython.parallel cimport prange
 import shapely.geometry as sgeom
 
-cdef extern from "geodesic.h":
-    # External imports of Proj4.9 functions
-    cdef struct geod_geodesic:
-        pass
+from ._geodesic cimport geod_geodesic, geod_init, geod_direct, geod_inverse
 
-    ctypedef geod_geodesic* geodesic_t
-
-    void geod_init(geodesic_t, double, double)
-    void geod_direct(geodesic_t, double, double, double, double,
-                     double*, double*, double*) nogil
-    void geod_inverse(geodesic_t, double, double, double, double,
-                      double*, double*, double*) nogil
 
 cdef class Geodesic:
     """
