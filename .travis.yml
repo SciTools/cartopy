@@ -5,9 +5,9 @@ env:
         # These ancient versions are linked to an old libgfortran, but that version
         # isn't pinned in the package metadata
         - PYTHON_VERSION=2.7
-          PACKAGES="cython=0.15.1 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock"
+          PACKAGES="cython=0.17 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock"
         - PYTHON_VERSION=3.5
-          PACKAGES="cython=0.15.1 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
+          PACKAGES="cython=0.23.1 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
           PYTHONHASHSEED=0  # So pytest-xdist works.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6

@@ -39,7 +39,7 @@ import versioneer
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    raise ImportError('Cython 0.15.1+ is required to install cartopy.')
+    raise ImportError('Cython 0.17+ is required to install cartopy.')
 try:
     import numpy as np
 except ImportError:
