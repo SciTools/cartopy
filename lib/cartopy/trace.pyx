@@ -18,11 +18,10 @@
 # cython: embedsignature=True
 
 """
-This module pulls together ``_trace.cpp``, proj, GEOS and ``_crs.pyx`` to
-implement a function to project a `~shapely.geometry.LinearRing` /
-`~shapely.geometry.LineString`. In general, this should never be called
-manually, instead leaving the processing to be done by the
-:class:`cartopy.crs.Projection` subclasses.
+This module pulls together proj, GEOS and ``_crs.pyx`` to implement a function
+to project a `~shapely.geometry.LinearRing` / `~shapely.geometry.LineString`.
+In general, this should never be called manually, instead leaving the
+processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
 
 cimport cython
