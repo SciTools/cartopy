@@ -30,6 +30,7 @@ from libc.math cimport HUGE_VAL, isfinite, isnan, sqrt
 from libc.stdint cimport uintptr_t as ptr
 from libcpp cimport bool
 from libcpp.list cimport list
+from libcpp.vector cimport vector
 
 cdef bool DEBUG = False
 
@@ -42,6 +43,8 @@ cdef extern from "geos_c.h":
     GEOSCoordSequence *GEOSCoordSeq_create_r(GEOSContextHandle_t, unsigned int, unsigned int) nogil
     GEOSGeometry *GEOSGeom_createPoint_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
     GEOSGeometry *GEOSGeom_createLineString_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
+    GEOSGeometry *GEOSGeom_createCollection_r(GEOSContextHandle_t, int, GEOSGeometry **, unsigned int) nogil
+    GEOSGeometry *GEOSGeom_createEmptyCollection_r(GEOSContextHandle_t, int) nogil
     void GEOSGeom_destroy_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     GEOSCoordSequence *GEOSGeom_getCoordSeq_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     int GEOSCoordSeq_getSize_r(GEOSContextHandle_t handle, const GEOSCoordSequence* s, unsigned int *size) nogil
@@ -53,6 +56,7 @@ cdef extern from "geos_c.h":
     char GEOSPreparedCovers_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
     char GEOSPreparedDisjoint_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
+    cdef int GEOS_MULTILINESTRING
 
 from cartopy._crs cimport CRS
 from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
@@ -65,19 +69,6 @@ from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
 
 import shapely.geometry as sgeom
 from shapely.geos import lgeos
-
-
-cdef extern from "_trace.h":
-    ctypedef struct Point:
-        double x
-        double y
-
-    cdef cppclass LineAccumulator:
-        list.size_type size() const
-        void new_line()
-        void add_point(const Point &point)
-        void add_point_if_empty(const Point &point)
-        GEOSGeometry *as_geom(GEOSContextHandle_t handle)
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -102,6 +93,85 @@ cdef shapely_from_geos(GEOSGeometry *geom):
     multi_line_string.__parent__ = None
     multi_line_string._ndim = 2
     return multi_line_string
+
+
+ctypedef struct Point:
+    double x
+    double y
+
+ctypedef list[Point] Line
+
+
+cdef bool degenerate_line(const Line &value):
+    return value.size() < 2
+
+
+cdef bool close(double a, double b):
+    return abs(a - b) <= (1e-8 + 1e-5 * abs(b))
+
+
+@cython.final
+cdef class LineAccumulator:
+    cdef list[Line] lines
+
+    def __init__(self):
+        self.new_line()
+
+    cdef void new_line(self):
+        cdef Line line
+        self.lines.push_back(line)
+
+    cdef void add_point(self, const Point &point):
+        self.lines.back().push_back(point)
+
+    cdef void add_point_if_empty(self, const Point &point):
+        if self.lines.back().empty():
+            self.add_point(point)
+
+    cdef GEOSGeometry *as_geom(self, GEOSContextHandle_t handle):
+        from cython.operator cimport dereference, preincrement
+        # self.lines.remove_if(degenerate_line) is not available in Cython.
+        cdef list[Line].iterator it = self.lines.begin()
+        while it != self.lines.end():
+            if degenerate_line(dereference(it)):
+                it = self.lines.erase(it)
+            else:
+                preincrement(it)
+
+        cdef Point first, last
+        if self.lines.size() > 1:
+            first = self.lines.front().front()
+            last = self.lines.back().back()
+            if close(first.x, last.x) and close(first.y, last.y):
+                self.lines.front().pop_front()
+                self.lines.back().splice(self.lines.back().end(),
+                                         self.lines.front())
+                self.lines.pop_front()
+
+        cdef Line ilines
+        cdef Point ipoints
+        cdef vector[GEOSGeometry *] geoms
+        cdef int i
+        cdef GEOSCoordSequence *coords
+        for ilines in self.lines:
+            coords = GEOSCoordSeq_create_r(handle, ilines.size(), 2)
+            for i, ipoints in enumerate(ilines):
+                GEOSCoordSeq_setX_r(handle, coords, i, ipoints.x)
+                GEOSCoordSeq_setY_r(handle, coords, i, ipoints.y)
+
+            geoms.push_back(GEOSGeom_createLineString_r(handle, coords))
+
+        cdef GEOSGeometry *geom
+        if geoms.empty():
+            geom = GEOSGeom_createEmptyCollection_r(handle,
+                                                    GEOS_MULTILINESTRING)
+        else:
+            geom = GEOSGeom_createCollection_r(handle, GEOS_MULTILINESTRING,
+                                               &geoms[0], geoms.size())
+        return geom
+
+    cdef list[Line].size_type size(self):
+        return self.lines.size()
 
 
 cdef class Interpolator:
@@ -424,7 +494,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
                            unsigned int src_idx_from, unsigned int src_idx_to,
                            Interpolator interpolator,
                            const GEOSPreparedGeometry *gp_domain,
-                           double threshold, LineAccumulator &lines):
+                           double threshold, LineAccumulator lines):
     cdef Point p_current, p_min, p_max, p_end
     cdef double t_current, t_min, t_max
     cdef State state
@@ -549,6 +619,7 @@ def project_linear(geometry not None, CRS src_crs not None,
 
     GEOSCoordSeq_getSize_r(handle, src_coords, &src_size)  # check exceptions
 
+    lines = LineAccumulator()
     for src_idx in range(1, src_size):
         _project_segment(handle, src_coords, src_idx - 1, src_idx,
                          interpolator, gp_domain, threshold, lines);
@@ -557,6 +628,6 @@ def project_linear(geometry not None, CRS src_crs not None,
 
     g_multi_line_string = lines.as_geom(handle)
 
-    del interpolator
+    del lines, interpolator
     multi_line_string = shapely_from_geos(g_multi_line_string)
     return multi_line_string

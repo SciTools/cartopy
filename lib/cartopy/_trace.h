@@ -32,31 +32,6 @@
 typedef struct {
     double x;
     double y;
-} Point;
-
-typedef struct {
-    double x;
-    double y;
     double z;
 } Vec3;
-
-typedef std::list<Point> Line;
-
-class LineAccumulator
-{
-    public:
-    LineAccumulator();
-    void new_line();
-    void add_point(const Point &point);
-    void add_point_if_empty(const Point &point);
-    GEOSGeometry *as_geom(GEOSContextHandle_t handle);
-
-    std::list<Line>::size_type size() const
-    {
-        return m_lines.size();
-    }
-
-    private:
-    std::list<Line> m_lines;
-};
 #endif // _TRACE_H
