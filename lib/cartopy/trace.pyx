@@ -26,7 +26,7 @@ manually, instead leaving the processing to be done by the
 """
 
 cimport cython
-from libc.math cimport isfinite, isnan, sqrt
+from libc.math cimport HUGE_VAL, isfinite, isnan, sqrt
 from libc.stdint cimport uintptr_t as ptr
 from libcpp cimport bool
 from libcpp.list cimport list
@@ -55,7 +55,12 @@ cdef extern from "geos_c.h":
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
 
 from cartopy._crs cimport CRS
-from ._proj4 cimport projPJ
+from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
+                      pj_strerrno, DEG_TO_RAD)
+from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
+                                  geod_init, geod_geninverse,
+                                  geod_lineinit, geod_genposition,
+                                  GEOD_ARCMODE, GEOD_LATITUDE, GEOD_LONGITUDE)
 
 
 import shapely.geometry as sgeom
@@ -66,17 +71,6 @@ cdef extern from "_trace.h":
     ctypedef struct Point:
         double x
         double y
-
-    cdef cppclass Interpolator:
-        void set_line(const Point &start, const Point &end)
-        Point interpolate(double t)
-        Point project(const Point &point)
-
-    cdef cppclass SphericalInterpolator:
-        SphericalInterpolator(projPJ src_proj, projPJ dest_proj)
-
-    cdef cppclass CartesianInterpolator:
-        CartesianInterpolator(projPJ src_proj, projPJ dest_proj)
 
     cdef cppclass LineAccumulator:
         list.size_type size() const
@@ -110,6 +104,111 @@ cdef shapely_from_geos(GEOSGeometry *geom):
     return multi_line_string
 
 
+cdef class Interpolator:
+    cdef Point start
+    cdef Point end
+    cdef projPJ src_proj
+    cdef projPJ dest_proj
+
+    cdef void init(self, projPJ src_proj, projPJ dest_proj):
+        self.src_proj = src_proj
+        self.dest_proj = dest_proj
+
+    cdef void set_line(self, const Point &start, const Point &end):
+        self.start = start
+        self.end = end
+
+    cdef Point interpolate(self, double t):
+        raise NotImplementedError
+
+    cdef Point project(self, const Point &point):
+        raise NotImplementedError
+
+
+cdef class CartesianInterpolator(Interpolator):
+    cdef Point interpolate(self, double t):
+        cdef Point xy
+        xy.x = self.start.x + (self.end.x - self.start.x) * t
+        xy.y = self.start.y + (self.end.y - self.start.y) * t
+        return self.project(xy)
+
+    cdef Point project(self, const Point &src_xy):
+        cdef Point dest_xy
+        cdef projLP xy
+
+        xy.u = src_xy.x
+        xy.v = src_xy.y
+
+        cdef int status = pj_transform(self.src_proj, self.dest_proj,
+                                       1, 1, &xy.u, &xy.v, NULL)
+        if status in (-14, -20):
+            # -14 => "latitude or longitude exceeded limits"
+            # -20 => "tolerance condition error"
+            xy.u = xy.v = HUGE_VAL
+        elif status != 0:
+            raise Exception('pj_transform failed: %d\n%s' % (
+                status,
+                pj_strerrno(status)))
+
+        dest_xy.x = xy.u
+        dest_xy.y = xy.v
+        return dest_xy
+
+
+cdef class SphericalInterpolator(Interpolator):
+    cdef geod_geodesic geod
+    cdef geod_geodesicline geod_line
+    cdef double a13
+
+    cdef void init(self, projPJ src_proj, projPJ dest_proj):
+        self.src_proj = src_proj
+        self.dest_proj = dest_proj
+
+        cdef double major_axis
+        cdef double eccentricity_squared
+        pj_get_spheroid_defn(self.src_proj, &major_axis, &eccentricity_squared)
+        geod_init(&self.geod, major_axis, 1 - sqrt(1 - eccentricity_squared))
+
+    cdef void set_line(self, const Point &start, const Point &end):
+        cdef double azi1
+        self.a13 = geod_geninverse(&self.geod,
+                                   start.y, start.x, end.y, end.x,
+                                   NULL, &azi1, NULL, NULL, NULL, NULL, NULL)
+        geod_lineinit(&self.geod_line, &self.geod, start.y, start.x, azi1,
+                      GEOD_LATITUDE | GEOD_LONGITUDE);
+
+    cdef Point interpolate(self, double t):
+        cdef Point lonlat
+
+        geod_genposition(&self.geod_line, GEOD_ARCMODE, self.a13 * t,
+                         &lonlat.y, &lonlat.x, NULL, NULL, NULL, NULL, NULL,
+                         NULL)
+
+        return self.project(lonlat)
+
+    cdef Point project(self, const Point &lonlat):
+        cdef Point xy
+        cdef projLP dest
+
+        dest.u = lonlat.x * DEG_TO_RAD
+        dest.v = lonlat.y * DEG_TO_RAD
+
+        cdef int status = pj_transform(self.src_proj, self.dest_proj,
+                                       1, 1, &dest.u, &dest.v, NULL)
+        if status in (-14, -20):
+            # -14 => "latitude or longitude exceeded limits"
+            # -20 => "tolerance condition error"
+            dest.u = dest.v = HUGE_VAL
+        elif status != 0:
+            raise Exception('pj_transform failed: %d\n%s' % (
+                status,
+                pj_strerrno(status)))
+
+        xy.x = dest.u
+        xy.y = dest.v
+        return xy
+
+
 cdef enum State:
     POINT_IN = 1,
     POINT_OUT,
@@ -140,7 +239,7 @@ cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
 @cython.cdivision(True)  # Want divide-by-zero to produce NaN.
 cdef bool straightAndDomain(double t_start, const Point &p_start,
                             double t_end, const Point &p_end,
-                            Interpolator *interpolator, double threshold,
+                            Interpolator interpolator, double threshold,
                             GEOSContextHandle_t handle,
                             const GEOSPreparedGeometry *gp_domain,
                             bool inside):
@@ -269,7 +368,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
 cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
                  GEOSContextHandle_t handle,
                  const GEOSPreparedGeometry *gp_domain, const State &state,
-                 Interpolator *interpolator, double threshold,
+                 Interpolator interpolator, double threshold,
                  double &t_min, Point &p_min, double &t_max, Point &p_max):
     cdef double t_current
     cdef Point p_current
@@ -323,7 +422,7 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
 cdef void _project_segment(GEOSContextHandle_t handle,
                            const GEOSCoordSequence *src_coords,
                            unsigned int src_idx_from, unsigned int src_idx_to,
-                           Interpolator *interpolator,
+                           Interpolator interpolator,
                            const GEOSPreparedGeometry *gp_domain,
                            double threshold, LineAccumulator &lines):
     cdef Point p_current, p_min, p_max, p_end
@@ -429,7 +528,7 @@ def project_linear(geometry not None, CRS src_crs not None,
         double threshold = dest_projection.threshold
         GEOSContextHandle_t handle = get_geos_context_handle()
         GEOSGeometry *g_linear = geos_from_shapely(geometry)
-        Interpolator *interpolator
+        Interpolator interpolator
         GEOSGeometry *g_domain
         const GEOSCoordSequence *src_coords
         unsigned int src_size, src_idx
@@ -440,11 +539,10 @@ def project_linear(geometry not None, CRS src_crs not None,
     g_domain = geos_from_shapely(dest_projection.domain)
 
     if src_crs.is_geodetic():
-        interpolator = <Interpolator *>new SphericalInterpolator(
-                src_crs.proj4, (<CRS>dest_projection).proj4)
+        interpolator = SphericalInterpolator()
     else:
-        interpolator = <Interpolator *>new CartesianInterpolator(
-                src_crs.proj4, (<CRS>dest_projection).proj4)
+        interpolator = CartesianInterpolator()
+    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
 
     src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
     gp_domain = GEOSPrepare_r(handle, g_domain)

@@ -59,48 +59,4 @@ class LineAccumulator
     private:
     std::list<Line> m_lines;
 };
-
-
-class Interpolator
-{
-    public:
-    virtual ~Interpolator();
-    virtual void set_line(const Point &start, const Point &end);
-    virtual Point interpolate(double t)=0;
-    virtual Point project(const Point &point)=0;
-
-    protected:
-    Point m_start, m_end;
-};
-
-
-class CartesianInterpolator : public Interpolator
-{
-    public:
-    CartesianInterpolator(projPJ src_proj, projPJ dest_proj);
-    Point interpolate(double t);
-    Point project(const Point &point);
-
-    private:
-    projPJ m_src_proj, m_dest_proj;
-};
-
-
-class SphericalInterpolator : public Interpolator
-{
-    public:
-    // XXX Move the constructor and members up to the superclass?
-    SphericalInterpolator(projPJ src_proj, projPJ dest_proj);
-    void set_line(const Point &start, const Point &end);
-    Point interpolate(double t);
-    Point project(const Point &point);
-
-    private:
-    projPJ m_src_proj, m_dest_proj;
-    geod_geodesic m_geod;
-    geod_geodesicline m_geod_line;
-#if PJ_VERSION < 493
-    double m_a13;
-#endif
-};
 #endif // _TRACE_H
