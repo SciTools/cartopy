@@ -55,14 +55,11 @@ cdef extern from "geos_c.h":
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
 
 from cartopy._crs cimport CRS
+from ._proj4 cimport projPJ
 
 
 import shapely.geometry as sgeom
 from shapely.geos import lgeos
-
-
-cdef extern from "proj_api.h":
-    ctypedef void *projPJ
 
 
 cdef extern from "_trace.h":

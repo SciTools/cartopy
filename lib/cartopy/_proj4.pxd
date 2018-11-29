@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2018, Met Office
+# (C) British Crown Copyright 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -15,18 +15,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
+"""
+This file declares the Proj API, version 4.
 
-from ._proj4 cimport projPJ
+"""
 
 
-cdef class CRS:
-    """
-    Defines a Coordinate Reference System using proj.
-
-    """
-
-    cdef projPJ proj4
-    cdef readonly proj4_init
-    cdef proj4_params
-
-    cpdef is_geodetic(self)
+cdef extern from "proj_api.h":
+    ctypedef void *projPJ
+    projPJ pj_init_plus(char *) nogil
+    void pj_free(projPJ) nogil
+    int pj_transform(projPJ, projPJ, long, int, double *, double *, double *) nogil
+    int pj_is_latlong(projPJ) nogil
+    char *pj_strerrno(int) nogil
+    int *pj_get_errno_ref() nogil
+    char *pj_get_release() nogil
+    cdef double DEG_TO_RAD
+    cdef double RAD_TO_DEG

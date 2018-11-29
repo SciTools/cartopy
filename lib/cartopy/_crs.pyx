@@ -35,17 +35,9 @@ cimport numpy as np
 from cython.operator cimport dereference as deref
 
 
-cdef extern from "proj_api.h":
-    ctypedef void *projPJ
-    projPJ pj_init_plus(char *)
-    void pj_free(projPJ)
-    int pj_transform(projPJ, projPJ, long, int, double *, double *, double *)
-    int pj_is_latlong(projPJ)
-    char *pj_strerrno(int)
-    int *pj_get_errno_ref()
-    char *pj_get_release()
-    double DEG_TO_RAD
-    double RAD_TO_DEG
+from ._proj4 cimport (pj_init_plus, pj_free, pj_transform, pj_is_latlong,
+                      pj_strerrno, pj_get_errno_ref, pj_get_release,
+                      DEG_TO_RAD, RAD_TO_DEG)
 
 
 cdef double NAN = float('nan')
