@@ -20,6 +20,7 @@ from __future__ import (absolute_import, division, print_function)
 import io
 import os
 import shutil
+import sys
 import warnings
 
 import numpy as np
@@ -41,35 +42,31 @@ _TEST_DATA_DIR = os.path.join(config["data_dir"],
                               'wmts', 'aerial')
 
 
-def test_world_files():
-    func = cimg_nest.Img.world_files
-    fname = 'one'
-    expected = ['one.w', 'one.W', 'ONE.w', 'ONE.W']
-    assert func(fname) == expected
+@pytest.mark.parametrize('fname, expected', [
+    ('one', ['one.w', 'one.W', 'ONE.w', 'ONE.W']),
+    ('one.png',
+     ['one.pngw', 'one.pgw', 'one.PNGW', 'one.PGW', 'ONE.pngw', 'ONE.pgw',
+      'ONE.PNGW', 'ONE.PGW']),
+    ('/one.png',
+     ['/one.pngw', '/one.pgw', '/one.PNGW', '/one.PGW', '/ONE.pngw',
+      '/ONE.pgw', '/ONE.PNGW', '/ONE.PGW']),
+    ('/one/two.png',
+     ['/one/two.pngw', '/one/two.pgw', '/one/two.PNGW', '/one/two.PGW',
+      '/one/TWO.pngw', '/one/TWO.pgw', '/one/TWO.PNGW', '/one/TWO.PGW']),
+    ('/one/two/THREE.png',
+     ['/one/two/THREE.pngw', '/one/two/THREE.pgw', '/one/two/THREE.PNGW',
+      '/one/two/THREE.PGW', '/one/two/three.pngw', '/one/two/three.pgw',
+      '/one/two/three.PNGW', '/one/two/three.PGW']),
+])
+def test_world_files(fname, expected):
+    if sys.platform == 'win32':
+        fname = fname.replace('/', '\\')
+        expected = [f.replace('/', '\\') for f in expected]
+        if fname.startswith('\\'):
+            fname = 'c:' + fname
+            expected = ['c:' + f for f in expected]
 
-    fname = 'one.png'
-    expected = ['one.pngw', 'one.pgw', 'one.PNGW', 'one.PGW',
-                'ONE.pngw', 'ONE.pgw', 'ONE.PNGW', 'ONE.PGW']
-    assert func(fname) == expected
-
-    fname = '/one.png'
-    expected = ['/one.pngw', '/one.pgw', '/one.PNGW', '/one.PGW',
-                '/ONE.pngw', '/ONE.pgw', '/ONE.PNGW', '/ONE.PGW']
-    assert func(fname) == expected
-
-    fname = '/one/two.png'
-    expected = ['/one/two.pngw', '/one/two.pgw',
-                '/one/two.PNGW', '/one/two.PGW',
-                '/one/TWO.pngw', '/one/TWO.pgw',
-                '/one/TWO.PNGW', '/one/TWO.PGW']
-    assert func(fname) == expected
-
-    fname = '/one/two/THREE.png'
-    expected = ['/one/two/THREE.pngw', '/one/two/THREE.pgw',
-                '/one/two/THREE.PNGW', '/one/two/THREE.PGW',
-                '/one/two/three.pngw', '/one/two/three.pgw',
-                '/one/two/three.PNGW', '/one/two/three.PGW']
-    assert func(fname) == expected
+    assert cimg_nest.Img.world_files(fname) == expected
 
 
 def _save_world(fname, args):

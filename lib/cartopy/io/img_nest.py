@@ -142,7 +142,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                 result = ['{}.{}'.format(froot, ext) for ext in fext_types]
 
         def _convert_basename(name):
-            dirname, basename = os.path.dirname(name), os.path.basename(name)
+            dirname, basename = os.path.split(name)
             base, ext = os.path.splitext(basename)
             if base == base.upper():
                 result = base.lower() + ext
