@@ -41,7 +41,9 @@ class _EPSGProjection(ccrs.Projection):
     def __init__(self, code):
         import pyepsg
         projection = pyepsg.get(code)
-        if not isinstance(projection, pyepsg.ProjectedCRS):
+        if not (isinstance(projection, pyepsg.ProjectedCRS) or
+                (hasattr(pyepsg, 'CompoundCRS') and
+                 isinstance(projection, pyepsg.CompoundCRS))):
             raise ValueError('EPSG code does not define a projection')
 
         self.epsg_code = code
