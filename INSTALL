@@ -70,7 +70,7 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
     Python package for the manipulation and analysis of planar geometric
     objects.
 
-**pyshp** 1.1.4 or later (https://pypi.python.org/pypi/pyshp)
+**pyshp** 2.0 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
 **PROJ** 4.9.0 or later (https://proj4.org/)
