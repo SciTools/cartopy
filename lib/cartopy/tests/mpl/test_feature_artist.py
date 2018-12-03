@@ -135,3 +135,12 @@ def test_feature_artist_draw_styler(path_collection_cls, feature):
         assert expected_call['paths'] == actual_args
         assert transform == actual_kwargs.pop('transform')
         assert expected_call['style'] == actual_kwargs
+
+
+def test_feature_artist_getp(feature):
+    fa = FeatureArtist(feature, facecolor='red')
+    assert fa._kwargs == {'facecolor': 'red'}
+    assert fa.get_facecolor() == 'red'
+    fa.set_facecolor('pink')
+    assert fa._kwargs == {'facecolor': 'pink'}
+    assert fa.get_facecolor() == 'pink'

@@ -227,3 +227,30 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         # n.b. matplotlib.collection.Collection.draw returns None
         return None
+
+
+# Put setters, getters and properties that one would expect on a matplotlib
+# artist.
+def _attach_setters_and_getters(prop):
+    getter_name = 'get_{}'.format(prop)
+    if not getattr(FeatureArtist, getter_name, None):
+        # Attach a getter for the prop.
+        def getter_meth(self):
+            return self._kwargs.get(prop, None)
+        setattr(FeatureArtist, getter_name, getter_meth)
+
+    setter_name = 'set_{}'.format(prop)
+    if not getattr(FeatureArtist, setter_name, None):
+        def setter_meth(self, v):
+            return self._kwargs.__setitem__(prop, v)
+        setattr(FeatureArtist, setter_name, setter_meth)
+
+
+# Use the standard matplotlib machinery to find out what we should be setting
+# for a PathCollection.
+_inspector = matplotlib.artist.ArtistInspector(
+    matplotlib.collections.PathCollection)
+
+# Attach the actual set_* and get_* methods.
+for _prop in _inspector.get_setters():
+    _attach_setters_and_getters(_prop)
