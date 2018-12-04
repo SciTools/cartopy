@@ -26,22 +26,17 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
 pytestmark = pytest.mark.skipif(ccrs.PROJ4_VERSION < (5, 2, 0),
                                 reason='Proj is too old.')
 
 
-def check_proj_params(crs, other_args):
-    expected = other_args | {'proj=eqearth', 'no_defs'}
-    proj_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == proj_params
-
-
 def test_default():
     eqearth = ccrs.EqualEarth()
     other_args = {'ellps=WGS84', 'lon_0=0'}
-    check_proj_params(eqearth, other_args)
+    check_proj_params('eqearth', eqearth, other_args)
 
     assert_almost_equal(eqearth.x_limits,
                         [-17243959.0622169, 17243959.0622169])
@@ -56,7 +51,7 @@ def test_offset():
     crs = ccrs.EqualEarth()
     crs_offset = ccrs.EqualEarth(false_easting=1234, false_northing=-4321)
     other_args = {'ellps=WGS84', 'lon_0=0', 'x_0=1234', 'y_0=-4321'}
-    check_proj_params(crs_offset, other_args)
+    check_proj_params('eqearth', crs_offset, other_args)
     assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
     assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
 
@@ -66,7 +61,7 @@ def test_eccentric_globe():
                        ellipse=None)
     eqearth = ccrs.EqualEarth(globe=globe)
     other_args = {'a=1000', 'b=500', 'lon_0=0'}
-    check_proj_params(eqearth, other_args)
+    check_proj_params('eqearth', eqearth, other_args)
 
     assert_almost_equal(eqearth.x_limits,
                         [-2248.43664092550, 2248.43664092550])
@@ -81,7 +76,7 @@ def test_eccentric_globe():
 def test_central_longitude(lon):
     eqearth = ccrs.EqualEarth(central_longitude=lon)
     other_args = {'ellps=WGS84', 'lon_0={}'.format(lon)}
-    check_proj_params(eqearth, other_args)
+    check_proj_params('eqearth', eqearth, other_args)
 
     assert_almost_equal(eqearth.x_limits,
                         [-17243959.0622169, 17243959.0622169], decimal=5)

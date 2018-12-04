@@ -26,18 +26,13 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=igh', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 def test_default():
     igh = ccrs.InterruptedGoodeHomolosine()
     other_args = {'ellps=WGS84', 'lon_0=0'}
-    check_proj4_params(igh, other_args)
+    check_proj_params('igh', igh, other_args)
 
     assert_almost_equal(np.array(igh.x_limits),
                         [-20037508.3427892, 20037508.3427892])
@@ -50,7 +45,7 @@ def test_eccentric_globe():
                        ellipse=None)
     igh = ccrs.InterruptedGoodeHomolosine(globe=globe)
     other_args = {'a=1000', 'b=500', 'lon_0=0'}
-    check_proj4_params(igh, other_args)
+    check_proj_params('igh', igh, other_args)
 
     assert_almost_equal(np.array(igh.x_limits),
                         [-3141.5926536, 3141.5926536])
@@ -62,7 +57,7 @@ def test_eccentric_globe():
 def test_central_longitude(lon):
     igh = ccrs.InterruptedGoodeHomolosine(central_longitude=lon)
     other_args = {'ellps=WGS84', 'lon_0={}'.format(lon)}
-    check_proj4_params(igh, other_args)
+    check_proj_params('igh', igh, other_args)
 
     assert_almost_equal(np.array(igh.x_limits),
                         [-20037508.3427892, 20037508.3427892],

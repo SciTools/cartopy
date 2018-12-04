@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 """
-Tests for specific Cartopy CRS subclasses.
+Helpers for Cartopy CRS subclass tests.
 
 """
 
 from __future__ import (absolute_import, division, print_function)
 
-import pytest
 
-
-pytest.register_assert_rewrite('cartopy.tests.crs.helpers')
+def check_proj_params(name, crs, other_args):
+    expected = other_args | {'proj=' + name, 'no_defs'}
+    proj_params = set(crs.proj4_init.lstrip('+').split(' +'))
+    assert expected == proj_params

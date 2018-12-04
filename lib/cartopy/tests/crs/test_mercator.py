@@ -21,19 +21,14 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=merc', 'units=m', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 def test_default():
     crs = ccrs.Mercator()
 
-    other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0'}
-    check_proj4_params(crs, other_args)
+    other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0', 'units=m'}
+    check_proj_params('merc', crs, other_args)
     assert_almost_equal(crs.boundary.bounds,
                         [-20037508, -15496571, 20037508, 18764656], decimal=0)
 
@@ -42,8 +37,9 @@ def test_eccentric_globe():
     globe = ccrs.Globe(semimajor_axis=10000, semiminor_axis=5000,
                        ellipse=None)
     crs = ccrs.Mercator(globe=globe, min_latitude=-40, max_latitude=40)
-    other_args = {'a=10000', 'b=5000', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0'}
-    check_proj4_params(crs, other_args)
+    other_args = {'a=10000', 'b=5000', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0',
+                  'units=m'}
+    check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
                         [-31415.93, -2190.5, 31415.93, 2190.5], decimal=2)
@@ -67,8 +63,9 @@ def test_equality():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     crs = ccrs.Mercator(central_longitude=lon)
-    other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'x_0=0.0', 'y_0=0.0'}
-    check_proj4_params(crs, other_args)
+    other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'x_0=0.0', 'y_0=0.0',
+                  'units=m'}
+    check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
                         [-20037508, -15496570, 20037508, 18764656], decimal=0)
@@ -77,9 +74,9 @@ def test_central_longitude(lon):
 def test_latitude_true_scale():
     lat_ts = 20.0
     crs = ccrs.Mercator(latitude_true_scale=lat_ts)
-    other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0',
+    other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0', 'units=m',
                   'lat_ts={}'.format(lat_ts)}
-    check_proj4_params(crs, other_args)
+    check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
                         [-18836475, -14567718, 18836475, 17639917], decimal=0)
@@ -91,8 +88,8 @@ def test_easting_northing():
     crs = ccrs.Mercator(false_easting=false_easting,
                         false_northing=false_northing)
     other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0={}'.format(false_easting),
-                  'y_0={}'.format(false_northing)}
-    check_proj4_params(crs, other_args)
+                  'y_0={}'.format(false_northing), 'units=m'}
+    check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
                         [-19037508, -17496571, 21037508, 16764656], decimal=0)
@@ -103,9 +100,9 @@ def test_scale_factor():
     scale_factor = 0.939692620786
     crs = ccrs.Mercator(scale_factor=scale_factor,
                         globe=ccrs.Globe(ellipse='sphere'))
-    other_args = {'ellps=sphere', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0',
+    other_args = {'ellps=sphere', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0', 'units=m',
                   'k_0={:.12f}'.format(scale_factor)}
-    check_proj4_params(crs, other_args)
+    check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
                         [-18808021, -14585266, 18808021, 17653216], decimal=0)

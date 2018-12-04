@@ -26,18 +26,13 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=moll', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 def test_default():
     moll = ccrs.Mollweide()
     other_args = {'a=6378137.0', 'lon_0=0'}
-    check_proj4_params(moll, other_args)
+    check_proj_params('moll', moll, other_args)
 
     assert_almost_equal(np.array(moll.x_limits),
                         [-18040095.6961473, 18040095.6961473])
@@ -45,11 +40,52 @@ def test_default():
                         [-9020047.8480736, 9020047.8480736])
 
 
+def test_sphere_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, ellipse=None)
+    moll = ccrs.Mollweide(globe=globe)
+    other_args = {'a=1000', 'lon_0=0'}
+    check_proj_params('moll', moll, other_args)
+
+    assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
+    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+
+
+def test_ellipse_globe():
+    globe = ccrs.Globe(ellipse='WGS84')
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        moll = ccrs.Mollweide(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'ellps=WGS84', 'lon_0=0'}
+    check_proj_params('moll', moll, other_args)
+
+    # Limits are the same as default since ellipses are not supported.
+    assert_almost_equal(moll.x_limits, [-18040095.6961473, 18040095.6961473])
+    assert_almost_equal(moll.y_limits, [-9020047.8480736, 9020047.8480736])
+
+
+def test_eccentric_globe():
+    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
+                       ellipse=None)
+    with pytest.warns(UserWarning,
+                      match='does not handle elliptical globes.') as w:
+        moll = ccrs.Mollweide(globe=globe)
+        assert len(w) == 1
+
+    other_args = {'a=1000', 'b=500', 'lon_0=0'}
+    check_proj_params('moll', moll, other_args)
+
+    # Limits are the same as spheres since ellipses are not supported.
+    assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
+    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+
+
 def test_offset():
     crs = ccrs.Mollweide()
     crs_offset = ccrs.Mollweide(false_easting=1234, false_northing=-4321)
     other_args = {'a=6378137.0', 'lon_0=0', 'x_0=1234', 'y_0=-4321'}
-    check_proj4_params(crs_offset, other_args)
+    check_proj_params('moll', crs_offset, other_args)
     assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
     assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
 
@@ -58,7 +94,7 @@ def test_offset():
 def test_central_longitude(lon):
     moll = ccrs.Mollweide(central_longitude=lon)
     other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
-    check_proj4_params(moll, other_args)
+    check_proj_params('moll', moll, other_args)
 
     assert_almost_equal(np.array(moll.x_limits),
                         [-18040095.6961473, 18040095.6961473],
@@ -75,7 +111,7 @@ def test_grid():
     geodetic = moll.as_geodetic()
 
     other_args = {'a=0.7071067811865476', 'b=0.7071067811865476', 'lon_0=0'}
-    check_proj4_params(moll, other_args)
+    check_proj_params('moll', moll, other_args)
 
     assert_almost_equal(np.array(moll.x_limits),
                         [-2, 2])
@@ -110,7 +146,7 @@ def test_sphere_transform():
     geodetic = moll.as_geodetic()
 
     other_args = {'a=1.0', 'b=1.0', 'lon_0=-90.0'}
-    check_proj4_params(moll, other_args)
+    check_proj_params('moll', moll, other_args)
 
     assert_almost_equal(np.array(moll.x_limits),
                         [-2.8284271247461903, 2.8284271247461903],

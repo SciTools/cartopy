@@ -22,17 +22,14 @@ Tests for the Rotated Geodetic coordinate system.
 from __future__ import (absolute_import, division, print_function)
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=ob_tran', 'o_proj=latlon',
-                             'to_meter=0.0174532925199433', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+common_other_args = {'o_proj=latlon', 'to_meter=0.0174532925199433'}
 
 
 def test_default():
     geos = ccrs.RotatedGeodetic(30, 15, 27)
     other_args = {'datum=WGS84', 'ellps=WGS84', 'lon_0=210', 'o_lat_p=15',
-                  'o_lon_p=27'}
-    check_proj4_params(geos, other_args)
+                  'o_lon_p=27'} | common_other_args
+    check_proj_params('ob_tran', geos, other_args)

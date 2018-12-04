@@ -26,22 +26,17 @@ from numpy.testing import assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
-
-
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=utm', 'no_defs', 'units=m'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+from .helpers import check_proj_params
 
 
 @pytest.mark.parametrize('south', [False, True])
 def test_default(south):
     zone = 1  # Limits are fixed, so don't bother checking other zones.
     utm = ccrs.UTM(zone, southern_hemisphere=south)
-    other_args = {'ellps=WGS84', 'zone={}'.format(zone)}
+    other_args = {'ellps=WGS84', 'units=m', 'zone={}'.format(zone)}
     if south:
         other_args |= {'south'}
-    check_proj4_params(utm, other_args)
+    check_proj_params('utm', utm, other_args)
 
     assert_almost_equal(np.array(utm.x_limits),
                         [-250000, 1250000])
@@ -55,8 +50,8 @@ def test_ellipsoid_transform():
     utm = ccrs.UTM(zone=18, globe=globe)
     geodetic = utm.as_geodetic()
 
-    other_args = {'ellps=clrk66', 'zone=18'}
-    check_proj4_params(utm, other_args)
+    other_args = {'ellps=clrk66', 'units=m', 'zone=18'}
+    check_proj_params('utm', utm, other_args)
 
     assert_almost_equal(np.array(utm.x_limits),
                         [-250000, 1250000])

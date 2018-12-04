@@ -60,6 +60,9 @@ if _match is not None:
 else:
     PROJ4_VERSION = ()
 
+WGS84_SEMIMAJOR_AXIS = 6378137.0
+WGS84_SEMIMINOR_AXIS = 6356752.3142
+
 
 class Proj4Error(Exception):
     """
@@ -134,6 +137,10 @@ cdef class CRS:
     Define a Coordinate Reference System using proj.
 
     """
+
+    #: Whether this projection can handle ellipses.
+    _handles_ellipses = True
+
     def __cinit__(self):
         self.proj4 = NULL
 
@@ -157,7 +164,19 @@ cdef class CRS:
             See :class:`~cartopy.crs.Globe` for details.
 
         """
-        self.globe = globe or Globe()
+        if globe is None:
+            if self._handles_ellipses:
+                globe = Globe()
+            else:
+                globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS,
+                              ellipse=None)
+        if not self._handles_ellipses:
+            a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+            b = globe.semiminor_axis or a
+            if a != b or globe.ellipse is not None:
+                warnings.warn('The "{}" projection does not handle elliptical '
+                              'globes.'.format(self.__class__.__name__))
+        self.globe = globe
         self.proj4_params = self.globe.to_proj4_params()
         self.proj4_params.update(proj4_params)
 

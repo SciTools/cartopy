@@ -22,16 +22,14 @@ Tests for the Transverse Mercator projection, including OSGB and OSNI.
 from __future__ import (absolute_import, division, print_function)
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
-def check_proj4_params(crs, other_args):
-    expected = other_args | {'proj=ob_tran', 'o_proj=latlon',
-                             'to_meter=0.0174532925199433', 'no_defs'}
-    pro4_params = set(crs.proj4_init.lstrip('+').split(' +'))
-    assert expected == pro4_params
+common_other_args = {'o_proj=latlon', 'to_meter=0.0174532925199433'}
 
 
 def test_default():
     geos = ccrs.RotatedPole(60, 50, 80)
-    other_args = {'ellps=WGS84', 'lon_0=240', 'o_lat_p=50', 'o_lon_p=80'}
-    check_proj4_params(geos, other_args)
+    other_args = common_other_args | {'ellps=WGS84', 'lon_0=240', 'o_lat_p=50',
+                                      'o_lon_p=80'}
+    check_proj_params('ob_tran', geos, other_args)
