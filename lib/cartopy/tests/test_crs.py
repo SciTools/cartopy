@@ -97,6 +97,12 @@ class TestCRS(object):
         assert_almost_equal(uk.threshold, 8699.47, decimal=2)
         self._check_osgb(uk)
 
+    @pytest.mark.network
+    @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
+    def test_epsg_compound_crs(self):
+        projection = ccrs.epsg(5973)
+        assert projection.epsg_code == 5973
+
     def test_europp(self):
         europp = ccrs.EuroPP()
         proj4_init = europp.proj4_init
