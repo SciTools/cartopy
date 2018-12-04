@@ -98,9 +98,7 @@ class TestCRS(object):
         self._check_osgb(uk)
 
     @pytest.mark.network
-    @pytest.mark.skipif(pyepsg is None or
-                        not hasattr(pyepsg, 'CompoundCRS'),
-                        reason='requires pyepsg >= 0.4')
+    @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
     def test_epsg_compound_crs(self):
         projection = ccrs.epsg(5973)
         assert projection.epsg_code == 5973
