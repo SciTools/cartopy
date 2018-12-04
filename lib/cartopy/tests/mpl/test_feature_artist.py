@@ -30,7 +30,7 @@ import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes as geoaxes
 from cartopy.feature import ShapelyFeature
 from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
-
+from cartopy.mpl import style
 
 @pytest.mark.parametrize("source, expected", [
     [{1: 0}, frozenset({(1, 0)})],
@@ -108,6 +108,7 @@ def test_feature_artist_draw_styler(path_collection_cls, feature):
     geoms = list(feature.geometries())
     style1 = {'facecolor': 'blue', 'edgecolor': 'white'}
     style2 = {'color': 'black', 'linewidth': 1}
+    style2_finalized = style.finalize(style.merge(style2))
 
     def styler(geom):
         if geom == geoms[0]:
@@ -126,7 +127,7 @@ def test_feature_artist_draw_styler(path_collection_cls, feature):
     calls = [{'paths': (cached_paths(geoms[0], prj_crs), ),
               'style': dict(linewidth=2, **style1)},
              {'paths': (cached_paths(geoms[1], prj_crs), ),
-              'style': style2}]
+              'style': style2_finalized}]
 
     assert path_collection_cls.call_count == 2
     for expected_call, (actual_args, actual_kwargs) in \
