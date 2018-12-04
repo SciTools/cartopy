@@ -56,9 +56,10 @@ def merge(*style_dicts):
               matplotlib), UNLESS facecolor == "never", which will be expanded
               at finalization to 'none'
 
-    >>> merge({"lw": 1, "edgecolor": "black", "facecolor": "never"},
-    ...       {"linewidth": 2, "color": "gray"})
-    {'edgecolor': 'gray', 'facecolor': 'never', 'linewidth': 2}
+    >>> style = merge({"lw": 1, "edgecolor": "black", "facecolor": "never"},
+    ...               {"linewidth": 2, "color": "gray"})
+    >>> sorted(style.items())
+    [('edgecolor', 'gray'), ('facecolor', 'never'), ('linewidth', 2)]
 
     """
     style = {}
