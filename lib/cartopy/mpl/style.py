@@ -81,8 +81,10 @@ def merge(*style_dicts):
 
         if isinstance(facecolor, six.string_types) and facecolor == 'never':
             requested_color = this_style.pop('facecolor', None)
-            if ('fc' in orig_style or 'facecolor' in orig_style and
-                    requested_color != 'none'):
+            setting_color = not (isinstance(requested_color, six.string_types)
+                                 and requested_color.lower() == 'none')
+            if (('fc' in orig_style or 'facecolor' in orig_style) and
+                    setting_color):
                 warnings.warn('facecolor will have no effect as it has been '
                               'defined as "never".')
         else:

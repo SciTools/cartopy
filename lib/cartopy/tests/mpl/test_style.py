@@ -62,10 +62,14 @@ def test_merge(styles, expected):
     assert merged_style == expected
 
 
-def test_merge_warning():
-    with pytest.warns(UserWarning, match=r'defined as \"never\"') as record:
-        style.merge({'facecolor': 'never'}, {'fc': 'red'})
-    assert len(record) == 1
+@pytest.mark.parametrize(
+    ('case', 'should_warn'),
+    [[{'fc': 'red'}, True], [{'fc': 'NoNe'}, False], [{'fc': 1}, True]])
+def test_merge_warning(case, should_warn):
+    warn_type = UserWarning if should_warn else None
+    with pytest.warns(warn_type, match=r'defined as \"never\"') as record:
+        style.merge({'facecolor': 'never'}, case)
+    assert len(record) == (1 if should_warn else 0)
 
 
 @pytest.mark.parametrize(

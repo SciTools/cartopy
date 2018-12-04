@@ -200,8 +200,7 @@ class FeatureArtist(matplotlib.artist.Artist):
                 style = prepared_kwargs
             else:
                 # Unfreeze, then add the computed style, and then re-freeze.
-                style = dict(prepared_kwargs)
-                style.update(self._styler(geom))
+                style = style_merge(dict(prepared_kwargs), self._styler(geom))
                 style = _freeze(style)
 
             stylised_paths.setdefault(style, []).extend(geom_paths)
@@ -215,9 +214,7 @@ class FeatureArtist(matplotlib.artist.Artist):
             style = style_finalize(dict(style))
             # Build path collection and draw it.
             c = matplotlib.collections.PathCollection(
-                    paths,
-                    transform=transform,
-                    **dict(style))
+                    paths, transform=transform, **style)
             c.set_clip_path(ax.patch)
             c.set_figure(ax.figure)
             c.draw(renderer)
