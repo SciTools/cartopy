@@ -1267,9 +1267,9 @@ class GeoAxes(matplotlib.axes.Axes):
             ylocs = mticker.FixedLocator(ylocs)
         gl = Gridliner(
             self, crs=crs, draw_labels=draw_labels,
-            x_inline=x_inline, y_inline=y_inline,
             xlocator=xlocs, ylocator=ylocs,
-            collection_kwargs=kwargs)
+            x_inline=x_inline, y_inline=y_inline,
+            auto_inline=auto_inline, collection_kwargs=kwargs)
         self._gridliners.append(gl)
         return gl
 

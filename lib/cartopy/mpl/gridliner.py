@@ -35,13 +35,13 @@ _NON_INLINE_PROJS = (
     cartopy.crs.PlateCarree,
     cartopy.crs.Mercator,
     cartopy.crs.Miller,
-    cartopy.crs.RotatedPole,
     cartopy.crs.LambertCylindrical,
 )
 _X_INLINE_PROJS = (
     cartopy.crs.Mollweide,
     cartopy.crs.Robinson,
     cartopy.crs.Sinusoidal,
+    cartopy.crs.RotatedPole,
 )
 _Y_INLINE_PROJS = (
     cartopy.crs.AlbersEqualArea,
@@ -469,7 +469,10 @@ class Gridliner(object):
                     clip_on = True
                 elif self.y_inline:
                     other_value = np.nanpercentile(y_ticks, 0.4)
-                    clip_on = False
+                    if np.min(y_label_points) > 0:  # not global
+                        clip_on = True
+                    else:
+                        clip_on = False
                 else:
                     if (isinstance(proj, cartopy.crs.RotatedPole) and
                             x == -180):
@@ -499,7 +502,10 @@ class Gridliner(object):
                     clip_on = True
                 elif self.x_inline:
                     other_value = np.nanpercentile(x_label_points, 0.001)
-                    clip_on = False
+                    if np.min(y_label_points) > -150:  # not global
+                        clip_on = True
+                    else:
+                        clip_on = False
                 else:
                     other_value = None
                     clip_on = False

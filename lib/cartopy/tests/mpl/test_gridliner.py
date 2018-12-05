@@ -33,6 +33,40 @@ from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
+TEST_PROJS = [
+    ccrs.PlateCarree,
+    ccrs.AlbersEqualArea,
+    ccrs.AzimuthalEquidistant,
+    ccrs.LambertConformal,
+    ccrs.LambertCylindrical,
+    ccrs.Mercator,
+    ccrs.Miller,
+    ccrs.Mollweide,
+    ccrs.Orthographic,
+    ccrs.Robinson,
+    ccrs.Sinusoidal,
+    ccrs.Stereographic,
+    ccrs.TransverseMercator,
+#     ccrs.UTM,
+    ccrs.InterruptedGoodeHomolosine,
+    ccrs.RotatedPole,
+    ccrs.OSGB,
+    ccrs.EuroPP,
+#     ccrs.Geostationary,  # same as orthographic
+#     ccrs.NearsidePerspective,  # same as orthographic
+    ccrs.Gnomonic,
+    ccrs.LambertAzimuthalEqualArea,
+    ccrs.NorthPolarStereo,
+#     ccrs.OSNI,  # fails in 0.17.0
+    ccrs.SouthPolarStereo,
+]
+
+RP = ccrs.RotatedPole(pole_longitude=180.0,
+                     pole_latitude=36.0,
+                     central_rotated_longitude=-106.0,
+                     globe=ccrs.Globe(semimajor_axis=6370000,
+                                      semiminor_axis=6370000))
+
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner1'])
 def test_gridliner():
@@ -185,3 +219,42 @@ def test_grid_labels():
 
     # Increase margins between plots to stop them bumping into one another.
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
+
+
+@pytest.mark.natural_earth
+@ImageTesting(['gridliner_labels'])
+def test_grid_labels_inline_usa():
+    fig = plt.figure(figsize=(35, 30))
+    for i, proj in enumerate(TEST_PROJS, 1):
+        if isinstance(proj(), ccrs.RotatedPole):
+            ax = plt.subplot(7, 4, i, projection=RP)
+        else:
+            ax = plt.subplot(7, 4, i, projection=proj())
+        gl = ax.gridlines(draw_labels=True, auto_inline=True)
+        cl = ax.coastlines()
+        tl = ax.set_title(proj, y=1.08)
+        plt.tight_layout()
+
+
+@pytest.mark.natural_earth
+@ImageTesting(['gridliner_labels_usa'])
+def test_grid_labels_inline_usa():
+    top = 49.3457868  # north lat
+    left = -124.7844079  # west long
+    right = -66.9513812  # east long
+    bottom = 24.7433195  # south lat
+    fig = plt.figure(figsize=(35, 30))
+    for i, proj in enumerate(TEST_PROJS, 1):
+        if isinstance(proj(), ccrs.RotatedPole):
+            ax = plt.subplot(7, 4, i, projection=RP)
+        else:
+            ax = plt.subplot(7, 4, i, projection=proj())
+        try:
+            ax.set_extent([left, right, bottom, top],
+                crs=ccrs.PlateCarree())
+        except Exception as e:
+            pass
+        tl = ax.set_title(proj, y=1.08)
+        gl = ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+        cl = ax.coastlines()
+    plt.tight_layout()
