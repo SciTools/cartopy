@@ -62,10 +62,10 @@ TEST_PROJS = [
 ]
 
 RP = ccrs.RotatedPole(pole_longitude=180.0,
-                     pole_latitude=36.0,
-                     central_rotated_longitude=-106.0,
-                     globe=ccrs.Globe(semimajor_axis=6370000,
-                                      semiminor_axis=6370000))
+                      pole_latitude=36.0,
+                      central_rotated_longitude=-106.0,
+                      globe=ccrs.Globe(semimajor_axis=6370000,
+                                       semiminor_axis=6370000))
 
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner1'])
@@ -224,15 +224,15 @@ def test_grid_labels():
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels'])
 def test_grid_labels_inline_usa():
-    fig = plt.figure(figsize=(35, 30))
+    plt.figure(figsize=(35, 30))
     for i, proj in enumerate(TEST_PROJS, 1):
         if isinstance(proj(), ccrs.RotatedPole):
             ax = plt.subplot(7, 4, i, projection=RP)
         else:
             ax = plt.subplot(7, 4, i, projection=proj())
-        gl = ax.gridlines(draw_labels=True, auto_inline=True)
-        cl = ax.coastlines()
-        tl = ax.set_title(proj, y=1.08)
+        ax.gridlines(draw_labels=True, auto_inline=True)
+        ax.coastlines()
+        ax.set_title(proj, y=1.08)
         plt.tight_layout()
 
 
@@ -243,7 +243,7 @@ def test_grid_labels_inline_usa():
     left = -124.7844079  # west long
     right = -66.9513812  # east long
     bottom = 24.7433195  # south lat
-    fig = plt.figure(figsize=(35, 30))
+    plt.figure(figsize=(35, 30))
     for i, proj in enumerate(TEST_PROJS, 1):
         if isinstance(proj(), ccrs.RotatedPole):
             ax = plt.subplot(7, 4, i, projection=RP)
@@ -252,9 +252,9 @@ def test_grid_labels_inline_usa():
         try:
             ax.set_extent([left, right, bottom, top],
                 crs=ccrs.PlateCarree())
-        except Exception as e:
+        except Exception:
             pass
-        tl = ax.set_title(proj, y=1.08)
-        gl = ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
-        cl = ax.coastlines()
+        ax.set_title(proj, y=1.08)
+        ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+        ax.coastlines()
     plt.tight_layout()
