@@ -663,9 +663,8 @@ class _RectangularProjection(six.with_metaclass(ABCMeta, Projection)):
 
     @property
     def boundary(self):
-        # XXX Should this be a LinearRing?
         w, h = self._half_width, self._half_height
-        return sgeom.LineString([(-w, -h), (-w, h), (w, h), (w, -h), (-w, -h)])
+        return sgeom.LinearRing([(-w, -h), (-w, h), (w, h), (w, -h), (-w, -h)])
 
     @property
     def x_limits(self):
@@ -838,7 +837,7 @@ class TransverseMercator(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LineString([(x0, y0), (x0, y1),
+        return sgeom.LinearRing([(x0, y0), (x0, y1),
                                  (x1, y1), (x1, y0),
                                  (x0, y0)])
 
@@ -863,7 +862,7 @@ class OSGB(TransverseMercator):
     def boundary(self):
         w = self.x_limits[1] - self.x_limits[0]
         h = self.y_limits[1] - self.y_limits[0]
-        return sgeom.LineString([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
+        return sgeom.LinearRing([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
 
     @property
     def x_limits(self):
@@ -889,7 +888,7 @@ class OSNI(TransverseMercator):
     def boundary(self):
         w = self.x_limits[1] - self.x_limits[0]
         h = self.y_limits[1] - self.y_limits[0]
-        return sgeom.LineString([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
+        return sgeom.LinearRing([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
 
     @property
     def x_limits(self):
@@ -930,7 +929,7 @@ class UTM(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LineString([(x0, y0), (x0, y1),
+        return sgeom.LinearRing([(x0, y0), (x0, y1),
                                  (x1, y1), (x1, y0),
                                  (x0, y0)])
 
@@ -1059,7 +1058,7 @@ class Mercator(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LineString([(x0, y0), (x0, y1),
+        return sgeom.LinearRing([(x0, y0), (x0, y1),
                                  (x1, y1), (x1, y0),
                                  (x0, y0)])
 
