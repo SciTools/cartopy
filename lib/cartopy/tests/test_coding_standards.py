@@ -19,6 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 from datetime import datetime
 from fnmatch import fnmatch
+import io
 from itertools import chain
 import os
 import re
@@ -146,7 +147,7 @@ class TestLicenseHeaders(object):
             if ext in ('.py', '.pyx', '.c', '.cpp', '.h') and \
                     os.path.isfile(full_fname) and \
                     not any(fnmatch(fname, pat) for pat in exclude_patterns):
-                with open(full_fname) as fh:
+                with io.open(full_fname, encoding='utf-8') as fh:
                     years = TestLicenseHeaders.years_of_license_in_file(fh)
                     if years is None:
                         print('The file {} has no valid header license and '
@@ -196,7 +197,7 @@ class TestFutureImports(object):
                 if any(fnmatch(full_fname, pat) for pat in self.excluded):
                     continue
 
-                with open(full_fname, "r") as fh:
+                with io.open(full_fname, "r", encoding='utf-8') as fh:
                     content = fh.read()
 
                     if re.search(self.future_imports_pattern, content) is None:

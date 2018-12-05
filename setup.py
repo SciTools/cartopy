@@ -172,10 +172,7 @@ except (OSError, ValueError, subprocess.CalledProcessError):
 
     geos_includes = []
     geos_library_dirs = []
-    if sys.platform.startswith('win'):
-        geos_libraries = ['geos']
-    else:
-        geos_libraries = ['geos_c']
+    geos_libraries = ['geos_c']
 else:
     if geos_version < GEOS_MIN_VERSION:
         print('GEOS version %s is installed, but cartopy requires at least '
