@@ -47,17 +47,17 @@ TEST_PROJS = [
     ccrs.Sinusoidal,
     ccrs.Stereographic,
     ccrs.TransverseMercator,
-#     ccrs.UTM,
+    #     ccrs.UTM,
     ccrs.InterruptedGoodeHomolosine,
     ccrs.RotatedPole,
     ccrs.OSGB,
     ccrs.EuroPP,
-#     ccrs.Geostationary,  # same as orthographic
-#     ccrs.NearsidePerspective,  # same as orthographic
+    #     ccrs.Geostationary,  # same as orthographic
+    #     ccrs.NearsidePerspective,  # same as orthographic
     ccrs.Gnomonic,
     ccrs.LambertAzimuthalEqualArea,
     ccrs.NorthPolarStereo,
-#     ccrs.OSNI,  # fails in 0.17.0
+    #     ccrs.OSNI,  # fails in 0.17.0
     ccrs.SouthPolarStereo,
 ]
 
@@ -66,6 +66,7 @@ RP = ccrs.RotatedPole(pole_longitude=180.0,
                       central_rotated_longitude=-106.0,
                       globe=ccrs.Globe(semimajor_axis=6370000,
                                        semiminor_axis=6370000))
+
 
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner1'])
@@ -223,7 +224,7 @@ def test_grid_labels():
 
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels'])
-def test_grid_labels_inline_usa():
+def test_grid_labels_inline():
     plt.figure(figsize=(35, 30))
     for i, proj in enumerate(TEST_PROJS, 1):
         if isinstance(proj(), ccrs.RotatedPole):
@@ -251,7 +252,7 @@ def test_grid_labels_inline_usa():
             ax = plt.subplot(7, 4, i, projection=proj())
         try:
             ax.set_extent([left, right, bottom, top],
-                crs=ccrs.PlateCarree())
+                          crs=ccrs.PlateCarree())
         except Exception:
             pass
         ax.set_title(proj, y=1.08)
