@@ -243,7 +243,7 @@ class GeoSpine(mspines.Spine):
     def __init__(self, axes, **kwargs):
         self._original_path = mpath.Path(np.empty((0, 2)))
         kwargs.setdefault('clip_on', False)
-        super(GeoSpine, self).__init__(axes, 'geo', self._original_path,
+        super().__init__(axes, 'geo', self._original_path,
                                        **kwargs)
         self.set_capstyle('butt')
 
@@ -260,12 +260,12 @@ class GeoSpine(mspines.Spine):
         # make sure the location is updated so that transforms etc are
         # correct:
         self._adjust_location()
-        return super(GeoSpine, self).get_window_extent(renderer=renderer)
+        return super().get_window_extent(renderer=renderer)
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer):
         self._adjust_location()
-        ret = super(GeoSpine, self).draw(renderer)
+        ret = super().draw(renderer)
         self.stale = False
         return ret
 
@@ -318,7 +318,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.background_patch = None
         """The patch that provides the filled background of the projection."""
 
-        super(GeoAxes, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._gridliners = []
         self.img_factories = []
         self._done_img_factory = False
@@ -362,7 +362,7 @@ class GeoAxes(matplotlib.axes.Axes):
             # Args and kwargs not allowed.
             assert not bool(args) and not bool(kwargs)
             image = factory
-            super(GeoAxes, self).add_image(image)
+            super().add_image(image)
             return image
 
     @contextlib.contextmanager
@@ -823,7 +823,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Switch on drawing of x axis
         self.xaxis.set_visible(True)
 
-        return super(GeoAxes, self).set_xticks(xticks, minor)
+        return super().set_xticks(xticks, minor)
 
     def set_yticks(self, ticks, minor=False, crs=None):
         """
@@ -870,7 +870,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Switch on drawing of y axis
         self.yaxis.set_visible(True)
 
-        return super(GeoAxes, self).set_yticks(yticks, minor)
+        return super().set_yticks(yticks, minor)
 
     def stock_img(self, name='ne_shaded'):
         """

@@ -25,7 +25,7 @@ import shapely.geometry as sgeom
 import cartopy.mpl.patch as cpatch
 
 
-class Test_path_to_geos(object):
+class Test_path_to_geos:
     def test_empty_polyon(self):
         p = Path([[0, 0], [0, 0], [0, 0], [0, 0],
                   [1, 2], [1, 2], [1, 2], [1, 2]],

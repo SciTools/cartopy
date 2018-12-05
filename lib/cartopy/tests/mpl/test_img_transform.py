@@ -32,7 +32,7 @@ import cartopy.img_transform as im_trans
 from functools import reduce
 
 
-class TestRegrid(object):
+class TestRegrid:
     def test_array_dims(self):
         # Source data
         source_nx = 100

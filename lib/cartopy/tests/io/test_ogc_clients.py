@@ -43,7 +43,7 @@ RESOLUTION = (30, 30)
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class TestWMSRasterSource(object):
+class TestWMSRasterSource:
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
     layer = 'basic'
     layers = ['basic', 'ocean']
@@ -147,7 +147,7 @@ class TestWMSRasterSource(object):
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class TestWMTSRasterSource(object):
+class TestWMTSRasterSource:
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
     projection = ccrs.PlateCarree()
@@ -221,7 +221,7 @@ class TestWMTSRasterSource(object):
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-class TestWFSGeometrySource(object):
+class TestWFSGeometrySource:
     URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
     typename = 'land_excluding_antarctica'
     native_projection = ccrs.Stereographic(central_latitude=-90,

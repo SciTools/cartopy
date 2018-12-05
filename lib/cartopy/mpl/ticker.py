@@ -33,7 +33,7 @@ class _PlateCarreeFormatter(Formatter):
 
     _target_projection = ccrs.PlateCarree()
 
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+    def __init__(self, degree_symbol='\u00B0', number_format='g',
                  transform_precision=1e-8):
         """
         Base class for simpler implementation of specialised formatters
@@ -69,7 +69,7 @@ class _PlateCarreeFormatter(Formatter):
 
     def _format_value(self, value, original_value):
         hemisphere = self._hemisphere(value, original_value)
-        fmt_string = u'{value:{number_format}}{degree}{hemisphere}'
+        fmt_string = '{value:{number_format}}{degree}{hemisphere}'
         return fmt_string.format(value=abs(value),
                                  number_format=self._number_format,
                                  degree=self._degree_symbol,
@@ -98,7 +98,7 @@ class _PlateCarreeFormatter(Formatter):
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+    def __init__(self, degree_symbol='\u00B0', number_format='g',
                  transform_precision=1e-8):
         """
         Tick formatter for a latitude axis.
@@ -149,7 +149,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             ax.yaxis.set_major_formatter(lat_formatter)
 
         """
-        super(LatitudeFormatter, self).__init__(
+        super().__init__(
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision)
@@ -173,7 +173,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
     def __init__(self,
                  zero_direction_label=False,
                  dateline_direction_label=False,
-                 degree_symbol=u'\u00B0',
+                 degree_symbol='\u00B0',
                  number_format='g',
                  transform_precision=1e-8):
         """
@@ -234,7 +234,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             ax.xaxis.set_major_formatter(lon_formatter)
 
         """
-        super(LongitudeFormatter, self).__init__(
+        super().__init__(
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision)

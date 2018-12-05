@@ -25,7 +25,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestLambertAzimuthalEqualArea(object):
+class TestLambertAzimuthalEqualArea:
     def test_default(self):
         crs = ccrs.LambertAzimuthalEqualArea()
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',

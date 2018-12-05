@@ -226,7 +226,7 @@ def mark_plot_labels(app, document):
     the "htmlonly" (or "latexonly") node to the actual figure node
     itself.
     """
-    for name, explicit in six.iteritems(document.nametypes):
+    for name, explicit in document.nametypes.items():
         if not explicit:
             continue
         labelid = document.nameids[name]
@@ -427,7 +427,7 @@ Exception occurred rendering plot.
 # :context: option
 plot_context = dict()
 
-class ImageFile(object):
+class ImageFile:
     def __init__(self, basename, dirname):
         self.basename = basename
         self.dirname = dirname
@@ -509,17 +509,17 @@ def run_code(code, code_path, ns=None, function_name=None):
                 ns = {}
             if not ns:
                 if setup.config.plot_pre_code is None:
-                    six.exec_(six.text_type("import numpy as np\n" +
+                    exec(str("import numpy as np\n" +
                     "from matplotlib import pyplot as plt\n"), ns)
                 else:
-                    six.exec_(six.text_type(setup.config.plot_pre_code), ns)
+                    exec(str(setup.config.plot_pre_code), ns)
             ns['print'] = _dummy_print
             if "__main__" in code:
-                six.exec_("__name__ = '__main__'", ns)
+                exec("__name__ = '__main__'", ns)
             code = remove_coding(code)
-            six.exec_(code, ns)
+            exec(code, ns)
             if function_name is not None:
-                six.exec_(function_name + "()", ns)
+                exec(function_name + "()", ns)
         except (Exception, SystemExit) as err:
             raise PlotError(traceback.format_exc())
     finally:
@@ -551,13 +551,13 @@ def render_figures(code, code_path, output_dir, output_base, context,
     default_dpi = {'png': 80, 'hires.png': 200, 'pdf': 200}
     formats = []
     plot_formats = config.plot_formats
-    if isinstance(plot_formats, six.string_types):
+    if isinstance(plot_formats, str):
         # String Sphinx < 1.3, Split on , to mimic
         # Sphinx 1.3 and later. Sphinx 1.3 always
         # returns a list.
         plot_formats = plot_formats.split(',')
     for fmt in plot_formats:
-        if isinstance(fmt, six.string_types):
+        if isinstance(fmt, str):
             if ':' in fmt:
                 suffix,dpi = fmt.split(':')
                 formats.append((str(suffix), int(dpi)))
@@ -813,7 +813,7 @@ def run(arguments, content, options, state_machine, state, lineno):
         if nofigs:
             images = []
 
-        opts = [':{}: {}'.format(key, val) for key, val in six.iteritems(options)
+        opts = [':{}: {}'.format(key, val) for key, val in options.items()
                 if key in ('alt', 'height', 'width', 'scale', 'align', 'class')]
 
         only_html = ".. only:: html"

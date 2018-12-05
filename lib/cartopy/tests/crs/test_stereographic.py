@@ -24,7 +24,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestStereographic(object):
+class TestStereographic:
     def test_default(self):
         stereo = ccrs.Stereographic()
         other_args = {'ellps=WGS84', 'lat_0=0.0', 'lon_0=0.0', 'x_0=0.0',

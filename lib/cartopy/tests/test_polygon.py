@@ -26,7 +26,7 @@ import shapely.wkt
 import cartopy.crs as ccrs
 
 
-class TestBoundary(object):
+class TestBoundary:
     def test_no_polygon_boundary_reversal(self):
         # Check that polygons preserve their clockwise or counter-clockwise
         # ordering when they are attached to the boundary.
@@ -71,7 +71,7 @@ class TestBoundary(object):
             assert len(multi_polygon) == expected_polys
 
 
-class TestMisc(object):
+class TestMisc:
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90)
         polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
@@ -260,7 +260,7 @@ class TestMisc(object):
         assert abs(1200 - projected.area) < 1e-5
 
 
-class TestQuality(object):
+class TestQuality:
     def setup_class(self):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
                                       pole_latitude=37.5)
@@ -308,7 +308,7 @@ class TestQuality(object):
             assert abs(num_incr - num_decr) < 3, 'Too much asymmetry.'
 
 
-class PolygonTests(object):
+class PolygonTests:
     def _assert_bounds(self, bounds, x1, y1, x2, y2, delta=1):
         assert abs(bounds[0] - x1) < delta
         assert abs(bounds[1] - y1) < delta

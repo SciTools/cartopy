@@ -39,7 +39,7 @@ class SlippyImageArtist(AxesImage):
     """
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
-        super(SlippyImageArtist, self).__init__(ax, **kwargs)
+        super().__init__(ax, **kwargs)
         self.set_clip_path(ax.background_patch)
         self.cache = []
 
@@ -73,4 +73,4 @@ class SlippyImageArtist(AxesImage):
             self.set_array(img)
             with ax.hold_limits():
                 self.set_extent(extent)
-            super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)
+            super().draw(renderer, *args, **kwargs)

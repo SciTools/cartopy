@@ -26,7 +26,7 @@ import numpy as np
 import cartopy.crs as ccrs
 
 
-class TestTransverseMercator(object):
+class TestTransverseMercator:
     def setup_class(self):
         self.point_a = (-3.474083, 50.727301)
         self.point_b = (0.5, 50.5)
@@ -64,7 +64,7 @@ class TestTransverseMercator(object):
         assert np.all(np.isnan(res))
 
 
-class TestOSGB(object):
+class TestOSGB:
     def setup_class(self):
         self.point_a = (-3.474083, 50.727301)
         self.point_b = (0.5, 50.5)
@@ -88,7 +88,7 @@ class TestOSGB(object):
         assert np.all(np.isnan(res))
 
 
-class TestOSNI(object):
+class TestOSNI:
     def setup_class(self):
         self.point_a = (-6.826286, 54.725116)
         self.src_crs = ccrs.PlateCarree()

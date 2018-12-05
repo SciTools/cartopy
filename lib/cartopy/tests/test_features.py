@@ -28,7 +28,7 @@ auto_scaler = cfeature.AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
 auto_land = cfeature.NaturalEarthFeature('physical', 'land', auto_scaler)
 
 
-class TestFeatures(object):
+class TestFeatures:
     def test_change_scale(self):
         # Check that features can easily be retrieved with a different
         # scale.

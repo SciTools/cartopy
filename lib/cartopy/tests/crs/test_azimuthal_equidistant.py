@@ -24,7 +24,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestAzimuthalEquidistant(object):
+class TestAzimuthalEquidistant:
     def test_default(self):
         aeqd = ccrs.AzimuthalEquidistant()
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',

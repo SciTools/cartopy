@@ -25,7 +25,7 @@ import pytest
 from cartopy.util import add_cyclic_point
 
 
-class Test_add_cyclic_point(object):
+class Test_add_cyclic_point:
 
     @classmethod
     def setup_class(cls):

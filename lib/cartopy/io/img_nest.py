@@ -43,7 +43,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
             if isinstance(item, list):
                 item = tuple(item)
             new_kwargs[k] = item
-        return super(Img, cls).__new__(cls, *new_args, **new_kwargs)
+        return super().__new__(cls, *new_args, **new_kwargs)
 
     def __init__(self, *args, **kwargs):
         """
@@ -200,7 +200,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         return (min_x, max_x, min_y, max_y), pix_size
 
 
-class ImageCollection(object):
+class ImageCollection:
     def __init__(self, name, crs, images=None):
         """
         Represents a collection of images at the same logical level.
@@ -259,7 +259,7 @@ class ImageCollection(object):
             self.images.append(img_class.from_world_file(img, fworld))
 
 
-class NestedImageCollection(object):
+class NestedImageCollection:
     def __init__(self, name, crs, collections, _ancestry=None):
         """
         Represents a complex nest of ImageCollections.

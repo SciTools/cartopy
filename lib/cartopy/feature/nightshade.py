@@ -104,7 +104,7 @@ class Nightshade(ShapelyFeature):
         kwargs.setdefault('alpha', alpha)
 
         geom = sgeom.Polygon(np.column_stack((x, y)))
-        return super(Nightshade, self).__init__(
+        return super().__init__(
             [geom], rotated_pole, **kwargs)
 
 

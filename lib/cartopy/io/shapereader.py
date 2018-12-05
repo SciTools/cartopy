@@ -60,7 +60,7 @@ except ImportError:
 __all__ = ['Reader', 'Record']
 
 
-class Record(object):
+class Record:
     """
     A single logical entry from a shapefile, combining the attributes with
     their associated geometry.
@@ -126,7 +126,7 @@ class FionaRecord(Record):
         self._bounds = geometry.bounds
 
 
-class BasicReader(object):
+class BasicReader:
     """
     Provide an interface for accessing the contents of a shapefile.
 
@@ -175,7 +175,7 @@ class BasicReader(object):
             yield Record(shape_record.shape, attributes, fields)
 
 
-class FionaReader(object):
+class FionaReader:
     """
     Provides an interface for accessing the contents of a shapefile
     with the fiona library, which has a much faster reader than pyshp.
@@ -416,7 +416,7 @@ class GSHHSShpDownloader(Downloader):
                  url_template=_GSHHS_URL_TEMPLATE,
                  target_path_template=None,
                  pre_downloaded_path_template=''):
-        super(GSHHSShpDownloader, self).__init__(url_template,
+        super().__init__(url_template,
                                                  target_path_template,
                                                  pre_downloaded_path_template)
 

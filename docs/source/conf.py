@@ -83,8 +83,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'cartopy'
-copyright = u'2011 - 2018 British Crown Copyright'  # the template will need
+project = 'cartopy'
+copyright = '2011 - 2018 British Crown Copyright'  # the template will need
 # updating if this is changed
 
 # The version info for the project you're documenting, acts as replacement for
@@ -239,10 +239,10 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'cartopy.tex', u'Cartopy Introduction',
-   u'Philip Elson, Richard Hattersley', 'manual', False),
-  ('introductory_examples/index', 'cartopy_examples.tex', u'Cartopy examples',
-   u'Philip Elson, Richard Hattersley', 'manual', True)
+  ('index', 'cartopy.tex', 'Cartopy Introduction',
+   'Philip Elson, Richard Hattersley', 'manual', False),
+  ('introductory_examples/index', 'cartopy_examples.tex', 'Cartopy examples',
+   'Philip Elson, Richard Hattersley', 'manual', True)
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -271,8 +271,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cartopy', u'cartopy Documentation',
-     [u'Philip Elson, Richard Hattersley'], 1)
+    ('index', 'cartopy', 'cartopy Documentation',
+     ['Philip Elson, Richard Hattersley'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -285,8 +285,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'cartopy', u'cartopy Documentation',
-   u'Philip Elson, Richard Hattersley', 'cartopy',
+  ('index', 'cartopy', 'cartopy Documentation',
+   'Philip Elson, Richard Hattersley', 'cartopy',
    'One line description of project.',
    'Miscellaneous'),
 ]
@@ -304,10 +304,10 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'cartopy'
-epub_author = u'Philip Elson, Richard Hattersley'
-epub_publisher = u'Philip Elson, Richard Hattersley'
-epub_copyright = u'2012, Philip Elson, Richard Hattersley'
+epub_title = 'cartopy'
+epub_author = 'Philip Elson, Richard Hattersley'
+epub_publisher = 'Philip Elson, Richard Hattersley'
+epub_copyright = '2012, Philip Elson, Richard Hattersley'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

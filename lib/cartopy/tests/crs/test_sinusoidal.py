@@ -25,7 +25,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestSinusoidal(object):
+class TestSinusoidal:
     def test_default(self):
         crs = ccrs.Sinusoidal()
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0'}

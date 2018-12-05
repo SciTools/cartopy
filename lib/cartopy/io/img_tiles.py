@@ -207,7 +207,7 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
                 not Image.core.jpeg_decoder:
             msg = "The '%s' style requires pillow with jpeg decoding support."
             raise ValueError(msg % self.style)
-        return super(GoogleTiles, self).__init__(
+        return super().__init__(
             desired_tile_form=desired_tile_form)
 
     def _image_url(self, tile):
@@ -282,7 +282,7 @@ class Stamen(GoogleWTS):
 
     """
     def __init__(self, style='toner', desired_tile_form='RGB'):
-        super(Stamen, self).__init__(desired_tile_form=desired_tile_form)
+        super().__init__(desired_tile_form=desired_tile_form)
         self.style = style
 
     def _image_url(self, tile):
@@ -323,7 +323,7 @@ class StamenTerrain(Stamen):
         # NOTE: This subclass of Stamen exists for legacy reasons.
         # No further Stamen subclasses will be accepted as
         # they can easily be created in user code with Stamen(style_name).
-        return super(StamenTerrain, self).__init__(style='terrain-background')
+        return super().__init__(style='terrain-background')
 
 
 class MapboxTiles(GoogleWTS):
@@ -351,7 +351,7 @@ class MapboxTiles(GoogleWTS):
         """
         self.access_token = access_token
         self.map_id = map_id
-        super(MapboxTiles, self).__init__()
+        super().__init__()
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -394,7 +394,7 @@ class MapboxStyleTiles(GoogleWTS):
         self.access_token = access_token
         self.username = username
         self.map_id = map_id
-        super(MapboxStyleTiles, self).__init__()
+        super().__init__()
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -442,7 +442,7 @@ class QuadtreeTiles(GoogleWTS):
     def quadkey_to_tms(self, quadkey, google=False):
         # algorithm ported from
         # https://msdn.microsoft.com/en-us/library/bb259689.aspx
-        assert isinstance(quadkey, six.string_types), \
+        assert isinstance(quadkey, str), \
             'quadkey must be a string'
 
         x = y = 0

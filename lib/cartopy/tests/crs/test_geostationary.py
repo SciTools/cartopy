@@ -27,7 +27,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestGeostationary(object):
+class TestGeostationary:
     test_class = ccrs.Geostationary
     expected_proj_name = 'geos'
 

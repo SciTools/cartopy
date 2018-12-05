@@ -67,8 +67,8 @@ def test_LatitudeFormatter():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'90\u00B0S', u'60\u00B0S', u'30\u00B0S', u'0\u00B0',
-                u'30\u00B0N', u'60\u00B0N', u'90\u00B0N']
+    expected = ['90\u00B0S', '60\u00B0S', '30\u00B0S', '0\u00B0',
+                '30\u00B0N', '60\u00B0N', '90\u00B0N']
     assert result == expected
 
 
@@ -78,8 +78,8 @@ def test_LatitudeFormatter_degree_symbol():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'90S', u'60S', u'30S', u'0',
-                u'30N', u'60N', u'90N']
+    expected = ['90S', '60S', '30S', '0',
+                '30N', '60N', '90N']
     assert result == expected
 
 
@@ -89,9 +89,9 @@ def test_LatitudeFormatter_number_format():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'90.00\u00B0S', u'60.00\u00B0S', u'30.00\u00B0S',
-                u'0.00\u00B0', u'30.00\u00B0N', u'60.00\u00B0N',
-                u'90.00\u00B0N']
+    expected = ['90.00\u00B0S', '60.00\u00B0S', '30.00\u00B0S',
+                '0.00\u00B0', '30.00\u00B0N', '60.00\u00B0N',
+                '90.00\u00B0N']
     assert result == expected
 
 
@@ -103,8 +103,8 @@ def test_LatitudeFormatter_mercator():
                   -3482189.085407435, 0.0, 3482189.085407435,
                   8362698.548496634, 15496570.739707898]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'80\u00B0S', u'60\u00B0S', u'30\u00B0S', u'0\u00B0',
-                u'30\u00B0N', u'60\u00B0N', u'80\u00B0N']
+    expected = ['80\u00B0S', '60\u00B0S', '30\u00B0S', '0\u00B0',
+                '30\u00B0N', '60\u00B0N', '80\u00B0N']
     assert result == expected
 
 
@@ -114,8 +114,8 @@ def test_LatitudeFormatter_small_numbers():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [40.1275150, 40.1275152, 40.1275154]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'40.1275150\u00B0N', u'40.1275152\u00B0N',
-                u'40.1275154\u00B0N']
+    expected = ['40.1275150\u00B0N', '40.1275152\u00B0N',
+                '40.1275154\u00B0N']
     assert result == expected
 
 
@@ -125,8 +125,8 @@ def test_LongitudeFormatter_central_longitude_0():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'180\u00B0W', u'120\u00B0W', u'60\u00B0W', u'0\u00B0',
-                u'60\u00B0E', u'120\u00B0E', u'180\u00B0E']
+    expected = ['180\u00B0W', '120\u00B0W', '60\u00B0W', '0\u00B0',
+                '60\u00B0E', '120\u00B0E', '180\u00B0E']
     assert result == expected
 
 
@@ -136,8 +136,8 @@ def test_LongitudeFormatter_central_longitude_180():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'0\u00B0E', u'60\u00B0E', u'120\u00B0E', u'180\u00B0',
-                u'120\u00B0W', u'60\u00B0W', u'0\u00B0W']
+    expected = ['0\u00B0E', '60\u00B0E', '120\u00B0E', '180\u00B0',
+                '120\u00B0W', '60\u00B0W', '0\u00B0W']
     assert result == expected
 
 
@@ -147,8 +147,8 @@ def test_LongitudeFormatter_central_longitude_120():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'60\u00B0W', u'0\u00B0', u'60\u00B0E', u'120\u00B0E',
-                u'180\u00B0', u'120\u00B0W', u'60\u00B0W']
+    expected = ['60\u00B0W', '0\u00B0', '60\u00B0E', '120\u00B0E',
+                '180\u00B0', '120\u00B0W', '60\u00B0W']
     assert result == expected
 
 
@@ -159,7 +159,7 @@ def test_LongitudeFormatter_degree_symbol():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'180W', u'120W', u'60W', u'0', u'60E', u'120E', u'180E']
+    expected = ['180W', '120W', '60W', '0', '60E', '120E', '180E']
     assert result == expected
 
 
@@ -170,9 +170,9 @@ def test_LongitudeFormatter_number_format():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'180.00\u00B0W', u'120.00\u00B0W', u'60.00\u00B0W',
-                u'0.00\u00B0', u'60.00\u00B0E', u'120.00\u00B0E',
-                u'180.00\u00B0E']
+    expected = ['180.00\u00B0W', '120.00\u00B0W', '60.00\u00B0W',
+                '0.00\u00B0', '60.00\u00B0E', '120.00\u00B0E',
+                '180.00\u00B0E']
     assert result == expected
 
 
@@ -184,8 +184,8 @@ def test_LongitudeFormatter_mercator():
                   -6679169.447594353, 0.0, 6679169.447594353,
                   13358338.895188706, 20037508.342783064]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'180\u00B0W', u'120\u00B0W', u'60\u00B0W', u'0\u00B0',
-                u'60\u00B0E', u'120\u00B0E', u'180\u00B0E']
+    expected = ['180\u00B0W', '120\u00B0W', '60\u00B0W', '0\u00B0',
+                '60\u00B0E', '120\u00B0E', '180\u00B0E']
     assert result == expected
 
 
@@ -195,8 +195,8 @@ def test_LongitudeFormatter_small_numbers_0():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-17.1142343, -17.1142340, -17.1142337]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'17.1142343\u00B0W', u'17.1142340\u00B0W',
-                u'17.1142337\u00B0W']
+    expected = ['17.1142343\u00B0W', '17.1142340\u00B0W',
+                '17.1142337\u00B0W']
     assert result == expected
 
 
@@ -207,6 +207,6 @@ def test_LongitudeFormatter_small_numbers_180():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-17.1142343, -17.1142340, -17.1142337]
     result = [formatter(tick) for tick in test_ticks]
-    expected = [u'162.8857657\u00B0E', u'162.8857660\u00B0E',
-                u'162.8857663\u00B0E']
+    expected = ['162.8857657\u00B0E', '162.8857660\u00B0E',
+                '162.8857663\u00B0E']
     assert result == expected

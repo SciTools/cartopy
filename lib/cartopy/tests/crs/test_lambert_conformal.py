@@ -64,7 +64,7 @@ def test_specific_lambert():
     check_proj_params('lcc', crs, other_args)
 
 
-class Test_LambertConformal_standard_parallels(object):
+class Test_LambertConformal_standard_parallels:
     def test_single_value(self):
         crs = ccrs.LambertConformal(standard_parallels=[1.])
         other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0',

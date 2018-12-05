@@ -62,7 +62,7 @@ REPO_DIR = os.getenv('CARTOPY_GIT_DIR',
                      os.path.dirname(os.path.dirname(CARTOPY_DIR)))
 
 
-class TestLicenseHeaders(object):
+class TestLicenseHeaders:
     @staticmethod
     def years_of_license_in_file(fh):
         """
@@ -165,7 +165,7 @@ class TestLicenseHeaders(object):
             raise ValueError('There were license header failures. See stdout.')
 
 
-class TestFutureImports(object):
+class TestFutureImports:
     excluded = (
         '*/cartopy/examples/*.py',
         '*/docs/source/examples/*.py',

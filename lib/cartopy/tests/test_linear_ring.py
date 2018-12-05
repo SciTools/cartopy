@@ -24,7 +24,7 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 
 
-class TestBoundary(object):
+class TestBoundary:
     def test_cuts(self):
         # Check that fragments do not start or end with one of the
         # original ... ?
@@ -86,7 +86,7 @@ class TestBoundary(object):
                     assert mlinestr.is_empty
 
 
-class TestMisc(object):
+class TestMisc:
     def test_small(self):
         # What happens when a small (i.e. < threshold) feature crosses the
         # boundary?

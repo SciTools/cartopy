@@ -33,7 +33,7 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 
 
-class TestCRS(object):
+class TestCRS:
     def test_hash(self):
         stereo = ccrs.Stereographic(90)
         north = ccrs.NorthPolarStereo()

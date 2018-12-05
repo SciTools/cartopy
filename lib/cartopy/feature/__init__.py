@@ -123,7 +123,7 @@ class Feature(six.with_metaclass(ABCMeta)):
             return self.geometries()
 
 
-class Scaler(object):
+class Scaler:
     """
     General object for handling the scale of the geometries used in a Feature.
     """
@@ -179,7 +179,7 @@ class AdaptiveScaler(Scaler):
         'fine'
 
         """
-        super(AdaptiveScaler, self).__init__(default_scale)
+        super().__init__(default_scale)
         self._default_scale = default_scale
         # Upper limit on extent in degrees.
         self._limits = limits
@@ -227,7 +227,7 @@ class ShapelyFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super(ShapelyFeature, self).__init__(crs, **kwargs)
+        super().__init__(crs, **kwargs)
         self._geoms = tuple(geometries)
 
     def geometries(self):
@@ -260,13 +260,13 @@ class NaturalEarthFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super(NaturalEarthFeature, self).__init__(cartopy.crs.PlateCarree(),
+        super().__init__(cartopy.crs.PlateCarree(),
                                                   **kwargs)
         self.category = category
         self.name = name
 
         # Cast the given scale to a (constant) Scaler if a string is passed.
-        if isinstance(scale, six.string_types):
+        if isinstance(scale, str):
             scale = Scaler(scale)
 
         self.scaler = scale
@@ -300,7 +300,7 @@ class NaturalEarthFeature(Feature):
         If extent is None, the method returns all geometries for this dataset.
         """
         self.scaler.scale_from_extent(extent)
-        return super(NaturalEarthFeature, self).intersecting_geometries(extent)
+        return super().intersecting_geometries(extent)
 
     def with_scale(self, new_scale):
         """
@@ -352,7 +352,7 @@ class GSHHSFeature(Feature):
 
     """
     def __init__(self, scale='auto', levels=None, **kwargs):
-        super(GSHHSFeature, self).__init__(cartopy.crs.PlateCarree(), **kwargs)
+        super().__init__(cartopy.crs.PlateCarree(), **kwargs)
 
         if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
                          'intermediate', 'i', 'high', 'h', 'full', 'f'):
@@ -451,13 +451,13 @@ class WFSFeature(Feature):
         try:
             from cartopy.io.ogc_clients import WFSGeometrySource
         except ImportError as e:
-            six.raise_from(ImportError(
+            raise ImportError(
                 'WFSFeature requires additional dependencies. If installed '
-                'via pip, try `pip install cartopy[ows]`.\n'), e)
+                'via pip, try `pip install cartopy[ows]`.\n') from e
 
         self.source = WFSGeometrySource(wfs, features)
         crs = self.source.default_projection()
-        super(WFSFeature, self).__init__(crs, **kwargs)
+        super().__init__(crs, **kwargs)
         # Default kwargs
         self._kwargs.setdefault('edgecolor', 'black')
         self._kwargs.setdefault('facecolor', 'none')

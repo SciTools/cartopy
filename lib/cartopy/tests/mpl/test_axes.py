@@ -32,7 +32,7 @@ from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
 from cartopy.tests.mpl.test_caching import CallCounter
 
 
-class TestNoSpherical(object):
+class TestNoSpherical:
     def setup_method(self):
         self.ax = plt.axes(projection=ccrs.PlateCarree())
         self.data = np.arange(12).reshape((3, 4))

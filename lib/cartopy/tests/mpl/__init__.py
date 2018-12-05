@@ -37,7 +37,7 @@ import matplotlib._pylab_helpers as pyplot_helpers
 MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
 
 
-class ImageTesting(object):
+class ImageTesting:
     """
     Provides a convenient class for running visual Matplotlib tests.
 

@@ -29,7 +29,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestEquidistantConic(object):
+class TestEquidistantConic:
     def test_default(self):
         eqdc = ccrs.EquidistantConic()
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',

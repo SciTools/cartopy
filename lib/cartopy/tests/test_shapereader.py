@@ -26,7 +26,7 @@ import pytest
 import cartopy.io.shapereader as shp
 
 
-class TestLakes(object):
+class TestLakes:
     def setup_class(self):
         LAKES_PATH = os.path.join(os.path.dirname(__file__),
                                   'lakes_shapefile', 'ne_110m_lakes.shp')
@@ -83,7 +83,7 @@ class TestLakes(object):
 
 
 @pytest.mark.natural_earth
-class TestRivers(object):
+class TestRivers:
     def setup_class(self):
         RIVERS_PATH = shp.natural_earth(resolution='110m',
                                         category='physical',

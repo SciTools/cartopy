@@ -24,7 +24,7 @@ import cartopy.io.shapereader as shp
 
 
 @pytest.mark.natural_earth
-class TestCoastline(object):
+class TestCoastline:
     def test_robust(self):
         COASTLINE_PATH = shp.natural_earth()
 
