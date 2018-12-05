@@ -196,14 +196,14 @@ def find_proj_version_by_program(conda=None):
     proj = find_executable('proj')
     if proj is None:
         print(
-            'Proj %s must be installed.' % (
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), ),
+            'Proj {} must be installed.'.format(
+                '.'.join(str(v) for v in PROJ_MIN_VERSION)),
             file=sys.stderr)
         exit(1)
 
     if conda is not None and conda not in proj:
         print(
-            'Proj %s must be installed in Conda environment "%s".' % (
+            'Proj {} must be installed in Conda environment "{}".'.format(
                 '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
             file=sys.stderr)
         exit(1)

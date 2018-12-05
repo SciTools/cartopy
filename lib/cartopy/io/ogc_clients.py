@@ -430,9 +430,9 @@ class WMTSRasterSource(RasterSource):
                         break
                 if matrix_set_name is None:
                     # Fail completely.
-                    available_urns = sorted(set(
+                    available_urns = sorted({
                         self.wmts.tilematrixsets[name].crs
-                        for name in matrix_set_names))
+                        for name in matrix_set_names})
                     msg = 'Unable to find tile matrix for projection.'
                     msg += '\n    Projection: ' + str(target_projection)
                     msg += '\n    Available tile CRS URNs:'
@@ -696,8 +696,8 @@ class WFSGeometrySource(object):
         """
         # Using first element in crsOptions (default).
         if self._default_urn is None:
-            default_urn = set(self.service.contents[feature].crsOptions[0] for
-                              feature in self.features)
+            default_urn = {self.service.contents[feature].crsOptions[0] for
+                           feature in self.features}
             if len(default_urn) != 1:
                 ValueError('Failed to find a single common default SRS '
                            'across all features (typenames).')

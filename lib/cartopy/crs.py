@@ -483,7 +483,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                 sys.stdout.write('+')
                 sys.stdout.flush()
                 print()
-                print('Processing: %s, %s' % (i, current_ls))
+                print('Processing: {}, {}'.format(i, current_ls))
 
             added_linestring = set()
             while True:
@@ -2482,8 +2482,8 @@ class _BoundaryPoint(object):
         self.data = data
 
     def __repr__(self):
-        return '_BoundaryPoint(%r, %r, %s)' % (self.distance, self.kind,
-                                               self.data)
+        return '_BoundaryPoint({!r}, {!r}, {})'.format(self.distance, self.kind,
+                                                       self.data)
 
 
 def _find_first_ge(a, x):

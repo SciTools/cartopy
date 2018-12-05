@@ -231,7 +231,7 @@ class MapQuestOSM(GoogleWTS):
     # this now requires a sign up to a plan
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
+        url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/{}/{}/{}.jpg'.format(
             z, x, y)
         mqdevurl = ('http://devblog.mapquest.com/2016/06/15/'
                     'modernization-of-mapquest-results-in-changes'
@@ -248,7 +248,7 @@ class MapQuestOpenAerial(GoogleWTS):
     #  Farm Service Agency"
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
+        url = 'http://oatile1.mqcdn.com/tiles/1.0.0/sat/{}/{}/{}.jpg'.format(
             z, x, y)
         return url
 
@@ -257,7 +257,7 @@ class OSM(GoogleWTS):
     # http://developer.mapquest.com/web/products/open/map for terms of use
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'https://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
+        url = 'https://a.tile.openstreetmap.org/{}/{}/{}.png'.format(z, x, y)
         return url
 
 

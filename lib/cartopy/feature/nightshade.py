@@ -56,7 +56,7 @@ class Nightshade(ShapelyFeature):
 
         # make sure date is UTC, or naive with respect to time zones
         if date.utcoffset():
-            raise ValueError('datetime instance must be UTC, not {0}'.format(
+            raise ValueError('datetime instance must be UTC, not {}'.format(
                              date.tzname()))
 
         # Returns the Greenwich hour angle,

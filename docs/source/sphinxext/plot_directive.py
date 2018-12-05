@@ -347,7 +347,7 @@ def remove_coding(text):
     """
     Remove the coding comment, which six.exec_ doesn't like.
     """
-    sub_re = re.compile("^#\s*-\*-\s*coding:\s*.*-\*-$", flags=re.MULTILINE)
+    sub_re = re.compile(r"^#\s*-\*-\s*coding:\s*.*-\*-$", flags=re.MULTILINE)
     return sub_re.sub("", text)
 
 #------------------------------------------------------------------------------
@@ -434,7 +434,7 @@ class ImageFile(object):
         self.formats = []
 
     def filename(self, format):
-        return os.path.join(self.dirname, "%s.%s" % (self.basename, format))
+        return os.path.join(self.dirname, "{}.{}".format(self.basename, format))
 
     def filenames(self):
         return [self.filename(fmt) for fmt in self.formats]
@@ -785,8 +785,8 @@ def run(arguments, content, options, state_machine, state, lineno):
     except PlotError as err:
         reporter = state.memo.reporter
         sm = reporter.system_message(
-            2, "Exception occurred in plotting %s\n from %s:\n%s" % (output_base,
-                                                source_file_name, err),
+            2, "Exception occurred in plotting {}\n from {}:\n{}".format(
+                output_base, source_file_name, err),
             line=lineno)
         results = [(code, [])]
         errors = [sm]
@@ -813,7 +813,7 @@ def run(arguments, content, options, state_machine, state, lineno):
         if nofigs:
             images = []
 
-        opts = [':%s: %s' % (key, val) for key, val in six.iteritems(options)
+        opts = [':{}: {}'.format(key, val) for key, val in six.iteritems(options)
                 if key in ('alt', 'height', 'width', 'scale', 'align', 'class')]
 
         only_html = ".. only:: html"

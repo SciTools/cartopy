@@ -286,7 +286,7 @@ class NestedImageCollection(object):
 
         """
         # NOTE: all collections must have the same crs.
-        _names = set([collection.name for collection in collections])
+        _names = {collection.name for collection in collections}
         assert len(_names) == len(collections), \
             'The collections must have unique names.'
 
