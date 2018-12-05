@@ -35,6 +35,7 @@ geometry representation of shapely:
     >>> geoms = list(reader.geometries())
     >>> print(type(geoms[0]))
     <class 'shapely.geometry.point.Point'>
+    >>> reader.close()
 
 """
 
@@ -143,6 +144,9 @@ class BasicReader(object):
 
         self._fields = self._reader.fields
 
+    def close(self):
+        return self._reader.close()
+
     def __len__(self):
         return self._reader.numRecords
 
@@ -215,6 +219,12 @@ class FionaReader(object):
                      if feature['geometry'] else None}
                 d.update(feature['properties'])
                 self._data.append(d)
+
+    def close(self):
+        # TODO: Keep the Fiona handle open until this is called.
+        # This will enable us to pass down calls for bounding box queries,
+        # rather than having to have it all in memory.
+        pass
 
     def __len__(self):
         return len(self._data)
