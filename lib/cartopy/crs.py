@@ -2481,7 +2481,8 @@ class _BoundaryPoint:
         self.data = data
 
     def __repr__(self):
-        return '_BoundaryPoint({!r}, {!r}, {})'.format(self.distance, self.kind,
+        return '_BoundaryPoint({!r}, {!r}, {})'.format(self.distance,
+                                                       self.kind,
                                                        self.data)
 
 

@@ -427,6 +427,7 @@ Exception occurred rendering plot.
 # :context: option
 plot_context = dict()
 
+
 class ImageFile:
     def __init__(self, basename, dirname):
         self.basename = basename
@@ -434,7 +435,8 @@ class ImageFile:
         self.formats = []
 
     def filename(self, format):
-        return os.path.join(self.dirname, "{}.{}".format(self.basename, format))
+        return os.path.join(self.dirname, "{}.{}".format(
+            self.basename, format))
 
     def filenames(self):
         return [self.filename(fmt) for fmt in self.formats]

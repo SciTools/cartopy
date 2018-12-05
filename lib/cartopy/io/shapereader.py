@@ -84,10 +84,12 @@ class Record:
         self._fields = fields
 
     def __repr__(self):
-        return '<Record: {!r}, {!r}, <fields>>'.format(self.geometry, self.attributes)
+        return '<Record: {!r}, {!r}, <fields>>'.format(
+            self.geometry, self.attributes)
 
     def __str__(self):
-        return 'Record({}, {}, <fields>)'.format(self.geometry, self.attributes)
+        return 'Record({}, {}, <fields>)'.format(
+            self.geometry, self.attributes)
 
     @property
     def bounds(self):
