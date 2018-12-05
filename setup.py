@@ -393,6 +393,7 @@ setup(
     ],
 
     cmdclass=cmdclass,
+    python_requires='>3.3',
     classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: GNU Lesser General Public License v3 '
