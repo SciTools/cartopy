@@ -168,6 +168,7 @@ def test_simple_global():
     ccrs.EckertVI,
     ccrs.EqualEarth,
     ccrs.Gnomonic,
+    ccrs.Hammer,
     pytest.param((ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
                  id='InterruptedGoodeHomolosine'),
     ccrs.LambertCylindrical,
