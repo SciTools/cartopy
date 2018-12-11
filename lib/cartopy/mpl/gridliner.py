@@ -100,15 +100,19 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
 
 def _text_angle_to_specs_(angle):
     """Get appropriate kwargs for a rotated label from its angle in degrees"""
+    if matplotlib.__version__ > '2.0':
+        va_align_center = 'center_baseline'
+    else:
+        va_align_center = 'center'
     angle %= 360
     if angle > 180:
         angle -= 360
     kw = {'rotation': angle, 'rotation_mode': 'anchor'}
     if abs(angle) <= 45:
-        kw.update(ha='left', va='center')
+        kw.update(ha='left', va=va_align_center)
         loc = 'right'
     elif abs(angle) >= 135:
-        kw.update(ha='right', va='center')
+        kw.update(ha='right', va=va_align_center)
         kw['rotation'] -= np.sign(angle) * 180
         loc = 'left'
     elif angle > 45:
@@ -392,7 +396,7 @@ class Gridliner(object):
         self._assert_can_draw_ticks()
 
         # Get the real map boundaries
-        map_boundary_vertices = self.axes.outline_patch.get_path().vertices
+        map_boundary_vertices = self.axes.background_patch.get_path().vertices
         map_boundary = sgeom.Polygon(map_boundary_vertices)
 
         self._labels = []
@@ -567,7 +571,7 @@ class Gridliner(object):
 
                     # Finally check that it does not overlap the map
                     if outline_path is None:
-                        outline_path = self.axes.outline_patch.get_path(
+                        outline_path = self.axes.background_patch.get_path(
                             ).transformed(self.axes.transData)
                     visible = not outline_path.intersects_path(this_path)
 

@@ -37,7 +37,6 @@ import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
 import matplotlib.spines as mspines
-import matplotlib.ticker as mticker
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
@@ -54,8 +53,6 @@ from cartopy.vector_transform import vector_scalar_to_grid
 
 assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
                                     'Matplotlib 1.5.1 or greater.')
-
-_log = matplotlib.axes._base._log
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
 """
@@ -429,6 +426,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     self._get_extent_geom(factory.crs), args[0])
                 self.imshow(img, extent=extent, origin=origin,
                             transform=factory.crs, *args[1:], **kwargs)
+        self._done_img_factory = True
         self._cachedRenderer = renderer
         return matplotlib.axes.Axes.draw(self, renderer=renderer,
                                          inframe=inframe)
@@ -443,10 +441,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if not self._gridliners:
             return
 
-        _log.debug('update_title_pos')
-
         if self._autotitlepos is not None and not self._autotitlepos:
-            _log.debug('title position was updated manually, not adjusting')
             return
 
         # Get the max ymax of all top labels
