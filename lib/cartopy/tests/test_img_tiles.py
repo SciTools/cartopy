@@ -41,6 +41,19 @@ KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
                  (8, 9, 4): (0, 2504688.542848654,
                              -5009377.085697312, -2504688.542848654),
                  }
+if ccrs.PROJ4_VERSION == (5, 0, 0):
+    KNOWN_EXTENTS = {
+        (0, 0, 0): (-20037508.342789244, 20037508.342789244,
+                    -19994827.892149, 19994827.892149),
+        (2, 0, 2): (0, 10018754.171395,
+                    9997413.946075, 19994827.892149),
+        (0, 2, 2): (-20037508.342789244, -10018754.171394622,
+                    -9997413.946075, 0),
+        (2, 2, 2): (0, 10018754.171395,
+                    -9997413.946075, 0),
+        (8, 9, 4): (0, 2504688.542849,
+                    -4998706.973037, -2499353.486519),
+    }
 
 
 def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
@@ -155,9 +168,14 @@ def test_image_for_domain():
     ll_extent = ccrs.Geodetic().transform_points(gt.crs,
                                                  np.array(extent[:2]),
                                                  np.array(extent[2:]))
-    assert_arr_almost(ll_extent[:, :2],
-                      [[-11.25, 48.92249926],
-                       [11.25, 61.60639637]])
+    if ccrs.PROJ4_VERSION == (5, 0, 0):
+        assert_arr_almost(ll_extent[:, :2],
+                          [[-11.25, 49.033955],
+                           [11.25, 61.687101]])
+    else:
+        assert_arr_almost(ll_extent[:, :2],
+                          [[-11.25, 48.92249926],
+                           [11.25, 61.60639637]])
 
 
 def test_quadtree_wts():
@@ -198,12 +216,27 @@ def test_quadtree_wts():
                       KNOWN_EXTENTS[(8, 9, 4)])
 
 
-def test_mapbox_tiles():
+def test_mapbox_tiles_api_url():
     token = 'foo'
+    map_name = 'bar'
+    tile = [0, 1, 2]
+    exp_url = ('https://api.mapbox.com/v4/mapbox.bar'
+               '/2/0/1.png?access_token=foo')
+
+    mapbox_sample = cimgt.MapboxTiles(token, map_name)
+    url_str = mapbox_sample._image_url(tile)
+    assert url_str == exp_url
+
+
+def test_mapbox_style_tiles_api_url():
+    token = 'foo'
+    username = 'baz'
     map_id = 'bar'
     tile = [0, 1, 2]
-    exp_url = 'https://api.tiles.mapbox.com/v4/bar/2/0/1.png?access_token=foo'
+    exp_url = ('https://api.mapbox.com/styles/v1/'
+               'baz/bar/tiles/256/2/0/1'
+               '?access_token=foo')
 
-    mapbox_sample = cimgt.MapboxTiles(token, map_id)
+    mapbox_sample = cimgt.MapboxStyleTiles(token, username, map_id)
     url_str = mapbox_sample._image_url(tile)
     assert url_str == exp_url

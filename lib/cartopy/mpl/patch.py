@@ -29,7 +29,7 @@ and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-import matplotlib.path
+import matplotlib
 from matplotlib.path import Path
 import shapely.geometry as sgeom
 
@@ -45,6 +45,7 @@ def geos_to_path(shape):
         A list, tuple or single instance of any of the following
         types: :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
+        :class:`shapely.geometry.linestring.LinearRing`,
         :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.multipoint.MultiPoint`,
         :class:`shapely.geometry.multipolygon.MultiPolygon`,
@@ -64,12 +65,15 @@ def geos_to_path(shape):
             paths.extend(geos_to_path(shp))
         return paths
 
-    if isinstance(shape, (sgeom.LineString, sgeom.Point)):
+    if isinstance(shape, sgeom.LinearRing):
+        return [Path(np.column_stack(shape.xy), closed=True)]
+    elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
         return [Path(np.column_stack(shape.xy))]
     elif isinstance(shape, sgeom.Polygon):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
+            codes[-1] = Path.CLOSEPOLY
             return codes
         if shape.is_empty:
             return []
@@ -163,15 +167,16 @@ def path_to_geos(path, force_ccw=False):
         if len(path_verts) == 0:
             continue
 
-        # XXX A path can be given which does not end with close poly, in that
-        # situation, we have to guess?
         verts_same_as_first = np.all(path_verts[0, :] == path_verts[1:, :],
                                      axis=1)
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
         elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:
             geom = sgeom.Polygon(path_verts[:-1, :])
-        elif path_verts.shape[0] > 3 and verts_same_as_first[-1]:
+        elif (matplotlib.__version__ < '2.2.0' and
+                # XXX A path can be given which does not end with close poly,
+                # in that situation, we have to guess?
+                path_verts.shape[0] > 3 and verts_same_as_first[-1]):
             geom = sgeom.Polygon(path_verts)
         else:
             geom = sgeom.LineString(path_verts)

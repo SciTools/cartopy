@@ -14,12 +14,15 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+#
+# cython: embedsignature=True
 
 """
-This module pulls together _trace.cpp, proj.4, GEOS and _crs.pyx to implement a function
-to project a LinearRing/LineString. In general, this should never be called manually,
-instead leaving the processing to be done by the :class:`cartopy.crs.Projection`
-subclasses.
+This module pulls together ``_trace.cpp``, proj, GEOS and ``_crs.pyx`` to
+implement a function to project a `~shapely.geometry.LinearRing` /
+`~shapely.geometry.LineString`. In general, this should never be called
+manually, instead leaving the processing to be done by the
+:class:`cartopy.crs.Projection` subclasses.
 """
 
 from libc.stdint cimport uintptr_t as ptr
@@ -86,19 +89,22 @@ cdef shapely_from_geos(GEOSGeometry *geom):
 def project_linear(geometry not None, CRS src_crs not None,
                    dest_projection not None):
     """
-    Return the MultiLineString which results from projecting the given
-    geometry from the source projection into the destination projection.
+    Project a geometry from one projection to another.
 
     Parameters
     ----------
-    line_string
-        A shapely LineString or LinearRing to be projected.
-    src_crs
-        The cartopy.crs.CRS defining the coordinate system of the line
-        to be projected.
-    dest_projection
-        The cartopy.crs.Projection defining the projection for the
-        resulting projected line.
+    geometry : `shapely.geometry.LineString` or `shapely.geometry.LinearRing`
+        A geometry to be projected.
+    src_crs : cartopy.crs.CRS
+        The coordinate system of the line to be projected.
+    dest_projection : cartopy.crs.Projection
+        The projection for the resulting projected line.
+
+    Returns
+    -------
+    `shapely.geometry.MultiLineString`
+        The result of projecting the given geometry from the source projection
+        into the destination projection.
 
     """
     cdef:

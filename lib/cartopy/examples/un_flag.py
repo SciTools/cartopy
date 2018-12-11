@@ -102,11 +102,10 @@ def main():
 
     # Pick a suitable location for the map (which is in an Azimuthal
     # Equidistant projection).
-    ax = fig.add_axes([0.25, 0.24, 0.5, 0.54], projection=az_eq)
+    ax = fig.add_axes([0.25, 0.24, 0.5, 0.54], projection=az_eq, frameon=False)
 
-    # The background patch and outline patch are not needed in this example.
+    # The background patch and axes frame are not needed in this example.
     ax.background_patch.set_facecolor('none')
-    ax.outline_patch.set_edgecolor('none')
 
     # We want the map to go down to -60 degrees latitude.
     ax.set_extent([-180, 180, -60, 90], ccrs.PlateCarree())

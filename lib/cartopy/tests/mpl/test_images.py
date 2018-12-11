@@ -46,6 +46,9 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # care that it is putting images onto the map which are roughly correct.
 @pytest.mark.natural_earth
 @pytest.mark.network
+@pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
+                   reason='Proj returns slightly different bounds.',
+                   strict=True)
 @ImageTesting(['web_tiles'],
               tolerance=12 if MPL_VERSION < '2' else 2.9)
 def test_web_tiles():
@@ -83,6 +86,9 @@ def test_web_tiles():
 
 @pytest.mark.natural_earth
 @pytest.mark.network
+@pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
+                   reason='Proj returns slightly different bounds.',
+                   strict=True)
 @ImageTesting(['image_merge'],
               tolerance=3.6 if MPL_VERSION < '2' else 0.01)
 def test_image_merge():
@@ -110,6 +116,9 @@ def test_image_merge():
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_imshow():
@@ -137,6 +146,9 @@ def test_imshow_projected():
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=4.15 if MPL_VERSION < '2' else 0.7)
 def test_stock_img():
@@ -144,6 +156,9 @@ def test_stock_img():
     ax.stock_img()
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_pil_Image():
@@ -154,6 +169,9 @@ def test_pil_Image():
               extent=[-180, 180, -90, 90])
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=4.2 if MPL_VERSION < '2' else 0)
 def test_background_img():

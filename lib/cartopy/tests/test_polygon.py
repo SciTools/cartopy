@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
+import pytest
 import shapely.geometry as sgeom
 import shapely.wkt
 
@@ -134,6 +135,50 @@ class TestMisc(object):
 
         src = ccrs.PlateCarree()
         src._attach_lines_to_boundary(multi_line_strings, True)
+
+    @pytest.mark.parametrize('proj',
+                             [ccrs.InterruptedGoodeHomolosine, ccrs.Mollweide])
+    def test_infinite_loop_bounds(self, proj):
+        # test a polygon which used to get stuck in an infinite loop but is now
+        # erroneously clipped.
+        # see https://github.com/SciTools/cartopy/issues/1131
+
+        # These names are for IGH; effectively the same for Mollweide.
+        bottom = [0., 70.]
+        right = [0., 90.]
+        top = [-180., 90.]
+        left = [-180., 70.]
+        verts = np.array([
+            bottom,
+            right,
+            top,
+            left,
+            bottom,
+        ])
+        bad_path = sgeom.Polygon(verts)
+
+        target = proj()
+        source = ccrs.PlateCarree()
+
+        projected = target.project_geometry(bad_path, source)
+
+        # When transforming segments was broken, the resulting path did not
+        # close, and either filled most of the domain, or a smaller portion
+        # than it should. Check that the bounds match the individual points at
+        # the expected edges.
+        projected_left = target.transform_point(left[0], left[1], source)
+        assert projected.bounds[0] == pytest.approx(projected_left[0],
+                                                    rel=target.threshold)
+        projected_bottom = target.transform_point(bottom[0], bottom[1], source)
+        assert projected.bounds[1] == pytest.approx(projected_bottom[1],
+                                                    rel=target.threshold)
+        projected_right = target.transform_point(right[0], right[1], source)
+        assert projected.bounds[2] == pytest.approx(projected_right[0],
+                                                    rel=target.threshold,
+                                                    abs=1e-8)
+        projected_top = target.transform_point(top[0], top[1], source)
+        assert projected.bounds[3] == pytest.approx(projected_top[1],
+                                                    rel=target.threshold)
 
     def test_3pt_poly(self):
         projection = ccrs.OSGB()
@@ -254,7 +299,7 @@ class TestQuality(object):
 
         # For each region, check if the number of increasing steps is roughly
         # equal to the number of decreasing steps.
-        for i in range(boundary[0], regions.max(), 2):
+        for i in range(int(boundary[0]), regions.max(), 2):
             indices = np.where(regions == i)
             x = xy[indices, 0]
             delta = np.diff(x)

@@ -9,7 +9,6 @@
 Cartopy projection list
 =======================
 
-
 PlateCarree
 -----------
 
@@ -20,23 +19,17 @@ PlateCarree
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.coastlines(resolution='110m')
-    ax.gridlines()
+    nplots = 2
 
+    fig = plt.figure(figsize=(6, 6))
 
-
-.. plot::
-
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
-    plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.PlateCarree(
-        central_longitude=180))
-    ax.coastlines(resolution='110m')
-    ax.gridlines()
+    for i in range(0, nplots):
+        central_longitude = 0 if i == 0 else 180
+        ax = fig.add_subplot(nplots, 1, i+1,
+                             projection=ccrs.PlateCarree(
+                                        central_longitude=central_longitude))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
 
 
 AlbersEqualArea
@@ -67,7 +60,23 @@ AzimuthalEquidistant
 
     plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.AzimuthalEquidistant(
-        central_latitude=90))
+                            central_latitude=90))
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EquidistantConic
+----------------
+
+.. autoclass:: cartopy.crs.EquidistantConic
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(4.9603, 3))
+    ax = plt.axes(projection=ccrs.EquidistantConic())
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -242,11 +251,16 @@ UTM
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(0.1286, 3))
-    ax = plt.axes(projection=ccrs.UTM(
-        zone=30))
-    ax.coastlines(resolution='110m')
-    ax.gridlines()
+    nplots = 60
+
+    fig = plt.figure(figsize=(10, 3))
+
+    for i in range(0, nplots):
+        ax = fig.add_subplot(1, nplots, i+1,
+                             projection=ccrs.UTM(zone=i+1,
+                                                 southern_hemisphere=True))
+        ax.coastlines(resolution='110m')
+        ax.gridlines()
 
 
 InterruptedGoodeHomolosine
@@ -277,8 +291,8 @@ RotatedPole
 
     plt.figure(figsize=(6, 3))
     ax = plt.axes(projection=ccrs.RotatedPole(
-        pole_latitude=37.5,
-        pole_longitude=177.5))
+                            pole_latitude=37.5,
+                            pole_longitude=177.5))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -343,9 +357,121 @@ NearsidePerspective
 
     plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.NearsidePerspective(
-        central_latitude=50.72,
-        central_longitude=-3.53,
-        satellite_height=10000000.0))
+                            central_latitude=50.72,
+                            central_longitude=-3.53,
+                            satellite_height=10000000.0))
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertI
+-------
+
+.. autoclass:: cartopy.crs.EckertI
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertI())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertII
+--------
+
+.. autoclass:: cartopy.crs.EckertII
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertII())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertIII
+---------
+
+.. autoclass:: cartopy.crs.EckertIII
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertIII())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertIV
+--------
+
+.. autoclass:: cartopy.crs.EckertIV
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertIV())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertV
+-------
+
+.. autoclass:: cartopy.crs.EckertV
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertV())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EckertVI
+--------
+
+.. autoclass:: cartopy.crs.EckertVI
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.EckertVI())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+EqualEarth
+----------
+
+.. autoclass:: cartopy.crs.EqualEarth
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6.1637, 3))
+    ax = plt.axes(projection=ccrs.EqualEarth())
     ax.coastlines(resolution='110m')
     ax.gridlines()
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -22,16 +22,14 @@ Tests for the Rotated Geodetic coordinate system.
 from __future__ import (absolute_import, division, print_function)
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
-class TestRotatedGeodetic(object):
-    def check_proj4_params(self, crs, expected):
-        pro4_params = sorted(crs.proj4_init.split(' +'))
-        assert expected == pro4_params
+common_other_args = {'o_proj=latlon', 'to_meter=0.0174532925199433'}
 
-    def test_default(self):
-        geos = ccrs.RotatedGeodetic(30, 15, 27)
-        expected = ['+datum=WGS84', 'ellps=WGS84', 'lon_0=210', 'no_defs',
-                    'o_lat_p=15', 'o_lon_p=27', 'o_proj=latlon',
-                    'proj=ob_tran', 'to_meter=0.0174532925199433']
-        self.check_proj4_params(geos, expected)
+
+def test_default():
+    geos = ccrs.RotatedGeodetic(30, 15, 27)
+    other_args = {'datum=WGS84', 'ellps=WGS84', 'lon_0=210', 'o_lat_p=15',
+                  'o_lon_p=27'} | common_other_args
+    check_proj_params('ob_tran', geos, other_args)

@@ -776,7 +776,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
 
 
 # Default matches v1.2.x, maint/1.2.x, 1.2.x, 1.x etc.
-default_maint_branch_regexp = ".*([0-9]+\.)+x$"
+default_maint_branch_regexp = r".*([0-9]+\.)+x$"
 
 
 def plus_or_dot(pieces):
@@ -1340,8 +1340,9 @@ def write_to_version_file(filename, versions):
 
     print("set %s to '%s'" % (filename, versions["version"]))
 
+
 # Default matches v1.2.x, maint/1.2.x, 1.2.x, 1.x etc.
-default_maint_branch_regexp = ".*([0-9]+\.)+x$"
+default_maint_branch_regexp = r".*([0-9]+\.)+x$"
 
 
 def plus_or_dot(pieces):

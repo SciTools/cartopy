@@ -1,0 +1,46 @@
+environment:
+    matrix:
+        - PYTHON_VERSION: "3.6"
+          CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+          PACKAGES: "cython numpy matplotlib-base proj4 pykdtree scipy"
+        - PYTHON_VERSION: "2.7"
+          CONDA_INSTALL_LOCN: "C:\\Miniconda-x64"
+          PACKAGES: "cython=0.17 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 mock msinttypes futures"
+
+install:
+  # Install miniconda
+  # -----------------
+  - set PATH=%CONDA_INSTALL_LOCN%;%CONDA_INSTALL_LOCN%\scripts;%PATH%;
+
+  # Create the testing environment
+  # ------------------------------
+  - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
+  - conda config --add channels conda-forge
+  - conda config --add channels conda-forge/label/testing
+  - set ENV_NAME=test-environment
+  - set PACKAGES=%PACKAGES% pillow pytest filelock pep8 pyshp shapely six requests pyepsg owslib
+  - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%
+  - activate %ENV_NAME%
+  - set INCLUDE=%CONDA_PREFIX%\Library\include;%INCLUDE%
+  - set LIB=%CONDA_PREFIX%\Library\lib;%LIB%
+
+  # Conda debug
+  # -----------
+  - conda list -n %ENV_NAME%
+  - conda list -n %ENV_NAME% --explicit
+  - conda info -a
+
+build_script:
+  # Install cartopy
+  # ---------------
+  - pip install --no-deps .
+  - python -c "import cartopy; print('Version ', cartopy.__version__)"
+
+test_script:
+  - set MPLBACKEND=Agg
+  - pytest --pyargs cartopy
+
+artifacts:
+  - path: cartopy_test_output
+    name: cartopy_test_output
+    type: zip

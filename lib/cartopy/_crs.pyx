@@ -14,9 +14,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+#
+# cython: embedsignature=True
 
 """
-This module defines the core CRS class which can interface with Proj.4.
+This module defines the core CRS class which can interface with Proj.
 The CRS class is the base-class for all projections defined in :mod:`cartopy.crs`.
 
 """
@@ -58,6 +60,9 @@ if _match is not None:
 else:
     PROJ4_VERSION = ()
 
+WGS84_SEMIMAJOR_AXIS = 6378137.0
+WGS84_SEMIMINOR_AXIS = 6356752.3142
+
 
 class Proj4Error(Exception):
     """
@@ -70,7 +75,7 @@ class Proj4Error(Exception):
     def __init__(self):
         cdef int status
         status = deref(pj_get_errno_ref())
-        msg = 'Error from proj.4: {}'.format(pj_strerrno(status))
+        msg = 'Error from proj: {}'.format(pj_strerrno(status))
         self.status = status
         Exception.__init__(self, msg)
 
@@ -88,9 +93,9 @@ class Globe(object):
         Parameters
         ----------
         datum
-            Proj4 "datum" definiton. Defaults to None.
+            Proj "datum" definition. Defaults to None.
         ellipse
-            Proj4 "ellps" definiton. Defaults to 'WGS84'.
+            Proj "ellps" definition. Defaults to 'WGS84'.
         semimajor_axis
             Semimajor axis of the spheroid / ellipsoid.  Defaults to None.
         semiminor_axis
@@ -100,9 +105,9 @@ class Globe(object):
         inverse_flattening
             Inverse flattening of the ellipsoid.  Defaults to None.
         towgs84
-            Passed through to the Proj4 definition.  Defaults to None.
+            Passed through to the Proj definition.  Defaults to None.
         nadgrids
-            Passed through to the Proj4 definition.  Defaults to None.
+            Passed through to the Proj definition.  Defaults to None.
 
         """
         self.datum = datum
@@ -117,7 +122,7 @@ class Globe(object):
     def to_proj4_params(self):
         """
         Create an OrderedDict of key value pairs which represents this globe
-        in terms of proj4 params.
+        in terms of proj params.
 
         """
         proj4_params = (['datum', self.datum], ['ellps', self.ellipse],
@@ -129,9 +134,13 @@ class Globe(object):
 
 cdef class CRS:
     """
-    Define a Coordinate Reference System using proj.4.
+    Define a Coordinate Reference System using proj.
 
     """
+
+    #: Whether this projection can handle ellipses.
+    _handles_ellipses = True
+
     def __cinit__(self):
         self.proj4 = NULL
 
@@ -155,7 +164,19 @@ cdef class CRS:
             See :class:`~cartopy.crs.Globe` for details.
 
         """
-        self.globe = globe or Globe()
+        if globe is None:
+            if self._handles_ellipses:
+                globe = Globe()
+            else:
+                globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS,
+                              ellipse=None)
+        if not self._handles_ellipses:
+            a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+            b = globe.semiminor_axis or a
+            if a != b or globe.ellipse is not None:
+                warnings.warn('The "{}" projection does not handle elliptical '
+                              'globes.'.format(self.__class__.__name__))
+        self.globe = globe
         self.proj4_params = self.globe.to_proj4_params()
         self.proj4_params.update(proj4_params)
 
@@ -276,8 +297,8 @@ cdef class CRS:
             instance of :class:`CRS` that represents the coordinate
             system of ``x`` and ``y``.
         trap
-            Whether proj.4 errors for "latitude or longitude exceeded
-            limits" and "tolerance condition error" should be trapped.
+            Whether proj errors for "latitude or longitude exceeded limits" and
+            "tolerance condition error" should be trapped.
 
         Returns
         -------
@@ -376,7 +397,7 @@ cdef class CRS:
         else:
             result[:, 2] = z
 
-        # call proj.4. The result array is modified in place. This is only
+        # call proj. The result array is modified in place. This is only
         # safe if npts is not 0.
         if npts:
             status = pj_transform(src_crs.proj4, self.proj4, npts, 3,

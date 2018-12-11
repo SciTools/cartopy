@@ -23,7 +23,12 @@ transformations.
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-import scipy.spatial
+try:
+    import pykdtree.kdtree
+    _is_pykdtree = True
+except ImportError:
+    import scipy.spatial
+    _is_pykdtree = False
 
 import cartopy.crs as ccrs
 
@@ -42,9 +47,9 @@ def mesh_projection(projection, nx, ny,
     ----------
     projection
         A :class:`~cartopy.crs.Projection` instance.
-    nx
+    nx: int
         The number of sample points in the projection x-direction.
-    ny
+    ny: int
         The number of sample points in the projection y-direction.
     x_extents: optional
         The (lower, upper) x-direction extent of the projection.
@@ -270,15 +275,20 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
                                            target_x_points.flatten(),
                                            target_y_points.flatten())
 
-    # Versions of scipy >= v0.16 added the balanced_tree argument,
-    # which caused the KDTree to hang with this input.
-    try:
-        kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
-    except TypeError:
-        kdtree = scipy.spatial.cKDTree(xyz)
-
-    distances, indices = kdtree.query(target_xyz, k=1)
-    mask = np.isinf(distances)
+    if _is_pykdtree:
+        kdtree = pykdtree.kdtree.KDTree(xyz)
+        # Use sqr_dists=True because we don't care about distances,
+        # and it saves a sqrt.
+        _, indices = kdtree.query(target_xyz, k=1, sqr_dists=True)
+    else:
+        # Versions of scipy >= v0.16 added the balanced_tree argument,
+        # which caused the KDTree to hang with this input.
+        try:
+            kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
+        except TypeError:
+            kdtree = scipy.spatial.cKDTree(xyz)
+        _, indices = kdtree.query(target_xyz, k=1)
+    mask = indices >= len(xyz)
     indices[mask] = 0
 
     desired_ny, desired_nx = target_x_points.shape

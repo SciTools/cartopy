@@ -98,10 +98,12 @@ version = cartopy.__version__
 release = cartopy.__version__
 
 # Sphinx gallery configuration
+from sphinx_gallery.sorting import ExampleTitleSortKey
 sphinx_gallery_conf = {
     'examples_dirs': ['../../lib/cartopy/examples'],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
+    'within_subsection_order': ExampleTitleSortKey,
     'doc_module': ('cartopy',),
     'reference_url': {'cartopy': None},
     'backreferences_dir': '../build/backrefs',
@@ -122,7 +124,7 @@ sphinx_gallery_conf = {
 exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all documents.
-# default_role = None
+default_role = 'py:obj'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -345,7 +347,8 @@ epub_copyright = u'2012, Philip Elson, Richard Hattersley'
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
                        'matplotlib': ('https://matplotlib.org', None),
-                       'shapely': ('https://toblerity.org/shapely', None), }
+                       'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+                       'shapely': ('http://toblerity.org/shapely', None), }
 
 
 

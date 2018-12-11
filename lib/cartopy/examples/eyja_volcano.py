@@ -18,8 +18,8 @@ import cartopy.io.img_tiles as cimgt
 
 
 def main():
-    # Create a Stamen Terrain instance.
-    stamen_terrain = cimgt.StamenTerrain()
+    # Create a Stamen terrain background instance.
+    stamen_terrain = cimgt.Stamen('terrain-background')
 
     fig = plt.figure()
 

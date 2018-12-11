@@ -32,16 +32,26 @@ from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
-if MPL_VERSION >= '2.1.0':
-    _STREAMPLOT_IMAGE = 'streamplot'
-elif MPL_VERSION >= '2':
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_2'
+_CONTOUR_STYLE = _STREAMPLOT_STYLE = 'classic'
+if MPL_VERSION >= '3.0.0':
+    _CONTOUR_IMAGE = 'global_contour_wrap'
+    _CONTOUR_STYLE = 'mpl20'
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
+    # Should have been the case for anything but _1.4.3, but we don't want to
+    # regenerate those images again.
+    _STREAMPLOT_STYLE = 'mpl20'
 else:
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
+    _CONTOUR_IMAGE = 'global_contour_wrap_mpl_pre_3.0.0'
+    if MPL_VERSION >= '2.1.0':
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_2.1.0'
+    elif MPL_VERSION >= '2':
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_2.0.0'
+    else:
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_contour_wrap'])
+@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE)
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -51,7 +61,7 @@ def test_global_contour_wrap_new_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_contour_wrap'])
+@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE)
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -148,7 +158,8 @@ def test_simple_global():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections1'])
+@ImageTesting(['multiple_projections4' if ccrs.PROJ4_VERSION < (5, 0, 0)
+               else 'multiple_projections5'])
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
@@ -168,11 +179,19 @@ def test_multiple_projections():
                    ccrs.Orthographic(),
                    ccrs.Mollweide(),
                    ccrs.InterruptedGoodeHomolosine(),
+                   ccrs.EckertI(),
+                   ccrs.EckertII(),
+                   ccrs.EckertIII(),
+                   ccrs.EckertIV(),
+                   ccrs.EckertV(),
+                   ccrs.EckertVI(),
                    ]
 
-    fig = plt.figure(figsize=(10, 10))
+    rows = np.ceil(len(projections) / 5)
+
+    fig = plt.figure(figsize=(10, 2 * rows))
     for i, prj in enumerate(projections, 1):
-        ax = fig.add_subplot(5, 5, i, projection=prj)
+        ax = fig.add_subplot(rows, 5, i, projection=prj)
 
         ax.set_global()
 
@@ -185,6 +204,29 @@ def test_multiple_projections():
 
         plt.plot([-0.08, 132], [51.53, 43.17], color='blue',
                  transform=ccrs.Geodetic())
+
+
+@pytest.mark.skipif(ccrs.PROJ4_VERSION < (5, 2, 0),
+                    reason='Proj is too old.')
+@pytest.mark.natural_earth
+@ImageTesting(['multiple_projections520'])
+def test_multiple_projections_520():
+    # Test projections added in Proj 5.2.0.
+
+    fig = plt.figure(figsize=(2, 2))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.EqualEarth())
+
+    ax.set_global()
+
+    ax.coastlines()
+
+    ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
+
+    ax.plot([-0.08, 132], [51.53, 43.17], color='red',
+            transform=ccrs.PlateCarree())
+
+    ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
+            transform=ccrs.Geodetic())
 
 
 def test_cursor_values():
@@ -255,7 +297,9 @@ def test_pcolormesh_global_with_wrap1():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap2'])
+@ImageTesting(
+    ['pcolormesh_global_wrap2'],
+    tolerance=1.8 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0) else 0.5)
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -282,7 +326,9 @@ def test_pcolormesh_global_with_wrap2():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap3'], tolerance=_ROB_TOL)
+@ImageTesting(
+    ['pcolormesh_global_wrap3'],
+    tolerance=2.4 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0) else _ROB_TOL)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -587,7 +633,7 @@ def test_barbs_1d_transformed():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_STREAMPLOT_IMAGE])
+@ImageTesting([_STREAMPLOT_IMAGE], style=_STREAMPLOT_STYLE)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

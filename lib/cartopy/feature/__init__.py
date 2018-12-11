@@ -152,8 +152,7 @@ class Scaler(object):
 
 class AdaptiveScaler(Scaler):
     """
-    Object for changing scales of geometries based on extent of axes used to
-    plot geometries.
+    Automatically select scale of geometries based on extent of plotted axes.
     """
     def __init__(self, default_scale, limits):
         """
@@ -167,7 +166,8 @@ class AdaptiveScaler(Scaler):
             tuple of tuples ordered from coarsest to finest scales. Limit
             values are the upper bounds for their corresponding scale.
 
-        Example:
+        Example
+        -------
 
         >>> s = AdaptiveScaler('coarse',
         ...           (('intermediate', 30), ('fine', 10)))
@@ -347,7 +347,7 @@ class GSHHSFeature(Feature):
 
         {(scale, level): geom}
 
-    This provides a perfomance boost when plotting in interactive mode or
+    This provides a performance boost when plotting in interactive mode or
     instantiating multiple GSHHS artists, by reducing repeated file IO.
 
     """
@@ -475,7 +475,7 @@ class WFSFeature(Feature):
 
 
 BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
-                              '110m', edgecolor='black', facecolor='none')
+                              '110m', edgecolor='black', facecolor='never')
 """Small scale (1:110m) country boundaries."""
 
 STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
@@ -483,7 +483,7 @@ STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
 """Small scale (1:110m) state and province boundaries."""
 
 COASTLINE = NaturalEarthFeature('physical', 'coastline', '110m',
-                                edgecolor='black', facecolor='none')
+                                edgecolor='black', facecolor='never')
 """Small scale (1:110m) coastline, including major islands."""
 
 
@@ -507,5 +507,5 @@ OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
 
 RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
                              edgecolor=COLORS['water'],
-                             facecolor='none')
+                             facecolor='never')
 """Small scale (1:110m) single-line drainages, including lake centerlines."""

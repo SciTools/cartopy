@@ -11,7 +11,7 @@ Introduction
 
 Cartopy is a Python package designed for geospatial data processing in order to produce maps and other geospatial data analyses.
 
-Cartopy makes use of the powerful PROJ.4, numpy and shapely libraries and includes a programatic interface
+Cartopy makes use of the powerful PROJ.4, NumPy and Shapely libraries and includes a programmatic interface
 built on top of Matplotlib for the creation of publication quality maps.
 
 Key features of cartopy are its object oriented :ref:`projection definitions <cartopy_projections>`, and its
@@ -21,6 +21,8 @@ You will find cartopy especially useful for large area / small scale data, where
 assumptions of spherical data traditionally break down. If you've ever experienced a singularity
 at the pole or a cut-off at the dateline, it is likely you will appreciate cartopy's unique features!
 
+.. warning::
+  The next release, 0.18, will be the last that supports Python 2.7.
 
 .. _getting-started-with-cartopy:
 
@@ -56,8 +58,10 @@ outlines recent changes, new features, and future development plans.
     :hidden:
 
     cartopy.rst
+    cartopy/geodesic.rst
     cartopy/io/img_tiles.rst
     cartopy/io/ogc_clients.rst
+    cartopy/trace.rst
     cartopy/util/util.rst
 
 
@@ -82,6 +86,7 @@ There are many ways to get involved in the development of cartopy:
    re-designing its layout/logos etc.. The `documentation source <https://github.com/SciTools/cartopy>`_ is kept in the same repository as the source code.
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on github <bug>`).
  * Contribute enhancements and new features on the issue tracker.
+ * Chat with users and developers in the `Gitter chat room <https://gitter.im/SciTools/cartopy>`_.
 
 
 

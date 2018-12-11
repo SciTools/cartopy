@@ -97,6 +97,12 @@ class TestCRS(object):
         assert_almost_equal(uk.threshold, 8699.47, decimal=2)
         self._check_osgb(uk)
 
+    @pytest.mark.network
+    @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
+    def test_epsg_compound_crs(self):
+        projection = ccrs.epsg(5973)
+        assert projection.epsg_code == 5973
+
     def test_europp(self):
         europp = ccrs.EuroPP()
         proj4_init = europp.proj4_init
@@ -118,7 +124,7 @@ class TestCRS(object):
         unrotated_lon = res[..., 0]
         unrotated_lat = res[..., 1]
 
-        # Solutions derived by proj4 direct.
+        # Solutions derived by proj direct.
         solx = np.array([[-16.42176094, -14.85892262, -11.90627520],
                          [-16.71055023, -14.58434624, -11.68799988]])
         soly = np.array([[46.00724251, 51.29188893, 52.59101488],
@@ -138,7 +144,7 @@ class TestCRS(object):
         unrotated_lon = res[..., 0]
         unrotated_lat = res[..., 1]
 
-        # Solutions derived by proj4 direct.
+        # Solutions derived by proj direct.
         solx = np.array([-16.42176094, -14.85892262,
                          -12.88946157, -10.35078336])
         soly = np.array([46.00724251, 51.29188893,
@@ -175,9 +181,11 @@ class TestCRS(object):
     def test_globe(self):
         # Ensure the globe affects output.
         rugby_globe = ccrs.Globe(semimajor_axis=9000000,
-                                 semiminor_axis=1000000)
+                                 semiminor_axis=9000000,
+                                 ellipse=None)
         footy_globe = ccrs.Globe(semimajor_axis=1000000,
-                                 semiminor_axis=1000000)
+                                 semiminor_axis=1000000,
+                                 ellipse=None)
 
         rugby_moll = ccrs.Mollweide(globe=rugby_globe)
         footy_moll = ccrs.Mollweide(globe=footy_globe)

@@ -36,17 +36,10 @@ import warnings
 import versioneer
 
 
-# Ensure build-time dependencies are available.
-# See https://stackoverflow.com/a/12061891
-setuptools.dist.Distribution(
-    dict(
-        setup_requires=['Cython>=0.15.1', 'numpy>=1.10']))
-
-
 try:
     from Cython.Distutils import build_ext
 except ImportError:
-    raise ImportError('Cython 0.15.1+ is required to install cartopy.')
+    raise ImportError('Cython 0.17+ is required to install cartopy.')
 try:
     import numpy as np
 except ImportError:
@@ -179,10 +172,7 @@ except (OSError, ValueError, subprocess.CalledProcessError):
 
     geos_includes = []
     geos_library_dirs = []
-    if sys.platform.startswith('win'):
-        geos_libraries = ['geos']
-    else:
-        geos_libraries = ['geos_c']
+    geos_libraries = ['geos_c']
 else:
     if geos_version < GEOS_MIN_VERSION:
         print('GEOS version %s is installed, but cartopy requires at least '
@@ -205,19 +195,19 @@ else:
             geos_libraries.append(entry[2:])
 
 
-# Proj4
+# Proj
 def find_proj_version_by_program(conda=None):
     proj = find_executable('proj')
     if proj is None:
         print(
-            'Proj4 %s must be installed.' % (
+            'Proj %s must be installed.' % (
                 '.'.join(str(v) for v in PROJ_MIN_VERSION), ),
             file=sys.stderr)
         exit(1)
 
     if conda is not None and conda not in proj:
         print(
-            'Proj4 %s must be installed in Conda environment "%s".' % (
+            'Proj %s must be installed in Conda environment "%s".' % (
                 '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
             file=sys.stderr)
         exit(1)
@@ -229,7 +219,7 @@ def find_proj_version_by_program(conda=None):
         proj_version = tuple(int(v.strip(b',')) for v in proj_version)
     except (OSError, IndexError, ValueError, subprocess.CalledProcessError):
         warnings.warn(
-            'Unable to determine Proj4 version. Ensure you have %s or later '
+            'Unable to determine Proj version. Ensure you have %s or later '
             'installed, or installation may fail.' % (
                 '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
         proj_version = (0, 0, 0)
@@ -245,7 +235,7 @@ if conda is not None and conda in sys.prefix:
     proj_version = find_proj_version_by_program(conda)
     if proj_version < PROJ_MIN_VERSION:
         print(
-            'Proj4 version %s is installed, but cartopy requires at least '
+            'Proj version %s is installed, but cartopy requires at least '
             'version %s.' % ('.'.join(str(v) for v in proj_version),
                              '.'.join(str(v) for v in PROJ_MIN_VERSION)),
             file=sys.stderr)
@@ -268,7 +258,7 @@ else:
         proj_version = find_proj_version_by_program()
         if proj_version < PROJ_MIN_VERSION:
             print(
-                'Proj4 version %s is installed, but cartopy requires at least '
+                'Proj version %s is installed, but cartopy requires at least '
                 'version %s.' % ('.'.join(str(v) for v in proj_version),
                                  '.'.join(str(v) for v in PROJ_MIN_VERSION)),
                 file=sys.stderr)
@@ -280,7 +270,7 @@ else:
     else:
         if proj_version < PROJ_MIN_VERSION:
             print(
-                'Proj4 version %s is installed, but cartopy requires at least '
+                'Proj version %s is installed, but cartopy requires at least '
                 'version %s.' % ('.'.join(str(v) for v in proj_version),
                                  '.'.join(str(v) for v in PROJ_MIN_VERSION)),
                 file=sys.stderr)
@@ -353,7 +343,7 @@ setup(
     long_description=description,
     long_description_content_type='text/markdown',
     license="LGPLv3",
-    keywords="cartography map transform projection proj.4 geos shapely "
+    keywords="cartography map transform projection proj proj.4 geos shapely "
              "shapefile",
 
     install_requires=install_requires,
@@ -377,7 +367,7 @@ setup(
                   ['io/srtm.npz']},
 
 
-    # requires proj4 headers
+    # requires proj headers
     ext_modules=[
         Extension(
             'cartopy.trace',
@@ -397,7 +387,7 @@ setup(
             library_dirs=[library_dir] + proj_library_dirs,
             **extra_extension_args
         ),
-        # Requires proj4 v4.9
+        # Requires proj v4.9
         Extension(
             'cartopy.geodesic._geodesic',
             ['lib/cartopy/geodesic/_geodesic.pyx'],

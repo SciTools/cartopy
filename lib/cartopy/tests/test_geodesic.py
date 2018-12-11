@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2017, Met Office
+# (C) British Crown Copyright 2015 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,6 +19,8 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
+import pytest
+import shapely.geometry as sgeom
 
 from cartopy import geodesic
 
@@ -125,3 +127,60 @@ class TestGeodesic(object):
     def test_str(self):
         expected = '<Geodesic: radius=6378137.000, flattening=1/298.257>'
         assert expected == str(self.geod)
+
+    def test_inverse_shape(self):
+        with pytest.raises(ValueError):
+            self.geod.inverse([[0, 1, 2], [0, 1, 2]], [2, 3])
+
+
+lhr = [-0.5543, 51.4700]
+jfk = [-73.7781, 40.6413]
+tul = [144.8410, -37.6690]
+
+lhr_to_jfk = 5548298
+jfk_to_tul = 16695485
+tul_to_lhr = 16909514
+
+
+def test_geometry_length_ndarray():
+    geod = geodesic.Geodesic()
+    geom = np.array([lhr, jfk, lhr])
+    expected = pytest.approx(lhr_to_jfk * 2, abs=1)
+    assert geod.geometry_length(geom) == expected
+
+
+def test_geometry_length_linestring():
+    geod = geodesic.Geodesic()
+    geom = sgeom.LineString(np.array([lhr, jfk, lhr]).T)
+    expected = pytest.approx(lhr_to_jfk * 2, abs=1)
+    assert geod.geometry_length(geom) == expected
+
+
+def test_geometry_length_multilinestring():
+    geod = geodesic.Geodesic()
+    geom = sgeom.MultiLineString(
+        [sgeom.LineString(np.array([lhr, jfk]).T),
+         sgeom.LineString(np.array([tul, jfk]).T)])
+    expected = pytest.approx(lhr_to_jfk + jfk_to_tul, abs=1)
+    assert geod.geometry_length(geom) == expected
+
+
+def test_geometry_length_linearring():
+    geod = geodesic.Geodesic()
+    geom = sgeom.LinearRing(np.array([lhr, jfk, tul]))
+    expected = pytest.approx(lhr_to_jfk + jfk_to_tul + tul_to_lhr, abs=1)
+    assert geod.geometry_length(geom) == expected
+
+
+def test_geometry_length_polygon():
+    geod = geodesic.Geodesic()
+    geom = sgeom.Polygon(np.array([lhr, jfk, tul]))
+    expected = pytest.approx(lhr_to_jfk + jfk_to_tul + tul_to_lhr, abs=1)
+    assert geod.geometry_length(geom) == expected
+
+
+def test_geometry_length_point():
+    geod = geodesic.Geodesic()
+    geom = sgeom.Point(lhr)
+    with pytest.raises(ValueError):
+        geod.geometry_length(geom)

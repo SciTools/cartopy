@@ -18,7 +18,7 @@ __tags__ = ['Lines and polygons']
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from cartopy.io.img_tiles import StamenTerrain
+from cartopy.io.img_tiles import Stamen
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D as Line
 from matplotlib.patheffects import Stroke
@@ -61,7 +61,7 @@ def main():
                                            scale='10m')
 
     # Create a Stamen map tiler instance, and use its CRS for the GeoAxes.
-    tiler = StamenTerrain()
+    tiler = Stamen('terrain-background')
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=tiler.crs)
     ax.set_title('The effect of incorrectly referencing the Solomon Islands')
@@ -102,7 +102,7 @@ def main():
 
     # Make a nice border around the inset axes.
     effect = Stroke(linewidth=4, foreground='wheat', alpha=0.5)
-    sub_ax.outline_patch.set_path_effects([effect])
+    sub_ax.spines['geo'].set_path_effects([effect])
 
     # Add the land, coastlines and the extent of the Solomon Islands.
     sub_ax.add_feature(cfeature.LAND)

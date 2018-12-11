@@ -11,11 +11,11 @@ __tags__ = ['Web services']
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
-from cartopy.io.img_tiles import StamenTerrain
+from cartopy.io.img_tiles import Stamen
 
 
 def main():
-    tiler = StamenTerrain()
+    tiler = Stamen('terrain-background')
     mercator = tiler.crs
 
     fig = plt.figure()
