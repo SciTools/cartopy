@@ -464,6 +464,7 @@ class LongitudeLocator(MaxNLocator):
             self._decimal = kwargs['decimal']
 
     def _guess_steps(self, vmin, vmax):
+        print('VMIN VMAX',vmin,vmax)
 
         dv = abs(vmax - vmin)
         if dv > 180:
@@ -500,9 +501,20 @@ class LatitudeLocator(LongitudeLocator):
         Force decimal degrees so the locator does not stop specifically on
         fractions of minutes and seconds (False by default)
     """
-
-    def _raw_ticks(self, vmin, vmax):
+    def tick_values(self, vmin, vmax):
         vmin = max(vmin, -90.)
         vmax = min(vmax, 90.)
+        return LongitudeLocator.tick_values(self, vmin, vmax)
+
+    def _guess_steps(self, vmin, vmax):
+        vmin = max(vmin, -90.)
+        vmax = min(vmax, 90.)
+        LongitudeLocator._guess_steps(self, vmin, vmax)
+
+    def _raw_ticks(self, vmin, vmax):
         ticks = LongitudeLocator._raw_ticks(self, vmin, vmax)
+        return [t for t in ticks if t >= -90 and t <= 90]
+
+    def bin_boundaries(self, vmin, vmax):
+        ticks = LongitudeLocator.bin_boundaries(self, vmin, vmax)
         return [t for t in ticks if t >= -90 and t <= 90]
