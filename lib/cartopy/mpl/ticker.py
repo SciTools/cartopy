@@ -464,7 +464,6 @@ class LongitudeLocator(MaxNLocator):
             self._decimal = kwargs['decimal']
 
     def _guess_steps(self, vmin, vmax):
-        print('VMIN VMAX',vmin,vmax)
 
         dv = abs(vmax - vmin)
         if dv > 180:
