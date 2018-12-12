@@ -33,7 +33,6 @@ from cartopy.crs import Projection, _RectangularProjection
 from cartopy.mpl.ticker import (
         LongitudeLocator, LatitudeLocator,
         LongitudeFormatter, LatitudeFormatter)
-from cartopy.tests.mpl import MPL_VERSION
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
@@ -100,8 +99,9 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
 
 def _text_angle_to_specs_(angle):
     """Get appropriate kwargs for a rotated label from its angle in degrees"""
-    if False and MPL_VERSION > '3':     # deactivated because does not work
-                                        # properly with rotation_mode='anchor'
+    if False and matplotlib.__version__ > '3':
+        # deactivated because does not work properly
+        # with rotation_mode='anchor'
         va_align_center = 'center_baseline'
     else:
         va_align_center = 'center'
