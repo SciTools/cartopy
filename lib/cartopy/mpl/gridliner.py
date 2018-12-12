@@ -33,7 +33,7 @@ from cartopy.crs import Projection, _RectangularProjection
 from cartopy.mpl.ticker import (
         LongitudeLocator, LatitudeLocator,
         LongitudeFormatter, LatitudeFormatter)
-
+from cartopy.tests.mpl import MPL_VERSION
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
@@ -100,7 +100,8 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
 
 def _text_angle_to_specs_(angle):
     """Get appropriate kwargs for a rotated label from its angle in degrees"""
-    if matplotlib.__version__ > '2.0':
+    if False and MPL_VERSION > '3':     # deactivated because does not work
+                                        # properly with rotation_mode='anchor'
         va_align_center = 'center_baseline'
     else:
         va_align_center = 'center'
@@ -131,9 +132,7 @@ class Gridliner(object):
     # determination on zoom/pan.
     def __init__(self, axes, crs, draw_labels=False, xlocator=None,
                  ylocator=None, collection_kwargs=None,
-                 xformatter=None, yformatter=None,
-                 xpadding=6, ypadding=5,
-                 rotate_labels=True):
+                 xformatter=None, yformatter=None):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -489,25 +488,28 @@ class Gridliner(object):
         """Get appropriate kwargs for a label from lon or lat line segment"""
         x0, y0 = pt0
         x1, y1 = pt1
-        angle = np.arctan2(y0-y1, x0-x1)
+        angle = np.arctan2(y0-y1, x0-x1) * 180 / np.pi
         kw, loc = self._segment_angle_to_text_specs(angle)
         return kw, angle, loc
 
     def _segment_angle_to_text_specs(self, angle):
         """Get appropriate kwargs for a given direction angle"""
+        kw, loc = _text_angle_to_specs_(angle)
+        if not self.rotate_labels:
+            angle = {'top': 90., 'right': 0.,
+                     'bottom': -90., 'left': 180.}[loc]
+            del kw['rotation']
+
         xpadding = (self.xpadding if self.xpadding is not None
                     else matplotlib.rc_params['xtick.major.pad'])
-        ypadding = (self.ypadding if self.xpadding is not None
+        ypadding = (self.ypadding if self.ypadding is not None
                     else matplotlib.rc_params['ytick.major.pad'])
-        dx = ypadding * np.cos(angle)
-        dy = xpadding * np.sin(angle)
+        dx = ypadding * np.cos(angle * np.pi / 180)
+        dy = xpadding * np.sin(angle * np.pi / 180)
         transform = mtrans.offset_copy(self.axes.transData, self.axes.figure,
                                        x=dx, y=dy, units='dots')
-        angle *= 180 / np.pi
-        kw, loc = _text_angle_to_specs_(angle)
         kw.update(transform=transform)
-        if not self.rotate_labels:
-            del kw['rotate']
+
         return kw, loc
 
     def _update_labels_visibility(self, renderer):

@@ -20,7 +20,6 @@ from __future__ import (absolute_import, division, print_function)
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-from matplotlib import rc, rcdefaults
 try:
     from unittest import mock
 except ImportError:
@@ -112,7 +111,7 @@ def test_gridliner_specified_lines():
 
 # The tolerance on this test is particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-if MPL_VERSION >= '2.0':
+if MPL_VERSION >= '2':
     grid_label_image = 'gridliner_labels'
 else:
     grid_label_image = 'gridliner_labels_1.5'
@@ -122,9 +121,7 @@ else:
 @ImageTesting([grid_label_image])
 def test_grid_labels():
 
-    rc('font', size=9)
-
-    fig = plt.figure(figsize=(8, 10))
+    fig = plt.figure(figsize=(10, 10))
 
     crs_pc = ccrs.PlateCarree()
     crs_merc = ccrs.Mercator()
@@ -149,7 +146,8 @@ def test_grid_labels():
 
     ax = fig.add_subplot(3, 2, 3, projection=crs_merc)
     ax.coastlines()
-    ax.gridlines(draw_labels=True)
+    gl = ax.gridlines(draw_labels=True)
+    gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
     ax.coastlines()
@@ -184,9 +182,10 @@ def test_grid_labels():
     ax = fig.add_subplot(3, 2, 6, projection=crs_merc)
     ax.set_extent([-20, 10.0, 45.0, 70.0], crs=crs_pc)
     ax.coastlines()
-    ax.gridlines(draw_labels=True)
+    gl = ax.gridlines(draw_labels=True)
+    gl.rotate_labels = False
+    gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     # Increase margins between plots to stop them bumping into one another.
-    plt.subplots_adjust(wspace=0.25, hspace=0.25)
-
-    rcdefaults()
+    plt.subplots_adjust(wspace=0.25, hspace=0.25, top=.98, left=.07,
+                        bottom=0.02, right=0.93)
