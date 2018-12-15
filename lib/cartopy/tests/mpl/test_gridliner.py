@@ -129,7 +129,7 @@ def test_gridliner():
 def test_gridliner_specified_lines():
     xs = [0, 60, 120, 180, 240, 360]
     ys = [-90, -60, -30, 0, 30, 60, 90]
-    ax = mock.Mock(_gridliners=[], spec=GeoAxes)
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     gl = GeoAxes.gridlines(ax, xlocs=xs, ylocs=ys)
     assert isinstance(gl.xlocator, mticker.FixedLocator)
     assert isinstance(gl.ylocator, mticker.FixedLocator)
@@ -163,8 +163,6 @@ def test_grid_labels():
     ax = fig.add_subplot(3, 2, 2,
                          projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines()
-    with pytest.raises(TypeError):
-        ax.gridlines(crs=crs_merc, draw_labels=True)
 
     ax.set_title('Known bug')
     gl = ax.gridlines(crs=crs_pc, draw_labels=True)
@@ -180,8 +178,6 @@ def test_grid_labels():
     # (Currently can only draw these on PlateCarree or Mercator plots.)
     ax = fig.add_subplot(3, 2, 4, projection=crs_osgb)
     ax.coastlines()
-    with pytest.raises(TypeError):
-        ax.gridlines(draw_labels=True)
     ax.remove()
 
     ax = fig.add_subplot(3, 2, 4, projection=crs_pc)
@@ -223,7 +219,7 @@ def test_grid_labels():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels'])
+@ImageTesting(['gridliner_labels_inline'])
 def test_grid_labels_inline():
     plt.figure(figsize=(35, 30))
     for i, proj in enumerate(TEST_PROJS, 1):
@@ -234,11 +230,10 @@ def test_grid_labels_inline():
         ax.gridlines(draw_labels=True, auto_inline=True)
         ax.coastlines()
         ax.set_title(proj, y=1.08)
-        plt.tight_layout()
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_usa'])
+@ImageTesting(['gridliner_labels_inline_usa'])
 def test_grid_labels_inline_usa():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -258,4 +253,3 @@ def test_grid_labels_inline_usa():
         ax.set_title(proj, y=1.08)
         ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
         ax.coastlines()
-    plt.tight_layout()
