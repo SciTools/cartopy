@@ -141,8 +141,12 @@ def test_gridliner_specified_lines():
 # of text objects. A new testing strategy is needed for this kind of test.
 if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
+    grid_label_inline_image = 'gridliner_labels_inline'
+    grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
 else:
     grid_label_image = 'gridliner_labels_1.5'
+    grid_label_inline_image = 'gridliner_labels_inline_1.5'
+    grid_label_inline_usa_image = 'gridliner_labels_inline_usa_1.5'
 
 
 @pytest.mark.natural_earth
@@ -219,7 +223,7 @@ def test_grid_labels():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_inline'])
+@ImageTesting([grid_label_inline_image])
 def test_grid_labels_inline():
     plt.figure(figsize=(35, 30))
     for i, proj in enumerate(TEST_PROJS, 1):
@@ -233,7 +237,7 @@ def test_grid_labels_inline():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_inline_usa'])
+@ImageTesting([grid_label_inline_usa_image])
 def test_grid_labels_inline_usa():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
