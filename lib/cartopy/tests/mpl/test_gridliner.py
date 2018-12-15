@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-from matplotlib.backends.backend_agg import FigureCanvasAgg
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 try:
@@ -149,20 +148,20 @@ else:
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_image])
 def test_grid_labels():
-    plt.figure(figsize=(8, 10))
+    fig = plt.figure(figsize=(8, 10))
 
     crs_pc = ccrs.PlateCarree()
     crs_merc = ccrs.Mercator()
     crs_osgb = ccrs.OSGB()
 
-    ax = plt.subplot(3, 2, 1, projection=crs_pc)
+    ax = fig.add_subplot(3, 2, 1, projection=crs_pc)
     ax.coastlines()
     ax.gridlines(draw_labels=True)
 
     # Check that adding labels to Mercator gridlines gives an error.
     # (Currently can only label PlateCarree gridlines.)
-    ax = plt.subplot(3, 2, 2,
-                     projection=ccrs.PlateCarree(central_longitude=180))
+    ax = fig.add_subplot(3, 2, 2,
+                         projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines()
     with pytest.raises(TypeError):
         ax.gridlines(crs=crs_merc, draw_labels=True)
@@ -173,18 +172,19 @@ def test_grid_labels():
     gl.ylabels_left = False
     gl.xlines = False
 
-    ax = plt.subplot(3, 2, 3, projection=crs_merc)
+    ax = fig.add_subplot(3, 2, 3, projection=crs_merc)
     ax.coastlines()
     ax.gridlines(draw_labels=True)
 
     # Check that labelling the gridlines on an OSGB plot gives an error.
     # (Currently can only draw these on PlateCarree or Mercator plots.)
-    ax = plt.subplot(3, 2, 4, projection=crs_osgb)
+    ax = fig.add_subplot(3, 2, 4, projection=crs_osgb)
     ax.coastlines()
     with pytest.raises(TypeError):
         ax.gridlines(draw_labels=True)
+    ax.remove()
 
-    ax = plt.subplot(3, 2, 4, projection=crs_pc)
+    ax = fig.add_subplot(3, 2, 4, projection=crs_pc)
     ax.coastlines()
     gl = ax.gridlines(
         crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle='--')
@@ -201,19 +201,19 @@ def test_grid_labels():
 
     # trigger a draw at this point and check the appropriate artists are
     # populated on the gridliner instance
-    FigureCanvasAgg(plt.gcf()).draw()
+    fig.canvas.draw()
 
     assert len(gl.xlabel_artists) == 4
     assert len(gl.ylabel_artists) == 5
     assert len(gl.ylabel_artists) == 5
     assert len(gl.xline_artists) == 0
 
-    ax = plt.subplot(3, 2, 5, projection=crs_pc)
+    ax = fig.add_subplot(3, 2, 5, projection=crs_pc)
     ax.set_extent([-20, 10.0, 45.0, 70.0])
     ax.coastlines()
     ax.gridlines(draw_labels=True)
 
-    ax = plt.subplot(3, 2, 6, projection=crs_merc)
+    ax = fig.add_subplot(3, 2, 6, projection=crs_merc)
     ax.set_extent([-20, 10.0, 45.0, 70.0], crs=crs_pc)
     ax.coastlines()
     ax.gridlines(draw_labels=True)

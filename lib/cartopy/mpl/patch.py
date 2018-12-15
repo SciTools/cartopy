@@ -45,6 +45,7 @@ def geos_to_path(shape):
         A list, tuple or single instance of any of the following
         types: :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
+        :class:`shapely.geometry.linestring.LinearRing`,
         :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.multipoint.MultiPoint`,
         :class:`shapely.geometry.multipolygon.MultiPolygon`,
@@ -64,7 +65,9 @@ def geos_to_path(shape):
             paths.extend(geos_to_path(shp))
         return paths
 
-    if isinstance(shape, (sgeom.LineString, sgeom.Point)):
+    if isinstance(shape, sgeom.LinearRing):
+        return [Path(np.column_stack(shape.xy), closed=True)]
+    elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
         return [Path(np.column_stack(shape.xy))]
     elif isinstance(shape, sgeom.Polygon):
         def poly_codes(poly):
