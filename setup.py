@@ -50,7 +50,7 @@ PY3 = (sys.version_info[0] == 3)
 
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 3, 3)
-PROJ_MIN_VERSION = (4, 9, 0)
+PROJ_MIN_VERSION = (4, 9, 1)
 
 HERE = os.path.dirname(__file__)
 
@@ -233,7 +233,7 @@ if conda is not None and conda in sys.prefix:
     # should be set up so that nothing extra is required. We'll still check
     # the version, though.
     proj_version = find_proj_version_by_program(conda)
-    if proj_version < PROJ_MIN_VERSION:
+    if proj_version != (0, 0, 0) and proj_version < PROJ_MIN_VERSION:
         print(
             'Proj version %s is installed, but cartopy requires at least '
             'version %s.' % ('.'.join(str(v) for v in proj_version),
@@ -318,6 +318,12 @@ if sys.platform.startswith('win'):
 else:
     extra_extension_args = dict(
         runtime_library_dirs=[get_config_var('LIBDIR')])
+
+# Make use of the deprecated proj API.
+extra_extension_args.setdefault(
+    'define_macros', []).append(
+        ('ACCEPT_USE_OF_DEPRECATED_PROJ_API_H', '1'))
+
 
 # Description
 # ===========

@@ -315,8 +315,9 @@ cdef class CRS:
             cy *= DEG_TO_RAD
         status = pj_transform(src_crs.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
 
-        if trap and status == -14 or status == -20:
+        if trap and status in [-14, -15, -20]:
             # -14 => "latitude or longitude exceeded limits"
+            # -15 => "invalid x or y" (often from rHEALPix)
             # -20 => "tolerance condition error"
             cx = cy = NAN
         elif trap and status != 0:

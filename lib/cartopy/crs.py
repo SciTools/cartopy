@@ -2458,6 +2458,145 @@ class EquidistantConic(Projection):
         return self._y_limits
 
 
+class Healpix(Projection):
+    """
+    Hierarchical Equal Area isoLatitude Pixelisation of a 2-sphere, is an
+    algorithm for pixelisation of the 2-sphere
+
+    The projection is area preserving. It was initially developed for
+    mapping cosmic background microwave radiation. It consists of eight
+    isomorphic triangular interrupted map graticules.
+
+    """
+    def __init__(self, central_longitude=0):
+        proj4_params = [('proj', 'healpix'),
+                        ('lon_0', central_longitude)]
+        super(Healpix, self).__init__(proj4_params)
+
+        # Boundary is based on units of m, with a standard spherical ellipse.
+        width = 2e7
+        h = width/2
+        box_h = width/4
+
+        points = [[width, -box_h],
+                  [width, box_h],
+                  [width - 1*h + h/2, h],
+                  [width - 1*h, box_h],
+                  [width - 2*h + h/2, h],
+                  [width - 2*h, box_h],
+                  [width - 3*h + h/2, h],
+                  [width - 3*h, box_h],
+                  [width - 4*h + h/2, h],
+                  [width - 4*h, box_h],
+                  [width - 4*h, -box_h],
+                  [width - 4*h + h/2, -h],
+                  [width - 3*h, -box_h],
+                  [width - 3*h + h/2, -h],
+                  [width - 2*h, -box_h],
+                  [width - 2*h + h/2, -h],
+                  [width - 1*h, -box_h],
+                  [width - 1*h + h/2, -h]]
+        self._boundary = sgeom.LinearRing(points)
+
+        xs, ys = zip(*points)
+        self._x_limits = min(xs), max(xs)
+        self._y_limits = min(ys), max(ys)
+        self._threshold = (self.x_limits[1] - self.x_limits[0]) / 1e4
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
+class RectangularHealpix(Projection):
+    """
+    Also known as rHEALPix in proj.4, this projection is an extension of the
+    Healpix projection to present rectangles, rather than triangles, at the
+    north and south poles.
+
+    Parameters
+    ----------
+    central_longitude
+    north_square: int
+        The position for the north pole square. Must be one of 0, 1, 2 or 3.
+        0 would have the north pole square aligned with the left-most square,
+        and 3 would be aligned with the right-most.
+    south_square: int
+        The position for the south pole square. Must be one of 0, 1, 2 or 3.
+
+    """
+    def __init__(self, central_longitude=0, north_square=0, south_square=0):
+        valid_square = [0, 1, 2, 3]
+        if north_square not in valid_square:
+            raise ValueError('north_square must be one of '
+                             '{}'.format(valid_square))
+        if south_square not in valid_square:
+            raise ValueError('south_square must be one of {}'
+                             ''.format(valid_square))
+
+        proj4_params = [('proj', 'rhealpix'),
+                        ('north_square', north_square),
+                        ('south_square', south_square),
+                        ('lon_0', central_longitude)]
+        super(RectangularHealpix, self).__init__(proj4_params)
+
+        # Boundary is based on units of m, with a standard spherical ellipse.
+        # The hard-coded scale is the reason for not accepting the globe
+        # keyword. The scale changes based on the size of the semi-major axis.
+        top = 1.5e7
+        width = 2e7
+        h = width / 2
+        box_h = width / 4
+
+        points = [[width, -box_h],
+                  [width, box_h],
+                  [(north_square - 2) * h + h, box_h],
+                  [(north_square - 2) * h + h, top],
+                  [(north_square - 2) * box_h, top],
+                  [(north_square - 2) * box_h, box_h],
+                  [-width, box_h],
+                  [-width, -box_h],
+                  [(south_square - 2) * h, -box_h],
+                  [(south_square - 2) * h, -top],
+                  [(south_square - 2) * h + h, -top],
+                  [(south_square - 2) * h + h, -box_h]]
+
+        self._boundary = sgeom.LineString(points[::-1])
+
+        xs, ys = zip(*points)
+        self._x_limits = min(xs), max(xs)
+        self._y_limits = min(ys), max(ys)
+        self._threshold = (self.x_limits[1] - self.x_limits[0]) / 1e4
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
 class _BoundaryPoint(object):
     def __init__(self, distance, kind, data):
         """
