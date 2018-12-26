@@ -21,9 +21,6 @@ Tests for the Healpix projection.
 
 from __future__ import (absolute_import, division, print_function)
 
-import numpy as np
-import pytest
-
 import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
@@ -38,4 +35,3 @@ def test_central_longitude():
     crs = ccrs.Healpix(central_longitude=124.8)
     expected = {'ellps=WGS84', 'lon_0=124.8'}
     check_proj_params('healpix', crs, expected)
-

@@ -21,9 +21,6 @@ Tests for RectangularHealpix projection.
 
 from __future__ import (absolute_import, division, print_function)
 
-import numpy as np
-import pytest
-
 import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
@@ -42,5 +39,6 @@ def test_square_positions():
 
 def test_central_longitude():
     crs = ccrs.RectangularHealpix(north_square=2, central_longitude=-124.8)
-    expected = {'ellps=WGS84', 'lon_0=-124.8', 'north_square=2', 'south_square=0'}
+    expected = {'ellps=WGS84', 'lon_0=-124.8', 'north_square=2',
+                'south_square=0'}
     check_proj_params('rhealpix', crs, expected)

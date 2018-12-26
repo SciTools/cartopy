@@ -2455,10 +2455,19 @@ class EquidistantConic(Projection):
 
     @property
     def y_limits(self):
-      return self._y_limits
+        return self._y_limits
 
 
 class Healpix(Projection):
+    """
+    Hierarchical Equal Area isoLatitude Pixelisation of a 2-sphere, is an
+    algorithm for pixelisation of the 2-sphere
+
+    The projection is area preserving. It was initially developed for
+    mapping cosmic background microwave radiation. It consists of eight
+    isomorphic triangular interrupted map graticules.
+
+    """
     def __init__(self, central_longitude=0):
         proj4_params = [('proj', 'healpix'),
                         ('lon_0', central_longitude)]
@@ -2514,8 +2523,8 @@ class Healpix(Projection):
 class RectangularHealpix(Projection):
     """
     Also known as rHEALPix in proj.4, this projection is an extension of the
-    Healpix projection to present rectangles, rather than triangles, at the north
-    and south poles.
+    Healpix projection to present rectangles, rather than triangles, at the
+    north and south poles.
 
     Parameters
     ----------

@@ -25,9 +25,9 @@ PlateCarree
 
     for i in range(0, nplots):
         central_longitude = 0 if i == 0 else 180
-        ax = fig.add_subplot(nplots, 1, i+1,
-                             projection=ccrs.PlateCarree(
-                                        central_longitude=central_longitude))
+        ax = fig.add_subplot(
+            nplots, 1, i+1,
+            projection=ccrs.PlateCarree(central_longitude=central_longitude))
         ax.coastlines(resolution='110m')
         ax.gridlines()
 
@@ -139,7 +139,7 @@ Miller
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(4.0915, 3))
+    plt.figure(figsize=(4.0917, 3))
     ax = plt.axes(projection=ccrs.Miller())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -488,6 +488,22 @@ Gnomonic
 
     plt.figure(figsize=(3, 3))
     ax = plt.axes(projection=ccrs.Gnomonic())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+Healpix
+-------
+
+.. autoclass:: cartopy.crs.Healpix
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.Healpix())
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
