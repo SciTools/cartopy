@@ -2458,11 +2458,65 @@ class EquidistantConic(Projection):
       return self._y_limits
 
 
+class Healpix(Projection):
+    def __init__(self, central_longitude=0):
+        proj4_params = [('proj', 'healpix'),
+                        ('lon_0', central_longitude)]
+        super(Healpix, self).__init__(proj4_params)
+
+        # Boundary is based on units of m, with a standard spherical ellipse.
+        width = 2e7
+        h = width/2
+        box_h = width/4
+
+        points = [[width, -box_h],
+                  [width, box_h],
+                  [width - 1*h + h/2, h],
+                  [width - 1*h, box_h],
+                  [width - 2*h + h/2, h],
+                  [width - 2*h, box_h],
+                  [width - 3*h + h/2, h],
+                  [width - 3*h, box_h],
+                  [width - 4*h + h/2, h],
+                  [width - 4*h, box_h],
+                  [width - 4*h, -box_h],
+                  [width - 4*h + h/2, -h],
+                  [width - 3*h, -box_h],
+                  [width - 3*h + h/2, -h],
+                  [width - 2*h, -box_h],
+                  [width - 2*h + h/2, -h],
+                  [width - 1*h, -box_h],
+                  [width - 1*h + h/2, -h]]
+        self._boundary = sgeom.LinearRing(points)
+
+        xs, ys = zip(*points)
+        self._x_limits = min(xs), max(xs)
+        self._y_limits = min(ys), max(ys)
+        self._threshold = (self.x_limits[1] - self.x_limits[0]) / 1e4
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+
 class RectangularHealpix(Projection):
     """
     Also known as rHEALPix in proj.4, this projection is an extension of the
     Healpix projection to present rectangles, rather than triangles, at the north
     and south poles.
+
     Parameters
     ----------
     central_longitude
@@ -2472,6 +2526,7 @@ class RectangularHealpix(Projection):
         and 3 would be aligned with the right-most.
     south_square: int
         The position for the south pole square. Must be one of 0, 1, 2 or 3.
+
     """
     def __init__(self, central_longitude=0, north_square=0, south_square=0):
         valid_square = [0, 1, 2, 3]
@@ -2491,24 +2546,24 @@ class RectangularHealpix(Projection):
         # Boundary is based on units of m, with a standard spherical ellipse.
         # The hard-coded scale is the reason for not accepting the globe
         # keyword. The scale changes based on the size of the semi-major axis.
-        nrth_x_pos = (north_square - 2) * 1e7
-        sth_x_pos = (south_square - 2) * 1e7
-        top = 5.03e6
-        max_v = 2e7
+        top = 1.5e7
+        width = 2e7
+        h = width / 2
+        box_h = width / 4
 
-        points = [[max_v, -5e6],
-                  [max_v, top],
-                  [nrth_x_pos + 1e7, top],
-                  [nrth_x_pos + 1e7, 1.5e7],
-                  [nrth_x_pos, 1.5e7],
-                  [nrth_x_pos, top],
-                  [-max_v, top]]
-        if south_square != 0:
-            points.append([-max_v, -top])
-        points.extend([[sth_x_pos, -5e6],
-                       [sth_x_pos, -1.5e7],
-                       [sth_x_pos + 1e7, -1.5e7],
-                       [sth_x_pos + 1e7, -5e6]])
+        points = [[width, -box_h],
+                  [width, box_h],
+                  [(north_square - 2) * h + h, box_h],
+                  [(north_square - 2) * h + h, top],
+                  [(north_square - 2) * box_h, top],
+                  [(north_square - 2) * box_h, box_h],
+                  [-width, box_h],
+                  [-width, -box_h],
+                  [(south_square - 2) * h, -box_h],
+                  [(south_square - 2) * h, -top],
+                  [(south_square - 2) * h + h, -top],
+                  [(south_square - 2) * h + h, -box_h]]
+
         self._boundary = sgeom.LineString(points[::-1])
 
         xs, ys = zip(*points)

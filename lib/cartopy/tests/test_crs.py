@@ -234,25 +234,6 @@ class TestCRS(object):
                              decimal=1)
 
 
-def test_RectangularHealpix_defaults():
-    crs = ccrs.RectangularHealpix()
-    assert crs.proj4_params == {'ellps': 'WGS84',
-                                'lon_0': 0,
-                                'north_square': 0,
-                                'proj': 'rhealpix',
-                                'south_square': 0}
-
-
-def test_RectangularHealpix_params():
-    crs = ccrs.RectangularHealpix(central_longitude=20, north_square=1,
-                                  south_square=2)
-    assert crs.proj4_params == {'ellps': 'WGS84',
-                                'lon_0': 20,
-                                'north_square': 1,
-                                'proj': 'rhealpix',
-                                'south_square': 2}
-
-
 def test_pickle():
     # check that we can pickle a simple CRS
     fh = BytesIO()
