@@ -32,29 +32,24 @@ cdef extern from "geos_c.h":
     ctypedef struct GEOSGeometry:
         pass
     ctypedef struct GEOSCoordSequence
-    ctypedef struct GEOSPreparedGeometry
-    GEOSContextHandle_t GEOS_init_r() nogil
     GEOSCoordSequence *GEOSCoordSeq_create_r(GEOSContextHandle_t, unsigned int, unsigned int) nogil
-    GEOSGeometry *GEOSGeom_createPoint_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
     GEOSGeometry *GEOSGeom_createLineString_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
     GEOSGeometry *GEOSGeom_createCollection_r(GEOSContextHandle_t, int, GEOSGeometry **, unsigned int) nogil
     GEOSGeometry *GEOSGeom_createEmptyCollection_r(GEOSContextHandle_t, int) nogil
-    void GEOSGeom_destroy_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     GEOSCoordSequence *GEOSGeom_getCoordSeq_r(GEOSContextHandle_t, GEOSGeometry *) nogil
     int GEOSCoordSeq_getSize_r(GEOSContextHandle_t handle, const GEOSCoordSequence* s, unsigned int *size) nogil
     int GEOSCoordSeq_getX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
     int GEOSCoordSeq_getY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
     int GEOSCoordSeq_setX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
     int GEOSCoordSeq_setY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
-    const GEOSPreparedGeometry *GEOSPrepare_r(GEOSContextHandle_t handle, const GEOSGeometry* g) nogil
-    char GEOSPreparedCovers_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
-    char GEOSPreparedDisjoint_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
-    void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
     cdef int GEOS_MULTILINESTRING
 
 import re
 import warnings
 
+import shapely.geometry as sgeom
+import shapely.prepared as sprep
+from shapely.geos import lgeos
 from pyproj import Geod, Transformer
 from pyproj.exceptions import ProjError
 import shapely.geometry as sgeom
@@ -252,22 +247,14 @@ cdef enum State:
     POINT_NAN
 
 
-cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
-                     GEOSContextHandle_t handle):
+cdef State get_state(const Point &point, object gp_domain):
     cdef State state
-    cdef GEOSCoordSequence *coords
-    cdef GEOSGeometry *g_point
 
     if isfinite(point.x) and isfinite(point.y):
         # TODO: Avoid create-destroy
-        coords = GEOSCoordSeq_create_r(handle, 1, 2)
-        GEOSCoordSeq_setX_r(handle, coords, 0, point.x)
-        GEOSCoordSeq_setY_r(handle, coords, 0, point.y)
-        g_point = GEOSGeom_createPoint_r(handle, coords)
-        state = (POINT_IN
-                 if GEOSPreparedCovers_r(handle, gp_domain, g_point)
-                 else POINT_OUT)
-        GEOSGeom_destroy_r(handle, g_point)
+        g_point = sgeom.Point((point.x, point.y))
+        state = POINT_IN if gp_domain.covers(g_point) else POINT_OUT
+        del g_point
     else:
         state = POINT_NAN
     return state
@@ -278,7 +265,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
                             double t_end, const Point &p_end,
                             Interpolator interpolator, double threshold,
                             GEOSContextHandle_t handle,
-                            const GEOSPreparedGeometry *gp_domain,
+                            object gp_domain,
                             bool inside) except *:
     """
     Return whether the given line segment is suitable as an
@@ -305,8 +292,6 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
     cdef double along
     cdef double separation
     cdef double hypot
-    cdef GEOSCoordSequence *coords
-    cdef GEOSGeometry *g_segment
 
     # This could be optimised out of the loop.
     if not (isfinite(p_start.x) and isfinite(p_start.y)):
@@ -385,26 +370,23 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
             # TODO: Re-use geometries, instead of create-destroy!
 
             # Create a LineString for the current end-point.
-            coords = GEOSCoordSeq_create_r(handle, 2, 2)
-            GEOSCoordSeq_setX_r(handle, coords, 0, p_start.x)
-            GEOSCoordSeq_setY_r(handle, coords, 0, p_start.y)
-            GEOSCoordSeq_setX_r(handle, coords, 1, p_end.x)
-            GEOSCoordSeq_setY_r(handle, coords, 1, p_end.y)
-            g_segment = GEOSGeom_createLineString_r(handle, coords)
+            g_segment = sgeom.LineString([
+                (p_start.x, p_start.y),
+                (p_end.x, p_end.y)])
 
             if inside:
-                valid = GEOSPreparedCovers_r(handle, gp_domain, g_segment)
+                valid = gp_domain.covers(g_segment)
             else:
-                valid = GEOSPreparedDisjoint_r(handle, gp_domain, g_segment)
+                valid = gp_domain.disjoint(g_segment)
 
-            GEOSGeom_destroy_r(handle, g_segment)
+            del g_segment
 
     return valid
 
 
 cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
                  GEOSContextHandle_t handle,
-                 const GEOSPreparedGeometry *gp_domain, const State &state,
+                 object gp_domain, const State &state,
                  Interpolator interpolator, double threshold,
                  double &t_min, Point &p_min, double &t_max, Point &p_max) except *:
     cdef double t_current
@@ -460,7 +442,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
                            const GEOSCoordSequence *src_coords,
                            unsigned int src_idx_from, unsigned int src_idx_to,
                            Interpolator interpolator,
-                           const GEOSPreparedGeometry *gp_domain,
+                           object gp_domain,
                            double threshold, LineAccumulator lines) except *:
     cdef Point p_current, p_min, p_max, p_end
     cdef double t_current, t_min, t_max
@@ -484,7 +466,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
         print("   ", p_end.x, ", ", p_end.y)
 
     t_current = 0.0
-    state = get_state(p_current, gp_domain, handle)
+    state = get_state(p_current, gp_domain)
 
     cdef size_t old_lines_size = lines.size()
     while t_current < 1.0 and (lines.size() - old_lines_size) < 100:
@@ -517,7 +499,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
             else:
                 t_current = t_max
                 p_current = p_max
-                state = get_state(p_current, gp_domain, handle)
+                state = get_state(p_current, gp_domain)
                 if state == POINT_IN:
                     lines.new_line()
 
@@ -528,14 +510,14 @@ cdef void _project_segment(GEOSContextHandle_t handle,
             else:
                 t_current = t_max
                 p_current = p_max
-                state = get_state(p_current, gp_domain, handle)
+                state = get_state(p_current, gp_domain)
                 if state == POINT_IN:
                     lines.new_line()
 
         else:
             t_current = t_max
             p_current = p_max
-            state = get_state(p_current, gp_domain, handle)
+            state = get_state(p_current, gp_domain)
             if state == POINT_IN:
                 lines.new_line()
 
@@ -582,19 +564,19 @@ def project_linear(geometry not None, src_crs not None,
         GEOSContextHandle_t handle = get_geos_context_handle()
         GEOSGeometry *g_linear = geos_from_shapely(geometry)
         Interpolator interpolator
-        GEOSGeometry *g_domain
+        object g_domain
         const GEOSCoordSequence *src_coords
         unsigned int src_size, src_idx
-        const GEOSPreparedGeometry *gp_domain
+        object gp_domain
         LineAccumulator lines
         GEOSGeometry *g_multi_line_string
 
-    g_domain = geos_from_shapely(dest_projection.domain)
+    g_domain = dest_projection.domain
 
     interpolator = _interpolator(src_crs, dest_projection)
 
     src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
-    gp_domain = GEOSPrepare_r(handle, g_domain)
+    gp_domain = sprep.prep(g_domain)
 
     GEOSCoordSeq_getSize_r(handle, src_coords, &src_size)  # check exceptions
 
@@ -603,7 +585,7 @@ def project_linear(geometry not None, src_crs not None,
         _project_segment(handle, src_coords, src_idx - 1, src_idx,
                          interpolator, gp_domain, threshold, lines);
 
-    GEOSPreparedGeom_destroy_r(handle, gp_domain)
+    del gp_domain
 
     g_multi_line_string = lines.as_geom(handle)
 
@@ -617,7 +599,7 @@ class _Testing:
     def straight_and_within(Point l_start, Point l_end,
                             double t_start, double t_end,
                             Interpolator interpolator, double threshold,
-                            domain):
+                            object domain):
         # This function is for testing/demonstration only.
         # It is not careful about freeing resources, and it short-circuits
         # optimisations that are made in the real algorithm (in exchange for
@@ -625,11 +607,10 @@ class _Testing:
 
         cdef GEOSContextHandle_t handle = get_geos_context_handle()
 
-        cdef GEOSGeometry *g_domain = geos_from_shapely(domain)
-        cdef const GEOSPreparedGeometry *gp_domain
-        gp_domain = GEOSPrepare_r(handle, g_domain)
+        cdef object gp_domain
+        gp_domain = sprep.prep(domain)
 
-        state = get_state(interpolator.project(l_start), gp_domain, handle)
+        state = get_state(interpolator.project(l_start), gp_domain)
         cdef bool p_start_inside_domain = state == POINT_IN
 
         # l_end and l_start should be un-projected.
@@ -643,7 +624,7 @@ class _Testing:
             interpolator, threshold,
             handle, gp_domain, p_start_inside_domain)
 
-        GEOSPreparedGeom_destroy_r(handle, gp_domain)
+        del gp_domain
         return valid
 
     @staticmethod
