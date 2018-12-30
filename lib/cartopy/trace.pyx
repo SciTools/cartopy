@@ -98,7 +98,7 @@ cdef class LineAccumulator:
         if self.lines.back().empty():
             self.add_point(point)
 
-    cdef GEOSGeometry *as_geom(self, GEOSContextHandle_t handle):
+    cdef object as_geom(self, GEOSContextHandle_t handle):
         from cython.operator cimport dereference, preincrement
 
         # self.lines.remove_if(degenerate_line) is not available in Cython.
@@ -121,24 +121,12 @@ cdef class LineAccumulator:
 
         cdef Line ilines
         cdef Point ipoints
-        cdef vector[GEOSGeometry *] geoms
-        cdef int i
-        cdef GEOSCoordSequence *coords
+        geoms = []
         for ilines in self.lines:
-            coords = GEOSCoordSeq_create_r(handle, ilines.size(), 2)
-            for i, ipoints in enumerate(ilines):
-                GEOSCoordSeq_setX_r(handle, coords, i, ipoints.x)
-                GEOSCoordSeq_setY_r(handle, coords, i, ipoints.y)
+            coords = [(ipoints.x, ipoints.y) for ipoints in ilines]
+            geoms.append(sgeom.LineString(coords))
 
-            geoms.push_back(GEOSGeom_createLineString_r(handle, coords))
-
-        cdef GEOSGeometry *geom
-        if geoms.empty():
-            geom = GEOSGeom_createEmptyCollection_r(handle,
-                                                    GEOS_MULTILINESTRING)
-        else:
-            geom = GEOSGeom_createCollection_r(handle, GEOS_MULTILINESTRING,
-                                               &geoms[0], geoms.size())
+        geom = sgeom.MultiLineString(geoms)
         return geom
 
     cdef size_t size(self):
@@ -559,7 +547,6 @@ def project_linear(geometry not None, src_crs not None,
         unsigned int src_size, src_idx
         object gp_domain
         LineAccumulator lines
-        GEOSGeometry *g_multi_line_string
 
     g_domain = dest_projection.domain
 
@@ -577,10 +564,9 @@ def project_linear(geometry not None, src_crs not None,
 
     del gp_domain
 
-    g_multi_line_string = lines.as_geom(handle)
+    multi_line_string = lines.as_geom(handle)
 
     del lines, interpolator
-    multi_line_string = shapely_from_geos(g_multi_line_string)
     return multi_line_string
 
 
