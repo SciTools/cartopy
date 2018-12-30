@@ -60,12 +60,6 @@ cdef GEOSContextHandle_t get_geos_context_handle():
     return handle
 
 
-cdef GEOSGeometry *geos_from_shapely(shapely_geom) except *:
-    """Get the GEOS pointer from the given shapely geometry."""
-    cdef ptr geos_geom = shapely_geom._geom
-    return <GEOSGeometry *>geos_geom
-
-
 cdef shapely_from_geos(GEOSGeometry *geom):
     """Turn the given GEOS geometry pointer into a shapely geometry."""
     return sgeom.base.geom_factory(<ptr>geom)
@@ -439,8 +433,7 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
 
 
 cdef void _project_segment(GEOSContextHandle_t handle,
-                           const GEOSCoordSequence *src_coords,
-                           unsigned int src_idx_from, unsigned int src_idx_to,
+                           tuple src_from, tuple src_to,
                            Interpolator interpolator,
                            object gp_domain,
                            double threshold, LineAccumulator lines) except *:
@@ -448,10 +441,8 @@ cdef void _project_segment(GEOSContextHandle_t handle,
     cdef double t_current, t_min, t_max
     cdef State state
 
-    GEOSCoordSeq_getX_r(handle, src_coords, src_idx_from, &p_current.x)
-    GEOSCoordSeq_getY_r(handle, src_coords, src_idx_from, &p_current.y)
-    GEOSCoordSeq_getX_r(handle, src_coords, src_idx_to, &p_end.x)
-    GEOSCoordSeq_getY_r(handle, src_coords, src_idx_to, &p_end.y)
+    p_current.x, p_current.y = src_from
+    p_end.x, p_end.y = src_to
     if DEBUG:
         print("Setting line:")
         print("   ", p_current.x, ", ", p_current.y)
@@ -562,10 +553,9 @@ def project_linear(geometry not None, src_crs not None,
     cdef:
         double threshold = dest_projection.threshold
         GEOSContextHandle_t handle = get_geos_context_handle()
-        GEOSGeometry *g_linear = geos_from_shapely(geometry)
         Interpolator interpolator
         object g_domain
-        const GEOSCoordSequence *src_coords
+        object src_coords
         unsigned int src_size, src_idx
         object gp_domain
         LineAccumulator lines
@@ -575,14 +565,14 @@ def project_linear(geometry not None, src_crs not None,
 
     interpolator = _interpolator(src_crs, dest_projection)
 
-    src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
+    src_coords = geometry.coords
     gp_domain = sprep.prep(g_domain)
 
-    GEOSCoordSeq_getSize_r(handle, src_coords, &src_size)  # check exceptions
+    src_size = len(src_coords)  # check exceptions
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
-        _project_segment(handle, src_coords, src_idx - 1, src_idx,
+        _project_segment(handle, src_coords[src_idx - 1], src_coords[src_idx],
                          interpolator, gp_domain, threshold, lines);
 
     del gp_domain
