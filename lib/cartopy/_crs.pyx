@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -22,9 +22,8 @@ This module defines the core CRS class which can interface with Proj.
 The CRS class is the base-class for all projections defined in :mod:`cartopy.crs`.
 
 """
-
 from collections import OrderedDict
-import re
+import sys
 import warnings
 
 import numpy as np
@@ -32,44 +31,68 @@ import six
 
 cimport numpy as np
 
-from cython.operator cimport dereference as deref
-
-
-from ._proj4 cimport (pj_init_plus, pj_free, pj_transform, pj_is_latlong,
-                      pj_strerrno, pj_get_errno_ref, pj_get_release,
-                      DEG_TO_RAD, RAD_TO_DEG)
-
-
 cdef double NAN = float('nan')
 
 
-PROJ4_RELEASE = pj_get_release()
-if six.PY3:
-    PROJ4_RELEASE = PROJ4_RELEASE.decode()
-_match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
-if _match is not None:
-    PROJ4_VERSION = tuple(int(v) for v in _match.group().split('.'))
-else:
-    PROJ4_VERSION = ()
+PROJ4_VERSION = (PROJ_VERSION_MAJOR, PROJ_VERSION_MINOR, PROJ_VERSION_PATCH)
 
 WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 
-class Proj4Error(Exception):
+def pystrdecode(cstr):
     """
-    Raised when there has been an exception calling proj.4.
+    Decode a string to a python string.
+    """
+    if sys.version_info[0] > 2:
+        try:
+            return cstr.decode("utf-8")
+        except AttributeError:
+            pass
+    return cstr
+
+
+class ProjError(Exception):
+    """
+    Raised when there has been an exception calling PROJ.
 
     Add a ``status`` attribute to the exception which has the
-    proj.4 error reference.
+    PROJ error reference.
 
     """
-    def __init__(self):
-        cdef int status
-        status = deref(pj_get_errno_ref())
-        msg = 'Error from proj: {}'.format(pj_strerrno(status))
-        self.status = status
-        Exception.__init__(self, msg)
+    internal_proj_error = None
+    def __init__(self, int status=0):
+        internal_proj_error = "unknown"
+        cdef char * errno_str = NULL
+        if self.internal_proj_error is not None:
+            internal_proj_error = self.internal_proj_error
+            ProjError.clear()
+        elif status:
+            errno_str = proj_errno_string(status)
+            if errno_str is not NULL:
+                internal_proj_error = pystrdecode(errno_str)
+        error_message = "Internal PROJ error: {internal_proj_error})".format(
+            internal_proj_error=internal_proj_error,
+        )
+        super(ProjError, self).__init__(error_message)
+
+    @staticmethod
+    def clear():
+        """
+        This will clear the internal PROJ erro message.
+        """
+        ProjError.internal_proj_error = None
+
+
+cdef void cartopy_log_function(void *user_data, int level, const char *error_msg):
+    """
+    Log function for catching PROJ errors.
+    """
+    if level == PJ_LOG_ERROR:
+        ProjError.internal_proj_error = pystrdecode(error_msg)
+
+
+proj_log_func(NULL, NULL, cartopy_log_function)
 
 
 class Globe(object):
@@ -123,6 +146,25 @@ class Globe(object):
                         ['towgs84', self.towgs84], ['nadgrids', self.nadgrids])
         return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
+cdef class TransProj:
+    def __cinit__(self):
+        self.projpj = NULL
+
+    def __init__(self, CRS p1, CRS p2):
+        ProjError.clear()
+        self.projpj = proj_create_crs_to_crs(
+            NULL,
+            six.b(p1.proj4_init),
+            six.b(p2.proj4_init),
+            NULL)
+        if self.projpj == NULL:
+            raise ProjError()
+
+    def __dealloc__(self):
+        """destroy projection definition"""
+        if self.projpj != NULL:
+            proj_destroy(self.projpj)
+
 
 cdef class CRS:
     """
@@ -138,7 +180,7 @@ cdef class CRS:
 
     def __dealloc__(self):
         if self.proj4 != NULL:
-            pj_free(self.proj4)
+            proj_destroy(self.proj4)
 
     def __init__(self, proj4_params, globe=None):
         """
@@ -168,10 +210,12 @@ cdef class CRS:
             if a != b or globe.ellipse is not None:
                 warnings.warn('The "{}" projection does not handle elliptical '
                               'globes.'.format(self.__class__.__name__))
+
         self.globe = globe
         self.proj4_params = self.globe.to_proj4_params()
         self.proj4_params.update(proj4_params)
 
+        first_item_inserted = False
         init_items = []
         for k, v in self.proj4_params.items():
             if v is not None:
@@ -179,6 +223,9 @@ cdef class CRS:
                     init_items.append('+{}={:.16}'.format(k, v))
                 elif isinstance(v, np.float32):
                     init_items.append('+{}={:.8}'.format(k, v))
+                elif not first_item_inserted and k in ("init", "proj"):
+                    init_items.insert(0, '+{}={}'.format(k, v))
+                    initial_item_inserted = True
                 else:
                     init_items.append('+{}={}'.format(k, v))
             else:
@@ -186,10 +233,11 @@ cdef class CRS:
         self.proj4_init = ' '.join(init_items) + ' +no_defs'
         proj4_init_bytes = six.b(self.proj4_init)
         if self.proj4 != NULL:
-            pj_free(self.proj4)
-        self.proj4 = pj_init_plus(proj4_init_bytes)
-        if not self.proj4:
-            raise Proj4Error()
+            proj_destroy(self.proj4)
+        self.proj4 = proj_create(NULL, proj4_init_bytes)
+        if self.proj4 == NULL:
+            raise ProjError()
+        self.proj4_type = proj_get_type(self.proj4)
 
     # Cython uses this method instead of the normal rich comparisons.
     def __richcmp__(self, other, op):
@@ -233,7 +281,6 @@ cdef class CRS:
         self.__init__(self, **state)
 
     # TODO
-    #def __str__
     #def _geod(self): # to return the pyproj.Geod
 
     def _as_mpl_transform(self, axes=None):
@@ -269,8 +316,13 @@ cdef class CRS:
         """
         return Geodetic(self.globe)
 
-    cpdef is_geodetic(self):
-        return bool(pj_is_latlong(self.proj4))
+    def is_geodetic(self):
+        """
+        Returns
+        -------
+        bool: True if projection in geodetic coordinates
+        """
+        return self.proj4_type is PJ_TYPE_GEODETIC_CRS
 
     def transform_point(self, double x, double y, CRS src_crs not None, trap=True):
         """
@@ -297,26 +349,35 @@ cdef class CRS:
         (x, y) in this coordinate system
 
         """
+        pj_trans = TransProj(src_crs, self)
+
         cdef:
             double cx, cy
-            int status
         cx = x
         cy = y
         if src_crs.is_geodetic():
-            cx *= DEG_TO_RAD
-            cy *= DEG_TO_RAD
-        status = pj_transform(src_crs.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
+            cx = proj_torad(cx)
+            cy = proj_torad(cy)
 
+        proj_trans_generic(
+            pj_trans.projpj,
+            PJ_FWD,
+            &cx, sizeof(double), 1,
+            &cy, sizeof(double), 1,
+            NULL, 0, 0,
+            NULL, 0, 0,
+        )
+        cdef int status = proj_errno(pj_trans.projpj)
         if trap and status == -14 or status == -20:
             # -14 => "latitude or longitude exceeded limits"
             # -20 => "tolerance condition error"
             cx = cy = NAN
         elif trap and status != 0:
-            raise Proj4Error()
+            raise ProjError(status)
 
         if self.is_geodetic():
-            cx *= RAD_TO_DEG
-            cy *= RAD_TO_DEG
+            cx = proj_todeg(cx)
+            cy = proj_todeg(cy)
         return (cx, cy)
 
     def transform_points(self, CRS src_crs not None,
@@ -350,6 +411,8 @@ cdef class CRS:
             Array of shape ``x.shape + (3, )`` in this coordinate system.
 
         """
+        pj_trans = TransProj(src_crs, self)
+
         cdef np.ndarray[np.double_t, ndim=2] result
 
         result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
@@ -391,14 +454,27 @@ cdef class CRS:
 
         # call proj. The result array is modified in place. This is only
         # safe if npts is not 0.
+        cdef int status = 0
         if npts:
-            status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
-                                  &result[0, 0], &result[0, 1], &result[0, 2])
+            ProjError.clear()
+            stride = result.strides[0]
+            proj_trans_generic(
+                pj_trans.projpj,
+                PJ_FWD,
+                &result[0, 0], stride, npts,
+                &result[0, 1], stride, npts,
+                &result[0, 2], stride, npts,
+                NULL, 0, 0,
+            )
+
+            status = proj_errno(pj_trans.projpj)
+            if status:
+                raise ProjError(status)
+            elif ProjError.internal_proj_error is not None:
+                raise ProjError()
 
         if self.is_geodetic():
             result[:, :2] = np.rad2deg(result[:, :2])
-        #if status:
-        #    raise Proj4Error()
 
         if len(result_shape) > 2:
             return result.reshape(result_shape)

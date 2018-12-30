@@ -39,7 +39,7 @@ deps-run: &deps-install
         scipy \
         cython \
         pillow \
-        proj4 \
+        proj4=6.1.0 \
         pyshp \
         shapely \
         six \

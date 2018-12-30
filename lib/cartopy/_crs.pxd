@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
-
-from ._proj4 cimport projPJ
+include "proj4.pxi"
 
 
 cdef class CRS:
@@ -25,8 +24,14 @@ cdef class CRS:
 
     """
 
-    cdef projPJ proj4
+    cdef PJ * proj4
     cdef readonly proj4_init
+    cdef public object globe
     cdef proj4_params
+    cdef PJ_TYPE proj4_type
 
-    cpdef is_geodetic(self)
+cdef class TransProj:
+    """
+    This manages the PJ* of the transformation.
+    """
+    cdef PJ * projpj

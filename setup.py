@@ -16,24 +16,24 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 
-"""
-Distribution definition for Cartopy.
-
-"""
-
-import setuptools
-from setuptools import setup, Extension
-from setuptools import Command
-from setuptools import convert_path
-from distutils.spawn import find_executable
-from distutils.sysconfig import get_config_var
 import fnmatch
 import os
 import subprocess
 import sys
 import warnings
+from distutils.spawn import find_executable
+from distutils.sysconfig import get_config_var
+
+from setuptools import Command, Extension, convert_path, setup
 
 import versioneer
+
+"""
+Distribution definition for Cartopy.
+
+"""
+
+
 
 
 # The existence of a PKG-INFO directory is enough to tell us whether this is a
@@ -60,7 +60,7 @@ PY3 = (sys.version_info[0] == 3)
 
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 3, 3)
-PROJ_MIN_VERSION = (4, 9, 0)
+PROJ_MIN_VERSION = (6, 0, 0)
 
 
 def file_walk_relative(top, remove=''):
@@ -235,6 +235,18 @@ def find_proj_version_by_program(conda=None):
     return proj_version
 
 
+def get_proj_libraries():
+    """
+    This function gets the PROJ libraries to cythonize with
+    """
+    proj_libraries = ["proj"]
+    if os.name == "nt" and proj_version >= (6, 0, 0):
+        proj_libraries = [
+            "proj_{}_{}".format(proj_version[0], proj_version[1])
+        ]
+    return proj_libraries
+
+
 conda = os.getenv('CONDA_DEFAULT_ENV')
 if conda is not None and conda in sys.prefix:
     # Conda does not provide pkg-config compatibility, but the search paths
@@ -250,7 +262,7 @@ if conda is not None and conda in sys.prefix:
         exit(1)
 
     proj_includes = []
-    proj_libraries = ['proj']
+    proj_libraries = get_proj_libraries()
     proj_library_dirs = []
 
 else:
@@ -273,7 +285,7 @@ else:
             exit(1)
 
         proj_includes = []
-        proj_libraries = ['proj']
+        proj_libraries = get_proj_libraries()
         proj_library_dirs = []
     else:
         if proj_version < PROJ_MIN_VERSION:
@@ -326,7 +338,8 @@ if sys.platform.startswith('win'):
     extra_extension_args = {}
 else:
     extra_extension_args = dict(
-        runtime_library_dirs=[get_config_var('LIBDIR')])
+        runtime_library_dirs=[get_config_var('LIBDIR')],
+    )
 
 # Description
 # ===========

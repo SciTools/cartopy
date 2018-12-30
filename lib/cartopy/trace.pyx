@@ -23,6 +23,7 @@ to project a `~shapely.geometry.LinearRing` / `~shapely.geometry.LineString`.
 In general, this should never be called manually, instead leaving the
 processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
+include "proj4.pxi"
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
@@ -59,16 +60,16 @@ cdef extern from "geos_c.h":
     cdef int GEOS_MULTILINESTRING
 
 from cartopy._crs cimport CRS
-from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
-                      pj_strerrno, DEG_TO_RAD)
+from cartopy._crs cimport TransProj
+from cartopy._crs import ProjError
 from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
                                   geod_init, geod_geninverse,
                                   geod_lineinit, geod_genposition,
                                   GEOD_ARCMODE, GEOD_LATITUDE, GEOD_LONGITUDE)
 
-
 import shapely.geometry as sgeom
 from shapely.geos import lgeos
+import six
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -169,12 +170,10 @@ cdef class LineAccumulator:
 cdef class Interpolator:
     cdef Point start
     cdef Point end
-    cdef projPJ src_proj
-    cdef projPJ dest_proj
+    cdef TransProj trans_proj
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
-        self.src_proj = src_proj
-        self.dest_proj = dest_proj
+    cdef void init(self, CRS src_proj, CRS dest_proj) except *: 
+        self.trans_proj = TransProj(src_proj, dest_proj)
 
     cdef void set_line(self, const Point &start, const Point &end):
         self.start = start
@@ -183,7 +182,7 @@ cdef class Interpolator:
     cdef Point interpolate(self, double t):
         raise NotImplementedError
 
-    cdef Point project(self, const Point &point):
+    cdef Point project(self, const Point &point) except *:
         raise NotImplementedError
 
 
@@ -194,23 +193,29 @@ cdef class CartesianInterpolator(Interpolator):
         xy.y = self.start.y + (self.end.y - self.start.y) * t
         return self.project(xy)
 
-    cdef Point project(self, const Point &src_xy):
+    cdef Point project(self, const Point &src_xy) except *: 
         cdef Point dest_xy
-        cdef projLP xy
+        cdef PJ_UV xy
 
         xy.u = src_xy.x
         xy.v = src_xy.y
 
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &xy.u, &xy.v, NULL)
+        ProjError.clear()
+        proj_trans_generic(
+            self.trans_proj.projpj,
+            PJ_FWD,
+            &xy.u, sizeof(PJ_UV), 1,
+            &xy.v, sizeof(PJ_UV), 1,
+            NULL, 0, 0,
+            NULL, 0, 0,
+        )
+        cdef int status = proj_errno(self.trans_proj.projpj)
         if status in (-14, -20):
             # -14 => "latitude or longitude exceeded limits"
             # -20 => "tolerance condition error"
             xy.u = xy.v = HUGE_VAL
         elif status != 0:
-            raise Exception('pj_transform failed: %d\n%s' % (
-                status,
-                pj_strerrno(status)))
+            raise ProjError(status)
 
         dest_xy.x = xy.u
         dest_xy.y = xy.v
@@ -222,14 +227,31 @@ cdef class SphericalInterpolator(Interpolator):
     cdef geod_geodesicline geod_line
     cdef double a13
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
-        self.src_proj = src_proj
-        self.dest_proj = dest_proj
+    cdef void init(self, CRS src_proj, CRS dest_proj) except *: 
+        self.trans_proj = TransProj(src_proj, dest_proj)
+        cdef PJ * ellips_prod = NULL
 
-        cdef double major_axis
-        cdef double eccentricity_squared
-        pj_get_spheroid_defn(self.src_proj, &major_axis, &eccentricity_squared)
-        geod_init(&self.geod, major_axis, 1 - sqrt(1 - eccentricity_squared))
+        ProjError.clear()
+        ellips_prod = proj_get_ellipsoid(NULL, <PJ *>src_proj.proj4)
+        if ellips_prod is NULL:
+            raise ProjError()
+
+        cdef double semi_major_metre
+        cdef double inv_flattening
+        ProjError.clear()
+        try:
+            if not proj_ellipsoid_get_parameters(
+                    NULL,
+                    ellips_prod,
+                    &semi_major_metre,
+                    NULL,
+                    NULL,
+                    &inv_flattening):
+                raise ProjError()
+        finally:
+            proj_destroy(ellips_prod)
+
+        geod_init(&self.geod, semi_major_metre, 1 / inv_flattening)
 
     cdef void set_line(self, const Point &start, const Point &end):
         cdef double azi1
@@ -248,23 +270,29 @@ cdef class SphericalInterpolator(Interpolator):
 
         return self.project(lonlat)
 
-    cdef Point project(self, const Point &lonlat):
+    cdef Point project(self, const Point &lonlat) except *:
         cdef Point xy
-        cdef projLP dest
+        cdef PJ_UV dest
 
-        dest.u = lonlat.x * DEG_TO_RAD
-        dest.v = lonlat.y * DEG_TO_RAD
+        dest.u = proj_torad(lonlat.x)
+        dest.v = proj_torad(lonlat.y)
 
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &dest.u, &dest.v, NULL)
+        ProjError.clear()
+        proj_trans_generic(
+            self.trans_proj.projpj,
+            PJ_FWD,
+            &dest.u, sizeof(PJ_UV), 1,
+            &dest.v, sizeof(PJ_UV), 1,
+            NULL, 0, 0,
+            NULL, 0, 0,
+        )
+        cdef int status = proj_errno(self.trans_proj.projpj)
         if status in (-14, -20):
             # -14 => "latitude or longitude exceeded limits"
             # -20 => "tolerance condition error"
             dest.u = dest.v = HUGE_VAL
         elif status != 0:
-            raise Exception('pj_transform failed: %d\n%s' % (
-                status,
-                pj_strerrno(status)))
+            raise ProjError(status)
 
         xy.x = dest.u
         xy.y = dest.v
@@ -604,7 +632,7 @@ def project_linear(geometry not None, CRS src_crs not None,
         interpolator = SphericalInterpolator()
     else:
         interpolator = CartesianInterpolator()
-    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
+    interpolator.init(src_crs, (<CRS>dest_projection))
 
     src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
     gp_domain = GEOSPrepare_r(handle, g_domain)
