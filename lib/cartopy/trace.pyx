@@ -18,51 +18,20 @@ from functools import lru_cache
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
-from libc.stdint cimport uintptr_t as ptr
+from numpy.math cimport isfinite, isnan
 from libcpp cimport bool
 from libcpp.list cimport list
-from libcpp.vector cimport vector
-from numpy.math cimport isfinite, isnan
-
 
 cdef bool DEBUG = False
-
-cdef extern from "geos_c.h":
-    ctypedef void *GEOSContextHandle_t
-    ctypedef struct GEOSGeometry:
-        pass
-    ctypedef struct GEOSCoordSequence
-    GEOSCoordSequence *GEOSCoordSeq_create_r(GEOSContextHandle_t, unsigned int, unsigned int) nogil
-    GEOSGeometry *GEOSGeom_createLineString_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
-    GEOSGeometry *GEOSGeom_createCollection_r(GEOSContextHandle_t, int, GEOSGeometry **, unsigned int) nogil
-    GEOSGeometry *GEOSGeom_createEmptyCollection_r(GEOSContextHandle_t, int) nogil
-    GEOSCoordSequence *GEOSGeom_getCoordSeq_r(GEOSContextHandle_t, GEOSGeometry *) nogil
-    int GEOSCoordSeq_getSize_r(GEOSContextHandle_t handle, const GEOSCoordSequence* s, unsigned int *size) nogil
-    int GEOSCoordSeq_getX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
-    int GEOSCoordSeq_getY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
-    int GEOSCoordSeq_setX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
-    int GEOSCoordSeq_setY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
-    cdef int GEOS_MULTILINESTRING
 
 import re
 import warnings
 
 import shapely.geometry as sgeom
 import shapely.prepared as sprep
-from shapely.geos import lgeos
-from pyproj import Geod, Transformer
+from pyproj import Geod, Transformer, proj_version_str
 from pyproj.exceptions import ProjError
 import shapely.geometry as sgeom
-
-
-cdef GEOSContextHandle_t get_geos_context_handle():
-    cdef GEOSContextHandle_t handle = GEOS_init_r()
-    return handle
-
-
-cdef shapely_from_geos(GEOSGeometry *geom):
-    """Turn the given GEOS geometry pointer into a shapely geometry."""
-    return sgeom.base.geom_factory(<ptr>geom)
 
 
 ctypedef struct Point:
@@ -98,7 +67,7 @@ cdef class LineAccumulator:
         if self.lines.back().empty():
             self.add_point(point)
 
-    cdef object as_geom(self, GEOSContextHandle_t handle):
+    cdef object as_geom(self):
         from cython.operator cimport dereference, preincrement
 
         # self.lines.remove_if(degenerate_line) is not available in Cython.
@@ -246,7 +215,6 @@ cdef State get_state(const Point &point, object gp_domain):
 cdef bool straightAndDomain(double t_start, const Point &p_start,
                             double t_end, const Point &p_end,
                             Interpolator interpolator, double threshold,
-                            GEOSContextHandle_t handle,
                             object gp_domain,
                             bool inside) except *:
     """
@@ -259,7 +227,6 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
     p_start: Projected end point.
     interpolator: Interpolator for current source line.
     threshold: Lateral tolerance in target projection coordinates.
-    handle: Thread-local context handle for GEOS.
     gp_domain: Prepared polygon of target map domain.
     inside: Whether the start point is within the map domain.
 
@@ -367,7 +334,6 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
 
 
 cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
-                 GEOSContextHandle_t handle,
                  object gp_domain, const State &state,
                  Interpolator interpolator, double threshold,
                  double &t_min, Point &p_min, double &t_max, Point &p_max) except *:
@@ -396,13 +362,13 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
             # Straight and entirely-inside-domain
             valid = straightAndDomain(t_start, p_start, t_current, p_current,
                                       interpolator, threshold,
-                                      handle, gp_domain, True)
+                                      gp_domain, True)
 
         elif state == POINT_OUT:
             # Straight and entirely-outside-domain
             valid = straightAndDomain(t_start, p_start, t_current, p_current,
                                       interpolator, threshold,
-                                      handle, gp_domain, False)
+                                      gp_domain, False)
         else:
             valid = not isfinite(p_current.x) or not isfinite(p_current.y)
 
@@ -420,8 +386,7 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
         p_current = interpolator.interpolate(t_current)
 
 
-cdef void _project_segment(GEOSContextHandle_t handle,
-                           tuple src_from, tuple src_to,
+cdef void _project_segment(tuple src_from, tuple src_to,
                            Interpolator interpolator,
                            object gp_domain,
                            double threshold, LineAccumulator lines) except *:
@@ -461,7 +426,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
             print("   ", p_current.x, ", ", p_current.y)
             print("   ", p_end.x, ", ", p_end.y)
 
-        bisect(t_current, p_current, p_end, handle, gp_domain, state,
+        bisect(t_current, p_current, p_end, gp_domain, state,
                interpolator, threshold,
                t_min, p_min, t_max, p_max)
         if DEBUG:
@@ -540,7 +505,6 @@ def project_linear(geometry not None, src_crs not None,
     """
     cdef:
         double threshold = dest_projection.threshold
-        GEOSContextHandle_t handle = get_geos_context_handle()
         Interpolator interpolator
         object g_domain
         object src_coords
@@ -559,12 +523,12 @@ def project_linear(geometry not None, src_crs not None,
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
-        _project_segment(handle, src_coords[src_idx - 1], src_coords[src_idx],
+        _project_segment(src_coords[src_idx - 1], src_coords[src_idx],
                          interpolator, gp_domain, threshold, lines);
 
     del gp_domain
 
-    multi_line_string = lines.as_geom(handle)
+    multi_line_string = lines.as_geom()
 
     del lines, interpolator
     return multi_line_string
@@ -581,8 +545,6 @@ class _Testing:
         # optimisations that are made in the real algorithm (in exchange for
         # a convenient signature).
 
-        cdef GEOSContextHandle_t handle = get_geos_context_handle()
-
         cdef object gp_domain
         gp_domain = sprep.prep(domain)
 
@@ -598,7 +560,7 @@ class _Testing:
         valid = straightAndDomain(
             t_start, p0, t_end, p1,
             interpolator, threshold,
-            handle, gp_domain, p_start_inside_domain)
+            gp_domain, p_start_inside_domain)
 
         del gp_domain
         return valid
