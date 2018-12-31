@@ -1,0 +1,522 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://vmap0.tiles.osgeo.org/wms/vmap0?service=WMS&request=GetCapabilities&version=1.1.1
+  response:
+    body: {string: "<?xml version='1.0' encoding=\"ISO-8859-1\" standalone=\"no\"
+        ?>\n<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd\"\n
+        [\n <!ELEMENT VendorSpecificCapabilities EMPTY>\n ]>  <!-- end of DOCTYPE
+        declaration -->\n\n<WMT_MS_Capabilities version=\"1.1.1\">\n\n<!-- MapServer
+        version 5.6.5 OUTPUT=GIF OUTPUT=PNG OUTPUT=JPEG OUTPUT=WBMP OUTPUT=SVG SUPPORTS=PROJ
+        SUPPORTS=AGG SUPPORTS=FREETYPE SUPPORTS=ICONV SUPPORTS=WMS_SERVER SUPPORTS=WMS_CLIENT
+        SUPPORTS=WFS_SERVER SUPPORTS=WFS_CLIENT SUPPORTS=WCS_SERVER SUPPORTS=SOS_SERVER
+        SUPPORTS=GEOS INPUT=EPPL7 INPUT=POSTGIS INPUT=OGR INPUT=GDAL INPUT=SHAPEFILE
+        -->\n\n<Service>\n  <Name>OGC:WMS</Name>\n  <Title>Metacarta WMS VMaplv0</Title>\n
+        \ <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/>\n
+        \ <ContactInformation>\n  </ContactInformation>\n</Service>\n\n<Capability>\n
+        \ <Request>\n    <GetCapabilities>\n      <Format>application/vnd.ogc.wms_xml</Format>\n
+        \     <DCPType>\n        <HTTP>\n          <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetCapabilities>\n    <GetMap>\n
+        \     <Format>image/jpeg</Format>\n      <Format>image/png</Format>\n      <Format>image/gif</Format>\n
+        \     <Format>image/png; mode=24bit</Format>\n      <Format>image/vnd.wap.wbmp</Format>\n
+        \     <Format>image/tiff</Format>\n      <Format>image/svg+xml</Format>\n
+        \     <DCPType>\n        <HTTP>\n          <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetMap>\n    <GetFeatureInfo>\n      <Format>text/plain</Format>\n
+        \     <Format>application/vnd.ogc.gml</Format>\n      <DCPType>\n        <HTTP>\n
+        \         <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetFeatureInfo>\n    <DescribeLayer>\n
+        \     <Format>text/xml</Format>\n      <DCPType>\n        <HTTP>\n          <Get><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n
+        \         <Post><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n        </HTTP>\n
+        \     </DCPType>\n    </DescribeLayer>\n    <GetLegendGraphic>\n      <Format>image/jpeg</Format>\n
+        \     <Format>image/png</Format>\n      <Format>image/gif</Format>\n      <Format>image/png;
+        mode=24bit</Format>\n      <Format>image/vnd.wap.wbmp</Format>\n      <DCPType>\n
+        \       <HTTP>\n          <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetLegendGraphic>\n    <GetStyles>\n
+        \     <Format>text/xml</Format>\n      <DCPType>\n        <HTTP>\n          <Get><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n
+        \         <Post><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n        </HTTP>\n
+        \     </DCPType>\n    </GetStyles>\n  </Request>\n  <Exception>\n    <Format>application/vnd.ogc.se_xml</Format>\n
+        \   <Format>application/vnd.ogc.se_inimage</Format>\n    <Format>application/vnd.ogc.se_blank</Format>\n
+        \ </Exception>\n  <VendorSpecificCapabilities />\n  <UserDefinedSymbolization
+        SupportSLD=\"1\" UserLayer=\"0\" UserStyle=\"1\" RemoteWFS=\"0\"/>\n  <Layer>\n
+        \   <Name>Vmap0</Name>\n    <Title>Metacarta WMS VMaplv0</Title>\n    <Abstract>Vmap0</Abstract>\n
+        \   <SRS>EPSG:4269</SRS>\n    <SRS>EPSG:4326</SRS>\n    <SRS>EPSG:900913</SRS>\n
+        \   <LatLonBoundingBox minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\"
+        />\n    <Layer>\n      <Name>basic</Name>\n<!-- WARNING: Mandatory metadata
+        '..._GROUP_TITLE' was missing in this context. -->\n      <Title>basic</Title>\n
+        \     <Abstract>basic</Abstract>\n      <Layer queryable=\"0\" opaque=\"0\"
+        cascaded=\"0\">\n        <Name>ocean</Name>\n<!-- WARNING: Mandatory metadata
+        '..._title' was missing in this context. -->\n        <Title>ocean</Title>\n
+        \       <!-- WARNING: Optional LatLonBoundingBox could not be established
+        for this layer.  Consider setting the EXTENT in the LAYER object, or wms_extent
+        metadata. Also check that your data exists in the DATA statement -->\n      </Layer>\n
+        \     <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>ground_01</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>ground_01</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-90\" maxx=\"180\" maxy=\"90\" />\n        <Style>\n          <Name>default</Name>\n
+        \         <Title>default</Title>\n          <LegendURL width=\"78\" height=\"30\">\n
+        \            <Format>image/png</Format>\n             <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=ground_01&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"11973.6683623113\"
+        max=\"0\" />\n        <!-- WARNING: Only MINSCALEDENOM and no MAXSCALEDENOM
+        specified in the mapfile. A default value of 0 has been returned for the Max
+        ScaleHint but this is probably not what you want. -->\n      </Layer>\n      <Layer
+        queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>ground_02</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>ground_02</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-90\" maxx=\"180\" maxy=\"83.6274\" />\n        <Style>\n          <Name>default</Name>\n
+        \         <Title>default</Title>\n          <LegendURL width=\"78\" height=\"30\">\n
+        \            <Format>image/png</Format>\n             <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=ground_02&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"11973.6683623113\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>population</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>population</Title>\n        <LatLonBoundingBox
+        minx=\"-179.13\" miny=\"-53.1674\" maxx=\"178.443\" maxy=\"70.9927\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"148\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=population&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"5986.83418115564\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>river</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>river</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"85\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=river&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"299.341709057782\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>stateboundary</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>stateboundary</Title>\n        <LatLonBoundingBox
+        minx=\"-139.053\" miny=\"-49.1398\" maxx=\"178.043\" maxy=\"81.6552\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"148\" height=\"55\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=stateboundary&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"23947.3367246226\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>country_01</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>country_01</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"155\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=country_01&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n      </Layer>\n      <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>country_02</Name>\n<!-- WARNING:
+        Mandatory metadata '..._title' was missing in this context. -->\n        <Title>country_02</Title>\n
+        \       <LatLonBoundingBox minx=\"-180\" miny=\"-55.1943\" maxx=\"180\" maxy=\"72.0051\"
+        />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"155\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=country_02&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n      </Layer>\n      <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>disp</Name>\n<!-- WARNING: Mandatory
+        metadata '..._title' was missing in this context. -->\n        <Title>disp</Title>\n
+        \       <LatLonBoundingBox minx=\"-168.976\" miny=\"3.97549\" maxx=\"80.3432\"
+        maxy=\"68.0063\" />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\"
+        cascaded=\"0\">\n        <Name>inwater</Name>\n<!-- WARNING: Mandatory metadata
+        '..._title' was missing in this context. -->\n        <Title>inwater</Title>\n
+        \       <LatLonBoundingBox minx=\"-179.999\" miny=\"-70.9173\" maxx=\"179.999\"
+        maxy=\"83.576\" />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"134\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=inwater&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"11973.6683623113\"
+        />\n      </Layer>\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\"
+        cascaded=\"0\">\n        <Name>coastline_01</Name>\n<!-- WARNING: Mandatory
+        metadata '..._title' was missing in this context. -->\n        <Title>coastline_01</Title>\n
+        \       <LatLonBoundingBox minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\"
+        />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"113\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=coastline_01&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"11973.6683623113\"
+        max=\"0\" />\n        <!-- WARNING: Only MINSCALEDENOM and no MAXSCALEDENOM
+        specified in the mapfile. A default value of 0 has been returned for the Max
+        ScaleHint but this is probably not what you want. -->\n    </Layer>\n    <Layer
+        queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>coastline_02</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>coastline_02</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-85.5828\" maxx=\"180\" maxy=\"83.6274\" />\n        <Style>\n          <Name>default</Name>\n
+        \         <Title>default</Title>\n          <LegendURL width=\"113\" height=\"30\">\n
+        \            <Format>image/png</Format>\n             <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=coastline_02&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"11973.6683623113\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>depthcontour</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>depthcontour</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-78.1118\" maxx=\"180\" maxy=\"89.9187\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"141\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=depthcontour&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"17960.5025434669\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>priroad</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>priroad</Title>\n        <LatLonBoundingBox
+        minx=\"-174.009\" miny=\"-54.7939\" maxx=\"178.564\" maxy=\"70.4843\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"141\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=priroad&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n    </Layer>\n    <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>secroad</Name>\n<!-- WARNING:
+        Mandatory metadata '..._title' was missing in this context. -->\n        <Title>secroad</Title>\n
+        \       <LatLonBoundingBox minx=\"-179.999\" miny=\"-54.888\" maxx=\"179.999\"
+        maxy=\"74.7406\" />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"155\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=secroad&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"124.725712107409\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>rail</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>rail</Title>\n        <LatLonBoundingBox
+        minx=\"-165.245\" miny=\"-53.1384\" maxx=\"179.61\" maxy=\"78.168\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"106\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=rail&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"124.725712107409\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>ferry</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>ferry</Title>\n        <LatLonBoundingBox
+        minx=\"-126.191\" miny=\"-41.8292\" maxx=\"175.15\" maxy=\"69.6709\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"148\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=ferry&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"1197.36683623113\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>tunnel</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>tunnel</Title>\n        <LatLonBoundingBox
+        minx=\"-148.866\" miny=\"-50.3083\" maxx=\"177.891\" maxy=\"67.2178\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"92\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=tunnel&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"598.683418115565\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>bridge</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>bridge</Title>\n        <LatLonBoundingBox
+        minx=\"-149.703\" miny=\"-43.5104\" maxx=\"179.452\" maxy=\"69.6586\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"92\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=bridge&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"598.683418115565\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>trail</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>trail</Title>\n        <LatLonBoundingBox
+        minx=\"-179.999\" miny=\"-47.1622\" maxx=\"179.999\" maxy=\"77.224\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"92\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=trail&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"179.605025434669\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>CAUSE</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>CAUSE</Title>\n        <LatLonBoundingBox
+        minx=\"-96.5515\" miny=\"-32.2882\" maxx=\"127.912\" maxy=\"58.5718\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"106\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=CAUSE&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"598.683418115565\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>clabel</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>clabel</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"83.6236\" />\n    </Layer>\n
+        \   <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>statelabel</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>statelabel</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-90\" maxx=\"180\" maxy=\"83.6236\" />\n    </Layer>\n    <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>ctylabel</Name>\n<!-- WARNING:
+        Mandatory metadata '..._title' was missing in this context. -->\n        <Title>ctylabel</Title>\n
+        \       <LatLonBoundingBox minx=\"-165.27\" miny=\"-53.15\" maxx=\"177.13\"
+        maxy=\"78.2\" />\n    </Layer>\n  </Layer>\n</Capability>\n</WMT_MS_Capabilities>\n"}
+    headers:
+      Connection: [Keep-Alive]
+      Content-Type: [application/vnd.ogc.wms_xml]
+      Date: ['Tue, 04 Dec 2018 03:06:12 GMT']
+      Keep-Alive: ['timeout=5, max=100']
+      Server: [Apache/2.2.22]
+      Strict-Transport-Security: [max-age=15768000]
+      Transfer-Encoding: [chunked]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://vmap0.tiles.osgeo.org/wms/vmap0?service=WMS&request=GetCapabilities&version=1.1.1
+  response:
+    body: {string: "<?xml version='1.0' encoding=\"ISO-8859-1\" standalone=\"no\"
+        ?>\n<!DOCTYPE WMT_MS_Capabilities SYSTEM \"http://schemas.opengis.net/wms/1.1.1/WMS_MS_Capabilities.dtd\"\n
+        [\n <!ELEMENT VendorSpecificCapabilities EMPTY>\n ]>  <!-- end of DOCTYPE
+        declaration -->\n\n<WMT_MS_Capabilities version=\"1.1.1\">\n\n<!-- MapServer
+        version 5.6.5 OUTPUT=GIF OUTPUT=PNG OUTPUT=JPEG OUTPUT=WBMP OUTPUT=SVG SUPPORTS=PROJ
+        SUPPORTS=AGG SUPPORTS=FREETYPE SUPPORTS=ICONV SUPPORTS=WMS_SERVER SUPPORTS=WMS_CLIENT
+        SUPPORTS=WFS_SERVER SUPPORTS=WFS_CLIENT SUPPORTS=WCS_SERVER SUPPORTS=SOS_SERVER
+        SUPPORTS=GEOS INPUT=EPPL7 INPUT=POSTGIS INPUT=OGR INPUT=GDAL INPUT=SHAPEFILE
+        -->\n\n<Service>\n  <Name>OGC:WMS</Name>\n  <Title>Metacarta WMS VMaplv0</Title>\n
+        \ <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/>\n
+        \ <ContactInformation>\n  </ContactInformation>\n</Service>\n\n<Capability>\n
+        \ <Request>\n    <GetCapabilities>\n      <Format>application/vnd.ogc.wms_xml</Format>\n
+        \     <DCPType>\n        <HTTP>\n          <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetCapabilities>\n    <GetMap>\n
+        \     <Format>image/jpeg</Format>\n      <Format>image/png</Format>\n      <Format>image/gif</Format>\n
+        \     <Format>image/png; mode=24bit</Format>\n      <Format>image/vnd.wap.wbmp</Format>\n
+        \     <Format>image/tiff</Format>\n      <Format>image/svg+xml</Format>\n
+        \     <DCPType>\n        <HTTP>\n          <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetMap>\n    <GetFeatureInfo>\n      <Format>text/plain</Format>\n
+        \     <Format>application/vnd.ogc.gml</Format>\n      <DCPType>\n        <HTTP>\n
+        \         <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetFeatureInfo>\n    <DescribeLayer>\n
+        \     <Format>text/xml</Format>\n      <DCPType>\n        <HTTP>\n          <Get><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n
+        \         <Post><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n        </HTTP>\n
+        \     </DCPType>\n    </DescribeLayer>\n    <GetLegendGraphic>\n      <Format>image/jpeg</Format>\n
+        \     <Format>image/png</Format>\n      <Format>image/gif</Format>\n      <Format>image/png;
+        mode=24bit</Format>\n      <Format>image/vnd.wap.wbmp</Format>\n      <DCPType>\n
+        \       <HTTP>\n          <Get><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n          <Post><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n
+        \       </HTTP>\n      </DCPType>\n    </GetLegendGraphic>\n    <GetStyles>\n
+        \     <Format>text/xml</Format>\n      <DCPType>\n        <HTTP>\n          <Get><OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Get>\n
+        \         <Post><OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:href=\"http://vmap0.tiles.osgeo.org/wms?\"/></Post>\n        </HTTP>\n
+        \     </DCPType>\n    </GetStyles>\n  </Request>\n  <Exception>\n    <Format>application/vnd.ogc.se_xml</Format>\n
+        \   <Format>application/vnd.ogc.se_inimage</Format>\n    <Format>application/vnd.ogc.se_blank</Format>\n
+        \ </Exception>\n  <VendorSpecificCapabilities />\n  <UserDefinedSymbolization
+        SupportSLD=\"1\" UserLayer=\"0\" UserStyle=\"1\" RemoteWFS=\"0\"/>\n  <Layer>\n
+        \   <Name>Vmap0</Name>\n    <Title>Metacarta WMS VMaplv0</Title>\n    <Abstract>Vmap0</Abstract>\n
+        \   <SRS>EPSG:4269</SRS>\n    <SRS>EPSG:4326</SRS>\n    <SRS>EPSG:900913</SRS>\n
+        \   <LatLonBoundingBox minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\"
+        />\n    <Layer>\n      <Name>basic</Name>\n<!-- WARNING: Mandatory metadata
+        '..._GROUP_TITLE' was missing in this context. -->\n      <Title>basic</Title>\n
+        \     <Abstract>basic</Abstract>\n      <Layer queryable=\"0\" opaque=\"0\"
+        cascaded=\"0\">\n        <Name>ocean</Name>\n<!-- WARNING: Mandatory metadata
+        '..._title' was missing in this context. -->\n        <Title>ocean</Title>\n
+        \       <!-- WARNING: Optional LatLonBoundingBox could not be established
+        for this layer.  Consider setting the EXTENT in the LAYER object, or wms_extent
+        metadata. Also check that your data exists in the DATA statement -->\n      </Layer>\n
+        \     <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>ground_01</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>ground_01</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-90\" maxx=\"180\" maxy=\"90\" />\n        <Style>\n          <Name>default</Name>\n
+        \         <Title>default</Title>\n          <LegendURL width=\"78\" height=\"30\">\n
+        \            <Format>image/png</Format>\n             <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=ground_01&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"11973.6683623113\"
+        max=\"0\" />\n        <!-- WARNING: Only MINSCALEDENOM and no MAXSCALEDENOM
+        specified in the mapfile. A default value of 0 has been returned for the Max
+        ScaleHint but this is probably not what you want. -->\n      </Layer>\n      <Layer
+        queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>ground_02</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>ground_02</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-90\" maxx=\"180\" maxy=\"83.6274\" />\n        <Style>\n          <Name>default</Name>\n
+        \         <Title>default</Title>\n          <LegendURL width=\"78\" height=\"30\">\n
+        \            <Format>image/png</Format>\n             <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=ground_02&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"11973.6683623113\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>population</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>population</Title>\n        <LatLonBoundingBox
+        minx=\"-179.13\" miny=\"-53.1674\" maxx=\"178.443\" maxy=\"70.9927\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"148\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=population&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"5986.83418115564\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>river</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>river</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"85\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=river&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"299.341709057782\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>stateboundary</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>stateboundary</Title>\n        <LatLonBoundingBox
+        minx=\"-139.053\" miny=\"-49.1398\" maxx=\"178.043\" maxy=\"81.6552\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"148\" height=\"55\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=stateboundary&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"23947.3367246226\"
+        />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>country_01</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>country_01</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"155\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=country_01&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n      </Layer>\n      <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>country_02</Name>\n<!-- WARNING:
+        Mandatory metadata '..._title' was missing in this context. -->\n        <Title>country_02</Title>\n
+        \       <LatLonBoundingBox minx=\"-180\" miny=\"-55.1943\" maxx=\"180\" maxy=\"72.0051\"
+        />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"155\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=country_02&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n      </Layer>\n      <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>disp</Name>\n<!-- WARNING: Mandatory
+        metadata '..._title' was missing in this context. -->\n        <Title>disp</Title>\n
+        \       <LatLonBoundingBox minx=\"-168.976\" miny=\"3.97549\" maxx=\"80.3432\"
+        maxy=\"68.0063\" />\n      </Layer>\n      <Layer queryable=\"0\" opaque=\"0\"
+        cascaded=\"0\">\n        <Name>inwater</Name>\n<!-- WARNING: Mandatory metadata
+        '..._title' was missing in this context. -->\n        <Title>inwater</Title>\n
+        \       <LatLonBoundingBox minx=\"-179.999\" miny=\"-70.9173\" maxx=\"179.999\"
+        maxy=\"83.576\" />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"134\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=inwater&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"11973.6683623113\"
+        />\n      </Layer>\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\"
+        cascaded=\"0\">\n        <Name>coastline_01</Name>\n<!-- WARNING: Mandatory
+        metadata '..._title' was missing in this context. -->\n        <Title>coastline_01</Title>\n
+        \       <LatLonBoundingBox minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"90\"
+        />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"113\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=coastline_01&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"11973.6683623113\"
+        max=\"0\" />\n        <!-- WARNING: Only MINSCALEDENOM and no MAXSCALEDENOM
+        specified in the mapfile. A default value of 0 has been returned for the Max
+        ScaleHint but this is probably not what you want. -->\n    </Layer>\n    <Layer
+        queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>coastline_02</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>coastline_02</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-85.5828\" maxx=\"180\" maxy=\"83.6274\" />\n        <Style>\n          <Name>default</Name>\n
+        \         <Title>default</Title>\n          <LegendURL width=\"113\" height=\"30\">\n
+        \            <Format>image/png</Format>\n             <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=coastline_02&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"11973.6683623113\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>depthcontour</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>depthcontour</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-78.1118\" maxx=\"180\" maxy=\"89.9187\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"141\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=depthcontour&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"17960.5025434669\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>priroad</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>priroad</Title>\n        <LatLonBoundingBox
+        minx=\"-174.009\" miny=\"-54.7939\" maxx=\"178.564\" maxy=\"70.4843\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"141\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=priroad&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n    </Layer>\n    <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>secroad</Name>\n<!-- WARNING:
+        Mandatory metadata '..._title' was missing in this context. -->\n        <Title>secroad</Title>\n
+        \       <LatLonBoundingBox minx=\"-179.999\" miny=\"-54.888\" maxx=\"179.999\"
+        maxy=\"74.7406\" />\n        <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"155\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=secroad&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"124.725712107409\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>rail</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>rail</Title>\n        <LatLonBoundingBox
+        minx=\"-165.245\" miny=\"-53.1384\" maxx=\"179.61\" maxy=\"78.168\" />\n        <Style>\n
+        \         <Name>default</Name>\n          <Title>default</Title>\n          <LegendURL
+        width=\"106\" height=\"30\">\n             <Format>image/png</Format>\n             <OnlineResource
+        xmlns:xlink=\"http://www.w3.org/1999/xlink\" xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=rail&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"124.725712107409\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>ferry</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>ferry</Title>\n        <LatLonBoundingBox
+        minx=\"-126.191\" miny=\"-41.8292\" maxx=\"175.15\" maxy=\"69.6709\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"148\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=ferry&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"1197.36683623113\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>tunnel</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>tunnel</Title>\n        <LatLonBoundingBox
+        minx=\"-148.866\" miny=\"-50.3083\" maxx=\"177.891\" maxy=\"67.2178\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"92\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=tunnel&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"598.683418115565\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>bridge</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>bridge</Title>\n        <LatLonBoundingBox
+        minx=\"-149.703\" miny=\"-43.5104\" maxx=\"179.452\" maxy=\"69.6586\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"92\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=bridge&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"598.683418115565\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>trail</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>trail</Title>\n        <LatLonBoundingBox
+        minx=\"-179.999\" miny=\"-47.1622\" maxx=\"179.999\" maxy=\"77.224\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"92\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=trail&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"179.605025434669\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>CAUSE</Name>\n<!-- WARNING: Mandatory metadata '..._title' was
+        missing in this context. -->\n        <Title>CAUSE</Title>\n        <LatLonBoundingBox
+        minx=\"-96.5515\" miny=\"-32.2882\" maxx=\"127.912\" maxy=\"58.5718\" />\n
+        \       <Style>\n          <Name>default</Name>\n          <Title>default</Title>\n
+        \         <LegendURL width=\"106\" height=\"30\">\n             <Format>image/png</Format>\n
+        \            <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"
+        xlink:type=\"simple\" xlink:href=\"http://vmap0.tiles.osgeo.org/wms?version=1.1.1&amp;service=WMS&amp;request=GetLegendGraphic&amp;layer=CAUSE&amp;format=image/png&amp;STYLE=default\"/>\n
+        \         </LegendURL>\n        </Style>\n        <ScaleHint min=\"0\" max=\"598.683418115565\"
+        />\n    </Layer>\n    <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n
+        \       <Name>clabel</Name>\n<!-- WARNING: Mandatory metadata '..._title'
+        was missing in this context. -->\n        <Title>clabel</Title>\n        <LatLonBoundingBox
+        minx=\"-180\" miny=\"-90\" maxx=\"180\" maxy=\"83.6236\" />\n    </Layer>\n
+        \   <Layer queryable=\"0\" opaque=\"0\" cascaded=\"0\">\n        <Name>statelabel</Name>\n<!--
+        WARNING: Mandatory metadata '..._title' was missing in this context. -->\n
+        \       <Title>statelabel</Title>\n        <LatLonBoundingBox minx=\"-180\"
+        miny=\"-90\" maxx=\"180\" maxy=\"83.6236\" />\n    </Layer>\n    <Layer queryable=\"0\"
+        opaque=\"0\" cascaded=\"0\">\n        <Name>ctylabel</Name>\n<!-- WARNING:
+        Mandatory metadata '..._title' was missing in this context. -->\n        <Title>ctylabel</Title>\n
+        \       <LatLonBoundingBox minx=\"-165.27\" miny=\"-53.15\" maxx=\"177.13\"
+        maxy=\"78.2\" />\n    </Layer>\n  </Layer>\n</Capability>\n</WMT_MS_Capabilities>\n"}
+    headers:
+      Connection: [Keep-Alive]
+      Content-Type: [application/vnd.ogc.wms_xml]
+      Date: ['Tue, 04 Dec 2018 03:19:06 GMT']
+      Keep-Alive: ['timeout=5, max=100']
+      Server: [Apache/2.2.22]
+      Strict-Transport-Security: [max-age=15768000]
+      Transfer-Encoding: [chunked]
+    status: {code: 200, message: OK}
+version: 1

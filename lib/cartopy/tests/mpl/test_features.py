@@ -67,7 +67,7 @@ def test_gshhs():
                                          facecolor='green'), facecolor='blue')
 
 
-@pytest.mark.network
+@pytest.mark.vcr()
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @ImageTesting(['wfs'])
 def test_wfs():

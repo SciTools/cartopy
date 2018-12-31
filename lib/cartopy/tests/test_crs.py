@@ -85,7 +85,7 @@ class TestCRS(object):
     def test_osgb(self):
         self._check_osgb(ccrs.OSGB())
 
-    @pytest.mark.network
+    @pytest.mark.vcr()
     @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
     def test_epsg(self):
         uk = ccrs.epsg(27700)

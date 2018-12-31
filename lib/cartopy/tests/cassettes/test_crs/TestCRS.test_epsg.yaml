@@ -1,0 +1,238 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://epsg.io/27700.gml?download
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA61V227bRhB991cM+NQC5U1yrZCQGMRWShhILSNy+lpMdkfkNtxLd1eW9PcFb7LY
+        xAGK9IUgOTNnz5y57PLtUTbwTNYJrVZBGiUBkGKaC1Wtgk9Pv4VvgrfFFSwr2eSPVv9FzBO/+7iF
+        o2yUy8m4ahXsrcqPoa5M7gyx3LGaJIZHx/P3j9syT6Mk5+jRkQ+GuEo2q6D23uRxfDgcIm1IVcJF
+        inxcySaeR7PR9dgI9WXifJhH2lZxmmVZ3FkDaOkJvgqErkzIrAtni0WSBMUV9NQleVyjx0erDVl/
+        ag0Ay5Z+fqel1Or3waO3jDZ/MlSYMe9l/PJz4oaNQAfdcxXcWuGFq+EBvdAKGyit4AEwzWkVpEky
+        69+3Bhn12umK5Zx2uUIpVBW6k/Mke+3yxbwNiL9z3k/l7Z+bbXk7v4EYHt493W8e3n0oP96vIQRH
+        1LuBJYn2i/t5JDLL0pv/SmQRjDRGIgNq8VQLB+/3VpekK4umFsyB4KS82AmyIBzstAWEtnWckKJB
+        C16Db+M+7z0chK/hbgt4JAdCgbacLChtff0LEDofDeKPJ456xC+CTDUSaqet7Gqw1XvLqNhYrlAx
+        gu3ePtMJ9A5KS+ihrRgKNR7xdeTVNOdn0Y7LGj0VsyS9CZMsnGVnfhfWSRyrUVXk/i1h//t+DV0r
+        57Wl3bQYvUNo6e89OT9UY5Yk8yhJk4vW+GHAX6P0zf8JmN5Eyfz6snnjbwnRH+JqfSi83dPg1H1P
+        C+rWZCwx9MSLHTZudJ0Yri4O+nqyl/Fr22DZr5Bzx15Mxv2mfAyKScLWjVm2e6ZHfQk+4ymUVLSz
+        CWnWjec3d0Mf3vmOgVxLFGqz+wMbwYU/vSo9WsKByvU8G6vXYTimDRUf0FYEqDhI4mIvwTFsCLw2
+        46CCRGOEqjqndg0rItt+u25Mop5ejzZiM62GS+P1ptDacqHQ08aQ7fIdiKZZt3temH5GRyVpTl6w
+        7m55DfIs+/VssbhEYGg9OYHq7jvR5+DrpBeqz+zyWiv+AZADo9gRBwAA
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      CF-Cache-Status: [HIT]
+      CF-RAY: [483b0e288142c55a-ORD]
+      Cache-Control: ['public, max-age=31536000']
+      Connection: [keep-alive]
+      Content-Disposition: [attachment; filename=27700.gml]
+      Content-Encoding: [gzip]
+      Content-Type: [text/xml]
+      Date: ['Tue, 04 Dec 2018 03:06:08 GMT']
+      Expires: ['Wed, 04 Dec 2019 03:06:08 GMT']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=d914442d50ab07dda1e02b934c4f6bb721543892768; expires=Wed,
+          04-Dec-19 03:06:08 GMT; path=/; domain=.epsg.io; HttpOnly']
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://epsg.io/27700.proj4?download
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAy3KQQqDMBBA0avMfuIwGSYmWeQsIq0tttGIibTevgj9uw8Pt728Ulum/QaYxzZw
+        0giYyzpw6gTwnZhijD1b8dYDfi/BV4DnZex/ppy3msZ5PwFb+Txr0KTak2ownRVH1nnjVIh7w2Sd
+        YRL1himomE6YNETAY51bTQvgWob79KjwA2Cy5L6hAAAA
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      CF-Cache-Status: [HIT]
+      CF-RAY: [483b0e2a6253c53e-ORD]
+      Cache-Control: ['public, max-age=31536000']
+      Connection: [keep-alive]
+      Content-Disposition: [attachment; filename=27700.proj4]
+      Content-Encoding: [gzip]
+      Content-Type: [text/plain]
+      Date: ['Tue, 04 Dec 2018 03:06:08 GMT']
+      Expires: ['Wed, 04 Dec 2019 03:06:08 GMT']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=d0a05b1b57547c5ffee6f582be7d31e3d1543892768; expires=Wed,
+          04-Dec-19 03:06:08 GMT; path=/; domain=.epsg.io; HttpOnly']
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://epsg.io/urn:ogc:def:area:EPSG::4390.gml?download
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA5VV227bOBR8z1cQekkLVDfbcWPWVrGJXSPINgngGt23gkseUcSKpJaka/uv8g35
+        soUoybFTx9m+SefMmSGH0nD8eSNL9BOMFVpNgjRKAgSKaiYUnwTLb1/Cy+BzdobGUFmOZxsHyk0h
+        F0o4oRXayFJZXPcmwcoovAk1r7CtgGJLC5Ak3FiGZw+LOU6jBDPiiAUXtHOc6klQOFfhOF6v15Gw
+        2tFemkba8LiXJBcxp3oHluwtsGTP4PIArCtQXNhIgYu5LON+1Ougm1Kofw7A677nTEejUey7AeKy
+        xIJNgnqnITFAwkF/lATZuGmAciIXYBDVDBYVoTAJ7ucPQVZ7ojnFDHJcjzVW4Hp4HB/OZo3F4C1u
+        X/4wQO7zpYXsDCE05pJhBpYaUdXu+6KvU42vC2IIdWAWzgjFs6USDhi6FYozLdG75e17FCKd57bQ
+        BpDT6G+9UoyYLdI5Wt5eL9BauEIoNBg9PQ6G53c1Zpg+PSbp+R0iiqGPT4/9/vn3ut73j7NPSKuG
+        b26AOHRlhCNCoXczxUui2Af0nZRg/fSCalfX3kfoxpZQq34lqiOIxvGxXfhtx8f27c3goLkhVSHo
+        rARZ+7azRDI8++vHfAe4qncrFL/Smw7U4dZgnW//qRUXbsVgD9H5OwUqJCmzcBT1mrV2lT22+E06
+        LwjkNwR70eXlacGTdF7Q6pUrGghxbwkORtHHi9OKJ/m8otLm/ysO0ygdnFZ8na/pnzzrBnL8Y/F/
+        sARHpsSRB6MrMG674/Z/4bWWUquvLWZ/ab4tVK6NJPWXudArQyG7X8yvonH8SvflvIGfok7fKXGQ
+        9ZJ0GCb9MO218wfdl6O0IIqDfWHtXutminyC4cJA3kR0F0cNIDTw7wqsa4Opl6QXUTIcBSg+OIJX
+        1BopW+h15swKWpx//8UlO4XKACUOWJaT0nbog8bZgeAR45vUPHpeJ7L45rfDeEeoiIRseYvCXbjV
+        Yebz8lhQfjiSkg25Jzrb+cFBS3Bm+0WU8OoZNZdBWOlyy7XaW2/QjrhtBZPAClmV4M+sde754mgL
+        3bUSH73Hs/8Atn+otQcIAAA=
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      CF-Cache-Status: [HIT]
+      CF-RAY: [483b0e2b21bbc50e-ORD]
+      Cache-Control: ['public, max-age=31536000']
+      Connection: [keep-alive]
+      Content-Encoding: [gzip]
+      Content-Type: [text/xml]
+      Date: ['Tue, 04 Dec 2018 03:06:08 GMT']
+      Expires: ['Wed, 04 Dec 2019 03:06:08 GMT']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=d1a2eab5cbdf588fccc636effba0d9beb1543892768; expires=Wed,
+          04-Dec-19 03:06:08 GMT; path=/; domain=.epsg.io; HttpOnly']
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://epsg.io/27700.gml?download
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA61V227bRhB991cM+NQC5U1yrZCQGMRWShhILSNy+lpMdkfkNtxLd1eW9PcFb7LY
+        xAGK9IUgOTNnz5y57PLtUTbwTNYJrVZBGiUBkGKaC1Wtgk9Pv4VvgrfFFSwr2eSPVv9FzBO/+7iF
+        o2yUy8m4ahXsrcqPoa5M7gyx3LGaJIZHx/P3j9syT6Mk5+jRkQ+GuEo2q6D23uRxfDgcIm1IVcJF
+        inxcySaeR7PR9dgI9WXifJhH2lZxmmVZ3FkDaOkJvgqErkzIrAtni0WSBMUV9NQleVyjx0erDVl/
+        ag0Ay5Z+fqel1Or3waO3jDZ/MlSYMe9l/PJz4oaNQAfdcxXcWuGFq+EBvdAKGyit4AEwzWkVpEky
+        69+3Bhn12umK5Zx2uUIpVBW6k/Mke+3yxbwNiL9z3k/l7Z+bbXk7v4EYHt493W8e3n0oP96vIQRH
+        1LuBJYn2i/t5JDLL0pv/SmQRjDRGIgNq8VQLB+/3VpekK4umFsyB4KS82AmyIBzstAWEtnWckKJB
+        C16Db+M+7z0chK/hbgt4JAdCgbacLChtff0LEDofDeKPJ456xC+CTDUSaqet7Gqw1XvLqNhYrlAx
+        gu3ePtMJ9A5KS+ihrRgKNR7xdeTVNOdn0Y7LGj0VsyS9CZMsnGVnfhfWSRyrUVXk/i1h//t+DV0r
+        57Wl3bQYvUNo6e89OT9UY5Yk8yhJk4vW+GHAX6P0zf8JmN5Eyfz6snnjbwnRH+JqfSi83dPg1H1P
+        C+rWZCwx9MSLHTZudJ0Yri4O+nqyl/Fr22DZr5Bzx15Mxv2mfAyKScLWjVm2e6ZHfQk+4ymUVLSz
+        CWnWjec3d0Mf3vmOgVxLFGqz+wMbwYU/vSo9WsKByvU8G6vXYTimDRUf0FYEqDhI4mIvwTFsCLw2
+        46CCRGOEqjqndg0rItt+u25Mop5ejzZiM62GS+P1ptDacqHQ08aQ7fIdiKZZt3temH5GRyVpTl6w
+        7m55DfIs+/VssbhEYGg9OYHq7jvR5+DrpBeqz+zyWiv+AZADo9gRBwAA
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      CF-Cache-Status: [HIT]
+      CF-RAY: [483b210f775fc55a-ORD]
+      Cache-Control: ['public, max-age=31536000']
+      Connection: [keep-alive]
+      Content-Disposition: [attachment; filename=27700.gml]
+      Content-Encoding: [gzip]
+      Content-Type: [text/xml]
+      Date: ['Tue, 04 Dec 2018 03:19:02 GMT']
+      Expires: ['Wed, 04 Dec 2019 03:19:02 GMT']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=d2aa589cde8523971675ac1c442d1667c1543893542; expires=Wed,
+          04-Dec-19 03:19:02 GMT; path=/; domain=.epsg.io; HttpOnly']
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://epsg.io/27700.proj4?download
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAy3KQQqDMBBA0avMfuIwGSYmWeQsIq0tttGIibTevgj9uw8Pt728Ulum/QaYxzZw
+        0giYyzpw6gTwnZhijD1b8dYDfi/BV4DnZex/ppy3msZ5PwFb+Txr0KTak2ownRVH1nnjVIh7w2Sd
+        YRL1himomE6YNETAY51bTQvgWob79KjwA2Cy5L6hAAAA
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      CF-Cache-Status: [HIT]
+      CF-RAY: [483b211071efc51e-ORD]
+      Cache-Control: ['public, max-age=31536000']
+      Connection: [keep-alive]
+      Content-Disposition: [attachment; filename=27700.proj4]
+      Content-Encoding: [gzip]
+      Content-Type: [text/plain]
+      Date: ['Tue, 04 Dec 2018 03:19:02 GMT']
+      Expires: ['Wed, 04 Dec 2019 03:19:02 GMT']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=d0b81ea4d059eae0e52ff14cc2752af1a1543893542; expires=Wed,
+          04-Dec-19 03:19:02 GMT; path=/; domain=.epsg.io; HttpOnly']
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.0]
+    method: GET
+    uri: http://epsg.io/urn:ogc:def:area:EPSG::4390.gml?download
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA5VV227bOBR8z1cQekkLVDfbcWPWVrGJXSPINgngGt23gkseUcSKpJaka/uv8g35
+        soUoybFTx9m+SefMmSGH0nD8eSNL9BOMFVpNgjRKAgSKaiYUnwTLb1/Cy+BzdobGUFmOZxsHyk0h
+        F0o4oRXayFJZXPcmwcoovAk1r7CtgGJLC5Ak3FiGZw+LOU6jBDPiiAUXtHOc6klQOFfhOF6v15Gw
+        2tFemkba8LiXJBcxp3oHluwtsGTP4PIArCtQXNhIgYu5LON+1Ougm1Kofw7A677nTEejUey7AeKy
+        xIJNgnqnITFAwkF/lATZuGmAciIXYBDVDBYVoTAJ7ucPQVZ7ojnFDHJcjzVW4Hp4HB/OZo3F4C1u
+        X/4wQO7zpYXsDCE05pJhBpYaUdXu+6KvU42vC2IIdWAWzgjFs6USDhi6FYozLdG75e17FCKd57bQ
+        BpDT6G+9UoyYLdI5Wt5eL9BauEIoNBg9PQ6G53c1Zpg+PSbp+R0iiqGPT4/9/vn3ut73j7NPSKuG
+        b26AOHRlhCNCoXczxUui2Af0nZRg/fSCalfX3kfoxpZQq34lqiOIxvGxXfhtx8f27c3goLkhVSHo
+        rARZ+7azRDI8++vHfAe4qncrFL/Smw7U4dZgnW//qRUXbsVgD9H5OwUqJCmzcBT1mrV2lT22+E06
+        LwjkNwR70eXlacGTdF7Q6pUrGghxbwkORtHHi9OKJ/m8otLm/ysO0ygdnFZ8na/pnzzrBnL8Y/F/
+        sARHpsSRB6MrMG674/Z/4bWWUquvLWZ/ab4tVK6NJPWXudArQyG7X8yvonH8SvflvIGfok7fKXGQ
+        9ZJ0GCb9MO218wfdl6O0IIqDfWHtXutminyC4cJA3kR0F0cNIDTw7wqsa4Opl6QXUTIcBSg+OIJX
+        1BopW+h15swKWpx//8UlO4XKACUOWJaT0nbog8bZgeAR45vUPHpeJ7L45rfDeEeoiIRseYvCXbjV
+        Yebz8lhQfjiSkg25Jzrb+cFBS3Bm+0WU8OoZNZdBWOlyy7XaW2/QjrhtBZPAClmV4M+sde754mgL
+        3bUSH73Hs/8Atn+otQcIAAA=
+    headers:
+      Access-Control-Allow-Origin: ['*']
+      CF-Cache-Status: [HIT]
+      CF-RAY: [483b211140bcc56e-ORD]
+      Cache-Control: ['public, max-age=31536000']
+      Connection: [keep-alive]
+      Content-Encoding: [gzip]
+      Content-Type: [text/xml]
+      Date: ['Tue, 04 Dec 2018 03:19:02 GMT']
+      Expires: ['Wed, 04 Dec 2019 03:19:02 GMT']
+      Server: [cloudflare]
+      Set-Cookie: ['__cfduid=d3d79d0daf5d8db91dfa9741861267af21543893542; expires=Wed,
+          04-Dec-19 03:19:02 GMT; path=/; domain=.epsg.io; HttpOnly']
+      Transfer-Encoding: [chunked]
+      Vary: [Accept-Encoding]
+    status: {code: 200, message: OK}
+version: 1

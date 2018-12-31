@@ -29,7 +29,7 @@ import cartopy.io.srtm
 from .test_downloaders import download_to_temp  # noqa: F401 (used as fixture)
 
 
-pytestmark = [pytest.mark.network,
+pytestmark = [pytest.mark.vcr(filter_headers=[('authorization', 'DUMMY')]),
               pytest.mark.filterwarnings('ignore:SRTM requires an account'),
               pytest.mark.usefixtures('srtm_login_or_skip')]
 

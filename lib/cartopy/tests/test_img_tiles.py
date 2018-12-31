@@ -154,7 +154,7 @@ def test_tile_find_images():
             [(7, 4, 4), (7, 5, 4), (8, 4, 4), (8, 5, 4)])
 
 
-@pytest.mark.network
+@pytest.mark.vcr()
 def test_image_for_domain():
     gt = cimgt.GoogleTiles()
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
@@ -276,7 +276,7 @@ def test_ordnance_survey_tile_styles():
         cimgt.OrdnanceSurvey(dummy_apikey, layer="random_style")
 
 
-@pytest.mark.network
+@pytest.mark.vcr(filter_query_parameters=['key'])
 def test_ordnance_survey_get_image():
     # In order to test fetching map images from OS
     # an API key needs to be provided

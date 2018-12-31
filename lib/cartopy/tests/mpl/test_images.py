@@ -45,7 +45,7 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # The basemap changes on a regular basis (for seasons) and we really only
 # care that it is putting images onto the map which are roughly correct.
 @pytest.mark.natural_earth
-@pytest.mark.network
+@pytest.mark.vcr()
 @pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
                    reason='Proj returns slightly different bounds.',
                    strict=True)
@@ -85,7 +85,7 @@ def test_web_tiles():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.network
+@pytest.mark.vcr()
 @pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
                    reason='Proj returns slightly different bounds.',
                    strict=True)
