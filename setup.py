@@ -355,6 +355,8 @@ setup(
     package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/'
                                                      'mpl/baseline_images/',
                                                      remove='lib/cartopy/')) +
+                  list(file_walk_relative('lib/cartopy/tests/cassettes',
+                                          remove='lib/cartopy/')) +
                   list(file_walk_relative('lib/cartopy/data/raster',
                                           remove='lib/cartopy/')) +
                   list(file_walk_relative('lib/cartopy/data/netcdf',

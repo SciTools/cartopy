@@ -48,6 +48,7 @@ install:
   # ---------------------------------
   - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
   - conda install --quiet $PACKAGES
+  - pip install pytest-vcr
 
   # Conda debug
   # -----------
@@ -68,11 +69,21 @@ script:
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
-  - if [[ "$NAME" == "Latest everything"* ]]; then
-      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --doctest-modules --pyargs cartopy;
-    else
-      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --pyargs cartopy;
+  - |
+    PYTEST_ARGS=
+    if [[ "$NAME" == "Latest everything"* ]]; then
+      PYTEST_ARGS="$PYTEST_ARGS --doctest-modules"
     fi
+    if [[ "$TRAVIS_EVENT_TYPE" == "cron" ]]; then
+      PYTEST_ARGS="$PYTEST_ARGS --disable-vcr"
+    else
+      PYTEST_ARGS="$PYTEST_ARGS --vcr-record=none"
+      # These are invalid, but ensure the tests aren't skipped. A valid
+      # response is returned from vcrpy regardless of authentication.
+      export SRTM_USERNAME=username SRTM_PASSWORD=password
+    fi
+
+  - CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 $PYTEST_ARGS --pyargs cartopy;
 
 after_failure:
   - source activate $ENV_NAME

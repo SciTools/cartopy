@@ -21,6 +21,7 @@ install:
   - set PACKAGES=%PACKAGES% pillow pytest filelock pep8 pyshp shapely six requests pyepsg owslib
   - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%
   - activate %ENV_NAME%
+  - pip install pytest-vcr
   - set INCLUDE=%CONDA_PREFIX%\Library\include;%INCLUDE%
   - set LIB=%CONDA_PREFIX%\Library\lib;%LIB%
 
@@ -38,7 +39,10 @@ build_script:
 
 test_script:
   - set MPLBACKEND=Agg
-  - pytest --pyargs cartopy
+  # These are invalid, but ensure the tests aren't skipped. A valid response is
+  # returned from vcrpy regardless of authentication.
+  - set SRTM_USERNAME=username SRTM_PASSWORD=password
+  - pytest --vcr-record=none --pyargs cartopy
 
 artifacts:
   - path: cartopy_test_output
