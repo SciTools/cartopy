@@ -216,7 +216,7 @@ class RoundedImg(cimg_nest.Img):
 
 
 @pytest.mark.xfail(reason='MapQuest is unavailable')
-@pytest.mark.network
+@pytest.mark.vcr()
 def test_nest(nest_from_config):
     crs = cimgt.GoogleTiles().crs
     z0 = cimg_nest.ImageCollection('aerial z0 test', crs)
@@ -363,7 +363,7 @@ def wmts_data():
 
 
 @pytest.mark.xfail(reason='MapQuest is unavailable')
-@pytest.mark.network
+@pytest.mark.vcr()
 def test_find_images(wmts_data):
     z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
     img_fname = os.path.join(z2_dir, 'x_2_y_0.png')
