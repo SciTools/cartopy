@@ -25,7 +25,8 @@ processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
 
 cimport cython
-from libc.math cimport HUGE_VAL, isfinite, isnan, sqrt
+from libc.math cimport HUGE_VAL, sqrt
+from numpy.math cimport isfinite, isnan
 from libc.stdint cimport uintptr_t as ptr
 from libcpp cimport bool
 from libcpp.list cimport list

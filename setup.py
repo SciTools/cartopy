@@ -372,8 +372,8 @@ setup(
         Extension(
             'cartopy.trace',
             ['lib/cartopy/trace.pyx'],
-            include_dirs=[include_dir,
-                          './lib/cartopy'] + proj_includes + geos_includes,
+            include_dirs=([include_dir, './lib/cartopy', np.get_include()] +
+                          proj_includes + geos_includes),
             libraries=proj_libraries + geos_libraries,
             library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
             language='c++',
