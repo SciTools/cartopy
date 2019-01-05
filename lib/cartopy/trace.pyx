@@ -23,6 +23,7 @@ to project a `~shapely.geometry.LinearRing` / `~shapely.geometry.LineString`.
 In general, this should never be called manually, instead leaving the
 processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
+from __future__ import print_function
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
@@ -572,6 +573,33 @@ cdef void _project_segment(GEOSContextHandle_t handle,
                 lines.new_line()
 
 
+cdef _interpolator(CRS src_crs, CRS dest_projection):
+    # Get an Interpolator from the given CRS and projection.
+    # Callers must hold a reference to these systems for the lifetime
+    # of the interpolator. If they get garbage-collected while interpolator
+    # exists you *will* segfault.
+
+    cdef Interpolator interpolator
+    if src_crs.is_geodetic():
+        interpolator = SphericalInterpolator()
+    else:
+        interpolator = CartesianInterpolator()
+    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
+    if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
+        # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
+        # See https://github.com/OSGeo/proj#1782.
+        lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
+        if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
+                src_crs.proj4_params.get('o_proj', '') in lonlat and
+                'to_meter' in src_crs.proj4_params):
+            interpolator.src_scale = src_crs.proj4_params['to_meter']
+        if (dest_projection.proj4_params.get('proj', '') == 'ob_tran' and
+                dest_projection.proj4_params.get('o_proj', '') in lonlat and
+                'to_meter' in dest_projection.proj4_params):
+            interpolator.dest_scale = 1 / dest_projection.proj4_params['to_meter']
+    return interpolator
+
+
 def project_linear(geometry not None, CRS src_crs not None,
                    dest_projection not None):
     """
@@ -607,23 +635,7 @@ def project_linear(geometry not None, CRS src_crs not None,
 
     g_domain = geos_from_shapely(dest_projection.domain)
 
-    if src_crs.is_geodetic():
-        interpolator = SphericalInterpolator()
-    else:
-        interpolator = CartesianInterpolator()
-    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
-    if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
-        # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
-        # See https://github.com/OSGeo/proj#1782.
-        lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
-        if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
-                src_crs.proj4_params.get('o_proj', '') in lonlat and
-                'to_meter' in src_crs.proj4_params):
-            interpolator.src_scale = src_crs.proj4_params['to_meter']
-        if (dest_projection.proj4_params.get('proj', '') == 'ob_tran' and
-                dest_projection.proj4_params.get('o_proj', '') in lonlat and
-                'to_meter' in dest_projection.proj4_params):
-            interpolator.dest_scale = 1 / dest_projection.proj4_params['to_meter']
+    interpolator = _interpolator(src_crs, dest_projection)
 
     src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
     gp_domain = GEOSPrepare_r(handle, g_domain)
@@ -642,3 +654,52 @@ def project_linear(geometry not None, CRS src_crs not None,
     del lines, interpolator
     multi_line_string = shapely_from_geos(g_multi_line_string)
     return multi_line_string
+
+
+class _Testing:
+    @staticmethod
+    def straight_and_within(Point l_start, Point l_end,
+                            double t_start,
+                            double t_end,
+                            Interpolator interpolator, double threshold,
+                            domain):
+        # This function is for testing/demonstration only.
+        # It is not careful about freeing resources, and it short-circuits
+        # optimisations that are made in the real algorithm (in exchange for
+        # a convenient signature).
+
+        cdef GEOSContextHandle_t handle = get_geos_context_handle()
+
+        cdef GEOSGeometry *g_domain = geos_from_shapely(domain)
+        cdef const GEOSPreparedGeometry *gp_domain
+        gp_domain = GEOSPrepare_r(handle, g_domain)
+        
+        state = get_state(interpolator.project(l_start), gp_domain, handle)
+        cdef bool p_start_inside_domain = POINT_IN
+
+        # l_end and l_start should be un-projected.
+        interpolator.set_line(l_start, l_end)
+
+        cdef Point p0 = interpolator.interpolate(t_start)
+        cdef Point p1 = interpolator.interpolate(t_end)
+
+        valid = straightAndDomain(
+            t_start, p0, t_end, p1,
+            interpolator, threshold,
+            handle, gp_domain, p_start_inside_domain)
+
+        GEOSPreparedGeom_destroy_r(handle, gp_domain)
+        return valid
+
+    @staticmethod
+    def interpolator(source_crs, destination_projection):
+        return _interpolator(source_crs, destination_projection)
+
+    @staticmethod
+    def interp_prj_pt(Interpolator interp, const Point &lonlat):
+        return interp.project(lonlat)
+
+    @staticmethod
+    def interp_t_pt(Interpolator interp, const Point &start, const Point &end, double t):
+        interp.set_line(start, end)
+        return interp.interpolate(t)
