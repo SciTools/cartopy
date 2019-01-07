@@ -45,5 +45,13 @@ class ExampleImageTesting(ImageTesting):
 @ExampleImageTesting(['global_map'],
                      tolerance=4 if MPL_VERSION < '2' else 0)
 def test_global_map():
-    import cartopy.examples.global_map as c
-    c.main()
+    import cartopy.examples.global_map as example
+    example.main()
+
+
+@pytest.mark.natural_earth
+@ExampleImageTesting(['contour_label'],
+                     tolerance=4 if MPL_VERSION < '2' else 0)
+def test_contour_label():
+    import cartopy.examples.contour_labels as example
+    example.main()
