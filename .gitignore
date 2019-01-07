@@ -35,6 +35,10 @@ lib/cartopy/siteconfig.py
 
 cartopy_test_output
 
+
+benchmarks/results/
+benchmarks/envs/
+
 # pydev files
 .project
 .pydevproject
