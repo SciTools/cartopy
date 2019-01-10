@@ -67,7 +67,7 @@ class GeoContourSet(QuadContourSet):
             col.set_transform(self.ax.transData)
 
             # Clear the now incorrectly referenced paths.
-            paths.clear()
+            del paths[:]
 
             for path in new_paths:
                 if path.vertices.size == 0:
@@ -95,4 +95,4 @@ class GeoContourSet(QuadContourSet):
 
         # Now that we have prepared the collection paths, call on
         # through to the underlying implementation.
-        super().clabel(*args, **kwargs)
+        super(GeoContourSet, self).clabel(*args, **kwargs)
