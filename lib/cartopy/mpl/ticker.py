@@ -35,7 +35,7 @@ class _PlateCarreeFormatter(Formatter):
     _target_projection = ccrs.PlateCarree()
 
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
-                 transform_precision=1e-8, decimal=False,
+                 transform_precision=1e-8, decimal=True,
                  minute_symbol=u"'", second_symbol=u"''",
                  seconds_number_format='g',
                  auto_hide=True):
@@ -61,7 +61,7 @@ class _PlateCarreeFormatter(Formatter):
 
             if not isinstance(self.axis.axes, GeoAxes):
                 raise TypeError("This formatter can only be "
-                                "used with cartopy axes.")
+                                "used with cartopy GeoAxes.")
 
             # We want to produce labels for values in the familiar Plate Carree
             # projection, so convert the tick values from their own projection
@@ -113,11 +113,25 @@ class _PlateCarreeFormatter(Formatter):
         return label
 
     def _get_dms(self, x):
-        x = np.asarray(x, 'd')
+        """Convert to degrees, minutes, seconds
+
+        Parameters
+        ----------
+        x: float or array of floats
+            Degrees
+
+        Return
+        ------
+        x: degrees rounded to the requested precision
+        degs: degrees
+        mins: minutes
+        secs: seconds
+        """
+        x = np.round(np.asarray(x, 'd'), self._precision)
         degs = np.round(x, self._precision).astype('i')
-        x = (x - degs) * 60
-        mins = np.round(x, self._precision).astype('i')
-        secs = np.round((x - mins) * 60, self._precision - 3)
+        y = (x - degs) * 60
+        mins = np.round(y, self._precision).astype('i')
+        secs = np.round((y - mins) * 60, self._precision - 3)
         return x, degs, mins, secs
 
     def set_locs(self, locs):
@@ -135,7 +149,7 @@ class _PlateCarreeFormatter(Formatter):
                 return False
             if valid.sum() == 1:
                 return True
-            return np.diff(degs.compress(valid)).max() == 1
+            return np.diff(values.compress(valid)).max() == 1
 
         # Potentially hide minutes labels when pure minutes are all displayed
         self._auto_hide_minutes = auto_hide(secs0, mins)
@@ -192,14 +206,14 @@ class _PlateCarreeFormatter(Formatter):
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
-                 transform_precision=1e-8, decimal=False,
+                 transform_precision=1e-8, decimal=True,
                  minute_symbol=u"'", second_symbol=u"''",
                  seconds_number_format='g', auto_hide=True,
                  ):
         """
         Tick formatter for latitudes.
 
-        When bounded to an axis, the axis must be part of an axes defined
+        When bound to an axis, the axis must be part of an axes defined
         on a rectangular projection (e.g. Plate Carree, Mercator).
 
 
@@ -211,8 +225,8 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             degree symbol. Can be an empty string if no degree symbol is
             desired.
         number_format: optional
-            Format string to represent the degrees tick values.
-            Defaults to 'g'.
+            Format string to represent the longitude values when `decimal`
+            is set to True. Defaults to 'g'.
         transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
@@ -226,10 +240,10 @@ class LatitudeFormatter(_PlateCarreeFormatter):
         second_symbol: str, optional
             The character(s) used to represent the second symbol.
         seconds_number_format: optional
-            Format string to represent the seconds tick values.
-            Defaults to 'g'.
+            Format string to represent the "seconds" component of the longitude
+            values. Defaults to 'g'.
         auto_hide: bool, optional
-            Auto-hide degrees or minutes when redondant.
+            Auto-hide degrees or minutes when redundant.
 
         Note
         ----
@@ -257,7 +271,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             lat_formatter = LatitudeFormatter(degree_symbol='')
             ax.yaxis.set_major_formatter(lat_formatter)
 
-        When not bounded to an axis::
+        When not bound to an axis::
 
             lat_formatter = LatitudeFormatter()
             ticks = [-90, -60, -30, 0, 30, 60, 90]
@@ -298,7 +312,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  degree_symbol=u'\u00B0',
                  number_format='g',
                  transform_precision=1e-8,
-                 decimal=False,
+                 decimal=True,
                  minute_symbol=u"'",
                  second_symbol=u"''",
                  seconds_number_format='g',
@@ -307,7 +321,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         """
         Create a formatter for longitudes.
 
-        When bounded to an axis, the axis must be part of an axes defined
+        When bound to an axis, the axis must be part of an axes defined
         on a rectangular projection (e.g. Plate Carree, Mercator).
 
         Parameters
@@ -326,8 +340,8 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             The symbol used to represent degrees. Defaults to u'\u00B0'
             which is the unicode degree symbol.
         number_format: optional
-            Format string to represent the degrees tick values.
-            Defaults to 'g'.
+            Format string to represent the latitude values when `decimal`
+            is set to True. Defaults to 'g'.
         transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
@@ -341,10 +355,10 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         second_symbol: str, optional
             The character(s) used to represent the second symbol.
         seconds_number_format: optional
-            Format string to represent the seconds tick values.
-            Defaults to 'g'.
+            Format string to represent the "seconds" component of the latitude
+            values. Defaults to 'g'.
         auto_hide: bool, optional
-            Auto-hide degrees or minutes when redondant.
+            Auto-hide degrees or minutes when redundant.
 
         Note
         ----
@@ -374,7 +388,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             ax.xaxis.set_major_formatter(lon_formatter)
 
 
-        When not bounded to an axis::
+        When not bound to an axis::
 
             lon_formatter = LongitudeFormatter()
             ticks = [0, 60, 120, 180, 240, 300, 360]
@@ -455,7 +469,7 @@ class LongitudeLocator(MaxNLocator):
     """
 
     default_params = MaxNLocator.default_params.copy()
-    default_params.update(nbins=8, decimal=False)
+    default_params.update(nbins=8, decimal=True)
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
