@@ -111,7 +111,7 @@ def test_gridliner_specified_lines():
 
 # The tolerance on this test is particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-if MPL_VERSION >= '2':
+if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
 else:
     grid_label_image = 'gridliner_labels_1.5'
