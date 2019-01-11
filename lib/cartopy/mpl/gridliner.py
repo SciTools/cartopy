@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import operator
+from array import array
 
 import matplotlib
 import matplotlib.collections as mcollections
@@ -99,29 +100,43 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
 
 def _text_angle_to_specs_(angle):
     """Get appropriate kwargs for a rotated label from its angle in degrees"""
-    if False and matplotlib.__version__ > '3':
-        # deactivated because does not work properly
-        # with rotation_mode='anchor'
+
+    if matplotlib.__version__ >= '3.1':
+        # rotation_mode='anchor' and va_align_center='center_baseline'
+        # are incompatible before mpl-3.1
         va_align_center = 'center_baseline'
     else:
         va_align_center = 'center'
+
     angle %= 360
     if angle > 180:
         angle -= 360
+
+    # Default options
     kw = {'rotation': angle, 'rotation_mode': 'anchor'}
+
+    # Options that depend in which quarter the angle falls
     if abs(angle) <= 45:
-        kw.update(ha='left', va=va_align_center)
+
         loc = 'right'
+        kw.update(ha='left', va=va_align_center)
+
     elif abs(angle) >= 135:
+
+        loc = 'left'
         kw.update(ha='right', va=va_align_center)
         kw['rotation'] -= np.sign(angle) * 180
-        loc = 'left'
+
     elif angle > 45:
-        kw.update(ha='center', va='bottom', rotation=angle-90)
+
         loc = 'top'
+        kw.update(ha='center', va='bottom', rotation=angle-90)
+
     else:
-        kw.update(ha='center', va='top', rotation=angle+90)
+
         loc = 'bottom'
+        kw.update(ha='center', va='top', rotation=angle+90)
+
     return kw, loc
 
 
@@ -159,10 +174,12 @@ class Gridliner(object):
             of the gridlines.
         xformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format
-            longitude labels.
+            longitude labels. Defaults to
+            :class:`cartopy.mpl.ticker.LongitudeFormatter`.
         yformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format
-            latitude labels.
+            latitude labels. Defaults to
+            :class:`cartopy.mpl.ticker.LatitudeFormatter`.
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
@@ -435,10 +452,12 @@ class Gridliner(object):
                         if isinstance(intersection, sgeom.LineString):
                             intersection = [intersection]
                         elif len(intersection) > 4:
-                            # gridline and map boundary are parallel
-                            # and they intersect themselve too musc
+                            # Gridline and map boundary are parallel
+                            # and they intersect themselves too much
                             # it results in a multiline string
-                            # that must be converted to a single linestring
+                            # that must be converted to a single linestring.
+                            # This is an empirical workaround for a problem
+                            # that can probably be solved in a cleaner way.
                             x, y = intersection[0].coords.xy
                             x += intersection[-1].coords.xy[0]
                             y += intersection[-1].coords.xy[1]
@@ -453,8 +472,26 @@ class Gridliner(object):
                             heads.append(inter.coords[-1:-3:-1])
                         if not tails:
                             continue
+                    elif isinstance(intersection,
+                                    sgeom.collection.GeometryCollection):
+                        # This is a collection of Point and LineString that
+                        # represent the same gridline. We only consider
+                        # the first and last geometries, merge their
+                        # coordinates and keep first or last two points
+                        # to get only one tail and and one head.
+                        tails = []
+                        heads = []
+                        for ht, slicer in [(tails, slice(0, 2)),
+                                           (heads, slice(-1, -3, -1))]:
+                            x = array('d', [])
+                            y = array('d', [])
+                            for geom in list(intersection.geoms)[slicer]:
+                                x += geom.xy[0]
+                                y += geom.xy[1]
+                            ht.append(list(zip(x[slicer], y[slicer])))
                     else:
-                        # TODO: we should handle GeometryCollection
+                        warn('Unsupported intersection geometry for gridline'
+                             'labels: '+intersection.__class__)
                         continue
                     del intersection
 
@@ -493,7 +530,7 @@ class Gridliner(object):
         return kw, angle, loc
 
     def _segment_angle_to_text_specs(self, angle):
-        """Get appropriate kwargs for a given direction angle"""
+        """Get appropriate kwargs for a given text angle"""
         kw, loc = _text_angle_to_specs_(angle)
         if not self.rotate_labels:
             angle = {'top': 90., 'right': 0.,
@@ -537,7 +574,7 @@ class Gridliner(object):
         for priority, artist in self._labels:
 
             if artist not in axes_children:
-                warn('The labels if this gridliner do not belongs'
+                warn('The labels of this gridliner do not belong'
                      'to the gridliner axes')
 
             # Compute angles to try
@@ -645,8 +682,12 @@ class Gridliner(object):
             lon_range = self.crs.x_limits
             lat_range = self.crs.y_limits
         else:
+            # np.isfinite must be used to prevent np.inf values that
+            # not filtered by np.nanmax for some projections
+            lat_max = np.compress(np.isfinite(inside[:, 1]),
+                                  inside[:, 1]).max()
             lon_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
-            lat_range = np.nanmin(inside[:, 1]), np.nanmax(inside[:, 1])
+            lat_range = np.nanmin(inside[:, 1]), lat_max
 
         # XXX Cartopy specific thing. Perhaps make this bit a specialisation
         # in a subclass...
