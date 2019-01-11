@@ -451,12 +451,17 @@ class GeoAxes(matplotlib.axes.Axes):
                 for label in (gl.top_label_artists +
                               gl.left_label_artists +
                               gl.right_label_artists):
+                    # we skip bottom labels because they are usually
+                    # not at the top
                     bb = label.get_tightbbox(renderer)
                     top = max(top, bb.ymax)
         if top < 0:
+            # nothing to do if no label found
             return
         yn = self.transAxes.inverted().transform((0., top))[1]
         if yn <= 1:
+            # nothing to do if the upper bounds of labels is below
+            # the top of the axes
             return
 
         # Loop on titles to adjust
@@ -769,16 +774,22 @@ class GeoAxes(matplotlib.axes.Axes):
                 projected = boundary
 
         if clip:
+
+            # compute coordinates of the clipping polygon as two 1D arrays
             n = 100
             x = np.linspace(x1, x2, n)
             y = np.linspace(y1, y2, n)
             xx = np.concatenate((x, [x[-1]]*n, x[::-1], [x[0]]*n))
             yy = np.concatenate(([y[0]]*n, y, [y[-1]]*n, y[::-1]))
+
+            # project the coordinates and create the path object
             if crs is not None and crs != self.projection:
                 xy = self.projection.transform_points(crs, xx, yy)[:, :2]
             else:
                 xy = np.array([xx, yy]).T
             path = mpath.Path(xy)
+
+            # set it as a boundary
             self.set_boundary(path)
 
         if projected is None:
