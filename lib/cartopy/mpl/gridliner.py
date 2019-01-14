@@ -147,7 +147,8 @@ class Gridliner(object):
     # determination on zoom/pan.
     def __init__(self, axes, crs, draw_labels=False, xlocator=None,
                  ylocator=None, collection_kwargs=None,
-                 xformatter=None, yformatter=None):
+                 xformatter=None, yformatter=None,
+                 decimal=True):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -183,6 +184,10 @@ class Gridliner(object):
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
+        decimal: bool
+            When default locators and formatters are used,
+            ticks are not expected stop on minutes and seconds if decimal
+            is set to False, but on fraction of degrees.
 
         .. note:: Note that the "x" and "y" labels for locators and
              formatters do not necessarily correspond to X and Y,
@@ -200,7 +205,7 @@ class Gridliner(object):
                 xlocator = mticker.FixedLocator(xlocator)
             self.xlocator = xlocator
         elif isinstance(crs, cartopy.crs.PlateCarree):
-            self.xlocator = LongitudeLocator()
+            self.xlocator = LongitudeLocator(decimal=decimal)
         else:
             self.xlocator = classic_locator
 
@@ -211,15 +216,15 @@ class Gridliner(object):
                 ylocator = mticker.FixedLocator(ylocator)
             self.ylocator = ylocator
         elif isinstance(crs, cartopy.crs.PlateCarree):
-            self.ylocator = LatitudeLocator()
+            self.ylocator = LatitudeLocator(decimal=decimal)
         else:
             self.ylocator = classic_locator
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lon labels.
-        self.xformatter = xformatter or LongitudeFormatter()
+        self.xformatter = xformatter or LongitudeFormatter(decimal=decimal)
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
-        self.yformatter = yformatter or LatitudeFormatter()
+        self.yformatter = yformatter or LatitudeFormatter(decimal=decimal)
 
         #: Whether to draw labels on the top of the map.
         self.top_labels = draw_labels
