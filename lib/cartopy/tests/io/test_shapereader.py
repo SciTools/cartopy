@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,7 +17,14 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+from contextlib import contextmanager
 import os.path
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+import tempfile
+import shutil
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
@@ -28,7 +35,7 @@ import cartopy.io.shapereader as shp
 
 class TestLakes(object):
     def setup_class(self):
-        LAKES_PATH = os.path.join(os.path.dirname(__file__),
+        LAKES_PATH = os.path.join(os.path.dirname(__file__), '..',
                                   'lakes_shapefile', 'ne_110m_lakes.shp')
         self.reader = shp.Reader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
@@ -124,3 +131,33 @@ class TestRivers(object):
             if key in expected_attributes:
                 assert value == expected_attributes[key]
         assert river_record.geometry == self.test_river_geometry
+
+
+@contextmanager
+def tmpdatadir():
+    # Temporarily sets the cartopy data_dir to a temporary directory.
+    import cartopy
+    orig = cartopy.config['data_dir']
+    try:
+        tmp = tempfile.mkdtemp()
+        cartopy.config['data_dir'] = tmp
+        yield tmp
+    finally:
+        cartopy.config['data_dir'] = orig
+        shutil.rmtree(tmp)
+
+
+class TestGHSSH:
+    def test_gshhs_in_repo(self):
+        # Coarse L1 is part of the cartopy repo data.
+        with mock.patch('cartopy.io.Downloader.path') as p:
+            path = shp.gshhs(scale='c', level=1)
+        p.assert_not_called()
+
+    def test_gshhs_not_in_repo(self):
+        # Coarse L2 is not part of the cartopy repo data,
+        # and should trigger the original Downloader.path() call.
+
+        with mock.patch('cartopy.io.Downloader.path') as p, tmpdatadir():
+            path = shp.gshhs(scale='c', level=2)
+        p.assert_called_once()

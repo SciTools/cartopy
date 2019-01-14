@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -41,7 +41,6 @@ geometry representation of shapely:
 
 from __future__ import (absolute_import, division, print_function)
 
-import glob
 import itertools
 import os
 
@@ -470,27 +469,29 @@ class GSHHSShpDownloader(Downloader):
 
         zfh.close()
 
+    def path(self, format_dict):
+        # Because some of the GSHSS data is available with the cartopy
+        # repository, scales of "l" or "c" will not be downloaded if they
+        # exist in the ``cartopy.config['repo_data_dir']`` directory.
+
+        repo_fname_pattern = os.path.join(
+            config['repo_data_dir'], 'shapefiles', 'gshhs', '{scale}',
+            'GSHHS_{scale}_L{level}.shp')
+        repo_fname = repo_fname_pattern.format(**format_dict)
+        if os.path.exists(repo_fname):
+            return repo_fname
+        else:
+            return super(GSHHSShpDownloader, self).path(format_dict)
+
     def acquire_resource(self, target_path, format_dict):
         """
         Download the zip file and extracts the files listed in
         :meth:`zip_file_contents` to the target path.
 
-        Note
-        ----
-            Because some of the GSHSS data is available with the cartopy
-            repository, scales of "l" or "c" will not be downloaded if they
-            exist in the ``cartopy.config['repo_data_dir']`` directory.
-
         """
-        repo_fname_pattern = os.path.join(config['repo_data_dir'],
-                                          'shapefiles', 'gshhs', '{scale}',
-                                          'GSHHS_{scale}_L?.shp')
-        repo_fname_pattern = repo_fname_pattern.format(**format_dict)
-        repo_fnames = glob.glob(repo_fname_pattern)
-        if repo_fnames:
-            assert len(repo_fnames) == 1, '>1 repo files found for GSHHS'
-            return repo_fnames[0]
         self.acquire_all_resources(format_dict)
+        # We might have downloaded all those files, but not actually got one
+        # that exists...
         if not os.path.exists(target_path):
             raise RuntimeError('Failed to download and extract GSHHS '
                                'shapefile to {!r}.'.format(target_path))
