@@ -36,10 +36,18 @@ import warnings
 import versioneer
 
 
-try:
-    from Cython.Distutils import build_ext
-except ImportError:
-    raise ImportError('Cython 0.17+ is required to install cartopy.')
+# The existence of a PKG-INFO directory is enough to tell us whether this is a
+# source installation or not (sdist).
+HERE = os.path.dirname(__file__)
+IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
+
+if not IS_SDIST:
+    try:
+        from Cython.Distutils import build_ext
+    except ImportError:
+        raise ImportError(
+            "Cython 0.17+ is required to install cartopy from source.")
+
 try:
     import numpy as np
 except ImportError:
@@ -51,8 +59,6 @@ PY3 = (sys.version_info[0] == 3)
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 3, 3)
 PROJ_MIN_VERSION = (4, 9, 0)
-
-HERE = os.path.dirname(__file__)
 
 
 def file_walk_relative(top, remove=''):
@@ -280,8 +286,9 @@ else:
             proj_includes = proj_includes.decode()
             proj_clibs = proj_clibs.decode()
 
-        proj_includes = [proj_include[2:] if proj_include.startswith('-I') else
-                         proj_include for proj_include in proj_includes.split()]      
+        proj_includes = [
+            proj_include[2:] if proj_include.startswith('-I') else
+            proj_include for proj_include in proj_includes.split()]
 
         proj_libraries = []
         proj_library_dirs = []
@@ -321,13 +328,62 @@ else:
 
 # Description
 # ===========
-
 with open(os.path.join(HERE, 'README.md'), 'r') as fh:
     description = ''.join(fh.readlines())
 
 
+extensions = [
+    Extension(
+        'cartopy.trace',
+        ['lib/cartopy/trace.pyx'],
+        include_dirs=([include_dir, './lib/cartopy', np.get_include()] +
+                      proj_includes + geos_includes),
+        libraries=proj_libraries + geos_libraries,
+        library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
+        language='c++',
+        **extra_extension_args),
+    Extension(
+        'cartopy._crs',
+        ['lib/cartopy/_crs.pyx'],
+        include_dirs=[include_dir, np.get_include()] + proj_includes,
+        libraries=proj_libraries,
+        library_dirs=[library_dir] + proj_library_dirs,
+        **extra_extension_args),
+    # Requires proj v4.9
+    Extension(
+        'cartopy.geodesic._geodesic',
+        ['lib/cartopy/geodesic/_geodesic.pyx'],
+        include_dirs=[include_dir, np.get_include()] + proj_includes,
+        libraries=proj_libraries,
+        library_dirs=[library_dir] + proj_library_dirs,
+        **extra_extension_args),
+]
+
+
+def decythonize(extensions, **_ignore):
+    # Remove pyx sources from extensions.
+    # Note: even if there are changes to the pyx files, they will be ignored.
+    for extension in extensions:
+        sources = []
+        for sfile in extension.sources:
+            path, ext = os.path.splitext(sfile)
+            if ext in ('.pyx',):
+                if extension.language == 'c++':
+                    ext = '.cpp'
+                else:
+                    ext = '.c'
+                sfile = path + ext
+            sources.append(sfile)
+        extension.sources[:] = sources
+    return extensions
+
+
 cmdclass = versioneer.get_cmdclass()
-cmdclass.update({'build_ext': build_ext})
+
+if IS_SDIST:
+    extensions = decythonize(extensions)
+else:
+    cmdclass.update({'build_ext': build_ext})
 
 
 # Main setup
@@ -368,36 +424,7 @@ setup(
 
 
     # requires proj headers
-    ext_modules=[
-        Extension(
-            'cartopy.trace',
-            ['lib/cartopy/trace.pyx'],
-            include_dirs=([include_dir, './lib/cartopy', np.get_include()] +
-                          proj_includes + geos_includes),
-            libraries=proj_libraries + geos_libraries,
-            library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
-            language='c++',
-            **extra_extension_args
-        ),
-        Extension(
-            'cartopy._crs',
-            ['lib/cartopy/_crs.pyx'],
-            include_dirs=[include_dir, np.get_include()] + proj_includes,
-            libraries=proj_libraries,
-            library_dirs=[library_dir] + proj_library_dirs,
-            **extra_extension_args
-        ),
-        # Requires proj v4.9
-        Extension(
-            'cartopy.geodesic._geodesic',
-            ['lib/cartopy/geodesic/_geodesic.pyx'],
-            include_dirs=[include_dir, np.get_include()] + proj_includes,
-            libraries=proj_libraries,
-            library_dirs=[library_dir] + proj_library_dirs,
-            **extra_extension_args
-        ),
-    ],
-
+    ext_modules=extensions,
     cmdclass=cmdclass,
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
     classifiers=[
