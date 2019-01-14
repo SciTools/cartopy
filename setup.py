@@ -371,9 +371,9 @@ setup(
     ext_modules=[
         Extension(
             'cartopy.trace',
-            ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
-            include_dirs=[include_dir,
-                          './lib/cartopy'] + proj_includes + geos_includes,
+            ['lib/cartopy/trace.pyx'],
+            include_dirs=([include_dir, './lib/cartopy', np.get_include()] +
+                          proj_includes + geos_includes),
             libraries=proj_libraries + geos_libraries,
             library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
             language='c++',
@@ -399,6 +399,7 @@ setup(
     ],
 
     cmdclass=cmdclass,
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
     classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: GNU Lesser General Public License v3 '
@@ -413,9 +414,9 @@ setup(
             'Programming Language :: Python :: 2',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: GIS',
             'Topic :: Scientific/Engineering :: Visualization',
