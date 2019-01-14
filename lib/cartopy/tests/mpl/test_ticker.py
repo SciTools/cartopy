@@ -270,6 +270,6 @@ def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
                                        id='lon_tiny'),
                           ])
 def test_LongitudeLocator(cls, vmin, vmax, expected):
-    locator = cls()
+    locator = cls(decimal=False)
     result = locator.tick_values(vmin, vmax)
     np.testing.assert_allclose(result, expected)

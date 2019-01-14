@@ -127,11 +127,12 @@ class _PlateCarreeFormatter(Formatter):
         mins: minutes
         secs: seconds
         """
-        x = np.round(np.asarray(x, 'd'), self._precision)
+        self._precision = 6
+        x = np.asarray(x, 'd')
         degs = np.round(x, self._precision).astype('i')
         y = (x - degs) * 60
         mins = np.round(y, self._precision).astype('i')
-        secs = np.round((y - mins) * 60, self._precision - 3)
+        secs = np.round((y - mins)*60, self._precision - 3)
         return x, degs, mins, secs
 
     def set_locs(self, locs):
