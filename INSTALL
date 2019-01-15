@@ -56,7 +56,7 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 **Python** 2.7 or later (https://www.python.org/)
     Cartopy requires Python 2.7 or later.
 
-**Cython** 0.29 or later (https://pypi.python.org/pypi/Cython/)
+**Cython** 0.28 or later (https://pypi.python.org/pypi/Cython/)
 
 **NumPy** 1.10 or later (http://www.numpy.org/)
     Python package for scientific computing including a powerful N-dimensional

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -170,7 +170,7 @@ cdef class LineAccumulator:
                                                &geoms[0], geoms.size())
         return geom
 
-    cdef list[Line].size_type size(self):
+    cdef size_t size(self):
         return self.lines.size()
 
 

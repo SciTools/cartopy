@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -43,9 +43,9 @@ IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
 
 if not IS_SDIST:
     import Cython
-    if Cython.__version__ < '0.29':
+    if Cython.__version__ < '0.28':
         raise ImportError(
-            "Cython 0.29+ is required to install cartopy from source.")
+            "Cython 0.28+ is required to install cartopy from source.")
 
     from Cython.Distutils import build_ext as cy_build_ext
 
