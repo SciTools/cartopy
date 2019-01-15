@@ -33,7 +33,7 @@ install:
 build_script:
   # Install cartopy
   # ---------------
-  - pip install --no-deps .
+  - pip install --no-build-isolation --no-deps .
   - python -c "import cartopy; print('Version ', cartopy.__version__)"
 
 test_script:
