@@ -42,11 +42,13 @@ HERE = os.path.dirname(__file__)
 IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
 
 if not IS_SDIST:
-    try:
-        from Cython.Distutils import build_ext
-    except ImportError:
+    import Cython
+    if Cython.__version__ < '0.29':
         raise ImportError(
-            "Cython 0.17+ is required to install cartopy from source.")
+            "Cython 0.29+ is required to install cartopy from source.")
+
+    from Cython.Distutils import build_ext as cy_build_ext
+
 
 try:
     import numpy as np
@@ -383,7 +385,7 @@ cmdclass = versioneer.get_cmdclass()
 if IS_SDIST:
     extensions = decythonize(extensions)
 else:
-    cmdclass.update({'build_ext': build_ext})
+    cmdclass.update({'build_ext': cy_build_ext})
 
 
 # Main setup
