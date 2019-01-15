@@ -89,7 +89,7 @@ def test_LatitudeFormatter_degree_symbol():
 
 
 def test_LatitudeFormatter_number_format():
-    formatter = LatitudeFormatter(number_format='.2f', minutes=False)
+    formatter = LatitudeFormatter(number_format='.2f', dms=False)
     p = ccrs.PlateCarree()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
@@ -114,7 +114,7 @@ def test_LatitudeFormatter_mercator():
 
 
 def test_LatitudeFormatter_small_numbers():
-    formatter = LatitudeFormatter(number_format='.7f', minutes=False)
+    formatter = LatitudeFormatter(number_format='.7f', dms=False)
     p = ccrs.PlateCarree()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [40.1275150, 40.1275152, 40.1275154]
@@ -169,7 +169,7 @@ def test_LongitudeFormatter_degree_symbol():
 
 
 def test_LongitudeFormatter_number_format():
-    formatter = LongitudeFormatter(number_format='.2f', minutes=False,
+    formatter = LongitudeFormatter(number_format='.2f', dms=False,
                                    dateline_direction_label=True)
     p = ccrs.PlateCarree()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
@@ -195,7 +195,7 @@ def test_LongitudeFormatter_mercator():
 
 
 def test_LongitudeFormatter_small_numbers_0():
-    formatter = LongitudeFormatter(number_format='.7f', minutes=False)
+    formatter = LongitudeFormatter(number_format='.7f', dms=False)
     p = ccrs.PlateCarree(central_longitude=0)
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-17.1142343, -17.1142340, -17.1142337]
@@ -206,7 +206,7 @@ def test_LongitudeFormatter_small_numbers_0():
 
 
 def test_LongitudeFormatter_small_numbers_180():
-    formatter = LongitudeFormatter(zero_direction_label=True, minutes=False,
+    formatter = LongitudeFormatter(zero_direction_label=True, dms=False,
                                    number_format='.7f')
     p = ccrs.PlateCarree(central_longitude=180)
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
@@ -229,7 +229,7 @@ def test_LongitudeFormatter_small_numbers_180():
                                        id='seconds'),
                           ])
 def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
-    formatter = LongitudeFormatter(minutes=True, auto_hide=True)
+    formatter = LongitudeFormatter(dms=True, auto_hide=True)
     formatter.set_locs(test_ticks)
     result = [formatter(tick) for tick in test_ticks]
     assert result == expected
@@ -241,7 +241,7 @@ def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
                                        id='minutes_no_hide'),
                           ])
 def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
-    formatter = LatitudeFormatter(minutes=True, auto_hide=True)
+    formatter = LatitudeFormatter(dms=True, auto_hide=True)
     formatter.set_locs(test_ticks)
     result = [formatter(tick) for tick in test_ticks]
     assert result == expected
@@ -270,6 +270,6 @@ def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
                                        id='lon_tiny'),
                           ])
 def test_LongitudeLocator(cls, vmin, vmax, expected):
-    locator = cls(minutes=True)
+    locator = cls(dms=True)
     result = locator.tick_values(vmin, vmax)
     np.testing.assert_allclose(result, expected)

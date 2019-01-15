@@ -1275,7 +1275,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return result
 
     def gridlines(self, crs=None, draw_labels=False, xlocs=None,
-                  ylocs=None, minutes=False, **kwargs):
+                  ylocs=None, dms=False, **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1300,7 +1300,7 @@ class GeoAxes(matplotlib.axes.Axes):
             used to determine the locations of the parallel gridlines in the
             coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
-        minutes: bool
+        dms: bool
             When default longitude and latitude locators and formatters are
             used, ticks are able to stop on minutes and seconds if minutes
             is set to True, and not fraction of degrees.
@@ -1327,7 +1327,7 @@ class GeoAxes(matplotlib.axes.Axes):
         gl = Gridliner(
             self, crs=crs, draw_labels=draw_labels, xlocator=mlocs,
             ylocator=plocs, collection_kwargs=kwargs,
-            minutes=minutes)
+            dms=dms)
         self._gridliners.append(gl)
         return gl
 

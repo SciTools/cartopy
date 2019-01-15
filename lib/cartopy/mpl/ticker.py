@@ -35,7 +35,7 @@ class _PlateCarreeFormatter(Formatter):
     _target_projection = ccrs.PlateCarree()
 
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
-                 transform_precision=1e-8, minutes=False,
+                 transform_precision=1e-8, dms=False,
                  minute_symbol=u"'", second_symbol=u"''",
                  seconds_number_format='g',
                  auto_hide=True):
@@ -47,7 +47,7 @@ class _PlateCarreeFormatter(Formatter):
         self._degree_symbol = degree_symbol
         self._degrees_number_format = number_format
         self._transform_precision = transform_precision
-        self._minutes = minutes
+        self._dms = dms
         self._minute_symbol = minute_symbol
         self._second_symbol = second_symbol
         self._seconds_num_format = seconds_number_format
@@ -93,7 +93,7 @@ class _PlateCarreeFormatter(Formatter):
     def _format_value(self, value, original_value):
         hemisphere = self._hemisphere(value, original_value)
 
-        if not self._minutes:
+        if not self._dms:
             return (self._format_degrees(abs(value)) +
                     hemisphere)
 
@@ -160,7 +160,7 @@ class _PlateCarreeFormatter(Formatter):
 
     def _format_degrees(self, deg):
         """Format degrees as an integer"""
-        if self._minutes:
+        if self._dms:
             deg = int(deg)
             number_format = 'd'
         else:
@@ -207,7 +207,7 @@ class _PlateCarreeFormatter(Formatter):
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
-                 transform_precision=1e-8, minutes=False,
+                 transform_precision=1e-8, dms=False,
                  minute_symbol=u"'", second_symbol=u"''",
                  seconds_number_format='g', auto_hide=True,
                  ):
@@ -226,14 +226,14 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             degree symbol. Can be an empty string if no degree symbol is
             desired.
         number_format: optional
-            Format string to represent the longitude values when `minutes`
+            Format string to represent the longitude values when `dms`
             is set to False. Defaults to 'g'.
         transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
-        minutes: bool, optional
+        dms: bool, optional
             Wether or not formatting as degrees-minutes-seconds and not
             as decimal degrees.
         minute_symbol: str, optional
@@ -284,7 +284,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
-            minutes=minutes,
+            dms=dms,
             minute_symbol=minute_symbol,
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
@@ -313,7 +313,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  degree_symbol=u'\u00B0',
                  number_format='g',
                  transform_precision=1e-8,
-                 minutes=False,
+                 dms=False,
                  minute_symbol=u"'",
                  second_symbol=u"''",
                  seconds_number_format='g',
@@ -341,14 +341,14 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             The symbol used to represent degrees. Defaults to u'\u00B0'
             which is the unicode degree symbol.
         number_format: optional
-            Format string to represent the latitude values when `minutes`
+            Format string to represent the latitude values when `dms`
             is set to False. Defaults to 'g'.
         transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
-        minutes: bool, optional
+        dms: bool, optional
             Wether or not formatting as degrees-minutes-seconds and not
             as decimal degrees.
         minute_symbol: str, optional
@@ -400,7 +400,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
-            minutes=minutes,
+            dms=dms,
             minute_symbol=minute_symbol,
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
@@ -464,18 +464,18 @@ class LongitudeLocator(MaxNLocator):
 
     Parameters
     ----------
-    minutes: bool
+    dms: bool
         Allow the locator to stop on on minutes and seconds (False by default)
     """
 
     default_params = MaxNLocator.default_params.copy()
-    default_params.update(nbins=8, minutes=False)
+    default_params.update(nbins=8, dms=False)
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
         MaxNLocator.set_params(self, **kwargs)
-        if 'minutes' in kwargs:
-            self._minutes = kwargs['minutes']
+        if 'dms' in kwargs:
+            self._dms = kwargs['dms']
 
     def _guess_steps(self, vmin, vmax):
 
@@ -487,7 +487,7 @@ class LongitudeLocator(MaxNLocator):
 
             steps = np.array([1, 2, 3, 6, 10])
 
-        elif not self._minutes or dv > 3.:
+        elif not self._dms or dv > 3.:
 
             steps = np.array([1, 1.5, 2, 2.5, 3, 5, 10])
 
@@ -510,7 +510,7 @@ class LatitudeLocator(LongitudeLocator):
 
     Parameters
     ----------
-    minutes: bool
+    dms: bool
         Allow the locator to stop on on minutes and seconds (False by default)
     """
     def tick_values(self, vmin, vmax):
