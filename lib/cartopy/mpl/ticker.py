@@ -35,7 +35,7 @@ class _PlateCarreeFormatter(Formatter):
     _target_projection = ccrs.PlateCarree()
 
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
-                 transform_precision=1e-8, decimal=True,
+                 transform_precision=1e-8, minutes=False,
                  minute_symbol=u"'", second_symbol=u"''",
                  seconds_number_format='g',
                  auto_hide=True):
@@ -47,7 +47,7 @@ class _PlateCarreeFormatter(Formatter):
         self._degree_symbol = degree_symbol
         self._degrees_number_format = number_format
         self._transform_precision = transform_precision
-        self._decimal = decimal
+        self._minutes = minutes
         self._minute_symbol = minute_symbol
         self._second_symbol = second_symbol
         self._seconds_num_format = seconds_number_format
@@ -93,7 +93,7 @@ class _PlateCarreeFormatter(Formatter):
     def _format_value(self, value, original_value):
         hemisphere = self._hemisphere(value, original_value)
 
-        if self._decimal:
+        if not self._minutes:
             return (self._format_degrees(abs(value)) +
                     hemisphere)
 
@@ -160,7 +160,7 @@ class _PlateCarreeFormatter(Formatter):
 
     def _format_degrees(self, deg):
         """Format degrees as an integer"""
-        if not self._decimal:
+        if self._minutes:
             deg = int(deg)
             number_format = 'd'
         else:
@@ -207,7 +207,7 @@ class _PlateCarreeFormatter(Formatter):
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
     def __init__(self, degree_symbol=u'\u00B0', number_format='g',
-                 transform_precision=1e-8, decimal=True,
+                 transform_precision=1e-8, minutes=False,
                  minute_symbol=u"'", second_symbol=u"''",
                  seconds_number_format='g', auto_hide=True,
                  ):
@@ -226,16 +226,16 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             degree symbol. Can be an empty string if no degree symbol is
             desired.
         number_format: optional
-            Format string to represent the longitude values when `decimal`
-            is set to True. Defaults to 'g'.
+            Format string to represent the longitude values when `minutes`
+            is set to False. Defaults to 'g'.
         transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
-        decimal: bool, optional
-            Wether or not formatting as decimal degrees and not as
-            degrees-minutes-seconds.
+        minutes: bool, optional
+            Wether or not formatting as degrees-minutes-seconds and not
+            as decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.
         second_symbol: str, optional
@@ -284,7 +284,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
-            decimal=decimal,
+            minutes=minutes,
             minute_symbol=minute_symbol,
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
@@ -313,7 +313,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  degree_symbol=u'\u00B0',
                  number_format='g',
                  transform_precision=1e-8,
-                 decimal=True,
+                 minutes=False,
                  minute_symbol=u"'",
                  second_symbol=u"''",
                  seconds_number_format='g',
@@ -341,16 +341,16 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             The symbol used to represent degrees. Defaults to u'\u00B0'
             which is the unicode degree symbol.
         number_format: optional
-            Format string to represent the latitude values when `decimal`
-            is set to True. Defaults to 'g'.
+            Format string to represent the latitude values when `minutes`
+            is set to False. Defaults to 'g'.
         transform_precision: optional
             Sets the precision (in degrees) to which transformed tick
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
-        decimal: bool, optional
-            Wether or not formatting as decimal degrees and not as
-            degrees-minutes-seconds.
+        minutes: bool, optional
+            Wether or not formatting as degrees-minutes-seconds and not
+            as decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.
         second_symbol: str, optional
@@ -400,7 +400,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
-            decimal=decimal,
+            minutes=minutes,
             minute_symbol=minute_symbol,
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
@@ -464,19 +464,18 @@ class LongitudeLocator(MaxNLocator):
 
     Parameters
     ----------
-    decimal: bool
-        Force decimal degrees so the locator does not stop specifically on
-        fractions of minutes and seconds (False by default)
+    minutes: bool
+        Allow the locator to stop on on minutes and seconds (False by default)
     """
 
     default_params = MaxNLocator.default_params.copy()
-    default_params.update(nbins=8, decimal=True)
+    default_params.update(nbins=8, minutes=False)
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
         MaxNLocator.set_params(self, **kwargs)
-        if 'decimal' in kwargs:
-            self._decimal = kwargs['decimal']
+        if 'minutes' in kwargs:
+            self._minutes = kwargs['minutes']
 
     def _guess_steps(self, vmin, vmax):
 
@@ -488,7 +487,7 @@ class LongitudeLocator(MaxNLocator):
 
             steps = np.array([1, 2, 3, 6, 10])
 
-        elif self._decimal or dv > 3.:
+        elif not self._minutes or dv > 3.:
 
             steps = np.array([1, 1.5, 2, 2.5, 3, 5, 10])
 
@@ -511,9 +510,8 @@ class LatitudeLocator(LongitudeLocator):
 
     Parameters
     ----------
-    decimal: bool
-        Force decimal degrees so the locator does not stop specifically on
-        fractions of minutes and seconds (False by default)
+    minutes: bool
+        Allow the locator to stop on on minutes and seconds (False by default)
     """
     def tick_values(self, vmin, vmax):
         vmin = max(vmin, -90.)
