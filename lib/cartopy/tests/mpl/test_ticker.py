@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -33,7 +33,7 @@ def test_LatitudeFormatter_bad_axes():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
     message = 'This formatter can only be used with cartopy axes.'
-    with pytest.raises(TypeError, message=message):
+    with pytest.raises(TypeError, match=message):
         formatter(0)
 
 
@@ -41,7 +41,7 @@ def test_LatitudeFormatter_bad_projection():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
     message = 'This formatter cannot be used with non-rectangular projections.'
-    with pytest.raises(TypeError, message=message):
+    with pytest.raises(TypeError, match=message):
         formatter(0)
 
 
@@ -49,7 +49,7 @@ def test_LongitudeFormatter_bad_axes():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
     message = 'This formatter can only be used with cartopy axes.'
-    with pytest.raises(TypeError, message=message):
+    with pytest.raises(TypeError, match=message):
         formatter(0)
 
 
@@ -57,7 +57,7 @@ def test_LongitudeFormatter_bad_projection():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
     message = 'This formatter cannot be used with non-rectangular projections.'
-    with pytest.raises(TypeError, message=message):
+    with pytest.raises(TypeError, match=message):
         formatter(0)
 
 

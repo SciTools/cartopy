@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -72,11 +72,11 @@ class Test_LambertConformal_standard_parallels(object):
         check_proj_params('lcc', crs, other_args)
 
     def test_no_parallel(self):
-        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
+        with pytest.raises(ValueError, match='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[])
 
     def test_too_many_parallel(self):
-        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
+        with pytest.raises(ValueError, match='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[1, 2, 3])
 
     def test_single_spole(self):
