@@ -82,12 +82,21 @@ Documentation can be found at <http://scitools.org.uk/cartopy/docs/latest/>.
 - To chat with developers and other users you can use the
   [Gitter Chat](https://gitter.im/SciTools/cartopy)
 
-## License and copyright
 
-Cartopy is licensed under GNU Lesser General Public License (LGPLv3).
+## Credits, copyright and license
 
-Development occurs on GitHub at <https://github.com/SciTools/cartopy>, with a
-contributor's license agreement (CLA) that can be found at
-<http://scitools.org.uk/governance.html>.
+Cartopy is developed collaboratively under the SciTools umberella.
 
-(C) British Crown Copyright, Met Office
+A full list of codecontributors ("Cartopy contributors") can be found at
+https://github.com/SciTools/cartopy/graphs/contributors.
+
+Code is just one of many ways of positively contributing to Cartopy, please see
+our [contributing guide](.github/CONTRIBUTING.md) for more details on how
+you can get involved.
+
+Cartopy is released under a LGPL license with a shared copyright model.
+See [LICENSE](LICENSE) for full terms.
+
+The [Met Office](https://metoffice.gov.uk) has made a significant
+contribution to the development, maintenance and support of this library.
+All Met Office contributions are copyright on behalf of the British Crown.
