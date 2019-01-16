@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -45,11 +45,11 @@ import shapely.geometry as sgeom
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
-import cartopy.img_transform
+import cartopy.transform.image
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
-from cartopy.vector_transform import vector_scalar_to_grid
+from cartopy.transform.vector import vector_scalar_to_grid
 
 
 assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
@@ -1183,7 +1183,7 @@ class GeoAxes(matplotlib.axes.Axes):
             regrid_shape = kwargs.pop('regrid_shape', 750)
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
-            warp_array = cartopy.img_transform.warp_array
+            warp_array = cartopy.transform.image.warp_array
             img, extent = warp_array(img,
                                      source_proj=transform,
                                      source_extent=extent,

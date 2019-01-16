@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -28,7 +28,7 @@ import pytest
 from cartopy import config
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 import cartopy.crs as ccrs
-import cartopy.img_transform as im_trans
+import cartopy.transform.image as im_trans
 from functools import reduce
 
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -57,7 +57,7 @@ except ImportError:
 
 import cartopy.crs as ccrs
 from cartopy.io import LocatedImage, RasterSource
-from cartopy.img_transform import warp_array
+from cartopy.transform.image import warp_array
 
 _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 

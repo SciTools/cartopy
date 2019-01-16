@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -20,7 +20,7 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-import cartopy.vector_transform as vec_trans
+import cartopy.transform.vector as vec_trans
 import cartopy.crs as ccrs
 
 
