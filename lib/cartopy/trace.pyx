@@ -84,15 +84,7 @@ cdef GEOSGeometry *geos_from_shapely(shapely_geom) except *:
 
 cdef shapely_from_geos(GEOSGeometry *geom):
     """Turn the given GEOS geometry pointer into a shapely geometry."""
-    # This is the "correct" way to do it...
-    #   return geom_factory(<ptr>geom)
-    # ... but it's quite slow, so we do it by hand.
-    multi_line_string = sgeom.base.BaseGeometry()
-    multi_line_string.__class__ = sgeom.MultiLineString
-    multi_line_string.__geom__ = <ptr>geom
-    multi_line_string.__parent__ = None
-    multi_line_string._ndim = 2
-    return multi_line_string
+    return sgeom.base.geom_factory(<ptr>geom)
 
 
 ctypedef struct Point:
