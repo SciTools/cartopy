@@ -334,6 +334,12 @@ with open(os.path.join(HERE, 'README.md'), 'r') as fh:
     description = ''.join(fh.readlines())
 
 
+cython_coverage_enabled = os.environ.get('CYTHON_COVERAGE', None)
+if cython_coverage_enabled:
+    extra_cython_args = {'define_macros': [('CYTHON_TRACE_NOGIL', '1')]}
+    extra_extension_args.update(extra_cython_args)
+
+
 extensions = [
     Extension(
         'cartopy.trace',
@@ -360,6 +366,16 @@ extensions = [
         library_dirs=[library_dir] + proj_library_dirs,
         **extra_extension_args),
 ]
+
+
+if cython_coverage_enabled:
+    # We need to explicitly cythonize the extension in order
+    # to control the Cython compiler_directives.
+    from Cython.Build import cythonize
+
+    directives = {'linetrace': True,
+                  'binding': True}
+    extensions = cythonize(extensions, compiler_directives=directives)
 
 
 def decythonize(extensions, **_ignore):

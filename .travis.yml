@@ -47,6 +47,10 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
+  - if [[ "$NAME" == "Latest everything"* ]]; then
+        PACKAGES="$PACKAGES pytest-cov coveralls";
+        export CYTHON_COVERAGE=1;
+    fi
   - conda install --quiet $PACKAGES
 
   # Conda debug
@@ -69,9 +73,15 @@ script:
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
   - if [[ "$NAME" == "Latest everything"* ]]; then
-      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --doctest-modules --pyargs cartopy;
+      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --doctest-modules --pyargs cartopy --cov=cartopy -ra;
     else
       CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --pyargs cartopy;
+    fi
+
+
+after_success:
+  - if [[ "$NAME" == "Latest everything"* ]]; then
+      coveralls;
     fi
 
 after_failure:
