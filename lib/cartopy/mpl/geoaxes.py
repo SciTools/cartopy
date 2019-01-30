@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -32,6 +32,7 @@ import weakref
 import matplotlib as mpl
 import matplotlib.artist
 import matplotlib.axes
+import matplotlib.contour
 from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
@@ -46,6 +47,7 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
+import cartopy.mpl.contour
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
@@ -1394,6 +1396,10 @@ class GeoAxes(matplotlib.axes.Axes):
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
 
         self.autoscale_view()
+
+        # Re-cast the contour as a GeoContourSet.
+        if isinstance(result, matplotlib.contour.QuadContourSet):
+            result.__class__ = cartopy.mpl.contour.GeoContourSet
         return result
 
     def contourf(self, *args, **kwargs):
@@ -1434,6 +1440,11 @@ class GeoAxes(matplotlib.axes.Axes):
         self.dataLim.update_from_data_xy(extent.get_points())
 
         self.autoscale_view()
+
+        # Re-cast the contour as a GeoContourSet.
+        if isinstance(result, matplotlib.contour.QuadContourSet):
+            result.__class__ = cartopy.mpl.contour.GeoContourSet
+
         return result
 
     def scatter(self, *args, **kwargs):
