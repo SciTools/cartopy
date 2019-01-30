@@ -659,8 +659,7 @@ def project_linear(geometry not None, CRS src_crs not None,
 class _Testing:
     @staticmethod
     def straight_and_within(Point l_start, Point l_end,
-                            double t_start,
-                            double t_end,
+                            double t_start, double t_end,
                             Interpolator interpolator, double threshold,
                             domain):
         # This function is for testing/demonstration only.
@@ -675,7 +674,7 @@ class _Testing:
         gp_domain = GEOSPrepare_r(handle, g_domain)
         
         state = get_state(interpolator.project(l_start), gp_domain, handle)
-        cdef bool p_start_inside_domain = POINT_IN
+        cdef bool p_start_inside_domain = state == POINT_IN
 
         # l_end and l_start should be un-projected.
         interpolator.set_line(l_start, l_end)
