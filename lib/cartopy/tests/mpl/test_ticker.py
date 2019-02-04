@@ -37,7 +37,7 @@ ONE_SEC = 1 / 3600.
 def test_LatitudeFormatter_bad_axes():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
-    message = 'This formatter can only be used with cartopy axes.'
+    message = 'This formatter can only be used with cartopy GeoAxes.'
     with pytest.raises(TypeError, message=message):
         formatter(0)
 
@@ -53,7 +53,7 @@ def test_LatitudeFormatter_bad_projection():
 def test_LongitudeFormatter_bad_axes():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
-    message = 'This formatter can only be used with cartopy axes.'
+    message = 'This formatter can only be used with cartopy GeoAxes.'
     with pytest.raises(TypeError, message=message):
         formatter(0)
 
