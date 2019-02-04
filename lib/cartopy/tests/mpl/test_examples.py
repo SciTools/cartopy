@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -45,5 +45,13 @@ class ExampleImageTesting(ImageTesting):
 @ExampleImageTesting(['global_map'],
                      tolerance=4 if MPL_VERSION < '2' else 0)
 def test_global_map():
-    import cartopy.examples.global_map as c
-    c.main()
+    import cartopy.examples.global_map as example
+    example.main()
+
+
+@pytest.mark.natural_earth
+@ExampleImageTesting(['contour_label'],
+                     tolerance=7.5 if MPL_VERSION < '2' else 0)
+def test_contour_label():
+    import cartopy.examples.contour_labels as example
+    example.main()

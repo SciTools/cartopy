@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -117,7 +117,7 @@ class TestSRTMSource__single_tile(object):
     def test_out_of_range(self, Source):
         source = Source()
         msg = 'No srtm tile found for those coordinates.'
-        with pytest.raises(ValueError, message=msg):
+        with pytest.raises(ValueError, match=msg):
             source.single_tile(-25, 50)
 
     def test_in_range(self, Source):

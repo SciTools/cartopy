@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -1177,7 +1177,7 @@ class LambertConformal(Projection):
         self.cutoff = cutoff
         n = 91
         lons = np.empty(n + 2)
-        lats = np.full(n + 2, cutoff)
+        lats = np.full(n + 2, float(cutoff))
         lons[0] = lons[-1] = 0
         lats[0] = lats[-1] = plat
         if plat == 90:

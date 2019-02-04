@@ -46,7 +46,7 @@ def test_LatitudeFormatter_bad_projection():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
     message = 'This formatter cannot be used with non-rectangular projections.'
-    with pytest.raises(TypeError, message=message):
+    with pytest.raises(TypeError, match=message):
         formatter(0)
 
 
@@ -62,7 +62,7 @@ def test_LongitudeFormatter_bad_projection():
     formatter = LongitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
     message = 'This formatter cannot be used with non-rectangular projections.'
-    with pytest.raises(TypeError, message=message):
+    with pytest.raises(TypeError, match=message):
         formatter(0)
 
 
