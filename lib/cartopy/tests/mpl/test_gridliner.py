@@ -120,7 +120,6 @@ else:
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_image])
 def test_grid_labels():
-
     fig = plt.figure(figsize=(10, 10))
 
     crs_pc = ccrs.PlateCarree()

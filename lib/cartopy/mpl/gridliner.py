@@ -175,12 +175,14 @@ class Gridliner(object):
             of the gridlines.
         xformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format
-            longitude labels. Defaults to
-            :class:`cartopy.mpl.ticker.LongitudeFormatter`.
+            longitude labels. It defaults to None, which implies the use of a
+            :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
+            with the ``dms`` argument.
         yformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format
-            latitude labels. Defaults to
-            :class:`cartopy.mpl.ticker.LatitudeFormatter`.
+            latitude labels. It defaults to None, which implies the use of a
+            :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
+            with the ``dms`` argument.
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
