@@ -33,12 +33,17 @@ import subprocess
 import sys
 import warnings
 
+# ensure the current directory is in sys.path so versioneer can be imported
+# this is needed because PEP 517 makes the directory of setup.py not included
+# in sys.path
+HERE = os.path.dirname(__file__)
+sys.path.append(HERE)
+
 import versioneer
 
 
 # The existence of a PKG-INFO directory is enough to tell us whether this is a
 # source installation or not (sdist).
-HERE = os.path.dirname(__file__)
 IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
 
 if not IS_SDIST:
