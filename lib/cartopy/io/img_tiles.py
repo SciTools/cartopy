@@ -515,6 +515,56 @@ class QuadtreeTiles(GoogleWTS):
                 yield self.tms_to_quadkey(tile, google=True)
 
 
+class OrdnanceSurvey(GoogleWTS):
+    """
+    Implement web tile retrieval from Ordnance Survey map data.
+    To use this tile image source you will need to obtain an
+    API key from Ordnance Survey.
+
+    For more details on Ordnance Survey layer styles, see
+    https://apidocs.os.uk/docs/map-styles.
+
+    For the API framework agreement, see
+    https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
+    """
+    # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
+    def __init__(self, apikey, layer='Road', desired_tile_form='RGB'):
+        """
+        Parameters
+        ----------
+        apikey: required
+            The authentication key provided by OS to query the maps API
+        layer: optional
+            The style of the Ordnance Survey map tiles. One of 'Outdoor',
+            'Road', 'Light', 'Night', 'Leisure'. Defaults to 'Road'.
+            Details about the style of layer can be found at:
+             - https://apidocs.os.uk/docs/layer-information
+             - https://apidocs.os.uk/docs/map-styles
+        desired_tile_form: optional
+            Defaults to 'RGB'.
+        """
+        super(OrdnanceSurvey, self).__init__(
+            desired_tile_form=desired_tile_form)
+        self.apikey = apikey
+
+        if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:
+            raise ValueError('Invalid layer {}'.format(layer))
+
+        self.layer = layer
+
+    def _image_url(self, tile):
+        x, y, z = tile
+        url = ('https://api2.ordnancesurvey.co.uk/'
+               'mapping_api/v1/service/wmts?'
+               'key={apikey}&height=256&width=256&tilematrixSet=EPSG%3A3857&'
+               'version=1.0.0&style=true&layer={layer}%203857&'
+               'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
+               'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
+        return url.format(z=z, y=y, x=x,
+                          apikey=self.apikey,
+                          layer=self.layer)
+
+
 def _merge_tiles(tiles):
     """Return a single image, merging the given images."""
     if not tiles:

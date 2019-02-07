@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -32,12 +32,12 @@ import weakref
 import matplotlib as mpl
 import matplotlib.artist
 import matplotlib.axes
+import matplotlib.contour
 from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
 import matplotlib.spines as mspines
-import matplotlib.ticker as mticker
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
@@ -46,6 +46,7 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
+import cartopy.mpl.contour
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
@@ -54,7 +55,6 @@ from cartopy.vector_transform import vector_scalar_to_grid
 
 assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
                                     'Matplotlib 1.5.1 or greater.')
-
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
 """
@@ -404,6 +404,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # If data has been added (i.e. autoscale hasn't been turned off)
         # then we should autoscale the view.
+
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
@@ -412,9 +413,10 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.viewLim)
             self.background_patch._path = clipped_path
 
+        self.apply_aspect()
         for gl in self._gridliners:
-            gl._draw_gridliner(background_patch=self.background_patch)
-        self._gridliners = []
+            gl._draw_gridliner(background_patch=self.background_patch,
+                               renderer=renderer)
 
         # XXX This interface needs a tidy up:
         #       image drawing on pan/zoom;
@@ -427,9 +429,49 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.imshow(img, extent=extent, origin=origin,
                             transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
-
+        self._cachedRenderer = renderer
         return matplotlib.axes.Axes.draw(self, renderer=renderer,
                                          inframe=inframe)
+
+    def _update_title_position(self, renderer):
+        """
+        Update the title position based on the bounding box enclosing
+        all the ticklabels and x-axis spine and xlabel...
+
+        """
+        matplotlib.axes.Axes._update_title_position(self, renderer)
+        if not self._gridliners:
+            return
+
+        if self._autotitlepos is not None and not self._autotitlepos:
+            return
+
+        # Get the max ymax of all top labels
+        top = -1
+        for gl in self._gridliners:
+            if gl.has_labels():
+                for label in (gl.top_label_artists +
+                              gl.left_label_artists +
+                              gl.right_label_artists):
+                    # we skip bottom labels because they are usually
+                    # not at the top
+                    bb = label.get_tightbbox(renderer)
+                    top = max(top, bb.ymax)
+        if top < 0:
+            # nothing to do if no label found
+            return
+        yn = self.transAxes.inverted().transform((0., top))[1]
+        if yn <= 1:
+            # nothing to do if the upper bounds of labels is below
+            # the top of the axes
+            return
+
+        # Loop on titles to adjust
+        titles = (self.title, self._left_title, self._right_title)
+        for title in titles:
+            x, y0 = title.get_position()
+            y = max(1.0, yn)
+            title.set_position((x, y))
 
     def __str__(self):
         return '< GeoAxes: %s >' % self.projection
@@ -693,7 +735,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return geom_in_crs
 
-    def set_extent(self, extents, crs=None):
+    def set_extent(self, extents, crs=None, clip=False):
         """
         Set the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
@@ -703,9 +745,11 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Parameters
         ----------
-        extent
+        extents
             Tuple of floats representing the required extent (x0, x1, y0, y1).
 
+        clip: bool
+            Clip map boundary to match exactly this extent.
         """
         # TODO: Implement the same semantics as plt.xlim and
         # plt.ylim - allowing users to set None for a minimum and/or
@@ -731,6 +775,25 @@ class GeoAxes(matplotlib.axes.Axes):
             if boundary.equals(domain_in_crs):
                 projected = boundary
 
+        if clip:
+
+            # compute coordinates of the clipping polygon as two 1D arrays
+            n = 100
+            x = np.linspace(x1, x2, n)
+            y = np.linspace(y1, y2, n)
+            xx = np.concatenate((x, [x[-1]]*n, x[::-1], [x[0]]*n))
+            yy = np.concatenate(([y[0]]*n, y, [y[-1]]*n, y[::-1]))
+
+            # project the coordinates and create the path object
+            if crs is not None and crs != self.projection:
+                xy = self.projection.transform_points(crs, xx, yy)[:, :2]
+            else:
+                xy = np.array([xx, yy]).T
+            path = mpath.Path(xy)
+
+            # set it as a boundary
+            self.set_boundary(path)
+
         if projected is None:
             projected = self.projection.project_geometry(domain_in_crs, crs)
         try:
@@ -745,6 +808,7 @@ class GeoAxes(matplotlib.axes.Axes):
                    'y_limits=[{ylim[0]}, {ylim[1]}]).')
             raise ValueError(msg.format(xlim=self.projection.x_limits,
                                         ylim=self.projection.y_limits))
+
         self.set_xlim([x1, x2])
         self.set_ylim([y1, y2])
 
@@ -1213,8 +1277,8 @@ class GeoAxes(matplotlib.axes.Axes):
         return result
 
     def gridlines(self, crs=None, draw_labels=False,
-                  xlocs=None, ylocs=None,
-                  x_inline=False, y_inline=False,
+                  xlocs=None, ylocs=None, dms=False,
+                  x_inline=None, y_inline=None,
                   auto_inline=True, **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
@@ -1231,15 +1295,21 @@ class GeoAxes(matplotlib.axes.Axes):
         xlocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the gridlines in the
-            x-coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the meridian gridlines in the
+            coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
         ylocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the gridlines in the
-            y-coordinate of the given CRS. Defaults to None, which
-            implies automatic locating of the gridlines.
+            used to determine the locations of the parallel gridlines in the
+            coordinate of the given CRS. Defaults to None, which
+            implies automatic locating of the gridlines.        dms: bool
+            When default longitude and latitude locators and formatters are
+            used, ticks are able to stop on minutes and seconds if minutes
+            is set to True, and not fraction of degrees.
+            This keyword is passed to
+            :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
+            if xlocs and ylocs are explicitly set.
         x_inline: optional
             Toggle whether the x labels drawn should be inline.
         y_inline: optional
@@ -1261,15 +1331,12 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
-        if xlocs is not None and not isinstance(xlocs, mticker.Locator):
-            xlocs = mticker.FixedLocator(xlocs)
-        if ylocs is not None and not isinstance(ylocs, mticker.Locator):
-            ylocs = mticker.FixedLocator(ylocs)
+        mlocs = kwargs.pop('mlocs', xlocs)
+        plocs = kwargs.pop('plocs', ylocs)
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels,
-            xlocator=xlocs, ylocator=ylocs,
-            x_inline=x_inline, y_inline=y_inline,
-            auto_inline=auto_inline, collection_kwargs=kwargs)
+            self, crs=crs, draw_labels=draw_labels, xlocator=mlocs,
+            ylocator=plocs, collection_kwargs=kwargs, dms=dms,
+            x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline)
         self._gridliners.append(gl)
         return gl
 
@@ -1404,6 +1471,10 @@ class GeoAxes(matplotlib.axes.Axes):
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
 
         self.autoscale_view()
+
+        # Re-cast the contour as a GeoContourSet.
+        if isinstance(result, matplotlib.contour.QuadContourSet):
+            result.__class__ = cartopy.mpl.contour.GeoContourSet
         return result
 
     def contourf(self, *args, **kwargs):
@@ -1444,6 +1515,11 @@ class GeoAxes(matplotlib.axes.Axes):
         self.dataLim.update_from_data_xy(extent.get_points())
 
         self.autoscale_view()
+
+        # Re-cast the contour as a GeoContourSet.
+        if isinstance(result, matplotlib.contour.QuadContourSet):
+            result.__class__ = cartopy.mpl.contour.GeoContourSet
+
         return result
 
     def scatter(self, *args, **kwargs):

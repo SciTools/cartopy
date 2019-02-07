@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -36,10 +36,20 @@ import warnings
 import versioneer
 
 
-try:
-    from Cython.Distutils import build_ext
-except ImportError:
-    raise ImportError('Cython 0.17+ is required to install cartopy.')
+# The existence of a PKG-INFO directory is enough to tell us whether this is a
+# source installation or not (sdist).
+HERE = os.path.dirname(__file__)
+IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
+
+if not IS_SDIST:
+    import Cython
+    if Cython.__version__ < '0.28':
+        raise ImportError(
+            "Cython 0.28+ is required to install cartopy from source.")
+
+    from Cython.Distutils import build_ext as cy_build_ext
+
+
 try:
     import numpy as np
 except ImportError:
@@ -51,8 +61,6 @@ PY3 = (sys.version_info[0] == 3)
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 3, 3)
 PROJ_MIN_VERSION = (4, 9, 0)
-
-HERE = os.path.dirname(__file__)
 
 
 def file_walk_relative(top, remove=''):
@@ -280,8 +288,9 @@ else:
             proj_includes = proj_includes.decode()
             proj_clibs = proj_clibs.decode()
 
-        proj_includes = [proj_include[2:] if proj_include.startswith('-I') else
-                         proj_include for proj_include in proj_includes.split()]      
+        proj_includes = [
+            proj_include[2:] if proj_include.startswith('-I') else
+            proj_include for proj_include in proj_includes.split()]
 
         proj_libraries = []
         proj_library_dirs = []
@@ -321,13 +330,78 @@ else:
 
 # Description
 # ===========
-
 with open(os.path.join(HERE, 'README.md'), 'r') as fh:
     description = ''.join(fh.readlines())
 
 
+cython_coverage_enabled = os.environ.get('CYTHON_COVERAGE', None)
+if cython_coverage_enabled:
+    extra_cython_args = {'define_macros': [('CYTHON_TRACE_NOGIL', '1')]}
+    extra_extension_args.update(extra_cython_args)
+
+
+extensions = [
+    Extension(
+        'cartopy.trace',
+        ['lib/cartopy/trace.pyx'],
+        include_dirs=([include_dir, './lib/cartopy', np.get_include()] +
+                      proj_includes + geos_includes),
+        libraries=proj_libraries + geos_libraries,
+        library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
+        language='c++',
+        **extra_extension_args),
+    Extension(
+        'cartopy._crs',
+        ['lib/cartopy/_crs.pyx'],
+        include_dirs=[include_dir, np.get_include()] + proj_includes,
+        libraries=proj_libraries,
+        library_dirs=[library_dir] + proj_library_dirs,
+        **extra_extension_args),
+    # Requires proj v4.9
+    Extension(
+        'cartopy.geodesic._geodesic',
+        ['lib/cartopy/geodesic/_geodesic.pyx'],
+        include_dirs=[include_dir, np.get_include()] + proj_includes,
+        libraries=proj_libraries,
+        library_dirs=[library_dir] + proj_library_dirs,
+        **extra_extension_args),
+]
+
+
+if cython_coverage_enabled:
+    # We need to explicitly cythonize the extension in order
+    # to control the Cython compiler_directives.
+    from Cython.Build import cythonize
+
+    directives = {'linetrace': True,
+                  'binding': True}
+    extensions = cythonize(extensions, compiler_directives=directives)
+
+
+def decythonize(extensions, **_ignore):
+    # Remove pyx sources from extensions.
+    # Note: even if there are changes to the pyx files, they will be ignored.
+    for extension in extensions:
+        sources = []
+        for sfile in extension.sources:
+            path, ext = os.path.splitext(sfile)
+            if ext in ('.pyx',):
+                if extension.language == 'c++':
+                    ext = '.cpp'
+                else:
+                    ext = '.c'
+                sfile = path + ext
+            sources.append(sfile)
+        extension.sources[:] = sources
+    return extensions
+
+
 cmdclass = versioneer.get_cmdclass()
-cmdclass.update({'build_ext': build_ext})
+
+if IS_SDIST:
+    extensions = decythonize(extensions)
+else:
+    cmdclass.update({'build_ext': cy_build_ext})
 
 
 # Main setup
@@ -368,37 +442,9 @@ setup(
 
 
     # requires proj headers
-    ext_modules=[
-        Extension(
-            'cartopy.trace',
-            ['lib/cartopy/trace.pyx', 'lib/cartopy/_trace.cpp'],
-            include_dirs=[include_dir,
-                          './lib/cartopy'] + proj_includes + geos_includes,
-            libraries=proj_libraries + geos_libraries,
-            library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
-            language='c++',
-            **extra_extension_args
-        ),
-        Extension(
-            'cartopy._crs',
-            ['lib/cartopy/_crs.pyx'],
-            include_dirs=[include_dir, np.get_include()] + proj_includes,
-            libraries=proj_libraries,
-            library_dirs=[library_dir] + proj_library_dirs,
-            **extra_extension_args
-        ),
-        # Requires proj v4.9
-        Extension(
-            'cartopy.geodesic._geodesic',
-            ['lib/cartopy/geodesic/_geodesic.pyx'],
-            include_dirs=[include_dir, np.get_include()] + proj_includes,
-            libraries=proj_libraries,
-            library_dirs=[library_dir] + proj_library_dirs,
-            **extra_extension_args
-        ),
-    ],
-
+    ext_modules=extensions,
     cmdclass=cmdclass,
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
     classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: GNU Lesser General Public License v3 '
@@ -413,9 +459,9 @@ setup(
             'Programming Language :: Python :: 2',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: GIS',
             'Topic :: Scientific/Engineering :: Visualization',

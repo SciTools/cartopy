@@ -74,3 +74,8 @@ class SlippyImageArtist(AxesImage):
             with ax.hold_limits():
                 self.set_extent(extent)
             super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)
+
+    def can_composite(self):
+        # As per https://github.com/SciTools/cartopy/issues/689, disable
+        # compositing multiple raster sources.
+        return False

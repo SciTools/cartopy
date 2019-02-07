@@ -5,9 +5,9 @@ env:
         # These ancient versions are linked to an old libgfortran, but that version
         # isn't pinned in the package metadata
         - PYTHON_VERSION=2.7
-          PACKAGES="cython=0.17 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock futures"
+          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock futures"
         - PYTHON_VERSION=3.5
-          PACKAGES="cython=0.23.1 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
+          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
           PYTHONHASHSEED=0  # So pytest-xdist works.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
@@ -47,6 +47,10 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
+  - if [[ "$NAME" == "Latest everything"* ]]; then
+        PACKAGES="$PACKAGES pytest-cov coveralls";
+        export CYTHON_COVERAGE=1;
+    fi
   - conda install --quiet $PACKAGES
 
   # Conda debug
@@ -69,9 +73,15 @@ script:
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
   - if [[ "$NAME" == "Latest everything"* ]]; then
-      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --doctest-modules --pyargs cartopy;
+      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --doctest-modules --pyargs cartopy --cov=cartopy -ra;
     else
       CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --pyargs cartopy;
+    fi
+
+
+after_success:
+  - if [[ "$NAME" == "Latest everything"* ]]; then
+      coveralls;
     fi
 
 after_failure:
