@@ -20,10 +20,6 @@ from __future__ import (absolute_import, division, print_function)
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 import pytest
 
 import cartopy.crs as ccrs
@@ -46,18 +42,16 @@ TEST_PROJS = [
     ccrs.Robinson,
     ccrs.Sinusoidal,
     ccrs.Stereographic,
-    ccrs.TransverseMercator,
-    #     ccrs.UTM,
     ccrs.InterruptedGoodeHomolosine,
     ccrs.RotatedPole,
     ccrs.OSGB,
     ccrs.EuroPP,
-    #     ccrs.Geostationary,  # same as orthographic
-    #     ccrs.NearsidePerspective,  # same as orthographic
+    ccrs.Geostationary,
+    ccrs.NearsidePerspective,
     ccrs.Gnomonic,
     ccrs.LambertAzimuthalEqualArea,
     ccrs.NorthPolarStereo,
-    #     ccrs.OSNI,  # fails in 0.17.0
+    ccrs.OSNI,
     ccrs.SouthPolarStereo,
 ]
 
@@ -128,23 +122,11 @@ def test_gridliner():
 
 
 def test_gridliner_specified_lines():
-<<<<<<< HEAD
-    xs = [0, 60, 120, 180, 240, 360]
-    ys = [-90, -60, -30, 0, 30, 60, 90]
-    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    gl = GeoAxes.gridlines(ax, xlocs=xs, ylocs=ys)
-=======
     meridians = [0, 60, 120, 180, 240, 360]
     parallels = [-90, -60, -30, 0, 30, 60, 90]
 
-    def mpl_connext(*args):
-        pass
-
-    canvas = mock.Mock(mpl_connext=mpl_connext)
-    fig = mock.Mock(spec=matplotlib.figure.Figure, canvas=canvas)
-    ax = mock.Mock(_gridliners=[], spec=GeoAxes, figure=fig)
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     gl = GeoAxes.gridlines(ax, xlocs=meridians, ylocs=parallels)
->>>>>>> 45d0479abed27f73c5bb8bac35036772a3faa773
     assert isinstance(gl.xlocator, mticker.FixedLocator)
     assert isinstance(gl.ylocator, mticker.FixedLocator)
     assert gl.xlocator.tick_values(None, None).tolist() == meridians
@@ -192,17 +174,7 @@ def test_grid_labels():
     gl = ax.gridlines(draw_labels=True)
     gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
-<<<<<<< HEAD
-    # Check that labelling the gridlines on an OSGB plot gives an error.
-    # (Currently can only draw these on PlateCarree or Mercator plots.)
-    ax = fig.add_subplot(3, 2, 4, projection=crs_osgb)
-    ax.coastlines()
-    ax.remove()
-
-    ax = fig.add_subplot(3, 2, 4, projection=crs_pc)
-=======
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
->>>>>>> 45d0479abed27f73c5bb8bac35036772a3faa773
     ax.coastlines()
     gl = ax.gridlines(
         crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle=':')
@@ -240,14 +212,13 @@ def test_grid_labels():
     gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     # Increase margins between plots to stop them bumping into one another.
-<<<<<<< HEAD
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
 
 
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_inline_image])
 def test_grid_labels_inline():
-    plt.figure(figsize=(35, 30))
+    plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
         if isinstance(proj(), ccrs.RotatedPole):
             ax = plt.subplot(7, 4, i, projection=RP)
@@ -255,7 +226,8 @@ def test_grid_labels_inline():
             ax = plt.subplot(7, 4, i, projection=proj())
         ax.gridlines(draw_labels=True, auto_inline=True)
         ax.coastlines()
-        ax.set_title(proj, y=1.08)
+        ax.set_title(proj, y=1.075)
+    plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
 @pytest.mark.natural_earth
@@ -265,7 +237,7 @@ def test_grid_labels_inline_usa():
     left = -124.7844079  # west long
     right = -66.9513812  # east long
     bottom = 24.7433195  # south lat
-    plt.figure(figsize=(35, 30))
+    plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
         if isinstance(proj(), ccrs.RotatedPole):
             ax = plt.subplot(7, 4, i, projection=RP)
@@ -276,10 +248,7 @@ def test_grid_labels_inline_usa():
                           crs=ccrs.PlateCarree())
         except Exception:
             pass
-        ax.set_title(proj, y=1.08)
+        ax.set_title(proj, y=1.075)
         ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
         ax.coastlines()
-=======
-    plt.subplots_adjust(wspace=0.25, hspace=0.25, top=.98, left=.07,
-                        bottom=0.02, right=0.93)
->>>>>>> 45d0479abed27f73c5bb8bac35036772a3faa773
+    plt.subplots_adjust(wspace=0.35, hspace=0.35)

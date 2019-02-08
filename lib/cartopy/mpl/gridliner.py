@@ -32,8 +32,8 @@ from warnings import warn
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
 from cartopy.mpl.ticker import (
-        LongitudeLocator, LatitudeLocator,
-        LongitudeFormatter, LatitudeFormatter)
+    LongitudeLocator, LatitudeLocator,
+    LongitudeFormatter, LatitudeFormatter)
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
@@ -49,7 +49,9 @@ _X_INLINE_PROJS = (
 _POLAR_PROJS = (
     cartopy.crs.NorthPolarStereo,
     cartopy.crs.SouthPolarStereo,
+    cartopy.crs.Stereographic
 )
+
 
 def _fix_lons(lons):
     """
@@ -326,14 +328,13 @@ class Gridliner(object):
         # find the cneter point between each lat gridline
         cent = np.diff(ticks).mean() / 2
         if isinstance(self.axes.projection, _POLAR_PROJS):
-            # lower / upper quantile
-            lq = 35
-            uq = 65
+            lq = 90
+            uq = 90
         else:
             lq = 25
             uq = 75
         midpoints = (self._round(np.percentile(lim, lq), cent),
-                       self._round(np.percentile(lim, uq), cent))
+                     self._round(np.percentile(lim, uq), cent))
         return midpoints
 
     def _draw_gridliner(self, nx=None, ny=None, background_patch=None,
@@ -346,7 +347,7 @@ class Gridliner(object):
 
         # Inits
         lon_lim, lat_lim = self._axes_domain(
-                nx=nx, ny=ny, background_patch=background_patch)
+            nx=nx, ny=ny, background_patch=background_patch)
 
         transform = self._crs_transform()
         rc_params = matplotlib.rcParams
@@ -458,7 +459,7 @@ class Gridliner(object):
                 # Intersection of line with map boundary
                 line = np.array(line)
                 line = self.axes.projection.transform_points(
-                        crs, line[:, 0], line[:, 1])[:, :2]
+                    crs, line[:, 0], line[:, 1])[:, :2]
                 infs = np.isinf(line)
                 if infs.any():
                     if infs.all():
@@ -526,9 +527,9 @@ class Gridliner(object):
 
                     # Loop on head and tail and plot label by extrapolation
                     for tail, head in zip(tails, heads):
-                        for i ,(pt0, pt1) in enumerate([tail, head]):
+                        for i, (pt0, pt1) in enumerate([tail, head]):
                             kw, angle, loc = self._segment_to_text_specs(
-                                    pt0, pt1, lonlat)
+                                pt0, pt1, lonlat)
                             if not getattr(self, loc+'_labels'):
                                 continue
                             kw.update(label_style,
@@ -542,15 +543,17 @@ class Gridliner(object):
                                     continue
                                 x = x_midpoints[i]
                                 y = tick_value
+                                y_set = True
                             else:
                                 x = pt0[0]
+                                y_set = False
 
                             if self.x_inline and lonlat == 'lon':
                                 if abs(tick_value) == 180:
                                     continue
                                 x = tick_value
                                 y = y_midpoints[i]
-                            else:
+                            elif not y_set:
                                 y = pt0[1]
 
                             tt = self.axes.text(x, y, text, **kw)
@@ -576,7 +579,7 @@ class Gridliner(object):
         return kw, angle, loc
 
     def _text_angle_to_specs_(self, angle, lonlat):
-        """Get appropriate kwargs for a rotated label from its angle in degrees"""
+        """Get specs for a rotated label from its angle in degrees"""
 
         if matplotlib.__version__ >= '3.1':
             # rotation_mode='anchor' and va_align_center='center_baseline'
@@ -590,7 +593,7 @@ class Gridliner(object):
             angle -= 360
 
         if ((self.x_inline and lonlat == 'lon') or
-            (self.y_inline and lonlat == 'lat')):
+                (self.y_inline and lonlat == 'lat')):
             kw = {'rotation': 0, 'rotation_mode': 'anchor',
                   'ha': 'center', 'va': 'center'}
             loc = 'bottom'
@@ -632,7 +635,7 @@ class Gridliner(object):
             del kw['rotation']
 
         if ((self.x_inline and lonlat == 'lon') or
-            (self.y_inline and lonlat == 'lat')):
+                (self.y_inline and lonlat == 'lat')):
             kw.update(transform=cartopy.crs.PlateCarree())
         else:
             xpadding = (self.xpadding if self.xpadding is not None
@@ -690,7 +693,7 @@ class Gridliner(object):
             # Loop on angles until it works
             for angle in angles:
                 if ((self.x_inline and lonlat == 'lon') or
-                    (self.y_inline and lonlat == 'lat')):
+                        (self.y_inline and lonlat == 'lat')):
                     angle = 0
 
                 if angle is not None:
@@ -700,7 +703,7 @@ class Gridliner(object):
                 artist.update_bbox_position_size(renderer)
                 this_patch = artist.get_bbox_patch()
                 this_path = this_patch.get_path().transformed(
-                        this_patch.get_transform())
+                    this_patch.get_transform())
                 visible = False
 
                 for path in paths:
@@ -714,17 +717,17 @@ class Gridliner(object):
                     # Finally check that it does not overlap the map
                     if outline_path is None:
                         outline_path = self.axes.background_patch.get_path(
-                            ).transformed(self.axes.transData)
+                        ).transformed(self.axes.transData)
                     visible = (not outline_path.intersects_path(this_path) or
-                              (lonlat == 'lon' and self.x_inline) or
-                              (lonlat == 'lat' and self.y_inline))
+                               (lonlat == 'lon' and self.x_inline) or
+                               (lonlat == 'lat' and self.y_inline))
 
                     # Good
                     if visible:
                         break
 
                 if ((self.x_inline and lonlat == 'lon') or
-                    (self.y_inline and lonlat == 'lat')):
+                        (self.y_inline and lonlat == 'lat')):
                     break
 
             # Action
