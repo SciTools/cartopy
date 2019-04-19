@@ -470,9 +470,9 @@ class LongitudeLocator(MaxNLocator):
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
-        MaxNLocator.set_params(self, **kwargs)
-        if 'dms' in kwargs:
-            self._dms = kwargs['dms']
+        nbins = kwargs.pop('nbins', 8)
+        self._dms = kwargs.pop('dms', False)
+        MaxNLocator.set_params(self, nbins=nbins, **kwargs)
 
     def _guess_steps(self, vmin, vmax):
 
