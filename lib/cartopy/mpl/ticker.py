@@ -467,12 +467,14 @@ class LongitudeLocator(MaxNLocator):
     dms: bool
         Allow the locator to stop on on minutes and seconds (False by default)
     """
+    def __init__(self, *args, **kwargs):
+        nbins = kwargs.pop('nbins', 8)
+        super().__init__(*args, nbins=nbins, **kwargs)
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
-        nbins = kwargs.pop('nbins', 8)
         self._dms = kwargs.pop('dms', False)
-        MaxNLocator.set_params(self, nbins=nbins, **kwargs)
+        MaxNLocator.set_params(self, **kwargs)
 
     def _guess_steps(self, vmin, vmax):
 
