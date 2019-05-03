@@ -20,10 +20,6 @@ from __future__ import (absolute_import, division, print_function)
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 import pytest
 
 import cartopy.crs as ccrs
@@ -31,6 +27,39 @@ from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+
+
+TEST_PROJS = [
+    ccrs.PlateCarree,
+    ccrs.AlbersEqualArea,
+    ccrs.AzimuthalEquidistant,
+    ccrs.LambertConformal,
+    ccrs.LambertCylindrical,
+    ccrs.Mercator,
+    ccrs.Miller,
+    ccrs.Mollweide,
+    ccrs.Orthographic,
+    ccrs.Robinson,
+    ccrs.Sinusoidal,
+    ccrs.Stereographic,
+    ccrs.InterruptedGoodeHomolosine,
+    ccrs.RotatedPole,
+    ccrs.OSGB,
+    ccrs.EuroPP,
+    ccrs.Geostationary,
+    ccrs.NearsidePerspective,
+    ccrs.Gnomonic,
+    ccrs.LambertAzimuthalEqualArea,
+    ccrs.NorthPolarStereo,
+    ccrs.OSNI,
+    ccrs.SouthPolarStereo,
+]
+
+RP = ccrs.RotatedPole(pole_longitude=180.0,
+                      pole_latitude=36.0,
+                      central_rotated_longitude=-106.0,
+                      globe=ccrs.Globe(semimajor_axis=6370000,
+                                       semiminor_axis=6370000))
 
 
 @pytest.mark.natural_earth
@@ -96,12 +125,7 @@ def test_gridliner_specified_lines():
     meridians = [0, 60, 120, 180, 240, 360]
     parallels = [-90, -60, -30, 0, 30, 60, 90]
 
-    def mpl_connext(*args):
-        pass
-
-    canvas = mock.Mock(mpl_connext=mpl_connext)
-    fig = mock.Mock(spec=matplotlib.figure.Figure, canvas=canvas)
-    ax = mock.Mock(_gridliners=[], spec=GeoAxes, figure=fig)
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     gl = GeoAxes.gridlines(ax, xlocs=meridians, ylocs=parallels)
     assert isinstance(gl.xlocator, mticker.FixedLocator)
     assert isinstance(gl.ylocator, mticker.FixedLocator)
@@ -113,8 +137,12 @@ def test_gridliner_specified_lines():
 # of text objects. A new testing strategy is needed for this kind of test.
 if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
+    grid_label_inline_image = 'gridliner_labels_inline'
+    grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
 else:
     grid_label_image = 'gridliner_labels_1.5'
+    grid_label_inline_image = 'gridliner_labels_inline_1.5'
+    grid_label_inline_usa_image = 'gridliner_labels_inline_usa_1.5'
 
 
 @pytest.mark.natural_earth
@@ -134,8 +162,6 @@ def test_grid_labels():
     ax = fig.add_subplot(3, 2, 2,
                          projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines()
-    with pytest.raises(TypeError):
-        ax.gridlines(crs=crs_merc, draw_labels=True)
 
     ax.set_title('Known bug')
     gl = ax.gridlines(crs=crs_pc, draw_labels=True)
@@ -186,5 +212,43 @@ def test_grid_labels():
     gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     # Increase margins between plots to stop them bumping into one another.
-    plt.subplots_adjust(wspace=0.25, hspace=0.25, top=.98, left=.07,
-                        bottom=0.02, right=0.93)
+    plt.subplots_adjust(wspace=0.25, hspace=0.25)
+
+
+@pytest.mark.natural_earth
+@ImageTesting([grid_label_inline_image])
+def test_grid_labels_inline():
+    plt.figure(figsize=(35, 35))
+    for i, proj in enumerate(TEST_PROJS, 1):
+        if isinstance(proj(), ccrs.RotatedPole):
+            ax = plt.subplot(7, 4, i, projection=RP)
+        else:
+            ax = plt.subplot(7, 4, i, projection=proj())
+        ax.gridlines(draw_labels=True, auto_inline=True)
+        ax.coastlines()
+        ax.set_title(proj, y=1.075)
+    plt.subplots_adjust(wspace=0.35, hspace=0.35)
+
+
+@pytest.mark.natural_earth
+@ImageTesting([grid_label_inline_usa_image])
+def test_grid_labels_inline_usa():
+    top = 49.3457868  # north lat
+    left = -124.7844079  # west long
+    right = -66.9513812  # east long
+    bottom = 24.7433195  # south lat
+    plt.figure(figsize=(35, 35))
+    for i, proj in enumerate(TEST_PROJS, 1):
+        if isinstance(proj(), ccrs.RotatedPole):
+            ax = plt.subplot(7, 4, i, projection=RP)
+        else:
+            ax = plt.subplot(7, 4, i, projection=proj())
+        try:
+            ax.set_extent([left, right, bottom, top],
+                          crs=ccrs.PlateCarree())
+        except Exception:
+            pass
+        ax.set_title(proj, y=1.075)
+        ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+        ax.coastlines()
+    plt.subplots_adjust(wspace=0.35, hspace=0.35)
