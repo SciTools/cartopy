@@ -74,8 +74,8 @@ class TestWMSRasterSource(object):
         assert source.layers == self.layers
 
     def test_no_layers(self):
-        msg = 'One or more layers must be defined.'
-        with pytest.raises(ValueError, match=msg):
+        match = r'One or more layers must be defined\.'
+        with pytest.raises(ValueError, match=match):
             ogc.WMSRasterSource(self.URI, [])
 
     def test_extra_kwargs_empty(self):
@@ -174,8 +174,8 @@ class TestWMTSRasterSource(object):
     def test_unsupported_projection(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         with mock.patch('cartopy.io.ogc_clients._URN_TO_CRS', {}):
-            msg = 'Unable to find tile matrix for projection.'
-            with pytest.raises(ValueError, match=msg):
+            match = r'Unable to find tile matrix for projection\.'
+            with pytest.raises(ValueError, match=match):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
