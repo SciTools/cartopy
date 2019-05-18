@@ -145,14 +145,14 @@ class Gridliner(object):
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
         xformatter: optional
-            A :class:`matplotlib.ticker.Formatter` instance to format
-            longitude labels. It defaults to None, which implies the use of a
-            :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
+            A :class:`matplotlib.ticker.Formatter` instance to format labels
+            for x-coordinate gridlines. It defaults to None, which implies the
+            use of a :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
             with the ``dms`` argument.
         yformatter: optional
-            A :class:`matplotlib.ticker.Formatter` instance to format
-            latitude labels. It defaults to None, which implies the use of a
-            :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
+            A :class:`matplotlib.ticker.Formatter` instance to format labels
+            for y-coordinate gridlines. It defaults to None, which implies the
+            use of a :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
             with the ``dms`` argument.
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
@@ -166,13 +166,16 @@ class Gridliner(object):
         y_inline: optional
             Toggle whether the y labels drawn should be inline.
         auto_inline: optional
-            Set x_inline and y_inline automatically based on projection
+            Set x_inline and y_inline automatically based on projection.
 
-        .. note:: Note that the "x" and "y" labels for locators and
-             formatters do not necessarily correspond to X and Y,
-             but to longitudes and latitudes: indeed, according to
-             geographical projections, meridians and parallels can
-             cross both the X axis and the Y axis.
+        Notes
+        -----
+        The "x" and "y" labels for locators and formatters do not necessarily
+        correspond to X and Y, but to the first and second coordinates of the
+        specified CRS. For the common case of PlateCarree gridlines, these
+        correspond to longitudes and latitudes. Depending on the projection
+        used for the map, meridians and parallels can cross both the X axis and
+        the Y axis.
         """
         self.axes = axes
 
@@ -240,10 +243,10 @@ class Gridliner(object):
         elif not auto_inline:
             self.y_inline = False
 
-        #: Whether to draw the longitude gridlines (meridians).
+        #: Whether to draw the x gridlines.
         self.xlines = True
 
-        #: Whether to draw the latitude gridlines (parallels).
+        #: Whether to draw the y gridlines.
         self.ylines = True
 
         #: A dictionary passed through to ``ax.text`` on x label creation
@@ -603,23 +606,19 @@ class Gridliner(object):
 
         # Options that depend in which quarter the angle falls
         if abs(angle) <= 45:
-
             loc = 'right'
             kw.update(ha='left', va='center')
 
         elif abs(angle) >= 135:
-
             loc = 'left'
             kw.update(ha='right', va='center')
             kw['rotation'] -= np.sign(angle) * 180
 
         elif angle > 45:
-
             loc = 'top'
             kw.update(ha='center', va='bottom', rotation=angle-90)
 
         else:
-
             loc = 'bottom'
             kw.update(ha='center', va='top', rotation=angle+90)
 

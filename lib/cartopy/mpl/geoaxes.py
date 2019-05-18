@@ -1289,21 +1289,20 @@ class GeoAxes(matplotlib.axes.Axes):
         xlocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the meridian gridlines in the
-            coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the gridlines in the
+            x-coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
         ylocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the parallel gridlines in the
-            coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the gridlines in the
+            y-coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
         dms: bool
             When default longitude and latitude locators and formatters are
-            used, ticks are able to stop on minutes and seconds if minutes
-            is set to True, and not fraction of degrees.
-            This keyword is passed to
-            :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
+            used, ticks are able to stop on minutes and seconds if minutes is
+            set to True, and not fraction of degrees. This keyword is passed
+            to :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
             if xlocs and ylocs are explicitly set.
         x_inline: optional
             Toggle whether the x labels drawn should be inline.
@@ -1312,25 +1311,32 @@ class GeoAxes(matplotlib.axes.Axes):
         auto_inline: optional
             Set x_inline and y_inline automatically based on projection
 
+        Keyword Parameters
+        ------------------
+        **kwargs
+            All other keywords control line properties.  These are passed
+            through to :class:`matplotlib.collections.Collection`.
+
         Returns
         -------
         gridliner
             A :class:`cartopy.mpl.gridliner.Gridliner` instance.
 
-        Note
-        ----
-            All other keywords control line properties.  These are passed
-            through to :class:`matplotlib.collections.Collection`.
-
+        Notes
+        -----
+        The "x" and "y" for locations and inline settings do not necessarily
+        correspond to X and Y, but to the first and second coordinates of the
+        specified CRS. For the common case of PlateCarree gridlines, these
+        correspond to longitudes and latitudes. Depending on the projection
+        used for the map, meridians and parallels can cross both the X axis and
+        the Y axis.
         """
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
-        mlocs = kwargs.pop('mlocs', xlocs)
-        plocs = kwargs.pop('plocs', ylocs)
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels, xlocator=mlocs,
-            ylocator=plocs, collection_kwargs=kwargs, dms=dms,
+            self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
+            ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
             x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline)
         self._gridliners.append(gl)
         return gl
