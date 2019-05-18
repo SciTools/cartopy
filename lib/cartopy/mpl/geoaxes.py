@@ -433,11 +433,6 @@ class GeoAxes(matplotlib.axes.Axes):
                                          inframe=inframe)
 
     def _update_title_position(self, renderer):
-        """
-        Update the title position based on the bounding box enclosing
-        all the ticklabels and x-axis spine and xlabel...
-
-        """
         matplotlib.axes.Axes._update_title_position(self, renderer)
         if not self._gridliners:
             return
