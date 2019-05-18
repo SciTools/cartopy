@@ -429,7 +429,6 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.imshow(img, extent=extent, origin=origin,
                             transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
-        self._cachedRenderer = renderer
         return matplotlib.axes.Axes.draw(self, renderer=renderer,
                                          inframe=inframe)
 
