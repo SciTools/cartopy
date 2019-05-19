@@ -29,7 +29,7 @@ class TestGeodesic(object):
     def setup_class(self):
         """
         Data sampled from the GeographicLib Test Data for Geodesics at:
-        http://geographiclib.sourceforge.net/html/geodesic.html#testgeod
+        https://geographiclib.sourceforge.io/html/geodesic.html#testgeod
 
         """
         self.geod = geodesic.Geodesic()
