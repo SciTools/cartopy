@@ -409,7 +409,7 @@ else:
 setup(
     name='Cartopy',
     version=versioneer.get_version(),
-    url='http://scitools.org.uk/cartopy/docs/latest/',
+    url='https://scitools.org.uk/cartopy/docs/latest/',
     download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',
     description='A cartographic python library with Matplotlib support for '
