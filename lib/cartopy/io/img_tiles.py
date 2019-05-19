@@ -243,15 +243,15 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
 
 class MapQuestOSM(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
-    # http://devblog.mapquest.com/2016/06/15/
+    # https://developer.mapquest.com/web/products/open/map for terms of use
+    # https://devblog.mapquest.com/2016/06/15/
     # modernization-of-mapquest-results-in-changes-to-open-tile-access/
     # this now requires a sign up to a plan
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
+        url = 'https://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
             z, x, y)
-        mqdevurl = ('http://devblog.mapquest.com/2016/06/15/'
+        mqdevurl = ('https://devblog.mapquest.com/2016/06/15/'
                     'modernization-of-mapquest-results-in-changes'
                     '-to-open-tile-access/')
         warnings.warn('{} will require a log in and and will likely'
@@ -260,19 +260,19 @@ class MapQuestOSM(GoogleWTS):
 
 
 class MapQuestOpenAerial(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
+    # https://developer.mapquest.com/web/products/open/map for terms of use
     # The following attribution should be included in the resulting image:
     # "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture,
     #  Farm Service Agency"
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
+        url = 'https://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
             z, x, y)
         return url
 
 
 class OSM(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
+    # https://developer.mapquest.com/web/products/open/map for terms of use
     def _image_url(self, tile):
         x, y, z = tile
         url = 'https://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
