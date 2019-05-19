@@ -24,7 +24,7 @@ import cartopy.crs as ccrs
 
 def plot_city_lights():
     # Define resource for the NASA night-time illumination data.
-    base_uri = 'http://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
+    base_uri = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
 
     # Create a Cartopy crs for plain and rotated lat-lon projections.
