@@ -11,7 +11,7 @@ easy to install and extremely portable. However, for heavy duty shapefile I/O `F
 `GeoPandas`_ are highly recommended.
 
 .. _pyshp: https://github.com/GeospatialPython/pyshp
-.. _Fiona: http://toblerity.org/fiona/
+.. _Fiona: https://fiona.readthedocs.io/
 .. _GeoPandas: http://geopandas.org/
 
 
