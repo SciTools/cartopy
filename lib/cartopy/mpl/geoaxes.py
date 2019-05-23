@@ -2027,7 +2027,8 @@ class GeoAxes(matplotlib.axes.Axes):
             sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
         return sp
 
-    def add_wmts(self, wmts, layer_name, max_tm_identifier=None, wmts_kwargs=None, **kwargs):
+    def add_wmts(self, wmts, layer_name, max_tm_identifier=None,
+                 wmts_kwargs=None, **kwargs):
         """
         Add the specified WMTS layer to the axes.
 

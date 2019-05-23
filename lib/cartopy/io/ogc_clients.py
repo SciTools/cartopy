@@ -358,7 +358,8 @@ class WMTSRasterSource(RasterSource):
 
     """
 
-    def __init__(self, wmts, layer_name, max_tm_identifier=None, gettile_extra_kwargs=None):
+    def __init__(self, wmts, layer_name, max_tm_identifier=None,
+                 gettile_extra_kwargs=None):
         """
         Parameters
         ----------
@@ -505,7 +506,8 @@ class WMTSRasterSource(RasterSource):
 
         return located_images
 
-    def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span, max_tm_identifier=None):
+    def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span,
+                       max_tm_identifier=None):
         # Get the tile matrices in order of increasing resolution.
         tile_matrices = sorted(tile_matrices,
                                key=lambda tm: tm.scaledenominator,
@@ -514,7 +516,10 @@ class WMTSRasterSource(RasterSource):
         # Find which tile matrix has the appropriate resolution.
         max_scale = max_pixel_span * meters_per_unit / METERS_PER_PIXEL
         for tm in tile_matrices:
-            if tm.scaledenominator <= max_scale  or (max_tm_identifier is not None and int(tm.identifier)>=max_tm_identifier):
+            if max_tm_identifier is not None:
+                if int(tm.identifier) >= max_tm_identifier:
+                    return tm
+            if tm.scaledenominator <= max_scale:
                 return tm
         return tile_matrices[-1]
 
