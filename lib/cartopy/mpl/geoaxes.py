@@ -2040,7 +2040,7 @@ class GeoAxes(matplotlib.axes.Axes):
         layer_name
             The name of the layer to use.
         max_tm_identifier: int, optional
-            Integer denoting maximum tile identifier, i.e. zoom level,
+            Integer denoting maximum tile matrix identifier, i.e. zoom level,
             since some WMTS provide empty images at high zoom levels.
         wmts_kwargs: dict or None, optional
             Passed through to the

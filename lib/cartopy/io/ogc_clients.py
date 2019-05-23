@@ -367,7 +367,7 @@ class WMTSRasterSource(RasterSource):
         layer_name
             The name of the layer to use.
         max_tm_identifier: int, optional
-            Integer denoting maximum tile identifier, i.e. zoom level,
+            Integer denoting maximum tile matrix identifier, i.e. zoom level,
             since some WMTS provide empty images at high zoom levels.
         gettile_extra_kwargs: dict, optional
             Extra keywords (e.g. time) to pass through to the
@@ -578,7 +578,7 @@ class WMTSRasterSource(RasterSource):
         max_pixel_span
             Preferred maximum pixel width or height in Axes coordinates.
         max_tm_identifier
-            Integer denoting maximum tile identifier, i.e. zoom level,
+            Integer denoting maximum tile matrix identifier, i.e. zoom level,
             since some WMTS provide empty images at high zoom levels.
         """
 
