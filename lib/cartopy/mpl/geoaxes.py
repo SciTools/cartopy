@@ -2027,7 +2027,7 @@ class GeoAxes(matplotlib.axes.Axes):
             sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
         return sp
 
-    def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
+    def add_wmts(self, wmts, layer_name, max_tm_identifier=None, wmts_kwargs=None, **kwargs):
         """
         Add the specified WMTS layer to the axes.
 
@@ -2039,6 +2039,9 @@ class GeoAxes(matplotlib.axes.Axes):
             The URL of the WMTS, or an owslib.wmts.WebMapTileService instance.
         layer_name
             The name of the layer to use.
+        max_tm_identifier: int, optional
+            Integer denoting maximum tile identifier, i.e. zoom level,
+            since some WMTS provide empty images at high zoom levels.
         wmts_kwargs: dict or None, optional
             Passed through to the
             :class:`~cartopy.io.ogc_clients.WMTSRasterSource` constructor's
@@ -2052,6 +2055,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         from cartopy.io.ogc_clients import WMTSRasterSource
         wmts = WMTSRasterSource(wmts, layer_name,
+                                max_tm_identifier=max_tm_identifier,
                                 gettile_extra_kwargs=wmts_kwargs)
         return self.add_raster(wmts, **kwargs)
 
