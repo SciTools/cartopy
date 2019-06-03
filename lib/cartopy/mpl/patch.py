@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -193,13 +193,13 @@ def path_to_geos(path, force_ccw=False):
             collection[-1][1].append(geom.exterior)
         # Sometimes Points and LineStrings will be passed while looking
         # for interior Polygons, these must be ignored. Failing to do so
-        # here would cause subsequent internal polygons to be read as 
+        # here would cause subsequent internal polygons to be read as
         # external instead.
         elif (isinstance(geom, sgeom.Point) or
                 (len(collection) > 0 and
-                isinstance(collection[-1][0], sgeom.Polygon) and
-                isinstance(geom, sgeom.LineString) and
-                collection[-1][0].contains(geom))):
+                 isinstance(collection[-1][0], sgeom.Polygon) and
+                 isinstance(geom, sgeom.LineString) and
+                 collection[-1][0].contains(geom))):
             other_result_geoms.append(geom)
         else:
             collection.append((geom, []))
