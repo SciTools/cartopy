@@ -532,7 +532,7 @@ class Projection(CRS, metaclass=ABCMeta):
         def ring_validity(linear_ring):
             if len(linear_ring.coords) == 3:
                 coords = list(linear_ring.coords)
-                return coords[0] != coords[-1]
+                return coords[0] != coords[-1] and linear_ring.is_valid
             else:
                 return len(linear_ring.coords) > 3 and linear_ring.is_valid
 
