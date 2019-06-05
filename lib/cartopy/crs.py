@@ -535,7 +535,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 return coords[0] != coords[-1]
             else:
                 return len(linear_ring.coords) > 3 and linear_ring.is_valid
-        
+
         linear_rings = [
             sgeom.LinearRing(linear_ring)
             for linear_ring in processed_ls
