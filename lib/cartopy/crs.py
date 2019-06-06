@@ -531,6 +531,10 @@ class Projection(CRS, metaclass=ABCMeta):
         # filter out any non-valid linear rings
         def ring_validity(linear_ring):
             if len(linear_ring.coords) == 3:
+                # When sgeom.LinearRing is passed a LineString of length 3,
+                # if the first and last coordinate are equal, a LinearRing
+                # with 3 coordinates will be created. This object will cause
+                # a segfault when evaluated.
                 coords = list(linear_ring.coords)
                 return coords[0] != coords[-1] and linear_ring.is_valid
             else:

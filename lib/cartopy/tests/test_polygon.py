@@ -247,6 +247,21 @@ class TestMisc:
 
         assert abs(1200 - projected.area) < 1e-5
 
+    def test_attach_short_loop(self):
+        # Geometry comes from a matplotlib contourf.
+        mstring = shapely.wkt.loads(
+            'MULTILINESTRING ('
+            '(-179.9999982118607 71.87500000000001,'
+            '-179.0625 71.87500000000001,'
+            '-179.9999982118607 71.87500000000001))')
+        multi_line_strings = [mstring]
+
+        src = ccrs.PlateCarree()
+        polygons = src._attach_lines_to_boundary(multi_line_strings, True)
+        # Before fixing, this would contain a geometry which would
+        # cause a segmentation fault.
+        assert polygons == []
+
 
 class TestQuality:
     def setup_class(self):
