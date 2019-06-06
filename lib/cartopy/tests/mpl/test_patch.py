@@ -62,5 +62,6 @@ class Test_path_to_geos(object):
                         1, 2, 79,
                         1, 2, 2, 2, 79])
         geoms = cpatch.path_to_geos(p)
-        assert [type(geom) for geom in geoms] == [sgeom.Polygon, sgeom.LineString]
+        assert ([type(geom) for geom in geoms] ==
+                [sgeom.Polygon, sgeom.LineString])
         assert len(geoms[0].interiors) == 1
