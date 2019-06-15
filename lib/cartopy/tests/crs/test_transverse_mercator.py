@@ -30,14 +30,14 @@ class TestTransverseMercator(object):
     def setup_class(self):
         self.point_a = (-3.474083, 50.727301)
         self.point_b = (0.5, 50.5)
-        self.src_crs = ccrs.PlateCarree()
 
     def test_default(self):
         proj = ccrs.TransverseMercator()
-        res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
+        src_crs = ccrs.PlateCarree(globe=proj.globe)
+        res = proj.transform_point(*self.point_a, src_crs=src_crs)
         np.testing.assert_array_almost_equal(res, (-245269.53180633,
                                                    5627508.74354959))
-        res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
+        res = proj.transform_point(*self.point_b, src_crs=src_crs)
         np.testing.assert_array_almost_equal(res, (35474.63566645,
                                                    5596583.41949901))
 
@@ -49,18 +49,20 @@ class TestTransverseMercator(object):
                                        false_northing=-100000,
                                        globe=ccrs.Globe(datum='OSGB36',
                                                         ellipse='airy'))
-        res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
+        src_crs = ccrs.PlateCarree(globe=proj.globe)
+        res = proj.transform_point(*self.point_a, src_crs=src_crs)
         np.testing.assert_array_almost_equal(res, (295971.28667707,
                                                    93064.27666368))
-        res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
+        res = proj.transform_point(*self.point_b, src_crs=src_crs)
         np.testing.assert_array_almost_equal(res, (577274.98380140,
                                                    69740.49227181))
 
     def test_nan(self):
         proj = ccrs.TransverseMercator()
-        res = proj.transform_point(0.0, float('nan'), src_crs=self.src_crs)
+        src_crs = ccrs.PlateCarree(globe=proj.globe)
+        res = proj.transform_point(0.0, float('nan'), src_crs=src_crs)
         assert np.all(np.isnan(res))
-        res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
+        res = proj.transform_point(float('nan'), 0.0, src_crs=src_crs)
         assert np.all(np.isnan(res))
 
 
@@ -73,18 +75,20 @@ class TestOSGB(object):
 
     def test_default(self):
         proj = ccrs.OSGB()
-        res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
+        src_crs = ccrs.PlateCarree(globe=proj.globe)
+        res = proj.transform_point(*self.point_a, src_crs=src_crs)
         np.testing.assert_array_almost_equal(res, (295971.28667707,
                                                    93064.27666368))
-        res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
+        res = proj.transform_point(*self.point_b, src_crs=src_crs)
         np.testing.assert_array_almost_equal(res, (577274.98380140,
                                                    69740.49227181))
 
     def test_nan(self):
         proj = ccrs.OSGB()
-        res = proj.transform_point(0.0, float('nan'), src_crs=self.src_crs)
+        src_crs = ccrs.PlateCarree(globe=proj.globe)
+        res = proj.transform_point(0.0, float('nan'), src_crs=src_crs)
         assert np.all(np.isnan(res))
-        res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
+        res = proj.transform_point(float('nan'), 0.0, src_crs=src_crs)
         assert np.all(np.isnan(res))
 
 
@@ -96,14 +100,16 @@ class TestOSNI(object):
 
     def test_default(self):
         proj = ccrs.OSNI()
-        res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
+        src_crs = ccrs.PlateCarree(globe=proj.globe)
+        res = proj.transform_point(*self.point_a, src_crs=src_crs)
         np.testing.assert_array_almost_equal(
             res, (275614.26762651594, 386984.206429612),
             decimal=0 if ccrs.PROJ4_VERSION < (5, 0, 0) else 6)
 
     def test_nan(self):
         proj = ccrs.OSNI()
-        res = proj.transform_point(0.0, float('nan'), src_crs=self.src_crs)
+        src_crs = ccrs.PlateCarree(globe=proj.globe)
+        res = proj.transform_point(0.0, float('nan'), src_crs=src_crs)
         assert np.all(np.isnan(res))
-        res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
+        res = proj.transform_point(float('nan'), 0.0, src_crs=src_crs)
         assert np.all(np.isnan(res))

@@ -504,7 +504,7 @@ class GeoAxes(matplotlib.axes.Axes):
         A string formatted for the Matplotlib GUI status bar.
 
         """
-        lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
+        lon, lat = ccrs.Geodetic(self.projection.globe).transform_point(x, y, self.projection)
 
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'
@@ -583,7 +583,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                      n_samples=n_samples)
                 geoms.append(sgeom.Polygon(circle))
 
-        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
+        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(self.projection.globe),
                                                  **kwargs)
         return self.add_feature(feature)
 
@@ -1028,7 +1028,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # now get the projection from the metadata:
         if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
             # currently only PlateCarree is defined:
-            source_proj = ccrs.PlateCarree()
+            source_proj = ccrs.PlateCarree(globe=self.projection.globe)
         else:
             raise NotImplementedError('Background image projection undefined')
 
@@ -1322,7 +1322,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         if crs is None:
-            crs = ccrs.PlateCarree()
+            crs = ccrs.PlateCarree(globe=self.projection.globe)
         from cartopy.mpl.gridliner import Gridliner
         mlocs = kwargs.pop('mlocs', xlocs)
         plocs = kwargs.pop('plocs', ylocs)

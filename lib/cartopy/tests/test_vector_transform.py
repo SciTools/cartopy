@@ -140,8 +140,8 @@ class Test_vector_scalar_to_grid(object):
 
     def test_with_transform(self):
         # Transform and regrid vector.
-        target_crs = ccrs.PlateCarree()
         src_crs = ccrs.NorthPolarStereo()
+        target_crs = ccrs.PlateCarree(globe=src_crs.globe)
 
         input_coords = [src_crs.transform_point(xp, yp, target_crs)
                         for xp, yp in zip(self.x, self.y)]

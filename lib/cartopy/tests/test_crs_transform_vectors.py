@@ -35,7 +35,8 @@ class TestTransformVectors(object):
         rlats = np.array([0., 0., 0., 0.])
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         # transform grid eastward vectors
         ut, vt = target_proj.transform_vectors(src_proj,
                                                rlons,
@@ -70,7 +71,8 @@ class TestTransformVectors(object):
         v = np.cos(2. * np.deg2rad(x2d))
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         proj_xyz = target_proj.transform_points(src_proj, x2d, y2d)
         xt, yt = proj_xyz[..., 0], proj_xyz[..., 1]
         ut, vt = target_proj.transform_vectors(src_proj, x2d, y2d, u, v)
@@ -87,7 +89,8 @@ class TestTransformVectors(object):
         v = np.array([0.])
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
         assert_array_almost_equal(ut, np.array([0]), decimal=2)
         assert_array_almost_equal(vt, np.array([-1]), decimal=2)
@@ -102,7 +105,8 @@ class TestTransformVectors(object):
         v = np.array([0.])
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
         assert_array_almost_equal(ut, np.array([-1]), decimal=2)
         assert_array_almost_equal(vt, np.array([0.]), decimal=2)
@@ -117,7 +121,8 @@ class TestTransformVectors(object):
         v = np.array([1.])
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
         assert_array_almost_equal(ut, np.array([0.]), decimal=2)
         assert_array_almost_equal(vt, np.array([1.]), decimal=2)
@@ -131,7 +136,8 @@ class TestTransformVectors(object):
         v = np.array([1.])
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
         assert_array_almost_equal(ut, np.array([0.]), decimal=2)
         assert_array_almost_equal(vt, np.array([-2**.5]), decimal=2)
@@ -146,7 +152,8 @@ class TestTransformVectors(object):
         v = np.array([-1.])
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         with pytest.warns(UserWarning):
             warnings.simplefilter('always')
             ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
@@ -161,7 +168,8 @@ class TestTransformVectors(object):
         v = np.array([1.])
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+                                         central_longitude=0,
+                                         globe=src_proj.globe)
         with pytest.warns(UserWarning):
             warnings.simplefilter('always')
             ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)

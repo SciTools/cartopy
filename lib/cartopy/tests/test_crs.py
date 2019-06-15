@@ -190,8 +190,8 @@ class TestCRS(object):
         rugby_moll = ccrs.Mollweide(globe=rugby_globe)
         footy_moll = ccrs.Mollweide(globe=footy_globe)
 
-        rugby_pt = rugby_moll.transform_point(10, 10, ccrs.Geodetic())
-        footy_pt = footy_moll.transform_point(10, 10, ccrs.Geodetic())
+        rugby_pt = rugby_moll.transform_point(10, 10, ccrs.Geodetic(globe=rugby_globe))
+        footy_pt = footy_moll.transform_point(10, 10, ccrs.Geodetic(globe=footy_globe))
 
         assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
         assert_arr_almost_eq(footy_pt, (155657, 193479), decimal=0)
@@ -272,6 +272,6 @@ def test_PlateCarree_shortcut():
 def test_transform_points_empty():
     """Test CRS.transform_points with empty array."""
     crs = ccrs.Stereographic()
-    result = crs.transform_points(ccrs.PlateCarree(),
+    result = crs.transform_points(ccrs.PlateCarree(globe=crs.globe),
                                   np.array([]), np.array([]))
     assert_array_equal(result, np.array([], dtype=np.float64).reshape(0, 3))
