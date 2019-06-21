@@ -262,6 +262,26 @@ class TestMisc:
         # cause a segmentation fault.
         assert polygons == []
 
+    def test_project_degenerate_poly(self):
+        # Tests for the same bug as test_attach_short_loop.
+        # This test calls only the public API, but will cause a
+        # segmentation fault when it fails.
+        # Geometry comes from a matplotlib contourf.
+        polygon = shapely.wkt.loads(
+            'POLYGON (('
+            '178.9687499944748 70.625, '
+            '179.0625 71.875, '
+            '180.9375 71.875, '
+            '179.0625 71.875, '
+            '177.1875 71.875, '
+            '178.9687499944748 70.625))')
+
+        source = ccrs.PlateCarree()
+        target = ccrs.PlateCarree()
+        # Before fixing, this would cause a segmentation fault.
+        polygons = target.project_geometry(polygon, source)
+        assert type(polygons) == sgeom.MultiPolygon
+
 
 class TestQuality:
     def setup_class(self):
