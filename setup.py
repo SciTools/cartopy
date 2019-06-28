@@ -96,7 +96,7 @@ def find_package_tree(root_path, root_package):
 # GEOS
 try:
     geos_version = subprocess.check_output(['geos-config', '--version'])
-    geos_version = tuple(int(v) for v in geos_version.split(b'.'))
+    geos_version = tuple(int(v) for v in geos_version.split(b'.') if 'dev' not in str(v))
     geos_includes = subprocess.check_output(['geos-config', '--includes'])
     geos_clibs = subprocess.check_output(['geos-config', '--clibs'])
 except (OSError, ValueError, subprocess.CalledProcessError):
