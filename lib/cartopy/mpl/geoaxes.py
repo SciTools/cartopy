@@ -1303,7 +1303,8 @@ class GeoAxes(matplotlib.axes.Axes):
             :class:`matplotlib.ticker.Locator` instance which will be
             used to determine the locations of the parallel gridlines in the
             coordinate of the given CRS. Defaults to None, which
-            implies automatic locating of the gridlines.        dms: bool
+            implies automatic locating of the gridlines.
+        dms: bool
             When default longitude and latitude locators and formatters are
             used, ticks are able to stop on minutes and seconds if minutes
             is set to True, and not fraction of degrees.
