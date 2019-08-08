@@ -16,24 +16,25 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 from __future__ import print_function
 
-"""
-Distribution definition for Cartopy.
-
-"""
-
-import setuptools
-from setuptools import setup, Extension
-from setuptools import Command
-from setuptools import convert_path
-from distutils.spawn import find_executable
-from distutils.sysconfig import get_config_var
 import fnmatch
 import os
 import subprocess
 import sys
 import warnings
+from collections import defaultdict
+from distutils.spawn import find_executable
+from distutils.sysconfig import get_config_var
+
+from setuptools import Command, Extension, convert_path, setup
 
 import versioneer
+
+"""
+Distribution definition for Cartopy.
+
+"""
+
+
 
 
 # The existence of a PKG-INFO directory is enough to tell us whether this is a
@@ -235,6 +236,18 @@ def find_proj_version_by_program(conda=None):
     return proj_version
 
 
+def get_proj_libraries():
+    """
+    This function gets the PROJ libraries to cythonize with
+    """
+    proj_libraries = ["proj"]
+    if os.name == "nt" and proj_version >= (6, 0, 0):
+        proj_libraries = [
+            "proj_{}_{}".format(proj_version[0], proj_version[1])
+        ]
+    return proj_libraries
+
+
 conda = os.getenv('CONDA_DEFAULT_ENV')
 if conda is not None and conda in sys.prefix:
     # Conda does not provide pkg-config compatibility, but the search paths
@@ -250,7 +263,7 @@ if conda is not None and conda in sys.prefix:
         exit(1)
 
     proj_includes = []
-    proj_libraries = ['proj']
+    proj_libraries = get_proj_libraries()
     proj_library_dirs = []
 
 else:
@@ -273,7 +286,7 @@ else:
             exit(1)
 
         proj_includes = []
-        proj_libraries = ['proj']
+        proj_libraries = get_proj_libraries()
         proj_library_dirs = []
     else:
         if proj_version < PROJ_MIN_VERSION:
@@ -322,11 +335,11 @@ if sys.platform.startswith('win'):
         return '.'
 include_dir = get_config_var('INCLUDEDIR')
 library_dir = get_config_var('LIBDIR')
-if sys.platform.startswith('win'):
-    extra_extension_args = {}
-else:
-    extra_extension_args = dict(
-        runtime_library_dirs=[get_config_var('LIBDIR')])
+extra_extension_args = defaultdict(list)
+if not sys.platform.startswith('win'):
+    extra_extension_args["runtime_library_dirs"].append(
+        get_config_var('LIBDIR')
+    )
 
 # Description
 # ===========
@@ -335,10 +348,14 @@ with open(os.path.join(HERE, 'README.md'), 'r') as fh:
 
 
 cython_coverage_enabled = os.environ.get('CYTHON_COVERAGE', None)
+if proj_version >= (6, 0, 0):
+    extra_extension_args["define_macros"].append(
+        ('ACCEPT_USE_OF_DEPRECATED_PROJ_API_H', '1')
+    )
 if cython_coverage_enabled:
-    extra_cython_args = {'define_macros': [('CYTHON_TRACE_NOGIL', '1')]}
-    extra_extension_args.update(extra_cython_args)
-
+    extra_extension_args["define_macros"].append(
+        ('CYTHON_TRACE_NOGIL', '1')
+    )
 
 extensions = [
     Extension(
