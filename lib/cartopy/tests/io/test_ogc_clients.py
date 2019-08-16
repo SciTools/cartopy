@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -41,6 +41,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 RESOLUTION = (30, 30)
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWMSRasterSource(object):
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
@@ -74,7 +75,7 @@ class TestWMSRasterSource(object):
 
     def test_no_layers(self):
         msg = 'One or more layers must be defined.'
-        with pytest.raises(ValueError, message=msg):
+        with pytest.raises(ValueError, match=msg):
             ogc.WMSRasterSource(self.URI, [])
 
     def test_extra_kwargs_empty(self):
@@ -105,7 +106,7 @@ class TestWMSRasterSource(object):
                              {ccrs.OSNI(): 'EPSG:29901'},
                              clear=True):
             msg = 'not available'
-            with pytest.raises(ValueError, message=msg):
+            with pytest.raises(ValueError, match=msg):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
@@ -144,6 +145,7 @@ class TestWMSRasterSource(object):
         assert img.shape == (40, 20, 4)
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWMTSRasterSource(object):
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
@@ -173,7 +175,7 @@ class TestWMTSRasterSource(object):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         with mock.patch('cartopy.io.ogc_clients._URN_TO_CRS', {}):
             msg = 'Unable to find tile matrix for projection.'
-            with pytest.raises(ValueError, message=msg):
+            with pytest.raises(ValueError, match=msg):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
@@ -217,6 +219,7 @@ class TestWMTSRasterSource(object):
         assert im2.extent == extent
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWFSGeometrySource(object):
     URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
@@ -243,7 +246,7 @@ class TestWFSGeometrySource(object):
     def test_unsupported_projection(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
         msg = 'Geometries are only available in projection'
-        with pytest.raises(ValueError, message=msg):
+        with pytest.raises(ValueError, match=msg):
             source.fetch_geometries(ccrs.PlateCarree(), [-180, 180, -90, 90])
 
     def test_fetch_geometries(self):

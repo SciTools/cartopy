@@ -23,7 +23,7 @@ The matplotlib interface can make use of RasterSources via the
 with additional specific methods which make use of this for WMS and WMTS
 (:meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wms` and
 :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts`). An example of using WMTS in
-this way can be found at :ref:`examples-wmts`.
+this way can be found at :ref:`sphx_glr_gallery_wmts.py`.
 
 
 """
@@ -79,7 +79,9 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:EPSG::900913': 1,
     'urn:ogc:def:crs:OGC:1.3:CRS84': _WGS84_METERS_PER_UNIT,
     'urn:ogc:def:crs:EPSG::3031': 1,
-    'urn:ogc:def:crs:EPSG::3413': 1
+    'urn:ogc:def:crs:EPSG::3413': 1,
+    'urn:ogc:def:crs:EPSG::3857': 1,
+    'urn:ogc:def:crs:EPSG:6.18:3:3857': 1
 }
 
 _URN_TO_CRS = collections.OrderedDict(
@@ -93,7 +95,9 @@ _URN_TO_CRS = collections.OrderedDict(
      ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
          central_longitude=-45,
          central_latitude=90,
-         true_scale_latitude=70))
+         true_scale_latitude=70)),
+     ('urn:ogc:def:crs:EPSG::3857', ccrs.GOOGLE_MERCATOR),
+     ('urn:ogc:def:crs:EPSG:6.18:3:3857', ccrs.GOOGLE_MERCATOR)
      ])
 
 # XML namespace definitions
@@ -122,7 +126,8 @@ def _warped_located_image(image, source_projection, source_extent,
                                  source_proj=source_projection,
                                  source_extent=source_extent,
                                  target_proj=output_projection,
-                                 target_res=target_resolution,
+                                 target_res=np.asarray(target_resolution,
+                                                       dtype=int),
                                  target_extent=output_extent,
                                  mask_extrapolated=True)
 
@@ -507,8 +512,8 @@ class WMTSRasterSource(RasterSource):
         return tile_matrices[-1]
 
     def _tile_span(self, tile_matrix, meters_per_unit):
-        pixel_span = tile_matrix.scaledenominator * (
-                METERS_PER_PIXEL / meters_per_unit)
+        pixel_span = (tile_matrix.scaledenominator *
+                      (METERS_PER_PIXEL / meters_per_unit))
         tile_span_x = tile_matrix.tilewidth * pixel_span
         tile_span_y = tile_matrix.tileheight * pixel_span
         return tile_span_x, tile_span_y
@@ -612,8 +617,8 @@ class WMTSRasterSource(RasterSource):
                         tile = wmts.gettile(
                             layer=layer.id,
                             tilematrixset=matrix_set_name,
-                            tilematrix=tile_matrix_id,
-                            row=row, column=col,
+                            tilematrix=str(tile_matrix_id),
+                            row=str(row), column=str(col),
                             **self.gettile_extra_kwargs)
                     except owslib.util.ServiceException as exception:
                         if ('TileOutOfRange' in exception.message and

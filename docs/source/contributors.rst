@@ -10,7 +10,7 @@ cartopy was born. From such simple beginnings cartopy has grown into a community
 package with exciting scientific geospatial visualisation capabilities and a simple, pythonic
 interface.
 
-The following people have dedicated their time and effort to deliver 
+The following people have dedicated their time and effort to deliver
 new functionality, fix bugs, review code and provide support for, cartopy, without whom
 the package wouldn't be as rich or diverse as it is today:
 
@@ -37,7 +37,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Crispian Batstone
  * Daryl Herzmann
  * Robert Redl
-
+ * Greg Lucas
 
 Thank you!
 
@@ -45,4 +45,3 @@ Thank you!
 .. note::
 
     If you have been excluded from the list, please add yourself and submit a pull request.
-

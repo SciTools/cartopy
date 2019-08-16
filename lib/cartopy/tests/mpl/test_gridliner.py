@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -17,13 +17,9 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-from matplotlib.backends.backend_agg import FigureCanvasAgg
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 import pytest
 
 import cartopy.crs as ccrs
@@ -33,6 +29,40 @@ from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
+TEST_PROJS = [
+    ccrs.PlateCarree,
+    ccrs.AlbersEqualArea,
+    ccrs.AzimuthalEquidistant,
+    ccrs.LambertConformal,
+    ccrs.LambertCylindrical,
+    ccrs.Mercator,
+    ccrs.Miller,
+    ccrs.Mollweide,
+    ccrs.Orthographic,
+    ccrs.Robinson,
+    ccrs.Sinusoidal,
+    ccrs.Stereographic,
+    ccrs.InterruptedGoodeHomolosine,
+    ccrs.RotatedPole,
+    ccrs.OSGB,
+    ccrs.EuroPP,
+    ccrs.Geostationary,
+    ccrs.NearsidePerspective,
+    ccrs.Gnomonic,
+    ccrs.LambertAzimuthalEqualArea,
+    ccrs.NorthPolarStereo,
+    ccrs.OSNI,
+    ccrs.SouthPolarStereo,
+]
+
+RP = ccrs.RotatedPole(pole_longitude=180.0,
+                      pole_latitude=36.0,
+                      central_rotated_longitude=-106.0,
+                      globe=ccrs.Globe(semimajor_axis=6370000,
+                                       semiminor_axis=6370000))
+
+
+@pytest.mark.natural_earth
 @ImageTesting(['gridliner1'])
 def test_gridliner():
     ny, nx = 2, 4
@@ -42,18 +72,18 @@ def test_gridliner():
     ax = plt.subplot(nx, ny, 1, projection=ccrs.PlateCarree())
     ax.set_global()
     ax.coastlines()
-    ax.gridlines()
+    ax.gridlines(linestyle=':')
 
     ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB())
     ax.set_global()
     ax.coastlines()
-    ax.gridlines()
+    ax.gridlines(linestyle=':')
 
     ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB())
     ax.set_global()
     ax.coastlines()
     ax.gridlines(ccrs.PlateCarree(), color='blue', linestyle='-')
-    ax.gridlines(ccrs.OSGB())
+    ax.gridlines(ccrs.OSGB(), linestyle=':')
 
     ax = plt.subplot(nx, ny, 4, projection=ccrs.PlateCarree())
     ax.set_global()
@@ -66,7 +96,7 @@ def test_gridliner():
     ax.coastlines()
     osgb = ccrs.OSGB()
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
-    ax.gridlines(osgb)
+    ax.gridlines(osgb, linestyle=':')
 
     ax = plt.subplot(nx, ny, 6, projection=ccrs.NorthPolarStereo())
     ax.set_global()
@@ -78,7 +108,7 @@ def test_gridliner():
     ax.coastlines()
     osgb = ccrs.OSGB()
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
-    ax.gridlines(osgb)
+    ax.gridlines(osgb, linestyle=':')
 
     ax = plt.subplot(nx, ny, 8,
                      projection=ccrs.Robinson(central_longitude=135))
@@ -92,69 +122,64 @@ def test_gridliner():
 
 
 def test_gridliner_specified_lines():
-    xs = [0, 60, 120, 180, 240, 360]
-    ys = [-90, -60, -30, 0, 30, 60, 90]
-    ax = mock.Mock(_gridliners=[], spec=GeoAxes)
-    gl = GeoAxes.gridlines(ax, xlocs=xs, ylocs=ys)
+    meridians = [0, 60, 120, 180, 240, 360]
+    parallels = [-90, -60, -30, 0, 30, 60, 90]
+
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    gl = GeoAxes.gridlines(ax, xlocs=meridians, ylocs=parallels)
     assert isinstance(gl.xlocator, mticker.FixedLocator)
     assert isinstance(gl.ylocator, mticker.FixedLocator)
-    assert gl.xlocator.tick_values(None, None).tolist() == xs
-    assert gl.ylocator.tick_values(None, None).tolist() == ys
+    assert gl.xlocator.tick_values(None, None).tolist() == meridians
+    assert gl.ylocator.tick_values(None, None).tolist() == parallels
 
 
 # The tolerance on this test is particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
 if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
-elif MPL_VERSION >= '1.5':
-    grid_label_image = 'gridliner_labels_1.5'
+    grid_label_inline_image = 'gridliner_labels_inline'
+    grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
 else:
-    grid_label_image = 'gridliner_labels_pre_mpl_1.5'
+    grid_label_image = 'gridliner_labels_1.5'
+    grid_label_inline_image = 'gridliner_labels_inline_1.5'
+    grid_label_inline_usa_image = 'gridliner_labels_inline_usa_1.5'
 
 
+@pytest.mark.natural_earth
 @ImageTesting([grid_label_image])
 def test_grid_labels():
-    plt.figure(figsize=(8, 10))
+    fig = plt.figure(figsize=(10, 10))
 
     crs_pc = ccrs.PlateCarree()
     crs_merc = ccrs.Mercator()
-    crs_osgb = ccrs.OSGB()
 
-    ax = plt.subplot(3, 2, 1, projection=crs_pc)
+    ax = fig.add_subplot(3, 2, 1, projection=crs_pc)
     ax.coastlines()
     ax.gridlines(draw_labels=True)
 
     # Check that adding labels to Mercator gridlines gives an error.
     # (Currently can only label PlateCarree gridlines.)
-    ax = plt.subplot(3, 2, 2,
-                     projection=ccrs.PlateCarree(central_longitude=180))
+    ax = fig.add_subplot(3, 2, 2,
+                         projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines()
-    with pytest.raises(TypeError):
-        ax.gridlines(crs=crs_merc, draw_labels=True)
 
     ax.set_title('Known bug')
     gl = ax.gridlines(crs=crs_pc, draw_labels=True)
-    gl.xlabels_top = False
-    gl.ylabels_left = False
+    gl.top_labels = False
+    gl.left_labels = False
     gl.xlines = False
 
-    ax = plt.subplot(3, 2, 3, projection=crs_merc)
+    ax = fig.add_subplot(3, 2, 3, projection=crs_merc)
     ax.coastlines()
-    ax.gridlines(draw_labels=True)
-
-    # Check that labelling the gridlines on an OSGB plot gives an error.
-    # (Currently can only draw these on PlateCarree or Mercator plots.)
-    ax = plt.subplot(3, 2, 4, projection=crs_osgb)
-    ax.coastlines()
-    with pytest.raises(TypeError):
-        ax.gridlines(draw_labels=True)
+    gl = ax.gridlines(draw_labels=True)
+    gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
     ax.coastlines()
     gl = ax.gridlines(
-        crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle='--')
-    gl.xlabels_bottom = True
-    gl.ylabels_right = True
+        crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle=':')
+    gl.bottom_labels = True
+    gl.right_labels = True
     gl.xlines = False
     gl.xlocator = mticker.FixedLocator([-180, -45, 45, 180])
     gl.xformatter = LONGITUDE_FORMATTER
@@ -166,22 +191,64 @@ def test_grid_labels():
 
     # trigger a draw at this point and check the appropriate artists are
     # populated on the gridliner instance
-    FigureCanvasAgg(plt.gcf()).draw()
+    fig.canvas.draw()
 
-    assert len(gl.xlabel_artists) == 4
-    assert len(gl.ylabel_artists) == 5
-    assert len(gl.ylabel_artists) == 5
+    assert len(gl.bottom_label_artists) == 4
+    assert len(gl.top_label_artists) == 0
+    assert len(gl.left_label_artists) == 0
+    assert len(gl.right_label_artists) != 0
     assert len(gl.xline_artists) == 0
 
-    ax = plt.subplot(3, 2, 5, projection=crs_pc)
+    ax = fig.add_subplot(3, 2, 5, projection=crs_pc)
     ax.set_extent([-20, 10.0, 45.0, 70.0])
     ax.coastlines()
     ax.gridlines(draw_labels=True)
 
-    ax = plt.subplot(3, 2, 6, projection=crs_merc)
+    ax = fig.add_subplot(3, 2, 6, projection=crs_merc)
     ax.set_extent([-20, 10.0, 45.0, 70.0], crs=crs_pc)
     ax.coastlines()
-    ax.gridlines(draw_labels=True)
+    gl = ax.gridlines(draw_labels=True)
+    gl.rotate_labels = False
+    gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     # Increase margins between plots to stop them bumping into one another.
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
+
+
+@pytest.mark.natural_earth
+@ImageTesting([grid_label_inline_image])
+def test_grid_labels_inline():
+    plt.figure(figsize=(35, 35))
+    for i, proj in enumerate(TEST_PROJS, 1):
+        if isinstance(proj(), ccrs.RotatedPole):
+            ax = plt.subplot(7, 4, i, projection=RP)
+        else:
+            ax = plt.subplot(7, 4, i, projection=proj())
+        ax.gridlines(draw_labels=True, auto_inline=True)
+        ax.coastlines()
+        ax.set_title(proj, y=1.075)
+    plt.subplots_adjust(wspace=0.35, hspace=0.35)
+
+
+@pytest.mark.natural_earth
+@ImageTesting([grid_label_inline_usa_image])
+def test_grid_labels_inline_usa():
+    top = 49.3457868  # north lat
+    left = -124.7844079  # west long
+    right = -66.9513812  # east long
+    bottom = 24.7433195  # south lat
+    plt.figure(figsize=(35, 35))
+    for i, proj in enumerate(TEST_PROJS, 1):
+        if isinstance(proj(), ccrs.RotatedPole):
+            ax = plt.subplot(7, 4, i, projection=RP)
+        else:
+            ax = plt.subplot(7, 4, i, projection=proj())
+        try:
+            ax.set_extent([left, right, bottom, top],
+                          crs=ccrs.PlateCarree())
+        except Exception:
+            pass
+        ax.set_title(proj, y=1.075)
+        ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+        ax.coastlines()
+    plt.subplots_adjust(wspace=0.35, hspace=0.35)

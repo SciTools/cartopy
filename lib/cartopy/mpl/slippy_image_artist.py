@@ -40,7 +40,20 @@ class SlippyImageArtist(AxesImage):
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
         super(SlippyImageArtist, self).__init__(ax, **kwargs)
-        self.set_clip_path(ax.outline_patch)
+        self.set_clip_path(ax.background_patch)
+        self.cache = []
+
+        ax.figure.canvas.mpl_connect('button_press_event', self.on_press)
+        ax.figure.canvas.mpl_connect('button_release_event', self.on_release)
+
+        self.on_release()
+
+    def on_press(self, event=None):
+        self.user_is_interacting = True
+
+    def on_release(self, event=None):
+        self.user_is_interacting = False
+        self.stale = True
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
@@ -50,12 +63,19 @@ class SlippyImageArtist(AxesImage):
         ax = self.axes
         window_extent = ax.get_window_extent()
         [x1, y1], [x2, y2] = ax.viewLim.get_points()
-        located_images = self.raster_source.fetch_raster(
-            ax.projection, extent=[x1, x2, y1, y2],
-            target_resolution=(window_extent.width, window_extent.height))
+        if not self.user_is_interacting:
+            located_images = self.raster_source.fetch_raster(
+                ax.projection, extent=[x1, x2, y1, y2],
+                target_resolution=(window_extent.width, window_extent.height))
+            self.cache = located_images
 
-        for img, extent in located_images:
+        for img, extent in self.cache:
             self.set_array(img)
             with ax.hold_limits():
                 self.set_extent(extent)
             super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)
+
+    def can_composite(self):
+        # As per https://github.com/SciTools/cartopy/issues/689, disable
+        # compositing multiple raster sources.
+        return False

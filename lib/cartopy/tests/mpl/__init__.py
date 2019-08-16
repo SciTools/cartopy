@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -25,15 +25,13 @@ import glob
 import shutil
 import warnings
 
+import filelock
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.testing import setup as mpl_setup
 import matplotlib.testing.compare as mcompare
 import matplotlib._pylab_helpers as pyplot_helpers
-try:
-    from matplotlib.testing import setup as mpl_setup
-except ImportError:
-    from matplotlib.tests import setup as mpl_setup
 
 
 MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
@@ -96,11 +94,11 @@ class ImageTesting(object):
             image_output_directory = os.path.join(os.getcwd(),
                                                   'cartopy_test_output')
 
-    def __init__(self, img_names,
-                 tolerance=(0.1 if MPL_VERSION < '1.4' else 0.5)):
+    def __init__(self, img_names, tolerance=0.5, style='classic'):
         # With matplotlib v1.3 the tolerance keyword is an RMS of the pixel
         # differences, as computed by matplotlib.testing.compare.calculate_rms
         self.img_names = img_names
+        self.style = style
         self.tolerance = tolerance
 
     def expected_path(self, test_name, img_name, ext='.png'):
@@ -160,9 +158,9 @@ class ImageTesting(object):
             if not os.path.isdir(os.path.dirname(result_path)):
                 os.makedirs(os.path.dirname(result_path))
 
-            self.save_figure(figure, result_path)
-
-            self.do_compare(result_path, expected_path, self.tolerance)
+            with filelock.FileLock(result_path + '.lock').acquire():
+                self.save_figure(figure, result_path)
+                self.do_compare(result_path, expected_path, self.tolerance)
 
     def save_figure(self, figure, result_fname):
         """
@@ -227,7 +225,7 @@ class ImageTesting(object):
                 def style_context(style, after_reset=False):
                     yield
 
-            with style_context('classic'):
+            with style_context(self.style):
                 r = test_func(*args, **kwargs)
 
                 fig_managers = pyplot_helpers.Gcf._activeQue

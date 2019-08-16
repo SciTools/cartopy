@@ -4,19 +4,17 @@ env:
     matrix:
         # These ancient versions are linked to an old libgfortran, but that version
         # isn't pinned in the package metadata
-        # Forcing build 3 for numpy pulls in the packages from defaults, which
-        # is needed in order to work with libgfortran 1
         - PYTHON_VERSION=2.7
-          PACKAGES="numpy=1.9.3=py27_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1 mock"
+          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock futures"
         - PYTHON_VERSION=3.5
-          PACKAGES="numpy=1.9.3=py35_3 matplotlib=1.4.3 nose scipy=0.16.0 libgfortran=1"
-        # New FreeType causes changes in text output.
+          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
+          PYTHONHASHSEED=0  # So pytest-xdist works.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
-          PACKAGES="numpy matplotlib freetype<2.8 scipy"
+          PACKAGES="cython numpy matplotlib-base proj4 pykdtree scipy fiona"
         - NAME="Latest everything (py2k)."
           PYTHON_VERSION=2
-          PACKAGES="numpy matplotlib freetype<2.8 scipy mock"
+          PACKAGES="cython numpy matplotlib proj4 scipy mock futures"
 
 
 sudo: false
@@ -40,19 +38,26 @@ install:
   # Create the basic testing environment
   # ------------------------------------
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
-  - conda update conda
-  - conda create -n test-environment python=$PYTHON_VERSION
-  - source activate test-environment
+  - conda config --add channels conda-forge
+  - conda config --add channels conda-forge/label/testing
+  - ENV_NAME="test-environment"
+  - conda create -n $ENV_NAME python=$PYTHON_VERSION
+  - source activate $ENV_NAME
 
   # Customise the testing environment
   # ---------------------------------
-  - conda config --add channels conda-forge
-  - PACKAGES="$PACKAGES cython pillow pytest pep8 proj4 pyshp shapely six requests pyepsg owslib"
+  - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
+  - if [[ "$NAME" == "Latest everything"* ]]; then
+        PACKAGES="$PACKAGES pytest-cov coveralls";
+        export CYTHON_COVERAGE=1;
+    fi
   - conda install --quiet $PACKAGES
 
   # Conda debug
   # -----------
-  - conda list
+  - conda list -n $ENV_NAME
+  - conda list -n $ENV_NAME --explicit
+  - conda info -a
 
   - MPL_CONFIG_DIR=~/.config/matplotlib
   - mkdir -p $MPL_CONFIG_DIR
@@ -64,18 +69,34 @@ install:
   - python -c "import cartopy; print('Version ', cartopy.__version__)" && python setup.py version
 
 script:
-  - mkdir ../test_folder
-  - cd ../test_folder
-
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
   - python $TRAVIS_BUILD_DIR/tools/feature_download.py gshhs physical --dry-run
 
   - if [[ "$NAME" == "Latest everything"* ]]; then
-      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest --doctest-modules --pyargs cartopy;
+      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --doctest-modules --pyargs cartopy --cov=cartopy -ra;
     else
-      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest --pyargs cartopy;
+      CARTOPY_GIT_DIR=$TRAVIS_BUILD_DIR pytest -n 4 --pyargs cartopy;
+    fi
+
+
+after_success:
+  - if [[ "$NAME" == "Latest everything"* ]]; then
+      coveralls;
     fi
 
 after_failure:
-  - source activate test-environment
+  - source activate $ENV_NAME
   - python -c "from __future__ import print_function; import cartopy.tests.mpl; print(cartopy.tests.mpl.failed_images_html())"
+
+deploy:
+  - provider: pypi
+    user: scitools-cartopy
+    # travis encrypt <password>
+    password:
+      secure: Wbc/NQkcEsWVGn3hTemLbaDond6dtAO46Q6PVSS0GiL9RU0bH6QIpLq34JV5hKRuhooFp8WaU49OJsH71iMB4Utrr1y8olkwpTuq7BBsuZGSHtStX0T4UKUCAHynlLnCEqIyBBDIWFsIy6OnLZDnKmPkqLW8IdQfk0aWl0mDv5w=
+    distributions: sdist
+    upload_docs: false
+    on:
+      repo: SciTools/cartopy
+      condition: $NAME == "Latest everything."
+      tags: true

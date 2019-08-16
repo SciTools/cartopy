@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -59,6 +59,26 @@ def test_extents():
                               np.array([[-17.17698577, 48.21879707],
                                         [5.68924381, 60.54218893]])
                               )
+
+
+@cleanup
+def test_get_extent():
+    # tests that getting the extents of a map produces something reasonable.
+    uk = [-12.5, 4, 49, 60]
+    uk_crs = ccrs.PlateCarree()
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.set_extent(uk, crs=uk_crs)
+    assert_array_almost_equal(ax.get_extent(uk_crs), uk)
+
+    ax = plt.axes(projection=ccrs.Mercator())
+    ax.set_extent(uk, crs=uk_crs)
+    assert_array_almost_equal(ax.get_extent(uk_crs), uk)
+
+    ax = plt.axes(projection=ccrs.Mercator(min_latitude=uk[2],
+                                           max_latitude=uk[3]))
+    ax.set_extent(uk, crs=uk_crs)
+    assert_array_almost_equal(ax.get_extent(uk_crs), uk, decimal=1)
 
 
 @cleanup

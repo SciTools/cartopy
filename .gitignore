@@ -2,6 +2,8 @@
 *.py[co]
 build
 docs/build
+dist
+.pytest_cache/
 
 # cartopy build files
 lib/cartopy/trace.cpp
@@ -19,10 +21,8 @@ lib/cartopy/geodesic/_geodesic.pyd
 docs/build
 lib/cartopy/tests/mpl/output/
 docs/source/cartopy_outline.rst
-docs/source/examples
-docs/source/gallery.rst
 docs/source/gallery
-docs/source/api
+docs/source/matplotlib/coastlines.p??
 
 # some data files:
 lib/cartopy/data/SRTM3
@@ -32,6 +32,8 @@ lib/cartopy/data/shapefiles
 # some configuration files which aren't part of cartopy repo
 lib/cartopy/tests/.pep8_test_exclude.txt
 lib/cartopy/siteconfig.py
+
+cartopy_test_output
 
 # pydev files
 .project
@@ -43,12 +45,16 @@ lib/cartopy/siteconfig.py
 \.\#*
 *.swp
 .ipynb_checkpoints/
+.idea/
 
 # Operating system files
 \.DS_Store
 .cache/
 __pycache__/
 
+# PyTest cache files
+.pytest_cache
+
 # Egg that gets created with 'pip install -v -e .'
-lib/Cartopy.egg-info/
+*.egg-info/
 .eggs/

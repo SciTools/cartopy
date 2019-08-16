@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,6 +23,7 @@ import types
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+import pytest
 import shapely.geometry as sgeom
 
 from cartopy import config
@@ -43,6 +44,11 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # We have an exceptionally large tolerance for the web_tiles test.
 # The basemap changes on a regular basis (for seasons) and we really only
 # care that it is putting images onto the map which are roughly correct.
+@pytest.mark.natural_earth
+@pytest.mark.network
+@pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
+                   reason='Proj returns slightly different bounds.',
+                   strict=True)
 @ImageTesting(['web_tiles'],
               tolerance=12 if MPL_VERSION < '2' else 2.9)
 def test_web_tiles():
@@ -78,8 +84,13 @@ def test_web_tiles():
     ax.coastlines()
 
 
+@pytest.mark.natural_earth
+@pytest.mark.network
+@pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
+                   reason='Proj returns slightly different bounds.',
+                   strict=True)
 @ImageTesting(['image_merge'],
-              tolerance=3.6 if MPL_VERSION < '2' else 0)
+              tolerance=3.6 if MPL_VERSION < '2' else 0.01)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -105,6 +116,9 @@ def test_image_merge():
     plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_imshow():
@@ -118,6 +132,7 @@ def test_imshow():
               extent=[-180, 180, -90, 90])
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['imshow_regional_projected'],
               tolerance=10.4 if MPL_VERSION < '2' else 0)
 def test_imshow_projected():
@@ -131,6 +146,9 @@ def test_imshow_projected():
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=4.15 if MPL_VERSION < '2' else 0.7)
 def test_stock_img():
@@ -138,6 +156,9 @@ def test_stock_img():
     ax.stock_img()
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=3.96 if MPL_VERSION < '2' else 0.7)
 def test_pil_Image():
@@ -148,6 +169,9 @@ def test_pil_Image():
               extent=[-180, 180, -90, 90])
 
 
+@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
+                   reason='Proj Orthographic projection is buggy.',
+                   strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
               tolerance=4.2 if MPL_VERSION < '2' else 0)
 def test_background_img():

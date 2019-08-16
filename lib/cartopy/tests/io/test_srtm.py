@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -26,8 +26,43 @@ import pytest
 import cartopy.crs as ccrs
 import cartopy.io.srtm
 
+from .test_downloaders import download_to_temp  # noqa: F401 (used as fixture)
 
-pytestmark = pytest.mark.skip('SRTM login not supported')
+
+pytestmark = [pytest.mark.network,
+              pytest.mark.filterwarnings('ignore:SRTM requires an account'),
+              pytest.mark.usefixtures('srtm_login_or_skip')]
+
+
+@pytest.fixture
+def srtm_login_or_skip(monkeypatch):
+    import os
+    try:
+        srtm_username = os.environ['SRTM_USERNAME']
+    except KeyError:
+        pytest.skip('SRTM_USERNAME environment variable is unset.')
+    try:
+        srtm_password = os.environ['SRTM_PASSWORD']
+    except KeyError:
+        pytest.skip('SRTM_PASSWORD environment variable is unset.')
+
+    from six.moves.urllib.request import (HTTPBasicAuthHandler,
+                                          HTTPCookieProcessor,
+                                          HTTPPasswordMgrWithDefaultRealm,
+                                          build_opener)
+    from six.moves.http_cookiejar import CookieJar
+
+    password_manager = HTTPPasswordMgrWithDefaultRealm()
+    password_manager.add_password(
+        None,
+        "https://urs.earthdata.nasa.gov",
+        srtm_username,
+        srtm_password)
+    cookie_jar = CookieJar()
+    opener = build_opener(HTTPBasicAuthHandler(password_manager),
+                          HTTPCookieProcessor(cookie_jar))
+
+    monkeypatch.setattr(cartopy.io, 'urlopen', opener.open)
 
 
 class TestRetrieve(object):
@@ -82,14 +117,16 @@ class TestSRTMSource__single_tile(object):
     def test_out_of_range(self, Source):
         source = Source()
         msg = 'No srtm tile found for those coordinates.'
-        with pytest.raises(ValueError, message=msg):
+        with pytest.raises(ValueError, match=msg):
             source.single_tile(-25, 50)
 
     def test_in_range(self, Source):
         if Source == cartopy.io.srtm.SRTM3Source:
             shape = (1201, 1201)
-        elif Source == cartopy.io.srtm.SRTM3Source:
+        elif Source == cartopy.io.srtm.SRTM1Source:
             shape = (3601, 3601)
+        else:
+            raise ValueError('Source is of unexpected type.')
         source = Source()
         img, crs, extent = source.single_tile(-1, 50)
         assert isinstance(img, np.ndarray)

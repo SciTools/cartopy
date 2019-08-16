@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2017, Met Office
+# (C) British Crown Copyright 2015 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,16 +19,18 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pytest
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
 class TestLambertAzimuthalEqualArea(object):
     def test_default(self):
         crs = ccrs.LambertAzimuthalEqualArea()
-        expected = ('+ellps=WGS84 +proj=laea +lon_0=0.0 '
-                    '+lat_0=0.0 +x_0=0.0 +y_0=0.0 +no_defs')
-        assert crs.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0'}
+        check_proj_params('laea', crs, other_args)
 
         assert_almost_equal(np.array(crs.x_limits),
                             [-12755636.1863, 12755636.1863],
@@ -41,9 +43,9 @@ class TestLambertAzimuthalEqualArea(object):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
                            ellipse=None)
         crs = ccrs.LambertAzimuthalEqualArea(globe=globe)
-        expected = ('+a=1000 +b=500 +proj=laea +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=0.0 +y_0=0.0 +no_defs')
-        assert crs.proj4_init == expected
+        other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
+                      'y_0=0.0'}
+        check_proj_params('laea', crs, other_args)
 
         assert_almost_equal(np.array(crs.x_limits),
                             [-1999.9, 1999.9], decimal=1)
@@ -54,8 +56,15 @@ class TestLambertAzimuthalEqualArea(object):
         crs = ccrs.LambertAzimuthalEqualArea()
         crs_offset = ccrs.LambertAzimuthalEqualArea(false_easting=1234,
                                                     false_northing=-4321)
-        expected = ('+ellps=WGS84 +proj=laea +lon_0=0.0 +lat_0=0.0 '
-                    '+x_0=1234 +y_0=-4321 +no_defs')
-        assert crs_offset.proj4_init == expected
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=1234',
+                      'y_0=-4321'}
+        check_proj_params('laea', crs_offset, other_args)
         assert tuple(np.array(crs.x_limits) + 1234) == crs_offset.x_limits
         assert tuple(np.array(crs.y_limits) - 4321) == crs_offset.y_limits
+
+    @pytest.mark.parametrize("latitude", [-90, 90])
+    def test_extrema(self, latitude):
+        crs = ccrs.LambertAzimuthalEqualArea(central_latitude=latitude)
+        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0={}'.format(latitude),
+                      'x_0=0.0', 'y_0=0.0'}
+        check_proj_params('laea', crs, other_args)

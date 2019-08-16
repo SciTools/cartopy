@@ -29,7 +29,7 @@ and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-import matplotlib.path
+import matplotlib
 from matplotlib.path import Path
 import shapely.geometry as sgeom
 
@@ -45,6 +45,7 @@ def geos_to_path(shape):
         A list, tuple or single instance of any of the following
         types: :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
+        :class:`shapely.geometry.linestring.LinearRing`,
         :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.multipoint.MultiPoint`,
         :class:`shapely.geometry.multipolygon.MultiPolygon`,
@@ -64,12 +65,15 @@ def geos_to_path(shape):
             paths.extend(geos_to_path(shp))
         return paths
 
-    if isinstance(shape, (sgeom.LineString, sgeom.Point)):
+    if isinstance(shape, sgeom.LinearRing):
+        return [Path(np.column_stack(shape.xy), closed=True)]
+    elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
         return [Path(np.column_stack(shape.xy))]
     elif isinstance(shape, sgeom.Polygon):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
+            codes[-1] = Path.CLOSEPOLY
             return codes
         if shape.is_empty:
             return []
@@ -92,9 +96,7 @@ def geos_to_path(shape):
         raise ValueError('Unsupported shape type {}.'.format(type(shape)))
 
 
-def path_segments(path, transform=None, remove_nans=False, clip=None,
-                  quantize=False, simplify=False, curves=False,
-                  stroke_width=1.0, snap=False):
+def path_segments(path, **kwargs):
     """
     Create an array of vertices and a corresponding array of codes from a
     :class:`matplotlib.path.Path`.
@@ -119,31 +121,8 @@ def path_segments(path, transform=None, remove_nans=False, clip=None,
         codes and their meanings.
 
     """
-    # XXX assigned to avoid a ValueError inside the mpl C code...
-    a = (transform,  # noqa: F841  (flake8 = assigned + unused : see above)
-         remove_nans, clip, quantize, simplify, curves)
-
-    # Series of cleanups and conversions to the path e.g. it
-    # can convert curved segments to line segments.
-    vertices, codes = matplotlib.path.cleanup_path(path, transform,
-                                                   remove_nans, clip,
-                                                   snap, stroke_width,
-                                                   simplify, curves)
-
-    # Remove the final vertex (with code 0)
-    return vertices[:-1, :], codes[:-1]
-
-
-# Matplotlib v1.3+ deprecates the use of matplotlib.path.cleanup_path. Instead
-# there is a method on a Path instance to simplify this.
-if hasattr(matplotlib.path.Path, 'cleaned'):
-    _path_segments_doc = path_segments.__doc__
-
-    def path_segments(path, **kwargs):
-        pth = path.cleaned(**kwargs)
-        return pth.vertices[:-1, :], pth.codes[:-1]
-
-    path_segments.__doc__ = _path_segments_doc
+    pth = path.cleaned(**kwargs)
+    return pth.vertices[:-1, :], pth.codes[:-1]
 
 
 def path_to_geos(path, force_ccw=False):
@@ -188,15 +167,16 @@ def path_to_geos(path, force_ccw=False):
         if len(path_verts) == 0:
             continue
 
-        # XXX A path can be given which does not end with close poly, in that
-        # situation, we have to guess?
         verts_same_as_first = np.all(path_verts[0, :] == path_verts[1:, :],
                                      axis=1)
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
         elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:
             geom = sgeom.Polygon(path_verts[:-1, :])
-        elif path_verts.shape[0] > 3 and verts_same_as_first[-1]:
+        elif (matplotlib.__version__ < '2.2.0' and
+                # XXX A path can be given which does not end with close poly,
+                # in that situation, we have to guess?
+                path_verts.shape[0] > 3 and verts_same_as_first[-1]):
             geom = sgeom.Polygon(path_verts)
         else:
             geom = sgeom.LineString(path_verts)

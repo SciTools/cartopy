@@ -21,10 +21,10 @@ Provide support for converting EPSG codes to Projection instances.
 
 from __future__ import (absolute_import, division, print_function)
 
-import cartopy.crs as ccrs
 import numpy as np
-import pyepsg
 import shapely.geometry as sgeom
+
+import cartopy.crs as ccrs
 
 
 _GLOBE_PARAMS = {'datum': 'datum',
@@ -39,8 +39,10 @@ _GLOBE_PARAMS = {'datum': 'datum',
 
 class _EPSGProjection(ccrs.Projection):
     def __init__(self, code):
+        import pyepsg
         projection = pyepsg.get(code)
-        if not isinstance(projection, pyepsg.ProjectedCRS):
+        if not (isinstance(projection, pyepsg.ProjectedCRS) or
+                isinstance(projection, pyepsg.CompoundCRS)):
             raise ValueError('EPSG code does not define a projection')
 
         self.epsg_code = code

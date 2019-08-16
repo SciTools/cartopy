@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -21,13 +21,14 @@ from numpy.testing import assert_array_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
 def test_defaults():
     crs = ccrs.LambertConformal()
-    assert crs.proj4_init == ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
-                              '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
-                              '+lat_2=45 +no_defs')
+    other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0', 'x_0=0.0',
+                  'y_0=0.0', 'lat_1=33', 'lat_2=45'}
+    check_proj_params('lcc', crs, other_args)
 
 
 def test_default_with_cutoff():
@@ -35,9 +36,9 @@ def test_default_with_cutoff():
     crs2 = ccrs.LambertConformal(cutoff=-80)
     default = ccrs.LambertConformal()
 
-    assert crs.proj4_init == ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
-                              '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=33 '
-                              '+lat_2=45 +no_defs')
+    other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0', 'x_0=0.0',
+                  'y_0=0.0', 'lat_1=33', 'lat_2=45'}
+    check_proj_params('lcc', crs, other_args)
 
     # Check the behaviour of !=, == and (not ==) for the different cutoffs.
     assert crs == crs2
@@ -58,24 +59,24 @@ def test_specific_lambert():
                                 false_easting=4000000,
                                 false_northing=2800000,
                                 globe=ccrs.Globe(ellipse='GRS80'))
-    assert crs.proj4_init == ('+ellps=GRS80 +proj=lcc +lon_0=10 +lat_0=52 '
-                              '+x_0=4000000 +y_0=2800000 +lat_1=35 +lat_2=65 '
-                              '+no_defs')
+    other_args = {'ellps=GRS80', 'lon_0=10', 'lat_0=52',
+                  'x_0=4000000', 'y_0=2800000', 'lat_1=35', 'lat_2=65'}
+    check_proj_params('lcc', crs, other_args)
 
 
 class Test_LambertConformal_standard_parallels(object):
     def test_single_value(self):
         crs = ccrs.LambertConformal(standard_parallels=[1.])
-        assert crs.proj4_init == ('+ellps=WGS84 +proj=lcc +lon_0=-96.0 '
-                                  '+lat_0=39.0 +x_0=0.0 +y_0=0.0 +lat_1=1.0 '
-                                  '+no_defs')
+        other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0',
+                      'x_0=0.0', 'y_0=0.0', 'lat_1=1.0'}
+        check_proj_params('lcc', crs, other_args)
 
     def test_no_parallel(self):
-        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
+        with pytest.raises(ValueError, match='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[])
 
     def test_too_many_parallel(self):
-        with pytest.raises(ValueError, message='1 or 2 standard parallels'):
+        with pytest.raises(ValueError, match='1 or 2 standard parallels'):
             ccrs.LambertConformal(standard_parallels=[1, 2, 3])
 
     def test_single_spole(self):

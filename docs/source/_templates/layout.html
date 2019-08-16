@@ -29,7 +29,7 @@
 {% block sidebarlogo %}
 <a href="{{ pathto('index') }}">
 <img src="{{pathto("_static/cartopy.png", 1) }}"
-border="0" alt="Cartopy" style="margin-left: -60px;"/>
+border="0" alt="Cartopy"/>
 </a>
 
 {% endblock %}
@@ -40,7 +40,7 @@ border="0" alt="Cartopy" style="margin-left: -60px;"/>
     <div class="footer">
     <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/" rel="license">Open Government Licence</a></p>
     {%- if show_copyright %}
-        &copy; <a href="{{ pathto('copyright') }}">British Crown Copyright</a> 2011 - 2017, Met Office
+        &copy; <a href="{{ pathto('copyright') }}">British Crown Copyright</a> 2011 - 2018, Met Office
     {%- endif %}
     {%- if last_updated %}
       {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
@@ -51,6 +51,6 @@ border="0" alt="Cartopy" style="margin-left: -60px;"/>
     </div>
 
     <!-- Point to the *latest* version switcher. This will allow the latest versions to appear on older documentation. -->
-    <script type="text/javascript" src="http://scitools.org.uk/cartopy/docs/latest/_static/version_switch.js"></script>
+    <script type="text/javascript" src="https://scitools.org.uk/cartopy/docs/latest/_static/version_switch.js"></script>
 
 {% endblock %}

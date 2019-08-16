@@ -17,69 +17,10 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import warnings
+
 import matplotlib.path as mpath
 import numpy as np
-
-
-def clip_path_python(subject, clip, point_inside_clip_path):
-    """
-    Clip the subject path with the given clip path using the
-    Sutherland-Hodgman polygon clipping algorithm.
-
-    Parameters
-    ----------
-    subject
-        The subject path to be clipped. Must be a simple, single
-        polygon path with straight line segments only.
-    clip
-        The clip path to use. Must be a simple, single
-        polygon path with straight line segments only.
-    point_inside_clip_path
-        A point which can be found inside the clip path polygon.
-
-    """
-    inside_pt = point_inside_clip_path
-
-    output_verts = subject.vertices
-
-    for i in xrange(clip.vertices.shape[0] - 1):
-        clip_edge = clip.vertices[i:i + 2, :]
-        input_verts = output_verts
-        output_verts = []
-        inside = np.cross(clip_edge[1, :] - clip_edge[0, :],
-                          inside_pt - clip_edge[0, :])
-
-        try:
-            s = input_verts[-1]
-        except IndexError:
-            break
-
-        for e in input_verts:
-            e_clip_cross = np.cross(clip_edge[1, :] - clip_edge[0, :],
-                                    e - clip_edge[0, :])
-            s_clip_cross = np.cross(clip_edge[1, :] - clip_edge[0, :],
-                                    s - clip_edge[0, :])
-
-            if np.sign(e_clip_cross) == np.sign(inside):
-                if np.sign(s_clip_cross) != np.sign(inside):
-                    p = intersection_point(clip_edge[0, :], clip_edge[1, :],
-                                           e, s)
-                    output_verts.append(p)
-                output_verts.append(e)
-            elif np.sign(s_clip_cross) == np.sign(inside):
-                p = intersection_point(clip_edge[0, :], clip_edge[1, :],
-                                       e, s)
-                output_verts.append(p)
-            s = e
-
-    if output_verts == []:
-        path = mpath.Path([[0, 0]], codes=[mpath.Path.MOVETO])
-    else:
-        # If the subject polygon was closed, then the return should be too.
-        if np.all(subject.vertices[0, :] == subject.vertices[-1, :]):
-            output_verts.append(output_verts[0])
-        path = mpath.Path(np.array(output_verts))
-    return path
 
 
 def intersection_point(p0, p1, p2, p3):
@@ -113,25 +54,16 @@ def intersection_point(p0, p1, p2, p3):
 # Provide a clip_path function which clips the given path to the given Bbox.
 # There is inbuilt mpl functionality with v1.2.1 and beyond, but we provide
 # a shim here for older mpl versions.
-if hasattr(mpath.Path, 'clip_to_bbox'):
-    def clip_path(subject, clip_bbox):
-        """
-        Clip the given path to the given bounding box.
+def clip_path(subject, clip_bbox):
+    """
+    Clip the given path to the given bounding box.
 
-        """
-        return subject.clip_to_bbox(clip_bbox)
-else:
-    def clip_path(subject, clip_bbox):
-        """
-        Clip the given path to the given bounding box.
-
-        """
-        # A shim on clip_path_python to support Bbox path clipping.
-
-        bbox_patch = bbox_to_path(clip_bbox)
-        bbox_center = ((clip_bbox.x0 + clip_bbox.x1) / 2,
-                       (clip_bbox.y0 + clip_bbox.y1) / 2)
-        return clip_path_python(subject, bbox_patch, bbox_center)
+    """
+    warnings.warn("This method has been deprecated. "
+                  "You can replace ``clip_path(subject, clip_bbox)`` by "
+                  "``subject.clip_to_bbox(clip_bbox)``. "
+                  "See the \"What's new\" section for v0.17.")
+    return subject.clip_to_bbox(clip_bbox)
 
 
 def lines_intersect(p0, p1, p2, p3):

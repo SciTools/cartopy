@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -20,6 +20,7 @@ from __future__ import (absolute_import, division, print_function)
 import io
 import os
 import shutil
+import sys
 import warnings
 
 import numpy as np
@@ -41,35 +42,31 @@ _TEST_DATA_DIR = os.path.join(config["data_dir"],
                               'wmts', 'aerial')
 
 
-def test_world_files():
-    func = cimg_nest.Img.world_files
-    fname = 'one'
-    expected = ['one.w', 'one.W', 'ONE.w', 'ONE.W']
-    assert func(fname) == expected
+@pytest.mark.parametrize('fname, expected', [
+    ('one', ['one.w', 'one.W', 'ONE.w', 'ONE.W']),
+    ('one.png',
+     ['one.pngw', 'one.pgw', 'one.PNGW', 'one.PGW', 'ONE.pngw', 'ONE.pgw',
+      'ONE.PNGW', 'ONE.PGW']),
+    ('/one.png',
+     ['/one.pngw', '/one.pgw', '/one.PNGW', '/one.PGW', '/ONE.pngw',
+      '/ONE.pgw', '/ONE.PNGW', '/ONE.PGW']),
+    ('/one/two.png',
+     ['/one/two.pngw', '/one/two.pgw', '/one/two.PNGW', '/one/two.PGW',
+      '/one/TWO.pngw', '/one/TWO.pgw', '/one/TWO.PNGW', '/one/TWO.PGW']),
+    ('/one/two/THREE.png',
+     ['/one/two/THREE.pngw', '/one/two/THREE.pgw', '/one/two/THREE.PNGW',
+      '/one/two/THREE.PGW', '/one/two/three.pngw', '/one/two/three.pgw',
+      '/one/two/three.PNGW', '/one/two/three.PGW']),
+])
+def test_world_files(fname, expected):
+    if sys.platform == 'win32':
+        fname = fname.replace('/', '\\')
+        expected = [f.replace('/', '\\') for f in expected]
+        if fname.startswith('\\'):
+            fname = 'c:' + fname
+            expected = ['c:' + f for f in expected]
 
-    fname = 'one.png'
-    expected = ['one.pngw', 'one.pgw', 'one.PNGW', 'one.PGW',
-                'ONE.pngw', 'ONE.pgw', 'ONE.PNGW', 'ONE.PGW']
-    assert func(fname) == expected
-
-    fname = '/one.png'
-    expected = ['/one.pngw', '/one.pgw', '/one.PNGW', '/one.PGW',
-                '/ONE.pngw', '/ONE.pgw', '/ONE.PNGW', '/ONE.PGW']
-    assert func(fname) == expected
-
-    fname = '/one/two.png'
-    expected = ['/one/two.pngw', '/one/two.pgw',
-                '/one/two.PNGW', '/one/two.PGW',
-                '/one/TWO.pngw', '/one/TWO.pgw',
-                '/one/TWO.PNGW', '/one/TWO.PGW']
-    assert func(fname) == expected
-
-    fname = '/one/two/THREE.png'
-    expected = ['/one/two/THREE.pngw', '/one/two/THREE.pgw',
-                '/one/two/THREE.PNGW', '/one/two/THREE.PGW',
-                '/one/two/three.pngw', '/one/two/three.pgw',
-                '/one/two/three.PNGW', '/one/two/three.PGW']
-    assert func(fname) == expected
+    assert cimg_nest.Img.world_files(fname) == expected
 
 
 def _save_world(fname, args):
@@ -219,6 +216,7 @@ class RoundedImg(cimg_nest.Img):
 
 
 @pytest.mark.xfail(reason='MapQuest is unavailable')
+@pytest.mark.network
 def test_nest(nest_from_config):
     crs = cimgt.GoogleTiles().crs
     z0 = cimg_nest.ImageCollection('aerial z0 test', crs)
@@ -303,7 +301,7 @@ def wmts_data():
     """
     aerial = cimgt.MapQuestOpenAerial()
 
-    # get web tiles upto 3 zoom levels deep
+    # get web tiles up to 3 zoom levels deep
     tiles = [(0, 0, 0)]
     for tile in aerial.subtiles((0, 0, 0)):
         tiles.append(tile)
@@ -365,6 +363,7 @@ def wmts_data():
 
 
 @pytest.mark.xfail(reason='MapQuest is unavailable')
+@pytest.mark.network
 def test_find_images(wmts_data):
     z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
     img_fname = os.path.join(z2_dir, 'x_2_y_0.png')

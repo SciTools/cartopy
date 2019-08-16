@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2010 - 2016, Met Office
+# (C) British Crown Copyright 2010 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -16,13 +16,12 @@
 # along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
 
 
-cdef extern from "proj_api.h":
-    ctypedef void *projPJ
+from ._proj4 cimport projPJ
 
 
 cdef class CRS:
     """
-    Defines a Coordinate Reference System using proj.4.
+    Defines a Coordinate Reference System using proj.
 
     """
 

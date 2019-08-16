@@ -21,8 +21,13 @@ Natural Earth or GSHHS shapefiles.
 .. autoclass:: ShapelyFeature
 
 .. autoclass:: NaturalEarthFeature
+    :members: with_scale
 
 .. autoclass:: GSHHSFeature
+
+.. autoclass:: WFSFeature
+
+.. autoclass:: AdaptiveScaler
 
 ----------
 
@@ -31,20 +36,31 @@ constants. The pre-defined Features are all small-scale (1:110m)
 `Natural Earth <http://www.naturalearthdata.com>`_ datasets, and can be added with methods
 such as :func:`GeoAxes.add_feature <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
 
-=======================================  ==================================================
-Name                                     Description
-=======================================  ==================================================
-.. py:data:: cartopy.feature.BORDERS     Country boundaries.
-.. py:data:: cartopy.feature.COASTLINE   Coastline, including major islands.
-.. py:data:: cartopy.feature.LAKES       Natural and artificial lakes.
-.. py:data:: cartopy.feature.LAND        Land polygons, including major islands.
-.. py:data:: cartopy.feature.OCEAN       Ocean polygons.
-.. py:data:: cartopy.feature.RIVERS      Single-line drainages, including lake centerlines.
-=======================================  ==================================================
+=======================  ================================================================
+Name                     Description
+=======================  ================================================================
+.. py:data:: BORDERS     Country boundaries.
+
+.. py:data:: COASTLINE   Coastline, including major islands.
+
+.. py:data:: LAKES       Natural and artificial lakes.
+
+.. py:data:: LAND        Land polygons, including major islands.
+
+.. py:data:: OCEAN       Ocean polygons.
+
+.. py:data:: RIVERS      Single-line drainages, including lake centerlines.
+
+.. py:data:: STATES      Internal, first-order administrative boundaries (limited to the
+                         United States at this scale).
+                         Natural Earth have first-order admin boundaries for most
+                         countries at the 1:10,000,000 scale; these may be
+                         accessed with ``cartopy.feature.STATES.with_scale('10m')`` 
+=======================  ================================================================
 
 .. note::
 
-    Any Natural Earth dataset can easily be used by creating an
+    Any Natural Earth dataset can be used by creating an
     instance of :class:`cartopy.feature.NaturalEarthFeature`. For
     example::
 
@@ -71,7 +87,7 @@ For a full list of names in this dictionary:
 Example of using the Feature class with the Matplotlib interface
 ----------------------------------------------------------------
 
-.. figure:: ../gallery/lines_and_polygons/images/sphx_glr_feature_creation_001.png
-   :target: ../gallery/lines_and_polygons/feature_creation.html
+.. figure:: ../gallery/images/sphx_glr_feature_creation_001.png
+   :target: ../gallery/feature_creation.html
    :align: center
    :scale: 50

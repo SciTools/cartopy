@@ -5,7 +5,9 @@
   'use strict';
 
   var all_versions = {
-    'latest': '0.15',
+    'latest': '0.17',
+    'v0.16': '0.16',
+    'v0.15': '0.15',
     'v0.14': '0.14',
     'v0.13': '0.13',
     'v0.12': '0.12',
@@ -58,7 +60,7 @@
            window.location.href = new_url;
         },
         error: function() {
-           window.location.href = 'http://scitools.org.uk/cartopy/docs/' + selected;
+           window.location.href = 'https://scitools.org.uk/cartopy/docs/' + selected;
         }
       });
     }

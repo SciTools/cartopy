@@ -393,8 +393,8 @@ class SRTMDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'resolution', 'x', 'y')
 
-    _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/SRTM/SRTMGL{resolution}.'
-                      '003/2000.02.11/')
+    _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/MEASURES/'
+                      'SRTMGL{resolution}.003/2000.02.11/')
     _SRTM_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
                                       'srtm.npz')
     _SRTM_LOOKUP_MASK = np.load(_SRTM_LOOKUP_CACHE)['mask']
@@ -413,11 +413,12 @@ class SRTMDownloader(Downloader):
         Downloader.__init__(self, None,
                             target_path_template,
                             pre_downloaded_path_template)
-        warnings.warn('SRTM requires an account set up and log in to access.'
-                      'use of this class is likely to fail with'
-                      ' HTTP 401 errors.')
 
     def url(self, format_dict):
+        warnings.warn('SRTM requires an account set up and log in to access. '
+                      'Use of this Downloader is likely to fail with HTTP 401 '
+                      'errors.')
+
         # override the url method, looking up the url from the
         # ``SRTMDownloader._SRTM_LOOKUP_MASK`` array
         lat = int(format_dict['y'][1:])

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# (C) British Crown Copyright 2014 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -22,16 +22,14 @@ Tests for the Transverse Mercator projection, including OSGB and OSNI.
 from __future__ import (absolute_import, division, print_function)
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
-class TestRotatedPole(object):
-    def check_proj4_params(self, crs, expected):
-        pro4_params = sorted(crs.proj4_init.split(' +'))
-        assert expected == pro4_params
+common_other_args = {'o_proj=latlon', 'to_meter=0.0174532925199433'}
 
-    def test_default(self):
-        geos = ccrs.RotatedPole(60, 50, 80)
-        expected = ['+ellps=WGS84', 'lon_0=240', 'no_defs', 'o_lat_p=50',
-                    'o_lon_p=80', 'o_proj=latlon', 'proj=ob_tran',
-                    'to_meter=0.0174532925199433']
-        self.check_proj4_params(geos, expected)
+
+def test_default():
+    geos = ccrs.RotatedPole(60, 50, 80)
+    other_args = common_other_args | {'ellps=WGS84', 'lon_0=240', 'o_lat_p=50',
+                                      'o_lon_p=80'}
+    check_proj_params('ob_tran', geos, other_args)

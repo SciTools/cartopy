@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2018, Met Office
 #
 # This file is part of cartopy.
 #
@@ -101,6 +101,7 @@ else:
     regrid_tolerance = 0
 
 
+@pytest.mark.natural_earth
 @ImageTesting(['regrid_image'],
               tolerance=regrid_tolerance)
 def test_regrid_image():
@@ -132,13 +133,13 @@ def test_regrid_image():
     gs = mpl.gridspec.GridSpec(nrows=4, ncols=1,
                                hspace=1.5, wspace=0.5)
     # Set up axes and title
-    ax = plt.subplot(gs[0], frameon=False, projection=target_proj)
+    ax = plt.subplot(gs[0], projection=target_proj)
     plt.imshow(new_array, origin='lower', extent=target_extent)
     ax.coastlines()
     # Plot each color slice (tests masking)
     cmaps = {'red': 'Reds', 'green': 'Greens', 'blue': 'Blues'}
     for i, color in enumerate(['red', 'green', 'blue']):
-        ax = plt.subplot(gs[i + 1], frameon=False, projection=target_proj)
+        ax = plt.subplot(gs[i + 1], projection=target_proj)
         plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
                    cmap=cmaps[color])
         ax.coastlines()

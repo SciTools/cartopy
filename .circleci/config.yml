@@ -23,6 +23,8 @@ env-run:  &env-setup
   # a separate environment.
   name: Setup conda environment
   command: |
+    # Update conda to fix https://github.com/conda/conda/issues/6811
+    conda install -n base conda
     conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
     conda create -n test-environment python=$PYTHON_VERSION
     conda config --add channels conda-forge
@@ -44,8 +46,9 @@ deps-run: &deps-install
         requests \
         pyepsg \
         owslib \
-        $EXTRA_PACKAGES
-    conda install --quiet --file docs/doc-requirements.txt
+        pykdtree \
+        $EXTRA_PACKAGES \
+        --file docs/doc-requirements.txt
     conda list
 
 cp-run: &cp-install
@@ -60,15 +63,6 @@ doc-run: &doc-build
     source activate test-environment
     make html
   working_directory: docs
-
-doc-bundle-run: &doc-bundle
-  name: Bundle sphinx-gallery documentation artifacts
-  command: |
-    tar cf docs/build/sphinx-gallery-files.tar.gz \
-        docs/source/api \
-        docs/source/cartopy_outline.rst \
-        docs/source/gallery
-  when: always
 
 
 ##########################################
@@ -92,10 +86,6 @@ jobs:
 
       - run: *doc-build
 
-      - run: *doc-bundle
-      - store_artifacts:
-          path: docs/build/sphinx-gallery-files.tar.gz
-
       - store_artifacts:
           path: docs/build/html
 
@@ -114,14 +104,11 @@ jobs:
           <<: *env-setup
           environment:
             PYTHON_VERSION: 2
+            EXTRA_PACKAGES: "futures"
       - run: *deps-install
       - run: *cp-install
 
       - run: *doc-build
-
-      - run: *doc-bundle
-      - store_artifacts:
-          path: docs/build/sphinx-gallery-files.tar.gz
 
       - store_artifacts:
           path: docs/build/html
