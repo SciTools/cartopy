@@ -392,6 +392,16 @@ class GeoAxes(matplotlib.axes.Axes):
                 (self.ignore_existing_data_limits,
                     self._autoscaleXon, self._autoscaleYon) = other
 
+    def get_tightbbox(self, *args, **kwargs):
+        """Draws gridliner objects so they will be included in the tight
+        bounding box algorithm."""
+        # Duplicating post-processing steps in both draw() and get_tightbbox()
+        # is exactly how matplotlib.axes.Axes solves this problem
+        for gl in self._gridliners:
+            gl._draw_gridliner(background_patch=self.background_patch)
+        self._gridliners = []
+        return super(GeoAxes, self).get_tightbbox(*args, **kwargs)
+
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, inframe=False):
         """
