@@ -323,6 +323,10 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
+        # Initialize to a global extent, which will set the proper
+        # limits of the axis
+        self.set_global()
+
     @property
     def outline_patch(self):
         """
