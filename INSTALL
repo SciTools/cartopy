@@ -4,8 +4,9 @@ Installing Cartopy
 Conda pre-built binaries
 ------------------------
 
-The easiest way to install Cartopy is through 
-`Conda <https://conda.io/miniconda.html>`_. If conda is already installed, installation is as easy as::
+The easiest way to install Cartopy is by using
+`Conda <https://conda.io/miniconda.html>`_. If conda is already installed,
+installation is as easy as::
 
     conda install -c conda-forge cartopy
 
@@ -23,92 +24,107 @@ Additional pre-built binaries can be found at a variety of sources, including:
 Building from source
 --------------------
 
-Before building Cartopy from source, you need to **first** install the required dependencies listed below. Once these are installed, Cartopy can be installed using the pip installer::
+Before building Cartopy from source, you need to **first** install the
+required dependencies listed below. Once these are installed, Cartopy can be
+installed using the pip installer::
 
     pip install cartopy
 
-To instead install the most recent version found on the GitHub master branch, use::
+To instead install the most recent version found on the GitHub master branch,
+use::
 
-    pip install git+https://github.com/SciTools/cartopy.git --no-binary cartopy
+    pip install git+https://github.com/SciTools/cartopy.git
 
-Alternatively, you can clone the git repo on your computer and install using the `setup.py` file::
+Alternatively, you can clone the git repo on your computer and install manually
+using the `setup.py` file::
 
     git clone https://github.com/SciTools/cartopy.git
     cd cartopy
-    # Uncomment the following line to specify non-standard include and library paths
+    # Uncomment the following to specify non-standard include and library paths
     # python setup.py build_ext -I/path/to/include -L/path/to/lib
     python setup.py install
 
 
 Required dependencies
 ~~~~~~~~~~~~~~~~~~~~~
-In order to install Cartopy, or to access it's basic functionality, it will be necessary to first install **geos**, **numpy**, **cython**, **shapely**, **pyshp** and **six**. Many of these packages can be installed using pip or other package managers such as apt-get (linux) and brew (macos). Many of these dependencies are built as part of Cartopy's conda distribution, and the recipes for these can be found at https://github.com/conda-forge/feedstocks.
+In order to install Cartopy, or to access it's basic functionality, it will be
+necessary to first install **geos**, **numpy**, **cython**, **shapely**,
+**pyshp** and **six**. Many of these packages can be installed using pip or
+other package managers such as apt-get (linux) and brew (macos). Many of these
+dependencies are built as part of Cartopy's conda distribution, and the recipes
+for these packages can be found at https://github.com/conda-forge/feedstocks.
 
 For macOS, the required dependencies can be installed in the following way::
 
     brew install proj geos
     pip3 install --upgrade cython numpy pyshp six
-    # shapely needs to be build from source. If it is already installed,
-    # uninstall it by: pip3 uninstall shapely
+    # shapely needs to be built from source to link to geos. If it is already
+    # installed, uninstall it by: pip3 uninstall shapely
     pip3 install shapely --no-binary shapely
 
-If you are installing dependencies with a package manager on Linux, you may need to install the development packages (look for a "-dev" suffix) in addition to the core packages.
+If you are installing dependencies with a package manager on Linux, you may
+need to install the development packages (look for a "-dev" suffix) in addition
+to the core packages.
 
 Further information about the required dependencies can be found here:
 
 **Python** 2.7 or later (https://www.python.org/)
-    Cartopy requires Python 2.7 or later.
+
 **Cython** 0.28 or later (https://pypi.python.org/pypi/Cython/)
 
 **NumPy** 1.10 or later (https://numpy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
+
 **GEOS** 3.3.3 or later (https://trac.osgeo.org/geos/)
-    GEOS is an API of spatial predicates and functions for processing geometry
-    written in C++.
+
 **Shapely** 1.5.6 or later (https://github.com/Toblerity/Shapely)
-    Python package for the manipulation and analysis of planar geometric
-    objects.
+
 **pyshp** 2.0 or later (https://pypi.python.org/pypi/pyshp)
-    Pure Python read/write support for ESRI Shapefile format.
+
 **PROJ** 4.9.0 or later (https://proj4.org/)
-    Cartographic Projections library.
+
 **six** 1.3.0 or later (https://pypi.python.org/pypi/six)
-    Python 2 and 3 compatibility.
 
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
-These are optional packages that you may want to install to enable
-additional Cartopy functionality.
+To make the most of Cartopy by enabling additional functionality, you may want
+to install these optional dependencies.
 
 **Matplotlib** 1.5.1 or later (https://matplotlib.org/)
-    Python package for 2D plotting. This package is required for any
-    graphical capability.
+    Python package required for any graphical capabilities.
 
+<<<<<<< HEAD
 **GDAL** version 1.10.0 (https://gdal.org/)
     GDAL is a translator library for raster and vector geospatial data formats,
     which has powerful data transformation and processing capabilities.
+=======
+**GDAL** version 1.10.0 (http://www.gdal.org/)
+    A translator library for raster and vector geospatial data formats
+    that has powerful data transformation and processing capabilities.
+>>>>>>> Additional uptdates to INSTALL documenation
 
 **Pillow** 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
-    Popular fork of PythonImagingLibrary.
+    A popular fork of PythonImagingLibrary.
 
 **pyepsg** 0.4.0 or later (https://github.com/rhattersley/pyepsg)
     A simple Python interface to https://epsg.io
 
 **pykdtree** 1.2.2 or later (https://github.com/storpipfugl/pykdtree)
-    Fast kd-tree implementation in Python; used for faster warping of images in
-    preference to SciPy.
+    A fast kd-tree implementation that is used for faster warping
+    of images that in SciPy.
 
 **SciPy** 0.10 or later (https://www.scipy.org/)
-    Python package for scientific computing.
+    A Python package for scientific computing.
 
 **OWSLib** 0.8.7 (https://pypi.python.org/pypi/OWSLib)
-     Python package for client programming with Open Geospatial Consortium
-     (OGC) web service.  Gives access to cartopy ogc clients.
+     A Python package for client programming with the Open Geospatial
+     Consortium (OGC) web service, and which gives access to cartopy ogc
+     clients.
 
 **Fiona** 1.0 or later (https://github.com/Toblerity/Fiona)
-    Python package for reading shapefiles faster than the default (pyshp).
+    A Python package for reading shapefiles that is faster than the pyshp.
 
 
 Testing Dependencies
@@ -119,8 +135,7 @@ These packages are required for the full Cartopy test suite to run.
     A platform independent file lock for Python.
 
 **mock** 1.0.1 (https://pypi.python.org/pypi/mock/)
-    Python mocking and patching package for testing. Note that this package
-    is only required to support the Cartopy unit tests.
+    Python mocking and patching package for testing.
 
 **pytest** 3.1.0 or later (https://docs.pytest.org/en/latest/)
     Python package for software testing.
