@@ -38,6 +38,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Daryl Herzmann
  * Robert Redl
  * Greg Lucas
+ * Sadie Bartholomew
 
 Thank you!
 
