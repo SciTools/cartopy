@@ -116,8 +116,8 @@ class TestRetrieve(object):
 class TestSRTMSource__single_tile(object):
     def test_out_of_range(self, Source):
         source = Source()
-        msg = 'No srtm tile found for those coordinates.'
-        with pytest.raises(ValueError, match=msg):
+        match = r'No srtm tile found for those coordinates\.'
+        with pytest.raises(ValueError, match=match):
             source.single_tile(-25, 50)
 
     def test_in_range(self, Source):
