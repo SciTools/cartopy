@@ -546,7 +546,7 @@ class Geodetic(CRS):
         super(Geodetic, self).__init__(proj4_params, globe)
 
     # XXX Implement fwd such as Basemap's Geod. Would be used in the tissot example.
-    # Could come from https://geographiclib.sourceforge.net
+    # Could come from https://geographiclib.sourceforge.io
 
 
 class Geocentric(CRS):

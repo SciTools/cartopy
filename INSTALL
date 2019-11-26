@@ -58,7 +58,7 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 
 **Cython** 0.28 or later (https://pypi.python.org/pypi/Cython/)
 
-**NumPy** 1.10 or later (https://www.numpy.org/)
+**NumPy** 1.10 or later (https://numpy.org/)
     Python package for scientific computing including a powerful N-dimensional
     array object.
 
@@ -89,7 +89,7 @@ additional Cartopy functionality.
     Python package for 2D plotting.  This package is required for any
     graphical capability.
 
-**GDAL** version 1.10.0 (https://www.gdal.org/)
+**GDAL** version 1.10.0 (https://gdal.org/)
     GDAL is a translator library for raster and vector geospatial data formats,
     which has powerful data transformation and processing capabilities.
 
