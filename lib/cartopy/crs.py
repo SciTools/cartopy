@@ -2368,7 +2368,7 @@ class Sinusoidal(Projection):
 
 
 # MODIS data products use a Sinusoidal projection of a spherical Earth
-# http://modis-land.gsfc.nasa.gov/GCTP.html
+# https://modis-land.gsfc.nasa.gov/GCTP.html
 Sinusoidal.MODIS = Sinusoidal(globe=Globe(ellipse=None,
                                           semimajor_axis=6371007.181,
                                           semiminor_axis=6371007.181))

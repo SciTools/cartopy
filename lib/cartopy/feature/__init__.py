@@ -238,7 +238,7 @@ class NaturalEarthFeature(Feature):
     """
     A simple interface to Natural Earth shapefiles.
 
-    See http://www.naturalearthdata.com/
+    See https://www.naturalearthdata.com/
 
     """
     def __init__(self, category, name, scale, **kwargs):

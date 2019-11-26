@@ -30,7 +30,7 @@ from matplotlib.colors import LinearSegmentedColormap
 
 def aurora_forecast():
     """
-    Get the latest Aurora Forecast from http://swpc.noaa.gov.
+    Get the latest Aurora Forecast from https://www.swpc.noaa.gov.
 
     Returns
     -------
@@ -52,7 +52,7 @@ def aurora_forecast():
     url = ('https://gist.githubusercontent.com/belteshassar/'
            'c7ea9e02a3e3934a9ddc/raw/aurora-nowcast-map.txt')
     # To plot the current forecast instead, uncomment the following line
-    # url = 'http://services.swpc.noaa.gov/text/aurora-nowcast-map.txt'
+    # url = 'https://services.swpc.noaa.gov/text/aurora-nowcast-map.txt'
 
     response_text = StringIO(urlopen(url).read().decode('utf-8'))
     img = np.loadtxt(response_text)

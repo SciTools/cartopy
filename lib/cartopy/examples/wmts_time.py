@@ -23,7 +23,7 @@ import cartopy.crs as ccrs
 
 def main():
     # URL of NASA GIBS
-    URL = 'http://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi'
+    URL = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi'
     wmts = WebMapTileService(URL)
 
     # Layers for MODIS true color and snow RGB

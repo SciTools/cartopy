@@ -27,7 +27,7 @@ from cartopy.tests.mpl import ImageTesting
 @pytest.mark.natural_earth
 @ImageTesting(['lambert_conformal_south'])
 def test_lambert_south():
-    # Reference image: http://www.icsm.gov.au/mapping/map_projections.html
+    # Reference image: https://www.icsm.gov.au/mapping/map_projections.html
     crs = ccrs.LambertConformal(central_longitude=140, cutoff=65,
                                 standard_parallels=(-30, -60))
     ax = plt.axes(projection=crs)
