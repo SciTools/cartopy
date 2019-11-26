@@ -41,8 +41,6 @@ install:
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
   - ENV_NAME="test-environment"
-  - conda create -n $ENV_NAME python=$PYTHON_VERSION
-  - source activate $ENV_NAME
 
   # Customise the testing environment
   # ---------------------------------
@@ -51,7 +49,8 @@ install:
         PACKAGES="$PACKAGES pytest-cov coveralls";
         export CYTHON_COVERAGE=1;
     fi
-  - conda install --quiet $PACKAGES
+  - conda create -n $ENV_NAME python=$PYTHON_VERSION $PACKAGES
+  - source activate $ENV_NAME
 
   # Conda debug
   # -----------
