@@ -17,6 +17,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
+  - if %PYTHON_VERSION%==2.7 conda config --set restore_free_channel true
   - set ENV_NAME=test-environment
   - set PACKAGES=%PACKAGES% pillow pytest filelock pep8 pyshp shapely six requests pyepsg owslib
   - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%

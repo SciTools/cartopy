@@ -40,6 +40,9 @@ install:
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
+  - if [[ "$NAME" != "Latest*" ]]; then
+      conda config --set restore_free_channel true;
+    fi
   - ENV_NAME="test-environment"
 
   # Customise the testing environment
