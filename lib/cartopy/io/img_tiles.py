@@ -51,10 +51,14 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
     """
     _MAX_THREADS = 24
 
-    def __init__(self, desired_tile_form='RGB'):
+    def __init__(self, desired_tile_form='RGB', user_agent='cartopybot/1.0'):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
+        self.user_agent = user_agent
+        # some providers like osm need a user_agent in the request issue #1341
+        # osm may reject requests if there are too many of them, in which case
+        # a change of user_agent may fix the issue.
 
     def image_for_domain(self, target_domain, target_z):
         tiles = []
@@ -175,19 +179,24 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
 
     def get_image(self, tile):
         if six.PY3:
-            from urllib.request import urlopen
+            from urllib.request import urlopen, Request, HTTPError, URLError
         else:
-            from urllib2 import urlopen
+            from urllib2 import urlopen, Request, HTTPError, URLError
 
         url = self._image_url(tile)
+        try:
+            request = Request(url, headers={"user-agent": self.user_agent})
+            fh = urlopen(request)
+            im_data = six.BytesIO(fh.read())
+            fh.close()
+            img = Image.open(im_data)
 
-        fh = urlopen(url)
-        im_data = six.BytesIO(fh.read())
-        fh.close()
-        img = Image.open(im_data)
+        except (HTTPError, URLError) as err:
+            print(err)
+            img = Image.fromarray(np.full((256, 256, 3), (250, 250, 250),
+                                          dtype=np.uint8))
 
         img = img.convert(self.desired_tile_form)
-
         return img, self.tileextent(tile), 'lower'
 
 
@@ -272,7 +281,8 @@ class MapQuestOpenAerial(GoogleWTS):
 
 
 class OSM(GoogleWTS):
-    # https://developer.mapquest.com/web/products/open/map for terms of use
+    # https://operations.osmfoundation.org/policies/tiles/ for terms of use
+
     def _image_url(self, tile):
         x, y, z = tile
         url = 'https://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
