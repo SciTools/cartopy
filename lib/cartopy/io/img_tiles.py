@@ -39,6 +39,7 @@ import shapely.geometry as sgeom
 import numpy as np
 import six
 
+import cartopy
 import cartopy.crs as ccrs
 
 
@@ -51,7 +52,8 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
     """
     _MAX_THREADS = 24
 
-    def __init__(self, desired_tile_form='RGB', user_agent='cartopybot/1.0'):
+    def __init__(self, desired_tile_form='RGB',
+                 user_agent='CartoPy/' + cartopy.__version__):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
@@ -185,7 +187,7 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
 
         url = self._image_url(tile)
         try:
-            request = Request(url, headers={"user-agent": self.user_agent})
+            request = Request(url, headers={"User-Agent": self.user_agent})
             fh = urlopen(request)
             im_data = six.BytesIO(fh.read())
             fh.close()
