@@ -49,9 +49,16 @@ def test_global_map():
     example.main()
 
 
+if MPL_VERSION < '2':
+    contour_labels_tolerance = 7.5
+elif MPL_VERSION <= '2.1.2':
+    contour_labels_tolerance = 0.63
+else:
+    contour_labels_tolerance = 0
+
+
 @pytest.mark.natural_earth
-@ExampleImageTesting(['contour_label'],
-                     tolerance=7.5 if MPL_VERSION < '2' else 0)
+@ExampleImageTesting(['contour_label'], tolerance=contour_labels_tolerance)
 def test_contour_label():
     import cartopy.examples.contour_labels as example
     example.main()

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -44,13 +44,20 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # We have an exceptionally large tolerance for the web_tiles test.
 # The basemap changes on a regular basis (for seasons) and we really only
 # care that it is putting images onto the map which are roughly correct.
+if MPL_VERSION < '2':
+    web_tiles_tolerance = 12
+elif MPL_VERSION < '3':
+    web_tiles_tolerance = 4.5
+else:
+    web_tiles_tolerance = 2.9
+
+
 @pytest.mark.natural_earth
 @pytest.mark.network
 @pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
                    reason='Proj returns slightly different bounds.',
                    strict=True)
-@ImageTesting(['web_tiles'],
-              tolerance=12 if MPL_VERSION < '2' else 2.9)
+@ImageTesting(['web_tiles'], tolerance=web_tiles_tolerance)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = sgeom.Polygon([[extent[0], extent[1]],

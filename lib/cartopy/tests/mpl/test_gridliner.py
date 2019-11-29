@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import pytest
@@ -133,7 +132,7 @@ def test_gridliner_specified_lines():
     assert gl.ylocator.tick_values(None, None).tolist() == parallels
 
 
-# The tolerance on this test is particularly high because of the high number
+# The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
 if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
