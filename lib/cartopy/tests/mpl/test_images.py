@@ -46,10 +46,8 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # care that it is putting images onto the map which are roughly correct.
 if MPL_VERSION < '2':
     web_tiles_tolerance = 12
-elif MPL_VERSION < '3':
-    web_tiles_tolerance = 4.5
 else:
-    web_tiles_tolerance = 2.9
+    web_tiles_tolerance = 4.5
 
 
 @pytest.mark.natural_earth
@@ -141,7 +139,7 @@ def test_imshow():
 
 @pytest.mark.natural_earth
 @ImageTesting(['imshow_regional_projected'],
-              tolerance=10.4 if MPL_VERSION < '2' else 0)
+              tolerance=10.4 if MPL_VERSION < '2' else 0.8)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
@@ -180,7 +178,7 @@ def test_pil_Image():
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=4.2 if MPL_VERSION < '2' else 0)
+              tolerance=4.2 if MPL_VERSION < '2' else 0.5)
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resolution='low')

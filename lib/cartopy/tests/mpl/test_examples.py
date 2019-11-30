@@ -43,7 +43,7 @@ class ExampleImageTesting(ImageTesting):
 
 @pytest.mark.natural_earth
 @ExampleImageTesting(['global_map'],
-                     tolerance=4 if MPL_VERSION < '2' else 0)
+                     tolerance=4 if MPL_VERSION < '2' else 0.5)
 def test_global_map():
     import cartopy.examples.global_map as example
     example.main()
