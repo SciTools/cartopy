@@ -797,9 +797,14 @@ class Gridliner(object):
             # np.isfinite must be used to prevent np.inf values that
             # not filtered by np.nanmax for some projections
             lat_max = np.compress(np.isfinite(inside[:, 1]),
-                                  inside[:, 1]).max()
-            lon_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
-            lat_range = np.nanmin(inside[:, 1]), lat_max
+                                  inside[:, 1])
+            if lat_max.size == 0:
+                lon_range = self.crs.x_limits
+                lat_range = self.crs.y_limits
+            else:
+                lat_max = lat_max.max()
+                lon_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
+                lat_range = np.nanmin(inside[:, 1]), lat_max
 
         # XXX Cartopy specific thing. Perhaps make this bit a specialisation
         # in a subclass...

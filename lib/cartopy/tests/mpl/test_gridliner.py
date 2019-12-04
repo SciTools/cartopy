@@ -219,11 +219,18 @@ def test_grid_labels():
 def test_grid_labels_inline():
     plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
-        if isinstance(proj(), ccrs.RotatedPole):
+        if proj == ccrs.RotatedPole:
             ax = plt.subplot(7, 4, i, projection=RP)
         else:
             ax = plt.subplot(7, 4, i, projection=proj())
-        ax.gridlines(draw_labels=True, auto_inline=True)
+        if (ccrs.PROJ4_VERSION[:2] == (5, 0) and
+                proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
+                         ccrs.Geostationary, ccrs.NearsidePerspective)):
+            # Above projections are broken, so skip labels.
+            # Add gridlines anyway to minimize image differences.
+            ax.gridlines()
+        else:
+            ax.gridlines(draw_labels=True, auto_inline=True)
         ax.coastlines()
         ax.set_title(proj, y=1.075)
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
@@ -238,7 +245,7 @@ def test_grid_labels_inline_usa():
     bottom = 24.7433195  # south lat
     plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
-        if isinstance(proj(), ccrs.RotatedPole):
+        if proj == ccrs.RotatedPole:
             ax = plt.subplot(7, 4, i, projection=RP)
         else:
             ax = plt.subplot(7, 4, i, projection=proj())
@@ -248,6 +255,13 @@ def test_grid_labels_inline_usa():
         except Exception:
             pass
         ax.set_title(proj, y=1.075)
-        ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+        if (ccrs.PROJ4_VERSION[:2] == (5, 0) and
+                proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
+                         ccrs.Geostationary, ccrs.NearsidePerspective)):
+            # Above projections are broken, so skip labels.
+            # Add gridlines anyway to minimize image differences.
+            ax.gridlines()
+        else:
+            ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
         ax.coastlines()
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
