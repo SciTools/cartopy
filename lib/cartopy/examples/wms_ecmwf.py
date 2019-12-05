@@ -23,6 +23,7 @@ import matplotlib.pyplot as plt
 from matplotlib.path import Path
 import cartopy.crs as ccrs
 
+
 def full_geo_extent(axe, proj):
     """
     because a plate carree plot is wider for the same height
@@ -37,8 +38,8 @@ def full_geo_extent(axe, proj):
     """
     proj_geo = ccrs.Geodetic()
 
-    ratioxao = axe.get_position(original=True).width /\
-    axe.get_position(original=False).width
+    ratioxao = (axe.get_position(original=True).width /
+                axe.get_position(original=False).width)
 
     x01, x11 = axe.get_xlim()
 
@@ -51,6 +52,7 @@ def full_geo_extent(axe, proj):
     xog11, yog11 = proj_geo.transform_point(xo11, y11, proj)
 
     return xog01, xog11, yog01, yog11
+
 
 def set_outline_color(axe, color='black'):
     """
@@ -71,12 +73,12 @@ def main():
     in Mercator and Plate Carree
     Adjust the axes to have the longitudes at the same x on both plots
     Use the boundary to clip the second plot to fit the same geographic extent
-    If we use the same geo_extent then the second plot would not have longitudes
-    at the same x as the first one, due to the autoscale.
+    If we use the same geo_extent then the second plot would not have the
+    longitudes at the same x as the first one, due to the autoscale.
     """
     wms = 'https://apps.ecmwf.int/wms/?token=public'
     layers = ['t850_public', 'foreground', 'boundaries', 'grid']
-    geo_extent = (-10, 40, 32, 48) # x0, x1, y0, y1
+    geo_extent = (-10, 40, 32, 48)  # x0, x1, y0, y1
 
     fig = plt.figure(figsize=(13, 9), dpi=72)
     plt.subplots_adjust(top=0.925, bottom=0.0, hspace=0.04)
@@ -92,7 +94,7 @@ def main():
     # the outline is accessed differently according to the version
     set_outline_color(ax1, color='red')
 
-    fig.canvas.draw() # necessary to get the active position bounding box
+    fig.canvas.draw()  # necessary to get the active position bounding box
     geo_extento1 = full_geo_extent(ax1, proj1)
 
     ax2 = fig.add_subplot(2, 1, 2, projection=proj2)
