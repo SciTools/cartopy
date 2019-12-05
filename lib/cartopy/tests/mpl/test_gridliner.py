@@ -42,7 +42,12 @@ TEST_PROJS = [
     ccrs.Sinusoidal,
     ccrs.Stereographic,
     ccrs.InterruptedGoodeHomolosine,
-    ccrs.RotatedPole,
+    (ccrs.RotatedPole,
+     dict(pole_longitude=180.0,
+          pole_latitude=36.0,
+          central_rotated_longitude=-106.0,
+          globe=ccrs.Globe(semimajor_axis=6370000,
+                           semiminor_axis=6370000))),
     ccrs.OSGB,
     ccrs.EuroPP,
     ccrs.Geostationary,
@@ -53,12 +58,6 @@ TEST_PROJS = [
     ccrs.OSNI,
     ccrs.SouthPolarStereo,
 ]
-
-RP = ccrs.RotatedPole(pole_longitude=180.0,
-                      pole_latitude=36.0,
-                      central_rotated_longitude=-106.0,
-                      globe=ccrs.Globe(semimajor_axis=6370000,
-                                       semiminor_axis=6370000))
 
 
 @pytest.mark.natural_earth
@@ -219,10 +218,11 @@ def test_grid_labels():
 def test_grid_labels_inline():
     plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
-        if proj == ccrs.RotatedPole:
-            ax = plt.subplot(7, 4, i, projection=RP)
+        if isinstance(proj, tuple):
+            proj, kwargs = proj
         else:
-            ax = plt.subplot(7, 4, i, projection=proj())
+            kwargs = {}
+        ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
         if (ccrs.PROJ4_VERSION[:2] == (5, 0) and
                 proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
                          ccrs.Geostationary, ccrs.NearsidePerspective)):
@@ -245,10 +245,11 @@ def test_grid_labels_inline_usa():
     bottom = 24.7433195  # south lat
     plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
-        if proj == ccrs.RotatedPole:
-            ax = plt.subplot(7, 4, i, projection=RP)
+        if isinstance(proj, tuple):
+            proj, kwargs = proj
         else:
-            ax = plt.subplot(7, 4, i, projection=proj())
+            kwargs = {}
+        ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
         try:
             ax.set_extent([left, right, bottom, top],
                           crs=ccrs.PlateCarree())
