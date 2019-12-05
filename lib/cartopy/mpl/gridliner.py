@@ -583,13 +583,6 @@ class Gridliner(object):
     def _text_angle_to_specs_(self, angle, lonlat):
         """Get specs for a rotated label from its angle in degrees"""
 
-        if matplotlib.__version__ >= '3.1':
-            # rotation_mode='anchor' and va_align_center='center_baseline'
-            # are incompatible before mpl-3.1
-            va_align_center = 'center_baseline'
-        else:
-            va_align_center = 'center'
-
         angle %= 360
         if angle > 180:
             angle -= 360
@@ -608,12 +601,12 @@ class Gridliner(object):
         if abs(angle) <= 45:
 
             loc = 'right'
-            kw.update(ha='left', va=va_align_center)
+            kw.update(ha='left', va='center')
 
         elif abs(angle) >= 135:
 
             loc = 'left'
-            kw.update(ha='right', va=va_align_center)
+            kw.update(ha='right', va='center')
             kw['rotation'] -= np.sign(angle) * 180
 
         elif angle > 45:
