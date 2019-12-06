@@ -327,8 +327,11 @@ class Gridliner(object):
         return int(base * round(float(x) / base))
 
     def _find_midpoints(self, lim, ticks):
-        # find the cneter point between each lat gridline
-        cent = np.diff(ticks).mean() / 2
+        # Find the center point between each lat gridline.
+        if len(ticks) > 1:
+            cent = np.diff(ticks).mean() / 2
+        else:
+            cent = np.nan
         if isinstance(self.axes.projection, _POLAR_PROJS):
             lq = 90
             uq = 90
