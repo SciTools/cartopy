@@ -163,9 +163,10 @@ class BasicReader(object):
 
         """
         for i in range(self._reader.numRecords):
-            # Skip the shape that can not bee be represented as geometry.
+            shape = self._reader.shape(i)
+            # Skips the shape can not bee be represented as geometry.
             if shape.shapeType != shapefile.NULL:
-                yield sgeom.shape(self._reader.shape(i))
+                yield sgeom.shape(shape)
 
     def records(self):
         """
