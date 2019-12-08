@@ -267,13 +267,21 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     # XXX NB. target_x and target_y must currently be rectangular (i.e.
     # be a 2d np array)
-    geo_cent = source_cs.as_geocentric()
-    xyz = geo_cent.transform_points(source_cs,
-                                    source_x_coords.flatten(),
-                                    source_y_coords.flatten())
-    target_xyz = geo_cent.transform_points(target_proj,
-                                           target_x_points.flatten(),
-                                           target_y_points.flatten())
+
+    # previously regrid was done in geocentric, but it would transform
+    # straight lines in source projection in geodesic circles
+    # to avoid that, the regrid values need to be calculated in the source
+    # projection
+
+    xyz = np.stack((
+        source_x_coords.flatten(),
+        source_y_coords.flatten()),
+        axis=-1)
+    target_xyz = source_cs.transform_points(target_proj,
+                                            target_x_points.flatten(),
+                                            target_y_points.flatten())
+    target_xyz = target_xyz[:, :2]
+    # drop z
 
     if _is_pykdtree:
         kdtree = pykdtree.kdtree.KDTree(xyz)
