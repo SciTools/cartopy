@@ -48,14 +48,14 @@ TEST_PROJS = [
           central_rotated_longitude=-106.0,
           globe=ccrs.Globe(semimajor_axis=6370000,
                            semiminor_axis=6370000))),
-    ccrs.OSGB,
+    (ccrs.OSGB, dict(approx=False)),
     ccrs.EuroPP,
     ccrs.Geostationary,
     ccrs.NearsidePerspective,
     ccrs.Gnomonic,
     ccrs.LambertAzimuthalEqualArea,
     ccrs.NorthPolarStereo,
-    ccrs.OSNI,
+    (ccrs.OSNI, dict(approx=False)),
     ccrs.SouthPolarStereo,
 ]
 
@@ -72,16 +72,16 @@ def test_gridliner():
     ax.coastlines()
     ax.gridlines(linestyle=':')
 
-    ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB())
+    ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB(approx=False))
     ax.set_global()
     ax.coastlines()
     ax.gridlines(linestyle=':')
 
-    ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB())
+    ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB(approx=False))
     ax.set_global()
     ax.coastlines()
     ax.gridlines(ccrs.PlateCarree(), color='blue', linestyle='-')
-    ax.gridlines(ccrs.OSGB(), linestyle=':')
+    ax.gridlines(ccrs.OSGB(approx=False), linestyle=':')
 
     ax = plt.subplot(nx, ny, 4, projection=ccrs.PlateCarree())
     ax.set_global()
@@ -92,7 +92,7 @@ def test_gridliner():
     ax = plt.subplot(nx, ny, 5, projection=ccrs.PlateCarree())
     ax.set_global()
     ax.coastlines()
-    osgb = ccrs.OSGB()
+    osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
 
@@ -104,7 +104,7 @@ def test_gridliner():
     ax = plt.subplot(nx, ny, 7, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     ax.coastlines()
-    osgb = ccrs.OSGB()
+    osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
 

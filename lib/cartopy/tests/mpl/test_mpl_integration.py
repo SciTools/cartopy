@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -165,8 +165,8 @@ def test_multiple_projections():
     projections = [ccrs.PlateCarree(),
                    ccrs.Robinson(),
                    ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
-                   ccrs.OSGB(),
-                   ccrs.TransverseMercator(),
+                   ccrs.OSGB(approx=True),
+                   ccrs.TransverseMercator(approx=True),
                    ccrs.Mercator(
                        globe=ccrs.Globe(semimajor_axis=math.degrees(1)),
                        min_latitude=-85., max_latitude=85.),
