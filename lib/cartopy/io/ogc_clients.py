@@ -122,8 +122,7 @@ def _warped_located_image(image, source_projection, source_extent,
     else:
         # Convert Image to numpy array (flipping so that origin
         # is 'lower').
-        # convert to RGBA to keep the color palette
-        img, extent = warp_array(np.asanyarray(image.convert('RGBA'))[::-1],
+        img, extent = warp_array(np.asanyarray(image)[::-1],
                                  source_proj=source_projection,
                                  source_extent=source_extent,
                                  target_proj=output_projection,
