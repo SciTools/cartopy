@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -50,11 +50,11 @@ class TestTransverseMercator(object):
                                        globe=ccrs.Globe(datum='OSGB36',
                                                         ellipse='airy'))
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (295971.28667707,
-                                                   93064.27666368))
+        np.testing.assert_array_almost_equal(res, (295971.28668, 93064.27666),
+                                             decimal=5)
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (577274.98380140,
-                                                   69740.49227181))
+        np.testing.assert_array_almost_equal(res, (577274.98380, 69740.49227),
+                                             decimal=5)
 
     def test_nan(self):
         proj = ccrs.TransverseMercator()
@@ -74,11 +74,11 @@ class TestOSGB(object):
     def test_default(self):
         proj = ccrs.OSGB()
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (295971.28667707,
-                                                   93064.27666368))
+        np.testing.assert_array_almost_equal(res, (295971.28668, 93064.27666),
+                                             decimal=5)
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (577274.98380140,
-                                                   69740.49227181))
+        np.testing.assert_array_almost_equal(res, (577274.98380, 69740.49227),
+                                             decimal=5)
 
     def test_nan(self):
         proj = ccrs.OSGB()
