@@ -59,6 +59,7 @@ cdef extern from "geos_c.h":
     cdef int GEOS_MULTILINESTRING
 
 from cartopy._crs cimport CRS
+from cartopy._crs import PROJ4_VERSION
 from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
                       pj_strerrno, DEG_TO_RAD)
 from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
@@ -171,6 +172,12 @@ cdef class Interpolator:
     cdef Point end
     cdef projPJ src_proj
     cdef projPJ dest_proj
+    cdef double src_scale
+    cdef double dest_scale
+
+    def __cinit__(self):
+        self.src_scale = 1
+        self.dest_scale = 1
 
     cdef void init(self, projPJ src_proj, projPJ dest_proj):
         self.src_proj = src_proj
@@ -198,8 +205,8 @@ cdef class CartesianInterpolator(Interpolator):
         cdef Point dest_xy
         cdef projLP xy
 
-        xy.u = src_xy.x
-        xy.v = src_xy.y
+        xy.u = src_xy.x * self.src_scale
+        xy.v = src_xy.y * self.src_scale
 
         cdef int status = pj_transform(self.src_proj, self.dest_proj,
                                        1, 1, &xy.u, &xy.v, NULL)
@@ -212,8 +219,8 @@ cdef class CartesianInterpolator(Interpolator):
                 status,
                 pj_strerrno(status)))
 
-        dest_xy.x = xy.u
-        dest_xy.y = xy.v
+        dest_xy.x = xy.u * self.dest_scale
+        dest_xy.y = xy.v * self.dest_scale
         return dest_xy
 
 
@@ -252,8 +259,8 @@ cdef class SphericalInterpolator(Interpolator):
         cdef Point xy
         cdef projLP dest
 
-        dest.u = lonlat.x * DEG_TO_RAD
-        dest.v = lonlat.y * DEG_TO_RAD
+        dest.u = (lonlat.x * DEG_TO_RAD) * self.src_scale
+        dest.v = (lonlat.y * DEG_TO_RAD) * self.src_scale
 
         cdef int status = pj_transform(self.src_proj, self.dest_proj,
                                        1, 1, &dest.u, &dest.v, NULL)
@@ -266,8 +273,8 @@ cdef class SphericalInterpolator(Interpolator):
                 status,
                 pj_strerrno(status)))
 
-        xy.x = dest.u
-        xy.y = dest.v
+        xy.x = dest.u * self.dest_scale
+        xy.y = dest.v * self.dest_scale
         return xy
 
 
@@ -605,6 +612,18 @@ def project_linear(geometry not None, CRS src_crs not None,
     else:
         interpolator = CartesianInterpolator()
     interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
+    if (6, 1, 1) <= PROJ4_VERSION:
+        # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
+        # See https://github.com/OSGeo/proj#1782.
+        lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
+        if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
+                src_crs.proj4_params.get('o_proj', '') in lonlat and
+                'to_meter' in src_crs.proj4_params):
+            interpolator.src_scale = src_crs.proj4_params['to_meter']
+        if (dest_projection.proj4_params.get('proj', '') == 'ob_tran' and
+                dest_projection.proj4_params.get('o_proj', '') in lonlat and
+                'to_meter' in dest_projection.proj4_params):
+            interpolator.dest_scale = 1 / dest_projection.proj4_params['to_meter']
 
     src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
     gp_domain = GEOSPrepare_r(handle, g_domain)
