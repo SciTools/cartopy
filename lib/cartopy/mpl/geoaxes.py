@@ -1720,14 +1720,14 @@ class GeoAxes(matplotlib.axes.Axes):
 
                     collection.set_array(pcolormesh_data.ravel())
 
-                    # the part below in comment retrieves the masked 
-                    # overlapping cells and plot them with pcolor and a 
+                    # the part below in comment retrieves the masked
+                    # overlapping cells and plot them with pcolor and a
                     # smaller zorder to hide them
-                    # but there are not always hidden 
-                    # if one wants to retrieve those cells, split them at the 
-                    # boundary and plot them, the code below could be 
+                    # but there are not always hidden
+                    # if one wants to retrieve those cells, split them at the
+                    # boundary and plot them, the code below could be
                     # useful.
-                    
+
 #                    #############
 #
 #                    # now that the pcolormesh has masked the bad values,
@@ -1739,7 +1739,7 @@ class GeoAxes(matplotlib.axes.Axes):
 #                        pcolor_data = np.ma.array(C, mask=~mask)
 #
 #                    pts = coords.reshape((Ny, Nx, 2))
-#                    
+#
 #                    if np.any(~pcolor_data.mask):
 #                        # plot with slightly lower zorder to avoid odd issue
 #                        # where the main plot is obscured
