@@ -1720,36 +1720,47 @@ class GeoAxes(matplotlib.axes.Axes):
 
                     collection.set_array(pcolormesh_data.ravel())
 
-                    # now that the pcolormesh has masked the bad values,
-                    # create a pcolor with just those values that were masked
-                    if C_mask is not None:
-                        # remember to re-apply the original data mask
-                        pcolor_data = np.ma.array(C, mask=~mask | C_mask)
-                    else:
-                        pcolor_data = np.ma.array(C, mask=~mask)
-
-                    pts = coords.reshape((Ny, Nx, 2))
-                    if np.any(~pcolor_data.mask):
-                        # plot with slightly lower zorder to avoid odd issue
-                        # where the main plot is obscured
-                        zorder = collection.zorder - .1
-                        kwargs.pop('zorder', None)
-                        kwargs.setdefault('snap', False)
-                        pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
-                                                 pcolor_data, zorder=zorder,
-                                                 **kwargs)
-
-                        pcolor_col.set_cmap(cmap)
-                        pcolor_col.set_norm(norm)
-                        pcolor_col.set_clim(vmin, vmax)
-                        # scale the data according to the *original* data
-                        pcolor_col.norm.autoscale_None(C)
-
-                        # put the pcolor_col on the pcolormesh collection so
-                        # that if really necessary, users can do things post
-                        # this method
-                        collection._wrapped_collection_fix = pcolor_col
-
+                    # the part below in comment retrieves the masked 
+                    # overlapping cells and plot them with pcolor and a 
+                    # smaller zorder to hide them
+                    # but there are not always hidden 
+                    # if one wants to retrieve those cells, split them at the 
+                    # boundary and plot them, the code below could be 
+                    # useful.
+                    
+#                    #############
+#
+#                    # now that the pcolormesh has masked the bad values,
+#                    # create a pcolor with just those values that were masked
+#                    if C_mask is not None:
+#                        # remember to re-apply the original data mask
+#                        pcolor_data = np.ma.array(C, mask=~mask | C_mask)
+#                    else:
+#                        pcolor_data = np.ma.array(C, mask=~mask)
+#
+#                    pts = coords.reshape((Ny, Nx, 2))
+#                    
+#                    if np.any(~pcolor_data.mask):
+#                        # plot with slightly lower zorder to avoid odd issue
+#                        # where the main plot is obscured
+#                        zorder = collection.zorder - .1
+#                        kwargs.pop('zorder', None)
+#                        kwargs.setdefault('snap', False)
+#                        pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
+#                                                 pcolor_data, zorder=zorder,
+#                                                 **kwargs)
+#
+#                        pcolor_col.set_cmap(cmap)
+#                        pcolor_col.set_norm(norm)
+#                        pcolor_col.set_clim(vmin, vmax)
+#                        # scale the data according to the *original* data
+#                        pcolor_col.norm.autoscale_None(C)
+#
+#                        # put the pcolor_col on the pcolormesh collection so
+#                        # that if really necessary, users can do things post
+#                        # this method
+#                        collection._wrapped_collection_fix = pcolor_col
+#                    #############
             # Clip the QuadMesh to the projection boundary, which is required
             # to keep the shading inside the projection bounds.
             collection.set_clip_path(self.background_patch)
