@@ -12,9 +12,9 @@ env:
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
           PACKAGES="cython numpy matplotlib-base proj4 pykdtree scipy fiona"
-        - NAME="Latest everything (py2k)."
+        - NAME="Latest everything (py2)."
           PYTHON_VERSION=2
-          PACKAGES="cython numpy matplotlib proj4 scipy mock futures"
+          PACKAGES="cython numpy matplotlib-base proj4 scipy mock futures"
 
 
 sudo: false
@@ -54,6 +54,11 @@ install:
     fi
   - conda create -n $ENV_NAME python=$PYTHON_VERSION $PACKAGES
   - source activate $ENV_NAME
+  # Re-install so it's using FreeType 2.6; conda-forge/label/testing does not
+  # include the latest Python 2-compatible Matplotlib.
+  - if [[ "$NAME" == "Latest everything (py2)." ]]; then
+        pip install --force matplotlib;
+    fi
 
   # Conda debug
   # -----------
