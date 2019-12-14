@@ -729,7 +729,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return geom_in_crs
 
-    def set_extent(self, extents, crs=None, clip=False):
+    def set_extent(self, extents, crs=None):
         """
         Set the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
@@ -741,9 +741,6 @@ class GeoAxes(matplotlib.axes.Axes):
         ----------
         extents
             Tuple of floats representing the required extent (x0, x1, y0, y1).
-
-        clip: bool
-            Clip map boundary to match exactly this extent.
         """
         # TODO: Implement the same semantics as plt.xlim and
         # plt.ylim - allowing users to set None for a minimum and/or
@@ -768,25 +765,6 @@ class GeoAxes(matplotlib.axes.Axes):
             boundary = self.projection.boundary
             if boundary.equals(domain_in_crs):
                 projected = boundary
-
-        if clip:
-
-            # compute coordinates of the clipping polygon as two 1D arrays
-            n = 100
-            x = np.linspace(x1, x2, n)
-            y = np.linspace(y1, y2, n)
-            xx = np.concatenate((x, [x[-1]]*n, x[::-1], [x[0]]*n))
-            yy = np.concatenate(([y[0]]*n, y, [y[-1]]*n, y[::-1]))
-
-            # project the coordinates and create the path object
-            if crs is not None and crs != self.projection:
-                xy = self.projection.transform_points(crs, xx, yy)[:, :2]
-            else:
-                xy = np.array([xx, yy]).T
-            path = mpath.Path(xy)
-
-            # set it as a boundary
-            self.set_boundary(path)
 
         if projected is None:
             projected = self.projection.project_geometry(domain_in_crs, crs)
