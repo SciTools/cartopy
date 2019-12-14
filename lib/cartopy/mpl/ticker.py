@@ -460,12 +460,13 @@ class LongitudeFormatter(_PlateCarreeFormatter):
 
 
 class LongitudeLocator(MaxNLocator):
-    """A locator for longitudes that works even at very small scale
+    """
+    A locator for longitudes that works even at very small scale.
 
     Parameters
     ----------
     dms: bool
-        Allow the locator to stop on on minutes and seconds (False by default)
+        Allow the locator to stop on minutes and seconds (False by default)
     """
 
     default_params = MaxNLocator.default_params.copy()
@@ -506,12 +507,13 @@ class LongitudeLocator(MaxNLocator):
 
 
 class LatitudeLocator(LongitudeLocator):
-    """A locator for latitudes that works even at very small scale
+    """
+    A locator for latitudes that works even at very small scale.
 
     Parameters
     ----------
     dms: bool
-        Allow the locator to stop on on minutes and seconds (False by default)
+        Allow the locator to stop on minutes and seconds (False by default)
     """
     def tick_values(self, vmin, vmax):
         vmin = max(vmin, -90.)
