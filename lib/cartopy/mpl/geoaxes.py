@@ -332,7 +332,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         warnings.warn("The outline_patch property is deprecated. Use "
                       "GeoAxes.spines['geo'] or the default Axes properties "
-                      "instead.")
+                      "instead.",
+                      DeprecationWarning,
+                      stacklevel=2)
         return self.spines['geo']
 
     def add_image(self, factory, *args, **kwargs):
@@ -612,7 +614,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         warnings.warn('This method has been deprecated.'
-                      ' Please use `add_feature` instead.')
+                      ' Please use `add_feature` instead.',
+                      DeprecationWarning,
+                      stacklevel=2)
         kwargs.setdefault('edgecolor', 'face')
         kwargs.setdefault('facecolor', cartopy.feature.COLORS['land'])
         feature = cartopy.feature.NaturalEarthFeature(category, name,
@@ -1584,7 +1588,6 @@ class GeoAxes(matplotlib.axes.Axes):
         See PATCH comments below.
 
         """
-        import warnings
         import matplotlib.colors as mcolors
         import matplotlib.collections as mcoll
 
@@ -1697,7 +1700,8 @@ class GeoAxes(matplotlib.axes.Axes):
                     if collection.get_cmap()._rgba_bad[3] != 0.0:
                         warnings.warn("The colormap's 'bad' has been set, but "
                                       "in order to wrap pcolormesh across the "
-                                      "map it must be fully transparent.")
+                                      "map it must be fully transparent.",
+                                      stacklevel=3)
 
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
                     # a shape of (Ny, Nx-1) and pts has a shape of (Ny*Nx, 2)

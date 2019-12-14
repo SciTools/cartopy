@@ -348,7 +348,9 @@ class StamenTerrain(Stamen):
     def __init__(self):
         warnings.warn(
             "The StamenTerrain class was deprecated in v0.17. "
-            "Please use Stamen('terrain-background') instead.")
+            "Please use Stamen('terrain-background') instead.",
+            DeprecationWarning,
+            stacklevel=2)
 
         # NOTE: This subclass of Stamen exists for legacy reasons.
         # No further Stamen subclasses will be accepted as
