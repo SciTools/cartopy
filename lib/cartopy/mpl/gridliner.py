@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import operator
+import warnings
 from array import array
 
 import matplotlib
@@ -28,7 +29,6 @@ import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as sgeom
-from warnings import warn
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
@@ -529,8 +529,9 @@ class Gridliner(object):
                                 y += geom.xy[1]
                             ht.append(list(zip(x[slicer], y[slicer])))
                     else:
-                        warn('Unsupported intersection geometry for gridline'
-                             'labels: '+intersection.__class__)
+                        warnings.warn(
+                            'Unsupported intersection geometry for gridline '
+                            'labels: ' + intersection.__class__.__name__)
                         continue
                     del intersection
 
@@ -689,8 +690,8 @@ class Gridliner(object):
         for lonlat, priority, artist in self._labels:
 
             if artist not in axes_children:
-                warn('The labels of this gridliner do not belong'
-                     'to the gridliner axes')
+                warnings.warn('The labels of this gridliner do not belong to '
+                              'the gridliner axes')
 
             # Compute angles to try
             orig_specs = {'rotation': artist.get_rotation(),
