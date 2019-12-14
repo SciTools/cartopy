@@ -19,7 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import operator
 import warnings
-from array import array
 
 import matplotlib
 import matplotlib.collections as mcollections
@@ -508,20 +507,26 @@ class Gridliner(object):
                         # We only consider the first geometries, merge their
                         # coordinates and keep first two points to get only one
                         # tail ...
-                        x = array('d', [])
-                        y = array('d', [])
-                        for geom in list(intersection.geoms)[:2]:
-                            x += geom.xy[0]
-                            y += geom.xy[1]
-                        tails = [list(zip(x[:2], y[:2]))]
+                        xy = []
+                        for geom in intersection.geoms:
+                            for coord in geom.coords:
+                                xy.append(coord)
+                                if len(xy) == 2:
+                                    break
+                            if len(xy) == 2:
+                                break
+                        tails = [xy]
                         # ... and the last geometries, merge their coordinates
                         # and keep last two points to get only one head.
-                        x = array('d', [])
-                        y = array('d', [])
-                        for geom in list(intersection.geoms)[-1:-3:-1]:
-                            x += geom.xy[0]
-                            y += geom.xy[1]
-                        heads = [list(zip(x[-1:-3:-1], y[-1:-3:-1]))]
+                        xy = []
+                        for geom in reversed(intersection.geoms):
+                            for coord in reversed(geom.coords):
+                                xy.append(coord)
+                                if len(xy) == 2:
+                                    break
+                            if len(xy) == 2:
+                                break
+                        heads = [xy]
                     else:
                         warnings.warn(
                             'Unsupported intersection geometry for gridline '
