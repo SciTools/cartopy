@@ -25,7 +25,6 @@ import matplotlib.collections as mcollections
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import matplotlib.path as mpath
-import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as sgeom
 
@@ -710,7 +709,7 @@ class Gridliner(object):
 
                 if angle is not None:
                     specs, _ = self._segment_angle_to_text_specs(angle, lonlat)
-                    plt.setp(artist, **specs)
+                    artist.update(specs)
 
                 artist.update_bbox_position_size(renderer)
                 this_patch = artist.get_bbox_patch()
@@ -750,7 +749,7 @@ class Gridliner(object):
             # Action
             artist.set_visible(visible)
             if not visible:
-                plt.setp(artist, **orig_specs)
+                artist.update(orig_specs)
             else:
                 paths.append(this_path)
 
