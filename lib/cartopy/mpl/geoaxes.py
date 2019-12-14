@@ -1675,22 +1675,41 @@ class GeoAxes(matplotlib.axes.Axes):
                                ccrs._WarpedRectangularProjection,
                                ccrs.InterruptedGoodeHomolosine,
                                ccrs.Mercator)
-            if isinstance(t, wrap_proj_types) and \
+            if isinstance(t, (*wrap_proj_types,
+                              ccrs.Stereographic,
+                              )) and \
                     isinstance(self.projection, wrap_proj_types):
 
                 C = C.reshape((Ny - 1, Nx - 1))
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
 
-                # Compute the length of edges in transformed coordinates
+                # Compute the length of diagonals in transformed coordinates
+                # This takes into account the case where the top of the cell
+                # is on one side of the boundary while the other is on the
+                # other side, case overlooked with the edges only.
+                #
+                #    Top----Top  |
+                #                |  Bottom-----Bottom
+                #
                 with np.errstate(invalid='ignore'):
-                    edge_lengths = np.hypot(
-                        np.diff(transformed_pts[..., 0], axis=1),
-                        np.diff(transformed_pts[..., 1], axis=1)
+                    ptx, pty = transformed_pts[..., 0], transformed_pts[..., 0]
+                    diagonal0_lengths = np.hypot(
+                        ptx[1:, 1:] - ptx[:-1, :-1],
+                        pty[1:, 1:] - pty[:-1, :-1]
+                    )
+                    diagonal1_lengths = np.hypot(
+                        ptx[1:, 1:] - ptx[:-1, :-1],
+                        pty[1:, :-1] - pty[:-1, 1:]
                     )
                     to_mask = (
-                        (edge_lengths > abs(self.projection.x_limits[1] -
-                                            self.projection.x_limits[0]) / 2) |
-                        np.isnan(edge_lengths)
+                        (diagonal0_lengths > (
+                            abs(self.projection.x_limits[1]
+                                - self.projection.x_limits[0])) / 2) |
+                        np.isnan(diagonal0_lengths) |
+                        (diagonal1_lengths > (
+                            abs(self.projection.x_limits[1]
+                                - self.projection.x_limits[0])) / 2) |
+                        np.isnan(diagonal1_lengths)
                     )
 
                 if np.any(to_mask):
@@ -1704,11 +1723,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
                     mask = np.zeros(C.shape, dtype=np.bool)
 
-                    # Mask out the neighbouring cells if there was an edge
-                    # found with a large length. NB. Masking too much only has
-                    # a detrimental impact on performance.
-                    mask[to_mask[:-1, :]] = True  # Edges above a cell.
-                    mask[to_mask[1:, :]] = True  # Edges below a cell.
+                    mask[to_mask] = True
 
                     C_mask = getattr(C, 'mask', None)
 
