@@ -125,7 +125,7 @@ def main():
 
     gl = ax.gridlines(crs=pc, linewidth=3, color='white', linestyle='-')
     # Meridians every 45 degrees, and 5 parallels.
-    gl.xlocator = matplotlib.ticker.FixedLocator(np.arange(0, 361, 45))
+    gl.xlocator = matplotlib.ticker.FixedLocator(np.arange(-180, 181, 45))
     parallels = np.linspace(-60, 70, 5, endpoint=True)
     gl.ylocator = matplotlib.ticker.FixedLocator(parallels)
 
