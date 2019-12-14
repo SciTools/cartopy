@@ -527,8 +527,8 @@ class LatitudeLocator(LongitudeLocator):
 
     def _raw_ticks(self, vmin, vmax):
         ticks = LongitudeLocator._raw_ticks(self, vmin, vmax)
-        return [t for t in ticks if t >= -90 and t <= 90]
+        return [t for t in ticks if -90 <= t <= 90]
 
     def bin_boundaries(self, vmin, vmax):
         ticks = LongitudeLocator.bin_boundaries(self, vmin, vmax)
-        return [t for t in ticks if t >= -90 and t <= 90]
+        return [t for t in ticks if -90 <= t <= 90]
