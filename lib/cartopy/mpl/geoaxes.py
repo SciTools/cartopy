@@ -1697,7 +1697,7 @@ class GeoAxes(matplotlib.axes.Axes):
                         pty[1:, 1:] - pty[:-1, :-1]
                     )
                     diagonal1_lengths = np.hypot(
-                        ptx[1:, 1:] - ptx[:-1, :-1],
+                        ptx[1:, :-1] - ptx[:-1, 1:],
                         pty[1:, :-1] - pty[:-1, 1:]
                     )
                     to_mask = (
