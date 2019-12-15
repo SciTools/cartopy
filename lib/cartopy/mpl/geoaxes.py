@@ -1674,10 +1674,9 @@ class GeoAxes(matplotlib.axes.Axes):
             wrap_proj_types = (ccrs._RectangularProjection,
                                ccrs._WarpedRectangularProjection,
                                ccrs.InterruptedGoodeHomolosine,
-                               ccrs.Mercator)
-            if isinstance(t, (*wrap_proj_types,
-                              ccrs.Stereographic,
-                              )) and \
+                               ccrs.Mercator,
+                               ccrs.Stereographic)
+            if isinstance(t, wrap_proj_types) and \
                     isinstance(self.projection, wrap_proj_types):
 
                 C = C.reshape((Ny - 1, Nx - 1))
