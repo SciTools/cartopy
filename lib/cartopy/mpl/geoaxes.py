@@ -1691,7 +1691,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 #                |  Bottom-----Bottom
                 #
                 with np.errstate(invalid='ignore'):
-                    ptx, pty = transformed_pts[..., 0], transformed_pts[..., 0]
+                    ptx, pty = transformed_pts[..., 0], transformed_pts[..., 1]
                     diagonal0_lengths = np.hypot(
                         ptx[1:, 1:] - ptx[:-1, :-1],
                         pty[1:, 1:] - pty[:-1, :-1]
