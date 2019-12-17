@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -82,8 +82,9 @@ def merge(*style_dicts):
 
         if isinstance(facecolor, six.string_types) and facecolor == 'never':
             requested_color = this_style.pop('facecolor', None)
-            setting_color = not (isinstance(requested_color, six.string_types)
-                                 and requested_color.lower() == 'none')
+            setting_color = not (
+                isinstance(requested_color, six.string_types) and
+                requested_color.lower() == 'none')
             if (('fc' in orig_style or 'facecolor' in orig_style) and
                     setting_color):
                 warnings.warn('facecolor will have no effect as it has been '

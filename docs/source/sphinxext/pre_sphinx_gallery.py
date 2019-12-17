@@ -68,6 +68,9 @@ GALLERY_HEADER = textwrap.dedent("""
 
 """)
 
+# Directory to place examples, determined from Sphinx configuration.
+outdir = None
+
 
 def example_groups(src_dir):
     """Return a dictionary of {tag: [example filenames]} for the given dir."""
@@ -136,7 +139,8 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
     build_target_dir = os.path.relpath(target_dir, gallery_conf['src_dir'])
 
     seen = set()
-    tmp_dir = tempfile.mkdtemp()
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
     for tag, examples in tagged_examples.items():
         sorted_listdir = sorted(
@@ -149,9 +153,9 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
             'Generating gallery for %s ' % tag,
             length=len(sorted_listdir))
         for fname in iterator:
-            write_example(os.path.join(src_dir, fname), tmp_dir)
+            write_example(os.path.join(src_dir, fname), outdir)
             intro, time_elapsed = generate_file_rst(
-                fname, target_dir, tmp_dir, gallery_conf)
+                fname, target_dir, outdir, gallery_conf)
 
             if fname not in seen:
                 seen.add(fname)
@@ -188,9 +192,6 @@ def generate_dir_rst(src_dir, target_dir, gallery_conf, seen_backrefs):
         fhindex += """.. raw:: html\n
         <div style='clear:both'></div>\n\n"""
 
-    # Tidy up the temp directory
-    shutil.rmtree(tmp_dir)
-
     return fhindex, computation_times
 
 
@@ -200,4 +201,5 @@ sphinx_gallery.gen_gallery.generate_dir_rst = generate_dir_rst
 
 
 def setup(app):
-    pass
+    global outdir
+    outdir = os.path.join(app.srcdir, 'cartopy', 'examples')

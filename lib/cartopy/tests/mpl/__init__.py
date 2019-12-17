@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -226,6 +226,9 @@ class ImageTesting(object):
                     yield
 
             with style_context(self.style):
+                if MPL_VERSION >= '3.2.0':
+                    mpl.rcParams['text.kerning_factor'] = 6
+
                 r = test_func(*args, **kwargs)
 
                 fig_managers = pyplot_helpers.Gcf._activeQue

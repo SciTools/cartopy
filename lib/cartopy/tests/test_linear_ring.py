@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -60,7 +60,7 @@ class TestBoundary(object):
         # Check that a ring that is completely out of the map boundary
         # produces an empty result.
         # XXX Check efficiency?
-        projection = ccrs.TransverseMercator(central_longitude=0)
+        projection = ccrs.TransverseMercator(central_longitude=0, approx=True)
 
         rings = [
             # All valid

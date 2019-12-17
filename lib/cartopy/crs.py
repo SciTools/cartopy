@@ -803,7 +803,7 @@ class TransverseMercator(Projection):
     """
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
-                 scale_factor=1.0, globe=None):
+                 scale_factor=1.0, globe=None, approx=None):
         """
         Parameters
         ----------
@@ -818,15 +818,33 @@ class TransverseMercator(Projection):
             Y offset from the planar origin in metres. Defaults to 0.
         scale_factor: optional
             Scale factor at the central meridian. Defaults to 1.
+
         globe: optional
             An instance of :class:`cartopy.crs.Globe`. If omitted, a default
             globe is created.
 
+        approx: optional
+            Whether to use Proj's approximate projection (True), or the new
+            Extended Transverse Mercator code (False). Defaults to True, but
+            will change to False in the next release.
+
         """
+        if approx is None:
+            warnings.warn('The default value for the *approx* keyword '
+                          'argument to TransverseMercator will change '
+                          'from True to False after 0.18.',
+                          stacklevel=2)
+            approx = True
         proj4_params = [('proj', 'tmerc'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
+        if PROJ4_VERSION < (6, 0, 0):
+            if not approx:
+                proj4_params[0] = ('proj', 'etmerc')
+        else:
+            if approx:
+                proj4_params += [('approx', None)]
         super(TransverseMercator, self).__init__(proj4_params, globe=globe)
 
     @property
@@ -851,12 +869,19 @@ class TransverseMercator(Projection):
 
 
 class OSGB(TransverseMercator):
-    def __init__(self):
+    def __init__(self, approx=None):
+        if approx is None:
+            warnings.warn('The default value for the *approx* keyword '
+                          'argument to OSGB will change from True to '
+                          'False after 0.18.',
+                          stacklevel=2)
+            approx = True
         super(OSGB, self).__init__(central_longitude=-2, central_latitude=49,
                                    scale_factor=0.9996012717,
                                    false_easting=400000,
                                    false_northing=-100000,
-                                   globe=Globe(datum='OSGB36', ellipse='airy'))
+                                   globe=Globe(datum='OSGB36', ellipse='airy'),
+                                   approx=approx)
 
     @property
     def boundary(self):
@@ -874,7 +899,13 @@ class OSGB(TransverseMercator):
 
 
 class OSNI(TransverseMercator):
-    def __init__(self):
+    def __init__(self, approx=None):
+        if approx is None:
+            warnings.warn('The default value for the *approx* keyword '
+                          'argument to OSNI will change from True to '
+                          'False after 0.18.',
+                          stacklevel=2)
+            approx = True
         globe = Globe(semimajor_axis=6377340.189,
                       semiminor_axis=6356034.447938534)
         super(OSNI, self).__init__(central_longitude=-8,
@@ -882,7 +913,8 @@ class OSNI(TransverseMercator):
                                    scale_factor=1.000035,
                                    false_easting=200000,
                                    false_northing=250000,
-                                   globe=globe)
+                                   globe=globe,
+                                   approx=approx)
 
     @property
     def boundary(self):
@@ -1495,9 +1527,9 @@ class Orthographic(Projection):
         if PROJ4_VERSION != ():
             if (5, 0, 0) <= PROJ4_VERSION < (5, 1, 0):
                 warnings.warn(
-                    'The Orthographic projection in Proj between 5.0.0 and '
-                    '5.1.0 incorrectly transforms points. Use this projection '
-                    'with caution.')
+                    'The Orthographic projection in the v5.0.x series of Proj '
+                    'incorrectly transforms points. Use this projection with '
+                    'caution.')
         else:
             warnings.warn(
                 'Cannot determine Proj version. The Orthographic projection '

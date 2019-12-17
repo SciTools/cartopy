@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -43,8 +43,9 @@ class TestCRS(object):
 
         assert ccrs.Geodetic() == ccrs.Geodetic()
 
-    def test_osni(self):
-        osni = ccrs.OSNI()
+    @pytest.mark.parametrize('approx', [True, False])
+    def test_osni(self, approx):
+        osni = ccrs.OSNI(approx=approx)
         ll = ccrs.Geodetic()
 
         # results obtained by nearby.org.uk.
@@ -82,18 +83,19 @@ class TestCRS(object):
         r_inverted = np.array(ll.transform_point(r_east, r_north, osgb))
         assert_arr_almost_eq(r_inverted, [lon, lat])
 
-    def test_osgb(self):
-        self._check_osgb(ccrs.OSGB())
+    @pytest.mark.parametrize('approx', [True, False])
+    def test_osgb(self, approx):
+        self._check_osgb(ccrs.OSGB(approx=approx))
 
     @pytest.mark.network
     @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        assert_almost_equal(
-            uk.x_limits, (-118365.7408171,  751581.564796))
-        assert_almost_equal(
-            uk.y_limits, (-5268.1797977,  1272227.798124))
+        assert_almost_equal(uk.x_limits, (-118365.7406176, 751581.5647514),
+                            decimal=3)
+        assert_almost_equal(uk.y_limits, (-5268.1704980, 1272227.7987656),
+                            decimal=2)
         assert_almost_equal(uk.threshold, 8699.47, decimal=2)
         self._check_osgb(uk)
 

@@ -24,6 +24,7 @@ import matplotlib
 import matplotlib.collections as mcollections
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
+import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as sgeom
@@ -327,8 +328,11 @@ class Gridliner(object):
         return int(base * round(float(x) / base))
 
     def _find_midpoints(self, lim, ticks):
-        # find the cneter point between each lat gridline
-        cent = np.diff(ticks).mean() / 2
+        # Find the center point between each lat gridline.
+        if len(ticks) > 1:
+            cent = np.diff(ticks).mean() / 2
+        else:
+            cent = np.nan
         if isinstance(self.axes.projection, _POLAR_PROJS):
             lq = 90
             uq = 90
@@ -583,13 +587,6 @@ class Gridliner(object):
     def _text_angle_to_specs_(self, angle, lonlat):
         """Get specs for a rotated label from its angle in degrees"""
 
-        if matplotlib.__version__ >= '3.1':
-            # rotation_mode='anchor' and va_align_center='center_baseline'
-            # are incompatible before mpl-3.1
-            va_align_center = 'center_baseline'
-        else:
-            va_align_center = 'center'
-
         angle %= 360
         if angle > 180:
             angle -= 360
@@ -608,12 +605,12 @@ class Gridliner(object):
         if abs(angle) <= 45:
 
             loc = 'right'
-            kw.update(ha='left', va=va_align_center)
+            kw.update(ha='left', va='center')
 
         elif abs(angle) >= 135:
 
             loc = 'left'
-            kw.update(ha='right', va=va_align_center)
+            kw.update(ha='right', va='center')
             kw['rotation'] -= np.sign(angle) * 180
 
         elif angle > 45:
@@ -675,6 +672,21 @@ class Gridliner(object):
         max_delta_angle = 45
         axes_children = self.axes.get_children()
 
+        def remove_path_dupes(path):
+            """
+            Remove duplicate points in a path (zero-length segments).
+
+            This is necessary only for Matplotlib 3.1.0 -- 3.1.2, because
+            Path.intersects_path incorrectly returns True for any paths with
+            such segments.
+            """
+            segment_length = np.diff(path.vertices, axis=0)
+            mask = np.logical_or.reduce(segment_length != 0, axis=1)
+            mask = np.append(mask, True)
+            path = mpath.Path(np.compress(mask, path.vertices, axis=0),
+                              np.compress(mask, path.codes, axis=0))
+            return path
+
         for lonlat, priority, artist in self._labels:
 
             if artist not in axes_children:
@@ -706,6 +718,8 @@ class Gridliner(object):
                 this_patch = artist.get_bbox_patch()
                 this_path = this_patch.get_path().transformed(
                     this_patch.get_transform())
+                if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
+                    this_path = remove_path_dupes(this_path)
                 visible = False
 
                 for path in paths:
@@ -718,8 +732,11 @@ class Gridliner(object):
 
                     # Finally check that it does not overlap the map
                     if outline_path is None:
-                        outline_path = self.axes.background_patch.get_path(
-                        ).transformed(self.axes.transData)
+                        outline_path = (self.axes.background_patch
+                                        .get_path()
+                                        .transformed(self.axes.transData))
+                        if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
+                            outline_path = remove_path_dupes(outline_path)
                     visible = (not outline_path.intersects_path(this_path) or
                                (lonlat == 'lon' and self.x_inline) or
                                (lonlat == 'lat' and self.y_inline))
@@ -797,9 +814,14 @@ class Gridliner(object):
             # np.isfinite must be used to prevent np.inf values that
             # not filtered by np.nanmax for some projections
             lat_max = np.compress(np.isfinite(inside[:, 1]),
-                                  inside[:, 1]).max()
-            lon_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
-            lat_range = np.nanmin(inside[:, 1]), lat_max
+                                  inside[:, 1])
+            if lat_max.size == 0:
+                lon_range = self.crs.x_limits
+                lat_range = self.crs.y_limits
+            else:
+                lat_max = lat_max.max()
+                lon_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
+                lat_range = np.nanmin(inside[:, 1]), lat_max
 
         # XXX Cartopy specific thing. Perhaps make this bit a specialisation
         # in a subclass...

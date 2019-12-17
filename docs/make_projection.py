@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -30,6 +30,9 @@ SPECIFIC_PROJECTION_KWARGS = {
     ccrs.NearsidePerspective: {
         'central_longitude': -3.53, 'central_latitude': 50.72,
         'satellite_height': 10.0e6},
+    ccrs.OSGB: {'approx': False},
+    ccrs.OSNI: {'approx': False},
+    ccrs.TransverseMercator: {'approx': False},
 }
 
 

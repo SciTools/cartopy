@@ -20,6 +20,7 @@ lib/cartopy/geodesic/_geodesic.*.so
 lib/cartopy/geodesic/_geodesic.pyd
 docs/build
 lib/cartopy/tests/mpl/output/
+docs/source/cartopy/examples/
 docs/source/cartopy_outline.rst
 docs/source/gallery
 docs/source/matplotlib/coastlines.p??

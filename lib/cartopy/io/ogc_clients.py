@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -66,7 +66,7 @@ _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 _CRS_TO_OGC_SRS = collections.OrderedDict(
     [(ccrs.PlateCarree(), 'EPSG:4326'),
      (ccrs.Mercator.GOOGLE, 'EPSG:900913'),
-     (ccrs.OSGB(), 'EPSG:27700')
+     (ccrs.OSGB(approx=True), 'EPSG:27700')
      ])
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
@@ -88,7 +88,7 @@ _URN_TO_CRS = collections.OrderedDict(
     [('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
      ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
      ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
-     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
+     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB(approx=True)),
      ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
          central_latitude=-90,
          true_scale_latitude=-71)),
