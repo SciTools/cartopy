@@ -36,7 +36,10 @@ _CONTOUR_STYLE = _STREAMPLOT_STYLE = 'classic'
 if MPL_VERSION >= '3.0.0':
     _CONTOUR_IMAGE = 'global_contour_wrap'
     _CONTOUR_STYLE = 'mpl20'
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
+    if MPL_VERSION >= '3.2.0':
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.2.0'
+    else:
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
     # Should have been the case for anything but _1.4.3, but we don't want to
     # regenerate those images again.
     _STREAMPLOT_STYLE = 'mpl20'
