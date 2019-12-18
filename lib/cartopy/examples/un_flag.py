@@ -102,10 +102,13 @@ def main():
 
     # Pick a suitable location for the map (which is in an Azimuthal
     # Equidistant projection).
-    ax = fig.add_axes([0.25, 0.24, 0.5, 0.54], projection=az_eq, frameon=False)
+    ax = fig.add_axes([0.25, 0.24, 0.5, 0.54], projection=az_eq)
 
-    # The background patch and axes frame are not needed in this example.
+    # The background patch is not needed in this example.
     ax.background_patch.set_facecolor('none')
+    # The Axes frame produces the outer meridian line.
+    for spine in ax.spines.values():
+        spine.update({'edgecolor': 'white', 'linewidth': 2})
 
     # We want the map to go down to -60 degrees latitude.
     ax.set_extent([-180, 180, -60, 90], ccrs.PlateCarree())
@@ -123,10 +126,10 @@ def main():
     else:
         ax.stock_img()
 
-    gl = ax.gridlines(crs=pc, linewidth=3, color='white', linestyle='-')
-    # Meridians every 45 degrees, and 5 parallels.
+    gl = ax.gridlines(crs=pc, linewidth=2, color='white', linestyle='-')
+    # Meridians every 45 degrees, and 4 parallels.
     gl.xlocator = matplotlib.ticker.FixedLocator(np.arange(-180, 181, 45))
-    parallels = np.linspace(-60, 70, 5, endpoint=True)
+    parallels = np.arange(-30, 70, 30)
     gl.ylocator = matplotlib.ticker.FixedLocator(parallels)
 
     # Now add the olive branches around the axes. We do this in normalised
