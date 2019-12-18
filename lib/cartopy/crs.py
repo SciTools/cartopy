@@ -1172,7 +1172,9 @@ class LambertConformal(Projection):
         elif secant_latitudes is not None:
             warnings.warn('secant_latitudes has been deprecated in v0.12. '
                           'The standard_parallels keyword can be used as a '
-                          'direct replacement.')
+                          'direct replacement.',
+                          DeprecationWarning,
+                          stacklevel=2)
             standard_parallels = secant_latitudes
         elif standard_parallels is None:
             # The default. Put this as a keyword arg default once
@@ -1436,12 +1438,14 @@ class Stereographic(Projection):
                         'The Stereographic projection in Proj older than '
                         '5.0.0 incorrectly transforms points when '
                         'central_latitude=0. Use this projection with '
-                        'caution.')
+                        'caution.',
+                        stacklevel=2)
             else:
                 warnings.warn(
                     'Cannot determine Proj version. The Stereographic '
                     'projection may be unreliable and should be used with '
-                    'caution.')
+                    'caution.',
+                    stacklevel=2)
 
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
@@ -1451,7 +1455,8 @@ class Stereographic(Projection):
             if central_latitude not in (-90., 90.):
                 warnings.warn('"true_scale_latitude" parameter is only used '
                               'for polar stereographic projections. Consider '
-                              'the use of "scale_factor" instead.')
+                              'the use of "scale_factor" instead.',
+                              stacklevel=2)
             proj4_params.append(('lat_ts', true_scale_latitude))
 
         if scale_factor is not None:
@@ -1529,11 +1534,13 @@ class Orthographic(Projection):
                 warnings.warn(
                     'The Orthographic projection in the v5.0.x series of Proj '
                     'incorrectly transforms points. Use this projection with '
-                    'caution.')
+                    'caution.',
+                    stacklevel=2)
         else:
             warnings.warn(
                 'Cannot determine Proj version. The Orthographic projection '
-                'may be unreliable and should be used with caution.')
+                'may be unreliable and should be used with caution.',
+                stacklevel=2)
 
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
@@ -1865,11 +1872,13 @@ class Robinson(_WarpedRectangularProjection):
                 warnings.warn('The Robinson projection in the v4.8.x series '
                               'of Proj contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
-                              'caution.')
+                              'caution.',
+                              stacklevel=2)
         else:
             warnings.warn('Cannot determine Proj version. The Robinson '
                           'projection may be unreliable and should be used '
-                          'with caution.')
+                          'with caution.',
+                          stacklevel=2)
 
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super(Robinson, self).__init__(proj4_params, central_longitude,
@@ -2291,11 +2300,13 @@ class AzimuthalEquidistant(Projection):
                 warnings.warn('The Azimuthal Equidistant projection in Proj '
                               'older than 4.9.2 incorrectly transforms points '
                               'farther than 90 deg from the origin. Use this '
-                              'projection with caution.')
+                              'projection with caution.',
+                              stacklevel=2)
         else:
             warnings.warn('Cannot determine Proj version. The Azimuthal '
                           'Equidistant projection may be unreliable and '
-                          'should be used with caution.')
+                          'should be used with caution.',
+                          stacklevel=2)
 
         proj4_params = [('proj', 'aeqd'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude),

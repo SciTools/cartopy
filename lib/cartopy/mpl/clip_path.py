@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -62,7 +62,9 @@ def clip_path(subject, clip_bbox):
     warnings.warn("This method has been deprecated. "
                   "You can replace ``clip_path(subject, clip_bbox)`` by "
                   "``subject.clip_to_bbox(clip_bbox)``. "
-                  "See the \"What's new\" section for v0.17.")
+                  "See the \"What's new\" section for v0.17.",
+                  DeprecationWarning,
+                  stacklevel=2)
     return subject.clip_to_bbox(clip_bbox)
 
 
