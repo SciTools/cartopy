@@ -891,7 +891,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Switch on drawing of x axis
         self.xaxis.set_visible(True)
 
-        return super(GeoAxes, self).set_xticks(xticks, minor)
+        return super(GeoAxes, self).set_xticks(xticks, minor=minor)
 
     def set_yticks(self, ticks, minor=False, crs=None):
         """
@@ -938,7 +938,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Switch on drawing of y axis
         self.yaxis.set_visible(True)
 
-        return super(GeoAxes, self).set_yticks(yticks, minor)
+        return super(GeoAxes, self).set_yticks(yticks, minor=minor)
 
     def stock_img(self, name='ne_shaded'):
         """

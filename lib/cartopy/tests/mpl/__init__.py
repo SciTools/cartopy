@@ -31,7 +31,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.testing import setup as mpl_setup
 import matplotlib.testing.compare as mcompare
-import matplotlib._pylab_helpers as pyplot_helpers
 
 
 MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
@@ -211,12 +210,12 @@ class ImageTesting(object):
             plt.switch_backend('agg')
             mpl_setup()
 
-            if pyplot_helpers.Gcf.figs:
+            if plt.get_fignums():
                 warnings.warn('Figures existed before running the %s %s test.'
                               ' All figures should be closed after they run. '
                               'They will be closed automatically now.' %
                               (mod_name, test_name))
-                pyplot_helpers.Gcf.destroy_all()
+                plt.close('all')
 
             if MPL_VERSION >= '2':
                 style_context = mpl.style.context
@@ -231,14 +230,13 @@ class ImageTesting(object):
 
                 r = test_func(*args, **kwargs)
 
-                fig_managers = pyplot_helpers.Gcf._activeQue
-                figures = [manager.canvas.figure for manager in fig_managers]
+                figures = [plt.figure(num) for num in plt.get_fignums()]
 
                 try:
                     self.run_figure_comparisons(figures, test_name=mod_name)
                 finally:
                     for figure in figures:
-                        pyplot_helpers.Gcf.destroy_fig(figure)
+                        plt.close(figure)
                     plt.switch_backend(orig_backend)
             return r
 
