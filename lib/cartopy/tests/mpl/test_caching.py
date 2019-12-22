@@ -23,7 +23,7 @@ import six
 
 try:
     from owslib.wmts import WebMapTileService
-except ImportError as e:
+except ImportError:
     WebMapTileService = None
 import matplotlib.pyplot as plt
 import pytest

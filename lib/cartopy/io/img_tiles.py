@@ -104,7 +104,7 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
         domain = sgeom.box(x0, y0, x1, y1)
         if domain.intersects(target_domain):
             if start_tile[2] == target_z:
-                    yield start_tile
+                yield start_tile
             else:
                 for tile in self._subtiles(start_tile):
                     for result in self._find_images(target_domain, target_z,

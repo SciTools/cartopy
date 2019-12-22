@@ -580,10 +580,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if lons.shape != lats.shape:
             raise ValueError('lons and lats must have the same shape.')
 
-        for i in range(len(lons)):
-                circle = geod.circle(lons[i], lats[i], rad_km*1e3,
-                                     n_samples=n_samples)
-                geoms.append(sgeom.Polygon(circle))
+        for lon, lat in zip(lons, lats):
+            circle = geod.circle(lon, lat, rad_km*1e3, n_samples=n_samples)
+            geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
                                                  **kwargs)

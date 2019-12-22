@@ -166,22 +166,22 @@ class _PlateCarreeFormatter(Formatter):
         else:
             number_format = self._degrees_number_format
         return u'{value:{number_format}}{symbol}'.format(
-                value=abs(deg),
-                number_format=number_format,
-                symbol=self._degree_symbol)
+            value=abs(deg),
+            number_format=number_format,
+            symbol=self._degree_symbol)
 
     def _format_minutes(self, mn):
         """Format minutes as an integer"""
         return u'{value:d}{symbol}'.format(
-                value=int(mn),
-                symbol=self._minute_symbol)
+            value=int(mn),
+            symbol=self._minute_symbol)
 
     def _format_seconds(self, sec):
         """Format seconds as an float"""
         return u'{value:{fmt}}{symbol}'.format(
-                value=sec,
-                fmt=self._seconds_num_format,
-                symbol=self._second_symbol)
+            value=sec,
+            fmt=self._seconds_num_format,
+            symbol=self._second_symbol)
 
     def _apply_transform(self, value, target_proj, source_crs):
         """
@@ -289,7 +289,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
-            )
+        )
 
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
@@ -405,7 +405,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
-            )
+        )
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
 

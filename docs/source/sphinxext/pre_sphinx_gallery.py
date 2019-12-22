@@ -37,8 +37,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 from collections import OrderedDict, defaultdict
 import os.path
-import shutil
-import tempfile
 import textwrap
 
 import sphinx_gallery
