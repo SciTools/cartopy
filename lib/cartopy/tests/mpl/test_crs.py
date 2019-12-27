@@ -18,6 +18,7 @@
 from __future__ import (absolute_import, division, print_function)
 
 import matplotlib.pyplot as plt
+from matplotlib.testing.decorators import cleanup
 import pytest
 
 import cartopy.crs as ccrs
@@ -44,3 +45,13 @@ def test_mercator_squashed():
     ax = plt.axes(projection=crs)
     ax.coastlines()
     ax.gridlines()
+
+
+@cleanup
+def test_repr_html():
+    pc = ccrs.PlateCarree()
+    html = pc._repr_html_()
+
+    assert html is not None
+    assert '<svg ' in html
+    assert '<pre>&lt;cartopy.crs.PlateCarree object at ' in html
