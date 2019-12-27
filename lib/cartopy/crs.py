@@ -154,7 +154,10 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return minlon, maxlon
 
     def _repr_html_(self):
-        import cgi
+        if not six.PY2:
+            from html import escape
+        else:
+            from cgi import escape
         try:
             # As matplotlib is not a core cartopy dependency, don't error
             # if it's not available.
@@ -176,7 +179,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         # "Rewind" the buffer to the start and return it as an svg string.
         buf.seek(0)
         svg = buf.read()
-        return '{}<pre>{}</pre>'.format(svg, cgi.escape(repr(self)))
+        return '{}<pre>{}</pre>'.format(svg, escape(repr(self)))
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
