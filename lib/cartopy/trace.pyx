@@ -612,7 +612,7 @@ def project_linear(geometry not None, CRS src_crs not None,
     else:
         interpolator = CartesianInterpolator()
     interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
-    if (6, 1, 1) <= PROJ4_VERSION:
+    if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
         # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
         # See https://github.com/OSGeo/proj#1782.
         lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')

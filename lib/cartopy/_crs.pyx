@@ -121,7 +121,7 @@ def _safe_pj_transform_pre_611(CRS src_crs not None, CRS tgt_crs not None,
                             &x[0], &y[0], NULL)
 
 
-if (6, 1, 1) <= PROJ4_VERSION:
+if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
     _safe_pj_transform = _safe_pj_transform_611
 else:
     _safe_pj_transform = _safe_pj_transform_pre_611
