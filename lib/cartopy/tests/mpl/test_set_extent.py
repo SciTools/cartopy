@@ -19,6 +19,8 @@ from __future__ import (absolute_import, division, print_function)
 
 from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
+import matplotlib.collections as mplcollections
+from matplotlib.patches import Circle
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
@@ -179,4 +181,21 @@ def test_view_lim_default_global(tmpdir):
     expected = np.array([[-180, -90], [180, 90]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected)
+    plt.close()
+
+
+def test_view_lim_autoscale_collections(tmpdir):
+    ax = plt.axes(projection=ccrs.Orthographic(central_longitude=-100))
+
+    patches = []
+    patches.append(Circle((-90, -45), radius=30))
+    patches.append(Circle((-90, 45), radius=30))
+    collection = mplcollections.PatchCollection(patches,
+                                                transform=ccrs.PlateCarree())
+    ax.add_collection(collection)
+    expected = np.array([[-1898550.764068, -6378073.21863],
+                         [3503186.63727968, 6378073.21863]])
+    plt.savefig(str(tmpdir.join('view_lim_autoscale_collection.png')))
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
+                              expected, decimal=1)
     plt.close()

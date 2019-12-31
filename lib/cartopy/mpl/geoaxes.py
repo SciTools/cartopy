@@ -413,7 +413,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # If data has been added (i.e. autoscale hasn't been turned off)
         # then we should autoscale the view.
 
-        if self.get_autoscale_on() and self.ignore_existing_data_limits:
+        if self.get_autoscale_on():
             self.autoscale_view()
 
         if self.background_patch.reclip:
