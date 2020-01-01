@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -28,6 +28,7 @@ import six
 
 import collections
 import contextlib
+import functools
 import warnings
 import weakref
 if not six.PY2:
@@ -278,6 +279,24 @@ class GeoSpine(mspines.Spine):
     def set_position(self, position):
         raise NotImplementedError(
             'GeoSpine does not support changing its position.')
+
+
+def _add_transform(func):
+    """A decorator that adds and validates the transform keyword argument."""
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        transform = kwargs.get('transform', None)
+        if transform is None:
+            transform = self.projection
+        if (isinstance(transform, ccrs.CRS) and
+                not isinstance(transform, ccrs.Projection)):
+            raise ValueError('Invalid transform: Spherical {} '
+                             'is not supported - consider using '
+                             'PlateCarree/RotatedPole.'.format(func.__name__))
+
+        kwargs['transform'] = transform
+        return func(self, *args, **kwargs)
+    return wrapper
 
 
 class GeoAxes(matplotlib.axes.Axes):
@@ -1187,6 +1206,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 regrid_shape = (target_size, int(target_size / desired_aspect))
         return regrid_shape
 
+    @_add_transform
     def imshow(self, img, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
@@ -1223,7 +1243,7 @@ class GeoAxes(matplotlib.axes.Axes):
             Default is ``'lower'``.
 
         """
-        transform = kwargs.pop('transform', None)
+        transform = kwargs.pop('transform')
         if 'update_datalim' in kwargs:
             raise ValueError('The update_datalim keyword has been removed in '
                              'imshow. To hold the data and view limits see '
@@ -1234,9 +1254,7 @@ class GeoAxes(matplotlib.axes.Axes):
         same_projection = (isinstance(transform, ccrs.Projection) and
                            self.projection == transform)
 
-        if transform is None or transform == self.transData or same_projection:
-            if isinstance(transform, ccrs.Projection):
-                transform = transform._as_mpl_transform(self)
+        if transform == self.transData or same_projection:
             result = matplotlib.axes.Axes.imshow(self, img, *args, **kwargs)
         else:
             extent = kwargs.pop('extent', None)
@@ -1457,6 +1475,7 @@ class GeoAxes(matplotlib.axes.Axes):
         with self.hold_limits():
             self.add_patch(background)
 
+    @_add_transform
     def contour(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contour'.
@@ -1467,17 +1486,6 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical contouring is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
 
         self.autoscale_view()
@@ -1487,6 +1495,7 @@ class GeoAxes(matplotlib.axes.Axes):
             result.__class__ = cartopy.mpl.contour.GeoContourSet
         return result
 
+    @_add_transform
     def contourf(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf'.
@@ -1497,18 +1506,9 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical contouring is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
+        t = kwargs['transform']
         if isinstance(t, ccrs.Projection):
             kwargs['transform'] = t = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
-
         # Set flag to indicate correcting orientation of paths if not ccw
         if isinstance(t, mtransforms.Transform):
             for sub_trans, _ in t._iter_break_from_left_to_right():
@@ -1532,6 +1532,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return result
 
+    @_add_transform
     def scatter(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter'.
@@ -1542,19 +1543,12 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        # Keep this bit - even at mpl v1.2
-        if t is None:
-            t = self.projection
-        if hasattr(t, '_as_mpl_transform'):
-            kwargs['transform'] = t._as_mpl_transform(self)
-
         # exclude Geodetic as a valid source CS
-        if (isinstance(kwargs.get('transform', None),
+        if (isinstance(kwargs['transform'],
                        InterProjectionTransform) and
                 kwargs['transform'].source_projection.is_geodetic()):
             raise ValueError('Cartopy cannot currently do spherical '
-                             'contouring. The source CRS cannot be a '
+                             'scatter. The source CRS cannot be a '
                              'geodetic, consider using the cyllindrical form '
                              '(PlateCarree or RotatedPole).')
 
@@ -1562,6 +1556,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
+    @_add_transform
     def pcolormesh(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh'.
@@ -1572,14 +1567,6 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical pcolormesh is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        kwargs.setdefault('transform', t)
         result = self._pcolormesh_patched(*args, **kwargs)
         self.autoscale_view()
         return result
@@ -1768,6 +1755,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return collection
 
+    @_add_transform
     def pcolor(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
@@ -1778,14 +1766,6 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical pcolor is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        kwargs.setdefault('transform', t)
         result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
 
         # Update the datalim for this pcolor.
@@ -1795,6 +1775,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
+    @_add_transform
     def quiver(self, x, y, u, v, *args, **kwargs):
         """
         Plot a field of arrows.
@@ -1838,17 +1819,7 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical quiver is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
+        t = kwargs['transform']
         regrid_shape = kwargs.pop('regrid_shape', None)
         target_extent = kwargs.pop('target_extent',
                                    self.get_extent(self.projection))
@@ -1876,6 +1847,7 @@ class GeoAxes(matplotlib.axes.Axes):
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.quiver(self, x, y, u, v, *args, **kwargs)
 
+    @_add_transform
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
         Plot a field of barbs.
@@ -1919,17 +1891,7 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical barbs are not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
+        t = kwargs['transform']
         regrid_shape = kwargs.pop('regrid_shape', None)
         target_extent = kwargs.pop('target_extent',
                                    self.get_extent(self.projection))
@@ -1957,6 +1919,7 @@ class GeoAxes(matplotlib.axes.Axes):
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.barbs(self, x, y, u, v, *args, **kwargs)
 
+    @_add_transform
     def streamplot(self, x, y, u, v, **kwargs):
         """
         Plot streamlines of a vector flow.
@@ -1987,13 +1950,7 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs.pop('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical streamplot is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
+        t = kwargs.pop('transform')
         # Regridding is required for streamplot, it must have an evenly spaced
         # grid to work correctly. Choose our destination grid based on the
         # density keyword. The grid need not be bigger than the grid used by
