@@ -798,6 +798,7 @@ class PlateCarree(_CylindricalProjection):
 
         return return_value
 
+
 class LambertConformalConic(Projection):
     """
     A Lambert Conformal Conic Projection.
@@ -857,23 +858,22 @@ class LambertConformalConic(Projection):
         self._y_limits = y_limits
         super(LambertConformalConic, self).__init__(proj4_params, globe=globe)
 
-    
     @property
     def threshold(self):
         return 3e3
-    
+
     @property
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LineString([(x0, y0), (x0,y1),
-                                 (x1, y1), (x1, y0),
+        return sgeom.LineString([(x0, y0), (x0,y1), 
+                                 (x1, y1), (x1, y0), 
                                  (x0, y0)])
 
     @property
     def x_limits(self):
         return self._x_limits
-    
+
     @property
     def y_limits(self):
         return self._y_limits
