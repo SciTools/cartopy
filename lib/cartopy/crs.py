@@ -804,7 +804,8 @@ class LambertConformalConic(Projection):
     A Lambert Conformal Conic Projection.
 
     """
-    def __init__(self, central_longitude=-97.5, central_latitude=38.5,
+    def __init__(self,
+                 central_longitude=-97.5, central_latitude=38.5,
                  false_easting=0.0, false_northing=0.0,
                  standard_parallels=None,
                  x_limits=(-2.7e6, 2.7e6),
