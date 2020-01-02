@@ -39,6 +39,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Robert Redl
  * Greg Lucas
  * Sadie Bartholomew
+ * Jonathan Eliashiv
 
 Thank you!
 
