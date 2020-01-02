@@ -107,7 +107,7 @@ LambertConformalConic
     import cartopy.crs as ccrs
 
     plt.figure(figsize=(4, 3))
-    ax = plt.axes(projection.ccrs.LambertConformalConic())
+    ax = plt.axes(projection=ccrs.LambertConformalConic())
     ax.coastlines()
     ax.gridlines()
 
