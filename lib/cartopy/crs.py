@@ -805,7 +805,7 @@ class LambertConformalConic(Projection):
     """
     def __init__(self, central_longitude=-97.5, central_latitude=38.5,
                  false_easting=0.0, false_northing=0.0,
-                 standard_parallels=(38.5, 38.5),
+                 standard_parallels=None,
                  x_limits=(-2.7e6, 2.7e6),
                  y_limits=(-1.59e6, 1.59e6),
                  globe=Globe(ellipse='intl')
@@ -824,7 +824,7 @@ class LambertConformalConic(Projection):
         false_northing: optional
             Y offset from the planar origin in metres. Defaults to 0.
         standard_parallels: optional
-            Standard parallel latitude(s). Defaults to (38.5, 38.5).
+            Standard parallel latitude(s). Defaults to None.
         x_limits: optional
             Standard x limits from the planar origin in metres.
             Defaults to (-2.7e6, 2.7e6).
@@ -836,8 +836,10 @@ class LambertConformalConic(Projection):
             globe with 'intl' ellipse is created.
 
         """
-        n_parallels = len(standard_parallels)
+        if standard_parallels is None:
+            standard_parallels = (central_latitude, central_latitude)
 
+        n_parallels = len(standard_parallels)
         if not 1 <= n_parallels <= 2:
             raise ValueError('1 or 2 standard parallels must be specified. '
                              'Got {} ({})'.format(n_parallels,
