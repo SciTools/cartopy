@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2019, Met Office
+# (C) British Crown Copyright 2015 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
