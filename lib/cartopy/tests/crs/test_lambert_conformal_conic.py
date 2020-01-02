@@ -1,4 +1,4 @@
-# from __future__ import (absolute_import, division, print_function)
+from __future__ import (absolute_import, division, print_function)
 
 from numpy.testing import assert_array_almost_equal
 import pytest
@@ -15,19 +15,23 @@ def test_defaults():
 
 
 def test_specific_region():
-    aus = ccrs.LambertConformalConic(central_longitude=134.489, central_latitude=-23.993,
-                 x_limits=(-2.25e6, 2.25e6), y_limits=(-1.9e6, 1.9e6))
-    aus2 = ccrs.LambertConformalConic(central_longitude=134.489, central_latitude=-23.993,
-                 x_limits=(-2.25e6, 2.25e6), y_limits=(-1.9e6, 1.9e6))
+    aus_kwargs = dict(
+        central_longitude=134.489,
+        central_latitude=-23.993,
+        x_limits=(-2.25e6, 2.25e6), y_limits=(-1.9e6, 1.9e6)
+    )
+    aus = ccrs.LambertConformalConic(**aus_kwargs)
+    aus2 = ccrs.LambertConformalConic(**aus_kwargs)
     default = ccrs.LambertConformalConic()
-    other_args = {'ellps=intl', 'lon_0=134.489', 'lat_0=-23.993', 'lat_1=-23.993',
-                  'lat_2=-23.993' 'units=m', 'x_0=0.0', 'y_0=0.0'}
+    other_args = {'ellps=intl', 'lon_0=134.489', 'lat_0=-23.993',
+                  'lat_1=-23.993', 'lat_2=-23.993' 'units=m',
+                  'x_0=0.0', 'y_0=0.0'}
     check_proj_params('lcc', aus, other_args)
     assert aus == aus2
     assert aus != default
     assert hash(aus) != hash(default)
     assert hash(aus) == hash(aus2)
-    assert_array_almost_equal(aus.x_limits, (-2250000.0000001, 2249999.9999997))
+    assert_array_almost_equal(aus.x_limits, (-2250000.0000001, 2249999.999999))
 
 
 def test_too_many_standard_parallels():
