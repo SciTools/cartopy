@@ -866,8 +866,8 @@ class LambertConformalConic(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LineString([(x0, y0), (x0,y1), 
-                                 (x1, y1), (x1, y0), 
+        return sgeom.LineString([(x0, y0), (x0, y1),
+                                 (x1, y1), (x1, y0),
                                  (x0, y0)])
 
     @property
