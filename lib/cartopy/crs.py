@@ -798,6 +798,84 @@ class PlateCarree(_CylindricalProjection):
 
         return return_value
 
+class LambertConformalConic(Projection):
+    """
+    A Lambert Conformal Conic Projection.
+
+    """
+    def __init__(self, central_longitude=-97.5, central_latitude=38.5,
+                 false_easting=0.0, false_northing=0.0,
+                 standard_parallels=(38.5, 38.5),
+                 x_limits=(-2.7e6, 2.7e6),
+                 y_limits=(-1.59e6, 1.59e6),
+                 globe=Globe(ellipse='intl')
+                 ):
+        """
+        Parameters
+        ----------
+        central_longitude: optional
+            The true longitude of the central meridian in degrees.
+            Defaults to -97.5.
+        central_latitude: optional
+            The true latitude of the planar origin in degrees.
+            Defaults to 38.5.
+        false_easting: optional
+            X offset from the planar origin metres. Defaults to 0.
+        false_northing: optional
+            Y offset from the planar origin in metres. Defaults to 0.
+        standard_parallels: optional
+            Standard parallel latitude(s). Defaults to (38.5, 38.5).
+        x_limits: optional
+            Standard x limits from the planar origin in metres.
+            Defaults to (-2.7e6, 2.7e6).
+        y_limits: optional
+            Standard y limits from the planar origin in metres.
+            Defaults to (-1.59e6, 1.59e6)
+        globe: optional
+            An instance of :class:`cartopy.crs.Globe`. If omitted, a default
+            globe with 'intl' ellipse is created.
+
+        """
+        n_parallels = len(standard_parallels)
+
+        if not 1 <= n_parallels <= 2:
+            raise ValueError('1 or 2 standard parallels must be specified. '
+                             'Got {} ({})'.format(n_parallels,
+                                                  standard_parallels))
+        proj4_params = [('proj', 'lcc'), ('lon_0', central_longitude),
+                        ('lat_0', central_latitude),
+                        ('x_0', false_easting), ('y_0', false_northing),
+                        ('units', 'm')]
+
+        proj4_params.append(('lat_1', standard_parallels[0]))
+        if n_parallels == 2:
+            proj4_params.append(('lat_2', standard_parallels[1]))
+
+        self._x_limits = x_limits
+        self._y_limits = y_limits
+        super(LambertConformalConic, self).__init__(proj4_params, globe=globe)
+
+    
+    @property
+    def threshold(self):
+        return 3e3
+    
+    @property
+    def boundary(self):
+        x0, x1 = self.x_limits
+        y0, y1 = self.y_limits
+        return sgeom.LineString([(x0, y0), (x0,y1),
+                                 (x1, y1), (x1, y0),
+                                 (x0, y0)])
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+    
+    @property
+    def y_limits(self):
+        return self._y_limits
+
 
 class TransverseMercator(Projection):
     """

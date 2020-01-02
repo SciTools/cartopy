@@ -96,6 +96,20 @@ LambertConformal
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
+LambertConformalConic
+---------------------
+
+.. autoclass:: cartopy.crs.LambertConformalConic
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(4, 3))
+    ax = plt.axes(projection.ccrs.LambertConformalConic())
+    ax.coastlines()
+    ax.gridlines()
 
 LambertCylindrical
 ------------------
