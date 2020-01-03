@@ -1290,7 +1290,7 @@ class LambertConformal(Projection):
 
     @property
     def threshold(self):
-        return 1e3
+        return 1e5
 
     @property
     def x_limits(self):
