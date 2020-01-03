@@ -607,7 +607,6 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     y1 -= by
                     x2 += bx
                     y2 += by
-                    y2 += by
                     box = sgeom.box(min(x1, x3), min(y1, y3),
                                     max(x2, x4), max(y2, y4))
 
