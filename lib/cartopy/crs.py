@@ -608,6 +608,8 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     x2 += bx
                     y2 += by
                     y2 += by
+                    box = sgeom.box(min(x1, x3), min(y1, y3),
+                                    max(x2, x4), max(y2, y4))
 
                     # Invert the polygon
                     polygon = box.difference(polygon)
@@ -1163,7 +1165,6 @@ class LambertConformal(Projection):
             The map extends to infinity opposite the central pole
             so we must cut off the map drawing before then.
             A value of 0 will draw half the globe. Defaults to -30.
-            A value of 0 will draw half the globe. Defaults to -30.
             If northern and eastern extents are provided, they will override
             cutoff
         northern_extent: optional
@@ -1182,7 +1183,7 @@ class LambertConformal(Projection):
                 "Must specify both northern_extent and "
                 "eastern_extent to override cutoff."
             )
-        elif globe in None:
+        elif globe is None:
             globe = Globe(ellipse="intl")
 
         proj4_params = [('proj', 'lcc'),
