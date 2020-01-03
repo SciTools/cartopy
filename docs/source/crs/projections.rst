@@ -331,21 +331,6 @@ EuroPP
     ax.gridlines()
 
 
-Conus
------
-.. autoclass:: cartopy.crs.Conus
-
-.. plot::
-
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
-    plt.figure(figsize=(4,3))
-    ax = plt.axes(projection=ccrs.Conus())
-    ax.coastlines()
-    ax.gridlines()
-
-
 Geostationary
 -------------
 

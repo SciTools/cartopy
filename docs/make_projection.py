@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -88,7 +88,7 @@ PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Orthographic': 2, 'UTM': 2, 'AlbersEqualArea': 2,
                   'AzimuthalEquidistant': 2, 'Sinusoidal': 2,
                   'InterruptedGoodeHomolosine': 3, 'RotatedPole': 3,
-                  'OSGB': 4, 'EuroPP': 5,
+                  'OSGB': 4, 'EuroPP': 5, 'Conus': 4,
                   'Geostationary': 6, 'NearsidePerspective': 7,
                   'EckertI': 8.1, 'EckertII': 8.2, 'EckertIII': 8.3,
                   'EckertIV': 8.4, 'EckertV': 8.5, 'EckertVI': 8.6}
