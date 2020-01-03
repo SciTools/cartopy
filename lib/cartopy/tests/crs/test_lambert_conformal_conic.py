@@ -24,8 +24,8 @@ def test_specific_region():
     aus2 = ccrs.LambertConformalConic(**aus_kwargs)
     default = ccrs.LambertConformalConic()
     other_args = {'ellps=intl', 'lon_0=134.489', 'lat_0=-23.993',
-                  'lat_1=-23.993', 'lat_2=-23.993' 'units=m',
-                  'x_0=0.0', 'y_0=0.0'}
+                  'lat_1=-23.993', 'lat_2=-23.993' 'units=m', 'x_0=0.0', 'y_0=0.0'
+                  }
     check_proj_params('lcc', aus, other_args)
     assert aus == aus2
     assert aus != default
