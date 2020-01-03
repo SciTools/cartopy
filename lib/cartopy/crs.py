@@ -1182,8 +1182,6 @@ class LambertConformal(Projection):
                 "Must specify both northern_extent and "
                 "eastern_extent to override cutoff."
             )
-        elif globe is None:
-            globe = Globe(ellipse="intl")
 
         proj4_params = [('proj', 'lcc'),
                         ('lon_0', central_longitude),
