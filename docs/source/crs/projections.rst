@@ -96,20 +96,6 @@ LambertConformal
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
-LambertConformalConic
----------------------
-
-.. autoclass:: cartopy.crs.LambertConformalConic
-
-.. plot::
-
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
-    plt.figure(figsize=(4, 3))
-    ax = plt.axes(projection=ccrs.LambertConformalConic())
-    ax.coastlines()
-    ax.gridlines()
 
 LambertCylindrical
 ------------------
@@ -342,6 +328,21 @@ EuroPP
     plt.figure(figsize=(2.6154, 3))
     ax = plt.axes(projection=ccrs.EuroPP())
     ax.coastlines(resolution='50m')
+    ax.gridlines()
+
+
+Conus
+-----
+.. autoclass:: cartopy.crs.Conus
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(4,3))
+    ax = plt.axes(projection=ccrs.Conus())
+    ax.coastlines()
     ax.gridlines()
 
 

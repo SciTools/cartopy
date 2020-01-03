@@ -607,8 +607,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
                     y1 -= by
                     x2 += bx
                     y2 += by
-                    box = sgeom.box(min(x1, x3), min(y1, y3),
-                                    max(x2, x4), max(y2, y4))
+                    y2 += by
 
                     # Invert the polygon
                     polygon = box.difference(polygon)
@@ -797,87 +796,6 @@ class PlateCarree(_CylindricalProjection):
                         break
 
         return return_value
-
-
-class LambertConformalConic(Projection):
-    """
-    A Lambert Conformal Conic Projection.
-
-    """
-    def __init__(self,
-                 central_longitude=-97.5, central_latitude=38.5,
-                 false_easting=0.0, false_northing=0.0,
-                 standard_parallels=None,
-                 x_limits=(-2.7e6, 2.7e6),
-                 y_limits=(-1.59e6, 1.59e6),
-                 globe=Globe(ellipse='intl')
-                 ):
-        """
-        Parameters
-        ----------
-        central_longitude: optional
-            The true longitude of the central meridian in degrees.
-            Defaults to -97.5.
-        central_latitude: optional
-            The true latitude of the planar origin in degrees.
-            Defaults to 38.5.
-        false_easting: optional
-            X offset from the planar origin metres. Defaults to 0.
-        false_northing: optional
-            Y offset from the planar origin in metres. Defaults to 0.
-        standard_parallels: optional
-            Standard parallel latitude(s). Defaults to None.
-        x_limits: optional
-            Standard x limits from the planar origin in metres.
-            Defaults to (-2.7e6, 2.7e6).
-        y_limits: optional
-            Standard y limits from the planar origin in metres.
-            Defaults to (-1.59e6, 1.59e6)
-        globe: optional
-            An instance of :class:`cartopy.crs.Globe`. If omitted, a default
-            globe with 'intl' ellipse is created.
-
-        """
-        if standard_parallels is None:
-            standard_parallels = (central_latitude, central_latitude)
-
-        n_parallels = len(standard_parallels)
-        if not 1 <= n_parallels <= 2:
-            raise ValueError('1 or 2 standard parallels must be specified. '
-                             'Got {} ({})'.format(n_parallels,
-                                                  standard_parallels))
-        proj4_params = [('proj', 'lcc'), ('lon_0', central_longitude),
-                        ('lat_0', central_latitude),
-                        ('x_0', false_easting), ('y_0', false_northing),
-                        ('units', 'm')]
-
-        proj4_params.append(('lat_1', standard_parallels[0]))
-        if n_parallels == 2:
-            proj4_params.append(('lat_2', standard_parallels[1]))
-
-        self._x_limits = x_limits
-        self._y_limits = y_limits
-        super(LambertConformalConic, self).__init__(proj4_params, globe=globe)
-
-    @property
-    def threshold(self):
-        return 3e3
-
-    @property
-    def boundary(self):
-        x0, x1 = self.x_limits
-        y0, y1 = self.y_limits
-        return sgeom.LineString([(x0, y0), (x0, y1),
-                                 (x1, y1), (x1, y0),
-                                 (x0, y0)])
-
-    @property
-    def x_limits(self):
-        return self._x_limits
-
-    @property
-    def y_limits(self):
-        return self._y_limits
 
 
 class TransverseMercator(Projection):
@@ -1219,7 +1137,8 @@ class LambertConformal(Projection):
     def __init__(self, central_longitude=-96.0, central_latitude=39.0,
                  false_easting=0.0, false_northing=0.0,
                  secant_latitudes=None, standard_parallels=None,
-                 globe=None, cutoff=-30):
+                 globe=None, cutoff=-30, northern_extent=None,
+                 eastern_extent=None):
         """
         Parameters
         ----------
@@ -1244,8 +1163,28 @@ class LambertConformal(Projection):
             The map extends to infinity opposite the central pole
             so we must cut off the map drawing before then.
             A value of 0 will draw half the globe. Defaults to -30.
+            A value of 0 will draw half the globe. Defaults to -30.
+            If northern and eastern extents are provided, they will override
+            cutoff
+        northern_extent: optional
+            Extent in metres of the grid north of the planar origin. The grid
+            will extend the same amount south of the planar origin. Must
+            specify both northern and eastern extents. These will override
+            cutoff.
+        eastern_extent: optional
+            Extent in metres of the grid east of the planar origin. The grid
+            will extend the same amount sound of the planar origin. Must
+            specify both northern and eastern extents. These will override
 
         """
+        if (northern_extent is None) ^ (eastern_extent is None):
+            raise ValueError(
+                "Must specify both northern_extent and "
+                "eastern_extent to override cutoff."
+            )
+        elif globe in None:
+            globe = Globe(ellipse="intl")
+
         proj4_params = [('proj', 'lcc'),
                         ('lon_0', central_longitude),
                         ('lat_0', central_latitude),
@@ -1292,31 +1231,50 @@ class LambertConformal(Projection):
                 poliest_sec = standard_parallels[1]
             plat = 90 if poliest_sec > 0 else -90
 
-        self.cutoff = cutoff
-        n = 91
-        lons = np.empty(n + 2)
-        lats = np.full(n + 2, float(cutoff))
-        lons[0] = lons[-1] = 0
-        lats[0] = lats[-1] = plat
-        if plat == 90:
-            # Ensure clockwise
-            lons[1:-1] = np.linspace(central_longitude + 180 - 0.001,
-                                     central_longitude - 180 + 0.001, n)
+        # If northern extent and eastern extent are not specified, the grid
+        # will encompass the full zonal extent of the globe, and extend
+        # meridionally from the pole to the cutoff
+        if not (northern_extent and eastern_extent):
+            self.cutoff = cutoff
+            n = 91
+            lons = np.empty(n + 2)
+            lats = np.full(n + 2, float(cutoff))
+            lons[0] = lons[-1] = 0
+            lats[0] = lats[-1] = plat
+            if plat == 90:
+                # Ensure clockwise
+                lons[1:-1] = np.linspace(central_longitude + 180 - 0.001,
+                                         central_longitude - 180 + 0.001, n)
+            else:
+                lons[1:-1] = np.linspace(central_longitude - 180 + 0.001,
+                                         central_longitude + 180 - 0.001, n)
+
+            points = self.transform_points(PlateCarree(), lons, lats)
+
+            self._boundary = sgeom.LinearRing(points)
+            mins = np.min(points, axis=0)
+            maxs = np.max(points, axis=0)
+            self._x_limits = mins[0], maxs[0]
+            self._y_limits = mins[1], maxs[1]
         else:
-            lons[1:-1] = np.linspace(central_longitude - 180 + 0.001,
-                                     central_longitude + 180 - 0.001, n)
-
-        points = self.transform_points(PlateCarree(), lons, lats)
-
-        self._boundary = sgeom.LinearRing(points)
-        mins = np.min(points, axis=0)
-        maxs = np.max(points, axis=0)
-        self._x_limits = mins[0], maxs[0]
-        self._y_limits = mins[1], maxs[1]
+            # When northern and eastern extents are specified, the grid will
+            # be restricted to their extents
+            self._x_limits = [-eastern_extent, eastern_extent]
+            self._y_limits = [-northern_extent, northern_extent]
+            self._boundary = sgeom.LineString(
+                [
+                    (-eastern_extent, -northern_extent),
+                    (-eastern_extent, northern_extent),
+                    (eastern_extent, northern_extent),
+                    (eastern_extent, -northern_extent),
+                    (-eastern_extent, -northern_extent),
+                ])
 
     def __eq__(self, other):
         res = super(LambertConformal, self).__eq__(other)
         if hasattr(other, "cutoff"):
+            if not hasattr(self, "cutoff"):
+                return False
             res = res and self.cutoff == other.cutoff
         return res
 
@@ -1324,7 +1282,9 @@ class LambertConformal(Projection):
         return not self == other
 
     def __hash__(self):
-        return hash((self.proj4_init, self.cutoff))
+        if hasattr(self, "cutoff"):
+            return hash((self.proj4_init, self.cutoff))
+        return hash((self.proj4_init, self.boundary))
 
     @property
     def boundary(self):
@@ -1332,7 +1292,7 @@ class LambertConformal(Projection):
 
     @property
     def threshold(self):
-        return 1e5
+        return 1e3
 
     @property
     def x_limits(self):
@@ -1341,6 +1301,22 @@ class LambertConformal(Projection):
     @property
     def y_limits(self):
         return self._y_limits
+
+
+class Conus(LambertConformal):
+    """
+
+    A Lambertial Conformal Conic projection of the continental United States
+
+    """
+
+    def __init__(self):
+        super(Conus, self).__init__(
+            central_longitude=-97.5,
+            central_latitude=38.5,
+            northern_extent=1.59e6,
+            eastern_extent=2.7e6,
+        )
 
 
 class LambertAzimuthalEqualArea(Projection):
