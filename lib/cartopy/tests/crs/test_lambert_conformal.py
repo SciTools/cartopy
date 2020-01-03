@@ -57,8 +57,8 @@ def test_cutoff_override():
         ccrs.LambertConformal(northern_extent=2e7)
         ccrs.LambertConformal(eastern_extent=1e5)
     crs = ccrs.LambertConformal(northern_extent=2e7, eastern_extent=3e7)
-    assert crs.y_limits == (-3e7, 3e7)
-    assert crs.x_limits == (-2e7, 2e7)
+    assert crs.y_limits == (-2e7, 2e7)
+    assert crs.x_limits == (-3e7, 3e7)
 
 
 def test_specific_lambert():
