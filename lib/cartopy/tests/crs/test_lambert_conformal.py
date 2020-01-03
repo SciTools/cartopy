@@ -54,8 +54,8 @@ def test_default_with_cutoff():
 def test_cutoff_override():
     with pytest.raises(ValueError, match='Must specify both northern_extent '
                        'and eastern_extent to override cutoff.'):
-        _ = ccrs.LambertConformal(northern_extent=2e7)
-        _ = ccrs.LambertConformal(eastern_extent=1e5)
+        ccrs.LambertConformal(northern_extent=2e7)
+        ccrs.LambertConformal(eastern_extent=1e5)
     crs = ccrs.LambertConformal(northern_extent=2e7, eastern_extent=3e7)
     assert crs.y_limits == (-3e7, 3e7)
     assert crs.x_limits == (-2e7, 2e7)

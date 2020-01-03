@@ -1284,7 +1284,7 @@ class LambertConformal(Projection):
     def __hash__(self):
         if hasattr(self, "cutoff"):
             return hash((self.proj4_init, self.cutoff))
-        return hash((self.proj4_init, *self.x_limits, *self.y_limits))
+        return hash((self.proj4_init, *[*self.x_limits, *self.y_limits]))
 
     @property
     def boundary(self):
