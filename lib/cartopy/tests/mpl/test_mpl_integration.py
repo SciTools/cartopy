@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -446,7 +446,7 @@ def test_pcolormesh_goode_wrap():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_mercator_wrap'])
+@ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
 def test_pcolormesh_mercator_wrap():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
