@@ -50,7 +50,7 @@ Required dependencies
 In order to install Cartopy, or to access it's basic functionality, it will be
 necessary to first install **geos**, **numpy**, **cython**, **shapely**,
 **pyshp** and **six**. Many of these packages can be installed using pip or
-other package managers such as apt-get (linux) and brew (macos). Many of these
+other package managers such as apt-get (Linux) and brew (macOS). Many of these
 dependencies are built as part of Cartopy's conda distribution, and the recipes
 for these packages can be found at https://github.com/conda-forge/feedstocks.
 
@@ -77,15 +77,21 @@ Further information about the required dependencies can be found here:
     array object.
 
 **GEOS** 3.3.3 or later (https://trac.osgeo.org/geos/)
+    GEOS is an API of spatial predicates and functions for processing geometry
+    written in C++.
 
 **Shapely** 1.5.6 or later (https://github.com/Toblerity/Shapely)
+    Python package for the manipulation and analysis of planar geometric
+    objects.
 
 **pyshp** 2.0 or later (https://pypi.python.org/pypi/pyshp)
+    Pure Python read/write support for ESRI Shapefile format.
 
 **PROJ** 4.9.0 or later (https://proj4.org/)
+    Cartographic Projections library.
 
 **six** 1.3.0 or later (https://pypi.python.org/pypi/six)
-
+    Python 2 and 3 compatibility.
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
@@ -93,17 +99,12 @@ To make the most of Cartopy by enabling additional functionality, you may want
 to install these optional dependencies.
 
 **Matplotlib** 1.5.1 or later (https://matplotlib.org/)
-    Python package required for any graphical capabilities.
+    Python package for 2D plotting. Python package required for any
+    graphical capabilities.
 
-<<<<<<< HEAD
 **GDAL** version 1.10.0 (https://gdal.org/)
     GDAL is a translator library for raster and vector geospatial data formats,
     which has powerful data transformation and processing capabilities.
-=======
-**GDAL** version 1.10.0 (http://www.gdal.org/)
-    A translator library for raster and vector geospatial data formats
-    that has powerful data transformation and processing capabilities.
->>>>>>> Additional uptdates to INSTALL documenation
 
 **Pillow** 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
     A popular fork of PythonImagingLibrary.
@@ -113,18 +114,18 @@ to install these optional dependencies.
 
 **pykdtree** 1.2.2 or later (https://github.com/storpipfugl/pykdtree)
     A fast kd-tree implementation that is used for faster warping
-    of images that in SciPy.
+    of images than SciPy.
 
 **SciPy** 0.10 or later (https://www.scipy.org/)
     A Python package for scientific computing.
 
 **OWSLib** 0.8.7 (https://pypi.python.org/pypi/OWSLib)
      A Python package for client programming with the Open Geospatial
-     Consortium (OGC) web service, and which gives access to cartopy ogc
+     Consortium (OGC) web service, and which gives access to Cartopy ogc
      clients.
 
 **Fiona** 1.0 or later (https://github.com/Toblerity/Fiona)
-    A Python package for reading shapefiles that is faster than the pyshp.
+    A Python package for reading shapefiles that is faster than pyshp.
 
 
 Testing Dependencies
@@ -135,7 +136,8 @@ These packages are required for the full Cartopy test suite to run.
     A platform independent file lock for Python.
 
 **mock** 1.0.1 (https://pypi.python.org/pypi/mock/)
-    Python mocking and patching package for testing.
+    Python mocking and patching package for testing. Note that this package
+    is only required to support the Cartopy unit tests.
 
 **pytest** 3.1.0 or later (https://docs.pytest.org/en/latest/)
     Python package for software testing.
