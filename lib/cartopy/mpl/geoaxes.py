@@ -1223,20 +1223,30 @@ class GeoAxes(matplotlib.axes.Axes):
             Default is ``'lower'``.
 
         """
-        transform = kwargs.pop('transform', None)
         if 'update_datalim' in kwargs:
             raise ValueError('The update_datalim keyword has been removed in '
                              'imshow. To hold the data and view limits see '
                              'GeoAxes.hold_limits.')
 
+        transform = kwargs.pop('transform', None)
+        extent = kwargs.get('extent', None)
         kwargs.setdefault('origin', 'lower')
 
         same_projection = (isinstance(transform, ccrs.Projection) and
                            self.projection == transform)
+        # Only take the shortcut path if the image is within the current
+        # bounds (+/- threshold) of the projection
+        x0, x1 = self.projection.x_limits
+        y0, y1 = self.projection.y_limits
+        eps = self.projection.threshold
+        inside_bounds = (extent is None or
+                         (x0 - eps <= extent[0] <= x1 + eps and
+                          x0 - eps <= extent[1] <= x1 + eps and
+                          y0 - eps <= extent[2] <= y1 + eps and
+                          y0 - eps <= extent[3] <= y1 + eps))
 
-        if transform is None or transform == self.transData or same_projection:
-            if isinstance(transform, ccrs.Projection):
-                transform = transform._as_mpl_transform(self)
+        if ((transform is None) or (transform == self.transData) or
+                (same_projection and inside_bounds)):
             result = matplotlib.axes.Axes.imshow(self, img, *args, **kwargs)
         else:
             extent = kwargs.pop('extent', None)
