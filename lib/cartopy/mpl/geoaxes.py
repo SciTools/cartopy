@@ -1675,9 +1675,6 @@ class GeoAxes(matplotlib.axes.Axes):
                                ccrs._WarpedRectangularProjection,
                                ccrs.InterruptedGoodeHomolosine,
                                ccrs.Mercator,
-                               ccrs.LambertAzimuthalEqualArea,
-                               ccrs.AzimuthalEquidistant,
-                               ccrs.TransverseMercator,
                                ccrs.Stereographic)
             if isinstance(t, wrap_proj_types) and \
                     isinstance(self.projection, wrap_proj_types):
