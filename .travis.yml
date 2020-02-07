@@ -93,6 +93,9 @@ script:
 
 after_success:
   - if [[ "$NAME" == "Latest everything"* ]]; then
+      if [[ "$PYTHON_VERSION" == 2* ]]; then
+          coverage combine;
+      fi;
       coveralls;
     fi
 
