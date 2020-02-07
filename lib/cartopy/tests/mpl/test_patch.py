@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2018, Met Office
+# (C) British Crown Copyright 2015 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -26,14 +26,15 @@ import cartopy.mpl.patch as cpatch
 
 
 class Test_path_to_geos(object):
-    def test_empty_polyon(self):
+    def test_empty_polygon(self):
         p = Path([[0, 0], [0, 0], [0, 0], [0, 0],
-                  [1, 2], [1, 2], [1, 2], [1, 2]],
-                 codes=[1, 2, 2, 79,
-                        1, 2, 2, 79])
+                  [1, 2], [1, 2], [1, 2], [1, 2],
+                  # The vertex for CLOSEPOLY should be ignored.
+                  [2, 3], [2, 3], [2, 3], [42, 42]],
+                 codes=[1, 2, 2, 79] * 3)
         geoms = cpatch.path_to_geos(p)
-        assert [type(geom) for geom in geoms] == [sgeom.Point, sgeom.Point]
-        assert len(geoms) == 2
+        assert [type(geom) for geom in geoms] == [sgeom.Point] * 3
+        assert len(geoms) == 3
 
     @pytest.mark.skipif(matplotlib.__version__ < '2.2.0',
                         reason='Paths may not be closed with old Matplotlib.')

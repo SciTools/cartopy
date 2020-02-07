@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -166,6 +166,9 @@ def path_to_geos(path, force_ccw=False):
     for path_verts, path_codes in zip(verts_split, codes_split):
         if len(path_verts) == 0:
             continue
+
+        if path_codes[-1] == Path.CLOSEPOLY:
+            path_verts[-1, :] = path_verts[0, :]
 
         verts_same_as_first = np.all(path_verts[0, :] == path_verts[1:, :],
                                      axis=1)
