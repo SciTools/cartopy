@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -1245,8 +1245,8 @@ class GeoAxes(matplotlib.axes.Axes):
                           y0 - eps <= extent[2] <= y1 + eps and
                           y0 - eps <= extent[3] <= y1 + eps))
 
-        if ((transform is None) or (transform == self.transData) or
-                (same_projection and inside_bounds)):
+        if (transform is None or transform == self.transData or
+                same_projection and inside_bounds):
             result = matplotlib.axes.Axes.imshow(self, img, *args, **kwargs)
         else:
             extent = kwargs.pop('extent', None)
