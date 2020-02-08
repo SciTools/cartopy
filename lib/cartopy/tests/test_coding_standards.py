@@ -1,7 +1,8 @@
 # Copyright Cartopy Contributors
 #
 # This file is part of Cartopy and is released under the LGPL license.
-# See LICENSE in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -47,7 +48,8 @@ LICENSE_TEMPLATE_v2 = """
 # Copyright Cartopy Contributors
 #
 # This file is part of Cartopy and is released under the LGPL license.
-# See LICENSE in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """.strip()
 LICENSE_RE_PATTERN_v2 = re.escape(LICENSE_TEMPLATE_v2)
 LICENSE_RE_v2 = re.compile(SHEBANG_PATTERN + LICENSE_RE_PATTERN_v2,
