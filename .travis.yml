@@ -48,9 +48,14 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
-  - if [[ "$NAME" == "Latest everything"* ]]; then
+  - |
+    if [[ "$NAME" == "Latest everything"* ]]; then
         PACKAGES="$PACKAGES pytest-cov coveralls";
         export CYTHON_COVERAGE=1;
+        if [[ "$PYTHON_VERSION" == 2* ]]; then
+            # Latest available pytest-forked requires a newer pytest than available.
+            PACKAGES="$PACKAGES pytest-forked<1.1.0"
+        fi
     fi
   - conda create -n $ENV_NAME python=$PYTHON_VERSION $PACKAGES
   - source activate $ENV_NAME
