@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -149,6 +149,16 @@ def test_imshow_projected():
     ax.set_extent(img_extent, crs=source_proj)
     ax.coastlines(resolution='50m')
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
+
+
+def test_imshow_wrapping():
+    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0.0))
+    # Set the extent outside of the current projection domain to ensure
+    # it is wrapped back to the (-180, 180) extent of the projection
+    ax.imshow(np.random.random((10, 10)), transform=ccrs.PlateCarree(),
+              extent=(0, 360, -90, 90))
+
+    assert ax.get_xlim() == (-180, 180)
 
 
 @pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
