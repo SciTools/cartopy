@@ -437,16 +437,10 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.imshow(img, extent=extent, origin=origin,
                             transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
-        self._cachedRenderer = renderer
         return matplotlib.axes.Axes.draw(self, renderer=renderer,
                                          inframe=inframe)
 
     def _update_title_position(self, renderer):
-        """
-        Update the title position based on the bounding box enclosing
-        all the ticklabels and x-axis spine and xlabel...
-
-        """
         matplotlib.axes.Axes._update_title_position(self, renderer)
         if not self._gridliners:
             return
@@ -744,7 +738,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return geom_in_crs
 
-    def set_extent(self, extents, crs=None, clip=False):
+    def set_extent(self, extents, crs=None):
         """
         Set the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
@@ -756,9 +750,6 @@ class GeoAxes(matplotlib.axes.Axes):
         ----------
         extents
             Tuple of floats representing the required extent (x0, x1, y0, y1).
-
-        clip: bool
-            Clip map boundary to match exactly this extent.
         """
         # TODO: Implement the same semantics as plt.xlim and
         # plt.ylim - allowing users to set None for a minimum and/or
@@ -783,25 +774,6 @@ class GeoAxes(matplotlib.axes.Axes):
             boundary = self.projection.boundary
             if boundary.equals(domain_in_crs):
                 projected = boundary
-
-        if clip:
-
-            # compute coordinates of the clipping polygon as two 1D arrays
-            n = 100
-            x = np.linspace(x1, x2, n)
-            y = np.linspace(y1, y2, n)
-            xx = np.concatenate((x, [x[-1]]*n, x[::-1], [x[0]]*n))
-            yy = np.concatenate(([y[0]]*n, y, [y[-1]]*n, y[::-1]))
-
-            # project the coordinates and create the path object
-            if crs is not None and crs != self.projection:
-                xy = self.projection.transform_points(crs, xx, yy)[:, :2]
-            else:
-                xy = np.array([xx, yy]).T
-            path = mpath.Path(xy)
-
-            # set it as a boundary
-            self.set_boundary(path)
 
         if projected is None:
             projected = self.projection.project_geometry(domain_in_crs, crs)
@@ -1314,21 +1286,20 @@ class GeoAxes(matplotlib.axes.Axes):
         xlocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the meridian gridlines in the
-            coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the gridlines in the
+            x-coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
         ylocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the parallel gridlines in the
-            coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the gridlines in the
+            y-coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
         dms: bool
             When default longitude and latitude locators and formatters are
-            used, ticks are able to stop on minutes and seconds if minutes
-            is set to True, and not fraction of degrees.
-            This keyword is passed to
-            :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
+            used, ticks are able to stop on minutes and seconds if minutes is
+            set to True, and not fraction of degrees. This keyword is passed
+            to :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
             if xlocs and ylocs are explicitly set.
         x_inline: optional
             Toggle whether the x labels drawn should be inline.
@@ -1337,25 +1308,32 @@ class GeoAxes(matplotlib.axes.Axes):
         auto_inline: optional
             Set x_inline and y_inline automatically based on projection
 
+        Keyword Parameters
+        ------------------
+        **kwargs
+            All other keywords control line properties.  These are passed
+            through to :class:`matplotlib.collections.Collection`.
+
         Returns
         -------
         gridliner
             A :class:`cartopy.mpl.gridliner.Gridliner` instance.
 
-        Note
-        ----
-            All other keywords control line properties.  These are passed
-            through to :class:`matplotlib.collections.Collection`.
-
+        Notes
+        -----
+        The "x" and "y" for locations and inline settings do not necessarily
+        correspond to X and Y, but to the first and second coordinates of the
+        specified CRS. For the common case of PlateCarree gridlines, these
+        correspond to longitudes and latitudes. Depending on the projection
+        used for the map, meridians and parallels can cross both the X axis and
+        the Y axis.
         """
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
-        mlocs = kwargs.pop('mlocs', xlocs)
-        plocs = kwargs.pop('plocs', ylocs)
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels, xlocator=mlocs,
-            ylocator=plocs, collection_kwargs=kwargs, dms=dms,
+            self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
+            ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
             x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline)
         self._gridliners.append(gl)
         return gl
