@@ -47,6 +47,7 @@ def test_mercator_squashed():
     ax.gridlines()
 
 
+@pytest.mark.natural_earth
 @cleanup
 def test_repr_html():
     pc = ccrs.PlateCarree()
