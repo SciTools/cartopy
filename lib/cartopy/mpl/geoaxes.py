@@ -1760,7 +1760,7 @@ class GeoAxes(matplotlib.axes.Axes):
                         # so we need to hide them
                         if t is self.projection:
                             collection._wrapped_collection_fix.\
-                            set_visible(False)
+                                set_visible(False)
 
             # Clip the QuadMesh to the projection boundary, which is required
             # to keep the shading inside the projection bounds.
