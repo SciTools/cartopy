@@ -36,6 +36,7 @@ from cartopy.mpl.ticker import (
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
+classic_formatter = mticker.ScalarFormatter
 
 _DEGREE_SYMBOL = u'\u00B0'
 _X_INLINE_PROJS = (
@@ -202,13 +203,19 @@ class Gridliner(object):
             self.ylocator = classic_locator
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lon labels.
-        if not xformatter and isinstance(crs, cartopy.crs.PlateCarree):
-            xformatter = LongitudeFormatter(dms=dms)
+        if xformatter is None:
+            if isinstance(crs, cartopy.crs.PlateCarree):
+                xformatter = LongitudeFormatter(dms=dms)
+            else:
+                xformatter = classic_formatter()
         self.xformatter = xformatter
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
-        if not yformatter and isinstance(crs, cartopy.crs.PlateCarree):
-            yformatter = LatitudeFormatter(dms=dms)
+        if yformatter is None:
+            if isinstance(crs, cartopy.crs.PlateCarree):
+                yformatter = LatitudeFormatter(dms=dms)
+            else:
+                yformatter = classic_formatter()
         self.yformatter = yformatter
 
         #: Whether to draw labels on the top of the map.
