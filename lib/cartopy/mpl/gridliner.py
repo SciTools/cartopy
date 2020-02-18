@@ -146,12 +146,14 @@ class Gridliner(object):
             A :class:`matplotlib.ticker.Formatter` instance to format labels
             for x-coordinate gridlines. It defaults to None, which implies the
             use of a :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
-            with the ``dms`` argument.
+            with the ``dms`` argument, if the crs is of
+            :class:`~cartopy.crs.PlateCarree` type.
         yformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format labels
             for y-coordinate gridlines. It defaults to None, which implies the
             use of a :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
-            with the ``dms`` argument.
+            with the ``dms`` argument, if the crs is of
+            :class:`~cartopy.crs.PlateCarree` type.
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
@@ -200,10 +202,14 @@ class Gridliner(object):
             self.ylocator = classic_locator
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lon labels.
-        self.xformatter = xformatter or LongitudeFormatter(dms=dms)
+        if not xformatter and isinstance(crs, cartopy.crs.PlateCarree):
+            xformatter = LongitudeFormatter(dms=dms)
+        self.xformatter = xformatter
 
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
-        self.yformatter = yformatter or LatitudeFormatter(dms=dms)
+        if not yformatter and isinstance(crs, cartopy.crs.PlateCarree):
+            yformatter = LatitudeFormatter(dms=dms)
+        self.yformatter = yformatter
 
         #: Whether to draw labels on the top of the map.
         self.top_labels = draw_labels
