@@ -1754,6 +1754,14 @@ class GeoAxes(matplotlib.axes.Axes):
                         # this method
                         collection._wrapped_collection_fix = pcolor_col
 
+                        # if t is self.projection and
+                        # there are overlapping cells
+                        # then pcolor won't work for those cells
+                        # so we need to hide them
+                        if t is self.projection:
+                            collection._wrapped_collection_fix.\
+                            set_visible(False)
+
             # Clip the QuadMesh to the projection boundary, which is required
             # to keep the shading inside the projection bounds.
             collection.set_clip_path(self.background_patch)
