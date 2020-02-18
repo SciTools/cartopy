@@ -639,8 +639,23 @@ class Gridliner(object):
                         else matplotlib.rc_params['xtick.major.pad'])
             ypadding = (self.ypadding if self.ypadding is not None
                         else matplotlib.rc_params['ytick.major.pad'])
-            dx = ypadding * np.cos(angle * np.pi / 180)
-            dy = xpadding * np.sin(angle * np.pi / 180)
+
+            angle = ((angle+180) % 360 - 180) * np.pi / 180
+            tangle = np.tan(angle)
+            cangle = np.arctan2(xpadding, ypadding)
+            if abs(angle) < cangle:  # right
+                dx = ypadding
+                dy = dx * tangle
+            elif abs(angle) > (np.pi - cangle):  # left
+                dx = -ypadding
+                dy = dx * tangle
+            elif angle >= cangle:  # top
+                dy = xpadding
+                dx = dy / tangle
+            else:  # bottom
+                dy = -xpadding
+                dx = dy / tangle
+
             transform = mtrans.offset_copy(
                 self.axes.transData, self.axes.figure,
                 x=dx, y=dy, units='dots')
