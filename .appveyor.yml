@@ -2,7 +2,7 @@ environment:
     matrix:
         - PYTHON_VERSION: "3.6"
           CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
-          PACKAGES: "cython numpy matplotlib-base proj4 pykdtree scipy"
+          PACKAGES: "cython numpy matplotlib-base proj pykdtree scipy"
         - PYTHON_VERSION: "2.7"
           CONDA_INSTALL_LOCN: "C:\\Miniconda-x64"
           PACKAGES: "cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 mock msinttypes futures"

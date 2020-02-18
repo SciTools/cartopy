@@ -242,7 +242,7 @@ def get_proj_libraries():
     This function gets the PROJ libraries to cythonize with
     """
     proj_libraries = ["proj"]
-    if os.name == "nt" and proj_version >= (6, 0, 0):
+    if os.name == "nt" and (6, 0, 0) <= proj_version < (6, 3, 0):
         proj_libraries = [
             "proj_{}_{}".format(proj_version[0], proj_version[1])
         ]
