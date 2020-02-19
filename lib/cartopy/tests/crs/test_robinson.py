@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# (C) British Crown Copyright 2013 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -33,7 +33,12 @@ _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
 # Increase tolerance if using older proj releases
-_TOL = -1 if ccrs.PROJ4_VERSION < (4, 9) else 7
+if ccrs.PROJ4_VERSION >= (6, 3, 1):
+    _TRANSFORM_TOL = 7
+elif ccrs.PROJ4_VERSION >= (4, 9):
+    _TRANSFORM_TOL = 0
+else:
+    _TRANSFORM_TOL = -1
 _LIMIT_TOL = -1  # if ccrs.PROJ4_VERSION < (5, 2, 0) else 7
 
 
@@ -123,8 +128,8 @@ def test_transform_point():
 
     # this way has always worked
     result = _CRS_ROB.transform_point(35.0, 70.0, _CRS_PC)
-    assert_array_almost_equal(result, (2376187.27182751, 7275317.81573085),
-                              _TOL)
+    assert_array_almost_equal(result, (2376187.2182271, 7275318.1162980),
+                              _TRANSFORM_TOL)
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_point(np.nan, 70.0, _CRS_PC)
@@ -147,14 +152,16 @@ def test_transform_points():
                                        np.array([35.0]),
                                        np.array([70.0]))
     assert_array_almost_equal(result,
-                              [[2376187.27182751, 7275317.81573085, 0]], _TOL)
+                              [[2376187.2182271, 7275318.1162980, 0]],
+                              _TRANSFORM_TOL)
 
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
                                        np.array([70.0]),
                                        np.array([0.0]))
     assert_array_almost_equal(result,
-                              [[2376187.27182751, 7275317.81573085, 0]], _TOL)
+                              [[2376187.2182271, 7275318.1162980, 0]],
+                              _TRANSFORM_TOL)
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_points(_CRS_PC,
