@@ -117,7 +117,7 @@ def test_central_longitude(lon):
 def test_transform_point():
     """
     Mostly tests the workaround for a specific problem.
-    Problem report in: https://github.com/SciTools/cartopy/issues/23
+    Problem report in: https://github.com/SciTools/cartopy/issues/232
     Fix covered in: https://github.com/SciTools/cartopy/pull/277
     """
 
@@ -138,7 +138,7 @@ def test_transform_point():
 def test_transform_points():
     """
     Mostly tests the workaround for a specific problem.
-    Problem report in: https://github.com/SciTools/cartopy/issues/23
+    Problem report in: https://github.com/SciTools/cartopy/issues/232
     Fix covered in: https://github.com/SciTools/cartopy/pull/277
     """
 
