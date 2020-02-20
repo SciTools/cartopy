@@ -1708,7 +1708,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                       stacklevel=3)
 
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
-                    # a shape of (Ny, Nx-1) and pts has a shape of (Ny*Nx, 2)
+                    # a shape of (Ny-1, Nx-1) and pts has a shape of (Ny*Nx, 2)
 
                     mask = np.zeros(C.shape, dtype=np.bool)
 
