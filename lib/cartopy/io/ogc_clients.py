@@ -122,7 +122,8 @@ def _warped_located_image(image, source_projection, source_extent,
     else:
         # Convert Image to numpy array (flipping so that origin
         # is 'lower').
-        # convert to RGBA to keep the color palette
+        # convert to RGBA to keep the color palette in the regrid process
+        # if any
         img, extent = warp_array(np.asanyarray(image.convert('RGBA'))[::-1],
                                  source_proj=source_projection,
                                  source_extent=source_extent,
@@ -132,12 +133,11 @@ def _warped_located_image(image, source_projection, source_extent,
                                  target_extent=output_extent,
                                  mask_extrapolated=True)
 
-        # Convert arrays with masked RGB(A) values to non-masked RGBA
+        # Convert arrays with masked RGBA values to non-masked RGBA
         # arrays, setting the alpha channel to zero for masked values.
         # This avoids unsightly grey boundaries appearing when the
         # extent is limited (i.e. not global).
         if np.ma.is_masked(img):
-            # RGBA
             img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
                                     img[:, :, 3])
             img = img.data
@@ -563,7 +563,6 @@ class WMTSRasterSource(RasterSource):
             Preferred maximum pixel width or height in Axes coordinates.
 
         """
-
         # Find which tile matrix has the appropriate resolution.
         tile_matrix_set = wmts.tilematrixsets[matrix_set_name]
         tile_matrices = tile_matrix_set.tilematrix.values()
