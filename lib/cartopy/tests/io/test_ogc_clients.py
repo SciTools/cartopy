@@ -103,7 +103,7 @@ class TestWMSRasterSource(object):
         # Patch dict of known Proj->SRS mappings so that it does
         # not include any of the available SRSs from the WMS.
         with mock.patch.dict('cartopy.io.ogc_clients._CRS_TO_OGC_SRS',
-                             {ccrs.OSNI(): 'EPSG:29901'},
+                             {ccrs.OSNI(approx=True): 'EPSG:29901'},
                              clear=True):
             msg = 'not available'
             with pytest.raises(ValueError, match=msg):
@@ -147,6 +147,7 @@ class TestWMSRasterSource(object):
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 class TestWMTSRasterSource(object):
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'

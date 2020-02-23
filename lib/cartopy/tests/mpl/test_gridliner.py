@@ -17,7 +17,6 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import pytest
@@ -43,27 +42,28 @@ TEST_PROJS = [
     ccrs.Sinusoidal,
     ccrs.Stereographic,
     ccrs.InterruptedGoodeHomolosine,
-    ccrs.RotatedPole,
-    ccrs.OSGB,
+    (ccrs.RotatedPole,
+     dict(pole_longitude=180.0,
+          pole_latitude=36.0,
+          central_rotated_longitude=-106.0,
+          globe=ccrs.Globe(semimajor_axis=6370000,
+                           semiminor_axis=6370000))),
+    (ccrs.OSGB, dict(approx=False)),
     ccrs.EuroPP,
     ccrs.Geostationary,
     ccrs.NearsidePerspective,
     ccrs.Gnomonic,
     ccrs.LambertAzimuthalEqualArea,
     ccrs.NorthPolarStereo,
-    ccrs.OSNI,
+    (ccrs.OSNI, dict(approx=False)),
     ccrs.SouthPolarStereo,
 ]
 
-RP = ccrs.RotatedPole(pole_longitude=180.0,
-                      pole_latitude=36.0,
-                      central_rotated_longitude=-106.0,
-                      globe=ccrs.Globe(semimajor_axis=6370000,
-                                       semiminor_axis=6370000))
-
 
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner1'])
+@ImageTesting(['gridliner1'],
+              # Robinson projection is slightly better in Proj 6+.
+              tolerance=0.66 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -74,16 +74,16 @@ def test_gridliner():
     ax.coastlines()
     ax.gridlines(linestyle=':')
 
-    ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB())
+    ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB(approx=False))
     ax.set_global()
     ax.coastlines()
     ax.gridlines(linestyle=':')
 
-    ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB())
+    ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB(approx=False))
     ax.set_global()
     ax.coastlines()
     ax.gridlines(ccrs.PlateCarree(), color='blue', linestyle='-')
-    ax.gridlines(ccrs.OSGB(), linestyle=':')
+    ax.gridlines(ccrs.OSGB(approx=False), linestyle=':')
 
     ax = plt.subplot(nx, ny, 4, projection=ccrs.PlateCarree())
     ax.set_global()
@@ -94,7 +94,7 @@ def test_gridliner():
     ax = plt.subplot(nx, ny, 5, projection=ccrs.PlateCarree())
     ax.set_global()
     ax.coastlines()
-    osgb = ccrs.OSGB()
+    osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
 
@@ -106,7 +106,7 @@ def test_gridliner():
     ax = plt.subplot(nx, ny, 7, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     ax.coastlines()
-    osgb = ccrs.OSGB()
+    osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
 
@@ -133,20 +133,50 @@ def test_gridliner_specified_lines():
     assert gl.ylocator.tick_values(None, None).tolist() == parallels
 
 
-# The tolerance on this test is particularly high because of the high number
+# The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
+grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = 0.5
 if MPL_VERSION >= '2.0':
     grid_label_image = 'gridliner_labels'
+    if ccrs.PROJ4_VERSION < (4, 9, 3):
+        # A 0-longitude label is missing on older Proj versions.
+        grid_label_tol = 1.8
     grid_label_inline_image = 'gridliner_labels_inline'
     grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
+    if ccrs.PROJ4_VERSION == (4, 9, 1):
+        # AzimuthalEquidistant was previously broken.
+        grid_label_inline_tol = 7.9
+        grid_label_inline_usa_tol = 7.7
+    elif ccrs.PROJ4_VERSION < (5, 0, 0):
+        # Stereographic was previously broken.
+        grid_label_inline_tol = 6.4
+        grid_label_inline_usa_tol = 4.0
 else:
     grid_label_image = 'gridliner_labels_1.5'
+    if ccrs.PROJ4_VERSION >= (4, 9, 3):
+        # A 0-longitude label is visible on newer Proj versions.
+        grid_label_tol = 1.7
     grid_label_inline_image = 'gridliner_labels_inline_1.5'
     grid_label_inline_usa_image = 'gridliner_labels_inline_usa_1.5'
+    if ccrs.PROJ4_VERSION >= (5, 0, 0):
+        # Stereographic was fixed, but test image was not updated.
+        grid_label_inline_tol = 7.9
+        grid_label_inline_usa_tol = 7.8
+    elif ccrs.PROJ4_VERSION >= (4, 9, 2):
+        # AzimuthalEquidistant was fixed, but test image was not updated.
+        grid_label_inline_tol = 5.4
+        grid_label_inline_usa_tol = 7.2
+if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
+    # Several projections are broken in these versions, so not plotted.
+    grid_label_inline_tol += 5.1
+    grid_label_inline_usa_tol += 5.4
+elif (6, 0, 0) <= ccrs.PROJ4_VERSION:
+    # Better Robinson projection causes some text movement.
+    grid_label_inline_tol += 1.1
 
 
 @pytest.mark.natural_earth
-@ImageTesting([grid_label_image])
+@ImageTesting([grid_label_image], tolerance=grid_label_tol)
 def test_grid_labels():
     fig = plt.figure(figsize=(10, 10))
 
@@ -216,22 +246,31 @@ def test_grid_labels():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([grid_label_inline_image])
+@ImageTesting([grid_label_inline_image], tolerance=grid_label_inline_tol)
 def test_grid_labels_inline():
     plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
-        if isinstance(proj(), ccrs.RotatedPole):
-            ax = plt.subplot(7, 4, i, projection=RP)
+        if isinstance(proj, tuple):
+            proj, kwargs = proj
         else:
-            ax = plt.subplot(7, 4, i, projection=proj())
-        ax.gridlines(draw_labels=True, auto_inline=True)
+            kwargs = {}
+        ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
+        if (ccrs.PROJ4_VERSION[:2] == (5, 0) and
+                proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
+                         ccrs.Geostationary, ccrs.NearsidePerspective)):
+            # Above projections are broken, so skip labels.
+            # Add gridlines anyway to minimize image differences.
+            ax.gridlines()
+        else:
+            ax.gridlines(draw_labels=True, auto_inline=True)
         ax.coastlines()
         ax.set_title(proj, y=1.075)
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
 @pytest.mark.natural_earth
-@ImageTesting([grid_label_inline_usa_image])
+@ImageTesting([grid_label_inline_usa_image],
+              tolerance=grid_label_inline_usa_tol)
 def test_grid_labels_inline_usa():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -239,16 +278,24 @@ def test_grid_labels_inline_usa():
     bottom = 24.7433195  # south lat
     plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
-        if isinstance(proj(), ccrs.RotatedPole):
-            ax = plt.subplot(7, 4, i, projection=RP)
+        if isinstance(proj, tuple):
+            proj, kwargs = proj
         else:
-            ax = plt.subplot(7, 4, i, projection=proj())
+            kwargs = {}
+        ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
         try:
             ax.set_extent([left, right, bottom, top],
                           crs=ccrs.PlateCarree())
         except Exception:
             pass
         ax.set_title(proj, y=1.075)
-        ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+        if (ccrs.PROJ4_VERSION[:2] == (5, 0) and
+                proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
+                         ccrs.Geostationary, ccrs.NearsidePerspective)):
+            # Above projections are broken, so skip labels.
+            # Add gridlines anyway to minimize image differences.
+            ax.gridlines()
+        else:
+            ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
         ax.coastlines()
     plt.subplots_adjust(wspace=0.35, hspace=0.35)

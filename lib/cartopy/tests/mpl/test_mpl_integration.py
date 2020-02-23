@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -36,7 +36,10 @@ _CONTOUR_STYLE = _STREAMPLOT_STYLE = 'classic'
 if MPL_VERSION >= '3.0.0':
     _CONTOUR_IMAGE = 'global_contour_wrap'
     _CONTOUR_STYLE = 'mpl20'
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
+    if MPL_VERSION >= '3.2.0':
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.2.0'
+    else:
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
     # Should have been the case for anything but _1.4.3, but we don't want to
     # regenerate those images again.
     _STREAMPLOT_STYLE = 'mpl20'
@@ -165,8 +168,8 @@ def test_multiple_projections():
     projections = [ccrs.PlateCarree(),
                    ccrs.Robinson(),
                    ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
-                   ccrs.OSGB(),
-                   ccrs.TransverseMercator(),
+                   ccrs.OSGB(approx=True),
+                   ccrs.TransverseMercator(approx=True),
                    ccrs.Mercator(
                        globe=ccrs.Globe(semimajor_axis=math.degrees(1)),
                        min_latitude=-85., max_latitude=85.),
@@ -443,7 +446,7 @@ def test_pcolormesh_goode_wrap():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_mercator_wrap'])
+@ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
 def test_pcolormesh_mercator_wrap():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)

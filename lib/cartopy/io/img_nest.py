@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -434,7 +434,7 @@ class NestedImageCollection(object):
             if target_domain.intersects(domain) and \
                     not target_domain.touches(domain):
                 if start_tile[0] == target_z:
-                        yield start_tile
+                    yield start_tile
                 else:
                     for tile in self.subtiles(start_tile):
                         for result in self.find_images(target_domain,

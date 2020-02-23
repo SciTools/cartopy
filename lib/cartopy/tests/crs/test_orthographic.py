@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -56,7 +56,9 @@ def test_ellipse_globe():
     with pytest.warns(UserWarning,
                       match='does not handle elliptical globes.') as w:
         ortho = ccrs.Orthographic(globe=globe)
-        assert len(w) == 1
+        assert len(w) == (2
+                          if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0)
+                          else 1)
 
     other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0'}
     check_proj_params('ortho', ortho, other_args)
@@ -72,7 +74,9 @@ def test_eccentric_globe():
     with pytest.warns(UserWarning,
                       match='does not handle elliptical globes.') as w:
         ortho = ccrs.Orthographic(globe=globe)
-        assert len(w) == 1
+        assert len(w) == (2
+                          if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0)
+                          else 1)
 
     other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0'}
     check_proj_params('ortho', ortho, other_args)

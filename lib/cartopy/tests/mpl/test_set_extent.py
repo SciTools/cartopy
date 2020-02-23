@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -96,8 +96,8 @@ def test_domain_extents():
     ax.set_extent((-180, 180, -90, 90), ccrs.PlateCarree(90))
     assert_array_equal(ax.viewLim.get_points(), [[-180, -90], [180, 90]])
 
-    ax = plt.axes(projection=ccrs.OSGB())
-    ax.set_extent((0, 7e5, 0, 13e5), ccrs.OSGB())
+    ax = plt.axes(projection=ccrs.OSGB(approx=False))
+    ax.set_extent((0, 7e5, 0, 13e5), ccrs.OSGB(approx=False))
     assert_array_equal(ax.viewLim.get_points(), [[0, 0], [7e5, 13e5]])
 
 

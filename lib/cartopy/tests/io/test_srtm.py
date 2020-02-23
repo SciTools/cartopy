@@ -76,7 +76,7 @@ class TestRetrieve(object):
         'srtm1',
     ])
     def test_srtm_retrieve(self, Source, read_SRTM, max_, min_, pt,
-                           download_to_temp):
+                           download_to_temp):  # noqa: F811
         # test that the download mechanism for SRTM works
         with warnings.catch_warnings(record=True) as w:
             r = Source().srtm_fname(-4, 50)

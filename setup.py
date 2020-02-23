@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -41,8 +41,9 @@ Distribution definition for Cartopy.
 # source installation or not (sdist).
 HERE = os.path.dirname(__file__)
 IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
+FORCE_CYTHON = os.environ.get('FORCE_CYTHON', False)
 
-if not IS_SDIST:
+if not IS_SDIST or FORCE_CYTHON:
     import Cython
     if Cython.__version__ < '0.28':
         raise ImportError(
@@ -241,7 +242,7 @@ def get_proj_libraries():
     This function gets the PROJ libraries to cythonize with
     """
     proj_libraries = ["proj"]
-    if os.name == "nt" and proj_version >= (6, 0, 0):
+    if os.name == "nt" and (6, 0, 0) <= proj_version < (6, 3, 0):
         proj_libraries = [
             "proj_{}_{}".format(proj_version[0], proj_version[1])
         ]
@@ -415,7 +416,7 @@ def decythonize(extensions, **_ignore):
 
 cmdclass = versioneer.get_cmdclass()
 
-if IS_SDIST:
+if IS_SDIST and not FORCE_CYTHON:
     extensions = decythonize(extensions)
 else:
     cmdclass.update({'build_ext': cy_build_ext})

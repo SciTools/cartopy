@@ -95,7 +95,7 @@ our [contributing guide](.github/CONTRIBUTING.md) for more details on how
 you can get involved.
 
 Cartopy is released under a LGPL license with a shared copyright model.
-See [LICENSE](LICENSE) for full terms.
+See [COPYING](COPYING) and [COPYING.LESSER](COPYING.LESSER) for full terms.
 
 The [Met Office](https://metoffice.gov.uk) has made a significant
 contribution to the development, maintenance and support of this library.

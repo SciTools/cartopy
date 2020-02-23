@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -24,10 +24,17 @@ plot results from source coordinates to the GeoAxes' target projection.
 
 from __future__ import (absolute_import, division, print_function)
 
+import six
+
 import collections
 import contextlib
+import functools
 import warnings
 import weakref
+if not six.PY2:
+    import collections.abc as collections_abc
+else:
+    import collections as collections_abc
 
 import matplotlib as mpl
 import matplotlib.artist
@@ -274,6 +281,24 @@ class GeoSpine(mspines.Spine):
             'GeoSpine does not support changing its position.')
 
 
+def _add_transform(func):
+    """A decorator that adds and validates the transform keyword argument."""
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        transform = kwargs.get('transform', None)
+        if transform is None:
+            transform = self.projection
+        if (isinstance(transform, ccrs.CRS) and
+                not isinstance(transform, ccrs.Projection)):
+            raise ValueError('Invalid transform: Spherical {} '
+                             'is not supported - consider using '
+                             'PlateCarree/RotatedPole.'.format(func.__name__))
+
+        kwargs['transform'] = transform
+        return func(self, *args, **kwargs)
+    return wrapper
+
+
 class GeoAxes(matplotlib.axes.Axes):
     """
     A subclass of :class:`matplotlib.axes.Axes` which represents a
@@ -332,7 +357,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         warnings.warn("The outline_patch property is deprecated. Use "
                       "GeoAxes.spines['geo'] or the default Axes properties "
-                      "instead.")
+                      "instead.",
+                      DeprecationWarning,
+                      stacklevel=2)
         return self.spines['geo']
 
     def add_image(self, factory, *args, **kwargs):
@@ -429,16 +456,10 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.imshow(img, extent=extent, origin=origin,
                             transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
-        self._cachedRenderer = renderer
         return matplotlib.axes.Axes.draw(self, renderer=renderer,
                                          inframe=inframe)
 
     def _update_title_position(self, renderer):
-        """
-        Update the title position based on the bounding box enclosing
-        all the ticklabels and x-axis spine and xlabel...
-
-        """
         matplotlib.axes.Axes._update_title_position(self, renderer)
         if not self._gridliners:
             return
@@ -578,10 +599,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if lons.shape != lats.shape:
             raise ValueError('lons and lats must have the same shape.')
 
-        for i in range(len(lons)):
-                circle = geod.circle(lons[i], lats[i], rad_km*1e3,
-                                     n_samples=n_samples)
-                geoms.append(sgeom.Polygon(circle))
+        for lon, lat in zip(lons, lats):
+            circle = geod.circle(lon, lat, rad_km*1e3, n_samples=n_samples)
+            geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
                                                  **kwargs)
@@ -612,7 +632,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         warnings.warn('This method has been deprecated.'
-                      ' Please use `add_feature` instead.')
+                      ' Please use `add_feature` instead.',
+                      DeprecationWarning,
+                      stacklevel=2)
         kwargs.setdefault('edgecolor', 'face')
         kwargs.setdefault('facecolor', cartopy.feature.COLORS['land'])
         feature = cartopy.feature.NaturalEarthFeature(category, name,
@@ -735,7 +757,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return geom_in_crs
 
-    def set_extent(self, extents, crs=None, clip=False):
+    def set_extent(self, extents, crs=None):
         """
         Set the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
@@ -747,9 +769,6 @@ class GeoAxes(matplotlib.axes.Axes):
         ----------
         extents
             Tuple of floats representing the required extent (x0, x1, y0, y1).
-
-        clip: bool
-            Clip map boundary to match exactly this extent.
         """
         # TODO: Implement the same semantics as plt.xlim and
         # plt.ylim - allowing users to set None for a minimum and/or
@@ -774,25 +793,6 @@ class GeoAxes(matplotlib.axes.Axes):
             boundary = self.projection.boundary
             if boundary.equals(domain_in_crs):
                 projected = boundary
-
-        if clip:
-
-            # compute coordinates of the clipping polygon as two 1D arrays
-            n = 100
-            x = np.linspace(x1, x2, n)
-            y = np.linspace(y1, y2, n)
-            xx = np.concatenate((x, [x[-1]]*n, x[::-1], [x[0]]*n))
-            yy = np.concatenate(([y[0]]*n, y, [y[-1]]*n, y[::-1]))
-
-            # project the coordinates and create the path object
-            if crs is not None and crs != self.projection:
-                xy = self.projection.transform_points(crs, xx, yy)[:, :2]
-            else:
-                xy = np.array([xx, yy]).T
-            path = mpath.Path(xy)
-
-            # set it as a boundary
-            self.set_boundary(path)
 
         if projected is None:
             projected = self.projection.project_geometry(domain_in_crs, crs)
@@ -887,7 +887,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Switch on drawing of x axis
         self.xaxis.set_visible(True)
 
-        return super(GeoAxes, self).set_xticks(xticks, minor)
+        return super(GeoAxes, self).set_xticks(xticks, minor=minor)
 
     def set_yticks(self, ticks, minor=False, crs=None):
         """
@@ -934,7 +934,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Switch on drawing of y axis
         self.yaxis.set_visible(True)
 
-        return super(GeoAxes, self).set_yticks(yticks, minor)
+        return super(GeoAxes, self).set_yticks(yticks, minor=minor)
 
     def stock_img(self, name='ne_shaded'):
         """
@@ -1168,7 +1168,7 @@ class GeoAxes(matplotlib.axes.Axes):
         plotting methods.
 
         """
-        if not isinstance(regrid_shape, collections.Sequence):
+        if not isinstance(regrid_shape, collections_abc.Sequence):
             target_size = int(regrid_shape)
             x_range, y_range = np.diff(target_extent)[::2]
             desired_aspect = x_range / y_range
@@ -1178,6 +1178,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 regrid_shape = (target_size, int(target_size / desired_aspect))
         return regrid_shape
 
+    @_add_transform
     def imshow(self, img, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
@@ -1214,20 +1215,31 @@ class GeoAxes(matplotlib.axes.Axes):
             Default is ``'lower'``.
 
         """
-        transform = kwargs.pop('transform', None)
         if 'update_datalim' in kwargs:
             raise ValueError('The update_datalim keyword has been removed in '
                              'imshow. To hold the data and view limits see '
                              'GeoAxes.hold_limits.')
 
+        transform = kwargs.pop('transform')
+        extent = kwargs.get('extent', None)
         kwargs.setdefault('origin', 'lower')
 
         same_projection = (isinstance(transform, ccrs.Projection) and
                            self.projection == transform)
 
-        if transform is None or transform == self.transData or same_projection:
-            if isinstance(transform, ccrs.Projection):
-                transform = transform._as_mpl_transform(self)
+        # Only take the shortcut path if the image is within the current
+        # bounds (+/- threshold) of the projection
+        x0, x1 = self.projection.x_limits
+        y0, y1 = self.projection.y_limits
+        eps = self.projection.threshold
+        inside_bounds = (extent is None or
+                         (x0 - eps <= extent[0] <= x1 + eps and
+                          x0 - eps <= extent[1] <= x1 + eps and
+                          y0 - eps <= extent[2] <= y1 + eps and
+                          y0 - eps <= extent[3] <= y1 + eps))
+
+        if (transform is None or transform == self.transData or
+                same_projection and inside_bounds):
             result = matplotlib.axes.Axes.imshow(self, img, *args, **kwargs)
         else:
             extent = kwargs.pop('extent', None)
@@ -1295,21 +1307,20 @@ class GeoAxes(matplotlib.axes.Axes):
         xlocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the meridian gridlines in the
-            coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the gridlines in the
+            x-coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
         ylocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
-            used to determine the locations of the parallel gridlines in the
-            coordinate of the given CRS. Defaults to None, which
+            used to determine the locations of the gridlines in the
+            y-coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
         dms: bool
             When default longitude and latitude locators and formatters are
-            used, ticks are able to stop on minutes and seconds if minutes
-            is set to True, and not fraction of degrees.
-            This keyword is passed to
-            :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
+            used, ticks are able to stop on minutes and seconds if minutes is
+            set to True, and not fraction of degrees. This keyword is passed
+            to :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
             if xlocs and ylocs are explicitly set.
         x_inline: optional
             Toggle whether the x labels drawn should be inline.
@@ -1318,25 +1329,32 @@ class GeoAxes(matplotlib.axes.Axes):
         auto_inline: optional
             Set x_inline and y_inline automatically based on projection
 
+        Keyword Parameters
+        ------------------
+        **kwargs
+            All other keywords control line properties.  These are passed
+            through to :class:`matplotlib.collections.Collection`.
+
         Returns
         -------
         gridliner
             A :class:`cartopy.mpl.gridliner.Gridliner` instance.
 
-        Note
-        ----
-            All other keywords control line properties.  These are passed
-            through to :class:`matplotlib.collections.Collection`.
-
+        Notes
+        -----
+        The "x" and "y" for locations and inline settings do not necessarily
+        correspond to X and Y, but to the first and second coordinates of the
+        specified CRS. For the common case of PlateCarree gridlines, these
+        correspond to longitudes and latitudes. Depending on the projection
+        used for the map, meridians and parallels can cross both the X axis and
+        the Y axis.
         """
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
-        mlocs = kwargs.pop('mlocs', xlocs)
-        plocs = kwargs.pop('plocs', ylocs)
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels, xlocator=mlocs,
-            ylocator=plocs, collection_kwargs=kwargs, dms=dms,
+            self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
+            ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
             x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline)
         self._gridliners.append(gl)
         return gl
@@ -1448,6 +1466,7 @@ class GeoAxes(matplotlib.axes.Axes):
         with self.hold_limits():
             self.add_patch(background)
 
+    @_add_transform
     def contour(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contour'.
@@ -1458,17 +1477,6 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical contouring is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
 
         self.autoscale_view()
@@ -1478,6 +1486,7 @@ class GeoAxes(matplotlib.axes.Axes):
             result.__class__ = cartopy.mpl.contour.GeoContourSet
         return result
 
+    @_add_transform
     def contourf(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf'.
@@ -1488,18 +1497,9 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical contouring is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
+        t = kwargs['transform']
         if isinstance(t, ccrs.Projection):
             kwargs['transform'] = t = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
-
         # Set flag to indicate correcting orientation of paths if not ccw
         if isinstance(t, mtransforms.Transform):
             for sub_trans, _ in t._iter_break_from_left_to_right():
@@ -1523,6 +1523,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return result
 
+    @_add_transform
     def scatter(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter'.
@@ -1533,19 +1534,12 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        # Keep this bit - even at mpl v1.2
-        if t is None:
-            t = self.projection
-        if hasattr(t, '_as_mpl_transform'):
-            kwargs['transform'] = t._as_mpl_transform(self)
-
         # exclude Geodetic as a valid source CS
-        if (isinstance(kwargs.get('transform', None),
+        if (isinstance(kwargs['transform'],
                        InterProjectionTransform) and
                 kwargs['transform'].source_projection.is_geodetic()):
             raise ValueError('Cartopy cannot currently do spherical '
-                             'contouring. The source CRS cannot be a '
+                             'scatter. The source CRS cannot be a '
                              'geodetic, consider using the cyllindrical form '
                              '(PlateCarree or RotatedPole).')
 
@@ -1553,6 +1547,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
+    @_add_transform
     def pcolormesh(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh'.
@@ -1563,14 +1558,6 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical pcolormesh is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        kwargs.setdefault('transform', t)
         result = self._pcolormesh_patched(*args, **kwargs)
         self.autoscale_view()
         return result
@@ -1584,7 +1571,6 @@ class GeoAxes(matplotlib.axes.Axes):
         See PATCH comments below.
 
         """
-        import warnings
         import matplotlib.colors as mcolors
         import matplotlib.collections as mcoll
 
@@ -1697,7 +1683,8 @@ class GeoAxes(matplotlib.axes.Axes):
                     if collection.get_cmap()._rgba_bad[3] != 0.0:
                         warnings.warn("The colormap's 'bad' has been set, but "
                                       "in order to wrap pcolormesh across the "
-                                      "map it must be fully transparent.")
+                                      "map it must be fully transparent.",
+                                      stacklevel=3)
 
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
                     # a shape of (Ny, Nx-1) and pts has a shape of (Ny*Nx, 2)
@@ -1759,6 +1746,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return collection
 
+    @_add_transform
     def pcolor(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
@@ -1769,14 +1757,6 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical pcolor is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        kwargs.setdefault('transform', t)
         result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
 
         # Update the datalim for this pcolor.
@@ -1786,6 +1766,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
+    @_add_transform
     def quiver(self, x, y, u, v, *args, **kwargs):
         """
         Plot a field of arrows.
@@ -1829,17 +1810,7 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical quiver is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
+        t = kwargs['transform']
         regrid_shape = kwargs.pop('regrid_shape', None)
         target_extent = kwargs.pop('target_extent',
                                    self.get_extent(self.projection))
@@ -1867,6 +1838,7 @@ class GeoAxes(matplotlib.axes.Axes):
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.quiver(self, x, y, u, v, *args, **kwargs)
 
+    @_add_transform
     def barbs(self, x, y, u, v, *args, **kwargs):
         """
         Plot a field of barbs.
@@ -1910,17 +1882,7 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs.get('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical barbs are not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
-        if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t._as_mpl_transform(self)
-        else:
-            kwargs['transform'] = t
+        t = kwargs['transform']
         regrid_shape = kwargs.pop('regrid_shape', None)
         target_extent = kwargs.pop('target_extent',
                                    self.get_extent(self.projection))
@@ -1948,6 +1910,7 @@ class GeoAxes(matplotlib.axes.Axes):
             u, v = self.projection.transform_vectors(t, x, y, u, v)
         return matplotlib.axes.Axes.barbs(self, x, y, u, v, *args, **kwargs)
 
+    @_add_transform
     def streamplot(self, x, y, u, v, **kwargs):
         """
         Plot streamlines of a vector flow.
@@ -1978,13 +1941,7 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs.pop('transform', None)
-        if t is None:
-            t = self.projection
-        if isinstance(t, ccrs.CRS) and not isinstance(t, ccrs.Projection):
-            raise ValueError('invalid transform:'
-                             ' Spherical streamplot is not supported - '
-                             ' consider using PlateCarree/RotatedPole.')
+        t = kwargs.pop('transform')
         # Regridding is required for streamplot, it must have an evenly spaced
         # grid to work correctly. Choose our destination grid based on the
         # density keyword. The grid need not be bigger than the grid used by

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -44,13 +44,18 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # We have an exceptionally large tolerance for the web_tiles test.
 # The basemap changes on a regular basis (for seasons) and we really only
 # care that it is putting images onto the map which are roughly correct.
+if MPL_VERSION < '2':
+    web_tiles_tolerance = 12
+else:
+    web_tiles_tolerance = 4.5
+
+
 @pytest.mark.natural_earth
 @pytest.mark.network
 @pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
                    reason='Proj returns slightly different bounds.',
                    strict=True)
-@ImageTesting(['web_tiles'],
-              tolerance=12 if MPL_VERSION < '2' else 2.9)
+@ImageTesting(['web_tiles'], tolerance=web_tiles_tolerance)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = sgeom.Polygon([[extent[0], extent[1]],
@@ -134,7 +139,7 @@ def test_imshow():
 
 @pytest.mark.natural_earth
 @ImageTesting(['imshow_regional_projected'],
-              tolerance=10.4 if MPL_VERSION < '2' else 0)
+              tolerance=10.4 if MPL_VERSION < '2' else 0.8)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
@@ -144,6 +149,16 @@ def test_imshow_projected():
     ax.set_extent(img_extent, crs=source_proj)
     ax.coastlines(resolution='50m')
     ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
+
+
+def test_imshow_wrapping():
+    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0.0))
+    # Set the extent outside of the current projection domain to ensure
+    # it is wrapped back to the (-180, 180) extent of the projection
+    ax.imshow(np.random.random((10, 10)), transform=ccrs.PlateCarree(),
+              extent=(0, 360, -90, 90))
+
+    assert ax.get_xlim() == (-180, 180)
 
 
 @pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
@@ -173,7 +188,7 @@ def test_pil_Image():
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=4.2 if MPL_VERSION < '2' else 0)
+              tolerance=4.2 if MPL_VERSION < '2' else 0.5)
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resolution='low')

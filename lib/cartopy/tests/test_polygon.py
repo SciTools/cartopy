@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -51,7 +51,7 @@ class TestBoundary(object):
     def test_out_of_bounds(self):
         # Check that a polygon that is completely out of the map boundary
         # doesn't produce an empty result.
-        projection = ccrs.TransverseMercator(central_longitude=0)
+        projection = ccrs.TransverseMercator(central_longitude=0, approx=True)
 
         polys = [
             # All valid
@@ -73,7 +73,8 @@ class TestBoundary(object):
 
 class TestMisc(object):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90)
+        projection = ccrs.TransverseMercator(central_longitude=-90,
+                                             approx=False)
         polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
         projection.project_geometry(polygon)
 
@@ -181,11 +182,12 @@ class TestMisc(object):
                                                     rel=target.threshold)
 
     def test_3pt_poly(self):
-        projection = ccrs.OSGB()
+        projection = ccrs.OSGB(approx=True)
         polygon = sgeom.Polygon([(-1000, -1000),
                                  (-1000, 200000),
                                  (200000, -1000)])
-        multi_polygon = projection.project_geometry(polygon, ccrs.OSGB())
+        multi_polygon = projection.project_geometry(polygon,
+                                                    ccrs.OSGB(approx=True))
         assert len(multi_polygon) == 1
         assert len(multi_polygon[0].exterior.coords) == 4
 

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -27,6 +27,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 @ImageTesting(['wmts'], tolerance=7.56 if MPL_VERSION < '2' else 0)
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())

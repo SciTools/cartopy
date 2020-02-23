@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -30,7 +30,8 @@ class TestCoastline(object):
 
         # Make sure all the coastlines can be projected without raising any
         # exceptions.
-        projection = cartopy.crs.TransverseMercator(central_longitude=-90)
+        projection = cartopy.crs.TransverseMercator(central_longitude=-90,
+                                                    approx=False)
         reader = shp.Reader(COASTLINE_PATH)
         all_geometries = list(reader.geometries())
         geometries = []
