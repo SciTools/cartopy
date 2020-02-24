@@ -1671,14 +1671,15 @@ class GeoAxes(matplotlib.axes.Axes):
                 C = C.reshape((Ny - 1, Nx - 1))
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
 
-                # Compute the length of diagonals in transformed coordinates
-                # This takes into account the case where the top of the cell
-                # is on one side of the boundary while the other is on the
-                # other side, case overlooked with the edges only.
-                #
-                #    Top----Top  |
-                #                |  Bottom-----Bottom
-                #
+                 # Compute the length of diagonals in transformed coordinates
+                 # If either diagonal (Pt0 - Pt2) or (Pt1 - Pt3) is over half
+                 # the length of the projection limits it will be masked.
+                 # This accounts for long edges,both points of an edge are
+                 # on the same side of the boundary and transposed coordinates.
+                 #
+                 #    Pt0----Pt1  |
+                 #                |  Pt4-----Pt3
+                 #
                 with np.errstate(invalid='ignore'):
                     ptx, pty = transformed_pts[..., 0], transformed_pts[..., 1]
                     diagonal0_lengths = np.hypot(
@@ -1689,16 +1690,39 @@ class GeoAxes(matplotlib.axes.Axes):
                         ptx[1:, :-1] - ptx[:-1, 1:],
                         pty[1:, :-1] - pty[:-1, 1:]
                     )
+                    # compare the diagonals length to the extent dxs of x for
+                    # each y, so that it removes big cells in projection
+                    # like Robinson for which the width of the plot
+                    # varies with y
+                    # for PlateCarrree or Mercator the preferred option is
+                    #
+                    #       (abs(self.projection.x_limits[1]
+                    #            - self.projection.x_limits[0])) / 2
+                    #
+                    # using the x extend we need to manage the inf data
+                    if isinstance(self.projection, (ccrs.PlateCarree,
+                                                    ccrs.Mercator)):
+                        dxs = (abs(self.projection.x_limits[1]
+                                   - self.projection.x_limits[0])) / 2
+                    else:
+                        ptxn = np.empty_like(ptx)
+                        ptxn[ptx != np.inf] = ptx[ptx != np.inf]
+                        ptxn[ptx == np.inf] = np.nan
+                        dxs = (np.nanmax(ptxn, axis=1)
+                               - np.nanmin(ptxn, axis=1)) / 2
+                        # Take the mean value because the diagonal is
+                        # between 2 rows
+                        # dxs can be 0 at a pole
+                        dxs = np.nanmean(np.array([dxs[1:], dxs[:-1]]), axis=0)
+                        # when encountering 2 All-NaN slices
+                        dxs[np.isnan(dxs)] = np.nanmin(dxs)
+                        dxs = np.repeat(dxs.reshape(Ny - 1, 1), Nx - 1, axis=1)
+
                     to_mask = (
-                        (diagonal0_lengths > (
-                            abs(self.projection.x_limits[1]
-                                - self.projection.x_limits[0])) / 2) |
                         np.isnan(diagonal0_lengths) |
-                        (diagonal1_lengths > (
-                            abs(self.projection.x_limits[1]
-                                - self.projection.x_limits[0])) / 2) |
-                        np.isnan(diagonal1_lengths)
-                    )
+                        (diagonal0_lengths > dxs) |
+                        np.isnan(diagonal1_lengths) |
+                        (diagonal1_lengths > dxs))
 
                 if np.any(to_mask):
                     if collection.get_cmap()._rgba_bad[3] != 0.0:
@@ -1753,7 +1777,6 @@ class GeoAxes(matplotlib.axes.Axes):
                         # that if really necessary, users can do things post
                         # this method
                         collection._wrapped_collection_fix = pcolor_col
-
                         # if t is self.projection and
                         # there are overlapping cells
                         # then pcolor won't work for those cells
@@ -1761,7 +1784,6 @@ class GeoAxes(matplotlib.axes.Axes):
                         if t is self.projection:
                             collection._wrapped_collection_fix.\
                                 set_visible(False)
-
             # Clip the QuadMesh to the projection boundary, which is required
             # to keep the shading inside the projection bounds.
             collection.set_clip_path(self.background_patch)
@@ -1782,13 +1804,27 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
+        # In some cases, a ValueError crashes the plot
+        # if there are other data already plotted by pcolormesh
+        # while the wrapping cells are plotted by pcolor,
+        # then the crash prevents the use of pcolormesh which could be
+        # an option to get around a pcolor crash.
+        # Managing the exception:
+        #
+        try:
+            result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
 
-        # Update the datalim for this pcolor.
-        limits = result.get_datalim(self.transData)
-        self.update_datalim(limits)
-
-        self.autoscale_view()
+            # Update the datalim for this pcolor.
+            limits = result.get_datalim(self.transData)
+            self.update_datalim(limits)
+            self.autoscale_view()
+        except ValueError:
+            warnings.warn("Unexpected ValueError in pcolor"
+                          " the pcolor plot artist is removed.")
+            for child in self.get_children():
+                if child is result:
+                    child.remove()
+                    del child
         return result
 
     @_add_transform
