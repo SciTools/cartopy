@@ -1671,15 +1671,15 @@ class GeoAxes(matplotlib.axes.Axes):
                 C = C.reshape((Ny - 1, Nx - 1))
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
 
-                 # Compute the length of diagonals in transformed coordinates
-                 # If either diagonal (Pt0 - Pt2) or (Pt1 - Pt3) is over half
-                 # the length of the projection limits it will be masked.
-                 # This accounts for long edges,both points of an edge are
-                 # on the same side of the boundary and transposed coordinates.
-                 #
-                 #    Pt0----Pt1  |
-                 #                |  Pt4-----Pt3
-                 #
+                # Compute the length of diagonals in transformed coordinates
+                # If either diagonal (Pt0 - Pt2) or (Pt1 - Pt3) is over half
+                # the length of the projection limits it will be masked.
+                # This accounts for long edges,both points of an edge are
+                # on the same side of the boundary and transposed coordinates.
+                #
+                #    Pt0----Pt1  |
+                #                |  Pt4-----Pt3
+                #
                 with np.errstate(invalid='ignore'):
                     ptx, pty = transformed_pts[..., 0], transformed_pts[..., 1]
                     diagonal0_lengths = np.hypot(
