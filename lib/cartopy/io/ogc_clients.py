@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2019, Met Office
+# (C) British Crown Copyright 2014 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -122,7 +122,9 @@ def _warped_located_image(image, source_projection, source_extent,
     else:
         # Convert Image to numpy array (flipping so that origin
         # is 'lower').
-        img, extent = warp_array(np.asanyarray(image)[::-1],
+        # Convert to RGBA to keep the color palette in the regrid process
+        # if any
+        img, extent = warp_array(np.asanyarray(image.convert('RGBA'))[::-1],
                                  source_proj=source_projection,
                                  source_extent=source_extent,
                                  target_proj=output_projection,
@@ -136,19 +138,9 @@ def _warped_located_image(image, source_projection, source_extent,
         # This avoids unsightly grey boundaries appearing when the
         # extent is limited (i.e. not global).
         if np.ma.is_masked(img):
-            if img.shape[2:3] == (3,):
-                # RGB
-                old_img = img
-                img = np.zeros(img.shape[:2] + (4,), dtype=img.dtype)
-                img[:, :, 0:3] = old_img
-                img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
-                if img.dtype.kind == 'u':
-                    img[:, :, 3] *= 255
-            elif img.shape[2:3] == (4,):
-                # RGBA
-                img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
-                                        img[:, :, 3])
-                img = img.data
+            img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
+                                    img[:, :, 3])
+            img = img.data
 
         # Convert warped image array back to an Image, undoing the
         # earlier flip.
