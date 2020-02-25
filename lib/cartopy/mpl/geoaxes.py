@@ -1757,13 +1757,29 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
+        # In some cases, a ValueError crashes the plot
+        # if there are other data already plotted by pcolormesh
+        # while the wrapping cells are plotted by pcolor,
+        # then the crash prevents the use of pcolormesh which could be
+        # an option to get around a pcolor crash.
+        # Managing the exception:
+        #
+        try:
+            result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
 
-        # Update the datalim for this pcolor.
-        limits = result.get_datalim(self.transData)
-        self.update_datalim(limits)
+            # Update the datalim for this pcolor.
+            limits = result.get_datalim(self.transData)
+            self.update_datalim(limits)
+            self.autoscale_view()
+        except ValueError:
+            warnings.warn("Unexpected ValueError in pcolor"
+                          " the pcolor plot artist is removed."
+                          " Some cells could not be transformed"
+                          " in the axis projection.")
+            for child in self.get_children():
+                if child is result:
+                    child.remove()
 
-        self.autoscale_view()
         return result
 
     @_add_transform
