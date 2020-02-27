@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2018, Met Office
+# (C) British Crown Copyright 2015 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -271,13 +271,8 @@ cdef class Geodesic:
             # Polygon.
             result = self.geometry_length(geometry.exterior)
 
-        elif hasattr(geometry, 'coords'):
+        elif hasattr(geometry, 'coords') and not isinstance(geometry, sgeom.Point):
             coords = np.array(geometry.coords)
-
-            # LinearRings are (N, 2), whereas LineStrings are (2, N).
-            if not isinstance(geometry, sgeom.LinearRing):
-                coords = coords.T
-
             result = self.geometry_length(coords)
 
         elif isinstance(geometry, np.ndarray):
