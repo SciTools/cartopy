@@ -46,8 +46,8 @@ using the `setup.py` file::
 
 Required dependencies
 ~~~~~~~~~~~~~~~~~~~~~
-In order to install Cartopy, or to access it's basic functionality, it will be
-necessary to first install **geos**, **numpy**, **cython**, **shapely**,
+In order to install Cartopy, or to access its basic functionality, it will be
+necessary to first install **GEOS**, **NumPy**, **Cython**, **Shapely**,
 **pyshp** and **six**. Many of these packages can be installed using pip or
 other package managers such as apt-get (Linux) and brew (macOS). Many of these
 dependencies are built as part of Cartopy's conda distribution, and the recipes
@@ -62,7 +62,7 @@ For macOS, the required dependencies can be installed in the following way::
     pip3 install shapely --no-binary shapely
 
 If you are installing dependencies with a package manager on Linux, you may
-need to install the development packages (look for a "-dev" suffix) in addition
+need to install the development packages (look for a "-dev" or "-devel" suffix) in addition
 to the core packages.
 
 Further information about the required dependencies can be found here:
