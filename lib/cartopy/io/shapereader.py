@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -163,7 +163,10 @@ class BasicReader(object):
 
         """
         for i in range(self._reader.numRecords):
-            yield sgeom.shape(self._reader.shape(i))
+            shape = self._reader.shape(i)
+            # Skip the shape that can not be represented as geometry.
+            if shape.shapeType != shapefile.NULL:
+                yield sgeom.shape(shape)
 
     def records(self):
         """
