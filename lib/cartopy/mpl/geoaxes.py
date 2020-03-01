@@ -540,15 +540,19 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Parameters
         ----------
-        resolution
+        resolution : str or :class:`cartopy.feature.Scaler`, optional
             A named resolution to use from the Natural Earth
-            dataset. Currently can be one of "110m", "50m", and "10m",
-            or a Scaler object.
+            dataset. Currently can be one of "auto" (default), "110m", "50m",
+            and "10m", or a Scaler object.
 
         """
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
         feature = cartopy.feature.COASTLINE
+
+        # The coastline feature is automatically scaled by default, but for
+        # anything else, including custom scaler instances, create a new
+        # feature which derives from the default one.
         if resolution != 'auto':
             feature = feature.with_scale(resolution)
 

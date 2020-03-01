@@ -480,41 +480,43 @@ auto_scaler = AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
 degrees."""
 
 
-BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
-                              auto_scaler, edgecolor='black', facecolor='never')
+BORDERS = NaturalEarthFeature(
+    'cultural', 'admin_0_boundary_lines_land',
+    auto_scaler, edgecolor='black', facecolor='never')
 """Automatically scaled country boundaries."""
 
 
-STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
-                             auto_scaler, edgecolor='black', facecolor='none')
+STATES = NaturalEarthFeature(
+    'cultural', 'admin_1_states_provinces_lakes',
+    auto_scaler, edgecolor='black', facecolor='none')
 """Automatically scaled state and province boundaries."""
 
 
-COASTLINE = NaturalEarthFeature('physical', 'coastline', auto_scaler,
-                                edgecolor='black', facecolor='never')
+COASTLINE = NaturalEarthFeature(
+    'physical', 'coastline', auto_scaler,
+    edgecolor='black', facecolor='never')
 """Automatically scaled coastline, including major islands."""
 
 
-LAKES = NaturalEarthFeature('physical', 'lakes', auto_scaler,
-                            edgecolor='face',
-                            facecolor=COLORS['water'])
+LAKES = NaturalEarthFeature(
+    'physical', 'lakes', auto_scaler,
+    edgecolor='face', facecolor=COLORS['water'])
 """Automatically scaled natural and artificial lakes."""
 
 
-LAND = NaturalEarthFeature('physical', 'land', auto_scaler,
-                           edgecolor='face',
-                           facecolor=COLORS['land'], zorder=-1)
+LAND = NaturalEarthFeature(
+    'physical', 'land', auto_scaler,
+    edgecolor='face', facecolor=COLORS['land'], zorder=-1)
 """Automatically scaled land polygons, including major islands."""
 
 
-OCEAN = NaturalEarthFeature('physical', 'ocean', auto_scaler,
-                            edgecolor='face',
-                            facecolor=COLORS['water'], zorder=-1)
+OCEAN = NaturalEarthFeature(
+    'physical', 'ocean', auto_scaler,
+    edgecolor='face', facecolor=COLORS['water'], zorder=-1)
 """Automatically scaled ocean polygons."""
 
 
-RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines',
-                             auto_scaler,
-                             edgecolor=COLORS['water'],
-                             facecolor='never')
+RIVERS = NaturalEarthFeature(
+    'physical', 'rivers_lake_centerlines', auto_scaler,
+    edgecolor=COLORS['water'], facecolor='never')
 """Automatically scaled single-line drainages, including lake centerlines."""
