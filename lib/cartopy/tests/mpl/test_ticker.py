@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2019, Met Office
+# (C) British Crown Copyright 2014 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -21,7 +21,7 @@ try:
     from unittest.mock import Mock
 except ImportError:
     from mock import Mock
-from matplotlib.axes import Axes
+import matplotlib.pyplot as plt
 import pytest
 import numpy as np
 
@@ -34,26 +34,10 @@ ONE_MIN = 1 / 60.
 ONE_SEC = 1 / 3600.
 
 
-def test_LatitudeFormatter_bad_axes():
-    formatter = LatitudeFormatter()
-    formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
-    match = r'This formatter can only be used with cartopy GeoAxes\.'
-    with pytest.raises(TypeError, match=match):
-        formatter(0)
-
-
 def test_LatitudeFormatter_bad_projection():
     formatter = LatitudeFormatter()
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=ccrs.Orthographic()))
     match = r'This formatter cannot be used with non-rectangular projections\.'
-    with pytest.raises(TypeError, match=match):
-        formatter(0)
-
-
-def test_LongitudeFormatter_bad_axes():
-    formatter = LongitudeFormatter()
-    formatter.axis = Mock(axes=Mock(Axes, projection=ccrs.PlateCarree()))
-    match = r'This formatter can only be used with cartopy GeoAxes\.'
     with pytest.raises(TypeError, match=match):
         formatter(0)
 
@@ -247,6 +231,22 @@ def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
     assert result == expected
 
 
+@pytest.mark.parametrize("cls,letter",
+                         [(LongitudeFormatter, 'E'),
+                          (LatitudeFormatter, 'N')])
+def test_lonlatformatter_non_geoaxes(cls, letter):
+    ticks = [2, 2.5]
+    fig = plt.figure()
+    ax = plt.subplot(111)
+    ax.plot([0, 10], [0, 1])
+    ax.set_xticks(ticks)
+    ax.xaxis.set_major_formatter(cls(degree_symbol='', dms=False))
+    fig.canvas.draw()
+    ticklabels = [t.get_text() for t in ax.get_xticklabels()]
+    assert ticklabels == ['{:g}{}'.format(v, letter) for v in ticks]
+    plt.close()
+
+
 @pytest.mark.parametrize("cls,vmin,vmax,expected",
                          [pytest.param(LongitudeLocator, -180, 180,
                                        [-180., -120., -60., 0.,
@@ -273,3 +273,4 @@ def test_LongitudeLocator(cls, vmin, vmax, expected):
     locator = cls(dms=True)
     result = locator.tick_values(vmin, vmax)
     np.testing.assert_allclose(result, expected)
+
