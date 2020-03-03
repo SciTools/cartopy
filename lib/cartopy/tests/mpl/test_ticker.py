@@ -273,4 +273,3 @@ def test_LongitudeLocator(cls, vmin, vmax, expected):
     locator = cls(dms=True)
     result = locator.tick_values(vmin, vmax)
     np.testing.assert_allclose(result, expected)
-
