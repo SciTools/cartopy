@@ -1,19 +1,9 @@
-# (C) British Crown Copyright 2011 - 2020, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+
 """
 This module defines the :class:`GeoAxes` class, for use with matplotlib.
 
@@ -533,22 +523,26 @@ class GeoAxes(matplotlib.axes.Axes):
         return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat),
                                                          ns, abs(lon), ew)
 
-    def coastlines(self, resolution='110m', color='black', **kwargs):
+    def coastlines(self, resolution='auto', color='black', **kwargs):
         """
         Add coastal **outlines** to the current axes from the Natural Earth
         "coastline" shapefile collection.
 
         Parameters
         ----------
-        resolution
+        resolution : str or :class:`cartopy.feature.Scaler`, optional
             A named resolution to use from the Natural Earth
-            dataset. Currently can be one of "110m", "50m", and "10m",
-            or a Scaler object.
+            dataset. Currently can be one of "auto" (default), "110m", "50m",
+            and "10m", or a Scaler object.
 
         """
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
         feature = cartopy.feature.COASTLINE
+
+        # The coastline feature is automatically scaled by default, but for
+        # anything else, including custom scaler instances, create a new
+        # feature which derives from the default one.
         if resolution != 'auto':
             feature = feature.with_scale(resolution)
 
