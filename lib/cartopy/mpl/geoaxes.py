@@ -1212,7 +1212,7 @@ class GeoAxes(matplotlib.axes.Axes):
         origin: {'lower', 'upper'}
             The origin of the vertical pixels. See
             :func:`matplotlib.pyplot.imshow` for further details.
-            Default is ``'lower'``.
+            Default is ``'upper'``. Prior to 0.18, it was ``'lower'``.
 
         """
         if 'update_datalim' in kwargs:
@@ -1222,7 +1222,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         transform = kwargs.pop('transform')
         extent = kwargs.get('extent', None)
-        kwargs.setdefault('origin', 'lower')
+        kwargs.setdefault('origin', 'upper')
 
         same_projection = (isinstance(transform, ccrs.Projection) and
                            self.projection == transform)
