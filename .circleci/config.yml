@@ -32,8 +32,7 @@ env-run:  &env-setup
 deps-run: &deps-install
   name: Install Python dependencies
   command: |
-    source activate test-environment
-    conda install --quiet \
+    conda install -n test-environment --quiet \
         numpy \
         matplotlib \
         scipy \
@@ -49,7 +48,7 @@ deps-run: &deps-install
         pykdtree \
         $EXTRA_PACKAGES \
         --file docs/doc-requirements.txt
-    conda list
+    conda list -n test-environment
 
 cp-run: &cp-install
   name: Install Cartopy
@@ -61,8 +60,7 @@ doc-run: &doc-build
   name: Build documentation
   command: |
     source activate test-environment
-    make html
-  working_directory: docs
+    make -C docs html
 
 
 ##########################################
