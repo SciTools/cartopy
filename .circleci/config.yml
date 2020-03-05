@@ -85,10 +85,6 @@ jobs:
       - store_artifacts:
           path: docs/build/html
 
-      - run:
-          name: "Built documentation is available at:"
-          command: echo "${CIRCLE_BUILD_URL}/artifacts/${CIRCLE_NODE_INDEX}/${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}/docs/build/html/index.html"
-
   docs-python2:
     docker:
       - image: continuumio/miniconda:latest
@@ -108,10 +104,6 @@ jobs:
 
       - store_artifacts:
           path: docs/build/html
-
-      - run:
-          name: "Built documentation is available at:"
-          command: echo "${CIRCLE_BUILD_URL}/artifacts/${CIRCLE_NODE_INDEX}/${CIRCLE_WORKING_DIRECTORY/#\~/$HOME}/docs/build/html/index.html"
 
 
 #########################################
