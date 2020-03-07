@@ -465,6 +465,7 @@ setup(
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
     classifiers=[
             'Development Status :: 4 - Beta',
+            'Framework :: Matplotlib',
             'License :: OSI Approved :: GNU Lesser General Public License v3 '
             'or later (LGPLv3+)',
             'Operating System :: MacOS :: MacOS X',
