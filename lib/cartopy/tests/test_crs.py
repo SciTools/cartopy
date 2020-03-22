@@ -17,6 +17,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+import copy
 from io import BytesIO
 import pickle
 
@@ -236,13 +237,32 @@ class TestCRS(object):
                              decimal=1)
 
 
-def test_pickle():
+@pytest.fixture(params=[
+    [ccrs.PlateCarree, {}],
+    [ccrs.PlateCarree, dict(
+        central_longitude=1.23)],
+    [ccrs.NorthPolarStereo, dict(
+        central_longitude=42.5,
+        globe=ccrs.Globe(ellipse="helmert"))],
+])
+def proj_to_copy(request):
+    cls, kwargs = request.param
+    return cls(**kwargs)
+
+
+def test_pickle(proj_to_copy):
     # check that we can pickle a simple CRS
     fh = BytesIO()
-    pickle.dump(ccrs.PlateCarree(), fh)
+    pickle.dump(proj_to_copy, fh)
     fh.seek(0)
-    pc = pickle.load(fh)
-    assert pc == ccrs.PlateCarree()
+    pickled_prj = pickle.load(fh)
+    assert proj_to_copy == pickled_prj
+
+
+def test_deepcopy(proj_to_copy):
+    prj_cp = copy.deepcopy(proj_to_copy)
+    assert proj_to_copy.proj4_params == prj_cp.proj4_params
+    assert proj_to_copy == prj_cp
 
 
 def test_PlateCarree_shortcut():

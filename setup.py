@@ -328,7 +328,7 @@ for name in os.listdir(os.path.join(HERE, 'requirements')):
             else:
                 extras_require[section].append(line.strip())
 install_requires = extras_require.pop('default')
-tests_require = extras_require.pop('tests', [])
+tests_require = extras_require.get('tests', [])
 
 # General extension paths
 if sys.platform.startswith('win'):
