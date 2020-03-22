@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2020, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -75,41 +64,41 @@ def test_gridliner():
 
     ax = plt.subplot(nx, ny, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(linestyle=':')
 
     ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB(approx=False))
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(linestyle=':')
 
     ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB(approx=False))
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(ccrs.PlateCarree(), color='blue', linestyle='-')
     ax.gridlines(ccrs.OSGB(approx=False), linestyle=':')
 
     ax = plt.subplot(nx, ny, 4, projection=ccrs.PlateCarree())
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(ccrs.NorthPolarStereo(), alpha=0.5,
                  linewidth=1.5, linestyle='-')
 
     ax = plt.subplot(nx, ny, 5, projection=ccrs.PlateCarree())
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
 
     ax = plt.subplot(nx, ny, 6, projection=ccrs.NorthPolarStereo())
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(alpha=0.5, linewidth=1.5, linestyle='-')
 
     ax = plt.subplot(nx, ny, 7, projection=ccrs.NorthPolarStereo())
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
@@ -117,7 +106,7 @@ def test_gridliner():
     ax = plt.subplot(nx, ny, 8,
                      projection=ccrs.Robinson(central_longitude=135))
     ax.set_global()
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(ccrs.PlateCarree(), alpha=0.5, linewidth=1.5, linestyle='-')
 
     delta = 1.5e-2
@@ -188,14 +177,14 @@ def test_grid_labels():
     crs_merc = ccrs.Mercator()
 
     ax = fig.add_subplot(3, 2, 1, projection=crs_pc)
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(draw_labels=True)
 
     # Check that adding labels to Mercator gridlines gives an error.
     # (Currently can only label PlateCarree gridlines.)
     ax = fig.add_subplot(3, 2, 2,
                          projection=ccrs.PlateCarree(central_longitude=180))
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
 
     ax.set_title('Known bug')
     gl = ax.gridlines(crs=crs_pc, draw_labels=True)
@@ -204,12 +193,12 @@ def test_grid_labels():
     gl.xlines = False
 
     ax = fig.add_subplot(3, 2, 3, projection=crs_merc)
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     gl = ax.gridlines(draw_labels=True)
     gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     ax = plt.subplot(3, 2, 4, projection=crs_pc)
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     gl = ax.gridlines(
         crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle=':')
     gl.bottom_labels = True
@@ -235,12 +224,12 @@ def test_grid_labels():
 
     ax = fig.add_subplot(3, 2, 5, projection=crs_pc)
     ax.set_extent([-20, 10.0, 45.0, 70.0])
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.gridlines(draw_labels=True)
 
     ax = fig.add_subplot(3, 2, 6, projection=crs_merc)
     ax.set_extent([-20, 10.0, 45.0, 70.0], crs=crs_pc)
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     gl = ax.gridlines(draw_labels=True)
     gl.rotate_labels = False
     gl.xlabel_style = gl.ylabel_style = {'size': 9}
@@ -267,7 +256,7 @@ def test_grid_labels_inline():
             ax.gridlines()
         else:
             ax.gridlines(draw_labels=True, auto_inline=True)
-        ax.coastlines()
+        ax.coastlines(resolution="110m")
         ax.set_title(proj, y=1.075)
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
@@ -301,7 +290,7 @@ def test_grid_labels_inline_usa():
             ax.gridlines()
         else:
             ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
-        ax.coastlines()
+        ax.coastlines(resolution="110m")
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
 

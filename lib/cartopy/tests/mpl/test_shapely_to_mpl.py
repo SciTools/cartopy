@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -67,7 +56,7 @@ def test_polygon_interiors():
     # test multiple interior polygons
     ax = plt.subplot(212, projection=ccrs.PlateCarree(),
                      xlim=[-5, 15], ylim=[-5, 15])
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
 
     exterior = np.array(sgeom.box(0, 0, 12, 12).exterior.coords)
     interiors = [np.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),

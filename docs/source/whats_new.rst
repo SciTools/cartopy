@@ -1,3 +1,98 @@
+What's New in cartopy 0.18
+==========================
+
+:Release: 0.18.0
+:Date: XXX Mar 2020
+
+For a full list of included Pull Requests and closed Issues, please see the
+`0.18 milestone <https://github.com/SciTools/cartopy/milestone/25>`_.
+
+Features
+--------
+
+* Kevin Donkers and Phil Elson made the AdaptiveScalar to the Natural
+  Earth Features the default. This will make the default features look
+  much nicer when plotting on zoomed in axes. (:pull:`1105`)
+
+* Elliot Sales de Andrade added support for Matplotlib 3.2 and 3.3
+  (:pull:`1425`) and Python 3.7 and 3.8 (:pull:`1428`).
+
+* Alan Snow added the ability to use Proj version 6.x (:pull:`1289`) and
+  Elliot Sales de Andrade updated a lot of the tests and build issues
+  for this upgrade (:pull:`1417`).
+
+* Andrew Huang added the ability to put the meridian and parallel gridline
+  labels on the gridlines within the plot boundaries rather than
+  only as labels on the boundary. (:pull:`1089`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        ax.set_global()
+        ax.stock_img()
+        ax.coastlines()
+        ax.gridlines(x_inline=True, draw_labels=True)
+        plt.show()
+
+* Stephane Raynaud added longitude and latitude labeling
+  to all projections. It was previously restricted to the Mercator
+  and PlateCarree projections. (:pull:`1117`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=ccrs.InterruptedGoodeHomolosine())
+        ax.set_global()
+        ax.stock_img()
+        ax.coastlines()
+        ax.gridlines(draw_labels=True)
+        plt.show()
+
+* Phil Elson added the (long awaited!)
+  ability to label contours on GeoAxes.
+  A :ref:`sphx_glr_gallery_contour_labels.py` example has
+  been added to the gallery demonstrating the new capability.
+  (:pull:`1257`)
+
+  .. figure:: _images/sphx_glr_contour_labels_001.png
+   :target: gallery/contour_labels.html
+   :align: center
+
+* Matthew Bradbury added the ability to query
+  `UK Ordnance Survey <https://apidocs.os.uk/>`_
+  image tiles. (:pull:`1214`)
+
+* Phil Elson added the ability to fetch image tiles using multiple
+  threads. (:pull:`1232`)
+
+* Elliot Sales de Andrade added a :class:`cartopy.mpl.geoaxes.GeoAxes.GeoSpine`
+  class to replace the :func:`cartopy.mpl.geoaxes.GeoAxes.outline_patch`
+  that defines the map boundary. (:pull:`1213`)
+
+* Ryan May fixed the Geostationary projection boundary so that geometries
+  no longer extend beyond the map domain. (:pull:`1216`)
+
+Deprecations
+------------
+* This will be the last release with Python 2 support.
+
+* The default value for the ``origin`` argument to
+  :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` is now
+  ``'upper'`` to match the default in matplotlib.
+
+
+--------
+
+
 What's New in cartopy 0.17
 ==========================
 

@@ -1,19 +1,9 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+
 """
 This module defines :class:`Feature` instances, for use with
 ax.add_feature().
@@ -474,38 +464,49 @@ class WFSFeature(Feature):
         return iter(geoms)
 
 
-BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
-                              '110m', edgecolor='black', facecolor='never')
-"""Small scale (1:110m) country boundaries."""
-
-STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
-                             '110m', edgecolor='black', facecolor='none')
-"""Small scale (1:110m) state and province boundaries."""
-
-COASTLINE = NaturalEarthFeature('physical', 'coastline', '110m',
-                                edgecolor='black', facecolor='never')
-"""Small scale (1:110m) coastline, including major islands."""
+auto_scaler = AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
+"""AdaptiveScaler for NaturalEarthFeature. Default scale is '110m'.
+'110m' is used above 50 degrees, '50m' for 50-15 degrees and '10m' below 15
+degrees."""
 
 
-LAKES = NaturalEarthFeature('physical', 'lakes', '110m',
-                            edgecolor='face',
-                            facecolor=COLORS['water'])
-"""Small scale (1:110m) natural and artificial lakes."""
+BORDERS = NaturalEarthFeature(
+    'cultural', 'admin_0_boundary_lines_land',
+    auto_scaler, edgecolor='black', facecolor='never')
+"""Automatically scaled country boundaries."""
 
 
-LAND = NaturalEarthFeature('physical', 'land', '110m',
-                           edgecolor='face',
-                           facecolor=COLORS['land'], zorder=-1)
-"""Small scale (1:110m) land polygons, including major islands."""
+STATES = NaturalEarthFeature(
+    'cultural', 'admin_1_states_provinces_lakes',
+    auto_scaler, edgecolor='black', facecolor='none')
+"""Automatically scaled state and province boundaries."""
 
 
-OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
-                            edgecolor='face',
-                            facecolor=COLORS['water'], zorder=-1)
-"""Small scale (1:110m) ocean polygons."""
+COASTLINE = NaturalEarthFeature(
+    'physical', 'coastline', auto_scaler,
+    edgecolor='black', facecolor='never')
+"""Automatically scaled coastline, including major islands."""
 
 
-RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
-                             edgecolor=COLORS['water'],
-                             facecolor='never')
-"""Small scale (1:110m) single-line drainages, including lake centerlines."""
+LAKES = NaturalEarthFeature(
+    'physical', 'lakes', auto_scaler,
+    edgecolor='face', facecolor=COLORS['water'])
+"""Automatically scaled natural and artificial lakes."""
+
+
+LAND = NaturalEarthFeature(
+    'physical', 'land', auto_scaler,
+    edgecolor='face', facecolor=COLORS['land'], zorder=-1)
+"""Automatically scaled land polygons, including major islands."""
+
+
+OCEAN = NaturalEarthFeature(
+    'physical', 'ocean', auto_scaler,
+    edgecolor='face', facecolor=COLORS['water'], zorder=-1)
+"""Automatically scaled ocean polygons."""
+
+
+RIVERS = NaturalEarthFeature(
+    'physical', 'rivers_lake_centerlines', auto_scaler,
+    edgecolor=COLORS['water'], facecolor='never')
+"""Automatically scaled single-line drainages, including lake centerlines."""

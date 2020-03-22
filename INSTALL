@@ -1,17 +1,20 @@
 Installing Cartopy
 ==================
 
-Pre-built binaries
-------------------
+Conda pre-built binaries
+------------------------
 
-The easiest route to installing cartopy is through 
-`Conda <https://conda.io/miniconda.html>`_. For all platforms
-installing cartopy can be done with::
+The easiest way to install Cartopy is by using
+`Conda <https://conda.io/miniconda.html>`_. If conda is already installed,
+installation is as easy as::
 
     conda install -c conda-forge cartopy
 
-Additional options include:
- * `Enthought Canopy <https://www.enthought.com/product/canopy/>`_.
+
+Other pre-built binaries
+------------------------
+
+Additional pre-built binaries can be found at a variety of sources, including:
  * Christoph Gohlke (https://www.lfd.uci.edu/~gohlke/pythonlibs/)
    maintains unofficial Windows binaries of cartopy.
  * `OSGeo Live <https://live.osgeo.org>`_.
@@ -20,41 +23,51 @@ Additional options include:
 Building from source
 --------------------
 
-The latest release of Cartopy is available from
-https://github.com/SciTools/Cartopy.
+Before building Cartopy from source, you need to **first** install the
+required dependencies listed below. Once these are installed, Cartopy can be
+installed using the pip installer::
 
-Once you have satisfied the requirements detailed below, simply run::
+    pip install cartopy
 
+To instead install the most recent version found on the GitHub master branch,
+use::
+
+    pip install git+https://github.com/SciTools/cartopy.git
+
+Alternatively, you can clone the git repo on your computer and install manually
+using the `setup.py` file::
+
+    git clone https://github.com/SciTools/cartopy.git
+    cd cartopy
+    # Uncomment the following to specify non-standard include and library paths
+    # python setup.py build_ext -I/path/to/include -L/path/to/lib
     python setup.py install
 
-For non-standard locations, additional build lib & include paths
-can be provided as per-usual at build_ext phase::
 
-    python setup.py build_ext -I/path/to/include -L/path/to/lib
-    python setup.py install
+Required dependencies
+~~~~~~~~~~~~~~~~~~~~~
+In order to install Cartopy, or to access its basic functionality, it will be
+necessary to first install **GEOS**, **NumPy**, **Cython**, **Shapely**,
+**pyshp** and **six**. Many of these packages can be installed using pip or
+other package managers such as apt-get (Linux) and brew (macOS). Many of these
+dependencies are built as part of Cartopy's conda distribution, and the recipes
+for these packages can be found at https://github.com/conda-forge/feedstocks.
 
+For macOS, the required dependencies can be installed in the following way::
 
-Requirements
-~~~~~~~~~~~~
-These external packages are required to install Cartopy or gain access to
-significant Cartopy functionality.
+    brew install proj geos
+    pip3 install --upgrade cython numpy pyshp six
+    # shapely needs to be built from source to link to geos. If it is already
+    # installed, uninstall it by: pip3 uninstall shapely
+    pip3 install shapely --no-binary shapely
 
-Many of these packages are available in Linux package managers
-such as aptitude and yum. For example, it may be possible to install
-Numpy using::
+If you are installing dependencies with a package manager on Linux, you may
+need to install the development packages (look for a "-dev" or "-devel" suffix) in addition
+to the core packages.
 
-    apt-get install python-numpy
-
-If you are installing dependencies with a package manager on Linux,
-you may need to install the development packages (look for a "-dev"
-suffix) in addition to the core packages.
-
-Many of these dependencies are built as part of Cartopy's conda distribution.
-The recipes for these can be found at https://github.com/conda-forge/feedstocks.
-
+Further information about the required dependencies can be found here:
 
 **Python** 2.7 or later (https://www.python.org/)
-    Cartopy requires Python 2.7 or later.
 
 **Cython** 0.28 or later (https://pypi.python.org/pypi/Cython/)
 
@@ -79,39 +92,39 @@ The recipes for these can be found at https://github.com/conda-forge/feedstocks.
 **six** 1.3.0 or later (https://pypi.python.org/pypi/six)
     Python 2 and 3 compatibility.
 
-
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
-These are optional packages which you may want to install to enable
-additional Cartopy functionality.
+To make the most of Cartopy by enabling additional functionality, you may want
+to install these optional dependencies.
 
 **Matplotlib** 1.5.1 or later (https://matplotlib.org/)
-    Python package for 2D plotting.  This package is required for any
-    graphical capability.
+    Python package for 2D plotting. Python package required for any
+    graphical capabilities.
 
 **GDAL** version 1.10.0 (https://gdal.org/)
     GDAL is a translator library for raster and vector geospatial data formats,
     which has powerful data transformation and processing capabilities.
 
 **Pillow** 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
-    Popular fork of PythonImagingLibrary.
+    A popular fork of PythonImagingLibrary.
 
 **pyepsg** 0.4.0 or later (https://github.com/rhattersley/pyepsg)
     A simple Python interface to https://epsg.io
 
 **pykdtree** 1.2.2 or later (https://github.com/storpipfugl/pykdtree)
-    Fast kd-tree implementation in Python; used for faster warping of images in
-    preference to SciPy.
+    A fast kd-tree implementation that is used for faster warping
+    of images than SciPy.
 
 **SciPy** 0.10 or later (https://www.scipy.org/)
-    Python package for scientific computing.
+    A Python package for scientific computing.
 
 **OWSLib** 0.8.7 (https://pypi.python.org/pypi/OWSLib)
-     Python package for client programming with Open Geospatial Consortium
-     (OGC) web service.  Gives access to cartopy ogc clients.
+     A Python package for client programming with the Open Geospatial
+     Consortium (OGC) web service, and which gives access to Cartopy ogc
+     clients.
 
 **Fiona** 1.0 or later (https://github.com/Toblerity/Fiona)
-    Python package for reading shapefiles faster than the default (pyshp).
+    A Python package for reading shapefiles that is faster than pyshp.
 
 
 Testing Dependencies

@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2020, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -198,7 +187,7 @@ def test_multiple_projections():
 
         ax.set_global()
 
-        ax.coastlines()
+        ax.coastlines(resolution="110m")
 
         plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
 
@@ -472,7 +461,7 @@ def test_quiver_plate_carree():
     # plot on native projection
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.quiver(x, y, u, v, mag)
     # plot on a different projection
     ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
@@ -556,12 +545,12 @@ def test_barbs():
     # plot on native projection
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, length=4, linewidth=.25)
     # plot on a different projection
     ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)
 
 
@@ -614,7 +603,7 @@ def test_barbs_1d():
     plt.figure(figsize=(6, 5))
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
              length=8, linewidth=1, color='#7f7f7f')
 

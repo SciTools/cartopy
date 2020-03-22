@@ -133,7 +133,7 @@ def test_imshow():
     # form that JPG images would be loaded with imread.
     img = (img * 255).astype('uint8')
     ax = plt.axes(projection=ccrs.Orthographic())
-    ax.imshow(img, origin='upper', transform=source_proj,
+    ax.imshow(img, transform=source_proj,
               extent=[-180, 180, -90, 90])
 
 
@@ -148,7 +148,7 @@ def test_imshow_projected():
     ax = plt.axes(projection=ccrs.LambertConformal())
     ax.set_extent(img_extent, crs=source_proj)
     ax.coastlines(resolution='50m')
-    ax.imshow(img, extent=img_extent, origin='upper', transform=source_proj)
+    ax.imshow(img, extent=img_extent, transform=source_proj)
 
 
 def test_imshow_wrapping():
@@ -180,7 +180,7 @@ def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()
     ax = plt.axes(projection=ccrs.Orthographic())
-    ax.imshow(img, origin='upper', transform=source_proj,
+    ax.imshow(img, transform=source_proj,
               extent=[-180, 180, -90, 90])
 
 
