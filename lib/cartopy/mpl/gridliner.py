@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -36,6 +25,7 @@ from cartopy.mpl.ticker import (
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
+classic_formatter = mticker.ScalarFormatter
 
 _DEGREE_SYMBOL = u'\u00B0'
 _X_INLINE_PROJS = (
@@ -146,12 +136,14 @@ class Gridliner(object):
             A :class:`matplotlib.ticker.Formatter` instance to format labels
             for x-coordinate gridlines. It defaults to None, which implies the
             use of a :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
-            with the ``dms`` argument.
+            with the ``dms`` argument, if the crs is of
+            :class:`~cartopy.crs.PlateCarree` type.
         yformatter: optional
             A :class:`matplotlib.ticker.Formatter` instance to format labels
             for y-coordinate gridlines. It defaults to None, which implies the
             use of a :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
-            with the ``dms`` argument.
+            with the ``dms`` argument, if the crs is of
+            :class:`~cartopy.crs.PlateCarree` type.
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
@@ -199,11 +191,21 @@ class Gridliner(object):
         else:
             self.ylocator = classic_locator
 
+        if xformatter is None:
+            if isinstance(crs, cartopy.crs.PlateCarree):
+                xformatter = LongitudeFormatter(dms=dms)
+            else:
+                xformatter = classic_formatter()
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lon labels.
-        self.xformatter = xformatter or LongitudeFormatter(dms=dms)
+        self.xformatter = xformatter
 
+        if yformatter is None:
+            if isinstance(crs, cartopy.crs.PlateCarree):
+                yformatter = LatitudeFormatter(dms=dms)
+            else:
+                yformatter = classic_formatter()
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
-        self.yformatter = yformatter or LatitudeFormatter(dms=dms)
+        self.yformatter = yformatter
 
         #: Whether to draw labels on the top of the map.
         self.top_labels = draw_labels
