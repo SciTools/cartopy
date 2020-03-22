@@ -7,7 +7,7 @@ env:
         - PYTHON_VERSION=2.7
           PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock futures"
         - PYTHON_VERSION=3.5
-          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
+          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 owslib=0.19.1"
           PYTHONHASHSEED=0  # So pytest-xdist works.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
