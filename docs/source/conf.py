@@ -28,8 +28,13 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 import sys, os
+
+import cartopy
+from distutils.version import LooseVersion
+import matplotlib
+import owslib
+from sphinx_gallery.sorting import ExampleTitleSortKey
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -67,7 +72,7 @@ extensions = [
               'sphinx.ext.napoleon'
               ]
 
-import matplotlib
+
 matplotlib.use('Agg')
 
 # Add any paths that contain templates here, relative to this directory.
@@ -92,13 +97,11 @@ copyright = u'2011 - 2018 British Crown Copyright'  # the template will need
 # built documents.
 #
 # The short X.Y version.
-import cartopy
 version = cartopy.__version__
 # The full version, including alpha/beta/rc tags.
 release = cartopy.__version__
 
-import owslib
-from distutils.version import LooseVersion
+
 if (hasattr(owslib, '__version__') and
         LooseVersion(owslib.__version__) >= '0.19.2'):
     expected_failing_examples = []
@@ -111,7 +114,6 @@ else:
     ]
 
 # Sphinx gallery configuration
-from sphinx_gallery.sorting import ExampleTitleSortKey
 sphinx_gallery_conf = {
     'examples_dirs': ['../../lib/cartopy/examples'],
     'filename_pattern': '^((?!sgskip).)*$',
