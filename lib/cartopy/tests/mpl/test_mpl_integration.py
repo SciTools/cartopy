@@ -526,6 +526,26 @@ def test_pcolormesh_mercator_wrap():
 
 @pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
+@ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
+def test_pcolormesh_wrap_set_array():
+    x = np.linspace(0, 360, 73)
+    y = np.linspace(-87.5, 87.5, 36)
+    X, Y = np.meshgrid(*[np.deg2rad(c) for c in (x, y)])
+    Z = np.cos(Y) + 0.375 * np.sin(2. * X)
+    Z = Z[:-1, :-1]
+    ax = plt.axes(projection=ccrs.Mercator())
+    ax.coastlines()
+    # Start off with different data
+    coll = ax.pcolormesh(x, y, np.ones(Z.shape), transform=ccrs.PlateCarree())
+    # coll = ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
+    # Now update the plot with the set_array method
+    coll.set_array(Z)
+    print(coll.get_array())
+    import cartopy.mpl.geocollection
+    assert isinstance(coll, cartopy.mpl.geocollection.GeoQuadMesh)
+
+
+@pytest.mark.natural_earth
 @ImageTesting(['quiver_plate_carree'])
 def test_quiver_plate_carree():
     x = np.arange(-60, 42.5, 2.5)
