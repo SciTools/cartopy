@@ -1814,7 +1814,7 @@ class GeoAxes(matplotlib.axes.Axes):
                         # We will add the original data mask in later to
                         # make sure that set_array can work in future
                         # calls on the proper sized array inputs.
-                        pcolor_data = np.ma.array(C.filled(), mask=~mask)
+                        pcolor_data = np.ma.array(C.data, mask=~mask)
                         pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
                                                  pcolor_data, zorder=zorder,
                                                  **kwargs)

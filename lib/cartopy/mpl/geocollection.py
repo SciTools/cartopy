@@ -9,8 +9,7 @@ import numpy as np
 
 class GeoQuadMesh(QuadMesh):
     """
-    A QuadMesh designed to help handle the case when the mesh
-    is wrapped.
+    A QuadMesh designed to help handle the case when the mesh is wrapped.
 
     """
     # No __init__ method here - most of the time a GeoQuadMesh will
