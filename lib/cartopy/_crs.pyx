@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 #
 # cython: embedsignature=True
 
@@ -269,23 +258,38 @@ cdef class CRS:
         instance of this class (e.g. an empty tuple). The state will then be
         added via __getstate__ and __setstate__.
 
+        We are forced to this approach because a CRS does not store
+        the constructor keyword arguments in its state.
+
         """
-        return self.__class__, tuple()
+        return self.__class__, (), self.__getstate__()
 
     def __getstate__(self):
         """Return the full state of this instance for reconstruction
         in ``__setstate__``.
 
         """
-        return {'proj4_params': self.proj4_params}
+        state = self.__dict__.copy()
+        # Remove the proj4 instance and the proj4_init string, which can
+        # be re-created (in __setstate__) from the other arguments.
+        state.pop('proj4', None)
+        state.pop('proj4_init', None)
+        state['proj4_params'] = self.proj4_params
+        return state
 
     def __setstate__(self, state):
         """
         Take the dictionary created by ``__getstate__`` and passes it
-        through to the class's __init__ method.
+        through to this implementation's __init__ method.
 
         """
-        self.__init__(self, **state)
+        # Strip out the key state items for a CRS instance.
+        CRS_state = {key: state.pop(key) for key in ['proj4_params', 'globe']}
+        # Put everything else directly into the dict of the instance.
+        self.__dict__.update(state)
+        # Call the init of this class to ensure that the projection is
+        # properly initialised with proj4.
+        CRS.__init__(self, **CRS_state)
 
     # TODO
     #def __str__
