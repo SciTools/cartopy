@@ -14,7 +14,7 @@ env:
           PACKAGES="cython numpy matplotlib-base proj4 pykdtree scipy fiona"
         - NAME="Latest everything (py2)."
           PYTHON_VERSION=2
-          PACKAGES="cython numpy matplotlib-base proj4 scipy mock futures"
+          PACKAGES="cython=0.29 numpy matplotlib-base proj4 scipy mock futures"
 
 
 sudo: false
