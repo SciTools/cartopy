@@ -57,11 +57,7 @@ class _PlateCarreeFormatter(Formatter):
         self._precision = 5  # locator precision
 
     def __call__(self, value, pos=None):
-        if self.axis is not None:
-
-            if not isinstance(self.axis.axes, GeoAxes):
-                raise TypeError("This formatter can only be "
-                                "used with cartopy GeoAxes.")
+        if self.axis is not None and isinstance(self.axis.axes, GeoAxes):
 
             # We want to produce labels for values in the familiar Plate Carree
             # projection, so convert the tick values from their own projection
