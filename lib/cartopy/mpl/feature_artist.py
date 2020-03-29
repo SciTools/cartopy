@@ -143,20 +143,8 @@ class FeatureArtist(matplotlib.artist.Artist):
         if not self.get_visible():
             return
 
-        ax = self.axes
-        feature_crs = self._feature.crs
-
-        # Get geometries that we need to draw.
-        extent = None
-        try:
-            extent = ax.get_extent(feature_crs)
-        except ValueError:
-            warnings.warn('Unable to determine extent. Defaulting to global.')
-        geoms = self._feature.intersecting_geometries(extent)
-
-        stylised_paths = self._get_stylised_paths(geoms, ax, feature_crs, **kwargs)
-
-        transform = ax.projection._as_mpl_transform(ax)
+        geoms, ax, feature_crs, transform = self.get_geometry()
+        stylised_paths = self.get_stylised_paths(geoms, ax, feature_crs, **kwargs)
 
         # Draw one PathCollection per style. We could instead pass an array
         # of style items through to a single PathCollection, but that
@@ -174,7 +162,7 @@ class FeatureArtist(matplotlib.artist.Artist):
         # n.b. matplotlib.collection.Collection.draw returns None
         return None
 
-    def _get_stylised_paths(self, geoms, ax, feature_crs, **kwargs):
+    def get_stylised_paths(self, geoms, ax, feature_crs, **kwargs):
         # Combine all the keyword args in priority order.
         prepared_kwargs = style_merge(self._feature.kwargs,
                                       self._kwargs,
@@ -224,3 +212,19 @@ class FeatureArtist(matplotlib.artist.Artist):
             stylised_paths.setdefault(style, []).extend(geom_paths)
 
         return stylised_paths
+
+    def get_geometry(self):
+        ax = self.axes
+        feature_crs = self._feature.crs
+
+        # Get geometries that we need to draw.
+        extent = None
+        try:
+            extent = ax.get_extent(feature_crs)
+        except ValueError:
+            warnings.warn('Unable to determine extent. Defaulting to global.')
+        geoms = self._feature.intersecting_geometries(extent)
+
+        transform = ax.projection._as_mpl_transform(ax)
+
+        return geoms, ax, feature_crs, transform
