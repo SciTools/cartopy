@@ -276,6 +276,5 @@ class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
         return [p]
 
 
-
 matplotlib.legend.Legend.update_default_handler_map({
     FeatureArtist: HandlerFeature()})
