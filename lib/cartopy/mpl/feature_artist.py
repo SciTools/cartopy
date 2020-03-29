@@ -143,8 +143,12 @@ class FeatureArtist(matplotlib.artist.Artist):
         if not self.get_visible():
             return
 
-        geoms, ax, feature_crs, transform = self.get_geometry()
-        stylised_paths = self.get_stylised_paths(geoms, ax, feature_crs, **kwargs)
+        ax = self.axes
+
+        geoms, feature_crs, transform = self.get_geometry()
+        projection = ax.projection
+        stylised_paths = self.get_stylised_paths(
+            geoms, feature_crs, projection, **kwargs)
 
         # Draw one PathCollection per style. We could instead pass an array
         # of style items through to a single PathCollection, but that
@@ -162,7 +166,7 @@ class FeatureArtist(matplotlib.artist.Artist):
         # n.b. matplotlib.collection.Collection.draw returns None
         return None
 
-    def get_stylised_paths(self, geoms, ax, feature_crs, **kwargs):
+    def get_stylised_paths(self, geoms, feature_crs, projection, **kwargs):
         # Combine all the keyword args in priority order.
         prepared_kwargs = style_merge(self._feature.kwargs,
                                       self._kwargs,
@@ -174,7 +178,6 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         # Project (if necessary) and convert geometries to matplotlib paths.
         stylised_paths = OrderedDict()
-        key = ax.projection
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
             # hashable, we have to use a WeakValueDictionary to manage
@@ -192,15 +195,15 @@ class FeatureArtist(matplotlib.artist.Artist):
                 geom_key, geom)
             mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
                 geom_key, {})
-            geom_paths = mapping.get(key)
+            geom_paths = mapping.get(projection)
             if geom_paths is None:
-                if ax.projection != feature_crs:
-                    projected_geom = ax.projection.project_geometry(
+                if projection != feature_crs:
+                    projected_geom = projection.project_geometry(
                         geom, feature_crs)
                 else:
                     projected_geom = geom
                 geom_paths = cpatch.geos_to_path(projected_geom)
-                mapping[key] = geom_paths
+                mapping[projection] = geom_paths
 
             if not self._styler:
                 style = prepared_kwargs
@@ -215,16 +218,20 @@ class FeatureArtist(matplotlib.artist.Artist):
 
     def get_geometry(self):
         ax = self.axes
-        feature_crs = self._feature.crs
-
-        # Get geometries that we need to draw.
         extent = None
-        try:
-            extent = ax.get_extent(feature_crs)
-        except ValueError:
-            warnings.warn('Unable to determine extent. Defaulting to global.')
+        if ax is not None:
+            transform = ax.projection._as_mpl_transform(ax)
+            feature_crs = self._feature.crs
+            # Get geometries that we need to draw.
+            try:
+                extent = ax.get_extent(feature_crs)
+            except ValueError:
+                warnings.warn('Unable to determine extent. Defaulting to global.')
+        else:
+            transform = None
+            feature_crs = ccrs.PlateCarree()
+
         geoms = self._feature.intersecting_geometries(extent)
 
-        transform = ax.projection._as_mpl_transform(ax)
 
-        return geoms, ax, feature_crs, transform
+        return geoms, feature_crs, transform
