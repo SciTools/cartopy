@@ -154,6 +154,27 @@ class FeatureArtist(matplotlib.artist.Artist):
             warnings.warn('Unable to determine extent. Defaulting to global.')
         geoms = self._feature.intersecting_geometries(extent)
 
+        stylised_paths = self._get_stylised_paths(geoms, ax, feature_crs, **kwargs)
+
+        transform = ax.projection._as_mpl_transform(ax)
+
+        # Draw one PathCollection per style. We could instead pass an array
+        # of style items through to a single PathCollection, but that
+        # complexity does not yet justify the effort.
+        for style, paths in stylised_paths.items():
+            style = style_finalize(dict(style))
+            # Build path collection and draw it.
+            c = matplotlib.collections.PathCollection(paths,
+                                                      transform=transform,
+                                                      **style)
+            c.set_clip_path(ax.patch)
+            c.set_figure(ax.figure)
+            c.draw(renderer)
+
+        # n.b. matplotlib.collection.Collection.draw returns None
+        return None
+
+    def _get_stylised_paths(self, geoms, ax, feature_crs, **kwargs):
         # Combine all the keyword args in priority order.
         prepared_kwargs = style_merge(self._feature.kwargs,
                                       self._kwargs,
@@ -202,20 +223,4 @@ class FeatureArtist(matplotlib.artist.Artist):
 
             stylised_paths.setdefault(style, []).extend(geom_paths)
 
-        transform = ax.projection._as_mpl_transform(ax)
-
-        # Draw one PathCollection per style. We could instead pass an array
-        # of style items through to a single PathCollection, but that
-        # complexity does not yet justify the effort.
-        for style, paths in stylised_paths.items():
-            style = style_finalize(dict(style))
-            # Build path collection and draw it.
-            c = matplotlib.collections.PathCollection(paths,
-                                                      transform=transform,
-                                                      **style)
-            c.set_clip_path(ax.patch)
-            c.set_figure(ax.figure)
-            c.draw(renderer)
-
-        # n.b. matplotlib.collection.Collection.draw returns None
-        return None
+        return stylised_paths
