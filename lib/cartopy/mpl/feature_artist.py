@@ -229,15 +229,16 @@ class FeatureArtist(matplotlib.artist.Artist):
             try:
                 extent = ax.get_extent(feature_crs)
             except ValueError:
-                warnings.warn('Unable to determine extent. Defaulting to global.')
+                warnings.warn('''Unable to determine extent.
+                              Defaulting to global.''')
         else:
             transform = None
             feature_crs = ccrs.PlateCarree()
 
         geoms = self._feature.intersecting_geometries(extent)
 
-
         return geoms, feature_crs, transform
+
 
 class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
     def create_artists(self, legend, orig_handle,
@@ -267,12 +268,14 @@ class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
                 style['color'] = val
 
             xdata, _ = self.get_xdata(legend, xdescent, ydescent,
-                                             width, height, fontsize)
+                                      width, height, fontsize)
             ydata = np.full_like(xdata, (height - ydescent) / 2)
             p = matplotlib.lines.Line2D(xdata, ydata, **style)
 
         p.set_transform(trans)
         return [p]
+
+
 
 matplotlib.legend.Legend.update_default_handler_map({
     FeatureArtist: HandlerFeature()})
