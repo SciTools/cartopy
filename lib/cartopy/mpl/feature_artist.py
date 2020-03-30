@@ -243,37 +243,40 @@ class FeatureArtist(matplotlib.artist.Artist):
 class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
     def create_artists(self, legend, orig_handle,
                        xdescent, ydescent, width, height, fontsize, trans):
-        # Use first geometry object to determine type
+        # Use first geometry object to determine shapely geometry type
         geom = next(orig_handle._feature.geometries())
 
-        # Take the first path to generate legend artist
+        # Get paths and associated styles
         geoms, feature_crs, _ = orig_handle.get_geometry()
         projection = ccrs.PlateCarree()
         stylised_paths = orig_handle.get_stylised_paths(geoms, feature_crs,
                                                         projection)
-        style = dict(list(stylised_paths.keys())[0])
 
-        facecolor = style.get('facecolor', 'none')
-        if facecolor not in ('none', 'never') or type(geom) is Polygon:
-            p = matplotlib.patches.Rectangle(
-                xy=(-xdescent, -ydescent),
-                width=width, height=height,
-                **style
-            )
-        elif type(geom) in (LineString, LinearRing):
-            # color handling
-            style.pop('facecolor')
-            val = style.pop('edgecolor', 'none')
-            if val != 'none' and style.get('color', 'none') == 'none':
-                style['color'] = val
+        artists = []
+        for style in stylised_paths.keys():
+            style = dict(style)
+            facecolor = style.get('facecolor', 'none')
+            if facecolor not in ('none', 'never') or type(geom) is Polygon:
+                p = matplotlib.patches.Rectangle(
+                    xy=(-xdescent, -ydescent),
+                    width=width, height=height,
+                    **style
+                )
+            elif type(geom) in (LineString, LinearRing):
+                # color handling
+                style.pop('facecolor')
+                val = style.pop('edgecolor', 'none')
+                if val != 'none' and style.get('color', 'none') == 'none':
+                    style['color'] = val
 
-            xdata, _ = self.get_xdata(legend, xdescent, ydescent,
-                                      width, height, fontsize)
-            ydata = np.full_like(xdata, (height - ydescent) / 2)
-            p = matplotlib.lines.Line2D(xdata, ydata, **style)
+                xdata, _ = self.get_xdata(legend, xdescent, ydescent,
+                                          width, height, fontsize)
+                ydata = np.full_like(xdata, (height - ydescent) / 2)
+                p = matplotlib.lines.Line2D(xdata, ydata, **style)
 
-        p.set_transform(trans)
-        return [p]
+            artists.append(p)
+
+        return artists
 
 
 matplotlib.legend.Legend.update_default_handler_map({
