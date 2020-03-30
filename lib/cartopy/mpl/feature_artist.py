@@ -249,7 +249,7 @@ class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
         style = dict(list(stylised_paths.keys())[0])
 
         facecolor = style.get('facecolor', 'none')
-        if facecolor != 'none':
+        if facecolor not in ('none', 'never'):
             p = matplotlib.patches.Rectangle(
                 xy=(-xdescent, -ydescent),
                 width=width, height=height,
