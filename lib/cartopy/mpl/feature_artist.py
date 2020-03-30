@@ -253,7 +253,6 @@ class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
                                                         projection)
         style = dict(list(stylised_paths.keys())[0])
 
-        # style = deepcopy(style)
         if type(geom) is Polygon:
             p = matplotlib.patches.Rectangle(
                 xy=(-xdescent, -ydescent),
