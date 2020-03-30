@@ -20,8 +20,6 @@ import numpy as np
 import matplotlib.artist
 import matplotlib.collections
 
-from shapely.geometry import Polygon, LineString, LinearRing
-
 import cartopy.mpl.patch as cpatch
 import cartopy.crs as ccrs
 from .style import merge as style_merge, finalize as style_finalize
@@ -253,23 +251,11 @@ class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
                                                         projection)
         style = dict(list(stylised_paths.keys())[0])
 
-        if type(geom) is Polygon:
-            p = matplotlib.patches.Rectangle(
-                xy=(-xdescent, -ydescent),
-                width=width, height=height,
-                **style
-            )
-        elif type(geom) in (LineString, LinearRing):
-            # color handling
-            style.pop('facecolor')
-            val = style.pop('edgecolor', None)
-            if val != 'none' and style.get('color', 'none') == 'none':
-                style['color'] = val
-
-            xdata, _ = self.get_xdata(legend, xdescent, ydescent,
-                                      width, height, fontsize)
-            ydata = np.full_like(xdata, (height - ydescent) / 2)
-            p = matplotlib.lines.Line2D(xdata, ydata, **style)
+        p = matplotlib.patches.Rectangle(
+            xy=(-xdescent, -ydescent),
+            width=width, height=height,
+            **style
+        )
 
         p.set_transform(trans)
         return [p]
