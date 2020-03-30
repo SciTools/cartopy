@@ -20,6 +20,8 @@ import numpy as np
 import matplotlib.artist
 import matplotlib.collections
 
+from shapely.geometry import Polygon, LineString, LinearRing
+
 import cartopy.mpl.patch as cpatch
 import cartopy.crs as ccrs
 from .style import merge as style_merge, finalize as style_finalize
@@ -241,6 +243,9 @@ class FeatureArtist(matplotlib.artist.Artist):
 class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
     def create_artists(self, legend, orig_handle,
                        xdescent, ydescent, width, height, fontsize, trans):
+        # Use first geometry object to determine type
+        geom = next(orig_handle._feature.geometries())
+
         # Take the first path to generate legend artist
         geoms, feature_crs, _ = orig_handle.get_geometry()
         projection = ccrs.PlateCarree()
@@ -249,13 +254,13 @@ class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
         style = dict(list(stylised_paths.keys())[0])
 
         facecolor = style.get('facecolor', 'none')
-        if facecolor not in ('none', 'never'):
+        if facecolor not in ('none', 'never') or type(geom) is Polygon:
             p = matplotlib.patches.Rectangle(
                 xy=(-xdescent, -ydescent),
                 width=width, height=height,
                 **style
             )
-        else:
+        elif type(geom) in (LineString, LinearRing):
             # color handling
             style.pop('facecolor')
             val = style.pop('edgecolor', 'none')
