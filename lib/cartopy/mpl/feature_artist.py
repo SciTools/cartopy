@@ -241,9 +241,6 @@ class FeatureArtist(matplotlib.artist.Artist):
 class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
     def create_artists(self, legend, orig_handle,
                        xdescent, ydescent, width, height, fontsize, trans):
-        # Use first geometry object to determine type
-        geom = next(orig_handle._feature.geometries())
-
         # Take the first path to generate legend artist
         geoms, feature_crs, _ = orig_handle.get_geometry()
         projection = ccrs.PlateCarree()
@@ -251,11 +248,24 @@ class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
                                                         projection)
         style = dict(list(stylised_paths.keys())[0])
 
-        p = matplotlib.patches.Rectangle(
-            xy=(-xdescent, -ydescent),
-            width=width, height=height,
-            **style
-        )
+        facecolor = style.get('facecolor', 'none')
+        if facecolor != 'none':
+            p = matplotlib.patches.Rectangle(
+                xy=(-xdescent, -ydescent),
+                width=width, height=height,
+                **style
+            )
+        else:
+            # color handling
+            style.pop('facecolor')
+            val = style.pop('edgecolor', 'none')
+            if val != 'none' and style.get('color', 'none') == 'none':
+                style['color'] = val
+
+            xdata, _ = self.get_xdata(legend, xdescent, ydescent,
+                                      width, height, fontsize)
+            ydata = np.full_like(xdata, (height - ydescent) / 2)
+            p = matplotlib.lines.Line2D(xdata, ydata, **style)
 
         p.set_transform(trans)
         return [p]
