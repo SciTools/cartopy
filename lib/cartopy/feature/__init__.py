@@ -260,10 +260,19 @@ class NaturalEarthFeature(Feature):
             scale = Scaler(scale)
 
         self.scaler = scale
+        # Make sure this is a valid resolution
+        self._validate_scale()
 
     @property
     def scale(self):
         return self.scaler.scale
+
+    def _validate_scale(self):
+        if self.scale not in ('110m', '50m', '10m'):
+            raise ValueError(
+                '{} is not a valid Natural Earth scale. '.format(self.scale) +
+                'Valid scales are "110m", "50m", and "10m".'
+            )
 
     def geometries(self):
         """
