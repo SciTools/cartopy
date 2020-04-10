@@ -389,8 +389,8 @@ plot_rcparams = {'figure.subplot.bottom': 0.04,
                  'figure.subplot.top': 0.96,
                  'figure.subplot.left': 0.04,
                  'figure.subplot.right': 0.96}
-plot_formats = [('thumb.png', 20),
-                'png',
+plot_formats = ['png',
+                ('thumb.png', 20),
                 'pdf'
                 ]
 
