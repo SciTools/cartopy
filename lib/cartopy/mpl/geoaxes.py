@@ -236,6 +236,28 @@ class InterProjectionTransform(mtransforms.Transform):
                                         self.source_projection)
 
 
+class _ViewClippedPathPatch(mpatches.PathPatch):
+    def __init__(self, axes, **kwargs):
+        self._original_path = mpath.Path(np.empty((0, 2)))
+        super(_ViewClippedPathPatch, self).__init__(self._original_path,
+                                                    **kwargs)
+        self._axes = axes
+
+    def set_boundary(self, path, transform):
+        self._original_path = path
+        self.set_transform(transform)
+        self.stale = True
+
+    def _adjust_location(self):
+        if self.stale:
+            self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
+
+    @matplotlib.artist.allow_rasterization
+    def draw(self, renderer, *args, **kwargs):
+        self._adjust_location()
+        super(_ViewClippedPathPatch, self).draw(renderer, *args, **kwargs)
+
+
 class GeoSpine(mspines.Spine):
     def __init__(self, axes, **kwargs):
         self._original_path = mpath.Path(np.empty((0, 2)))
@@ -330,9 +352,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.projection = kwargs.pop('map_projection')
         """The :class:`cartopy.crs.Projection` of this GeoAxes."""
 
-        self.background_patch = None
-        """The patch that provides the filled background of the projection."""
-
         super(GeoAxes, self).__init__(*args, **kwargs)
         self._gridliners = []
         self.img_factories = []
@@ -351,6 +370,18 @@ class GeoAxes(matplotlib.axes.Axes):
                       DeprecationWarning,
                       stacklevel=2)
         return self.spines['geo']
+
+    @property
+    def background_patch(self):
+        """
+        DEPRECATED. The patch that provides the filled background of the
+        projection.
+        """
+        warnings.warn('The background_patch property is deprecated. '
+                      'Use GeoAxes.patch instead.',
+                      DeprecationWarning,
+                      stacklevel=2)
+        return self.patch
 
     def add_image(self, factory, *args, **kwargs):
         """
@@ -425,15 +456,13 @@ class GeoAxes(matplotlib.axes.Axes):
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
-        if self.background_patch.reclip:
-            clipped_path = self.background_patch.orig_path.clip_to_bbox(
-                self.viewLim)
-            self.background_patch._path = clipped_path
+        # Adjust location of background patch so that new gridlines below are
+        # clipped correctly.
+        self.patch._adjust_location()
 
         self.apply_aspect()
         for gl in self._gridliners:
-            gl._draw_gridliner(background_patch=self.background_patch,
-                               renderer=renderer)
+            gl._draw_gridliner(renderer=renderer)
 
         # XXX This interface needs a tidy up:
         #       image drawing on pan/zoom;
@@ -496,8 +525,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self._tight = True
         self.set_aspect('equal')
 
-        with self.hold_limits():
-            self._boundary()
+        self._boundary()
 
         # XXX consider a margin - but only when the map is not global...
         # self._xmargin = 0.15
@@ -1353,6 +1381,9 @@ class GeoAxes(matplotlib.axes.Axes):
         self._gridliners.append(gl)
         return gl
 
+    def _gen_axes_patch(self):
+        return _ViewClippedPathPatch(self)
+
     def _gen_axes_spines(self, locations=None, offset=0.0, units='inches'):
         # generate some axes spines, as some Axes super class machinery
         # requires them. Just make them invisible
@@ -1370,24 +1401,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add the map's boundary to this GeoAxes.
 
-        The appropriate artists are attached to :data:`.background_patch`, and
-        :data:`.spines['geo']` is updated to match.
-
-        Note
-        ----
-            The boundary is not the ``axes.patch``. ``axes.patch``
-            is made invisible by this method - its only remaining
-            purpose is to provide a rectilinear clip patch for
-            all Axes artists.
+        The :data:`.patch` and :data:`.spines['geo']` are updated to match.
 
         """
-        # Hide the old "background" patch used by matplotlib - it is not
-        # used by cartopy's GeoAxes.
-        self.patch.set_facecolor((1, 1, 1, 0))
-        self.patch.set_edgecolor((0.5, 0.5, 0.5))
-        self.patch.set_visible(False)
-        self.background_patch = None
-
         path, = cpatch.geos_to_path(self.projection.boundary)
 
         # Get the outline path in terms of self.transData
@@ -1395,17 +1411,16 @@ class GeoAxes(matplotlib.axes.Axes):
         trans_path = proj_to_data.transform_path(path)
 
         # Set the boundary - we can make use of the rectangular clipping.
-        self.set_boundary(trans_path, use_as_clip_path=False)
+        self.set_boundary(trans_path)
 
         # Attach callback events for when the xlim or ylim are changed. This
         # is what triggers the patches to be re-clipped at draw time.
         self.callbacks.connect('xlim_changed', _trigger_patch_reclip)
         self.callbacks.connect('ylim_changed', _trigger_patch_reclip)
 
-    def set_boundary(self, path, transform=None, use_as_clip_path=True):
+    def set_boundary(self, path, transform=None, use_as_clip_path=None):
         """
-        Given a path, update the :data:`.spines['geo']` and
-        :data:`.background_patch` to take its shape.
+        Given a path, update :data:`.spines['geo']` and :data:`.patch`.
 
         Parameters
         ----------
@@ -1416,49 +1431,24 @@ class GeoAxes(matplotlib.axes.Axes):
             this must be convertible to data coordinates, and
             therefore cannot extend beyond the limits of the
             axes' projection.
-        use_as_clip_path : bool, optional
-            Whether axes.patch should be updated.
-            Updating axes.patch means that any artists
-            subsequently created will inherit clipping
-            from this path, rather than the standard unit
-            square in axes coordinates.
 
         """
+        if use_as_clip_path is not None:
+            warnings.warn(
+                'Passing use_as_clip_path to set_boundary is deprecated.',
+                DeprecationWarning,
+                stacklevel=2)
+
         if transform is None:
             transform = self.transData
 
         if isinstance(transform, cartopy.crs.CRS):
             transform = transform._as_mpl_transform(self)
 
-        if self.background_patch is None:
-            background = mpatches.PathPatch(path, edgecolor='none',
-                                            facecolor='white', zorder=-2,
-                                            clip_on=False, transform=transform)
-        else:
-            background = mpatches.PathPatch(path, zorder=-2, clip_on=False)
-            background.update_from(self.background_patch)
-            self.background_patch.remove()
-            background.set_transform(transform)
-
         # Attach the original path to the patches. This will be used each time
         # a new clipped path is calculated.
-        background.orig_path = path
+        self.patch.set_boundary(path, transform)
         self.spines['geo'].set_boundary(path, transform)
-
-        # Attach a "reclip" attribute, which determines if the patch's path is
-        # reclipped before drawing. A callback is used to change the "reclip"
-        # state.
-        background.reclip = True
-
-        # Add the patches to the axes, and also make them available as
-        # attributes.
-        self.background_patch = background
-
-        if use_as_clip_path:
-            self.patch = background
-
-        with self.hold_limits():
-            self.add_patch(background)
 
     @_add_transform
     def contour(self, *args, **kwargs):
@@ -1730,10 +1720,6 @@ class GeoAxes(matplotlib.axes.Axes):
                         # that if really necessary, users can do things post
                         # this method
                         collection._wrapped_collection_fix = pcolor_col
-
-            # Clip the QuadMesh to the projection boundary, which is required
-            # to keep the shading inside the projection bounds.
-            collection.set_clip_path(self.background_patch)
 
         # END OF PATCH
         ##############
@@ -2051,4 +2037,4 @@ def _trigger_patch_reclip(event):
     axes = event.axes
     # trigger the outline and background patches to be re-clipped
     axes.spines['geo'].stale = True
-    axes.background_patch.reclip = True
+    axes.patch.stale = True

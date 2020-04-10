@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2019, Met Office
+# (C) British Crown Copyright 2014 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -41,7 +41,7 @@ def test_wmts():
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@ImageTesting(['wms'], tolerance=7.76 if MPL_VERSION < '2' else 0)
+@ImageTesting(['wms'], tolerance=7.79 if MPL_VERSION < '2' else 0.02)
 def test_wms():
     ax = plt.axes(projection=ccrs.Orthographic())
     url = 'http://vmap0.tiles.osgeo.org/wms/vmap0'

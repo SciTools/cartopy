@@ -46,8 +46,10 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # care that it is putting images onto the map which are roughly correct.
 if MPL_VERSION < '2':
     web_tiles_tolerance = 12
+elif MPL_VERSION < '2.1.0':
+    web_tiles_tolerance = 4.6
 else:
-    web_tiles_tolerance = 4.5
+    web_tiles_tolerance = 5.4
 
 
 @pytest.mark.natural_earth
@@ -95,7 +97,7 @@ def test_web_tiles():
                    reason='Proj returns slightly different bounds.',
                    strict=True)
 @ImageTesting(['image_merge'],
-              tolerance=3.6 if MPL_VERSION < '2' else 0.01)
+              tolerance=3.9 if MPL_VERSION < '2' else 0.01)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -125,7 +127,7 @@ def test_image_merge():
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=3.96 if MPL_VERSION < '2' else 0.7)
+              tolerance=3.99 if MPL_VERSION < '2' else 0.7)
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
@@ -165,7 +167,7 @@ def test_imshow_wrapping():
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=4.15 if MPL_VERSION < '2' else 0.7)
+              tolerance=4.19 if MPL_VERSION < '2' else 0.7)
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()
@@ -175,7 +177,7 @@ def test_stock_img():
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
 @ImageTesting(['imshow_natural_earth_ortho'],
-              tolerance=3.96 if MPL_VERSION < '2' else 0.7)
+              tolerance=3.99 if MPL_VERSION < '2' else 0.7)
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()

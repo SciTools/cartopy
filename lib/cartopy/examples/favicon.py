@@ -29,8 +29,8 @@ def main():
 
         """
         # Clip the image to the current background boundary.
-        im.set_clip_path(ax.background_patch.get_path(),
-                         transform=ax.background_patch.get_transform())
+        im.set_clip_path(ax.patch.get_path(),
+                         transform=ax.patch.get_transform())
 
     # Register the on_draw method and call it once now.
     fig.canvas.mpl_connect('draw_event', on_draw)

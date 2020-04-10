@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# (C) British Crown Copyright 2014 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -40,7 +40,6 @@ class SlippyImageArtist(AxesImage):
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
         super(SlippyImageArtist, self).__init__(ax, **kwargs)
-        self.set_clip_path(ax.background_patch)
         self.cache = []
 
         ax.figure.canvas.mpl_connect('button_press_event', self.on_press)

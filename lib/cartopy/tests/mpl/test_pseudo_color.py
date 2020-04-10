@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# (C) British Crown Copyright 2013 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -24,8 +24,10 @@ try:
 except ImportError:
     import mock
 import numpy as np
+import pytest
 
 import cartopy.crs as ccrs
+from cartopy.tests.mpl import MPL_VERSION
 
 
 def test_pcolormesh_fully_masked():
@@ -66,6 +68,7 @@ def test_pcolormesh_invisible():
         plt.close()
 
 
+@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 def test_savefig_tight():
     nx, ny = 36, 18
     xbnds = np.linspace(0, 360, nx, endpoint=True)

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -96,9 +96,12 @@ if MPL_VERSION < '2':
     regrid_tolerance = 2.5
 elif MPL_VERSION < '2.0.1':
     regrid_tolerance = 0.5
+elif MPL_VERSION < '2.1.0':
+    # Bug in latest Matplotlib that we don't consider correct.
+    regrid_tolerance = 4.78
 else:
     # Bug in latest Matplotlib that we don't consider correct.
-    regrid_tolerance = 4.75
+    regrid_tolerance = 5.55
 
 
 @pytest.mark.natural_earth
