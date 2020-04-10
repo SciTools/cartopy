@@ -59,12 +59,7 @@ extensions = [
               # 'sphinx.ext.autosummary',
               # 'sphinxcontrib.napoleon', (Needs work before this can
               # be enabled.)
-              # 'matplotlib.sphinxext.plot_directive'
-              # We use a local copy of the plot_directive until
-              # https://github.com/matplotlib/matplotlib/pull/6213 is
-              # available in order
-              # to benefit from cached rebuilds of plots.
-              'sphinxext.plot_directive',
+              'matplotlib.sphinxext.plot_directive',
               # Monkey-patch sphinx_gallery to handle cartopy's __tags__
               # example convention.
               'sphinxext.pre_sphinx_gallery',
