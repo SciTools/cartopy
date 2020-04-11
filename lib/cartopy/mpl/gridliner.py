@@ -296,6 +296,8 @@ class Gridliner(object):
 
     @property
     def xlabels_top(self):
+        warnings.warn('The .xlabels_top attribute is deprecated. Please '
+                      'use .top_labels to toggle visibility instead.')
         return self.top_labels
 
     @xlabels_top.setter
@@ -306,6 +308,8 @@ class Gridliner(object):
 
     @property
     def xlabels_bottom(self):
+        warnings.warn('The .xlabels_bottom attribute is deprecated. Please '
+                      'use .bottom_labels to toggle visibility instead.')
         return self.bottom_labels
 
     @xlabels_bottom.setter
@@ -316,6 +320,8 @@ class Gridliner(object):
 
     @property
     def ylabels_left(self):
+        warnings.warn('The .ylabels_left attribute is deprecated. Please '
+                      'use .left_labels to toggle visibility instead.')
         return self.left_labels
 
     @ylabels_left.setter
@@ -326,6 +332,8 @@ class Gridliner(object):
 
     @property
     def ylabels_right(self):
+        warnings.warn('The .ylabels_right attribute is deprecated. Please '
+                      'use .right_labels to toggle visibility instead.')
         return self.right_labels
 
     @ylabels_right.setter
