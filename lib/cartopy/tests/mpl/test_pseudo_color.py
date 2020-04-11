@@ -68,7 +68,7 @@ def test_pcolormesh_invisible():
         plt.close()
 
 
-@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
+@pytest.mark.skipif(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 def test_savefig_tight():
     nx, ny = 36, 18
     xbnds = np.linspace(0, 360, nx, endpoint=True)
