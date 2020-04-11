@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2018, Met Office
+# (C) British Crown Copyright 2016 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -40,6 +40,11 @@ def test_contour_plot_bounds():
     ax.contourf(x, y, data, levels=np.arange(0, 40, 1))
     assert_array_almost_equal(ax.get_extent(),
                               np.array([x[0], x[-1], y[0], y[-1]]))
+
+    # Levels that don't include data should not fail.
+    plt.figure()
+    ax = plt.axes(projection=proj_lcc)
+    ax.contourf(x, y, data, levels=np.max(data) + np.arange(1, 3))
 
 
 @cleanup
