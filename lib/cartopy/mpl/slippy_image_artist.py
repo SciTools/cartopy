@@ -54,6 +54,9 @@ class SlippyImageArtist(AxesImage):
         self.user_is_interacting = False
         self.stale = True
 
+    def get_window_extent(self, renderer=None):
+        return self.axes.get_window_extent(renderer=renderer)
+
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
         if not self.get_visible():
