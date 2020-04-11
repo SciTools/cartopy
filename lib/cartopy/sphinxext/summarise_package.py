@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,7 +23,6 @@ import os
 import sys
 import sysconfig
 import warnings
-import six
 
 
 def walk_module(mod_name, exclude_folders=None):
@@ -170,7 +169,7 @@ def gen_summary_rst(app):
     exclude_dirs = app.config.summarise_package_exclude_directories
     fnames = app.config.summarise_package_fnames
 
-    if isinstance(package_names, six.string_types):
+    if isinstance(package_names, str):
         package_names = [package_names]
 
     if package_names is None:
@@ -188,15 +187,14 @@ def gen_summary_rst(app):
             raise exception
 
         for exclude_dirs_individual in exclude_dirs:
-            if isinstance(exclude_dirs_individual, six.string_types):
+            if isinstance(exclude_dirs_individual, str):
                 raise exception
 
     if fnames is None:
         fnames = ['outline_of_{}.rst'.format(package_name)
                   for package_name in package_names]
     else:
-        if isinstance(fnames, six.string_types) or \
-                len(fnames) != len(package_names):
+        if isinstance(fnames, str) or len(fnames) != len(package_names):
             raise TypeError('Please provide a list of filenames for each of '
                             'the packages which are to be summarised.')
 

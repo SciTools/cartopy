@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,6 +19,7 @@ from __future__ import (absolute_import, division, print_function)
 
 import io
 import os
+import pickle
 import shutil
 import sys
 import warnings
@@ -28,7 +29,6 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 from PIL import Image
 import pytest
 import shapely.geometry as sgeom
-from six.moves import cPickle as pickle
 
 from cartopy import config
 import cartopy.io.img_tiles as cimgt

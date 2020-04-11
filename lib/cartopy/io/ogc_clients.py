@@ -30,8 +30,6 @@ this way can be found at :ref:`sphx_glr_gallery_wmts.py`.
 
 from __future__ import (absolute_import, division, print_function)
 
-import six
-
 import collections
 import io
 import math
@@ -235,10 +233,10 @@ class WMSRasterSource(RasterSource):
         if WebMapService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, six.string_types):
+        if isinstance(service, str):
             service = WebMapService(service)
 
-        if isinstance(layers, six.string_types):
+        if isinstance(layers, str):
             layers = [layers]
 
         if getmap_extra_kwargs is None:
@@ -273,7 +271,7 @@ class WMSRasterSource(RasterSource):
 
         """
         contents = self.service.contents
-        for proj, srs in six.iteritems(_CRS_TO_OGC_SRS):
+        for proj, srs in _CRS_TO_OGC_SRS.items():
             missing = any(srs not in contents[layer].crsOptions for
                           layer in self.layers)
             if not missing:
@@ -658,10 +656,10 @@ class WFSGeometrySource(object):
         if WebFeatureService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, six.string_types):
+        if isinstance(service, str):
             service = WebFeatureService(service)
 
-        if isinstance(features, six.string_types):
+        if isinstance(features, str):
             features = [features]
 
         if getfeature_extra_kwargs is None:
@@ -696,13 +694,13 @@ class WFSGeometrySource(object):
             else:
                 default_urn = default_urn.pop()
 
-            if six.text_type(default_urn) not in _URN_TO_CRS:
+            if str(default_urn) not in _URN_TO_CRS:
                 raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
                                  'cartopy projection.'.format(default_urn))
 
             self._default_urn = default_urn
 
-        return _URN_TO_CRS[six.text_type(self._default_urn)]
+        return _URN_TO_CRS[str(self._default_urn)]
 
     def fetch_geometries(self, projection, extent):
         """

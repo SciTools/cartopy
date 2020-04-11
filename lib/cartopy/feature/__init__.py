@@ -16,7 +16,6 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import shapely.geometry as sgeom
-import six
 
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
@@ -46,7 +45,7 @@ same projection.
 """
 
 
-class Feature(six.with_metaclass(ABCMeta)):
+class Feature(metaclass=ABCMeta):
     """
     Represents a collection of points, lines and polygons with convenience
     methods for common drawing and filtering operations.
@@ -256,7 +255,7 @@ class NaturalEarthFeature(Feature):
         self.name = name
 
         # Cast the given scale to a (constant) Scaler if a string is passed.
-        if isinstance(scale, six.string_types):
+        if isinstance(scale, str):
             scale = Scaler(scale)
 
         self.scaler = scale
@@ -450,9 +449,9 @@ class WFSFeature(Feature):
         try:
             from cartopy.io.ogc_clients import WFSGeometrySource
         except ImportError as e:
-            six.raise_from(ImportError(
+            raise ImportError(
                 'WFSFeature requires additional dependencies. If installed '
-                'via pip, try `pip install cartopy[ows]`.\n'), e)
+                'via pip, try `pip install cartopy[ows]`.\n') from e
 
         self.source = WFSGeometrySource(wfs, features)
         crs = self.source.default_projection()

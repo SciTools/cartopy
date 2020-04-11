@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -25,13 +25,13 @@ between them.
 from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractproperty
+import io
 import math
 import warnings
 
 import numpy as np
 import shapely.geometry as sgeom
 from shapely.prepared import prep
-import six
 
 from cartopy._crs import (CRS, Geodetic, Globe, PROJ4_VERSION,
                           WGS84_SEMIMAJOR_AXIS, WGS84_SEMIMINOR_AXIS)
@@ -82,7 +82,7 @@ class RotatedGeodetic(CRS):
         super(RotatedGeodetic, self).__init__(proj4_params, globe=globe)
 
 
-class Projection(six.with_metaclass(ABCMeta, CRS)):
+class Projection(CRS, metaclass=ABCMeta):
     """
     Define a projected coordinate system with flat topology and Euclidean
     distance.
@@ -154,10 +154,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return minlon, maxlon
 
     def _repr_html_(self):
-        if not six.PY2:
-            from html import escape
-        else:
-            from cgi import escape
+        from html import escape
         try:
             # As matplotlib is not a core cartopy dependency, don't error
             # if it's not available.
@@ -173,7 +170,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         ax.set_global()
         ax.coastlines('auto')
         ax.gridlines()
-        buf = six.StringIO()
+        buf = io.StringIO()
         fig.savefig(buf, format='svg', bbox_inches='tight')
         plt.close(fig)
         # "Rewind" the buffer to the start and return it as an svg string.
@@ -653,7 +650,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return return_value
 
 
-class _RectangularProjection(six.with_metaclass(ABCMeta, Projection)):
+class _RectangularProjection(Projection, metaclass=ABCMeta):
     """
     The abstract superclass of projections with a rectangular domain which
     is symmetric about the origin.
@@ -678,8 +675,7 @@ class _RectangularProjection(six.with_metaclass(ABCMeta, Projection)):
         return (-self._half_height, self._half_height)
 
 
-class _CylindricalProjection(six.with_metaclass(ABCMeta,
-                                                _RectangularProjection)):
+class _CylindricalProjection(_RectangularProjection, metaclass=ABCMeta):
     """
     The abstract class which denotes cylindrical projections where we
     want to allow x values to wrap around.
@@ -1579,7 +1575,7 @@ class Orthographic(Projection):
         return self._y_limits
 
 
-class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
+class _WarpedRectangularProjection(Projection, metaclass=ABCMeta):
     def __init__(self, proj4_params, central_longitude,
                  false_easting=None, false_northing=None, globe=None):
         if false_easting is not None:
@@ -1622,7 +1618,7 @@ class _WarpedRectangularProjection(six.with_metaclass(ABCMeta, Projection)):
         return self._y_limits
 
 
-class _Eckert(six.with_metaclass(ABCMeta, _WarpedRectangularProjection)):
+class _Eckert(_WarpedRectangularProjection, metaclass=ABCMeta):
     """
     An Eckert projection.
 

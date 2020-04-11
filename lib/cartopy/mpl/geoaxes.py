@@ -14,17 +14,11 @@ plot results from source coordinates to the GeoAxes' target projection.
 
 from __future__ import (absolute_import, division, print_function)
 
-import six
-
 import collections
 import contextlib
 import functools
 import warnings
 import weakref
-if not six.PY2:
-    import collections.abc as collections_abc
-else:
-    import collections as collections_abc
 
 import matplotlib as mpl
 import matplotlib.artist
@@ -1190,7 +1184,7 @@ class GeoAxes(matplotlib.axes.Axes):
         plotting methods.
 
         """
-        if not isinstance(regrid_shape, collections_abc.Sequence):
+        if not isinstance(regrid_shape, collections.abc.Sequence):
             target_size = int(regrid_shape)
             x_range, y_range = np.diff(target_extent)[::2]
             desired_aspect = x_range / y_range

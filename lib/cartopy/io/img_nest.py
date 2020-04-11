@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -24,7 +24,6 @@ import os.path
 import numpy as np
 from PIL import Image
 import shapely.geometry as sgeom
-from six.moves import zip
 
 
 _img_class_attrs = ['filename', 'extent', 'origin', 'pixel_size']

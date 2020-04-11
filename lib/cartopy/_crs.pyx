@@ -17,8 +17,6 @@ import re
 import warnings
 
 import numpy as np
-import six
-
 cimport numpy as np
 
 from cython.operator cimport dereference as deref
@@ -32,9 +30,7 @@ from ._proj4 cimport (pj_init_plus, pj_free, pj_transform, pj_is_latlong,
 cdef double NAN = float('nan')
 
 
-PROJ4_RELEASE = pj_get_release()
-if six.PY3:
-    PROJ4_RELEASE = PROJ4_RELEASE.decode()
+PROJ4_RELEASE = pj_get_release().decode('utf-8')
 _match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
 if _match is not None:
     PROJ4_VERSION = tuple(int(v) for v in _match.group().split('.'))
@@ -228,7 +224,7 @@ cdef class CRS:
             else:
                 init_items.append('+{}'.format(k))
         self.proj4_init = ' '.join(init_items) + ' +no_defs'
-        proj4_init_bytes = six.b(self.proj4_init)
+        proj4_init_bytes = self.proj4_init.encode('utf-8')
         if self.proj4 != NULL:
             pj_free(self.proj4)
         self.proj4 = pj_init_plus(proj4_init_bytes)
