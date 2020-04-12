@@ -79,7 +79,7 @@ Features
 
 * Elliott Sales de Andrade added a
   :class:`cartopy.mpl.geoaxes.GeoAxes.GeoSpine` class to replace the
-  :func:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` that defines the map
+  :attr:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` that defines the map
   boundary. (:pull:`1213`)
 
 * Ryan May fixed the Geostationary projection boundary so that geometries
@@ -93,6 +93,24 @@ Deprecations
   :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` is now ``'upper'`` to match the
   default in Matplotlib.
 
+* The :attr:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` attribute is
+  deprecated. In its place, use Matplotlib's standard options for controlling
+  the Axes frame, or access ``GeoAxes.spines['geo']`` directly.
+
+* The :attr:`cartopy.mpl.geoaxes.GeoAxes.background_patch` attribute is
+  deprecated. In its place, use Matplotlib's standard options for controlling
+  the Axes patch, i.e., pass values to the constructor or access
+  ``GeoAxes.patch`` directly.
+
+* The gridliner labelling options
+  :attr:`cartopy.mpl.gridliner.Gridliner.xlabels_top`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.xlabels_bottom`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.ylabels_left`, and
+  :attr:`cartopy.mpl.gridliner.Gridliner.ylabels_right` are deprecated.
+  Instead, use :attr:`cartopy.mpl.gridliner.Gridliner.top_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.bottom_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.left_labels`, or
+  :attr:`cartopy.mpl.gridliner.Gridliner.right_labels`.
 
 --------
 
