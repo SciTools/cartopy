@@ -10,16 +10,16 @@ For a full list of included Pull Requests and closed Issues, please see the
 Features
 --------
 
-* Kevin Donkers and Phil Elson made the AdaptiveScalar to the Natural
-  Earth Features the default. This will make the default features look
-  much nicer when plotting on zoomed in axes. (:pull:`1105`)
+* Kevin Donkers and Phil Elson made the AdaptiveScalar the default for Natural
+  Earth Features. This will make the default features look much nicer when
+  plotting on zoomed in axes. (:pull:`1105`)
 
-* Elliot Sales de Andrade added support for Matplotlib 3.2 and 3.3
+* Elliott Sales de Andrade added support for Matplotlib 3.2 and 3.3
   (:pull:`1425`) and Python 3.7 and 3.8 (:pull:`1428`).
 
 * Alan Snow added the ability to use Proj version 6.x (:pull:`1289`) and
-  Elliot Sales de Andrade updated a lot of the tests and build issues
-  for this upgrade (:pull:`1417`).
+  Elliott Sales de Andrade updated a lot of the tests and build issues for this
+  upgrade (:pull:`1417`).
 
 * Andrew Huang added the ability to put the meridian and parallel gridline
   labels on the gridlines within the plot boundaries rather than
@@ -74,9 +74,10 @@ Features
 * Phil Elson added the ability to fetch image tiles using multiple
   threads. (:pull:`1232`)
 
-* Elliot Sales de Andrade added a :class:`cartopy.mpl.geoaxes.GeoAxes.GeoSpine`
-  class to replace the :func:`cartopy.mpl.geoaxes.GeoAxes.outline_patch`
-  that defines the map boundary. (:pull:`1213`)
+* Elliott Sales de Andrade added a
+  :class:`cartopy.mpl.geoaxes.GeoAxes.GeoSpine` class to replace the
+  :func:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` that defines the map
+  boundary. (:pull:`1213`)
 
 * Ryan May fixed the Geostationary projection boundary so that geometries
   no longer extend beyond the map domain. (:pull:`1216`)
@@ -86,8 +87,8 @@ Deprecations
 * This will be the last release with Python 2 support.
 
 * The default value for the ``origin`` argument to
-  :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` is now
-  ``'upper'`` to match the default in matplotlib.
+  :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` is now ``'upper'`` to match the
+  default in Matplotlib.
 
 
 --------
@@ -171,7 +172,7 @@ Features
   render vector images of the coastlines using a given
   projection to enable a quick preview. (:pull:`951`, :pull:`1196`)
 
-* Fixes were added by Elliott Sales de Andrade to support the matplotlib 3.x
+* Fixes were added by Elliott Sales de Andrade to support the Matplotlib 3.x
   series. (:pull:`1130`)
 
 * Ryan May fixed up the `.Geostationary` and `.NearsidePerspective` projections
@@ -248,11 +249,11 @@ Deprecations
 
 * In CartoPy 0.18, the default value for the ``origin`` argument to
   :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` will change from ``'lower'``
-  to ``'upper'`` to match the default in matplotlib.
+  to ``'upper'`` to match the default in Matplotlib.
 
 Incompatible Changes
 --------------------
-* Support for matplotlib < 1.5.1 and NumPy < 1.10 has been removed.
+* Support for Matplotlib < 1.5.1 and NumPy < 1.10 has been removed.
 
 --------
 
@@ -375,11 +376,11 @@ Features
   CARTOPY_USER_BACKGROUNDS environment variable.
 
 * The Web Map Tile Service (WMTS) interface has been extended so that WMTS
-  layers can be added to geoaxes in different projections.
+  layers can be added to GeoAxes in different projections.
 
 * The :class:`~cartopy.crs.NearsidePerspective` projection has been added.
 
-* Optional kwargs can now be supplied to the
+* Optional keyword arguments can now be supplied to the
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method, which will be passed to
   the OGC WMTS ``gettile`` method.
 
@@ -668,7 +669,7 @@ What's new in cartopy 0.11
   Hattersley to provide interactive pan and zoom OGC web services support for
   a Web Map Tile Service (WMTS) aware axes, which is available through the
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method. This includes support
-  for the Google Mercator projection and efficient WTMS tile caching. This new
+  for the Google Mercator projection and efficient WMTS tile caching. This new
   capability determines how to match up the available tiles projections
   with the target projection and chooses the zoom level to best match the pixel
   density in the rendered image.
@@ -906,7 +907,7 @@ Deprecations
 Feature API
 -----------
 
-A new features api is now available, see :doc:`tutorials/using_the_shapereader`.
+A new features API is now available, see :doc:`tutorials/using_the_shapereader`.
 
 .. figure:: gallery/images/sphx_glr_features_001.png
    :target: gallery/features.html
