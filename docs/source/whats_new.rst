@@ -10,6 +10,12 @@ For a full list of included Pull Requests and closed Issues, please see the
 Features
 --------
 
+* We are very pleased to announce that Greg Lucas has been added to the cartopy
+  core development team. Greg (@greglucas) added the NightShade feature in the
+  previous release, and has been instrumental in issue and PR triage leading up
+  to 0.18. He has also ensured that CI systems have kept working through
+  various upstream project changes.
+
 * Kevin Donkers and Phil Elson made the AdaptiveScalar the default for Natural
   Earth Features. This will make the default features look much nicer when
   plotting on zoomed in axes. (:pull:`1105`)
