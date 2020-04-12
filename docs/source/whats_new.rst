@@ -39,9 +39,9 @@ Features
         ax.gridlines(x_inline=True, draw_labels=True)
         plt.show()
 
-* Stephane Raynaud added longitude and latitude labeling
-  to all projections. It was previously restricted to the Mercator
-  and PlateCarree projections. (:pull:`1117`)
+* Stephane Raynaud added longitude and latitude labeling to all projections. It
+  was previously restricted to the Mercator and PlateCarree projections.
+  (:pull:`1117`)
 
     .. plot::
        :width: 400pt
@@ -57,19 +57,16 @@ Features
         ax.gridlines(draw_labels=True)
         plt.show()
 
-* Phil Elson added the (long awaited!)
-  ability to label contours on GeoAxes.
-  A :ref:`sphx_glr_gallery_contour_labels.py` example has
-  been added to the gallery demonstrating the new capability.
-  (:pull:`1257`)
+* Phil Elson added the (long awaited!) ability to label contours on GeoAxes. A
+  :ref:`sphx_glr_gallery_contour_labels.py` example has been added to the
+  gallery demonstrating the new capability.  (:pull:`1257`)
 
   .. figure:: _images/sphx_glr_contour_labels_001.png
    :target: gallery/contour_labels.html
    :align: center
 
-* Matthew Bradbury added the ability to query
-  `UK Ordnance Survey <https://apidocs.os.uk/>`_
-  image tiles. (:pull:`1214`)
+* Matthew Bradbury added the ability to query `UK Ordnance Survey
+  <https://apidocs.os.uk/>`_ image tiles. (:pull:`1214`)
 
 * Phil Elson added the ability to fetch image tiles using multiple
   threads. (:pull:`1232`)
