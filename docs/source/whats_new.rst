@@ -82,8 +82,15 @@ Features
   :attr:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` that defines the map
   boundary. (:pull:`1213`)
 
+* Elliott Sales de Andrade improved appearance of plots with tight layout.
+  (:pull:`1213` and :pull:`1422`)
+
 * Ryan May fixed the Geostationary projection boundary so that geometries
   no longer extend beyond the map domain. (:pull:`1216`)
+
+* Phil Elson added support for style composition of Features. This means that
+  the styles set on a Feature when it is created, and when it is added to an
+  Axes, will be processed consistently.
 
 Deprecations
 ------------
