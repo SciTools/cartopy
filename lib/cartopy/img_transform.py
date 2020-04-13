@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -34,8 +34,8 @@ import cartopy.crs as ccrs
 
 
 def mesh_projection(projection, nx, ny,
-                    x_extents=[None, None],
-                    y_extents=[None, None]):
+                    x_extents=(None, None),
+                    y_extents=(None, None)):
     """
     Return sample points in the given projection which span the entire
     projection range evenly.
@@ -69,11 +69,17 @@ def mesh_projection(projection, nx, ny,
 
     """
 
+    def extent(specified, default, index):
+        if specified[index] is not None:
+            return specified[index]
+        else:
+            return default[index]
+
     # Establish the x-direction and y-direction extents.
-    x_lower = x_extents[0] or projection.x_limits[0]
-    x_upper = x_extents[1] or projection.x_limits[1]
-    y_lower = y_extents[0] or projection.y_limits[0]
-    y_upper = y_extents[1] or projection.y_limits[1]
+    x_lower = extent(x_extents, projection.x_limits, 0)
+    x_upper = extent(x_extents, projection.x_limits, 1)
+    y_lower = extent(y_extents, projection.y_limits, 0)
+    y_upper = extent(y_extents, projection.y_limits, 1)
 
     # Calculate evenly spaced sample points spanning the
     # extent - excluding endpoint.
