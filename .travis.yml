@@ -7,14 +7,14 @@ env:
         - PYTHON_VERSION=2.7
           PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock futures"
         - PYTHON_VERSION=3.5
-          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
+          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 owslib=0.19.1"
           PYTHONHASHSEED=0  # So pytest-xdist works.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
           PACKAGES="cython numpy matplotlib-base proj4 pykdtree scipy fiona"
         - NAME="Latest everything (py2)."
           PYTHON_VERSION=2
-          PACKAGES="cython numpy matplotlib-base proj4 scipy mock futures"
+          PACKAGES="cython=0.29 numpy matplotlib-base proj4 scipy mock futures"
 
 
 sudo: false
@@ -93,6 +93,9 @@ script:
 
 after_success:
   - if [[ "$NAME" == "Latest everything"* ]]; then
+      if [[ "$PYTHON_VERSION" == 2* ]]; then
+          coverage combine;
+      fi;
       coveralls;
     fi
 

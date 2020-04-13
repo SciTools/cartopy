@@ -45,7 +45,7 @@ def main():
     # turn off the background patch and axes frame
     ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.LambertConformal(),
                       frameon=False)
-    ax.background_patch.set_visible(False)
+    ax.patch.set_visible(False)
 
     ax.set_extent([-125, -66.5, 20, 50], ccrs.Geodetic())
 

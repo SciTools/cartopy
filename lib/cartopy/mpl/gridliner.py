@@ -1,4 +1,4 @@
-# Copyright Cartopy Contributors
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of Cartopy and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
@@ -296,6 +296,54 @@ class Gridliner(object):
         # (or once drawn, only at resize event ?)
         self.axes.figure.canvas.mpl_connect('draw_event', self._draw_event)
 
+    @property
+    def xlabels_top(self):
+        warnings.warn('The .xlabels_top attribute is deprecated. Please '
+                      'use .top_labels to toggle visibility instead.')
+        return self.top_labels
+
+    @xlabels_top.setter
+    def xlabels_top(self, value):
+        warnings.warn('The .xlabels_top attribute is deprecated. Please '
+                      'use .top_labels to toggle visibility instead.')
+        self.top_labels = value
+
+    @property
+    def xlabels_bottom(self):
+        warnings.warn('The .xlabels_bottom attribute is deprecated. Please '
+                      'use .bottom_labels to toggle visibility instead.')
+        return self.bottom_labels
+
+    @xlabels_bottom.setter
+    def xlabels_bottom(self, value):
+        warnings.warn('The .xlabels_bottom attribute is deprecated. Please '
+                      'use .bottom_labels to toggle visibility instead.')
+        self.bottom_labels = value
+
+    @property
+    def ylabels_left(self):
+        warnings.warn('The .ylabels_left attribute is deprecated. Please '
+                      'use .left_labels to toggle visibility instead.')
+        return self.left_labels
+
+    @ylabels_left.setter
+    def ylabels_left(self, value):
+        warnings.warn('The .ylabels_left attribute is deprecated. Please '
+                      'use .left_labels to toggle visibility instead.')
+        self.left_labels = value
+
+    @property
+    def ylabels_right(self):
+        warnings.warn('The .ylabels_right attribute is deprecated. Please '
+                      'use .right_labels to toggle visibility instead.')
+        return self.right_labels
+
+    @ylabels_right.setter
+    def ylabels_right(self, value):
+        warnings.warn('The .ylabels_right attribute is deprecated. Please '
+                      'use .right_labels to toggle visibility instead.')
+        self.right_labels = value
+
     def _draw_event(self, event):
         if self.has_labels():
             self._update_labels_visibility(event.renderer)
@@ -346,8 +394,7 @@ class Gridliner(object):
                      self._round(np.percentile(lim, uq), cent))
         return midpoints
 
-    def _draw_gridliner(self, nx=None, ny=None, background_patch=None,
-                        renderer=None):
+    def _draw_gridliner(self, nx=None, ny=None, renderer=None):
         """Create Artists for all visible elements and add to our Axes."""
         # Check status
         if self._plotted:
@@ -355,8 +402,7 @@ class Gridliner(object):
         self._plotted = True
 
         # Inits
-        lon_lim, lat_lim = self._axes_domain(
-            nx=nx, ny=ny, background_patch=background_patch)
+        lon_lim, lat_lim = self._axes_domain(nx=nx, ny=ny)
 
         transform = self._crs_transform()
         rc_params = matplotlib.rcParams
@@ -440,7 +486,7 @@ class Gridliner(object):
         self._assert_can_draw_ticks()
 
         # Get the real map boundaries
-        map_boundary_vertices = self.axes.background_patch.get_path().vertices
+        map_boundary_vertices = self.axes.patch.get_path().vertices
         map_boundary = sgeom.Polygon(map_boundary_vertices)
 
         self._labels = []
@@ -731,8 +777,7 @@ class Gridliner(object):
 
                     # Finally check that it does not overlap the map
                     if outline_path is None:
-                        outline_path = (self.axes.background_patch
-                                        .get_path()
+                        outline_path = (self.axes.patch.get_path()
                                         .transformed(self.axes.transData))
                         if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
                             outline_path = remove_path_dupes(outline_path)
@@ -768,7 +813,7 @@ class Gridliner(object):
                             'supported.'.format(crs=self.crs))
         return True
 
-    def _axes_domain(self, nx=None, ny=None, background_patch=None):
+    def _axes_domain(self, nx=None, ny=None):
         """Return lon_range, lat_range"""
         DEBUG = False
 
@@ -787,13 +832,12 @@ class Gridliner(object):
 
         in_data = desired_trans.transform(coords)
 
-        ax_to_bkg_patch = self.axes.transAxes - \
-            background_patch.get_transform()
+        ax_to_bkg_patch = self.axes.transAxes - self.axes.patch.get_transform()
 
         # convert the coordinates of the data to the background patches
         # coordinates
         background_coord = ax_to_bkg_patch.transform(coords)
-        ok = background_patch.get_path().contains_points(background_coord)
+        ok = self.axes.patch.get_path().contains_points(background_coord)
 
         if DEBUG:
             import matplotlib.pyplot as plt

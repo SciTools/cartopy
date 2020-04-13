@@ -20,8 +20,10 @@ import cartopy.mpl.patch as cpatch
 from cartopy.tests.mpl import ImageTesting
 
 
+# Note: Matplotlib is broken here
+# https://github.com/matplotlib/matplotlib/issues/15946
 @pytest.mark.natural_earth
-@ImageTesting(['poly_interiors'])
+@ImageTesting(['poly_interiors'], tolerance=3.1)
 def test_polygon_interiors():
 
     ax = plt.subplot(211, projection=ccrs.PlateCarree())

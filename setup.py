@@ -1,19 +1,9 @@
-# (C) British Crown Copyright 2011 - 2020, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+
 from __future__ import print_function
 
 import fnmatch
@@ -33,9 +23,6 @@ import versioneer
 Distribution definition for Cartopy.
 
 """
-
-
-
 
 # The existence of a PKG-INFO directory is enough to tell us whether this is a
 # source installation or not (sdist).
@@ -101,68 +88,6 @@ def find_package_tree(root_path, root_package):
             packages.extend(['.'.join([root_package] + prefix + [dir_name])
                              for dir_name in dir_names])
     return packages
-
-
-class MissingHeaderError(Exception):
-    """
-    Raised when one or more files do not have the required copyright
-    and licence header.
-
-    """
-    pass
-
-
-class HeaderCheck(Command):
-    """
-    Checks that all the necessary files have the copyright and licence
-    header.
-
-    """
-
-    description = "check for copyright/licence headers"
-    user_options = []
-
-    exclude_patterns = ('./setup.py',
-                        './build/*',
-                        './docs/build/*',
-                        './dist/*',
-                        './lib/cartopy/examples/*.py')
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        check_paths = []
-        for root, dirs, files in os.walk('.'):
-            for file in files:
-                if file.endswith('.py') or file.endswith('.c'):
-                    path = os.path.join(root, file)
-                    check_paths.append(path)
-
-        for pattern in self.exclude_patterns:
-            exclude = lambda path: not fnmatch.fnmatch(path, pattern)
-            check_paths = list(filter(exclude, check_paths))
-
-        bad_paths = list(filter(self._header_bad, check_paths))
-        if bad_paths:
-            raise MissingHeaderError(bad_paths)
-
-    def _header_bad(self, path):
-        target = '(C) British Crown Copyright 2011 - 2012, Met Office'
-        with open(path, 'rt') as text_file:
-            # Check for the header on the first line.
-            line = text_file.readline().rstrip()
-            bad = target not in line
-
-            # Check if it was an executable script, with the header
-            # starting on the second line.
-            if bad and line == '#!/usr/bin/env python':
-                line = text_file.readline().rstrip()
-                bad = target not in line
-        return bad
 
 
 # Dependency checks
@@ -328,7 +253,7 @@ for name in os.listdir(os.path.join(HERE, 'requirements')):
             else:
                 extras_require[section].append(line.strip())
 install_requires = extras_require.pop('default')
-tests_require = extras_require.pop('tests', [])
+tests_require = extras_require.get('tests', [])
 
 # General extension paths
 if sys.platform.startswith('win'):
@@ -481,6 +406,7 @@ setup(
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: GIS',
             'Topic :: Scientific/Engineering :: Visualization',

@@ -10,16 +10,22 @@ For a full list of included Pull Requests and closed Issues, please see the
 Features
 --------
 
-* Kevin Donkers and Phil Elson made the AdaptiveScalar to the Natural
-  Earth Features the default. This will make the default features look
-  much nicer when plotting on zoomed in axes. (:pull:`1105`)
+* We are very pleased to announce that Greg Lucas has been added to the cartopy
+  core development team. Greg (@greglucas) added the NightShade feature in the
+  previous release, and has been instrumental in issue and PR triage leading up
+  to 0.18. He has also ensured that CI systems have kept working through
+  various upstream project changes.
 
-* Elliot Sales de Andrade added support for Matplotlib 3.2 and 3.3
+* Kevin Donkers and Phil Elson made the AdaptiveScalar the default for Natural
+  Earth Features. This will make the default features look much nicer when
+  plotting on zoomed in axes. (:pull:`1105`)
+
+* Elliott Sales de Andrade added support for Matplotlib 3.2 and 3.3
   (:pull:`1425`) and Python 3.7 and 3.8 (:pull:`1428`).
 
 * Alan Snow added the ability to use Proj version 6.x (:pull:`1289`) and
-  Elliot Sales de Andrade updated a lot of the tests and build issues
-  for this upgrade (:pull:`1417`).
+  Elliott Sales de Andrade updated a lot of the tests and build issues for this
+  upgrade (:pull:`1417`).
 
 * Andrew Huang added the ability to put the meridian and parallel gridline
   labels on the gridlines within the plot boundaries rather than
@@ -39,9 +45,9 @@ Features
         ax.gridlines(x_inline=True, draw_labels=True)
         plt.show()
 
-* Stephane Raynaud added longitude and latitude labeling
-  to all projections. It was previously restricted to the Mercator
-  and PlateCarree projections. (:pull:`1117`)
+* Stephane Raynaud added longitude and latitude labeling to all projections. It
+  was previously restricted to the Mercator and PlateCarree projections.
+  (:pull:`1117`)
 
     .. plot::
        :width: 400pt
@@ -57,38 +63,61 @@ Features
         ax.gridlines(draw_labels=True)
         plt.show()
 
-* Phil Elson added the (long awaited!)
-  ability to label contours on GeoAxes.
-  A :ref:`sphx_glr_gallery_contour_labels.py` example has
-  been added to the gallery demonstrating the new capability.
-  (:pull:`1257`)
+* Phil Elson added the (long awaited!) ability to label contours on GeoAxes. A
+  :ref:`sphx_glr_gallery_contour_labels.py` example has been added to the
+  gallery demonstrating the new capability.  (:pull:`1257`)
 
   .. figure:: _images/sphx_glr_contour_labels_001.png
    :target: gallery/contour_labels.html
    :align: center
 
-* Matthew Bradbury added the ability to query
-  `UK Ordnance Survey <https://apidocs.os.uk/>`_
-  image tiles. (:pull:`1214`)
+* Matthew Bradbury added the ability to query `UK Ordnance Survey
+  <https://apidocs.os.uk/>`_ image tiles. (:pull:`1214`)
 
 * Phil Elson added the ability to fetch image tiles using multiple
   threads. (:pull:`1232`)
 
-* Elliot Sales de Andrade added a :class:`cartopy.mpl.geoaxes.GeoAxes.GeoSpine`
-  class to replace the :func:`cartopy.mpl.geoaxes.GeoAxes.outline_patch`
-  that defines the map boundary. (:pull:`1213`)
+* Elliott Sales de Andrade added a
+  :class:`cartopy.mpl.geoaxes.GeoAxes.GeoSpine` class to replace the
+  :attr:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` that defines the map
+  boundary. (:pull:`1213`)
+
+* Elliott Sales de Andrade improved appearance of plots with tight layout.
+  (:pull:`1213` and :pull:`1422`)
 
 * Ryan May fixed the Geostationary projection boundary so that geometries
   no longer extend beyond the map domain. (:pull:`1216`)
+
+* Phil Elson added support for style composition of Features. This means that
+  the styles set on a Feature when it is created, and when it is added to an
+  Axes, will be processed consistently.
 
 Deprecations
 ------------
 * This will be the last release with Python 2 support.
 
 * The default value for the ``origin`` argument to
-  :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` is now
-  ``'upper'`` to match the default in matplotlib.
+  :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` is now ``'upper'`` to match the
+  default in Matplotlib.
 
+* The :attr:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` attribute is
+  deprecated. In its place, use Matplotlib's standard options for controlling
+  the Axes frame, or access ``GeoAxes.spines['geo']`` directly.
+
+* The :attr:`cartopy.mpl.geoaxes.GeoAxes.background_patch` attribute is
+  deprecated. In its place, use Matplotlib's standard options for controlling
+  the Axes patch, i.e., pass values to the constructor or access
+  ``GeoAxes.patch`` directly.
+
+* The gridliner labelling options
+  :attr:`cartopy.mpl.gridliner.Gridliner.xlabels_top`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.xlabels_bottom`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.ylabels_left`, and
+  :attr:`cartopy.mpl.gridliner.Gridliner.ylabels_right` are deprecated.
+  Instead, use :attr:`cartopy.mpl.gridliner.Gridliner.top_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.bottom_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.left_labels`, or
+  :attr:`cartopy.mpl.gridliner.Gridliner.right_labels`.
 
 --------
 
@@ -171,7 +200,7 @@ Features
   render vector images of the coastlines using a given
   projection to enable a quick preview. (:pull:`951`, :pull:`1196`)
 
-* Fixes were added by Elliott Sales de Andrade to support the matplotlib 3.x
+* Fixes were added by Elliott Sales de Andrade to support the Matplotlib 3.x
   series. (:pull:`1130`)
 
 * Ryan May fixed up the `.Geostationary` and `.NearsidePerspective` projections
@@ -248,11 +277,11 @@ Deprecations
 
 * In CartoPy 0.18, the default value for the ``origin`` argument to
   :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` will change from ``'lower'``
-  to ``'upper'`` to match the default in matplotlib.
+  to ``'upper'`` to match the default in Matplotlib.
 
 Incompatible Changes
 --------------------
-* Support for matplotlib < 1.5.1 and NumPy < 1.10 has been removed.
+* Support for Matplotlib < 1.5.1 and NumPy < 1.10 has been removed.
 
 --------
 
@@ -375,11 +404,11 @@ Features
   CARTOPY_USER_BACKGROUNDS environment variable.
 
 * The Web Map Tile Service (WMTS) interface has been extended so that WMTS
-  layers can be added to geoaxes in different projections.
+  layers can be added to GeoAxes in different projections.
 
 * The :class:`~cartopy.crs.NearsidePerspective` projection has been added.
 
-* Optional kwargs can now be supplied to the
+* Optional keyword arguments can now be supplied to the
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method, which will be passed to
   the OGC WMTS ``gettile`` method.
 
@@ -668,7 +697,7 @@ What's new in cartopy 0.11
   Hattersley to provide interactive pan and zoom OGC web services support for
   a Web Map Tile Service (WMTS) aware axes, which is available through the
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method. This includes support
-  for the Google Mercator projection and efficient WTMS tile caching. This new
+  for the Google Mercator projection and efficient WMTS tile caching. This new
   capability determines how to match up the available tiles projections
   with the target projection and chooses the zoom level to best match the pixel
   density in the rendered image.
@@ -906,7 +935,7 @@ Deprecations
 Feature API
 -----------
 
-A new features api is now available, see :doc:`tutorials/using_the_shapereader`.
+A new features API is now available, see :doc:`tutorials/using_the_shapereader`.
 
 .. figure:: gallery/images/sphx_glr_features_001.png
    :target: gallery/features.html
