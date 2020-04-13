@@ -39,6 +39,9 @@ class SlippyImageArtist(AxesImage):
     """
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
+        if matplotlib.__version__ >= '3':
+            # This artist fills the Axes, so should not influence layout.
+            kwargs.setdefault('in_layout', False)
         super(SlippyImageArtist, self).__init__(ax, **kwargs)
         self.cache = []
 
@@ -53,6 +56,9 @@ class SlippyImageArtist(AxesImage):
     def on_release(self, event=None):
         self.user_is_interacting = False
         self.stale = True
+
+    def get_window_extent(self, renderer=None):
+        return self.axes.get_window_extent(renderer=renderer)
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
