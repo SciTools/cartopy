@@ -97,7 +97,9 @@ jobs:
           environment:
             PYTHON_VERSION: 2
             EXTRA_PACKAGES: "futures"
-      - run: *deps-install
+      - run:
+          <<: *deps-install
+          no_output_timeout: "20m"
       - run: *cp-install
 
       - run: *doc-build
