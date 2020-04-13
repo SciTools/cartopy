@@ -62,8 +62,8 @@ class to produce customized gridlines and tick labels:
     gl.xlines = False
     gl.xlocator = mticker.FixedLocator([-180, -45, 0, 45, 180])
     gl.ylocator = LatitudeLocator()
-    gl.xformatter = LongitudeFormatter
-    gl.yformatter = LatitudeFormatter
+    gl.xformatter = LongitudeFormatter()
+    gl.yformatter = LatitudeFormatter()
     gl.xlabel_style = {'size': 15, 'color': 'gray'}
     gl.xlabel_style = {'color': 'red', 'weight': 'bold'}
 
