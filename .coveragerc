@@ -15,7 +15,7 @@ plugins = Cython.Coverage
 [paths]
 source =
     lib/cartopy
-    /home/travis/miniconda/envs/test-environment/lib/python?.?/site-packages/cartopy
+    /home/travis/miniconda/envs/test-environment/lib/python*/site-packages/cartopy
 
 [report]
 exclude_lines =

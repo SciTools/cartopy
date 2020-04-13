@@ -96,6 +96,7 @@ after_success:
       if [[ "$PYTHON_VERSION" == 2* ]]; then
           coverage combine;
       fi;
+      coveralls debug;
       coveralls;
     fi
 
