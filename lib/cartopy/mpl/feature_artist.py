@@ -1,19 +1,9 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+
 """
 This module defines the :class:`FeatureArtist` class, for drawing
 :class:`Feature` instances with matplotlib.
@@ -165,8 +155,9 @@ class FeatureArtist(matplotlib.artist.Artist):
         geoms = self._feature.intersecting_geometries(extent)
 
         # Combine all the keyword args in priority order.
-        prepared_kwargs = style_merge(
-                self._feature.kwargs, self._kwargs, kwargs)
+        prepared_kwargs = style_merge(self._feature.kwargs,
+                                      self._kwargs,
+                                      kwargs)
 
         # Freeze the kwargs so that we can use them as a dict key. We will
         # need to unfreeze this with dict(frozen) before passing to mpl.
@@ -219,8 +210,9 @@ class FeatureArtist(matplotlib.artist.Artist):
         for style, paths in stylised_paths.items():
             style = style_finalize(dict(style))
             # Build path collection and draw it.
-            c = matplotlib.collections.PathCollection(
-                    paths, transform=transform, **style)
+            c = matplotlib.collections.PathCollection(paths,
+                                                      transform=transform,
+                                                      **style)
             c.set_clip_path(ax.patch)
             c.set_figure(ax.figure)
             c.draw(renderer)

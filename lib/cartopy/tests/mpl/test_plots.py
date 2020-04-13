@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -40,6 +40,6 @@ def test_triplot_bbox_tight():
     triangles = np.asarray([[0, 1, 2]])
 
     fig = plt.figure()
-    ax = plt.axes(projection=ccrs.OSGB())
+    ax = plt.axes(projection=ccrs.OSGB(approx=False))
     ax.triplot(x, y, triangles, transform=ccrs.Geodetic())
     fig.savefig(BytesIO(), bbox_inches='tight')

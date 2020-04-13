@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -39,6 +39,7 @@ import shapely.geometry as sgeom
 import numpy as np
 import six
 
+import cartopy
 import cartopy.crs as ccrs
 
 
@@ -51,10 +52,15 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
     """
     _MAX_THREADS = 24
 
-    def __init__(self, desired_tile_form='RGB'):
+    def __init__(self, desired_tile_form='RGB',
+                 user_agent='CartoPy/' + cartopy.__version__):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
+        self.user_agent = user_agent
+        # some providers like osm need a user_agent in the request issue #1341
+        # osm may reject requests if there are too many of them, in which case
+        # a change of user_agent may fix the issue.
 
     def image_for_domain(self, target_domain, target_z):
         tiles = []
@@ -98,7 +104,7 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
         domain = sgeom.box(x0, y0, x1, y1)
         if domain.intersects(target_domain):
             if start_tile[2] == target_z:
-                    yield start_tile
+                yield start_tile
             else:
                 for tile in self._subtiles(start_tile):
                     for result in self._find_images(target_domain, target_z,
@@ -175,19 +181,24 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
 
     def get_image(self, tile):
         if six.PY3:
-            from urllib.request import urlopen
+            from urllib.request import urlopen, Request, HTTPError, URLError
         else:
-            from urllib2 import urlopen
+            from urllib2 import urlopen, Request, HTTPError, URLError
 
         url = self._image_url(tile)
+        try:
+            request = Request(url, headers={"User-Agent": self.user_agent})
+            fh = urlopen(request)
+            im_data = six.BytesIO(fh.read())
+            fh.close()
+            img = Image.open(im_data)
 
-        fh = urlopen(url)
-        im_data = six.BytesIO(fh.read())
-        fh.close()
-        img = Image.open(im_data)
+        except (HTTPError, URLError) as err:
+            print(err)
+            img = Image.fromarray(np.full((256, 256, 3), (250, 250, 250),
+                                          dtype=np.uint8))
 
         img = img.convert(self.desired_tile_form)
-
         return img, self.tileextent(tile), 'lower'
 
 
@@ -243,15 +254,15 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
 
 class MapQuestOSM(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
-    # http://devblog.mapquest.com/2016/06/15/
+    # https://developer.mapquest.com/web/products/open/map for terms of use
+    # https://devblog.mapquest.com/2016/06/15/
     # modernization-of-mapquest-results-in-changes-to-open-tile-access/
     # this now requires a sign up to a plan
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
+        url = 'https://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
             z, x, y)
-        mqdevurl = ('http://devblog.mapquest.com/2016/06/15/'
+        mqdevurl = ('https://devblog.mapquest.com/2016/06/15/'
                     'modernization-of-mapquest-results-in-changes'
                     '-to-open-tile-access/')
         warnings.warn('{} will require a log in and and will likely'
@@ -260,19 +271,20 @@ class MapQuestOSM(GoogleWTS):
 
 
 class MapQuestOpenAerial(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
+    # https://developer.mapquest.com/web/products/open/map for terms of use
     # The following attribution should be included in the resulting image:
     # "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture,
     #  Farm Service Agency"
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
+        url = 'https://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
             z, x, y)
         return url
 
 
 class OSM(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
+    # https://operations.osmfoundation.org/policies/tiles/ for terms of use
+
     def _image_url(self, tile):
         x, y, z = tile
         url = 'https://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
@@ -336,7 +348,9 @@ class StamenTerrain(Stamen):
     def __init__(self):
         warnings.warn(
             "The StamenTerrain class was deprecated in v0.17. "
-            "Please use Stamen('terrain-background') instead.")
+            "Please use Stamen('terrain-background') instead.",
+            DeprecationWarning,
+            stacklevel=2)
 
         # NOTE: This subclass of Stamen exists for legacy reasons.
         # No further Stamen subclasses will be accepted as

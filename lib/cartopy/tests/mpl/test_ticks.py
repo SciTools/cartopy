@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -139,7 +139,7 @@ def test_set_xyticks():
     projections = (ccrs.PlateCarree(),
                    ccrs.Mercator(globe=ccrs.Globe(
                        semimajor_axis=math.degrees(1))),
-                   ccrs.TransverseMercator())
+                   ccrs.TransverseMercator(approx=False))
     x = -3.275024
     y = 50.753998
     for i, prj in enumerate(projections, 1):

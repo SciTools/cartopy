@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -52,7 +52,7 @@ def test_julian_day():
     (datetime(2018, 9, 29, 14, 0), -(2 + 32/60), -(32 + 25/60)),
     (datetime(1992, 2, 14, 0, 0), -(13 + 20/60), -(176 + 26/60)),
     (datetime(2030, 6, 21, 0, 0), (23 + 26/60), -(179 + 34/60))
-    ])
+])
 def test_solar_position(dt, true_lat, true_lon):
     lat, lon = _solar_position(dt)
     assert pytest.approx(true_lat, 0.1) == lat

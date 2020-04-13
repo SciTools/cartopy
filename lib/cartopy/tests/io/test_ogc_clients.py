@@ -74,8 +74,8 @@ class TestWMSRasterSource(object):
         assert source.layers == self.layers
 
     def test_no_layers(self):
-        msg = 'One or more layers must be defined.'
-        with pytest.raises(ValueError, match=msg):
+        match = r'One or more layers must be defined\.'
+        with pytest.raises(ValueError, match=match):
             ogc.WMSRasterSource(self.URI, [])
 
     def test_extra_kwargs_empty(self):
@@ -103,7 +103,7 @@ class TestWMSRasterSource(object):
         # Patch dict of known Proj->SRS mappings so that it does
         # not include any of the available SRSs from the WMS.
         with mock.patch.dict('cartopy.io.ogc_clients._CRS_TO_OGC_SRS',
-                             {ccrs.OSNI(): 'EPSG:29901'},
+                             {ccrs.OSNI(approx=True): 'EPSG:29901'},
                              clear=True):
             msg = 'not available'
             with pytest.raises(ValueError, match=msg):
@@ -147,6 +147,7 @@ class TestWMSRasterSource(object):
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 class TestWMTSRasterSource(object):
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
@@ -174,8 +175,8 @@ class TestWMTSRasterSource(object):
     def test_unsupported_projection(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         with mock.patch('cartopy.io.ogc_clients._URN_TO_CRS', {}):
-            msg = 'Unable to find tile matrix for projection.'
-            with pytest.raises(ValueError, match=msg):
+            match = r'Unable to find tile matrix for projection\.'
+            with pytest.raises(ValueError, match=match):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):

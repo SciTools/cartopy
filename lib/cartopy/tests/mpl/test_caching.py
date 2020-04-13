@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -23,7 +23,7 @@ import six
 
 try:
     from owslib.wmts import WebMapTileService
-except ImportError as e:
+except ImportError:
     WebMapTileService = None
 import matplotlib.pyplot as plt
 import pytest
@@ -189,6 +189,7 @@ def test_contourf_transform_path_counting():
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()

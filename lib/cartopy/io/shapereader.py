@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -163,7 +163,10 @@ class BasicReader(object):
 
         """
         for i in range(self._reader.numRecords):
-            yield sgeom.shape(self._reader.shape(i))
+            shape = self._reader.shape(i)
+            # Skip the shape that can not be represented as geometry.
+            if shape.shapeType != shapefile.NULL:
+                yield sgeom.shape(shape)
 
     def records(self):
         """
@@ -307,7 +310,7 @@ class NEShpDownloader(Downloader):
     # Define the NaturalEarth URL template. The natural earth website
     # returns a 302 status if accessing directly, so we use the naciscdn
     # URL directly.
-    _NE_URL_TEMPLATE = ('http://naciscdn.org/naturalearth/{resolution}'
+    _NE_URL_TEMPLATE = ('https://naciscdn.org/naturalearth/{resolution}'
                         '/{category}/ne_{resolution}_{name}.zip')
 
     def __init__(self,

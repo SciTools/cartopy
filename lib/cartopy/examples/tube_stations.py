@@ -19,7 +19,7 @@ def tube_locations():
     Return an (n, 2) array of selected London Tube locations in Ordnance
     Survey GB coordinates.
 
-    Source: http://www.doogal.co.uk/london_stations.php
+    Source: https://www.doogal.co.uk/london_stations.php
 
     """
     return np.array([[531738., 180890.], [532379., 179734.],
@@ -58,9 +58,9 @@ def main():
     # Plot the locations twice, first with the red concentric circles,
     # then with the blue rectangle.
     xs, ys = tube_locations().T
-    ax.plot(xs, ys, transform=ccrs.OSGB(),
+    ax.plot(xs, ys, transform=ccrs.OSGB(approx=False),
             marker=concentric_circle, color='red', markersize=9, linestyle='')
-    ax.plot(xs, ys, transform=ccrs.OSGB(),
+    ax.plot(xs, ys, transform=ccrs.OSGB(approx=False),
             marker=rectangle, color='blue', markersize=11, linestyle='')
 
     ax.set_title('London underground locations')

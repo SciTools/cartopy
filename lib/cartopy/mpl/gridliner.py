@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -18,16 +18,15 @@
 from __future__ import (absolute_import, division, print_function)
 
 import operator
-from array import array
+import warnings
 
 import matplotlib
 import matplotlib.collections as mcollections
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
-import matplotlib.pyplot as plt
+import matplotlib.path as mpath
 import numpy as np
 import shapely.geometry as sgeom
-from warnings import warn
 
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
@@ -144,14 +143,14 @@ class Gridliner(object):
             the given CRS. Defaults to None, which implies automatic locating
             of the gridlines.
         xformatter: optional
-            A :class:`matplotlib.ticker.Formatter` instance to format
-            longitude labels. It defaults to None, which implies the use of a
-            :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
+            A :class:`matplotlib.ticker.Formatter` instance to format labels
+            for x-coordinate gridlines. It defaults to None, which implies the
+            use of a :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
             with the ``dms`` argument.
         yformatter: optional
-            A :class:`matplotlib.ticker.Formatter` instance to format
-            latitude labels. It defaults to None, which implies the use of a
-            :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
+            A :class:`matplotlib.ticker.Formatter` instance to format labels
+            for y-coordinate gridlines. It defaults to None, which implies the
+            use of a :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
             with the ``dms`` argument.
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
@@ -165,13 +164,16 @@ class Gridliner(object):
         y_inline: optional
             Toggle whether the y labels drawn should be inline.
         auto_inline: optional
-            Set x_inline and y_inline automatically based on projection
+            Set x_inline and y_inline automatically based on projection.
 
-        .. note:: Note that the "x" and "y" labels for locators and
-             formatters do not necessarily correspond to X and Y,
-             but to longitudes and latitudes: indeed, according to
-             geographical projections, meridians and parallels can
-             cross both the X axis and the Y axis.
+        Notes
+        -----
+        The "x" and "y" labels for locators and formatters do not necessarily
+        correspond to X and Y, but to the first and second coordinates of the
+        specified CRS. For the common case of PlateCarree gridlines, these
+        correspond to longitudes and latitudes. Depending on the projection
+        used for the map, meridians and parallels can cross both the X axis and
+        the Y axis.
         """
         self.axes = axes
 
@@ -239,10 +241,10 @@ class Gridliner(object):
         elif not auto_inline:
             self.y_inline = False
 
-        #: Whether to draw the longitude gridlines (meridians).
+        #: Whether to draw the x gridlines.
         self.xlines = True
 
-        #: Whether to draw the latitude gridlines (parallels).
+        #: Whether to draw the y gridlines.
         self.ylines = True
 
         #: A dictionary passed through to ``ax.text`` on x label creation
@@ -292,6 +294,54 @@ class Gridliner(object):
         # (or once drawn, only at resize event ?)
         self.axes.figure.canvas.mpl_connect('draw_event', self._draw_event)
 
+    @property
+    def xlabels_top(self):
+        warnings.warn('The .xlabels_top attribute is deprecated. Please '
+                      'use .top_labels to toggle visibility instead.')
+        return self.top_labels
+
+    @xlabels_top.setter
+    def xlabels_top(self, value):
+        warnings.warn('The .xlabels_top attribute is deprecated. Please '
+                      'use .top_labels to toggle visibility instead.')
+        self.top_labels = value
+
+    @property
+    def xlabels_bottom(self):
+        warnings.warn('The .xlabels_bottom attribute is deprecated. Please '
+                      'use .bottom_labels to toggle visibility instead.')
+        return self.bottom_labels
+
+    @xlabels_bottom.setter
+    def xlabels_bottom(self, value):
+        warnings.warn('The .xlabels_bottom attribute is deprecated. Please '
+                      'use .bottom_labels to toggle visibility instead.')
+        self.bottom_labels = value
+
+    @property
+    def ylabels_left(self):
+        warnings.warn('The .ylabels_left attribute is deprecated. Please '
+                      'use .left_labels to toggle visibility instead.')
+        return self.left_labels
+
+    @ylabels_left.setter
+    def ylabels_left(self, value):
+        warnings.warn('The .ylabels_left attribute is deprecated. Please '
+                      'use .left_labels to toggle visibility instead.')
+        self.left_labels = value
+
+    @property
+    def ylabels_right(self):
+        warnings.warn('The .ylabels_right attribute is deprecated. Please '
+                      'use .right_labels to toggle visibility instead.')
+        return self.right_labels
+
+    @ylabels_right.setter
+    def ylabels_right(self, value):
+        warnings.warn('The .ylabels_right attribute is deprecated. Please '
+                      'use .right_labels to toggle visibility instead.')
+        self.right_labels = value
+
     def _draw_event(self, event):
         if self.has_labels():
             self._update_labels_visibility(event.renderer)
@@ -327,8 +377,11 @@ class Gridliner(object):
         return int(base * round(float(x) / base))
 
     def _find_midpoints(self, lim, ticks):
-        # find the cneter point between each lat gridline
-        cent = np.diff(ticks).mean() / 2
+        # Find the center point between each lat gridline.
+        if len(ticks) > 1:
+            cent = np.diff(ticks).mean() / 2
+        else:
+            cent = np.nan
         if isinstance(self.axes.projection, _POLAR_PROJS):
             lq = 90
             uq = 90
@@ -339,8 +392,7 @@ class Gridliner(object):
                      self._round(np.percentile(lim, uq), cent))
         return midpoints
 
-    def _draw_gridliner(self, nx=None, ny=None, background_patch=None,
-                        renderer=None):
+    def _draw_gridliner(self, nx=None, ny=None, renderer=None):
         """Create Artists for all visible elements and add to our Axes."""
         # Check status
         if self._plotted:
@@ -348,8 +400,7 @@ class Gridliner(object):
         self._plotted = True
 
         # Inits
-        lon_lim, lat_lim = self._axes_domain(
-            nx=nx, ny=ny, background_patch=background_patch)
+        lon_lim, lat_lim = self._axes_domain(nx=nx, ny=ny)
 
         transform = self._crs_transform()
         rc_params = matplotlib.rcParams
@@ -381,16 +432,14 @@ class Gridliner(object):
         collection_kwargs.setdefault('linewidth', rc_params['grid.linewidth'])
 
         # Meridians
-        lon_lines = []
         lat_min, lat_max = lat_lim
         if lat_ticks:
             lat_min = min(lat_min, min(lat_ticks))
             lat_max = max(lat_max, max(lat_ticks))
-        for x in lon_ticks:
-            ticks = list(zip(
-                [x]*n_steps,
-                np.linspace(lat_min, lat_max, n_steps)))
-            lon_lines.append(ticks)
+        lon_lines = np.empty((len(lon_ticks), n_steps, 2))
+        lon_lines[:, :, 0] = np.array(lon_ticks)[:, np.newaxis]
+        lon_lines[:, :, 1] = np.linspace(lat_min, lat_max,
+                                         n_steps)[np.newaxis, :]
 
         if self.xlines:
             nx = len(lon_lines) + 1
@@ -407,16 +456,14 @@ class Gridliner(object):
             self.axes.add_collection(lon_lc, autolim=False)
 
         # Parallels
-        lat_lines = []
         lon_min, lon_max = lon_lim
         if lon_ticks:
             lon_min = min(lon_min, min(lon_ticks))
             lon_max = max(lon_max, max(lon_ticks))
-        for y in lat_ticks:
-            ticks = list(zip(
-                np.linspace(lon_min, lon_max, n_steps),
-                [y]*n_steps))
-            lat_lines.append(ticks)
+        lat_lines = np.empty((len(lat_ticks), n_steps, 2))
+        lat_lines[:, :, 0] = np.linspace(lon_min, lon_max,
+                                         n_steps)[np.newaxis, :]
+        lat_lines[:, :, 1] = np.array(lat_ticks)[:, np.newaxis]
         if self.ylines:
             lat_lc = mcollections.LineCollection(lat_lines,
                                                  **collection_kwargs)
@@ -437,7 +484,7 @@ class Gridliner(object):
         self._assert_can_draw_ticks()
 
         # Get the real map boundaries
-        map_boundary_vertices = self.axes.background_patch.get_path().vertices
+        map_boundary_vertices = self.axes.patch.get_path().vertices
         map_boundary = sgeom.Polygon(map_boundary_vertices)
 
         self._labels = []
@@ -455,18 +502,14 @@ class Gridliner(object):
 
             formatter.set_locs(line_ticks)
 
-            # lines = lines[::2]
-            # line_ticks = line_ticks[::2]
             for line, tick_value in zip(lines, line_ticks):
                 # Intersection of line with map boundary
-                line = np.array(line)
                 line = self.axes.projection.transform_points(
                     crs, line[:, 0], line[:, 1])[:, :2]
-                infs = np.isinf(line)
-                if infs.any():
-                    if infs.all():
-                        continue
-                    line = line.compress(~infs.any(axis=1), axis=0)
+                infs = np.isinf(line).any(axis=1)
+                line = line.compress(~infs, axis=0)
+                if line.size == 0:
+                    continue
                 line = sgeom.LineString(line)
                 if line.intersects(map_boundary):
                     intersection = line.intersection(map_boundary)
@@ -490,11 +533,9 @@ class Gridliner(object):
                             # that must be converted to a single linestring.
                             # This is an empirical workaround for a problem
                             # that can probably be solved in a cleaner way.
-                            x, y = intersection[0].coords.xy
-                            x += intersection[-1].coords.xy[0]
-                            y += intersection[-1].coords.xy[1]
-                            xy = np.array((x, y))
-                            intersection = [sgeom.LineString(xy.T)]
+                            xy = np.append(intersection[0], intersection[-1],
+                                           axis=0)
+                            intersection = [sgeom.LineString(xy)]
                         tails = []
                         heads = []
                         for inter in intersection:
@@ -507,23 +548,34 @@ class Gridliner(object):
                     elif isinstance(intersection,
                                     sgeom.collection.GeometryCollection):
                         # This is a collection of Point and LineString that
-                        # represent the same gridline. We only consider
-                        # the first and last geometries, merge their
-                        # coordinates and keep first or last two points
-                        # to get only one tail and and one head.
-                        tails = []
-                        heads = []
-                        for ht, slicer in [(tails, slice(0, 2)),
-                                           (heads, slice(-1, -3, -1))]:
-                            x = array('d', [])
-                            y = array('d', [])
-                            for geom in list(intersection.geoms)[slicer]:
-                                x += geom.xy[0]
-                                y += geom.xy[1]
-                            ht.append(list(zip(x[slicer], y[slicer])))
+                        # represent the same gridline.
+                        # We only consider the first geometries, merge their
+                        # coordinates and keep first two points to get only one
+                        # tail ...
+                        xy = []
+                        for geom in intersection.geoms:
+                            for coord in geom.coords:
+                                xy.append(coord)
+                                if len(xy) == 2:
+                                    break
+                            if len(xy) == 2:
+                                break
+                        tails = [xy]
+                        # ... and the last geometries, merge their coordinates
+                        # and keep last two points to get only one head.
+                        xy = []
+                        for geom in reversed(intersection.geoms):
+                            for coord in reversed(geom.coords):
+                                xy.append(coord)
+                                if len(xy) == 2:
+                                    break
+                            if len(xy) == 2:
+                                break
+                        heads = [xy]
                     else:
-                        warn('Unsupported intersection geometry for gridline'
-                             'labels: '+intersection.__class__)
+                        warnings.warn(
+                            'Unsupported intersection geometry for gridline '
+                            'labels: ' + intersection.__class__.__name__)
                         continue
                     del intersection
 
@@ -583,13 +635,6 @@ class Gridliner(object):
     def _text_angle_to_specs_(self, angle, lonlat):
         """Get specs for a rotated label from its angle in degrees"""
 
-        if matplotlib.__version__ >= '3.1':
-            # rotation_mode='anchor' and va_align_center='center_baseline'
-            # are incompatible before mpl-3.1
-            va_align_center = 'center_baseline'
-        else:
-            va_align_center = 'center'
-
         angle %= 360
         if angle > 180:
             angle -= 360
@@ -606,23 +651,19 @@ class Gridliner(object):
 
         # Options that depend in which quarter the angle falls
         if abs(angle) <= 45:
-
             loc = 'right'
-            kw.update(ha='left', va=va_align_center)
+            kw.update(ha='left', va='center')
 
         elif abs(angle) >= 135:
-
             loc = 'left'
-            kw.update(ha='right', va=va_align_center)
+            kw.update(ha='right', va='center')
             kw['rotation'] -= np.sign(angle) * 180
 
         elif angle > 45:
-
             loc = 'top'
             kw.update(ha='center', va='bottom', rotation=angle-90)
 
         else:
-
             loc = 'bottom'
             kw.update(ha='center', va='top', rotation=angle+90)
 
@@ -675,11 +716,26 @@ class Gridliner(object):
         max_delta_angle = 45
         axes_children = self.axes.get_children()
 
+        def remove_path_dupes(path):
+            """
+            Remove duplicate points in a path (zero-length segments).
+
+            This is necessary only for Matplotlib 3.1.0 -- 3.1.2, because
+            Path.intersects_path incorrectly returns True for any paths with
+            such segments.
+            """
+            segment_length = np.diff(path.vertices, axis=0)
+            mask = np.logical_or.reduce(segment_length != 0, axis=1)
+            mask = np.append(mask, True)
+            path = mpath.Path(np.compress(mask, path.vertices, axis=0),
+                              np.compress(mask, path.codes, axis=0))
+            return path
+
         for lonlat, priority, artist in self._labels:
 
             if artist not in axes_children:
-                warn('The labels of this gridliner do not belong'
-                     'to the gridliner axes')
+                warnings.warn('The labels of this gridliner do not belong to '
+                              'the gridliner axes')
 
             # Compute angles to try
             orig_specs = {'rotation': artist.get_rotation(),
@@ -688,9 +744,8 @@ class Gridliner(object):
             angles = [None]
             for abs_delta_angle in np.arange(delta_angle, max_delta_angle+1,
                                              delta_angle):
-                for sign_delta_angle in (1, -1):
-                    angle = artist._angle + sign_delta_angle * abs_delta_angle
-                    angles.append(angle)
+                angles.append(artist._angle + abs_delta_angle)
+                angles.append(artist._angle - abs_delta_angle)
 
             # Loop on angles until it works
             for angle in angles:
@@ -700,12 +755,14 @@ class Gridliner(object):
 
                 if angle is not None:
                     specs, _ = self._segment_angle_to_text_specs(angle, lonlat)
-                    plt.setp(artist, **specs)
+                    artist.update(specs)
 
                 artist.update_bbox_position_size(renderer)
                 this_patch = artist.get_bbox_patch()
                 this_path = this_patch.get_path().transformed(
                     this_patch.get_transform())
+                if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
+                    this_path = remove_path_dupes(this_path)
                 visible = False
 
                 for path in paths:
@@ -718,8 +775,10 @@ class Gridliner(object):
 
                     # Finally check that it does not overlap the map
                     if outline_path is None:
-                        outline_path = self.axes.background_patch.get_path(
-                        ).transformed(self.axes.transData)
+                        outline_path = (self.axes.patch.get_path()
+                                        .transformed(self.axes.transData))
+                        if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
+                            outline_path = remove_path_dupes(outline_path)
                     visible = (not outline_path.intersects_path(this_path) or
                                (lonlat == 'lon' and self.x_inline) or
                                (lonlat == 'lat' and self.y_inline))
@@ -735,7 +794,7 @@ class Gridliner(object):
             # Action
             artist.set_visible(visible)
             if not visible:
-                plt.setp(artist, **orig_specs)
+                artist.update(orig_specs)
             else:
                 paths.append(this_path)
 
@@ -752,7 +811,7 @@ class Gridliner(object):
                             'supported.'.format(crs=self.crs))
         return True
 
-    def _axes_domain(self, nx=None, ny=None, background_patch=None):
+    def _axes_domain(self, nx=None, ny=None):
         """Return lon_range, lat_range"""
         DEBUG = False
 
@@ -771,13 +830,12 @@ class Gridliner(object):
 
         in_data = desired_trans.transform(coords)
 
-        ax_to_bkg_patch = self.axes.transAxes - \
-            background_patch.get_transform()
+        ax_to_bkg_patch = self.axes.transAxes - self.axes.patch.get_transform()
 
         # convert the coordinates of the data to the background patches
         # coordinates
         background_coord = ax_to_bkg_patch.transform(coords)
-        ok = background_patch.get_path().contains_points(background_coord)
+        ok = self.axes.patch.get_path().contains_points(background_coord)
 
         if DEBUG:
             import matplotlib.pyplot as plt
@@ -797,9 +855,14 @@ class Gridliner(object):
             # np.isfinite must be used to prevent np.inf values that
             # not filtered by np.nanmax for some projections
             lat_max = np.compress(np.isfinite(inside[:, 1]),
-                                  inside[:, 1]).max()
-            lon_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
-            lat_range = np.nanmin(inside[:, 1]), lat_max
+                                  inside[:, 1])
+            if lat_max.size == 0:
+                lon_range = self.crs.x_limits
+                lat_range = self.crs.y_limits
+            else:
+                lat_max = lat_max.max()
+                lon_range = np.nanmin(inside[:, 0]), np.nanmax(inside[:, 0])
+                lat_range = np.nanmin(inside[:, 1]), lat_max
 
         # XXX Cartopy specific thing. Perhaps make this bit a specialisation
         # in a subclass...

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -19,10 +19,10 @@ Provide shapely geometry <-> matplotlib path support.
 
 
 See also `Shapely Geometric Objects <see_also_shapely>`_
-and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
+and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
 
 .. see_also_shapely:
-   http://toblerity.org/shapely/manual.html#geometric-objects
+   https://shapely.readthedocs.io/en/latest/manual.html#geometric-objects
 
 """
 
@@ -167,8 +167,14 @@ def path_to_geos(path, force_ccw=False):
         if len(path_verts) == 0:
             continue
 
-        verts_same_as_first = np.all(path_verts[0, :] == path_verts[1:, :],
-                                     axis=1)
+        if path_codes[-1] == Path.CLOSEPOLY:
+            path_verts[-1, :] = path_verts[0, :]
+
+        verts_same_as_first = np.isclose(path_verts[0, :], path_verts[1:, :],
+                                         rtol=1e-10, atol=1e-13)
+        verts_same_as_first = np.logical_and.reduce(verts_same_as_first,
+                                                    axis=1)
+
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
         elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:

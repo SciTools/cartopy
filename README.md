@@ -1,6 +1,6 @@
 <h1 align="center" style="margin:1em;">
-  <a href="http://scitools.org.uk/cartopy/docs/latest/">
-    <img src="http://scitools.org.uk/cartopy/docs/latest/_static/cartopy.png"
+  <a href="https://scitools.org.uk/cartopy/docs/latest/">
+    <img src="https://scitools.org.uk/cartopy/docs/latest/_static/cartopy.png"
          alt="Cartopy"></a>
 </h1>
 
@@ -68,7 +68,7 @@ It features:
 - powerful vector data handling by integrating shapefile reading with Shapely
   capabilities
 
-Documentation can be found at <http://scitools.org.uk/cartopy/docs/latest/>.
+Documentation can be found at <https://scitools.org.uk/cartopy/docs/latest/>.
 
 ## Get in touch
 
@@ -95,7 +95,7 @@ our [contributing guide](.github/CONTRIBUTING.md) for more details on how
 you can get involved.
 
 Cartopy is released under a LGPL license with a shared copyright model.
-See [LICENSE](LICENSE) for full terms.
+See [COPYING](COPYING) and [COPYING.LESSER](COPYING.LESSER) for full terms.
 
 The [Met Office](https://metoffice.gov.uk) has made a significant
 contribution to the development, maintenance and support of this library.

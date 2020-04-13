@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from __future__ import (absolute_import, division, print_function)
 
@@ -33,10 +22,16 @@ from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 _ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
 _CONTOUR_STYLE = _STREAMPLOT_STYLE = 'classic'
+_CONTOUR_TOL = 0.5
 if MPL_VERSION >= '3.0.0':
     _CONTOUR_IMAGE = 'global_contour_wrap'
     _CONTOUR_STYLE = 'mpl20'
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
+    if MPL_VERSION < '3.2.0':
+        _CONTOUR_TOL = 0.74
+    if MPL_VERSION >= '3.2.0':
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.2.0'
+    else:
+        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
     # Should have been the case for anything but _1.4.3, but we don't want to
     # regenerate those images again.
     _STREAMPLOT_STYLE = 'mpl20'
@@ -45,13 +40,15 @@ else:
     if MPL_VERSION >= '2.1.0':
         _STREAMPLOT_IMAGE = 'streamplot_mpl_2.1.0'
     elif MPL_VERSION >= '2':
+        _CONTOUR_TOL = 11.4
         _STREAMPLOT_IMAGE = 'streamplot_mpl_2.0.0'
     else:
+        _CONTOUR_TOL = 11.4
         _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE)
+@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE, tolerance=_CONTOUR_TOL)
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -61,7 +58,7 @@ def test_global_contour_wrap_new_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE)
+@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE, tolerance=_CONTOUR_TOL)
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -111,7 +108,8 @@ def test_global_pcolor_wrap_no_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'])
+@ImageTesting(['global_scatter_wrap'],
+              tolerance=12.4 if MPL_VERSION < '2.1.0' else 0.5)
 def test_global_scatter_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     # By default the coastline feature will be drawn after patches.
@@ -124,7 +122,8 @@ def test_global_scatter_wrap_new_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'])
+@ImageTesting(['global_scatter_wrap'],
+              tolerance=12.4 if MPL_VERSION < '2.1.0' else 0.5)
 def test_global_scatter_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=0)
@@ -134,7 +133,7 @@ def test_global_scatter_wrap_no_transform():
 
 
 @ImageTesting(['global_map'],
-              tolerance=16 if ccrs.PROJ4_VERSION < (4, 9) else 0.1)
+              tolerance=1.93 if MPL_VERSION < '2.1.0' else 0.55)
 def test_global_map():
     plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
@@ -159,14 +158,15 @@ def test_simple_global():
 
 @pytest.mark.natural_earth
 @ImageTesting(['multiple_projections4' if ccrs.PROJ4_VERSION < (5, 0, 0)
-               else 'multiple_projections5'])
+               else 'multiple_projections5'],
+              tolerance=0.81)
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
                    ccrs.Robinson(),
                    ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
-                   ccrs.OSGB(),
-                   ccrs.TransverseMercator(),
+                   ccrs.OSGB(approx=True),
+                   ccrs.TransverseMercator(approx=True),
                    ccrs.Mercator(
                        globe=ccrs.Globe(semimajor_axis=math.degrees(1)),
                        min_latitude=-85., max_latitude=85.),
@@ -195,7 +195,7 @@ def test_multiple_projections():
 
         ax.set_global()
 
-        ax.coastlines()
+        ax.coastlines(resolution="110m")
 
         plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
 
@@ -274,7 +274,8 @@ def test_axes_natural_earth_interface():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap1'])
+@ImageTesting(['pcolormesh_global_wrap1'],
+              tolerance=6.3 if MPL_VERSION < '2.1.0' else 1.27)
 def test_pcolormesh_global_with_wrap1():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -296,10 +297,17 @@ def test_pcolormesh_global_with_wrap1():
     ax.set_global()  # make sure everything is visible
 
 
+tolerance = 1.61
+if MPL_VERSION < '2.1.0':
+    tolerance = 6.4
+if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
+    tolerance += 0.8
+
+
 @pytest.mark.natural_earth
 @ImageTesting(
     ['pcolormesh_global_wrap2'],
-    tolerance=1.8 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0) else 0.5)
+    tolerance=tolerance)
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -325,10 +333,17 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global()  # make sure everything is visible
 
 
+tolerance = 1.39
+if MPL_VERSION < '2.1.0':
+    tolerance = 2.5
+if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
+    tolerance += 1.4
+
+
 @pytest.mark.natural_earth
 @ImageTesting(
     ['pcolormesh_global_wrap3'],
-    tolerance=2.4 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0) else _ROB_TOL)
+    tolerance=tolerance)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -365,9 +380,10 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global()  # make sure everything is visible
 
 
+@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_limited_area_wrap'],
-              tolerance=1.41 if MPL_VERSION >= '2.1.0' else 0.7)
+              tolerance=1.82 if MPL_VERSION >= '2.1.0' else 0.7)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
@@ -427,6 +443,7 @@ def test_pcolormesh_single_column_wrap():
     ax.set_global()
 
 
+@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_goode_wrap'])
 def test_pcolormesh_goode_wrap():
@@ -442,8 +459,9 @@ def test_pcolormesh_goode_wrap():
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_mercator_wrap'])
+@ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
 def test_pcolormesh_mercator_wrap():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
@@ -455,6 +473,7 @@ def test_pcolormesh_mercator_wrap():
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['quiver_plate_carree'])
 def test_quiver_plate_carree():
@@ -469,7 +488,7 @@ def test_quiver_plate_carree():
     # plot on native projection
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.quiver(x, y, u, v, mag)
     # plot on a different projection
     ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
@@ -478,6 +497,7 @@ def test_quiver_plate_carree():
     ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree())
 
 
+@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['quiver_rotated_pole'])
 def test_quiver_rotated_pole():
@@ -522,7 +542,7 @@ def test_quiver_regrid():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_regrid_with_extent'])
+@ImageTesting(['quiver_regrid_with_extent'], tolerance=0.51)
 def test_quiver_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -541,7 +561,8 @@ def test_quiver_regrid_with_extent():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_plate_carree'])
+@ImageTesting(['barbs_plate_carree'],
+              tolerance=8 if MPL_VERSION < '2.1.0' else 0.5)
 def test_barbs():
     x = np.arange(-60, 45, 5)
     y = np.arange(30, 75, 5)
@@ -553,17 +574,18 @@ def test_barbs():
     # plot on native projection
     ax = plt.subplot(211, projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, length=4, linewidth=.25)
     # plot on a different projection
     ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_regrid'])
+@ImageTesting(['barbs_regrid'],
+              tolerance=2.9 if MPL_VERSION < '2.1.0' else 0.5)
 def test_barbs_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -581,7 +603,7 @@ def test_barbs_regrid():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_regrid_with_extent'])
+@ImageTesting(['barbs_regrid_with_extent'], tolerance=0.54)
 def test_barbs_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -611,7 +633,7 @@ def test_barbs_1d():
     plt.figure(figsize=(6, 5))
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
              length=8, linewidth=1, color='#7f7f7f')
 
@@ -633,7 +655,7 @@ def test_barbs_1d_transformed():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_STREAMPLOT_IMAGE], style=_STREAMPLOT_STYLE)
+@ImageTesting([_STREAMPLOT_IMAGE], style=_STREAMPLOT_STYLE, tolerance=0.54)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

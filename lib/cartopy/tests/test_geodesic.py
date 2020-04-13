@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2015 - 2018, Met Office
+# (C) British Crown Copyright 2015 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -29,7 +29,7 @@ class TestGeodesic(object):
     def setup_class(self):
         """
         Data sampled from the GeographicLib Test Data for Geodesics at:
-        http://geographiclib.sourceforge.net/html/geodesic.html#testgeod
+        https://geographiclib.sourceforge.io/html/geodesic.html#testgeod
 
         """
         self.geod = geodesic.Geodesic()
@@ -151,7 +151,7 @@ def test_geometry_length_ndarray():
 
 def test_geometry_length_linestring():
     geod = geodesic.Geodesic()
-    geom = sgeom.LineString(np.array([lhr, jfk, lhr]).T)
+    geom = sgeom.LineString(np.array([lhr, jfk, lhr]))
     expected = pytest.approx(lhr_to_jfk * 2, abs=1)
     assert geod.geometry_length(geom) == expected
 
@@ -159,8 +159,8 @@ def test_geometry_length_linestring():
 def test_geometry_length_multilinestring():
     geod = geodesic.Geodesic()
     geom = sgeom.MultiLineString(
-        [sgeom.LineString(np.array([lhr, jfk]).T),
-         sgeom.LineString(np.array([tul, jfk]).T)])
+        [sgeom.LineString(np.array([lhr, jfk])),
+         sgeom.LineString(np.array([tul, jfk]))])
     expected = pytest.approx(lhr_to_jfk + jfk_to_tul, abs=1)
     assert geod.geometry_length(geom) == expected
 
@@ -182,5 +182,5 @@ def test_geometry_length_polygon():
 def test_geometry_length_point():
     geod = geodesic.Geodesic()
     geom = sgeom.Point(lhr)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         geod.geometry_length(geom)

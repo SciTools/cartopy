@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -242,7 +242,9 @@ def srtm(lon, lat):
     Elevation is in meters.
     """
     warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.")
+                  "See the \"What's new\" section for v0.12.",
+                  DeprecationWarning,
+                  stacklevel=2)
     return SRTM3Source().single_tile(lon, lat)
 
 
@@ -294,7 +296,9 @@ def fill_gaps(elevation, max_distance=10):
 
     """
     warnings.warn("The fill_gaps function has been deprecated. "
-                  "See the \"What's new\" section for v0.14.")
+                  "See the \"What's new\" section for v0.14.",
+                  DeprecationWarning,
+                  stacklevel=2)
     # Lazily import osgeo - it is only an optional dependency for cartopy.
     from osgeo import gdal
     from osgeo import gdal_array
@@ -314,7 +318,9 @@ def fill_gaps(elevation, max_distance=10):
 
 def srtm_composite(lon_min, lat_min, nx, ny):
     warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.")
+                  "See the \"What's new\" section for v0.12.",
+                  DeprecationWarning,
+                  stacklevel=2)
     return SRTM3Source().combined(lon_min, lat_min, nx, ny)
 
 
@@ -382,7 +388,9 @@ def SRTM3_retrieve(lon, lat):
 
     """
     warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.")
+                  "See the \"What's new\" section for v0.12.",
+                  DeprecationWarning,
+                  stacklevel=2)
     return SRTM3Source().srtm_fname(lon, lat)
 
 

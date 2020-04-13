@@ -154,7 +154,10 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         return minlon, maxlon
 
     def _repr_html_(self):
-        import cgi
+        if not six.PY2:
+            from html import escape
+        else:
+            from cgi import escape
         try:
             # As matplotlib is not a core cartopy dependency, don't error
             # if it's not available.
@@ -176,7 +179,7 @@ class Projection(six.with_metaclass(ABCMeta, CRS)):
         # "Rewind" the buffer to the start and return it as an svg string.
         buf.seek(0)
         svg = buf.read()
-        return '{}<pre>{}</pre>'.format(svg, cgi.escape(repr(self)))
+        return '{}<pre>{}</pre>'.format(svg, escape(repr(self)))
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
@@ -803,7 +806,7 @@ class TransverseMercator(Projection):
     """
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
-                 scale_factor=1.0, globe=None):
+                 scale_factor=1.0, globe=None, approx=None):
         """
         Parameters
         ----------
@@ -818,15 +821,33 @@ class TransverseMercator(Projection):
             Y offset from the planar origin in metres. Defaults to 0.
         scale_factor: optional
             Scale factor at the central meridian. Defaults to 1.
+
         globe: optional
             An instance of :class:`cartopy.crs.Globe`. If omitted, a default
             globe is created.
 
+        approx: optional
+            Whether to use Proj's approximate projection (True), or the new
+            Extended Transverse Mercator code (False). Defaults to True, but
+            will change to False in the next release.
+
         """
+        if approx is None:
+            warnings.warn('The default value for the *approx* keyword '
+                          'argument to TransverseMercator will change '
+                          'from True to False after 0.18.',
+                          stacklevel=2)
+            approx = True
         proj4_params = [('proj', 'tmerc'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
+        if PROJ4_VERSION < (6, 0, 0):
+            if not approx:
+                proj4_params[0] = ('proj', 'etmerc')
+        else:
+            if approx:
+                proj4_params += [('approx', None)]
         super(TransverseMercator, self).__init__(proj4_params, globe=globe)
 
     @property
@@ -851,12 +872,19 @@ class TransverseMercator(Projection):
 
 
 class OSGB(TransverseMercator):
-    def __init__(self):
+    def __init__(self, approx=None):
+        if approx is None:
+            warnings.warn('The default value for the *approx* keyword '
+                          'argument to OSGB will change from True to '
+                          'False after 0.18.',
+                          stacklevel=2)
+            approx = True
         super(OSGB, self).__init__(central_longitude=-2, central_latitude=49,
                                    scale_factor=0.9996012717,
                                    false_easting=400000,
                                    false_northing=-100000,
-                                   globe=Globe(datum='OSGB36', ellipse='airy'))
+                                   globe=Globe(datum='OSGB36', ellipse='airy'),
+                                   approx=approx)
 
     @property
     def boundary(self):
@@ -874,7 +902,13 @@ class OSGB(TransverseMercator):
 
 
 class OSNI(TransverseMercator):
-    def __init__(self):
+    def __init__(self, approx=None):
+        if approx is None:
+            warnings.warn('The default value for the *approx* keyword '
+                          'argument to OSNI will change from True to '
+                          'False after 0.18.',
+                          stacklevel=2)
+            approx = True
         globe = Globe(semimajor_axis=6377340.189,
                       semiminor_axis=6356034.447938534)
         super(OSNI, self).__init__(central_longitude=-8,
@@ -882,7 +916,8 @@ class OSNI(TransverseMercator):
                                    scale_factor=1.000035,
                                    false_easting=200000,
                                    false_northing=250000,
-                                   globe=globe)
+                                   globe=globe,
+                                   approx=approx)
 
     @property
     def boundary(self):
@@ -1140,7 +1175,9 @@ class LambertConformal(Projection):
         elif secant_latitudes is not None:
             warnings.warn('secant_latitudes has been deprecated in v0.12. '
                           'The standard_parallels keyword can be used as a '
-                          'direct replacement.')
+                          'direct replacement.',
+                          DeprecationWarning,
+                          stacklevel=2)
             standard_parallels = secant_latitudes
         elif standard_parallels is None:
             # The default. Put this as a keyword arg default once
@@ -1404,12 +1441,14 @@ class Stereographic(Projection):
                         'The Stereographic projection in Proj older than '
                         '5.0.0 incorrectly transforms points when '
                         'central_latitude=0. Use this projection with '
-                        'caution.')
+                        'caution.',
+                        stacklevel=2)
             else:
                 warnings.warn(
                     'Cannot determine Proj version. The Stereographic '
                     'projection may be unreliable and should be used with '
-                    'caution.')
+                    'caution.',
+                    stacklevel=2)
 
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
@@ -1419,7 +1458,8 @@ class Stereographic(Projection):
             if central_latitude not in (-90., 90.):
                 warnings.warn('"true_scale_latitude" parameter is only used '
                               'for polar stereographic projections. Consider '
-                              'the use of "scale_factor" instead.')
+                              'the use of "scale_factor" instead.',
+                              stacklevel=2)
             proj4_params.append(('lat_ts', true_scale_latitude))
 
         if scale_factor is not None:
@@ -1495,13 +1535,15 @@ class Orthographic(Projection):
         if PROJ4_VERSION != ():
             if (5, 0, 0) <= PROJ4_VERSION < (5, 1, 0):
                 warnings.warn(
-                    'The Orthographic projection in Proj between 5.0.0 and '
-                    '5.1.0 incorrectly transforms points. Use this projection '
-                    'with caution.')
+                    'The Orthographic projection in the v5.0.x series of Proj '
+                    'incorrectly transforms points. Use this projection with '
+                    'caution.',
+                    stacklevel=2)
         else:
             warnings.warn(
                 'Cannot determine Proj version. The Orthographic projection '
-                'may be unreliable and should be used with caution.')
+                'may be unreliable and should be used with caution.',
+                stacklevel=2)
 
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
@@ -1833,11 +1875,13 @@ class Robinson(_WarpedRectangularProjection):
                 warnings.warn('The Robinson projection in the v4.8.x series '
                               'of Proj contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
-                              'caution.')
+                              'caution.',
+                              stacklevel=2)
         else:
             warnings.warn('Cannot determine Proj version. The Robinson '
                           'projection may be unreliable and should be used '
-                          'with caution.')
+                          'with caution.',
+                          stacklevel=2)
 
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super(Robinson, self).__init__(proj4_params, central_longitude,
@@ -2259,11 +2303,13 @@ class AzimuthalEquidistant(Projection):
                 warnings.warn('The Azimuthal Equidistant projection in Proj '
                               'older than 4.9.2 incorrectly transforms points '
                               'farther than 90 deg from the origin. Use this '
-                              'projection with caution.')
+                              'projection with caution.',
+                              stacklevel=2)
         else:
             warnings.warn('Cannot determine Proj version. The Azimuthal '
                           'Equidistant projection may be unreliable and '
-                          'should be used with caution.')
+                          'should be used with caution.',
+                          stacklevel=2)
 
         proj4_params = [('proj', 'aeqd'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude),
@@ -2368,7 +2414,7 @@ class Sinusoidal(Projection):
 
 
 # MODIS data products use a Sinusoidal projection of a spherical Earth
-# http://modis-land.gsfc.nasa.gov/GCTP.html
+# https://modis-land.gsfc.nasa.gov/GCTP.html
 Sinusoidal.MODIS = Sinusoidal(globe=Globe(ellipse=None,
                                           semimajor_axis=6371007.181,
                                           semiminor_axis=6371007.181))

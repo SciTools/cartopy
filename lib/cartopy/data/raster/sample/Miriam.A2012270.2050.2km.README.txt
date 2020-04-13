@@ -1,5 +1,5 @@
 Imagery comes from
-http://lance-modis.eosdis.nasa.gov/cgi-bin/imagery/single.cgi?image=Miriam.A2012270.2050.2km.jpg
+https://lance-modis.eosdis.nasa.gov/cgi-bin/imagery/single.cgi?image=Miriam.A2012270.2050.2km.jpg
 
 Extent: (-120.67660000000001, -106.32104523100001, 13.2301484511245, 30.766899999999502)
 World file contents:

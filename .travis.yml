@@ -7,14 +7,14 @@ env:
         - PYTHON_VERSION=2.7
           PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 mock futures"
         - PYTHON_VERSION=3.5
-          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1"
+          PACKAGES="cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 libgfortran=1 owslib=0.19.1"
           PYTHONHASHSEED=0  # So pytest-xdist works.
         - NAME="Latest everything."
           PYTHON_VERSION=3.6
           PACKAGES="cython numpy matplotlib-base proj4 pykdtree scipy fiona"
-        - NAME="Latest everything (py2k)."
+        - NAME="Latest everything (py2)."
           PYTHON_VERSION=2
-          PACKAGES="cython numpy matplotlib proj4 scipy mock futures"
+          PACKAGES="cython=0.29 numpy matplotlib-base proj4 scipy mock futures"
 
 
 sudo: false
@@ -40,18 +40,30 @@ install:
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
+  - if [[ "$NAME" != "Latest*" ]]; then
+      conda config --set restore_free_channel true;
+    fi
   - ENV_NAME="test-environment"
-  - conda create -n $ENV_NAME python=$PYTHON_VERSION
-  - source activate $ENV_NAME
 
   # Customise the testing environment
   # ---------------------------------
   - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
-  - if [[ "$NAME" == "Latest everything"* ]]; then
+  - |
+    if [[ "$NAME" == "Latest everything"* ]]; then
         PACKAGES="$PACKAGES pytest-cov coveralls";
         export CYTHON_COVERAGE=1;
+        if [[ "$PYTHON_VERSION" == 2* ]]; then
+            # Latest available pytest-forked requires a newer pytest than available.
+            PACKAGES="$PACKAGES pytest-forked<1.1.0"
+        fi
     fi
-  - conda install --quiet $PACKAGES
+  - conda create -n $ENV_NAME python=$PYTHON_VERSION $PACKAGES
+  - source activate $ENV_NAME
+  # Re-install so it's using FreeType 2.6; conda-forge/label/testing does not
+  # include the latest Python 2-compatible Matplotlib.
+  - if [[ "$NAME" == "Latest everything (py2)." ]]; then
+        pip install --force matplotlib;
+    fi
 
   # Conda debug
   # -----------
@@ -81,6 +93,9 @@ script:
 
 after_success:
   - if [[ "$NAME" == "Latest everything"* ]]; then
+      if [[ "$PYTHON_VERSION" == 2* ]]; then
+          coverage combine;
+      fi;
       coveralls;
     fi
 

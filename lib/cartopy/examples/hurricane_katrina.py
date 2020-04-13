@@ -22,7 +22,7 @@ def sample_data():
     for Hurricane Katrina (2005).
 
     The data was originally sourced from the HURDAT2 dataset from AOML/NOAA:
-    http://www.aoml.noaa.gov/hrd/hurdat/newhurdat-all.html on 14th Dec 2012.
+    https://www.aoml.noaa.gov/hrd/hurdat/newhurdat-all.html on 14th Dec 2012.
 
     """
     lons = [-75.1, -75.7, -76.2, -76.5, -76.9, -77.7, -78.4, -79.0,
@@ -45,7 +45,7 @@ def main():
     # turn off the background patch and axes frame
     ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.LambertConformal(),
                       frameon=False)
-    ax.background_patch.set_visible(False)
+    ax.patch.set_visible(False)
 
     ax.set_extent([-125, -66.5, 20, 50], ccrs.Geodetic())
 

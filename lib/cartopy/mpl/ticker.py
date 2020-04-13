@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2014 - 2019, Met Office
+# (C) British Crown Copyright 2014 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -57,11 +57,7 @@ class _PlateCarreeFormatter(Formatter):
         self._precision = 5  # locator precision
 
     def __call__(self, value, pos=None):
-        if self.axis is not None:
-
-            if not isinstance(self.axis.axes, GeoAxes):
-                raise TypeError("This formatter can only be "
-                                "used with cartopy GeoAxes.")
+        if self.axis is not None and isinstance(self.axis.axes, GeoAxes):
 
             # We want to produce labels for values in the familiar Plate Carree
             # projection, so convert the tick values from their own projection
@@ -166,22 +162,22 @@ class _PlateCarreeFormatter(Formatter):
         else:
             number_format = self._degrees_number_format
         return u'{value:{number_format}}{symbol}'.format(
-                value=abs(deg),
-                number_format=number_format,
-                symbol=self._degree_symbol)
+            value=abs(deg),
+            number_format=number_format,
+            symbol=self._degree_symbol)
 
     def _format_minutes(self, mn):
         """Format minutes as an integer"""
         return u'{value:d}{symbol}'.format(
-                value=int(mn),
-                symbol=self._minute_symbol)
+            value=int(mn),
+            symbol=self._minute_symbol)
 
     def _format_seconds(self, sec):
         """Format seconds as an float"""
         return u'{value:{fmt}}{symbol}'.format(
-                value=sec,
-                fmt=self._seconds_num_format,
-                symbol=self._second_symbol)
+            value=sec,
+            fmt=self._seconds_num_format,
+            symbol=self._second_symbol)
 
     def _apply_transform(self, value, target_proj, source_crs):
         """
@@ -289,7 +285,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
-            )
+        )
 
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
@@ -405,7 +401,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
-            )
+        )
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
 
@@ -460,12 +456,13 @@ class LongitudeFormatter(_PlateCarreeFormatter):
 
 
 class LongitudeLocator(MaxNLocator):
-    """A locator for longitudes that works even at very small scale
+    """
+    A locator for longitudes that works even at very small scale.
 
     Parameters
     ----------
     dms: bool
-        Allow the locator to stop on on minutes and seconds (False by default)
+        Allow the locator to stop on minutes and seconds (False by default)
     """
 
     default_params = MaxNLocator.default_params.copy()
@@ -473,9 +470,9 @@ class LongitudeLocator(MaxNLocator):
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
-        MaxNLocator.set_params(self, **kwargs)
         if 'dms' in kwargs:
-            self._dms = kwargs['dms']
+            self._dms = kwargs.pop('dms')
+        MaxNLocator.set_params(self, **kwargs)
 
     def _guess_steps(self, vmin, vmax):
 
@@ -506,12 +503,13 @@ class LongitudeLocator(MaxNLocator):
 
 
 class LatitudeLocator(LongitudeLocator):
-    """A locator for latitudes that works even at very small scale
+    """
+    A locator for latitudes that works even at very small scale.
 
     Parameters
     ----------
     dms: bool
-        Allow the locator to stop on on minutes and seconds (False by default)
+        Allow the locator to stop on minutes and seconds (False by default)
     """
     def tick_values(self, vmin, vmax):
         vmin = max(vmin, -90.)
@@ -525,8 +523,8 @@ class LatitudeLocator(LongitudeLocator):
 
     def _raw_ticks(self, vmin, vmax):
         ticks = LongitudeLocator._raw_ticks(self, vmin, vmax)
-        return [t for t in ticks if t >= -90 and t <= 90]
+        return [t for t in ticks if -90 <= t <= 90]
 
     def bin_boundaries(self, vmin, vmax):
         ticks = LongitudeLocator.bin_boundaries(self, vmin, vmax)
-        return [t for t in ticks if t >= -90 and t <= 90]
+        return [t for t in ticks if -90 <= t <= 90]

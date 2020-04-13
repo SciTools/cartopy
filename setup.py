@@ -1,47 +1,36 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+
 from __future__ import print_function
+
+import fnmatch
+import os
+import subprocess
+import sys
+import warnings
+from collections import defaultdict
+from distutils.spawn import find_executable
+from distutils.sysconfig import get_config_var
+
+from setuptools import Command, Extension, convert_path, setup
+
+import versioneer
 
 """
 Distribution definition for Cartopy.
 
 """
 
-import setuptools
-from setuptools import setup, Extension
-from setuptools import Command
-from setuptools import convert_path
-from distutils.spawn import find_executable
-from distutils.sysconfig import get_config_var
-import fnmatch
-import os
-import subprocess
-import sys
-import warnings
-
-import versioneer
-
-
 # The existence of a PKG-INFO directory is enough to tell us whether this is a
 # source installation or not (sdist).
 HERE = os.path.dirname(__file__)
 IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
+FORCE_CYTHON = os.environ.get('FORCE_CYTHON', False)
 
-if not IS_SDIST:
+if not IS_SDIST or FORCE_CYTHON:
     import Cython
     if Cython.__version__ < '0.28':
         raise ImportError(
@@ -99,68 +88,6 @@ def find_package_tree(root_path, root_package):
             packages.extend(['.'.join([root_package] + prefix + [dir_name])
                              for dir_name in dir_names])
     return packages
-
-
-class MissingHeaderError(Exception):
-    """
-    Raised when one or more files do not have the required copyright
-    and licence header.
-
-    """
-    pass
-
-
-class HeaderCheck(Command):
-    """
-    Checks that all the necessary files have the copyright and licence
-    header.
-
-    """
-
-    description = "check for copyright/licence headers"
-    user_options = []
-
-    exclude_patterns = ('./setup.py',
-                        './build/*',
-                        './docs/build/*',
-                        './dist/*',
-                        './lib/cartopy/examples/*.py')
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        check_paths = []
-        for root, dirs, files in os.walk('.'):
-            for file in files:
-                if file.endswith('.py') or file.endswith('.c'):
-                    path = os.path.join(root, file)
-                    check_paths.append(path)
-
-        for pattern in self.exclude_patterns:
-            exclude = lambda path: not fnmatch.fnmatch(path, pattern)
-            check_paths = list(filter(exclude, check_paths))
-
-        bad_paths = list(filter(self._header_bad, check_paths))
-        if bad_paths:
-            raise MissingHeaderError(bad_paths)
-
-    def _header_bad(self, path):
-        target = '(C) British Crown Copyright 2011 - 2012, Met Office'
-        with open(path, 'rt') as text_file:
-            # Check for the header on the first line.
-            line = text_file.readline().rstrip()
-            bad = target not in line
-
-            # Check if it was an executable script, with the header
-            # starting on the second line.
-            if bad and line == '#!/usr/bin/env python':
-                line = text_file.readline().rstrip()
-                bad = target not in line
-        return bad
 
 
 # Dependency checks
@@ -235,6 +162,18 @@ def find_proj_version_by_program(conda=None):
     return proj_version
 
 
+def get_proj_libraries():
+    """
+    This function gets the PROJ libraries to cythonize with
+    """
+    proj_libraries = ["proj"]
+    if os.name == "nt" and (6, 0, 0) <= proj_version < (6, 3, 0):
+        proj_libraries = [
+            "proj_{}_{}".format(proj_version[0], proj_version[1])
+        ]
+    return proj_libraries
+
+
 conda = os.getenv('CONDA_DEFAULT_ENV')
 if conda is not None and conda in sys.prefix:
     # Conda does not provide pkg-config compatibility, but the search paths
@@ -250,7 +189,7 @@ if conda is not None and conda in sys.prefix:
         exit(1)
 
     proj_includes = []
-    proj_libraries = ['proj']
+    proj_libraries = get_proj_libraries()
     proj_library_dirs = []
 
 else:
@@ -273,7 +212,7 @@ else:
             exit(1)
 
         proj_includes = []
-        proj_libraries = ['proj']
+        proj_libraries = get_proj_libraries()
         proj_library_dirs = []
     else:
         if proj_version < PROJ_MIN_VERSION:
@@ -314,7 +253,7 @@ for name in os.listdir(os.path.join(HERE, 'requirements')):
             else:
                 extras_require[section].append(line.strip())
 install_requires = extras_require.pop('default')
-tests_require = extras_require.pop('tests', [])
+tests_require = extras_require.get('tests', [])
 
 # General extension paths
 if sys.platform.startswith('win'):
@@ -322,11 +261,11 @@ if sys.platform.startswith('win'):
         return '.'
 include_dir = get_config_var('INCLUDEDIR')
 library_dir = get_config_var('LIBDIR')
-if sys.platform.startswith('win'):
-    extra_extension_args = {}
-else:
-    extra_extension_args = dict(
-        runtime_library_dirs=[get_config_var('LIBDIR')])
+extra_extension_args = defaultdict(list)
+if not sys.platform.startswith('win'):
+    extra_extension_args["runtime_library_dirs"].append(
+        get_config_var('LIBDIR')
+    )
 
 # Description
 # ===========
@@ -335,10 +274,14 @@ with open(os.path.join(HERE, 'README.md'), 'r') as fh:
 
 
 cython_coverage_enabled = os.environ.get('CYTHON_COVERAGE', None)
+if proj_version >= (6, 0, 0):
+    extra_extension_args["define_macros"].append(
+        ('ACCEPT_USE_OF_DEPRECATED_PROJ_API_H', '1')
+    )
 if cython_coverage_enabled:
-    extra_cython_args = {'define_macros': [('CYTHON_TRACE_NOGIL', '1')]}
-    extra_extension_args.update(extra_cython_args)
-
+    extra_extension_args["define_macros"].append(
+        ('CYTHON_TRACE_NOGIL', '1')
+    )
 
 extensions = [
     Extension(
@@ -398,7 +341,7 @@ def decythonize(extensions, **_ignore):
 
 cmdclass = versioneer.get_cmdclass()
 
-if IS_SDIST:
+if IS_SDIST and not FORCE_CYTHON:
     extensions = decythonize(extensions)
 else:
     cmdclass.update({'build_ext': cy_build_ext})
@@ -409,7 +352,7 @@ else:
 setup(
     name='Cartopy',
     version=versioneer.get_version(),
-    url='http://scitools.org.uk/cartopy/docs/latest/',
+    url='https://scitools.org.uk/cartopy/docs/latest/',
     download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',
     description='A cartographic python library with Matplotlib support for '
@@ -447,6 +390,7 @@ setup(
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
     classifiers=[
             'Development Status :: 4 - Beta',
+            'Framework :: Matplotlib',
             'License :: OSI Approved :: GNU Lesser General Public License v3 '
             'or later (LGPLv3+)',
             'Operating System :: MacOS :: MacOS X',
@@ -462,6 +406,7 @@ setup(
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: GIS',
             'Topic :: Scientific/Engineering :: Visualization',

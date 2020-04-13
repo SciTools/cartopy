@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# (C) British Crown Copyright 2011 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -31,7 +31,7 @@ class TestLineString(object):
     def test_out_of_bounds(self):
         # Check that a line that is completely out of the map boundary produces
         # a valid LineString
-        projection = ccrs.TransverseMercator(central_longitude=0)
+        projection = ccrs.TransverseMercator(central_longitude=0, approx=True)
 
         # For both start & end, define a point that results in well-defined
         # projection coordinates and one that results in NaN.
@@ -184,7 +184,8 @@ class TestBisect(object):
         assert len(multi_line_string[0].coords) == 2
 
     def test_nan_start(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90)
+        projection = ccrs.TransverseMercator(central_longitude=-90,
+                                             approx=False)
         line_string = sgeom.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string) == 1
@@ -194,7 +195,8 @@ class TestBisect(object):
                     'Unexpected NaN in projected coords.'
 
     def test_nan_end(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90)
+        projection = ccrs.TransverseMercator(central_longitude=-90,
+                                             approx=False)
         line_string = sgeom.LineString([(-10, 30), (10, 50)])
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
@@ -208,7 +210,8 @@ class TestBisect(object):
 
 class TestMisc(object):
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90)
+        projection = ccrs.TransverseMercator(central_longitude=-90,
+                                             approx=False)
         line_string = sgeom.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show

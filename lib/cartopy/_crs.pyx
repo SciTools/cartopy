@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 #
 # cython: embedsignature=True
 
@@ -70,6 +59,61 @@ class Proj4Error(Exception):
         msg = 'Error from proj: {}'.format(pj_strerrno(status))
         self.status = status
         Exception.__init__(self, msg)
+
+
+def _safe_pj_transform_611(CRS src_crs not None, CRS tgt_crs not None,
+                           int npts, int offset,
+                           np.ndarray[np.double_t] x not None,
+                           np.ndarray[np.double_t] y not None,
+                           np.ndarray[np.double_t] z):
+    """
+    Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
+
+    See https://github.com/OSGeo/proj#1782.
+    """
+    cdef int status
+
+    lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
+
+    if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
+            src_crs.proj4_params.get('o_proj', '') in lonlat and
+            'to_meter' in src_crs.proj4_params):
+       x *= src_crs.proj4_params['to_meter']
+       y *= src_crs.proj4_params['to_meter']
+
+    if z is not None:
+        status = pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
+                              &x[0], &y[0], &z[0])
+    else:
+        status = pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
+                              &x[0], &y[0], NULL)
+
+    if (tgt_crs.proj4_params.get('proj', '') == 'ob_tran' and
+            tgt_crs.proj4_params.get('o_proj', '') in lonlat and
+           'to_meter' in tgt_crs.proj4_params):
+        x /= tgt_crs.proj4_params['to_meter']
+        y /= tgt_crs.proj4_params['to_meter']
+
+    return status
+
+
+def _safe_pj_transform_pre_611(CRS src_crs not None, CRS tgt_crs not None,
+                               int npts, int offset,
+                               np.ndarray[np.double_t] x not None,
+                               np.ndarray[np.double_t] y not None,
+                               np.ndarray[np.double_t] z):
+    if z is not None:
+        return pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
+                            &x[0], &y[0], &z[0])
+    else:
+        return pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
+                            &x[0], &y[0], NULL)
+
+
+if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
+    _safe_pj_transform = _safe_pj_transform_611
+else:
+    _safe_pj_transform = _safe_pj_transform_pre_611
 
 
 class Globe(object):
@@ -214,23 +258,38 @@ cdef class CRS:
         instance of this class (e.g. an empty tuple). The state will then be
         added via __getstate__ and __setstate__.
 
+        We are forced to this approach because a CRS does not store
+        the constructor keyword arguments in its state.
+
         """
-        return self.__class__, tuple()
+        return self.__class__, (), self.__getstate__()
 
     def __getstate__(self):
         """Return the full state of this instance for reconstruction
         in ``__setstate__``.
 
         """
-        return {'proj4_params': self.proj4_params}
+        state = self.__dict__.copy()
+        # Remove the proj4 instance and the proj4_init string, which can
+        # be re-created (in __setstate__) from the other arguments.
+        state.pop('proj4', None)
+        state.pop('proj4_init', None)
+        state['proj4_params'] = self.proj4_params
+        return state
 
     def __setstate__(self, state):
         """
         Take the dictionary created by ``__getstate__`` and passes it
-        through to the class's __init__ method.
+        through to this implementation's __init__ method.
 
         """
-        self.__init__(self, **state)
+        # Strip out the key state items for a CRS instance.
+        CRS_state = {key: state.pop(key) for key in ['proj4_params', 'globe']}
+        # Put everything else directly into the dict of the instance.
+        self.__dict__.update(state)
+        # Call the init of this class to ensure that the projection is
+        # properly initialised with proj4.
+        CRS.__init__(self, **CRS_state)
 
     # TODO
     #def __str__
@@ -298,26 +357,26 @@ cdef class CRS:
 
         """
         cdef:
-            double cx, cy
+            np.ndarray[np.double_t, ndim=1] cx, cy
             int status
-        cx = x
-        cy = y
+        cx = np.array([x])
+        cy = np.array([y])
         if src_crs.is_geodetic():
             cx *= DEG_TO_RAD
             cy *= DEG_TO_RAD
-        status = pj_transform(src_crs.proj4, self.proj4, 1, 1, &cx, &cy, NULL);
+        status = _safe_pj_transform(src_crs, self, 1, 1, cx, cy, None)
 
         if trap and status == -14 or status == -20:
             # -14 => "latitude or longitude exceeded limits"
             # -20 => "tolerance condition error"
-            cx = cy = NAN
+            cx[0] = cy[0] = np.nan
         elif trap and status != 0:
             raise Proj4Error()
 
         if self.is_geodetic():
             cx *= RAD_TO_DEG
             cy *= RAD_TO_DEG
-        return (cx, cy)
+        return (cx[0], cy[0])
 
     def transform_points(self, CRS src_crs not None,
                                 np.ndarray x not None,
@@ -392,8 +451,9 @@ cdef class CRS:
         # call proj. The result array is modified in place. This is only
         # safe if npts is not 0.
         if npts:
-            status = pj_transform(src_crs.proj4, self.proj4, npts, 3,
-                                  &result[0, 0], &result[0, 1], &result[0, 2])
+            status = _safe_pj_transform(src_crs, self, npts, 3,
+                                        result[:, 0], result[:, 1],
+                                        result[:, 2])
 
         if self.is_geodetic():
             result[:, :2] = np.rad2deg(result[:, :2])
@@ -546,7 +606,7 @@ class Geodetic(CRS):
         super(Geodetic, self).__init__(proj4_params, globe)
 
     # XXX Implement fwd such as Basemap's Geod. Would be used in the tissot example.
-    # Could come from http://geographiclib.sourceforge.net
+    # Could come from https://geographiclib.sourceforge.io
 
 
 class Geocentric(CRS):

@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2016 - 2018, Met Office
+# (C) British Crown Copyright 2016 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -75,7 +75,7 @@ class TestSinusoidal(object):
 
     def test_MODIS(self):
         # Testpoints verified with MODLAND Tile Calculator
-        # http://landweb.nascom.nasa.gov/cgi-bin/developer/tilemap.cgi
+        # https://landweb.nascom.nasa.gov/cgi-bin/developer/tilemap.cgi
         # Settings: Sinusoidal, Global map coordinates, Forward mapping
         crs = ccrs.Sinusoidal.MODIS
         lons = np.array([-180, -50, 40, 180])

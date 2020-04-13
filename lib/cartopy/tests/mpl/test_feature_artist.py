@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018, Met Office
+# (C) British Crown Copyright 2018 - 2019, Met Office
 #
 # This file is part of cartopy.
 #
@@ -31,6 +31,7 @@ import cartopy.mpl.geoaxes as geoaxes
 from cartopy.feature import ShapelyFeature
 from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
 from cartopy.mpl import style
+
 
 @pytest.mark.parametrize("source, expected", [
     [{1: 0}, frozenset({(1, 0)})],
