@@ -28,5 +28,6 @@ cdef class CRS:
     cdef projPJ proj4
     cdef readonly proj4_init
     cdef proj4_params
+    cdef readonly globe
 
     cpdef is_geodetic(self)

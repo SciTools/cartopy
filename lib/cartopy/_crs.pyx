@@ -275,6 +275,7 @@ cdef class CRS:
         state.pop('proj4', None)
         state.pop('proj4_init', None)
         state['proj4_params'] = self.proj4_params
+        state['globe'] = self.globe
         return state
 
     def __setstate__(self, state):
