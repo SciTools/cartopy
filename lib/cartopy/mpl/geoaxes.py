@@ -1312,8 +1312,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def gridlines(self, crs=None, draw_labels=False,
                   xlocs=None, ylocs=None, dms=False,
-                  x_inline=None, y_inline=None,
-                  auto_inline=True, **kwargs):
+                  x_inline=None, y_inline=None, auto_inline=True,
+                  xformatter=None, yformatter=None,
+                  **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1350,6 +1351,18 @@ class GeoAxes(matplotlib.axes.Axes):
             Toggle whether the y labels drawn should be inline.
         auto_inline: optional
             Set x_inline and y_inline automatically based on projection
+        xformatter: optional
+            A :class:`matplotlib.ticker.Formatter` instance to format labels
+            for x-coordinate gridlines. It defaults to None, which implies the
+            use of a :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
+            with the ``dms`` argument, if the crs is of
+            :class:`~cartopy.crs.PlateCarree` type.
+        yformatter: optional
+            A :class:`matplotlib.ticker.Formatter` instance to format labels
+            for y-coordinate gridlines. It defaults to None, which implies the
+            use of a :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
+            with the ``dms`` argument, if the crs is of
+            :class:`~cartopy.crs.PlateCarree` type.
 
         Keyword Parameters
         ------------------
@@ -1377,7 +1390,8 @@ class GeoAxes(matplotlib.axes.Axes):
         gl = Gridliner(
             self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
             ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
-            x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline)
+            x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline,
+            xformatter=xformatter, yformatter=yformatter)
         self._gridliners.append(gl)
         return gl
 
