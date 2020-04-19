@@ -599,6 +599,7 @@ class Gridliner(object):
                                     continue
                                 x = x_midpoints[i]
                                 y = tick_value
+                                kw.update(clip_on=True)
                                 y_set = True
                             else:
                                 x = pt0[0]
@@ -609,6 +610,7 @@ class Gridliner(object):
                                     continue
                                 x = tick_value
                                 y = y_midpoints[i]
+                                kw.update(clip_on=True)
                             elif not y_set:
                                 y = pt0[1]
 
@@ -739,10 +741,10 @@ class Gridliner(object):
                 warnings.warn('The labels of this gridliner do not belong to '
                               'the gridliner axes')
 
-            # Compute angles to try
             orig_specs = {'rotation': artist.get_rotation(),
                           'ha': artist.get_ha(),
                           'va': artist.get_va()}
+            # Compute angles to try
             angles = [None]
             for abs_delta_angle in np.arange(delta_angle, max_delta_angle+1,
                                              delta_angle):
