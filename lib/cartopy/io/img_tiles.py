@@ -22,6 +22,7 @@ import concurrent.futures
 import io
 import json
 import os
+from uuid import uuid4
 import warnings
 
 from PIL import Image
@@ -52,12 +53,7 @@ class GoogleWTS(metaclass=ABCMeta):
         # a change of user_agent may fix the issue.
         self.cache_path = cache_path
         self.cache = {}
-        if self.cache_path is not None:
-            try:
-                os.makedirs(self.cache_path)
-            except OSError:
-                pass
-            self._load_cache()
+        self._load_cache()
 
     def image_for_domain(self, target_domain, target_z):
         tiles = []
@@ -88,8 +84,7 @@ class GoogleWTS(metaclass=ABCMeta):
 
         img, extent, origin = _merge_tiles(tiles)
 
-        if self.cache_path is not None:
-            self._save_cache()
+        self._save_cache()
 
         return img, extent, origin
 
@@ -107,7 +102,8 @@ class GoogleWTS(metaclass=ABCMeta):
     def _save_cache(self):
         """Save the cache"""
         if self.cache_path is not None and self.cache:
-            from uuid import uuid4
+            if not os.path.exists(self.cache_path):
+                os.makedirs(self.cache_path)
             files = self._cache_files()
             already_cached = self._fetch_cache(files)
 
