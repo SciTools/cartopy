@@ -295,7 +295,7 @@ def test_cache(tmpdir):
     tmpdir_str = tmpdir.strpath
 
     # Fetch tiles and save them in the cache
-    gt = cimgt.GoogleTiles(cache=tmpdir_str)
+    gt = cimgt.GoogleTiles(cache_path=tmpdir_str)
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
 
     ll_target_domain = sgeom.box(-10, 50, 10, 60)
@@ -324,9 +324,9 @@ def test_cache(tmpdir):
         (33, 21, 6, '8ea3e1caff873c7947d2ef4f7f353ae4')
     ]
     base_url = (
-        'https://chart.googleapis.com/chart?chst=d_text_outline&chs=256x256&chf=bg,'
-        's,00000055&chld=FFFFFF|16|h|000000|b||||Google:%20%20({},{})|Zoom%20{}||||'
-        '||____________________________'
+        'https://chart.googleapis.com/chart?chst=d_text_outline&chs=256x256&'
+        'chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||Google:%20%20({},{})'
+        '|Zoom%20{}||||||____________________________'
     )
 
     # Check the results
@@ -341,12 +341,12 @@ def test_cache(tmpdir):
     url_ids = json.load(open(os.path.join(tmpdir_str, "files")))
 
     assert sorted(hashes.values()) == sorted([
-        h for _, _, _, h in x_y_z_h
+        h for x, y, z, h in x_y_z_h
     ])
 
     assert sorted(url_ids.keys()) == sorted([
         base_url.format(x, y, z)
-        for x, y, z, _ in x_y_z_h
+        for x, y, z, h in x_y_z_h
     ])
 
     url_hashes = {url: hashes[uid + ".tiff"] for url, uid in url_ids.items()}
@@ -361,8 +361,9 @@ def test_cache(tmpdir):
         img = Image.new('RGB', (255, 255), "white")
         img.save(filename)
 
-    gt_cache = cimgt.GoogleTiles(cache=tmpdir_str)
-    gt_cache._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt_cache)
+    gt_cache = cimgt.GoogleTiles(cache_path=tmpdir_str)
+    gt_cache._image_url = types.MethodType(
+        GOOGLE_IMAGE_URL_REPLACEMENT, gt_cache)
     img_cache, _, _ = gt_cache.image_for_domain(target_domain, 6)
 
     # Check that the new image_for_domain() call used cached images

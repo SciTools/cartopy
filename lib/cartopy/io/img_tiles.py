@@ -18,6 +18,7 @@ using tiles in this way can be found at the
 """
 
 from abc import ABCMeta, abstractmethod
+from builtins import FileExistsError
 import concurrent.futures
 import io
 import json
@@ -101,10 +102,7 @@ class GoogleWTS(metaclass=ABCMeta):
         already_cached = {}
         if os.path.exists(files):
             with open(files) as f:
-                try:
-                    already_cached = json.load(f)
-                except:
-                    already_cached = {}
+                already_cached = json.load(f)
         return already_cached
 
     def _save_cache(self):
@@ -252,7 +250,8 @@ class GoogleWTS(metaclass=ABCMeta):
 class GoogleTiles(GoogleWTS):
     def __init__(self, desired_tile_form='RGB', style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
-                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'), cache_path=None):
+                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
+                 cache_path=None):
         """
         Parameters
         ----------
@@ -587,7 +586,11 @@ class OrdnanceSurvey(GoogleWTS):
     https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
     """
     # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
-    def __init__(self, apikey, layer='Road', desired_tile_form='RGB', cache_path=None):
+    def __init__(self,
+                 apikey,
+                 layer='Road',
+                 desired_tile_form='RGB',
+                 cache_path=None):
         """
         Parameters
         ----------
