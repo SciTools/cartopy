@@ -93,7 +93,7 @@ def test_global_pcolor_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
-    data = np.sin(np.sqrt(x ** 2 + y ** 2))
+    data = np.sin(np.sqrt(x ** 2 + y ** 2))[:-1, :-1]
     plt.pcolor(x, y, data, transform=ccrs.PlateCarree())
 
 
@@ -103,7 +103,7 @@ def test_global_pcolor_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
-    data = np.sin(np.sqrt(x ** 2 + y ** 2))
+    data = np.sin(np.sqrt(x ** 2 + y ** 2))[:-1, :-1]
     plt.pcolor(x, y, data)
 
 
@@ -148,6 +148,7 @@ def test_global_map():
              transform=ccrs.Geodetic())
 
 
+@pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
 @ImageTesting(['simple_global'])
 def test_simple_global():
@@ -156,6 +157,7 @@ def test_simple_global():
     # produces a global map, despite not having needed to set the limits
 
 
+@pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
 @ImageTesting(['multiple_projections4' if ccrs.PROJ4_VERSION < (5, 0, 0)
                else 'multiple_projections5'],
@@ -187,7 +189,7 @@ def test_multiple_projections():
                    ccrs.EckertVI(),
                    ]
 
-    rows = np.ceil(len(projections) / 5)
+    rows = np.ceil(len(projections) / 5).astype(int)
 
     fig = plt.figure(figsize=(10, 2 * rows))
     for i, prj in enumerate(projections, 1):

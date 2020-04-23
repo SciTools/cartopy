@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -151,8 +151,9 @@ def test_shapefile_transform_cache():
 
 
 def test_contourf_transform_path_counting():
+    fig = plt.figure()
     ax = plt.axes(projection=ccrs.Robinson())
-    ax.figure.canvas.draw()
+    fig.canvas.draw()
 
     # Capture the size of the cache before our test.
     gc.collect()

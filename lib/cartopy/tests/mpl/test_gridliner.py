@@ -315,6 +315,7 @@ def test_grid_labels_inline_usa():
      ])
 def test_gridliner_default_fmtloc(
         proj, gcrs, xloc, xfmt, xloc_expected, xfmt_expected):
+    plt.figure()
     ax = plt.subplot(111, projection=proj)
     gl = ax.gridlines(crs=gcrs, draw_labels=False, xlocs=xloc, xformatter=xfmt)
     plt.close()
