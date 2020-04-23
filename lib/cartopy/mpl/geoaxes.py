@@ -1583,13 +1583,20 @@ class GeoAxes(matplotlib.axes.Axes):
         cmap = kwargs.pop('cmap', None)
         vmin = kwargs.pop('vmin', None)
         vmax = kwargs.pop('vmax', None)
-        shading = kwargs.pop('shading', 'flat').lower()
         antialiased = kwargs.pop('antialiased', False)
         kwargs.setdefault('edgecolors', 'None')
 
-        allmatch = (shading == 'gouraud')
+        if matplotlib.__version__ < "3.3":
+            shading = kwargs.pop('shading', 'flat')
+            allmatch = (shading == 'gouraud')
+            X, Y, C = self._pcolorargs('pcolormesh', *args, allmatch=allmatch)
+        else:
+            shading = kwargs.pop('shading', 'auto')
+            if shading is None:
+                shading = 'auto'
+            X, Y, C, shading = self._pcolorargs('pcolormesh', *args,
+                                                shading=shading)
 
-        X, Y, C = self._pcolorargs('pcolormesh', *args, allmatch=allmatch)
         Ny, Nx = X.shape
 
         # convert to one dimensional arrays
