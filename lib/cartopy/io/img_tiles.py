@@ -18,7 +18,6 @@ using tiles in this way can be found at the
 """
 
 from abc import ABCMeta, abstractmethod
-from builtins import FileExistsError
 import concurrent.futures
 import io
 import json
@@ -56,7 +55,7 @@ class GoogleWTS(metaclass=ABCMeta):
         if self.cache_path is not None:
             try:
                 os.makedirs(self.cache_path)
-            except FileExistsError:
+            except OSError:
                 pass
             self._load_cache()
 
