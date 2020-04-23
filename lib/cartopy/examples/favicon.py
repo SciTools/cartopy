@@ -19,22 +19,7 @@ def main():
 
     ax.coastlines()
     ax.gridlines()
-
-    im = ax.stock_img()
-
-    def on_draw(event=None):
-        """
-        Hook into matplotlib's event mechanism to define the clip path of the
-        background image.
-
-        """
-        # Clip the image to the current background boundary.
-        im.set_clip_path(ax.patch.get_path(),
-                         transform=ax.patch.get_transform())
-
-    # Register the on_draw method and call it once now.
-    fig.canvas.mpl_connect('draw_event', on_draw)
-    on_draw()
+    ax.stock_img()
 
     # Generate a matplotlib path representing the character "C".
     fp = FontProperties(family='Bitstream Vera Sans', weight='bold')
