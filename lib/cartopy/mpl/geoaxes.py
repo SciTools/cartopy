@@ -441,7 +441,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     self._autoscaleXon, self._autoscaleYon) = other
 
     @matplotlib.artist.allow_rasterization
-    def draw(self, renderer=None, inframe=False):
+    def draw(self, renderer=None, **kwargs):
         """
         Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
 
@@ -475,8 +475,8 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.imshow(img, extent=extent, origin=origin,
                             transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
-        return matplotlib.axes.Axes.draw(self, renderer=renderer,
-                                         inframe=inframe)
+
+        return matplotlib.axes.Axes.draw(self, renderer=renderer, **kwargs)
 
     def _update_title_position(self, renderer):
         matplotlib.axes.Axes._update_title_position(self, renderer)
