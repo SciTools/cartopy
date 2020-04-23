@@ -4,11 +4,14 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+import hashlib
+import json
 import os
 import types
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
+from PIL import Image
 import pytest
 import shapely.geometry as sgeom
 
@@ -285,3 +288,83 @@ def test_ordnance_survey_get_image():
 
     # The extent is the same though
     assert extent1 == extent2
+
+
+@pytest.mark.network
+def test_cache(tmpdir):
+    tmpdir_str = tmpdir.strpath
+
+    # Fetch tiles and save them in the cache
+    gt = cimgt.GoogleTiles(cache=tmpdir_str)
+    gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
+
+    ll_target_domain = sgeom.box(-10, 50, 10, 60)
+    multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
+    target_domain = multi_poly.geoms[0]
+
+    img_init, _, _ = gt.image_for_domain(target_domain, 6)
+
+    # Define expected results
+    x_y_z_h = [
+        (30, 18, 6, '3f4aad7c536b7d43a16b891283c6ec02'),
+        (30, 19, 6, '308d0a772f08e4e0ee6285ca8595913d'),
+        (30, 20, 6, 'bb613f149ca6cec329591bd3f50e5a9f'),
+        (30, 21, 6, '4f1bb78eb1fe225b77dde6ee1cc33afe'),
+        (31, 18, 6, 'e6e2343ff5c6a3f3632a57e673b4a155'),
+        (31, 19, 6, '943ec0bc1f55b3b4e7b5c6a17313a6c8'),
+        (31, 20, 6, 'e835fd11f30d9976f8aa722205d47af8'),
+        (31, 21, 6, 'f9b54ce321ce2a351480f440f70a31eb'),
+        (32, 18, 6, 'dd065d5502411e5752dac7bd596cca02'),
+        (32, 19, 6, '641b162bc052785d6e1270a49aa42a10'),
+        (32, 20, 6, '1de7433ab6f6ce272f269a46c214ff08'),
+        (32, 21, 6, 'faa04e22f983e842496fdee07bd67435'),
+        (33, 18, 6, 'c097aedf3d78bbe898950244e5e1b82c'),
+        (33, 19, 6, '606473c53c86eeda09b06f729f04246d'),
+        (33, 20, 6, '541bcd6b12609c2423f0bf141f7f6705'),
+        (33, 21, 6, '8ea3e1caff873c7947d2ef4f7f353ae4')
+    ]
+    base_url = (
+        'https://chart.googleapis.com/chart?chst=d_text_outline&chs=256x256&chf=bg,'
+        's,00000055&chld=FFFFFF|16|h|000000|b||||Google:%20%20({},{})|Zoom%20{}||||'
+        '||____________________________'
+    )
+
+    # Check the results
+    files = [i for i in os.listdir(tmpdir_str) if i != "files"]
+    hashes = {
+        f:
+        hashlib.md5(
+            open(os.path.join(tmpdir_str, f), mode="rb").read()
+        ).hexdigest()
+        for f in files
+    }
+    url_ids = json.load(open(os.path.join(tmpdir_str, "files")))
+
+    assert sorted(hashes.values()) == sorted([
+        h for _, _, _, h in x_y_z_h
+    ])
+
+    assert sorted(url_ids.keys()) == sorted([
+        base_url.format(x, y, z)
+        for x, y, z, _ in x_y_z_h
+    ])
+
+    url_hashes = {url: hashes[uid + ".tiff"] for url, uid in url_ids.items()}
+    assert url_hashes == {
+        base_url.format(x, y, z): h
+        for x, y, z, h in x_y_z_h
+    }
+
+    # Update images in cache (all white)
+    for f in files:
+        filename = os.path.join(tmpdir_str, f)
+        img = Image.new('RGB', (255, 255), "white")
+        img.save(filename)
+
+    gt_cache = cimgt.GoogleTiles(cache=tmpdir_str)
+    gt_cache._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt_cache)
+    img_cache, _, _ = gt_cache.image_for_domain(target_domain, 6)
+
+    # Check that the new image_for_domain() call used cached images
+    assert gt_cache.cache.keys() == gt.cache.keys()
+    assert (img_cache == 255).all()
