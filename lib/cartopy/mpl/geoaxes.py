@@ -441,7 +441,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     self._autoscaleXon, self._autoscaleYon) = other
 
     @matplotlib.artist.allow_rasterization
-    def draw(self, renderer=None, inframe=False):
+    def draw(self, renderer=None, **kwargs):
         """
         Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
 
@@ -475,8 +475,8 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.imshow(img, extent=extent, origin=origin,
                             transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
-        return matplotlib.axes.Axes.draw(self, renderer=renderer,
-                                         inframe=inframe)
+
+        return matplotlib.axes.Axes.draw(self, renderer=renderer, **kwargs)
 
     def _update_title_position(self, renderer):
         matplotlib.axes.Axes._update_title_position(self, renderer)
@@ -1583,13 +1583,20 @@ class GeoAxes(matplotlib.axes.Axes):
         cmap = kwargs.pop('cmap', None)
         vmin = kwargs.pop('vmin', None)
         vmax = kwargs.pop('vmax', None)
-        shading = kwargs.pop('shading', 'flat').lower()
         antialiased = kwargs.pop('antialiased', False)
         kwargs.setdefault('edgecolors', 'None')
 
-        allmatch = (shading == 'gouraud')
+        if matplotlib.__version__ < "3.3":
+            shading = kwargs.pop('shading', 'flat')
+            allmatch = (shading == 'gouraud')
+            X, Y, C = self._pcolorargs('pcolormesh', *args, allmatch=allmatch)
+        else:
+            shading = kwargs.pop('shading', 'auto')
+            if shading is None:
+                shading = 'auto'
+            X, Y, C, shading = self._pcolorargs('pcolormesh', *args,
+                                                shading=shading)
 
-        X, Y, C = self._pcolorargs('pcolormesh', *args, allmatch=allmatch)
         Ny, Nx = X.shape
 
         # convert to one dimensional arrays
