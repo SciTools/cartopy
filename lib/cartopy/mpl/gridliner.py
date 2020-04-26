@@ -599,6 +599,7 @@ class Gridliner(object):
                                     continue
                                 x = x_midpoints[i]
                                 y = tick_value
+                                kw.update(clip_on=True)
                                 y_set = True
                             else:
                                 x = pt0[0]
@@ -609,6 +610,7 @@ class Gridliner(object):
                                     continue
                                 x = tick_value
                                 y = y_midpoints[i]
+                                kw.update(clip_on=True)
                             elif not y_set:
                                 y = pt0[1]
 
@@ -739,10 +741,10 @@ class Gridliner(object):
                 warnings.warn('The labels of this gridliner do not belong to '
                               'the gridliner axes')
 
-            # Compute angles to try
             orig_specs = {'rotation': artist.get_rotation(),
                           'ha': artist.get_ha(),
                           'va': artist.get_va()}
+            # Compute angles to try
             angles = [None]
             for abs_delta_angle in np.arange(delta_angle, max_delta_angle+1,
                                              delta_angle):
@@ -765,6 +767,8 @@ class Gridliner(object):
                     this_patch.get_transform())
                 if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
                     this_path = remove_path_dupes(this_path)
+                center = artist.get_transform().transform_point(
+                    artist.get_position())
                 visible = False
 
                 for path in paths:
@@ -781,9 +785,16 @@ class Gridliner(object):
                                         .transformed(self.axes.transData))
                         if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
                             outline_path = remove_path_dupes(outline_path)
-                    visible = (not outline_path.intersects_path(this_path) or
-                               (lonlat == 'lon' and self.x_inline) or
-                               (lonlat == 'lat' and self.y_inline))
+                    # Inline must be within the map.
+                    if ((lonlat == 'lon' and self.x_inline) or
+                            (lonlat == 'lat' and self.y_inline)):
+                        # TODO: When Matplotlib clip path works on text, this
+                        # clipping can be left to it.
+                        if outline_path.contains_point(center):
+                            visible = True
+                    # Non-inline must not run through the outline.
+                    elif not outline_path.intersects_path(this_path):
+                        visible = True
 
                     # Good
                     if visible:
