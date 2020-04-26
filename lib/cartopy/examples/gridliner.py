@@ -29,10 +29,7 @@ def main():
     rotated_crs = ccrs.RotatedPole(pole_longitude=120.0, pole_latitude=70.0)
     ax0 = plt.axes(projection=rotated_crs)
     ax0.set_extent([-6, 1, 47.5, 51.5], crs=ccrs.PlateCarree())
-    ocean = cfeature.NaturalEarthFeature(
-        'physical', 'land', '110m', edgecolor='face',
-        facecolor=cfeature.COLORS['land'], zorder=-1)
-    ax0.add_feature(ocean)
+    ax0.add_feature(cfeature.LAND.with_scale('110m'))
     ax0.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
 
     plt.figure(figsize=(6.9228, 3))
