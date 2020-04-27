@@ -85,28 +85,6 @@ jobs:
       - store_artifacts:
           path: docs/build/html
 
-  docs-python2:
-    docker:
-      - image: continuumio/miniconda:latest
-    steps:
-      - checkout
-
-      - run: *apt-install
-      - run:
-          <<: *env-setup
-          environment:
-            PYTHON_VERSION: 2
-            EXTRA_PACKAGES: "futures"
-      - run:
-          <<: *deps-install
-          no_output_timeout: "20m"
-      - run: *cp-install
-
-      - run: *doc-build
-
-      - store_artifacts:
-          path: docs/build/html
-
 
 #########################################
 # Defining workflows gets us parallelism.
@@ -117,4 +95,3 @@ workflows:
   build:
     jobs:
       - docs-python3
-      - docs-python2
