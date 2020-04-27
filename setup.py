@@ -4,12 +4,29 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import print_function
+# NOTE: This file must remain Python 2 compatible for the foreseeable future,
+# to ensure that we error out properly for people with outdated setuptools
+# and/or pip.
+import sys
+
+PYTHON_MIN_VERSION = (3, 5)
+
+if sys.version_info < PYTHON_MIN_VERSION:
+    error = """
+Beginning with Cartopy 0.19, Python {0} or above is required.
+You are using Python {1}.
+
+This may be due to an out of date pip.
+
+Make sure you have pip >= 9.0.1.
+""".format('.'.join(str(n) for n in PYTHON_MIN_VERSION),
+           '.'.join(str(n) for n in sys.version_info[:3]))
+    sys.exit(error)
+
 
 import fnmatch
 import os
 import subprocess
-import sys
 import warnings
 from collections import defaultdict
 from distutils.spawn import find_executable
@@ -44,8 +61,6 @@ try:
 except ImportError:
     raise ImportError('NumPy 1.10+ is required to install cartopy.')
 
-
-PY3 = (sys.version_info[0] == 3)
 
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 3, 3)
@@ -117,14 +132,10 @@ else:
               file=sys.stderr)
         exit(1)
 
-    if PY3:
-        geos_includes = geos_includes.decode()
-        geos_clibs = geos_clibs.decode()
-
-    geos_includes = geos_includes.split()
+    geos_includes = geos_includes.decode().split()
     geos_libraries = []
     geos_library_dirs = []
-    for entry in geos_clibs.split():
+    for entry in geos_clibs.decode().split():
         if entry.startswith('-L'):
             geos_library_dirs.append(entry[2:])
         elif entry.startswith('-l'):
@@ -224,17 +235,13 @@ else:
                 file=sys.stderr)
             exit(1)
 
-        if PY3:
-            proj_includes = proj_includes.decode()
-            proj_clibs = proj_clibs.decode()
-
         proj_includes = [
             proj_include[2:] if proj_include.startswith('-I') else
-            proj_include for proj_include in proj_includes.split()]
+            proj_include for proj_include in proj_includes.decode().split()]
 
         proj_libraries = []
         proj_library_dirs = []
-        for entry in proj_clibs.split():
+        for entry in proj_clibs.decode().split():
             if entry.startswith('-L'):
                 proj_library_dirs.append(entry[2:])
             elif entry.startswith('-l'):
@@ -388,7 +395,7 @@ setup(
     # requires proj headers
     ext_modules=extensions,
     cmdclass=cmdclass,
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*',
+    python_requires='>=' + '.'.join(str(n) for n in PYTHON_MIN_VERSION),
     classifiers=[
             'Development Status :: 4 - Beta',
             'Framework :: Matplotlib',
@@ -401,8 +408,6 @@ setup(
             'Operating System :: POSIX :: Linux',
             'Programming Language :: C++',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 2',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',

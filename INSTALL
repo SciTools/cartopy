@@ -67,7 +67,7 @@ to the core packages.
 
 Further information about the required dependencies can be found here:
 
-**Python** 2.7 or later (https://www.python.org/)
+**Python** 3.5 or later (https://www.python.org/)
 
 **Cython** 0.28 or later (https://pypi.python.org/pypi/Cython/)
 

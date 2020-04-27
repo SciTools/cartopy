@@ -3,9 +3,6 @@ environment:
         - PYTHON_VERSION: "3.6"
           CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
           PACKAGES: "cython numpy matplotlib-base proj pykdtree scipy"
-        - PYTHON_VERSION: "2.7"
-          CONDA_INSTALL_LOCN: "C:\\Miniconda-x64"
-          PACKAGES: "cython=0.28 numpy=1.10.0 matplotlib=1.5.1 nose proj4=4.9.1 scipy=0.16.0 mock msinttypes futures"
 
 install:
   # Install miniconda
@@ -17,7 +14,6 @@ install:
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
-  - if %PYTHON_VERSION%==2.7 conda config --set restore_free_channel true
   - if %PYTHON_VERSION%==3.6 conda update conda --yes
   - set ENV_NAME=test-environment
   - set PACKAGES=%PACKAGES% pillow pytest filelock pep8 pyshp shapely six requests pyepsg owslib

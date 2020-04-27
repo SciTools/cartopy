@@ -22,7 +22,7 @@ assumptions of spherical data traditionally break down. If you've ever experienc
 at the pole or a cut-off at the dateline, it is likely you will appreciate cartopy's unique features!
 
 .. warning::
-  The 0.18 release is the final release that will support Python 2.7.
+  The 0.19 release, and later, no longer support Python 2.7.
 
 .. _getting-started-with-cartopy:
 
