@@ -20,9 +20,7 @@ using tiles in this way can be found at the
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 import io
-import json
 import os
-from uuid import uuid4
 import warnings
 
 from PIL import Image
@@ -52,7 +50,7 @@ class GoogleWTS(metaclass=ABCMeta):
         # osm may reject requests if there are too many of them, in which case
         # a change of user_agent may fix the issue.
         self.cache_path = cache_path
-        self.cache = {}
+        self.cache = set({})
         self._load_cache()
 
     def image_for_domain(self, target_domain, target_z):
@@ -84,50 +82,22 @@ class GoogleWTS(metaclass=ABCMeta):
 
         img, extent, origin = _merge_tiles(tiles)
 
-        self._save_cache()
-
         return img, extent, origin
 
-    def _cache_files(self):
-        """Return the name of the file containing the cache entries"""
-        return os.path.join(self.cache_path, "files")
-
-    def _fetch_cache(self, files):
-        already_cached = {}
-        if os.path.exists(files):
-            with open(files) as f:
-                already_cached = json.load(f)
-        return already_cached
-
-    def _save_cache(self):
-        """Save the cache"""
-        if self.cache_path is not None and self.cache:
-            if not os.path.exists(self.cache_path):
-                os.makedirs(self.cache_path)
-            files = self._cache_files()
-            already_cached = self._fetch_cache(files)
-
-            new_urls = {}
-            for url, img in self.cache.items():
-                if url not in already_cached:
-                    uid = str(uuid4())
-                    img.save(os.path.join(self.cache_path, uid + ".tiff"))
-                    new_urls[url] = uid
-
-            if new_urls:
-                with open(files, "w") as f:
-                    already_cached.update(new_urls)
-                    json.dump(already_cached, f)
+    @property
+    def _cache_dir(self):
+        """Return the name of the cache directory"""
+        return os.path.join(
+            self.cache_path,
+            self.__class__.__name__
+        )
 
     def _load_cache(self):
         """Load the cache"""
         if self.cache_path is not None:
-            files = self._cache_files()
-            in_cache = self._fetch_cache(files)
-
-            for url, uid in in_cache.items():
-                img = Image.open(os.path.join(self.cache_path, uid + ".tiff"))
-                self.cache[url] = img
+            if not os.path.exists(self._cache_dir):
+                os.makedirs(self._cache_dir)
+            self.cache = self.cache.union(set(os.listdir(self._cache_dir)))
 
     def _find_images(self, target_domain, target_z, start_tile=(0, 0, 0)):
         """Target domain is a shapely polygon in native coordinates."""
@@ -218,26 +188,36 @@ class GoogleWTS(metaclass=ABCMeta):
     def get_image(self, tile):
         from urllib.request import urlopen, Request, HTTPError, URLError
 
-        url = self._image_url(tile)
-
-        if url in self.cache:
-            img = self.cache[url]
+        if self.cache_path is not None:
+            filename = "_".join([str(i) for i in tile]) + ".npy"
+            cached_file = os.path.join(
+                self._cache_dir,
+                filename
+            )
         else:
+            filename = None
+            cached_file = None
+
+        if filename in self.cache:
+            img = np.load(cached_file, allow_pickle=False)
+        else:
+            url = self._image_url(tile)
             try:
                 request = Request(url, headers={"User-Agent": self.user_agent})
                 fh = urlopen(request)
                 im_data = io.BytesIO(fh.read())
                 fh.close()
                 img = Image.open(im_data)
-                if self.cache_path is not None:
-                    self.cache[url] = img
 
             except (HTTPError, URLError) as err:
                 print(err)
                 img = Image.fromarray(np.full((256, 256, 3), (250, 250, 250),
                                               dtype=np.uint8))
 
-        img = img.convert(self.desired_tile_form)
+            img = img.convert(self.desired_tile_form)
+            if self.cache_path is not None:
+                np.save(cached_file, img, allow_pickle=False)
+                self.cache.add(filename)
 
         return img, self.tileextent(tile), 'lower'
 
