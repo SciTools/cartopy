@@ -304,22 +304,22 @@ def test_cache(tmpdir):
 
     # Define expected results
     x_y_z_f_h = [
-        (30, 18, 6, '30_18_6.npy', '5f4bcb9e2d21931ad67086a96b0ea679'),
-        (30, 19, 6, '30_19_6.npy', '5c26cd7585f869e6d9a6d32530c4ff62'),
-        (30, 20, 6, '30_20_6.npy', 'e0861f5af0c3ede62c25213a482b69bf'),
-        (30, 21, 6, '30_21_6.npy', '562e0ed47fb5b89b04e26db712ddd224'),
-        (31, 18, 6, '31_18_6.npy', '0b8d038ad535d1d0b9671d11e1fed688'),
-        (31, 19, 6, '31_19_6.npy', '403bee164411405daea04be26f53af82'),
-        (31, 20, 6, '31_20_6.npy', '9a65b7852c4fb7cf38df8c14ded37cea'),
-        (31, 21, 6, '31_21_6.npy', '8431309ba8f05e76fd1df47807fd1134'),
-        (32, 18, 6, '32_18_6.npy', 'f11e04a071a60266cd197fc46b301f32'),
-        (32, 19, 6, '32_19_6.npy', 'ba956e8daf68968d97ce04994d8a5be2'),
-        (32, 20, 6, '32_20_6.npy', 'e269f50f4cc79858e4f31bd39bdbad07'),
-        (32, 21, 6, '32_21_6.npy', '76f23795f0724af4522a78e9c9d0fa9c'),
-        (33, 18, 6, '33_18_6.npy', '132ec5f64985b783c79facdd85de1927'),
-        (33, 19, 6, '33_19_6.npy', 'e4e855d2376cf2faa20a8d7da4114a61'),
-        (33, 20, 6, '33_20_6.npy', '02009bce9adab5f05a64f4bed3fa5218'),
-        (33, 21, 6, '33_21_6.npy', '309beaef09160ce1d849ba77a2d79246')
+        (30, 18, 6, '30_18_6.npy', '545db25f1aa348ad85e1f437fd0db0d9'),
+        (30, 19, 6, '30_19_6.npy', '10355add0674bfa33f673ea27a6d1206'),
+        (30, 20, 6, '30_20_6.npy', 'ab3e7f2ed8d71977ac176094973695ae'),
+        (30, 21, 6, '30_21_6.npy', '3e8947b93a6ffa07f22cfea4042a4740'),
+        (31, 18, 6, '31_18_6.npy', 'd0fa58b9146aa99b273eb75256b328cc'),
+        (31, 19, 6, '31_19_6.npy', '9255bd0cd22736bd2c25a9087bd47b20'),
+        (31, 20, 6, '31_20_6.npy', 'ac0f7e32bdf8edb50d1dccf3ec0ef446'),
+        (31, 21, 6, '31_21_6.npy', 'f36b8cc1825bf267b2daead837facae9'),
+        (32, 18, 6, '32_18_6.npy', '9f4ddd90cd1ae76ef2bbc8f0252ead91'),
+        (32, 19, 6, '32_19_6.npy', 'a995803578bb94ecfca8563754717196'),
+        (32, 20, 6, '32_20_6.npy', 'def9e71d77fd6007c77c2a14dfae858f'),
+        (32, 21, 6, '32_21_6.npy', 'a3d7935037019ec58ae78f60e6fb924e'),
+        (33, 18, 6, '33_18_6.npy', '4e51e32da73fb99229817dcd7b7e1f4f'),
+        (33, 19, 6, '33_19_6.npy', 'b9b5057fa012c5788cbbe1e18c9bb512'),
+        (33, 20, 6, '33_20_6.npy', 'b55a7c0a8d86167df496732f85bddcf9'),
+        (33, 21, 6, '33_21_6.npy', '4208ba897c460e9bb0d2469552e127ff')
     ]
 
     # Check the results
@@ -328,7 +328,7 @@ def test_cache(tmpdir):
     hashes = {
         f:
         hashlib.md5(
-            open(os.path.join(cache_dir, f), mode="rb").read()
+            np.load(os.path.join(cache_dir, f), allow_pickle=True).data
         ).hexdigest()
         for f in files
     }

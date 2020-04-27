@@ -81,7 +81,6 @@ class GoogleWTS(metaclass=ABCMeta):
                     pass
 
         img, extent, origin = _merge_tiles(tiles)
-
         return img, extent, origin
 
     @property
@@ -257,7 +256,8 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
                 not Image.core.jpeg_decoder:
             msg = "The '%s' style requires pillow with jpeg decoding support."
             raise ValueError(msg % self.style)
-        return super().__init__(desired_tile_form=desired_tile_form, cache_path=cache_path)
+        return super().__init__(desired_tile_form=desired_tile_form,
+                                cache_path=cache_path)
 
     def _image_url(self, tile):
         style_dict = {
@@ -331,8 +331,10 @@ class Stamen(GoogleWTS):
     attribute this imagery.
 
     """
-    def __init__(self, style='toner', desired_tile_form='RGB', cache_path=None):
-        super().__init__(desired_tile_form=desired_tile_form, cache_path=cache_path)
+    def __init__(self, style='toner',
+                 desired_tile_form='RGB', cache_path=None):
+        super().__init__(desired_tile_form=desired_tile_form,
+                         cache_path=cache_path)
         self.style = style
 
     def _image_url(self, tile):
@@ -375,7 +377,8 @@ class StamenTerrain(Stamen):
         # NOTE: This subclass of Stamen exists for legacy reasons.
         # No further Stamen subclasses will be accepted as
         # they can easily be created in user code with Stamen(style_name).
-        return super().__init__(style='terrain-background', cache_path=cache_path)
+        return super().__init__(style='terrain-background',
+                                cache_path=cache_path)
 
 
 class MapboxTiles(GoogleWTS):
@@ -581,7 +584,8 @@ class OrdnanceSurvey(GoogleWTS):
         desired_tile_form: optional
             Defaults to 'RGB'.
         """
-        super().__init__(desired_tile_form=desired_tile_form, cache_path=cache_path)
+        super().__init__(desired_tile_form=desired_tile_form,
+                         cache_path=cache_path)
         self.apikey = apikey
 
         if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:
