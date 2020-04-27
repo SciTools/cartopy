@@ -852,13 +852,18 @@ class Gridliner:
         ax_transform = self.axes.transAxes
         desired_trans = ax_transform - transform
 
-        nx = nx or 100
-        ny = ny or 100
+        nx = nx or 101
+        ny = ny or 101
         x = np.linspace(1e-9, 1 - 1e-9, nx)
         y = np.linspace(1e-9, 1 - 1e-9, ny)
         x, y = np.meshgrid(x, y)
 
-        coords = np.column_stack((x.ravel(), y.ravel()))
+        xyp = (self.axes.patch.get_transform()-ax_transform).transform(
+            self.axes.patch.get_path().vertices)
+        x = np.concatenate((x.ravel(), xyp[:, 0]))
+        y = np.concatenate((y.ravel(), xyp[:, 1]))
+
+        coords = np.column_stack((x, y))
 
         in_data = desired_trans.transform(coords)
 
