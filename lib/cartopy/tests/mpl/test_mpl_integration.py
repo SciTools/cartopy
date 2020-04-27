@@ -129,6 +129,42 @@ def test_global_scatter_wrap_no_transform():
     plt.scatter(x, y, c=data)
 
 
+@pytest.mark.natural_earth
+@ImageTesting(['global_hexbin_wrap'],
+              tolerance=27.7 if MPL_VERSION < '2.1.0' else 0.5)
+def test_global_hexbin_wrap():
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines(zorder=2)
+    x, y = np.meshgrid(np.arange(-179, 181), np.arange(-90, 91))
+    data = np.sin(np.sqrt(x**2 + y**2))
+    plt.hexbin(
+        x.flatten(),
+        y.flatten(),
+        C=data.flatten(),
+        gridsize=20,
+        zorder=1,
+    )
+
+
+@pytest.mark.natural_earth
+@ImageTesting(['global_hexbin_wrap'],
+              tolerance=27.7 if MPL_VERSION < '2.1.0' else 0.5)
+def test_global_hexbin_wrap_transform():
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines(zorder=2)
+    x, y = np.meshgrid(np.arange(0, 360), np.arange(-90, 91))
+    # wrap values so to match x values from test_global_hexbin_wrap
+    x_wrap = np.where(x >= 180, x-360, x)
+    data = np.sin(np.sqrt(x_wrap**2 + y**2))
+    plt.hexbin(
+        x.flatten(),
+        y.flatten(),
+        C=data.flatten(),
+        gridsize=20,
+        zorder=1,
+    )
+
+
 @ImageTesting(['global_map'],
               tolerance=1.93 if MPL_VERSION < '2.1.0' else 0.55)
 def test_global_map():
