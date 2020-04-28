@@ -197,7 +197,15 @@ def path_to_geos(path, force_ccw=False):
                 isinstance(geom, sgeom.Polygon) and
                 collection[-1][0].contains(geom.exterior)):
             collection[-1][1].append(geom.exterior)
-        elif isinstance(geom, sgeom.Point):
+        # Sometimes Points and LineStrings will be passed while looking
+        # for interior Polygons, these must be ignored. Failing to do so
+        # here would cause subsequent internal polygons to be read as
+        # external instead.
+        elif (isinstance(geom, sgeom.Point) or
+                (len(collection) > 0 and
+                    isinstance(collection[-1][0], sgeom.Polygon) and
+                    isinstance(geom, sgeom.LineString) and
+                    collection[-1][0].contains(geom))):
             other_result_geoms.append(geom)
         else:
             collection.append((geom, []))

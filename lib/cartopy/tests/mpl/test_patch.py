@@ -60,3 +60,16 @@ class Test_path_to_geos(object):
         geoms = cpatch.path_to_geos(p)
         assert [type(geom) for geom in geoms] == [sgeom.Polygon, sgeom.Point]
         assert len(geoms[0].interiors) == 1
+
+    def test_polygon_with_interior_and_short_path(self):
+        # A geometry with two interiors, one a short path.
+        p = Path([[0, 0], [10, 0], [10, 10], [0, 10], [0, 0],
+                  [1, 1], [1, 2], [1, 1],
+                  [2, 2], [3, 2], [3, 3], [2, 3], [2, 2]],
+                 codes=[1, 2, 2, 2, 79,
+                        1, 2, 79,
+                        1, 2, 2, 2, 79])
+        geoms = cpatch.path_to_geos(p)
+        assert ([type(geom) for geom in geoms] ==
+                [sgeom.Polygon, sgeom.LineString])
+        assert len(geoms[0].interiors) == 1
