@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -32,18 +32,18 @@ from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
+import io
 import warnings
 
 from PIL import Image
 import shapely.geometry as sgeom
 import numpy as np
-import six
 
 import cartopy
 import cartopy.crs as ccrs
 
 
-class GoogleWTS(six.with_metaclass(ABCMeta, object)):
+class GoogleWTS(metaclass=ABCMeta):
     """
     Implement web tile retrieval using the Google WTS coordinate system.
 
@@ -180,16 +180,13 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
         pass
 
     def get_image(self, tile):
-        if six.PY3:
-            from urllib.request import urlopen, Request, HTTPError, URLError
-        else:
-            from urllib2 import urlopen, Request, HTTPError, URLError
+        from urllib.request import urlopen, Request, HTTPError, URLError
 
         url = self._image_url(tile)
         try:
             request = Request(url, headers={"User-Agent": self.user_agent})
             fh = urlopen(request)
-            im_data = six.BytesIO(fh.read())
+            im_data = io.BytesIO(fh.read())
             fh.close()
             img = Image.open(im_data)
 
@@ -474,8 +471,7 @@ class QuadtreeTiles(GoogleWTS):
     def quadkey_to_tms(self, quadkey, google=False):
         # algorithm ported from
         # https://msdn.microsoft.com/en-us/library/bb259689.aspx
-        assert isinstance(quadkey, six.string_types), \
-            'quadkey must be a string'
+        assert isinstance(quadkey, str), 'quadkey must be a string'
 
         x = y = 0
         z = len(quadkey)

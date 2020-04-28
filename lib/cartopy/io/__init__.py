@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -26,14 +26,8 @@ from __future__ import (absolute_import, division, print_function)
 import collections
 import os
 import string
+from urllib.request import urlopen
 import warnings
-
-import six
-
-if six.PY3:
-    from urllib.request import urlopen
-else:
-    from urllib2 import urlopen
 
 from cartopy import config
 
@@ -60,7 +54,7 @@ def fh_getter(fh, mode='r', needs_filename=False):
     if mode != 'r':
         raise ValueError('Only mode "r" currently supported.')
 
-    if isinstance(fh, six.string_types):
+    if isinstance(fh, str):
         filename = fh
         fh = open(fh, mode)
     elif isinstance(fh, tuple):

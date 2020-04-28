@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# (C) British Crown Copyright 2011 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -46,11 +46,11 @@ def srtm_login_or_skip(monkeypatch):
     except KeyError:
         pytest.skip('SRTM_PASSWORD environment variable is unset.')
 
-    from six.moves.urllib.request import (HTTPBasicAuthHandler,
-                                          HTTPCookieProcessor,
-                                          HTTPPasswordMgrWithDefaultRealm,
-                                          build_opener)
-    from six.moves.http_cookiejar import CookieJar
+    from urllib.request import (HTTPBasicAuthHandler,
+                                HTTPCookieProcessor,
+                                HTTPPasswordMgrWithDefaultRealm,
+                                build_opener)
+    from http.cookiejar import CookieJar
 
     password_manager = HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(

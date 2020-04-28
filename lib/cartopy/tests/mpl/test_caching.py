@@ -19,8 +19,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import gc
 
-import six
-
 try:
     from owslib.wmts import WebMapTileService
 except ImportError:
@@ -165,8 +163,6 @@ def test_contourf_transform_path_counting():
         cs = plt.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
         n_geom = sum([len(c.get_paths()) for c in cs.collections])
         del cs
-        if not six.PY3:
-            del c
         ax.figure.canvas.draw()
 
     # Before the performance enhancement, the count would have been 2 * n_geom,

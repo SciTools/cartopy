@@ -1,4 +1,4 @@
-# (C) British Crown Copyright 2018 - 2019, Met Office
+# (C) British Crown Copyright 2018 - 2020, Met Office
 #
 # This file is part of cartopy.
 #
@@ -22,8 +22,6 @@ Handles matplotlib styling in a single consistent place.
 
 """
 import warnings
-
-import six
 
 
 # Define the matplotlib style aliases that cartopy can expand.
@@ -80,10 +78,10 @@ def merge(*style_dicts):
             this_style['edgecolor'] = color
             this_style['facecolor'] = color
 
-        if isinstance(facecolor, six.string_types) and facecolor == 'never':
+        if isinstance(facecolor, str) and facecolor == 'never':
             requested_color = this_style.pop('facecolor', None)
             setting_color = not (
-                isinstance(requested_color, six.string_types) and
+                isinstance(requested_color, str) and
                 requested_color.lower() == 'none')
             if (('fc' in orig_style or 'facecolor' in orig_style) and
                     setting_color):

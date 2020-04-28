@@ -42,12 +42,12 @@ geometry representation of shapely:
 from __future__ import (absolute_import, division, print_function)
 
 import glob
+import io
 import itertools
 import os
 
 import shapely.geometry as sgeom
 import shapefile
-import six
 
 from cartopy.io import Downloader
 from cartopy import config
@@ -349,7 +349,7 @@ class NEShpDownloader(Downloader):
 
         shapefile_online = self._urlopen(url)
 
-        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
             ext = os.path.splitext(member_path)[1]
@@ -450,7 +450,7 @@ class GSHHSShpDownloader(Downloader):
         # Download archive.
         url = self.url(format_dict)
         shapefile_online = self._urlopen(url)
-        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 
         # Iterate through all scales and levels and extract relevant files.
