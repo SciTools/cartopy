@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import matplotlib
 from matplotlib.path import Path
@@ -14,7 +13,7 @@ import shapely.geometry as sgeom
 import cartopy.mpl.patch as cpatch
 
 
-class Test_path_to_geos(object):
+class Test_path_to_geos:
     def test_empty_polygon(self):
         p = Path(
             [

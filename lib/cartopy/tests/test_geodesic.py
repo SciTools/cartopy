@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
@@ -14,7 +13,7 @@ import shapely.geometry as sgeom
 from cartopy import geodesic
 
 
-class TestGeodesic(object):
+class TestGeodesic:
     def setup_class(self):
         """
         Data sampled from the GeographicLib Test Data for Geodesics at:

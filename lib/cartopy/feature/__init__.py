@@ -10,7 +10,6 @@ ax.add_feature().
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod
 
@@ -112,7 +111,7 @@ class Feature(metaclass=ABCMeta):
             return self.geometries()
 
 
-class Scaler(object):
+class Scaler:
     """
     General object for handling the scale of the geometries used in a Feature.
     """
@@ -168,7 +167,7 @@ class AdaptiveScaler(Scaler):
         'fine'
 
         """
-        super(AdaptiveScaler, self).__init__(default_scale)
+        super().__init__(default_scale)
         self._default_scale = default_scale
         # Upper limit on extent in degrees.
         self._limits = limits
@@ -216,7 +215,7 @@ class ShapelyFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super(ShapelyFeature, self).__init__(crs, **kwargs)
+        super().__init__(crs, **kwargs)
         self._geoms = tuple(geometries)
 
     def geometries(self):
@@ -249,7 +248,7 @@ class NaturalEarthFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super(NaturalEarthFeature, self).__init__(cartopy.crs.PlateCarree(),
+        super().__init__(cartopy.crs.PlateCarree(),
                                                   **kwargs)
         self.category = category
         self.name = name
@@ -298,7 +297,7 @@ class NaturalEarthFeature(Feature):
         If extent is None, the method returns all geometries for this dataset.
         """
         self.scaler.scale_from_extent(extent)
-        return super(NaturalEarthFeature, self).intersecting_geometries(extent)
+        return super().intersecting_geometries(extent)
 
     def with_scale(self, new_scale):
         """
@@ -350,7 +349,7 @@ class GSHHSFeature(Feature):
 
     """
     def __init__(self, scale='auto', levels=None, **kwargs):
-        super(GSHHSFeature, self).__init__(cartopy.crs.PlateCarree(), **kwargs)
+        super().__init__(cartopy.crs.PlateCarree(), **kwargs)
 
         if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
                          'intermediate', 'i', 'high', 'h', 'full', 'f'):
@@ -455,7 +454,7 @@ class WFSFeature(Feature):
 
         self.source = WFSGeometrySource(wfs, features)
         crs = self.source.default_projection()
-        super(WFSFeature, self).__init__(crs, **kwargs)
+        super().__init__(crs, **kwargs)
         # Default kwargs
         self._kwargs.setdefault('edgecolor', 'black')
         self._kwargs.setdefault('facecolor', 'none')

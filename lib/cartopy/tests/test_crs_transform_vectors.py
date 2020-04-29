@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import warnings
 
@@ -15,7 +14,7 @@ import pytest
 import cartopy.crs as ccrs
 
 
-class TestTransformVectors(object):
+class TestTransformVectors:
 
     def test_transform(self):
         # Test some simple vectors to make sure they are transformed

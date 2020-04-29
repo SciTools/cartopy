@@ -14,7 +14,6 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 import io
 import os
@@ -194,7 +193,7 @@ class SRTM3Source(_SRTMSource):
             producing a taller composite for this RasterSource.
 
         """
-        super(SRTM3Source, self).__init__(resolution=3, downloader=downloader,
+        super().__init__(resolution=3, downloader=downloader,
                                           max_nx=max_nx, max_ny=max_ny)
 
 
@@ -221,7 +220,7 @@ class SRTM1Source(_SRTMSource):
             producing a taller composite for this RasterSource.
 
         """
-        super(SRTM1Source, self).__init__(resolution=1, downloader=downloader,
+        super().__init__(resolution=1, downloader=downloader,
                                           max_nx=max_nx, max_ny=max_ny)
 
 
@@ -432,7 +431,7 @@ class SRTMDownloader(Downloader):
 
         if SRTMDownloader._SRTM_LOOKUP_MASK[lon, colat]:
             return (SRTMDownloader._SRTM_BASE_URL +
-                    u'{y}{x}.SRTMGL{resolution}.hgt.zip').format(**format_dict)
+                    '{y}{x}.SRTMGL{resolution}.hgt.zip').format(**format_dict)
         else:
             return None
 
@@ -448,7 +447,7 @@ class SRTMDownloader(Downloader):
         srtm_online = self._urlopen(url)
         zfh = ZipFile(io.BytesIO(srtm_online.read()), 'r')
 
-        zip_member_path = u'{y}{x}.hgt'.format(**format_dict)
+        zip_member_path = '{y}{x}.hgt'.format(**format_dict)
         member = zfh.getinfo(zip_member_path)
         with open(target_path, 'wb') as fh:
             fh.write(zfh.open(member).read())

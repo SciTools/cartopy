@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Map tile acquisition
 --------------------
@@ -44,7 +43,7 @@ def main():
     text_transform = offset_copy(geodetic_transform, units='dots', x=-25)
 
     # Add text 25 pixels to the left of the volcano.
-    ax.text(-19.613333, 63.62, u'Eyjafjallajökull',
+    ax.text(-19.613333, 63.62, 'Eyjafjallajökull',
             verticalalignment='center', horizontalalignment='right',
             transform=text_transform,
             bbox=dict(facecolor='sandybrown', alpha=0.5, boxstyle='round'))

@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 from numpy.testing import assert_array_almost_equal
 import pytest
@@ -53,7 +52,7 @@ def test_specific_lambert():
     check_proj_params('lcc', crs, other_args)
 
 
-class Test_LambertConformal_standard_parallels(object):
+class Test_LambertConformal_standard_parallels:
     def test_single_value(self):
         crs = ccrs.LambertConformal(standard_parallels=[1.])
         other_args = {'ellps=WGS84', 'lon_0=-96.0', 'lat_0=39.0',

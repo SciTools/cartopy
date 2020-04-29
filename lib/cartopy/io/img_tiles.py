@@ -17,7 +17,6 @@ using tiles in this way can be found at the
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
@@ -57,7 +56,7 @@ class GoogleWTS(metaclass=ABCMeta):
         def fetch_tile(tile):
             try:
                 img, extent, origin = self.get_image(tile)
-            except IOError:
+            except OSError:
                 # Some services 404 for tiles that aren't supposed to be
                 # there (e.g. out of range).
                 raise
@@ -75,7 +74,7 @@ class GoogleWTS(metaclass=ABCMeta):
                 try:
                     img, x, y, origin = future.result()
                     tiles.append([img, x, y, origin])
-                except IOError:
+                except OSError:
                     pass
 
         img, extent, origin = _merge_tiles(tiles)
@@ -96,9 +95,8 @@ class GoogleWTS(metaclass=ABCMeta):
                 yield start_tile
             else:
                 for tile in self._subtiles(start_tile):
-                    for result in self._find_images(target_domain, target_z,
-                                                    start_tile=tile):
-                        yield result
+                    yield from self._find_images(target_domain, target_z,
+                                                 start_tile=tile)
 
     find_images = _find_images
 
@@ -222,7 +220,7 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
                 not Image.core.jpeg_decoder:
             msg = "The '%s' style requires pillow with jpeg decoding support."
             raise ValueError(msg % self.style)
-        return super(GoogleTiles, self).__init__(
+        return super().__init__(
             desired_tile_form=desired_tile_form)
 
     def _image_url(self, tile):
@@ -246,7 +244,7 @@ class MapQuestOSM(GoogleWTS):
     # this now requires a sign up to a plan
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'https://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
+        url = 'https://otile1.mqcdn.com/tiles/1.0.0/osm/{}/{}/{}.jpg'.format(
             z, x, y)
         mqdevurl = ('https://devblog.mapquest.com/2016/06/15/'
                     'modernization-of-mapquest-results-in-changes'
@@ -263,7 +261,7 @@ class MapQuestOpenAerial(GoogleWTS):
     #  Farm Service Agency"
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'https://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
+        url = 'https://oatile1.mqcdn.com/tiles/1.0.0/sat/{}/{}/{}.jpg'.format(
             z, x, y)
         return url
 
@@ -273,7 +271,7 @@ class OSM(GoogleWTS):
 
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'https://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
+        url = 'https://a.tile.openstreetmap.org/{}/{}/{}.png'.format(z, x, y)
         return url
 
 
@@ -298,7 +296,7 @@ class Stamen(GoogleWTS):
 
     """
     def __init__(self, style='toner', desired_tile_form='RGB'):
-        super(Stamen, self).__init__(desired_tile_form=desired_tile_form)
+        super().__init__(desired_tile_form=desired_tile_form)
         self.style = style
 
     def _image_url(self, tile):
@@ -341,7 +339,7 @@ class StamenTerrain(Stamen):
         # NOTE: This subclass of Stamen exists for legacy reasons.
         # No further Stamen subclasses will be accepted as
         # they can easily be created in user code with Stamen(style_name).
-        return super(StamenTerrain, self).__init__(style='terrain-background')
+        return super().__init__(style='terrain-background')
 
 
 class MapboxTiles(GoogleWTS):
@@ -369,7 +367,7 @@ class MapboxTiles(GoogleWTS):
         """
         self.access_token = access_token
         self.map_id = map_id
-        super(MapboxTiles, self).__init__()
+        super().__init__()
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -412,7 +410,7 @@ class MapboxStyleTiles(GoogleWTS):
         self.access_token = access_token
         self.username = username
         self.map_id = map_id
-        super(MapboxStyleTiles, self).__init__()
+        super().__init__()
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -542,7 +540,7 @@ class OrdnanceSurvey(GoogleWTS):
         desired_tile_form: optional
             Defaults to 'RGB'.
         """
-        super(OrdnanceSurvey, self).__init__(
+        super().__init__(
             desired_tile_form=desired_tile_form)
         self.apikey = apikey
 

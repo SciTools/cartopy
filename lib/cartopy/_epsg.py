@@ -8,7 +8,6 @@ Provide support for converting EPSG codes to Projection instances.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 import shapely.geometry as sgeom
@@ -48,7 +47,7 @@ class _EPSGProjection(ccrs.Projection):
                     other_terms.append([term[0], None])
                 else:
                     other_terms.append(term)
-        super(_EPSGProjection, self).__init__(other_terms, globe)
+        super().__init__(other_terms, globe)
 
         # Convert lat/lon bounds to projected bounds.
         # GML defines gmd:EX_GeographicBoundingBox as:

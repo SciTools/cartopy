@@ -10,7 +10,6 @@ dragging and zooming of raster data.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 from matplotlib.image import AxesImage
 import matplotlib.artist
@@ -31,7 +30,7 @@ class SlippyImageArtist(AxesImage):
         if matplotlib.__version__ >= '3':
             # This artist fills the Axes, so should not influence layout.
             kwargs.setdefault('in_layout', False)
-        super(SlippyImageArtist, self).__init__(ax, **kwargs)
+        super().__init__(ax, **kwargs)
         self.cache = []
 
         ax.figure.canvas.mpl_connect('button_press_event', self.on_press)
@@ -67,7 +66,7 @@ class SlippyImageArtist(AxesImage):
             self.set_array(img)
             with ax.hold_limits():
                 self.set_extent(extent)
-            super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)
+            super().draw(renderer, *args, **kwargs)
 
     def can_composite(self):
         # As per https://github.com/SciTools/cartopy/issues/689, disable

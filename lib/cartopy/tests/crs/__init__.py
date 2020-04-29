@@ -8,7 +8,6 @@ Tests for specific Cartopy CRS subclasses.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 import pytest
 

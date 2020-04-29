@@ -14,7 +14,6 @@ For detail on how to use this tool, execute it with the `-h` option:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 import argparse
 

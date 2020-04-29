@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 from datetime import datetime
 from fnmatch import fnmatch
@@ -41,7 +40,7 @@ REPO_DIR = os.getenv('CARTOPY_GIT_DIR',
                      os.path.dirname(os.path.dirname(CARTOPY_DIR)))
 
 
-class TestLicenseHeaders(object):
+class TestLicenseHeaders:
     @staticmethod
     def list_tracked_files():
         """
@@ -96,7 +95,7 @@ class TestLicenseHeaders(object):
                     # Allow completely empty files (e.g. ``__init__.py``)
                     continue
 
-                with io.open(full_fname, encoding='utf-8') as fh:
+                with open(full_fname, encoding='utf-8') as fh:
                     content = fh.read()
 
                 if not bool(LICENSE_RE.match(content)):
@@ -105,7 +104,7 @@ class TestLicenseHeaders(object):
         assert failed == [], 'There were license header failures.'
 
 
-class TestFutureImports(object):
+class TestFutureImports:
     excluded = (
         '*/cartopy/examples/*.py',
         '*/docs/source/examples/*.py',
@@ -139,7 +138,7 @@ class TestFutureImports(object):
 
                 is_empty = os.path.getsize(full_fname) == 0
 
-                with io.open(full_fname, "r", encoding='utf-8') as fh:
+                with open(full_fname, "r", encoding='utf-8') as fh:
                     content = fh.read()
 
                 has_future_import = re.search(

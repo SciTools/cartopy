@@ -10,7 +10,6 @@ This module defines the :class:`FeatureArtist` class, for drawing
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 from collections import OrderedDict
 import warnings
@@ -24,7 +23,7 @@ import cartopy.mpl.patch as cpatch
 from .style import merge as style_merge, finalize as style_finalize
 
 
-class _GeomKey(object):
+class _GeomKey:
     """
     Provide id() based equality and hashing for geometries.
 
@@ -101,7 +100,7 @@ class FeatureArtist(matplotlib.artist.Artist):
             will override those shared with the feature.
 
         """
-        super(FeatureArtist, self).__init__()
+        super().__init__()
 
         if kwargs is None:
             kwargs = {}

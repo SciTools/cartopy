@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
@@ -21,7 +20,7 @@ from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
 from cartopy.tests.mpl.test_caching import CallCounter
 
 
-class TestNoSpherical(object):
+class TestNoSpherical:
     def setup_method(self):
         self.ax = plt.axes(projection=ccrs.PlateCarree())
         self.data = np.arange(12).reshape((3, 4))

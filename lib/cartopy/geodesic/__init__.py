@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 # NOTE: noqa for flake8 = unused import
 from cartopy.geodesic._geodesic import Geodesic  # noqa: F401
