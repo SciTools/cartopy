@@ -1276,14 +1276,26 @@ class GeoAxes(matplotlib.axes.Axes):
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
             warp_array = cartopy.img_transform.warp_array
+            original_extent = extent
             img, extent = warp_array(img,
                                      source_proj=transform,
-                                     source_extent=extent,
+                                     source_extent=original_extent,
                                      target_proj=self.projection,
                                      target_res=regrid_shape,
                                      target_extent=target_extent,
                                      mask_extrapolated=True,
                                      )
+            alpha = kwargs.pop('alpha', None)
+            if np.array(alpha).ndim == 2:
+                alpha, _ = warp_array(alpha,
+                                      source_proj=transform,
+                                      source_extent=original_extent,
+                                      target_proj=self.projection,
+                                      target_res=regrid_shape,
+                                      target_extent=target_extent,
+                                      mask_extrapolated=True,
+                                      )
+            kwargs['alpha'] = alpha
 
             # As a workaround to a matplotlib limitation, turn any images
             # which are RGB with a mask into RGBA images with an alpha
