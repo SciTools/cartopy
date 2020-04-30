@@ -34,8 +34,6 @@ from distutils.sysconfig import get_config_var
 
 from setuptools import Command, Extension, convert_path, setup
 
-import versioneer
-
 """
 Distribution definition for Cartopy.
 
@@ -347,19 +345,17 @@ def decythonize(extensions, **_ignore):
     return extensions
 
 
-cmdclass = versioneer.get_cmdclass()
-
 if IS_SDIST and not FORCE_CYTHON:
     extensions = decythonize(extensions)
+    cmdclass = {}
 else:
-    cmdclass.update({'build_ext': cy_build_ext})
+    cmdclass = {'build_ext': cy_build_ext}
 
 
 # Main setup
 # ==========
 setup(
     name='Cartopy',
-    version=versioneer.get_version(),
     url='https://scitools.org.uk/cartopy/docs/latest/',
     download_url='https://github.com/SciTools/cartopy',
     author='UK Met Office',
@@ -374,6 +370,11 @@ setup(
     install_requires=install_requires,
     extras_require=extras_require,
     tests_require=tests_require,
+
+    setup_requires=['setuptools_scm', 'setuptools_scm_git_archive'],
+    use_scm_version={
+        'write_to': 'lib/cartopy/_version.py',
+    },
 
     packages=find_package_tree('lib/cartopy', 'cartopy'),
     package_dir={'': 'lib'},

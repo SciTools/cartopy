@@ -69,7 +69,6 @@ class TestLicenseHeaders:
                             'docs/source/sphinxext/*.py',
                             'lib/cartopy/examples/*.py',
                             'lib/cartopy/_version.py',
-                            'versioneer.py',
                             )
 
         try:

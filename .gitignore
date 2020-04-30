@@ -6,6 +6,7 @@ dist
 .pytest_cache/
 
 # cartopy build files
+lib/cartopy/_version.py
 lib/cartopy/trace.cpp
 lib/cartopy/trace.so
 lib/cartopy/trace.*.so

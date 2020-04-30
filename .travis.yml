@@ -38,7 +38,9 @@ install:
 
   # Customise the testing environment
   # ---------------------------------
-  - PACKAGES="$PACKAGES pillow pytest pytest-xdist filelock pep8 pyshp shapely six requests pyepsg owslib"
+  - PACKAGES="$PACKAGES filelock owslib pep8 pillow pyepsg pyshp pytest"
+  - PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
+  - PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
   - |
     if [[ "$NAME" == "Latest everything"* ]]; then
         PACKAGES="$PACKAGES pytest-cov coveralls";
@@ -60,7 +62,7 @@ install:
   # Install cartopy
   # ---------------
   - pip install --no-deps .
-  - python -c "import cartopy; print('Version ', cartopy.__version__)" && python setup.py version
+  - python -c "import cartopy; print('Version ', cartopy.__version__)"
 
 script:
   # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
