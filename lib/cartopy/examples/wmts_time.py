@@ -15,7 +15,7 @@ the left, with the MODIS false color 'snow RGB' shown on the right.
 __tags__ = ['Web services']
 
 import matplotlib.pyplot as plt
-import matplotlib.patheffects as PathEffects
+from matplotlib import patheffects
 from owslib.wmts import WebMapTileService
 
 import cartopy.crs as ccrs
@@ -23,8 +23,8 @@ import cartopy.crs as ccrs
 
 def main():
     # URL of NASA GIBS
-    URL = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi'
-    wmts = WebMapTileService(URL)
+    url = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi'
+    wmts = WebMapTileService(url)
 
     # Layers for MODIS true color and snow RGB
     layers = ['MODIS_Terra_SurfaceReflectance_Bands143',
@@ -33,22 +33,22 @@ def main():
     date_str = '2016-02-05'
 
     # Plot setup
-    plot_CRS = ccrs.Mercator()
-    geodetic_CRS = ccrs.Geodetic()
-    x0, y0 = plot_CRS.transform_point(4.6, 43.1, geodetic_CRS)
-    x1, y1 = plot_CRS.transform_point(11.0, 47.4, geodetic_CRS)
+    plot_crs = ccrs.Mercator()
+    geodetic_crs = ccrs.Geodetic()
+    x0, y0 = plot_crs.transform_point(4.6, 43.1, geodetic_crs)
+    x1, y1 = plot_crs.transform_point(11.0, 47.4, geodetic_crs)
     ysize = 8
     xsize = 2 * ysize * (x1 - x0) / (y1 - y0)
     fig = plt.figure(figsize=(xsize, ysize), dpi=100)
 
     for layer, offset in zip(layers, [0, 0.5]):
-        ax = fig.add_axes([offset, 0, 0.5, 1], projection=plot_CRS)
+        ax = fig.add_axes([offset, 0, 0.5, 1], projection=plot_crs)
         ax.set_xlim((x0, x1))
         ax.set_ylim((y0, y1))
         ax.add_wmts(wmts, layer, wmts_kwargs={'time': date_str})
         txt = ax.text(4.7, 43.2, wmts[layer].title, fontsize=18, color='wheat',
-                      transform=geodetic_CRS)
-        txt.set_path_effects([PathEffects.withStroke(linewidth=5,
+                      transform=geodetic_crs)
+        txt.set_path_effects([patheffects.withStroke(linewidth=5,
                                                      foreground='black')])
     plt.show()
 
