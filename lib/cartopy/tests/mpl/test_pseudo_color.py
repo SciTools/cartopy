@@ -5,11 +5,9 @@
 # licensing details.
 
 import io
+from unittest import mock
+
 import matplotlib.pyplot as plt
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 import numpy as np
 import pytest
 

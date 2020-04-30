@@ -4,10 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 import numpy as np
 import matplotlib.pyplot as plt

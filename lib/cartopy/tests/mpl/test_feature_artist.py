@@ -4,14 +4,12 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+from unittest import mock
+
 import numpy as np
 import pytest
 import shapely.geometry as sgeom
 from matplotlib.transforms import IdentityTransform
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 
 import cartopy.crs as ccrs
 import cartopy.mpl.geoaxes as geoaxes
