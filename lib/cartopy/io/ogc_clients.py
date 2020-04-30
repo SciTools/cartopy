@@ -14,9 +14,7 @@ with additional specific methods which make use of this for WMS and WMTS
 :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts`). An example of using WMTS in
 this way can be found at :ref:`sphx_glr_gallery_wmts.py`.
 
-
 """
-
 
 import collections
 import io

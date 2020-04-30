@@ -10,7 +10,6 @@ ax.add_feature().
 
 """
 
-
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -30,7 +29,6 @@ The named keys in this dictionary represent the "type" of
 feature being plotted.
 
 """
-
 
 _NATURAL_EARTH_GEOM_CACHE = {}
 """

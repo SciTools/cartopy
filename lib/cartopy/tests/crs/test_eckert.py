@@ -8,7 +8,6 @@ Tests for the Eckert family of coordinate systems.
 
 """
 
-
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest

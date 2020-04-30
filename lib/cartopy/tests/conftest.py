@@ -5,7 +5,6 @@
 # licensing details.
 
 
-
 def pytest_configure(config):
     # Register additional markers.
     config.addinivalue_line('markers',

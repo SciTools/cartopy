@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import pytest
@@ -294,24 +293,24 @@ def test_grid_labels_inline_usa():
 @pytest.mark.parametrize(
     "proj,gcrs,xloc,xfmt,xloc_expected,xfmt_expected",
     [
-       (ccrs.PlateCarree(), ccrs.PlateCarree(),
-        [10, 20], None, mticker.FixedLocator, LongitudeFormatter),
-       (ccrs.PlateCarree(), ccrs.Mercator(),
-        [10, 20], None, mticker.FixedLocator, classic_formatter),
-       (ccrs.PlateCarree(), ccrs.PlateCarree(),
-        mticker.MaxNLocator(nbins=9), None,
-        mticker.MaxNLocator, LongitudeFormatter),
-       (ccrs.PlateCarree(), ccrs.Mercator(),
-        mticker.MaxNLocator(nbins=9), None,
-        mticker.MaxNLocator, classic_formatter),
-       (ccrs.PlateCarree(), ccrs.PlateCarree(),
-        None, None, LongitudeLocator, LongitudeFormatter),
-       (ccrs.PlateCarree(), ccrs.Mercator(),
-        None, None, classic_locator.__class__, classic_formatter),
-       (ccrs.PlateCarree(), ccrs.PlateCarree(),
-        None, mticker.StrMethodFormatter('{x}'),
-        LongitudeLocator, mticker.StrMethodFormatter),
-     ])
+        (ccrs.PlateCarree(), ccrs.PlateCarree(),
+         [10, 20], None, mticker.FixedLocator, LongitudeFormatter),
+        (ccrs.PlateCarree(), ccrs.Mercator(),
+         [10, 20], None, mticker.FixedLocator, classic_formatter),
+        (ccrs.PlateCarree(), ccrs.PlateCarree(),
+         mticker.MaxNLocator(nbins=9), None,
+         mticker.MaxNLocator, LongitudeFormatter),
+        (ccrs.PlateCarree(), ccrs.Mercator(),
+         mticker.MaxNLocator(nbins=9), None,
+         mticker.MaxNLocator, classic_formatter),
+        (ccrs.PlateCarree(), ccrs.PlateCarree(),
+         None, None, LongitudeLocator, LongitudeFormatter),
+        (ccrs.PlateCarree(), ccrs.Mercator(),
+         None, None, classic_locator.__class__, classic_formatter),
+        (ccrs.PlateCarree(), ccrs.PlateCarree(),
+         None, mticker.StrMethodFormatter('{x}'),
+         LongitudeLocator, mticker.StrMethodFormatter),
+    ])
 def test_gridliner_default_fmtloc(
         proj, gcrs, xloc, xfmt, xloc_expected, xfmt_expected):
     plt.figure()

@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
 import numpy as np

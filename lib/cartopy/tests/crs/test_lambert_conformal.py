@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 from numpy.testing import assert_array_almost_equal
 import pytest
 

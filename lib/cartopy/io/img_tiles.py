@@ -17,7 +17,6 @@ using tiles in this way can be found at the
 
 """
 
-
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 import io

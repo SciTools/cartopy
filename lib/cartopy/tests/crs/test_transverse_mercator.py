@@ -8,7 +8,6 @@ Tests for the Transverse Mercator projection, including OSGB and OSNI.
 
 """
 
-
 import numpy as np
 import pytest
 

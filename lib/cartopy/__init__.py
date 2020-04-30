@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions

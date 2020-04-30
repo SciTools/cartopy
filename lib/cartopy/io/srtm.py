@@ -14,7 +14,6 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
 
 """
 
-
 import io
 import os
 import warnings

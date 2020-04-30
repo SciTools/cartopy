@@ -12,7 +12,6 @@ plot results from source coordinates to the GeoAxes' target projection.
 
 """
 
-
 import collections
 import contextlib
 import functools

@@ -4,11 +4,11 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 """
 Handles matplotlib styling in a single consistent place.
 
 """
+
 import warnings
 
 
