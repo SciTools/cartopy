@@ -193,7 +193,7 @@ class SRTM3Source(_SRTMSource):
 
         """
         super().__init__(resolution=3, downloader=downloader,
-                                          max_nx=max_nx, max_ny=max_ny)
+                         max_nx=max_nx, max_ny=max_ny)
 
 
 class SRTM1Source(_SRTMSource):
@@ -220,7 +220,7 @@ class SRTM1Source(_SRTMSource):
 
         """
         super().__init__(resolution=1, downloader=downloader,
-                                          max_nx=max_nx, max_ny=max_ny)
+                         max_nx=max_nx, max_ny=max_ny)
 
 
 def srtm(lon, lat):

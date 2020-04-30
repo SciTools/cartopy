@@ -219,8 +219,7 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
                 not Image.core.jpeg_decoder:
             msg = "The '%s' style requires pillow with jpeg decoding support."
             raise ValueError(msg % self.style)
-        return super().__init__(
-            desired_tile_form=desired_tile_form)
+        return super().__init__(desired_tile_form=desired_tile_form)
 
     def _image_url(self, tile):
         style_dict = {
@@ -539,8 +538,7 @@ class OrdnanceSurvey(GoogleWTS):
         desired_tile_form: optional
             Defaults to 'RGB'.
         """
-        super().__init__(
-            desired_tile_form=desired_tile_form)
+        super().__init__(desired_tile_form=desired_tile_form)
         self.apikey = apikey
 
         if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:

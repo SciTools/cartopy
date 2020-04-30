@@ -231,8 +231,7 @@ class InterProjectionTransform(mtransforms.Transform):
 class _ViewClippedPathPatch(mpatches.PathPatch):
     def __init__(self, axes, **kwargs):
         self._original_path = mpath.Path(np.empty((0, 2)))
-        super().__init__(self._original_path,
-                                                    **kwargs)
+        super().__init__(self._original_path, **kwargs)
         self._axes = axes
 
     def set_boundary(self, path, transform):
@@ -254,8 +253,7 @@ class GeoSpine(mspines.Spine):
     def __init__(self, axes, **kwargs):
         self._original_path = mpath.Path(np.empty((0, 2)))
         kwargs.setdefault('clip_on', False)
-        super().__init__(axes, 'geo', self._original_path,
-                                       **kwargs)
+        super().__init__(axes, 'geo', self._original_path, **kwargs)
         self.set_capstyle('butt')
 
     def set_boundary(self, path, transform):
