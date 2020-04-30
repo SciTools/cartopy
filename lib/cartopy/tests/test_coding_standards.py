@@ -5,7 +5,6 @@
 # licensing details.
 
 
-from datetime import datetime
 from fnmatch import fnmatch
 import os
 import re
