@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Override sphinx_gallery's treatment of groups (folders) with cartopy's
 ``__tags__`` semantics. This is tightly bound to the sphinx_gallery
@@ -79,7 +78,7 @@ def example_groups(src_dir):
 
     for fname in sorted_listdir:
         fpath = os.path.join(src_dir, fname)
-        with open(fpath, 'r') as fh:
+        with open(fpath) as fh:
             for line in fh:
                 # Crudely extract the __tags__ line.
                 if line.startswith('__tags__ = '):
@@ -114,7 +113,7 @@ def order_examples(tagged_examples):
 
 def write_example(src_fpath, target_dir):
     target_fpath = os.path.join(target_dir, os.path.basename(src_fpath))
-    with open(src_fpath, 'r') as fh:
+    with open(src_fpath) as fh:
         with open(target_fpath, 'w') as fh_out:
             for line in fh:
                 # Crudely remove the __tags__ line.

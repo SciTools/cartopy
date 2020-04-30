@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -13,7 +12,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestStereographic(object):
+class TestStereographic:
     def test_default(self):
         stereo = ccrs.Stereographic()
         other_args = {'ellps=WGS84', 'lat_0=0.0', 'lon_0=0.0', 'x_0=0.0',

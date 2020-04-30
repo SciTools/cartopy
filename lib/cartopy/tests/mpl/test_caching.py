@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import gc
 
@@ -24,7 +23,7 @@ import cartopy.mpl.patch
 from cartopy.examples.waves import sample_data
 
 
-class CallCounter(object):
+class CallCounter:
     """
     Exposes a context manager which can count the number of calls to a specific
     function. (useful for cache checking!)

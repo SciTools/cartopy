@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import datetime
 
@@ -45,7 +44,7 @@ class Nightshade(ShapelyFeature):
 
         # make sure date is UTC, or naive with respect to time zones
         if date.utcoffset():
-            raise ValueError('datetime instance must be UTC, not {0}'.format(
+            raise ValueError('datetime instance must be UTC, not {}'.format(
                              date.tzname()))
 
         # Returns the Greenwich hour angle,
@@ -93,7 +92,7 @@ class Nightshade(ShapelyFeature):
         kwargs.setdefault('alpha', alpha)
 
         geom = sgeom.Polygon(np.column_stack((x, y)))
-        return super(Nightshade, self).__init__(
+        return super().__init__(
             [geom], rotated_pole, **kwargs)
 
 

@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 from matplotlib.contour import QuadContourSet
 import matplotlib.path as mpath
@@ -91,4 +90,4 @@ class GeoContourSet(QuadContourSet):
 
         # Now that we have prepared the collection paths, call on
         # through to the underlying implementation.
-        super(GeoContourSet, self).clabel(*args, **kwargs)
+        super().clabel(*args, **kwargs)

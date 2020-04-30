@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import contextlib
 import os
@@ -119,7 +118,7 @@ def test_downloading_simple_ascii(download_to_temp):
                              'raised. Got {}.'.format(len(w)))
         assert issubclass(w[0].category, cio.DownloadWarning)
 
-    with open(tmp_fname, 'r') as fh:
+    with open(tmp_fname) as fh:
         fh.readline()
         assert fh.readline() == " * jQuery JavaScript Library v1.8.2\n"
 

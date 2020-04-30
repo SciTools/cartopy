@@ -10,7 +10,6 @@ between them.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 from abc import ABCMeta, abstractproperty
 import io
@@ -67,7 +66,7 @@ class RotatedGeodetic(CRS):
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
         globe = globe or Globe(datum='WGS84')
-        super(RotatedGeodetic, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
 
 class Projection(CRS, metaclass=ABCMeta):
@@ -471,7 +470,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 sys.stdout.write('+')
                 sys.stdout.flush()
                 print()
-                print('Processing: %s, %s' % (i, current_ls))
+                print('Processing: {}, {}'.format(i, current_ls))
 
             added_linestring = set()
             while True:
@@ -516,8 +515,8 @@ class Projection(CRS, metaclass=ABCMeta):
                     coords_to_append = list(line_to_append.coords)
 
                     # Build up the linestring.
-                    current_ls = sgeom.LineString((list(current_ls.coords) +
-                                                   coords_to_append))
+                    current_ls = sgeom.LineString(list(current_ls.coords) +
+                                                  coords_to_append)
 
                     # Catch getting stuck in an infinite loop by checking that
                     # linestring only added once.
@@ -647,7 +646,7 @@ class _RectangularProjection(Projection, metaclass=ABCMeta):
     def __init__(self, proj4_params, half_width, half_height, globe=None):
         self._half_width = half_width
         self._half_height = half_height
-        super(_RectangularProjection, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
     @property
     def boundary(self):
@@ -695,7 +694,7 @@ class PlateCarree(_CylindricalProjection):
         y_max = a_rad * 90
         # Set the threshold around 0.5 if the x max is 180.
         self._threshold = x_max / 360.
-        super(PlateCarree, self).__init__(proj4_params, x_max, y_max,
+        super().__init__(proj4_params, x_max, y_max,
                                           globe=globe)
 
     @property
@@ -747,8 +746,7 @@ class PlateCarree(_CylindricalProjection):
         return bbox, lon_0_offset
 
     def quick_vertices_transform(self, vertices, src_crs):
-        return_value = super(PlateCarree,
-                             self).quick_vertices_transform(vertices, src_crs)
+        return_value = super().quick_vertices_transform(vertices, src_crs)
 
         # Optimise the PlateCarree -> PlateCarree case where no
         # wrapping or interpolation needs to take place.
@@ -832,7 +830,7 @@ class TransverseMercator(Projection):
         else:
             if approx:
                 proj4_params += [('approx', None)]
-        super(TransverseMercator, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
     @property
     def threshold(self):
@@ -863,7 +861,7 @@ class OSGB(TransverseMercator):
                           'False after 0.18.',
                           stacklevel=2)
             approx = True
-        super(OSGB, self).__init__(central_longitude=-2, central_latitude=49,
+        super().__init__(central_longitude=-2, central_latitude=49,
                                    scale_factor=0.9996012717,
                                    false_easting=400000,
                                    false_northing=-100000,
@@ -895,7 +893,7 @@ class OSNI(TransverseMercator):
             approx = True
         globe = Globe(semimajor_axis=6377340.189,
                       semiminor_axis=6356034.447938534)
-        super(OSNI, self).__init__(central_longitude=-8,
+        super().__init__(central_longitude=-8,
                                    central_latitude=53.5,
                                    scale_factor=1.000035,
                                    false_easting=200000,
@@ -942,7 +940,7 @@ class UTM(Projection):
                         ('zone', zone)]
         if southern_hemisphere:
             proj4_params.append(('south', None))
-        super(UTM, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
     @property
     def boundary(self):
@@ -978,7 +976,7 @@ class EuroPP(UTM):
     """
     def __init__(self):
         globe = Globe(ellipse='intl')
-        super(EuroPP, self).__init__(32, globe=globe)
+        super().__init__(32, globe=globe)
 
     @property
     def x_limits(self):
@@ -1044,7 +1042,7 @@ class Mercator(Projection):
             else:
                 proj4_params.append(('k_0', scale_factor))
 
-        super(Mercator, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # Calculate limits.
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
@@ -1057,7 +1055,7 @@ class Mercator(Projection):
                               np.diff(self.y_limits)[0] / 360)
 
     def __eq__(self, other):
-        res = super(Mercator, self).__eq__(other)
+        res = super().__eq__(other)
         if hasattr(other, "_y_limits") and hasattr(other, "_x_limits"):
             res = res and self._y_limits == other._y_limits and \
                 self._x_limits == other._x_limits
@@ -1105,7 +1103,7 @@ class LambertCylindrical(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = [('proj', 'cea'), ('lon_0', central_longitude)]
         globe = Globe(semimajor_axis=math.degrees(1))
-        super(LambertCylindrical, self).__init__(proj4_params, 180,
+        super().__init__(proj4_params, 180,
                                                  math.degrees(1), globe=globe)
 
     @property
@@ -1179,7 +1177,7 @@ class LambertConformal(Projection):
         if n_parallels == 2:
             proj4_params.append(('lat_2', standard_parallels[1]))
 
-        super(LambertConformal, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # Compute whether this projection is at the "north pole" or the
         # "south pole" (after the central lon/lat have been taken into
@@ -1218,7 +1216,7 @@ class LambertConformal(Projection):
         self._y_limits = mins[1], maxs[1]
 
     def __eq__(self, other):
-        res = super(LambertConformal, self).__eq__(other)
+        res = super().__eq__(other)
         if hasattr(other, "cutoff"):
             res = res and self.cutoff == other.cutoff
         return res
@@ -1277,7 +1275,7 @@ class LambertAzimuthalEqualArea(Projection):
                         ('x_0', false_easting),
                         ('y_0', false_northing)]
 
-        super(LambertAzimuthalEqualArea, self).__init__(proj4_params,
+        super().__init__(proj4_params,
                                                         globe=globe)
 
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
@@ -1328,7 +1326,7 @@ class Miller(_RectangularProjection):
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
         # (lambda-lambda0)=180 and phi=90 to get limits.
-        super(Miller, self).__init__(proj4_params,
+        super().__init__(proj4_params,
                                      a * np.pi, a * 2.303412543376391,
                                      globe=globe)
 
@@ -1376,7 +1374,7 @@ class RotatedPole(_CylindricalProjection):
                         ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
-        super(RotatedPole, self).__init__(proj4_params, 180, 90, globe=globe)
+        super().__init__(proj4_params, 180, 90, globe=globe)
 
     @property
     def threshold(self):
@@ -1390,7 +1388,7 @@ class Gnomonic(Projection):
                  central_longitude=0.0, globe=None):
         proj4_params = [('proj', 'gnom'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude)]
-        super(Gnomonic, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
         self._max = 5e7
 
     @property
@@ -1454,7 +1452,7 @@ class Stereographic(Projection):
             else:
                 proj4_params.append(('k_0', scale_factor))
 
-        super(Stereographic, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
@@ -1494,7 +1492,7 @@ class Stereographic(Projection):
 class NorthPolarStereo(Stereographic):
     def __init__(self, central_longitude=0.0, true_scale_latitude=None,
                  globe=None):
-        super(NorthPolarStereo, self).__init__(
+        super().__init__(
             central_latitude=90,
             central_longitude=central_longitude,
             true_scale_latitude=true_scale_latitude,  # None is +90
@@ -1504,7 +1502,7 @@ class NorthPolarStereo(Stereographic):
 class SouthPolarStereo(Stereographic):
     def __init__(self, central_longitude=0.0, true_scale_latitude=None,
                  globe=None):
-        super(SouthPolarStereo, self).__init__(
+        super().__init__(
             central_latitude=-90,
             central_longitude=central_longitude,
             true_scale_latitude=true_scale_latitude,  # None is -90
@@ -1531,7 +1529,7 @@ class Orthographic(Projection):
 
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
-        super(Orthographic, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
@@ -1570,7 +1568,7 @@ class _WarpedRectangularProjection(Projection, metaclass=ABCMeta):
             proj4_params += [('x_0', false_easting)]
         if false_northing is not None:
             proj4_params += [('y_0', false_northing)]
-        super(_WarpedRectangularProjection, self).__init__(proj4_params,
+        super().__init__(proj4_params,
                                                            globe=globe)
 
         # Obtain boundary points
@@ -1637,7 +1635,7 @@ class _Eckert(_WarpedRectangularProjection, metaclass=ABCMeta):
         """
         proj4_params = [('proj', self._proj_name),
                         ('lon_0', central_longitude)]
-        super(_Eckert, self).__init__(proj4_params, central_longitude,
+        super().__init__(proj4_params, central_longitude,
                                       false_easting=false_easting,
                                       false_northing=false_northing,
                                       globe=globe)
@@ -1724,7 +1722,7 @@ class EckertVI(_Eckert):
 
 
 class EqualEarth(_WarpedRectangularProjection):
-    u"""
+    """
     An Equal Earth projection.
 
     This projection is pseudocylindrical, and equal area. Parallels are
@@ -1765,7 +1763,7 @@ class EqualEarth(_WarpedRectangularProjection):
                              .format('.'.join(str(v) for v in PROJ4_VERSION)))
 
         proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
-        super(EqualEarth, self).__init__(proj_params, central_longitude,
+        super().__init__(proj_params, central_longitude,
                                          false_easting=false_easting,
                                          false_northing=false_northing,
                                          globe=globe)
@@ -1809,7 +1807,7 @@ class Mollweide(_WarpedRectangularProjection):
 
         """
         proj4_params = [('proj', 'moll'), ('lon_0', central_longitude)]
-        super(Mollweide, self).__init__(proj4_params, central_longitude,
+        super().__init__(proj4_params, central_longitude,
                                         false_easting=false_easting,
                                         false_northing=false_northing,
                                         globe=globe)
@@ -1868,7 +1866,7 @@ class Robinson(_WarpedRectangularProjection):
                           stacklevel=2)
 
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
-        super(Robinson, self).__init__(proj4_params, central_longitude,
+        super().__init__(proj4_params, central_longitude,
                                        false_easting=false_easting,
                                        false_northing=false_northing,
                                        globe=globe)
@@ -1894,7 +1892,7 @@ class Robinson(_WarpedRectangularProjection):
         if np.isnan(x) or np.isnan(y):
             result = (np.nan, np.nan)
         else:
-            result = super(Robinson, self).transform_point(x, y, src_crs)
+            result = super().transform_point(x, y, src_crs)
         return result
 
     def transform_points(self, src_crs, x, y, z=None):
@@ -1922,7 +1920,7 @@ class Robinson(_WarpedRectangularProjection):
             y[input_point_nans] = 0.0
             if z is not None:
                 z[input_point_nans] = 0.0
-        result = super(Robinson, self).transform_points(src_crs, x, y, z)
+        result = super().transform_points(src_crs, x, y, z)
         if handle_nans:
             # Result always has shape (N, 3).
             # Blank out each (whole) point where we had a NaN in the input.
@@ -1933,7 +1931,7 @@ class Robinson(_WarpedRectangularProjection):
 class InterruptedGoodeHomolosine(Projection):
     def __init__(self, central_longitude=0, globe=None):
         proj4_params = [('proj', 'igh'), ('lon_0', central_longitude)]
-        super(InterruptedGoodeHomolosine, self).__init__(proj4_params,
+        super().__init__(proj4_params,
                                                          globe=globe)
 
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
@@ -2019,7 +2017,7 @@ class _Satellite(Projection):
                         ('units', 'm')]
         if sweep_axis:
             proj4_params.append(('sweep', sweep_axis))
-        super(_Satellite, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
     def _set_boundary(self, coords):
         self._boundary = sgeom.LinearRing(coords.T)
@@ -2080,7 +2078,7 @@ class Geostationary(_Satellite):
             'x' should be used for GOES.
         """
 
-        super(Geostationary, self).__init__(
+        super().__init__(
             projection='geos',
             satellite_height=satellite_height,
             central_longitude=central_longitude,
@@ -2146,7 +2144,7 @@ class NearsidePerspective(_Satellite):
                 This projection does not handle elliptical globes.
 
         """
-        super(NearsidePerspective, self).__init__(
+        super().__init__(
             projection='nsper',
             satellite_height=satellite_height,
             central_longitude=central_longitude,
@@ -2210,7 +2208,7 @@ class AlbersEqualArea(Projection):
             except TypeError:
                 proj4_params.append(('lat_1', standard_parallels))
 
-        super(AlbersEqualArea, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # bounds
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
@@ -2298,7 +2296,7 @@ class AzimuthalEquidistant(Projection):
         proj4_params = [('proj', 'aeqd'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
-        super(AzimuthalEquidistant, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
@@ -2357,7 +2355,7 @@ class Sinusoidal(Projection):
                         ('lon_0', central_longitude),
                         ('x_0', false_easting),
                         ('y_0', false_northing)]
-        super(Sinusoidal, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # Obtain boundary points
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
@@ -2448,7 +2446,7 @@ class EquidistantConic(Projection):
             except TypeError:
                 proj4_params.append(('lat_1', standard_parallels))
 
-        super(EquidistantConic, self).__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # bounds
         n = 103
@@ -2488,7 +2486,7 @@ class EquidistantConic(Projection):
         return self._y_limits
 
 
-class _BoundaryPoint(object):
+class _BoundaryPoint:
     def __init__(self, distance, kind, data):
         """
         A representation for a geometric object which is
@@ -2511,8 +2509,9 @@ class _BoundaryPoint(object):
         self.data = data
 
     def __repr__(self):
-        return '_BoundaryPoint(%r, %r, %s)' % (self.distance, self.kind,
-                                               self.data)
+        return '_BoundaryPoint({!r}, {!r}, {})'.format(
+            self.distance, self.kind, self.data
+        )
 
 
 def _find_first_ge(a, x):

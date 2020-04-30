@@ -13,8 +13,8 @@ PYTHON_MIN_VERSION = (3, 5)
 
 if sys.version_info < PYTHON_MIN_VERSION:
     error = """
-Beginning with Cartopy 0.19, Python {0} or above is required.
-You are using Python {1}.
+Beginning with Cartopy 0.19, Python {} or above is required.
+You are using Python {}.
 
 This may be due to an out of date pip.
 
@@ -147,14 +147,14 @@ def find_proj_version_by_program(conda=None):
     proj = find_executable('proj')
     if proj is None:
         print(
-            'Proj %s must be installed.' % (
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), ),
+            'Proj {} must be installed.'.format(
+                '.'.join(str(v) for v in PROJ_MIN_VERSION)),
             file=sys.stderr)
         exit(1)
 
     if conda is not None and conda not in proj:
         print(
-            'Proj %s must be installed in Conda environment "%s".' % (
+            'Proj {} must be installed in Conda environment "{}".'.format(
                 '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
             file=sys.stderr)
         exit(1)
@@ -250,7 +250,7 @@ else:
 # Python dependencies
 extras_require = {}
 for name in os.listdir(os.path.join(HERE, 'requirements')):
-    with open(os.path.join(HERE, 'requirements', name), 'r') as fh:
+    with open(os.path.join(HERE, 'requirements', name)) as fh:
         section, ext = os.path.splitext(name)
         extras_require[section] = []
         for line in fh:
@@ -277,7 +277,7 @@ if not sys.platform.startswith('win'):
 
 # Description
 # ===========
-with open(os.path.join(HERE, 'README.md'), 'r') as fh:
+with open(os.path.join(HERE, 'README.md')) as fh:
     description = ''.join(fh.readlines())
 
 
@@ -413,6 +413,7 @@ setup(
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3 :: Only',
             'Topic :: Scientific/Engineering',
             'Topic :: Scientific/Engineering :: GIS',
             'Topic :: Scientific/Engineering :: Visualization',

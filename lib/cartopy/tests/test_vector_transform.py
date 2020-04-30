@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -29,7 +28,7 @@ def _sample_plate_carree_vector_field():
     return u, v
 
 
-class Test_interpolate_to_grid(object):
+class Test_interpolate_to_grid:
 
     @classmethod
     def setup_class(cls):
@@ -95,7 +94,7 @@ class Test_interpolate_to_grid(object):
         assert_array_almost_equal(s_grid3, expected_s_grid)
 
 
-class Test_vector_scalar_to_grid(object):
+class Test_vector_scalar_to_grid:
 
     @classmethod
     def setup_class(cls):

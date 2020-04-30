@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import base64
 import contextlib
@@ -25,7 +24,7 @@ import matplotlib.testing.compare as mcompare
 MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
 
 
-class ImageTesting(object):
+class ImageTesting:
     """
     Provides a convenient class for running visual Matplotlib tests.
 
@@ -74,7 +73,7 @@ class ImageTesting(object):
     image_output_directory = os.path.join(root_image_results, 'output')
     if not os.access(image_output_directory, os.W_OK):
         if not os.access(os.getcwd(), os.W_OK):
-            raise IOError('Write access to a local disk is required to run '
+            raise OSError('Write access to a local disk is required to run '
                           'image tests.  Run the tests from a current working '
                           'directory you have write access to to avoid this '
                           'issue.')

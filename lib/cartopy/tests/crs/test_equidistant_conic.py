@@ -8,7 +8,6 @@ Tests for the Equidistant Conic coordinate system.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
@@ -18,7 +17,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-class TestEquidistantConic(object):
+class TestEquidistantConic:
     def test_default(self):
         eqdc = ccrs.EquidistantConic()
         other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',

@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import operator
 import os
@@ -21,7 +20,7 @@ import cartopy.img_transform as im_trans
 from functools import reduce
 
 
-class TestRegrid(object):
+class TestRegrid:
     def test_array_dims(self):
         # Source data
         source_nx = 100

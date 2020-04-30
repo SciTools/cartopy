@@ -10,7 +10,6 @@ various data formats.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 import collections
 import os
@@ -66,7 +65,7 @@ class DownloadWarning(Warning):
     pass
 
 
-class Downloader(object):
+class Downloader:
     """
     Represents a resource, that can be configured easily, which knows
     how to acquire itself (perhaps via HTTP).
@@ -309,7 +308,7 @@ class LocatedImage(collections.namedtuple('LocatedImage', 'image, extent')):
     """
 
 
-class RasterSource(object):
+class RasterSource:
     """
     Define the cartopy raster fetching interface.
 
@@ -409,11 +408,11 @@ class PostprocessedRasterSource(RasterSourceContainer):
             return a single LocatedImage.
 
         """
-        super(PostprocessedRasterSource, self).__init__(contained_source)
+        super().__init__(contained_source)
         self._post_fetch_fn = img_post_process
 
     def fetch_raster(self, *args, **kwargs):
-        fetch_raster = super(PostprocessedRasterSource, self).fetch_raster
+        fetch_raster = super().fetch_raster
         located_imgs = fetch_raster(*args, **kwargs)
         if located_imgs:
             located_imgs = [self._post_fetch_fn(img) for img in located_imgs]

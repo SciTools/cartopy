@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import copy
 from io import BytesIO
@@ -23,7 +22,7 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 
 
-class TestCRS(object):
+class TestCRS:
     def test_hash(self):
         stereo = ccrs.Stereographic(90)
         north = ccrs.NorthPolarStereo()

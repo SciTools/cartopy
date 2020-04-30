@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import io
 import os
@@ -225,7 +224,7 @@ def test_nest(nest_from_config):
     # floating point values badly
     for img in z1.images:
         if not z0.images[0].bbox().contains(img.bbox()):
-            raise IOError('The test images aren\'t all "contained" by the '
+            raise OSError('The test images aren\'t all "contained" by the '
                           'z0 images, the nest cannot possibly work.\n '
                           'img {!s} not contained by {!s}\nExtents: {!s}; '
                           '{!s}'.format(img, z0.images[0], img.extent,
@@ -307,9 +306,9 @@ def wmts_data():
 
     test_data_version = None
     try:
-        with open(data_version_fname, 'r') as fh:
+        with open(data_version_fname) as fh:
             test_data_version = int(fh.read().strip())
-    except IOError:
+    except OSError:
         pass
     finally:
         if test_data_version != _TEST_DATA_VERSION:

@@ -15,7 +15,6 @@ and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 import matplotlib

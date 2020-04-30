@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 import numpy.ma as ma
@@ -14,7 +13,7 @@ import pytest
 from cartopy.util import add_cyclic_point
 
 
-class Test_add_cyclic_point(object):
+class Test_add_cyclic_point:
 
     @classmethod
     def setup_class(cls):

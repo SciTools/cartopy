@@ -5,7 +5,6 @@
 # licensing details.
 """This module contains tools for handling tick marks in cartopy."""
 
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from matplotlib.ticker import Formatter, MaxNLocator
@@ -23,9 +22,9 @@ class _PlateCarreeFormatter(Formatter):
 
     _target_projection = ccrs.PlateCarree()
 
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+    def __init__(self, degree_symbol='\u00B0', number_format='g',
                  transform_precision=1e-8, dms=False,
-                 minute_symbol=u"'", second_symbol=u"''",
+                 minute_symbol="'", second_symbol="''",
                  seconds_number_format='g',
                  auto_hide=True):
         """
@@ -85,7 +84,7 @@ class _PlateCarreeFormatter(Formatter):
         value, deg, mn, sec = self._get_dms(abs(value))
 
         # Format
-        label = u''
+        label = ''
         if sec:
             label = self._format_seconds(sec)
 
@@ -150,20 +149,20 @@ class _PlateCarreeFormatter(Formatter):
             number_format = 'd'
         else:
             number_format = self._degrees_number_format
-        return u'{value:{number_format}}{symbol}'.format(
+        return '{value:{number_format}}{symbol}'.format(
             value=abs(deg),
             number_format=number_format,
             symbol=self._degree_symbol)
 
     def _format_minutes(self, mn):
         """Format minutes as an integer"""
-        return u'{value:d}{symbol}'.format(
+        return '{value:d}{symbol}'.format(
             value=int(mn),
             symbol=self._minute_symbol)
 
     def _format_seconds(self, sec):
         """Format seconds as an float"""
-        return u'{value:{fmt}}{symbol}'.format(
+        return '{value:{fmt}}{symbol}'.format(
             value=sec,
             fmt=self._seconds_num_format,
             symbol=self._second_symbol)
@@ -191,9 +190,9 @@ class _PlateCarreeFormatter(Formatter):
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+    def __init__(self, degree_symbol='\u00B0', number_format='g',
                  transform_precision=1e-8, dms=False,
-                 minute_symbol=u"'", second_symbol=u"''",
+                 minute_symbol="'", second_symbol="''",
                  seconds_number_format='g', auto_hide=True,
                  ):
         """
@@ -265,7 +264,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             labels = [lat_formatter(value) for value in ticks]
 
         """
-        super(LatitudeFormatter, self).__init__(
+        super().__init__(
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
@@ -295,12 +294,12 @@ class LongitudeFormatter(_PlateCarreeFormatter):
     def __init__(self,
                  zero_direction_label=False,
                  dateline_direction_label=False,
-                 degree_symbol=u'\u00B0',
+                 degree_symbol='\u00B0',
                  number_format='g',
                  transform_precision=1e-8,
                  dms=False,
-                 minute_symbol=u"'",
-                 second_symbol=u"''",
+                 minute_symbol="'",
+                 second_symbol="''",
                  seconds_number_format='g',
                  auto_hide=True,
                  ):
@@ -381,7 +380,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             lon_formatter.set_locs(ticks)
             labels = [lon_formatter(value) for value in ticks]
         """
-        super(LongitudeFormatter, self).__init__(
+        super().__init__(
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,

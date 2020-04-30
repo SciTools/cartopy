@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import warnings
 
@@ -54,7 +53,7 @@ def srtm_login_or_skip(monkeypatch):
     monkeypatch.setattr(cartopy.io, 'urlopen', opener.open)
 
 
-class TestRetrieve(object):
+class TestRetrieve:
     @pytest.mark.parametrize('Source, read_SRTM, max_, min_, pt', [
         (cartopy.io.srtm.SRTM3Source, cartopy.io.srtm.read_SRTM3,
          602, -34, 78),
@@ -102,7 +101,7 @@ class TestRetrieve(object):
     'srtm3',
     'srtm1',
 ])
-class TestSRTMSource__single_tile(object):
+class TestSRTMSource__single_tile:
     def test_out_of_range(self, Source):
         source = Source()
         match = r'No srtm tile found for those coordinates\.'
@@ -137,7 +136,7 @@ class TestSRTMSource__single_tile(object):
     'srtm3',
     'srtm1',
 ])
-class TestSRTMSource__combined(object):
+class TestSRTMSource__combined:
     def test_trivial(self, Source):
         source = Source()
 

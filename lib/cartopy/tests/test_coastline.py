@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import pytest
 
@@ -13,7 +12,7 @@ import cartopy.io.shapereader as shp
 
 
 @pytest.mark.natural_earth
-class TestCoastline(object):
+class TestCoastline:
     def test_robust(self):
         COASTLINE_PATH = shp.natural_earth()
 

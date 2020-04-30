@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 import collections
 import glob
@@ -31,7 +30,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
             if isinstance(item, list):
                 item = tuple(item)
             new_kwargs[k] = item
-        return super(Img, cls).__new__(cls, *new_args, **new_kwargs)
+        return super().__new__(cls, *new_args, **new_kwargs)
 
     def __init__(self, *args, **kwargs):
         """
@@ -188,7 +187,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         return (min_x, max_x, min_y, max_y), pix_size
 
 
-class ImageCollection(object):
+class ImageCollection:
     def __init__(self, name, crs, images=None):
         """
         Represents a collection of images at the same logical level.
@@ -247,7 +246,7 @@ class ImageCollection(object):
             self.images.append(img_class.from_world_file(img, fworld))
 
 
-class NestedImageCollection(object):
+class NestedImageCollection:
     def __init__(self, name, crs, collections, _ancestry=None):
         """
         Represents a complex nest of ImageCollections.
@@ -274,7 +273,7 @@ class NestedImageCollection(object):
 
         """
         # NOTE: all collections must have the same crs.
-        _names = set([collection.name for collection in collections])
+        _names = {collection.name for collection in collections}
         assert len(_names) == len(collections), \
             'The collections must have unique names.'
 
@@ -362,7 +361,7 @@ class NestedImageCollection(object):
         for tile in self.find_images(target_domain, target_z):
             try:
                 img, extent, origin = self.get_image(tile)
-            except IOError:
+            except OSError:
                 continue
 
             img = np.array(img)
@@ -425,10 +424,9 @@ class NestedImageCollection(object):
                     yield start_tile
                 else:
                     for tile in self.subtiles(start_tile):
-                        for result in self.find_images(target_domain,
-                                                       target_z,
-                                                       start_tiles=[tile]):
-                            yield result
+                        yield from self.find_images(target_domain,
+                                                    target_z,
+                                                    start_tiles=[tile])
 
     def subtiles(self, collection_image):
         """
