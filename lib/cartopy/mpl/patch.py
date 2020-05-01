@@ -6,7 +6,6 @@
 """
 Provide shapely geometry <-> matplotlib path support.
 
-
 See also `Shapely Geometric Objects <see_also_shapely>`_
 and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
 
@@ -14,7 +13,6 @@ and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
    https://shapely.readthedocs.io/en/latest/manual.html#geometric-objects
 
 """
-
 
 import numpy as np
 import matplotlib

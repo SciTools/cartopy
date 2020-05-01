@@ -5,7 +5,6 @@
 # licensing details.
 """This module contains tools for handling tick marks in cartopy."""
 
-
 import numpy as np
 from matplotlib.ticker import Formatter, MaxNLocator
 

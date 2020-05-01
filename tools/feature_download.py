@@ -14,7 +14,6 @@ For detail on how to use this tool, execute it with the `-h` option:
 
 """
 
-
 import argparse
 
 from cartopy import config

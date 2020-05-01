@@ -10,7 +10,6 @@ ax.add_feature().
 
 """
 
-
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -30,7 +29,6 @@ The named keys in this dictionary represent the "type" of
 feature being plotted.
 
 """
-
 
 _NATURAL_EARTH_GEOM_CACHE = {}
 """
@@ -248,8 +246,7 @@ class NaturalEarthFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super().__init__(cartopy.crs.PlateCarree(),
-                                                  **kwargs)
+        super().__init__(cartopy.crs.PlateCarree(), **kwargs)
         self.category = category
         self.name = name
 

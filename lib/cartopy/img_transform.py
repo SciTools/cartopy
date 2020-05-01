@@ -9,7 +9,6 @@ transformations.
 
 """
 
-
 import numpy as np
 try:
     import pykdtree.kdtree

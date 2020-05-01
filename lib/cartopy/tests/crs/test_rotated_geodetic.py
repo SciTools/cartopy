@@ -8,7 +8,6 @@ Tests for the Transverse Mercator projection, including OSGB and OSNI.
 
 """
 
-
 import cartopy.crs as ccrs
 from .helpers import check_proj_params
 

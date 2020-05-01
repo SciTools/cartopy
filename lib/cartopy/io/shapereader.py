@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 """
 Combine the shapefile access of pyshp with the
 geometry representation of shapely:
@@ -27,7 +26,6 @@ geometry representation of shapely:
     >>> reader.close()
 
 """
-
 
 import glob
 import io
@@ -421,9 +419,8 @@ class GSHHSShpDownloader(Downloader):
                  url_template=_GSHHS_URL_TEMPLATE,
                  target_path_template=None,
                  pre_downloaded_path_template=''):
-        super().__init__(url_template,
-                                                 target_path_template,
-                                                 pre_downloaded_path_template)
+        super().__init__(url_template, target_path_template,
+                         pre_downloaded_path_template)
 
     def zip_file_contents(self, format_dict):
         """

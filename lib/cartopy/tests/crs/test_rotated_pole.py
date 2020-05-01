@@ -8,7 +8,6 @@ Tests for the Rotated Geodetic coordinate system.
 
 """
 
-
 import cartopy.crs as ccrs
 from .helpers import check_proj_params
 

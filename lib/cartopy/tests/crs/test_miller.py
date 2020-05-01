@@ -8,7 +8,6 @@ Tests for the Miller coordinate system.
 
 """
 
-
 import numpy as np
 from numpy.testing import assert_almost_equal
 import pytest

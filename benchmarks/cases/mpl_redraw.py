@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import io

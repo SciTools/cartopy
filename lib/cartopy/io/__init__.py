@@ -10,7 +10,6 @@ various data formats.
 
 """
 
-
 import collections
 import os
 import string

@@ -10,7 +10,6 @@ This module defines the :class:`FeatureArtist` class, for drawing
 
 """
 
-
 from collections import OrderedDict
 import warnings
 import weakref

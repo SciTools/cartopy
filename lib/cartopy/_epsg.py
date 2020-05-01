@@ -8,7 +8,6 @@ Provide support for converting EPSG codes to Projection instances.
 
 """
 
-
 import numpy as np
 import shapely.geometry as sgeom
 

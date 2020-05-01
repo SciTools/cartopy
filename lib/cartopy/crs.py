@@ -10,7 +10,6 @@ between them.
 
 """
 
-
 from abc import ABCMeta, abstractproperty
 import io
 import math
@@ -694,8 +693,7 @@ class PlateCarree(_CylindricalProjection):
         y_max = a_rad * 90
         # Set the threshold around 0.5 if the x max is 180.
         self._threshold = x_max / 360.
-        super().__init__(proj4_params, x_max, y_max,
-                                          globe=globe)
+        super().__init__(proj4_params, x_max, y_max, globe=globe)
 
     @property
     def threshold(self):
@@ -862,11 +860,10 @@ class OSGB(TransverseMercator):
                           stacklevel=2)
             approx = True
         super().__init__(central_longitude=-2, central_latitude=49,
-                                   scale_factor=0.9996012717,
-                                   false_easting=400000,
-                                   false_northing=-100000,
-                                   globe=Globe(datum='OSGB36', ellipse='airy'),
-                                   approx=approx)
+                         scale_factor=0.9996012717,
+                         false_easting=400000, false_northing=-100000,
+                         globe=Globe(datum='OSGB36', ellipse='airy'),
+                         approx=approx)
 
     @property
     def boundary(self):
@@ -893,13 +890,10 @@ class OSNI(TransverseMercator):
             approx = True
         globe = Globe(semimajor_axis=6377340.189,
                       semiminor_axis=6356034.447938534)
-        super().__init__(central_longitude=-8,
-                                   central_latitude=53.5,
-                                   scale_factor=1.000035,
-                                   false_easting=200000,
-                                   false_northing=250000,
-                                   globe=globe,
-                                   approx=approx)
+        super().__init__(central_longitude=-8, central_latitude=53.5,
+                         scale_factor=1.000035,
+                         false_easting=200000, false_northing=250000,
+                         globe=globe, approx=approx)
 
     @property
     def boundary(self):
@@ -1103,8 +1097,7 @@ class LambertCylindrical(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = [('proj', 'cea'), ('lon_0', central_longitude)]
         globe = Globe(semimajor_axis=math.degrees(1))
-        super().__init__(proj4_params, 180,
-                                                 math.degrees(1), globe=globe)
+        super().__init__(proj4_params, 180, math.degrees(1), globe=globe)
 
     @property
     def threshold(self):
@@ -1275,8 +1268,7 @@ class LambertAzimuthalEqualArea(Projection):
                         ('x_0', false_easting),
                         ('y_0', false_northing)]
 
-        super().__init__(proj4_params,
-                                                        globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
 
@@ -1326,9 +1318,8 @@ class Miller(_RectangularProjection):
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
         # (lambda-lambda0)=180 and phi=90 to get limits.
-        super().__init__(proj4_params,
-                                     a * np.pi, a * 2.303412543376391,
-                                     globe=globe)
+        super().__init__(proj4_params, a * np.pi, a * 2.303412543376391,
+                         globe=globe)
 
     @property
     def threshold(self):
@@ -1568,8 +1559,7 @@ class _WarpedRectangularProjection(Projection, metaclass=ABCMeta):
             proj4_params += [('x_0', false_easting)]
         if false_northing is not None:
             proj4_params += [('y_0', false_northing)]
-        super().__init__(proj4_params,
-                                                           globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         # Obtain boundary points
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
@@ -1636,9 +1626,9 @@ class _Eckert(_WarpedRectangularProjection, metaclass=ABCMeta):
         proj4_params = [('proj', self._proj_name),
                         ('lon_0', central_longitude)]
         super().__init__(proj4_params, central_longitude,
-                                      false_easting=false_easting,
-                                      false_northing=false_northing,
-                                      globe=globe)
+                         false_easting=false_easting,
+                         false_northing=false_northing,
+                         globe=globe)
 
     @property
     def threshold(self):
@@ -1764,9 +1754,9 @@ class EqualEarth(_WarpedRectangularProjection):
 
         proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
         super().__init__(proj_params, central_longitude,
-                                         false_easting=false_easting,
-                                         false_northing=false_northing,
-                                         globe=globe)
+                         false_easting=false_easting,
+                         false_northing=false_northing,
+                         globe=globe)
 
     @property
     def threshold(self):
@@ -1808,9 +1798,9 @@ class Mollweide(_WarpedRectangularProjection):
         """
         proj4_params = [('proj', 'moll'), ('lon_0', central_longitude)]
         super().__init__(proj4_params, central_longitude,
-                                        false_easting=false_easting,
-                                        false_northing=false_northing,
-                                        globe=globe)
+                         false_easting=false_easting,
+                         false_northing=false_northing,
+                         globe=globe)
 
     @property
     def threshold(self):
@@ -1867,9 +1857,9 @@ class Robinson(_WarpedRectangularProjection):
 
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super().__init__(proj4_params, central_longitude,
-                                       false_easting=false_easting,
-                                       false_northing=false_northing,
-                                       globe=globe)
+                         false_easting=false_easting,
+                         false_northing=false_northing,
+                         globe=globe)
 
     @property
     def threshold(self):
@@ -1931,8 +1921,7 @@ class Robinson(_WarpedRectangularProjection):
 class InterruptedGoodeHomolosine(Projection):
     def __init__(self, central_longitude=0, globe=None):
         proj4_params = [('proj', 'igh'), ('lon_0', central_longitude)]
-        super().__init__(proj4_params,
-                                                         globe=globe)
+        super().__init__(proj4_params, globe=globe)
 
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         epsilon = 1e-10

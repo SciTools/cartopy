@@ -8,7 +8,6 @@ Tests for specific Cartopy CRS subclasses.
 
 """
 
-
 import pytest
 
 

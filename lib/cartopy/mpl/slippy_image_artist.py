@@ -10,7 +10,6 @@ dragging and zooming of raster data.
 
 """
 
-
 from matplotlib.image import AxesImage
 import matplotlib.artist
 
