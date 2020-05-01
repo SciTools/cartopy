@@ -14,8 +14,10 @@ from cartopy.examples.waves import sample_data
 
 
 def main():
+    fig = plt.figure()
+
     # Setup a global EckertIII map with faint coastlines.
-    ax = plt.axes(projection=ccrs.EckertIII())
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.EckertIII())
     ax.set_global()
     ax.coastlines('110m', alpha=0.1)
 
@@ -36,10 +38,10 @@ def main():
     # plt.setp(line_c.collections, visible=False)
 
     # Add a colorbar for the filled contour.
-    plt.colorbar(filled_c, orientation='horizontal')
+    fig.colorbar(filled_c, orientation='horizontal')
 
     # Use the line contours to place contour labels.
-    plt.clabel(
+    ax.clabel(
         line_c,  # Typically best results when labelling line contours.
         colors=['black'],
         manual=False,  # Automatic placement vs manual placement.
