@@ -13,15 +13,12 @@ data spaced equally in degrees from -180 to 180 and -90 to 90.
 
 """
 __tags__ = ["Scalar data"]
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
 
+from datetime import datetime
 from io import StringIO
+from urllib.request import urlopen
 
 import numpy as np
-from datetime import datetime
 import cartopy.crs as ccrs
 from cartopy.feature.nightshade import Nightshade
 import matplotlib.pyplot as plt

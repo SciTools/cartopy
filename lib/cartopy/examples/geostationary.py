@@ -13,11 +13,8 @@ cartopy into a global Miller map.
 """
 __tags__ = ["Scalar data"]
 
-try:
-    from urllib2 import urlopen
-except ImportError:
-    from urllib.request import urlopen
 from io import BytesIO
+from urllib.request import urlopen
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
