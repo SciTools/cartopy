@@ -2,7 +2,7 @@ What's New in cartopy 0.18
 ==========================
 
 :Release: 0.18.0
-:Date: XXX Mar 2020
+:Date: 3rd May 2020
 
 For a full list of included Pull Requests and closed Issues, please see the
 `0.18 milestone <https://github.com/SciTools/cartopy/milestone/25>`_.

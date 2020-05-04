@@ -533,8 +533,9 @@ class OrdnanceSurvey(GoogleWTS):
             The style of the Ordnance Survey map tiles. One of 'Outdoor',
             'Road', 'Light', 'Night', 'Leisure'. Defaults to 'Road'.
             Details about the style of layer can be found at:
-             - https://apidocs.os.uk/docs/layer-information
-             - https://apidocs.os.uk/docs/map-styles
+
+            - https://apidocs.os.uk/docs/layer-information
+            - https://apidocs.os.uk/docs/map-styles
         desired_tile_form: optional
             Defaults to 'RGB'.
         """
