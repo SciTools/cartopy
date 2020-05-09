@@ -90,4 +90,4 @@ class GeoContourSet(QuadContourSet):
 
         # Now that we have prepared the collection paths, call on
         # through to the underlying implementation.
-        super().clabel(*args, **kwargs)
+        return super().clabel(*args, **kwargs)
