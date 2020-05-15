@@ -1930,17 +1930,59 @@ class Robinson(_WarpedRectangularProjection):
 
 
 class InterruptedGoodeHomolosine(Projection):
-    def __init__(self, central_longitude=0, globe=None):
-        proj4_params = [('proj', 'igh'), ('lon_0', central_longitude)]
-        super().__init__(proj4_params, globe=globe)
+    """
+    Composite equal-area projection empahsizing either land or
+    ocean features.
+
+    Original Reference:
+    Goode, J. P., 1925: The Homolosine Projection: A new device for
+        portraying the Earth's surface entire. Annals of the
+        Association of American Geographers, 15:3, 119-125,
+        DOI: 10.1080/00045602509356949
+
+    A central_longitude value of -160 is recommended for the oceanic view.
+
+    """
+    def __init__(self, central_longitude=0, globe=None, emphasis='land'):
+        """
+        Parameters
+        ----------
+        central_longitude: optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+        emphasis: optional
+            Options "land" and "ocean" are available. Defaults to "land"
+
+        """
+        if emphasis == 'land':
+            proj4_params = [('proj', 'igh'), ('lon_0', central_longitude)]
+            super().__init__(proj4_params,globe=globe)
+
+        elif emphasis == 'ocean':
+            if PROJ4_VERSION < (7, 1, 0):
+                _proj_ver = '.'.join(str(v) for v in PROJ4_VERSION)
+                raise ValueError('The Interrupted Goode Homolosine ocean '
+                                 'projection requires Proj version 7.1.0, '
+                                 'but you are using ' + _proj_ver)
+            proj4_params = [('proj', 'igh_o'), ('lon_0', central_longitude)]
+            super().__init__(proj4_params,globe=globe)
+
+        else:
+            msg = '`emphasis` needs to be either \'land\' or \'ocean\''
+            raise ValueError(msg)
 
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         epsilon = 1e-10
 
         # Obtain boundary points
-        n = 31
-        top_interrupted_lons = (-40.0,)
-        bottom_interrupted_lons = (80.0, -20.0, -100.0)
+        n = 91
+        if emphasis == 'land':
+            top_interrupted_lons = (-40.0,)
+            bottom_interrupted_lons = (80.0, -20.0, -100.0)
+        elif emphasis == 'ocean':
+            top_interrupted_lons = (-90.0, 60.0)
+            bottom_interrupted_lons = (90.0, -60.0)
         lons = np.empty(
             (2 + 2 * len(top_interrupted_lons + bottom_interrupted_lons)) * n +
             1)
