@@ -1550,6 +1550,33 @@ class GeoAxes(matplotlib.axes.Axes):
         return result
 
     @_add_transform
+    def hexbin(self, x, y, *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.hexbin'.
+
+        The points are first transformed into the projection of the axes and
+        then the hexbin algorithm is computed using the data in the axes
+        projection.
+
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
+        """
+        t = kwargs.pop('transform')
+        pairs = self.projection.transform_points(
+            t,
+            np.asarray(x),
+            np.asarray(y),
+        )
+        x = pairs[:, 0]
+        y = pairs[:, 1]
+
+        result = matplotlib.axes.Axes.hexbin(self, x, y, *args, **kwargs)
+        self.autoscale_view()
+        return result
+
+    @_add_transform
     def pcolormesh(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh'.
