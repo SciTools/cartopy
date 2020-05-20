@@ -181,3 +181,22 @@ def test_pil_Image():
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resolution='low')
+
+
+def test_alpha_2d_warp():
+    # tests that both image and alpha arrays (if alpha is 2D) are warped
+    plt_crs = ccrs.Geostationary(central_longitude=-155.)
+    fig = plt.figure(figsize=(5, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=plt_crs)
+    latlon_crs = ccrs.PlateCarree()
+    coords = [-162., -148., 17.5, 23.]
+    ax.set_extent(coords, crs=latlon_crs)
+    fake_data = np.zeros([100, 100])
+    fake_alphas = np.zeros(fake_data.shape)
+    image = ax.imshow(fake_data, extent=coords, transform=latlon_crs,
+                      alpha=fake_alphas)
+    plt.close()
+    image_data = image.get_array()
+    image_alpha = image.get_alpha()
+
+    assert image_data.shape == image_alpha.shape
