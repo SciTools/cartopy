@@ -6,6 +6,7 @@
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
@@ -319,3 +320,29 @@ def test_gridliner_default_fmtloc(
     plt.close()
     assert isinstance(gl.xlocator, xloc_expected)
     assert isinstance(gl.xformatter, xfmt_expected)
+
+
+def test_gridliner_line_limits():
+    fig = plt.figure()
+    ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
+    ax.set_global()
+    # Test a single value passed in which represents (-lim, lim)
+    xlim, ylim = 125, 75
+    gl = ax.gridlines(xlim=xlim, ylim=ylim)
+    fig.canvas.draw_idle()
+
+    paths = gl.xline_artists[0].get_paths() + gl.yline_artists[0].get_paths()
+    for path in paths:
+        assert (np.min(path.vertices, axis=0) >= (-xlim, -ylim)).all()
+        assert (np.max(path.vertices, axis=0) <= (xlim, ylim)).all()
+
+    # Test a pair of values passed in which represents the min, max
+    xlim = (-125, 150)
+    ylim = (50, 70)
+    gl = ax.gridlines(xlim=xlim, ylim=ylim)
+    fig.canvas.draw_idle()
+
+    paths = gl.xline_artists[0].get_paths() + gl.yline_artists[0].get_paths()
+    for path in paths:
+        assert (np.min(path.vertices, axis=0) >= (xlim[0], ylim[0])).all()
+        assert (np.max(path.vertices, axis=0) <= (xlim[1], ylim[1])).all()
