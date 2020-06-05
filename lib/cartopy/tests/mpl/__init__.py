@@ -205,14 +205,7 @@ class ImageTesting:
                               (mod_name, test_name))
                 plt.close('all')
 
-            if MPL_VERSION >= '2':
-                style_context = mpl.style.context
-            else:
-                @contextlib.contextmanager
-                def style_context(style, after_reset=False):
-                    yield
-
-            with style_context(self.style):
+            with mpl.style.context(self.style):
                 if MPL_VERSION >= '3.2.0':
                     mpl.rcParams['text.kerning_factor'] = 6
 

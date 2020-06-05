@@ -127,44 +127,15 @@ def test_gridliner_specified_lines():
 
 # The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = 0.5
-if MPL_VERSION >= '2.0':
-    grid_label_image = 'gridliner_labels'
-    if ccrs.PROJ4_VERSION < (4, 9, 3):
-        # A 0-longitude label is missing on older Proj versions.
-        grid_label_tol = 1.8
-    grid_label_inline_image = 'gridliner_labels_inline'
-    grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
-    if ccrs.PROJ4_VERSION == (4, 9, 1):
-        # AzimuthalEquidistant was previously broken.
-        grid_label_inline_tol = 7.9
-        grid_label_inline_usa_tol = 7.7
-    elif ccrs.PROJ4_VERSION < (5, 0, 0):
-        # Stereographic was previously broken.
-        grid_label_inline_tol = 6.4
-        grid_label_inline_usa_tol = 4.0
+if MPL_VERSION < "3":
+    TOL = 15
 else:
-    # Skip test_grid_labels_tight for matplotlib 1.5.1 because it
-    # is not possible to override tight bounding box calculation
-    grid_label_image = 'gridliner_labels_1.5'
-    grid_label_tol = 1.8
-    grid_label_inline_image = 'gridliner_labels_inline_1.5'
-    grid_label_inline_usa_image = 'gridliner_labels_inline_usa_1.5'
-    if ccrs.PROJ4_VERSION >= (5, 0, 0):
-        # Stereographic was fixed, but test image was not updated.
-        grid_label_inline_tol = 7.9
-        grid_label_inline_usa_tol = 7.9
-    elif ccrs.PROJ4_VERSION >= (4, 9, 2):
-        # AzimuthalEquidistant was fixed, but test image was not updated.
-        grid_label_inline_tol = 5.4
-        grid_label_inline_usa_tol = 7.2
-if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
-    # Several projections are broken in these versions, so not plotted.
-    grid_label_inline_tol += 5.1
-    grid_label_inline_usa_tol += 5.5
-elif (6, 0, 0) <= ccrs.PROJ4_VERSION:
-    # Better Robinson projection causes some text movement.
-    grid_label_inline_tol += 1.2
+    TOL = 0.5
+grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = TOL
+grid_label_inline_tol += 1.1
+grid_label_image = 'gridliner_labels'
+grid_label_inline_image = 'gridliner_labels_inline'
+grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
 
 
 @pytest.mark.natural_earth
@@ -237,9 +208,6 @@ def test_grid_labels():
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
 
 
-@pytest.mark.skipif(
-    MPL_VERSION < '2.0.0',
-    reason='Impossible to override tight layout algorithm in mpl < 2.0.0')
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'],
               tolerance=grid_label_tol if ccrs.PROJ4_VERSION < (7, 1, 0)

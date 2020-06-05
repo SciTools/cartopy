@@ -34,14 +34,7 @@ if MPL_VERSION >= '3.0.0':
     _STREAMPLOT_STYLE = 'mpl20'
 else:
     _CONTOUR_IMAGE = 'global_contour_wrap_mpl_pre_3.0.0'
-    if MPL_VERSION >= '2.1.0':
-        _STREAMPLOT_IMAGE = 'streamplot_mpl_2.1.0'
-    elif MPL_VERSION >= '2':
-        _CONTOUR_TOL = 11.4
-        _STREAMPLOT_IMAGE = 'streamplot_mpl_2.0.0'
-    else:
-        _CONTOUR_TOL = 11.4
-        _STREAMPLOT_IMAGE = 'streamplot_mpl_1.4.3'
+    _STREAMPLOT_IMAGE = 'streamplot_mpl_2.1.0'
 
 
 @pytest.mark.natural_earth
@@ -105,8 +98,7 @@ def test_global_pcolor_wrap_no_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'],
-              tolerance=12.4 if MPL_VERSION < '2.1.0' else 0.5)
+@ImageTesting(['global_scatter_wrap'], tolerance=0.5)
 def test_global_scatter_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     # By default the coastline feature will be drawn after patches.
@@ -119,8 +111,7 @@ def test_global_scatter_wrap_new_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'],
-              tolerance=12.4 if MPL_VERSION < '2.1.0' else 0.5)
+@ImageTesting(['global_scatter_wrap'], tolerance=0.5)
 def test_global_scatter_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=0)
@@ -131,7 +122,7 @@ def test_global_scatter_wrap_no_transform():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=27.7 if MPL_VERSION < '2.1.0' else 0.5)
+              tolerance=2 if MPL_VERSION < '3' else 0.5)
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -148,7 +139,7 @@ def test_global_hexbin_wrap():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=27.7 if MPL_VERSION < '2.1.0' else 0.5)
+              tolerance=2 if MPL_VERSION < '3' else 0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -166,7 +157,7 @@ def test_global_hexbin_wrap_transform():
 
 
 @ImageTesting(['global_map'],
-              tolerance=1.93 if MPL_VERSION < '2.1.0' else 0.55)
+              tolerance=0.55)
 def test_global_map():
     plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
@@ -309,8 +300,7 @@ def test_axes_natural_earth_interface():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap1'],
-              tolerance=6.3 if MPL_VERSION < '2.1.0' else 1.27)
+@ImageTesting(['pcolormesh_global_wrap1'], tolerance=1.27)
 def test_pcolormesh_global_with_wrap1():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -333,8 +323,6 @@ def test_pcolormesh_global_with_wrap1():
 
 
 tolerance = 1.61
-if MPL_VERSION < '2.1.0':
-    tolerance = 6.4
 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
     tolerance += 0.8
 
@@ -369,8 +357,6 @@ def test_pcolormesh_global_with_wrap2():
 
 
 tolerance = 1.39
-if MPL_VERSION < '2.1.0':
-    tolerance = 2.5
 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
     tolerance += 1.4
 
@@ -462,10 +448,8 @@ def test_pcolormesh_set_array_with_mask():
     ax.set_global()  # make sure everything is visible
 
 
-@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_limited_area_wrap'],
-              tolerance=1.82 if MPL_VERSION >= '2.1.0' else 0.7)
+@ImageTesting(['pcolormesh_limited_area_wrap'], tolerance=1.82)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
@@ -541,7 +525,6 @@ def test_pcolormesh_diagonal_wrap():
     assert hasattr(mesh, "_wrapped_collection_fix")
 
 
-@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_goode_wrap'])
 def test_pcolormesh_goode_wrap():
@@ -557,7 +540,6 @@ def test_pcolormesh_goode_wrap():
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 
 
-@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
 def test_pcolormesh_mercator_wrap():
@@ -571,7 +553,6 @@ def test_pcolormesh_mercator_wrap():
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 
 
-@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
 def test_pcolormesh_wrap_set_array():
@@ -590,7 +571,6 @@ def test_pcolormesh_wrap_set_array():
     coll.set_array(Z.ravel())
 
 
-@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['quiver_plate_carree'])
 def test_quiver_plate_carree():
@@ -614,7 +594,6 @@ def test_quiver_plate_carree():
     ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree())
 
 
-@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['quiver_rotated_pole'])
 def test_quiver_rotated_pole():
@@ -678,8 +657,7 @@ def test_quiver_regrid_with_extent():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_plate_carree'],
-              tolerance=8 if MPL_VERSION < '2.1.0' else 0.5)
+@ImageTesting(['barbs_plate_carree'], tolerance=0.5)
 def test_barbs():
     x = np.arange(-60, 45, 5)
     y = np.arange(30, 75, 5)
@@ -701,8 +679,7 @@ def test_barbs():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_regrid'],
-              tolerance=2.9 if MPL_VERSION < '2.1.0' else 0.5)
+@ImageTesting(['barbs_regrid'], tolerance=0.5)
 def test_barbs_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

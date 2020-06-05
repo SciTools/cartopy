@@ -11,7 +11,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 
 
 @pytest.mark.filterwarnings("ignore:Downloading")
@@ -42,8 +42,7 @@ def test_natural_earth_custom():
     ax.set_ylim((58, 72))
 
 
-@ImageTesting(['gshhs_coastlines'],
-              tolerance=3.3 if MPL_VERSION < '2' else 0.95)
+@ImageTesting(['gshhs_coastlines'], tolerance=0.95)
 def test_gshhs():
     ax = plt.axes(projection=ccrs.Mollweide())
     ax.set_extent([138, 142, 32, 42], ccrs.Geodetic())

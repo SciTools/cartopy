@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib.testing.decorators import cleanup
 import pytest
 
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
@@ -17,7 +17,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
-@ImageTesting(['wmts'], tolerance=7.56 if MPL_VERSION < '2' else 0)
+@ImageTesting(['wmts'], tolerance=0)
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())
     url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
@@ -41,7 +41,7 @@ def test_wms_tight_layout():
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@ImageTesting(['wms'], tolerance=7.79 if MPL_VERSION < '2' else 0.02)
+@ImageTesting(['wms'], tolerance=0.02)
 def test_wms():
     ax = plt.axes(projection=ccrs.Orthographic())
     url = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
