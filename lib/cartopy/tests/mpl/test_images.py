@@ -9,6 +9,8 @@ import types
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as colors
 from PIL import Image
 import pytest
 import shapely.geometry as sgeom
@@ -148,6 +150,21 @@ def test_imshow_wrapping():
               extent=(0, 360, -90, 90))
 
     assert ax.get_xlim() == (-180, 180)
+
+
+def test_imshow_rgba():
+    # tests that the alpha of a RGBA array passed to imshow is set to 0
+    # instead of masked
+    z = np.random.rand(100, 100)
+    cmap = cm.get_cmap()
+    norm = colors.Normalize(vmin=0, vmax=1)
+    z1 = cmap(norm(z))
+    plt_crs = ccrs.LambertAzimuthalEqualArea()
+    latlon_crs = ccrs.PlateCarree()
+    ax = plt.axes(projection=plt_crs)
+    ax.set_extent([-30, -20, 60, 70], crs=latlon_crs)
+    img = ax.imshow(z1, extent=[-26, -24, 64, 66], transform=latlon_crs)
+    assert sum(img.get_array().data[:, 0, 3]) == 0
 
 
 @pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),

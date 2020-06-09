@@ -1306,6 +1306,12 @@ class GeoAxes(matplotlib.axes.Axes):
                 img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
                 if img.dtype.kind == 'u':
                     img[:, :, 3] *= 255
+            elif (isinstance(img, np.ma.MaskedArray) and
+                    img.shape[2:3] == (4, ) and
+                    img.mask is not False):
+                img[:, :, 3][img.mask[:, :, 3]] = 0
+                if img.dtype.kind == 'u':
+                    img[:, :, 3] *= 255
 
             result = matplotlib.axes.Axes.imshow(self, img, *args,
                                                  extent=extent, **kwargs)
