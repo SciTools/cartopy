@@ -300,7 +300,12 @@ def _add_transform(func):
         transform = kwargs.get('transform', None)
         if transform is None:
             transform = self.projection
-        if (isinstance(transform, ccrs.CRS) and
+        # Raise an error if any of these functions try to use
+        # a spherical source CRS.
+        non_spherical_funcs = ['contour', 'contourf', 'pcolormesh', 'pcolor',
+                               'quiver', 'barbs', 'streamplot']
+        if (func.__name__ in non_spherical_funcs and
+                isinstance(transform, ccrs.CRS) and
                 not isinstance(transform, ccrs.Projection)):
             raise ValueError('Invalid transform: Spherical {} '
                              'is not supported - consider using '
