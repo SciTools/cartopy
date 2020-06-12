@@ -691,7 +691,7 @@ class Gridliner:
             dy = xpadding * np.sin(angle * np.pi / 180)
             transform = mtrans.offset_copy(
                 self.axes.transData, self.axes.figure,
-                x=dx, y=dy, units='dots')
+                x=dx, y=dy, units='points')
             kw.update(transform=transform)
 
         return kw, loc
