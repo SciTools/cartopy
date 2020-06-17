@@ -238,7 +238,7 @@ def test_grid_labels():
 
 @pytest.mark.skipif(
     MPL_VERSION < '2.0.0',
-    reason='Cartopy cannot override tight layout in matplotlib < 2.0.0')
+    reason='Impossible to override tight layout algorithm in matplotlib < 2.0.0')
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'], tolerance=grid_label_tol)
 def test_grid_labels_tight():
