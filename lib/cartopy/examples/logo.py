@@ -22,7 +22,7 @@ def main():
 
     # generate a matplotlib path representing the word "cartopy"
     fp = FontProperties(family='Bitstream Vera Sans', weight='bold')
-    logo_path = matplotlib.textpath.TextPath((-175, -35), 'cartopy',
+    logo_path = matplotlib.textpath.TextPath((-171.0141, -43.6625), 'cartopy',
                                              size=1, prop=fp)
     # scale the letters up to sensible longitude and latitude sizes
     logo_path._vertices *= np.array([80, 160])
