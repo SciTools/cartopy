@@ -313,7 +313,8 @@ class GeoAxes(matplotlib.axes.Axes):
         geo_axes = plt.axes(projection=cartopy.crs.PlateCarree())
 
         # Set up a standard map for latlon data for multiple subplots
-        fig, geo_axes = plt.subplots(nrows=2, ncols=2, subplot_kw={'projection': ccrs.PlateCarree()})
+        fig, geo_axes = plt.subplots(nrows=2, ncols=2,
+                            subplot_kw={'projection': ccrs.PlateCarree()})
 
         # Set up an OSGB map.
         geo_axes = plt.subplot(2, 2, 1, projection=cartopy.crs.OSGB())
