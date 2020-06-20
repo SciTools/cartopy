@@ -192,7 +192,7 @@ class TestCRS:
         assert default_globe.ellipse == 'WGS84'
 
         eccentric_globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500)
-        assert not eccentric_globe.ellipse # might have to be adapted with #330
+        assert not eccentric_globe.ellipse  # would need revision with #330
         assert eccentric_globe.semimajor_axis == 1000
         assert eccentric_globe.semiminor_axis == 500
 
