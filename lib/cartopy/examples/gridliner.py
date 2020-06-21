@@ -11,7 +11,7 @@ to display fractions of degree.
 In the second example, labels are still drawn at the map edges
 despite its complexity, and some others are also drawn within the map
 boundary.
-In the third example, labels are drawn only on the left and bottom side.
+In the third example, labels are drawn only on the left and bottom sides.
 """
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
