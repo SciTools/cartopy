@@ -155,7 +155,7 @@ def test_imshow_wrapping():
 def test_imshow_rgba():
     # tests that the alpha of a RGBA array passed to imshow is set to 0
     # instead of masked
-    z = np.random.rand(100, 100)
+    z = np.ones((100, 100))*0.5
     cmap = cm.get_cmap()
     norm = colors.Normalize(vmin=0, vmax=1)
     z1 = cmap(norm(z))
@@ -164,6 +164,18 @@ def test_imshow_rgba():
     ax = plt.axes(projection=plt_crs)
     ax.set_extent([-30, -20, 60, 70], crs=latlon_crs)
     img = ax.imshow(z1, extent=[-26, -24, 64, 66], transform=latlon_crs)
+    assert sum(img.get_array().data[:, 0, 3]) == 0
+
+
+def test_imshow_rgb():
+    # tests that the alpha of a RGB array passed to imshow is set to 0
+    # instead of masked
+    z = np.ones((100, 100, 3))*0.5
+    plt_crs = ccrs.LambertAzimuthalEqualArea()
+    latlon_crs = ccrs.PlateCarree()
+    ax = plt.axes(projection=plt_crs)
+    ax.set_extent([-30, -20, 60, 70], crs=latlon_crs)
+    img = ax.imshow(z, extent=[-26, -24, 64, 66], transform=latlon_crs)
     assert sum(img.get_array().data[:, 0, 3]) == 0
 
 

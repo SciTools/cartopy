@@ -1294,24 +1294,25 @@ class GeoAxes(matplotlib.axes.Axes):
             kwargs['alpha'] = alpha
 
             # As a workaround to a matplotlib limitation, turn any images
-            # which are RGB(A) with a mask into unmasked RGBA images with the
-            # (hopefully) proper alpha channel.
+            # which are RGB(A) with a mask into unmasked RGBA images with alpha
+            # put into the A channel.
             if (isinstance(img, np.ma.MaskedArray) and
                     len(img.shape) > 2 and
                     img.mask is not False):
+                # if we don't pop alpha, imshow will apply (erroneously?) a
+                # 1D alpha to the RGBA array
+                # kwargs['alpha'] is guaranteed to be either 1D, 2D, or None
+                alpha = kwargs.pop('alpha')
                 old_img = img[:, :, 0:3]
                 img = np.zeros(img.shape[:2] + (4, ), dtype=img.dtype)
                 img[:, :, 0:3] = old_img
                 # Put an alpha channel in if the image was masked.
-                if not np.any(kwargs['alpha']):
-                    kwargs['alpha'] = 1
-                img[:, :, 3] = np.ma.filled(kwargs['alpha'], fill_value=0) * \
+                if not np.any(alpha):
+                    alpha = 1
+                img[:, :, 3] = np.ma.filled(alpha, fill_value=0) * \
                     (~np.any(old_img.mask, axis=2))
                 if img.dtype.kind == 'u':
                     img[:, :, 3] *= 255
-                # if we don't pop alpha, imshow will apply (erroneously?) a
-                # 1D alpha to the RGBA array
-                kwargs.pop('alpha')
 
             result = matplotlib.axes.Axes.imshow(self, img, *args,
                                                  extent=extent, **kwargs)
