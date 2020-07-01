@@ -434,19 +434,13 @@ class GeoAxes(matplotlib.axes.Axes):
                 (self.ignore_existing_data_limits,
                     self._autoscaleXon, self._autoscaleYon) = other
 
-    @matplotlib.artist.allow_rasterization
-    def draw(self, renderer=None, **kwargs):
+    def _draw_preprocess(self, renderer):
         """
-        Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
-
-        Draw grid lines and image factory results before invoking standard
-        Matplotlib drawing. A global range is used if no limits have yet
-        been set.
-
+        Perform pre-processing steps shared between :func:`GeoAxes.draw`
+        and :func:`GeoAxes.get_tightbbox`.
         """
         # If data has been added (i.e. autoscale hasn't been turned off)
         # then we should autoscale the view.
-
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
@@ -457,6 +451,32 @@ class GeoAxes(matplotlib.axes.Axes):
         self.apply_aspect()
         for gl in self._gridliners:
             gl._draw_gridliner(renderer=renderer)
+
+    def get_tightbbox(self, renderer, *args, **kwargs):
+        """
+        Extend the standard behaviour of
+        :func:`matplotlib.axes.Axes.get_tightbbox`.
+
+        Adjust the axes aspect ratio, background patch location, and add
+        gridliners before calculating the tight bounding box.
+        """
+        # Shared processing steps
+        self._draw_preprocess(renderer)
+
+        return matplotlib.axes.Axes.get_tightbbox(
+            self, renderer, *args, **kwargs)
+
+    @matplotlib.artist.allow_rasterization
+    def draw(self, renderer=None, **kwargs):
+        """
+        Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
+
+        Draw grid lines and image factory results before invoking standard
+        Matplotlib drawing. A global range is used if no limits have yet
+        been set.
+        """
+        # Shared processing steps
+        self._draw_preprocess(renderer)
 
         # XXX This interface needs a tidy up:
         #       image drawing on pan/zoom;

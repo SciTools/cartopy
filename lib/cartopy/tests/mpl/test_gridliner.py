@@ -143,6 +143,8 @@ if MPL_VERSION >= '2.0':
         grid_label_inline_tol = 6.4
         grid_label_inline_usa_tol = 4.0
 else:
+    # Skip test_grid_labels_tight for matplotlib 1.5.1 because it
+    # is not possible to override tight bounding box calculation
     grid_label_image = 'gridliner_labels_1.5'
     grid_label_tol = 1.8
     grid_label_inline_image = 'gridliner_labels_inline_1.5'
@@ -232,6 +234,50 @@ def test_grid_labels():
 
     # Increase margins between plots to stop them bumping into one another.
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
+
+
+@pytest.mark.skipif(
+    MPL_VERSION < '2.0.0',
+    reason='Impossible to override tight layout algorithm in mpl < 2.0.0')
+@pytest.mark.natural_earth
+@ImageTesting(['gridliner_labels_tight'], tolerance=grid_label_tol)
+def test_grid_labels_tight():
+
+    # Ensure tight layout accounts for gridlines
+    fig = plt.figure(figsize=(7, 5))
+
+    crs_pc = ccrs.PlateCarree()
+    crs_merc = ccrs.Mercator()
+
+    ax = fig.add_subplot(2, 2, 1, projection=crs_pc)
+    ax.coastlines(resolution="110m")
+    ax.gridlines(draw_labels=True)
+
+    ax = fig.add_subplot(2, 2, 2, projection=crs_merc)
+    ax.coastlines(resolution="110m")
+    ax.gridlines(draw_labels=True)
+
+    # Matplotlib tight layout is also incorrect if cartopy fails
+    # to adjust aspect ratios first. Relevant when aspect ratio has
+    # changed due to set_extent.
+    ax = fig.add_subplot(2, 2, 3, projection=crs_pc)
+    ax.set_extent([-20, 10.0, 45.0, 70.0])
+    ax.coastlines(resolution="110m")
+    ax.gridlines(draw_labels=True)
+
+    ax = fig.add_subplot(2, 2, 4, projection=crs_merc)
+    ax.set_extent([-20, 10.0, 45.0, 70.0], crs=crs_pc)
+    ax.coastlines(resolution="110m")
+    gl = ax.gridlines(draw_labels=True)
+    gl.rotate_labels = False
+
+    # Apply tight layout
+    fig.tight_layout()
+
+    # Ensure gridliners were plotted
+    for ax in fig.axes:
+        for gl in ax._gridliners:
+            assert hasattr(gl, '_plotted') and gl._plotted
 
 
 @pytest.mark.natural_earth
