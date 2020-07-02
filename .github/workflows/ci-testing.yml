@@ -67,7 +67,7 @@ jobs:
         id: test
         run: |
           # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
-          python tools/feature_download.py gshhs physical --dry-run
+          python tools/cartopy_feature_download.py gshhs physical --dry-run
           CARTOPY_GIT_DIR=$PWD
           pytest -n 4 --doctest-modules --pyargs cartopy ${EXTRA_TEST_ARGS}
 

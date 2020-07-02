@@ -391,6 +391,7 @@ setup(
                                           remove='lib/cartopy/')) +
                   ['io/srtm.npz']},
 
+    scripts=['tools/cartopy_feature_download.py'],
 
     # requires proj headers
     ext_modules=extensions,
