@@ -1649,9 +1649,15 @@ class _Eckert(_WarpedRectangularProjection, metaclass=ABCMeta):
                          false_northing=false_northing,
                          globe=globe)
 
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(self.globe.semiminor_axis or a)
+
+        self._threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
+
     @property
     def threshold(self):
-        return 1e5
+        return self._threshold
 
 
 class EckertI(_Eckert):
@@ -1821,9 +1827,15 @@ class Mollweide(_WarpedRectangularProjection):
                          false_northing=false_northing,
                          globe=globe)
 
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(self.globe.semiminor_axis or a)
+
+        self._threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
+
     @property
     def threshold(self):
-        return 1e5
+        return self._threshold
 
 
 class Robinson(_WarpedRectangularProjection):
@@ -2317,6 +2329,7 @@ class AzimuthalEquidistant(Projection):
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+        self._threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
 
     @property
     def boundary(self):
@@ -2324,7 +2337,7 @@ class AzimuthalEquidistant(Projection):
 
     @property
     def threshold(self):
-        return 1e5
+        return self._threshold
 
     @property
     def x_limits(self):
