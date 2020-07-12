@@ -1567,11 +1567,19 @@ class _WarpedRectangularProjection(Projection, metaclass=ABCMeta):
         lon = np.empty(2 * n + 1)
         lat = np.empty(2 * n + 1)
         lon[:n] = minlon
-        lat[:n] = np.linspace(-90, 90, n)
+        latsection = np.linspace(-90, 90, n)
+        # Avoid singularity at the pole
+        if proj4_params[0][1] == 'moll':
+            moll_cutoff = -89.14
+            latsection[0] = moll_cutoff
+            latsection[-1] = -moll_cutoff
+            lat[-1] = moll_cutoff
+        else:
+            lat[-1] = -90
+        lat[:n] = latsection
         lon[n:2 * n] = maxlon
-        lat[n:2 * n] = np.linspace(90, -90, n)
+        lat[n:2 * n] = latsection[::-1]
         lon[-1] = minlon
-        lat[-1] = -90
         points = self.transform_points(self.as_geodetic(), lon, lat)
 
         self._boundary = sgeom.LinearRing(points)

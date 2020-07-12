@@ -247,6 +247,22 @@ class TestMisc:
 
         assert abs(1200 - projected.area) < 1e-5
 
+    def test_mollweide_pole(self):
+        # Geometry comes from a matplotlib contourf (see #1333)
+        wkt = ('POLYGON ((-143.4375 88.9979823936324, '
+               '-149.0625 89.375, '
+               '-149.0625 88.46018604660821, '
+               '-147.1875 88.42282488713046, '
+               '-143.4375 88.9979823936324))')
+
+        geom = shapely.wkt.loads(wkt)
+        source, target = ccrs.PlateCarree(), ccrs.Mollweide()
+        projected = target.project_geometry(geom, source)
+        # Before restricting the pole from the Mollweide projection,
+        # this would contain the entire boundary.
+        for poly in projected:
+            assert len(poly.exterior.coords) < 10
+
 
 class TestQuality:
     def setup_class(self):

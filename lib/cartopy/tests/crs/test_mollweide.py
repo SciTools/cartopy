@@ -24,7 +24,7 @@ def test_default():
     assert_almost_equal(np.array(moll.x_limits),
                         [-18040095.6961473, 18040095.6961473])
     assert_almost_equal(np.array(moll.y_limits),
-                        [-9020047.8480736, 9020047.8480736])
+                        [-9001417.6133785, 9001417.6133785])
 
 
 def test_sphere_globe():
@@ -34,7 +34,7 @@ def test_sphere_globe():
     check_proj_params('moll', moll, other_args)
 
     assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
-    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+    assert_almost_equal(moll.y_limits, [-1411.29261,  1411.29261])
 
 
 def test_ellipse_globe():
@@ -49,7 +49,7 @@ def test_ellipse_globe():
 
     # Limits are the same as default since ellipses are not supported.
     assert_almost_equal(moll.x_limits, [-18040095.6961473, 18040095.6961473])
-    assert_almost_equal(moll.y_limits, [-9020047.8480736, 9020047.8480736])
+    assert_almost_equal(moll.y_limits, [-9001417.6133785, 9001417.6133785])
 
 
 def test_eccentric_globe():
@@ -65,7 +65,7 @@ def test_eccentric_globe():
 
     # Limits are the same as spheres since ellipses are not supported.
     assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
-    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+    assert_almost_equal(moll.y_limits, [-1411.29261,  1411.29261])
 
 
 def test_offset():
@@ -87,7 +87,7 @@ def test_central_longitude(lon):
                         [-18040095.6961473, 18040095.6961473],
                         decimal=5)
     assert_almost_equal(np.array(moll.y_limits),
-                        [-9020047.8480736, 9020047.8480736])
+                        [-9001417.6133785, 9001417.6133785])
 
 
 def test_grid():
@@ -103,7 +103,7 @@ def test_grid():
     assert_almost_equal(np.array(moll.x_limits),
                         [-2, 2])
     assert_almost_equal(np.array(moll.y_limits),
-                        [-1, 1])
+                        [-0.9979346, 0.9979346])
 
     lats = np.arange(0, 91, 5)[::-1]
     lons = np.full_like(lats, 90)
@@ -139,7 +139,7 @@ def test_sphere_transform():
                         [-2.8284271247461903, 2.8284271247461903],
                         decimal=2)
     assert_almost_equal(np.array(moll.y_limits),
-                        [-1.4142135623730951, 1.4142135623730951])
+                        [-1.4112926, 1.4112926])
 
     result = moll.transform_point(-75.0, -50.0, geodetic)
     assert_almost_equal(result, [0.1788845, -0.9208758])
