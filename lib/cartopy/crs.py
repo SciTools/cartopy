@@ -841,9 +841,17 @@ class TransverseMercator(Projection):
                 proj4_params += [('approx', None)]
         super().__init__(proj4_params, globe=globe)
 
+        # TODO: Let the globe return the semimajor axis always.
+        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = np.float(self.globe.semiminor_axis or a)
+
+        self._x_limits = (-np.pi * a, np.pi * a)
+        self._y_limits = (-np.pi / 2 * b, np.pi / 2 * b)
+        self._threshold = min(a, b) * 1.5e-3  # Approximately 1e4 for defaults.
+
     @property
     def threshold(self):
-        return 1e4
+        return self._threshold
 
     @property
     def boundary(self):
@@ -855,11 +863,11 @@ class TransverseMercator(Projection):
 
     @property
     def x_limits(self):
-        return (-2e7, 2e7)
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return (-1e7, 1e7)
+        return self._y_limits
 
 
 class OSGB(TransverseMercator):
