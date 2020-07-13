@@ -2329,7 +2329,7 @@ class AzimuthalEquidistant(Projection):
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
-        self._threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
+        self._threshold = min(a, b) * 1.5e-3  # Approximately 1e4 for defaults.
 
     @property
     def boundary(self):
