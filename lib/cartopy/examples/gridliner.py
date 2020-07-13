@@ -3,18 +3,22 @@ Gridlines and tick labels
 -------------------------
 These examples demonstrate how to quickly add longitude
 and latitude gridlines and tick labels on a non-rectangular projection.
+
 As you can see on the first example,
 longitude labels may be drawn on left and right sides,
 and latitude labels may be drawn on bottom and top sides.
 Thanks to the ``dms`` keyword, minutes are used when appropriate
 to display fractions of degree.
+
 In the second example, labels are still drawn at the map edges
 despite its complexity, and some others are also drawn within the map
 boundary.
+
 In the third example, labels are drawn only on the left and bottom sides.
 """
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+
 import matplotlib.pyplot as plt
 
 __tags__ = ['Gridlines', 'Tick labels', 'Lines and polygons']
