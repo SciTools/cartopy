@@ -247,6 +247,29 @@ class TestMisc:
 
         assert abs(1200 - projected.area) < 1e-5
 
+    def test_invalid_projected_polygon(self):
+        # A simplified version of the error in #956; this is basically the
+        # exterior of the OCEANS feature cut down significantly.
+
+        target = ccrs.UTM(zone=1, southern_hemisphere=True)
+        source = ccrs.PlateCarree()
+
+        geom = sgeom.Polygon([
+            (-115.0, -74.0),
+            (-180.0, 71.5),
+            (-180.0, 90.0),
+            (-112.5, 90.0),
+            (-90.0, 90.0),
+            (-67.5, 90.0),
+            (-45.0, 90.0),
+            (67.5, 90.0),
+            (135.0, 90.0),
+            (180.0, 90.0),
+            (180.0, 71.5)
+        ])
+        # Would fail before:
+        target.project_geometry(geom, source)
+
 
 class TestQuality:
     def setup_class(self):

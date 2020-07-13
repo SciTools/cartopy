@@ -553,7 +553,8 @@ class Projection(CRS, metaclass=ABCMeta):
         # Turn all the exterior rings into polygon definitions,
         # "slurping up" any interior rings they contain.
         for exterior_ring in exterior_rings:
-            polygon = sgeom.Polygon(exterior_ring)
+            # Use shapely buffer in an attempt to fix invalid geometries
+            polygon = sgeom.Polygon(exterior_ring).buffer(0)
             prep_polygon = prep(polygon)
             holes = []
             for interior_ring in interior_rings[:]:
