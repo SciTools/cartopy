@@ -312,6 +312,10 @@ class GeoAxes(matplotlib.axes.Axes):
         # Set up a standard map for latlon data.
         geo_axes = plt.axes(projection=cartopy.crs.PlateCarree())
 
+        # Set up a standard map for latlon data for multiple subplots
+        fig, geo_axes = plt.subplots(nrows=2, ncols=2,
+                            subplot_kw={'projection': ccrs.PlateCarree()})
+
         # Set up an OSGB map.
         geo_axes = plt.subplot(2, 2, 1, projection=cartopy.crs.OSGB())
 
@@ -430,19 +434,13 @@ class GeoAxes(matplotlib.axes.Axes):
                 (self.ignore_existing_data_limits,
                     self._autoscaleXon, self._autoscaleYon) = other
 
-    @matplotlib.artist.allow_rasterization
-    def draw(self, renderer=None, **kwargs):
+    def _draw_preprocess(self, renderer):
         """
-        Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
-
-        Draw grid lines and image factory results before invoking standard
-        Matplotlib drawing. A global range is used if no limits have yet
-        been set.
-
+        Perform pre-processing steps shared between :func:`GeoAxes.draw`
+        and :func:`GeoAxes.get_tightbbox`.
         """
         # If data has been added (i.e. autoscale hasn't been turned off)
         # then we should autoscale the view.
-
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
@@ -453,6 +451,32 @@ class GeoAxes(matplotlib.axes.Axes):
         self.apply_aspect()
         for gl in self._gridliners:
             gl._draw_gridliner(renderer=renderer)
+
+    def get_tightbbox(self, renderer, *args, **kwargs):
+        """
+        Extend the standard behaviour of
+        :func:`matplotlib.axes.Axes.get_tightbbox`.
+
+        Adjust the axes aspect ratio, background patch location, and add
+        gridliners before calculating the tight bounding box.
+        """
+        # Shared processing steps
+        self._draw_preprocess(renderer)
+
+        return matplotlib.axes.Axes.get_tightbbox(
+            self, renderer, *args, **kwargs)
+
+    @matplotlib.artist.allow_rasterization
+    def draw(self, renderer=None, **kwargs):
+        """
+        Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
+
+        Draw grid lines and image factory results before invoking standard
+        Matplotlib drawing. A global range is used if no limits have yet
+        been set.
+        """
+        # Shared processing steps
+        self._draw_preprocess(renderer)
 
         # XXX This interface needs a tidy up:
         #       image drawing on pan/zoom;
@@ -1294,16 +1318,23 @@ class GeoAxes(matplotlib.axes.Axes):
             kwargs['alpha'] = alpha
 
             # As a workaround to a matplotlib limitation, turn any images
-            # which are RGB with a mask into RGBA images with an alpha
-            # channel.
+            # which are RGB(A) with a mask into unmasked RGBA images with alpha
+            # put into the A channel.
             if (isinstance(img, np.ma.MaskedArray) and
-                    img.shape[2:3] == (3, ) and
+                    len(img.shape) > 2 and
                     img.mask is not False):
-                old_img = img
+                # if we don't pop alpha, imshow will apply (erroneously?) a
+                # 1D alpha to the RGBA array
+                # kwargs['alpha'] is guaranteed to be either 1D, 2D, or None
+                alpha = kwargs.pop('alpha')
+                old_img = img[:, :, 0:3]
                 img = np.zeros(img.shape[:2] + (4, ), dtype=img.dtype)
                 img[:, :, 0:3] = old_img
                 # Put an alpha channel in if the image was masked.
-                img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
+                if not np.any(alpha):
+                    alpha = 1
+                img[:, :, 3] = np.ma.filled(alpha, fill_value=0) * \
+                    (~np.any(old_img.mask, axis=2))
                 if img.dtype.kind == 'u':
                     img[:, :, 3] *= 255
 
