@@ -1296,9 +1296,7 @@ class GeoAxes(matplotlib.axes.Axes):
             # As a workaround to a matplotlib limitation, turn any images
             # which are RGB with a mask into RGBA images with an alpha
             # channel.
-            if (isinstance(img, np.ma.MaskedArray) and
-                    img.shape[2:3] == (3, ) and
-                    img.mask is not False):
+            if (np.ma.is_masked(img) and img.shape[2:3] == (3, )):
                 old_img = img
                 img = np.zeros(img.shape[:2] + (4, ), dtype=img.dtype)
                 img[:, :, 0:3] = old_img
