@@ -208,6 +208,9 @@ def test_grid_labels():
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
 
 
+@pytest.mark.skipif(
+    MPL_VERSION < '3.0.0',
+    reason='Impossible to override tight layout algorithm in mpl < 3')
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'],
               tolerance=grid_label_tol if ccrs.PROJ4_VERSION < (7, 1, 0)
