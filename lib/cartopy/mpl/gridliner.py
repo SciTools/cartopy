@@ -105,7 +105,8 @@ class Gridliner:
     def __init__(self, axes, crs, draw_labels=False, xlocator=None,
                  ylocator=None, collection_kwargs=None,
                  xformatter=None, yformatter=None, dms=False,
-                 x_inline=None, y_inline=None, auto_inline=True):
+                 x_inline=None, y_inline=None, auto_inline=True,
+                 xlim=None, ylim=None):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -155,6 +156,16 @@ class Gridliner:
             Toggle whether the y labels drawn should be inline.
         auto_inline: optional
             Set x_inline and y_inline automatically based on projection.
+        xlim: optional
+            Set a limit for the gridlines so that they do not go all the
+            way to the edge of the boundary. xlim can be a single number or
+            a (min, max) tuple. If a single number, the limits will be
+            (-xlim, +xlim).
+        ylim: optional
+            Set a limit for the gridlines so that they do not go all the
+            way to the edge of the boundary. ylim can be a single number or
+            a (min, max) tuple. If a single number, the limits will be
+            (-ylim, +ylim).
 
         Notes
         -----
@@ -240,6 +251,11 @@ class Gridliner:
             self.y_inline = y_inline
         elif not auto_inline:
             self.y_inline = False
+
+        # Gridline limits so that the gridlines don't extend all the way
+        # to the edge of the boundary
+        self.xlim = xlim
+        self.ylim = ylim
 
         #: Whether to draw the x gridlines.
         self.xlines = True
@@ -887,5 +903,21 @@ class Gridliner:
             prct = np.abs(np.diff(lon_range) / np.diff(crs.x_limits))
             if prct > 0.9:
                 lon_range = crs.x_limits
+
+        if self.xlim is not None:
+            if np.iterable(self.xlim):
+                # tuple, list or ndarray was passed in: (-140, 160)
+                lon_range = self.xlim
+            else:
+                # A single int/float was passed in: 140
+                lon_range = (-self.xlim, self.xlim)
+
+        if self.ylim is not None:
+            if np.iterable(self.ylim):
+                # tuple, list or ndarray was passed in: (-140, 160)
+                lat_range = self.ylim
+            else:
+                # A single int/float was passed in: 140
+                lat_range = (-self.ylim, self.ylim)
 
         return lon_range, lat_range

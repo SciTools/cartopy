@@ -1344,7 +1344,7 @@ class GeoAxes(matplotlib.axes.Axes):
     def gridlines(self, crs=None, draw_labels=False,
                   xlocs=None, ylocs=None, dms=False,
                   x_inline=None, y_inline=None, auto_inline=True,
-                  xformatter=None, yformatter=None,
+                  xformatter=None, yformatter=None, xlim=None, ylim=None,
                   **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
@@ -1394,6 +1394,16 @@ class GeoAxes(matplotlib.axes.Axes):
             use of a :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
             with the ``dms`` argument, if the crs is of
             :class:`~cartopy.crs.PlateCarree` type.
+        xlim: optional
+            Set a limit for the gridlines so that they do not go all the
+            way to the edge of the boundary. xlim can be a single number or
+            a (min, max) tuple. If a single number, the limits will be
+            (-xlim, +xlim).
+        ylim: optional
+            Set a limit for the gridlines so that they do not go all the
+            way to the edge of the boundary. ylim can be a single number or
+            a (min, max) tuple. If a single number, the limits will be
+            (-ylim, +ylim).
 
         Keyword Parameters
         ------------------
@@ -1422,7 +1432,7 @@ class GeoAxes(matplotlib.axes.Axes):
             self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
             ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
             x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline,
-            xformatter=xformatter, yformatter=yformatter)
+            xformatter=xformatter, yformatter=yformatter, xlim=xlim, ylim=ylim)
         self._gridliners.append(gl)
         return gl
 
