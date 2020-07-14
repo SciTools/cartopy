@@ -31,19 +31,20 @@ deps-run: &deps-install
   name: Install Python dependencies
   command: |
     conda install -n test-environment --quiet \
-        numpy \
-        matplotlib \
-        scipy \
         cython \
+        matplotlib \
+        numpy \
+        owslib \
         pillow \
         proj4 \
-        pyshp \
-        shapely \
-        six \
-        requests \
         pyepsg \
-        owslib \
         pykdtree \
+        pyshp \
+        requests \
+        scipy \
+        setuptools_scm \
+        setuptools_scm_git_archive \
+        shapely \
         $EXTRA_PACKAGES \
         --file docs/doc-requirements.txt
     conda list -n test-environment

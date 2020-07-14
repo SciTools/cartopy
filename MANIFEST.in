@@ -9,4 +9,3 @@ include lib/cartopy/io/srtm.npz
 include lib/cartopy/tests/lakes_shapefile/*
 recursive-include lib *.py
 recursive-include lib *.pyx *.pxd *.h *.c *.cpp
-include versioneer.py
