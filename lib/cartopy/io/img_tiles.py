@@ -41,7 +41,7 @@ class GoogleWTS(metaclass=ABCMeta):
     _MAX_THREADS = 24
 
     def __init__(self, desired_tile_form='RGB',
-                 user_agent='CartoPy/' + cartopy.__version__, cache_path=None):
+                 user_agent='CartoPy/' + cartopy.__version__, cache=False):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
@@ -49,7 +49,12 @@ class GoogleWTS(metaclass=ABCMeta):
         # some providers like osm need a user_agent in the request issue #1341
         # osm may reject requests if there are too many of them, in which case
         # a change of user_agent may fix the issue.
-        self.cache_path = cache_path
+        if cache is True:
+            self.cache_path = cartopy.config["cache_dir"]
+        elif cache is False:
+            self.cache_path = None
+        else:
+            self.cache_path = cache
         self.cache = set({})
         self._load_cache()
 
@@ -225,7 +230,7 @@ class GoogleTiles(GoogleWTS):
     def __init__(self, desired_tile_form='RGB', style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
                       '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
-                 cache_path=None):
+                 cache=False):
         """
         Parameters
         ----------
@@ -257,7 +262,7 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
             msg = "The '%s' style requires pillow with jpeg decoding support."
             raise ValueError(msg % self.style)
         return super().__init__(desired_tile_form=desired_tile_form,
-                                cache_path=cache_path)
+                                cache=cache)
 
     def _image_url(self, tile):
         style_dict = {
@@ -332,9 +337,9 @@ class Stamen(GoogleWTS):
 
     """
     def __init__(self, style='toner',
-                 desired_tile_form='RGB', cache_path=None):
+                 desired_tile_form='RGB', cache=False):
         super().__init__(desired_tile_form=desired_tile_form,
-                         cache_path=cache_path)
+                         cache=cache)
         self.style = style
 
     def _image_url(self, tile):
@@ -367,7 +372,7 @@ class StamenTerrain(Stamen):
 
 
     """
-    def __init__(self, cache_path=None):
+    def __init__(self, cache=False):
         warnings.warn(
             "The StamenTerrain class was deprecated in v0.17. "
             "Please use Stamen('terrain-background') instead.",
@@ -378,7 +383,7 @@ class StamenTerrain(Stamen):
         # No further Stamen subclasses will be accepted as
         # they can easily be created in user code with Stamen(style_name).
         return super().__init__(style='terrain-background',
-                                cache_path=cache_path)
+                                cache=cache)
 
 
 class MapboxTiles(GoogleWTS):
@@ -388,7 +393,7 @@ class MapboxTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
-    def __init__(self, access_token, map_id, cache_path=None):
+    def __init__(self, access_token, map_id, cache=False):
         """
         Set up a new Mapbox tiles instance.
 
@@ -406,7 +411,7 @@ class MapboxTiles(GoogleWTS):
         """
         self.access_token = access_token
         self.map_id = map_id
-        super().__init__(cache_path=cache_path)
+        super().__init__(cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -426,7 +431,7 @@ class MapboxStyleTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
-    def __init__(self, access_token, username, map_id, cache_path=None):
+    def __init__(self, access_token, username, map_id, cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
 
@@ -449,7 +454,7 @@ class MapboxStyleTiles(GoogleWTS):
         self.access_token = access_token
         self.username = username
         self.map_id = map_id
-        super().__init__(cache_path=cache_path)
+        super().__init__(cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -568,7 +573,7 @@ class OrdnanceSurvey(GoogleWTS):
                  apikey,
                  layer='Road',
                  desired_tile_form='RGB',
-                 cache_path=None):
+                 cache=False):
         """
         Parameters
         ----------
@@ -585,7 +590,7 @@ class OrdnanceSurvey(GoogleWTS):
             Defaults to 'RGB'.
         """
         super().__init__(desired_tile_form=desired_tile_form,
-                         cache_path=cache_path)
+                         cache=cache)
         self.apikey = apikey
 
         if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:

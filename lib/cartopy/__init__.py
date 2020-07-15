@@ -5,6 +5,7 @@
 # licensing details.
 
 from ._version import version as __version__  # noqa: F401
+import tempfile
 
 __document_these__ = ['config']
 
@@ -17,9 +18,11 @@ import os.path
 _writable_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
 _data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
                          'cartopy')
+_cache_dir = os.path.join(tempfile.gettempdir(), 'cartopy_cache_dir')
 
 config = {'pre_existing_data_dir': '',
           'data_dir': _data_dir,
+          'cache_dir': _cache_dir,
           'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
           }
@@ -67,6 +70,7 @@ Keys in the config dictionary:
 
 del _data_dir
 del _writable_dir
+del _cache_dir
 
 
 # Try importing a siteconfig file which exposes an update_config function,

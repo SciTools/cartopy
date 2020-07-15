@@ -13,6 +13,7 @@ from numpy.testing import assert_array_almost_equal as assert_arr_almost
 import pytest
 import shapely.geometry as sgeom
 
+from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
@@ -289,11 +290,18 @@ def test_ordnance_survey_get_image():
 
 
 @pytest.mark.network
-def test_cache(tmpdir):
-    tmpdir_str = tmpdir.strpath
+@pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
+def test_cache(cache_dir, tmpdir):
+    if cache_dir == "tmpdir":
+        tmpdir_str = tmpdir.strpath
+    else:
+        tmpdir_str = cache_dir
+
+    if cache_dir is True:
+        config["cache_dir"] = tmpdir.strpath
 
     # Fetch tiles and save them in the cache
-    gt = cimgt.GoogleTiles(cache_path=tmpdir_str)
+    gt = cimgt.GoogleTiles(cache=tmpdir_str)
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
 
     ll_target_domain = sgeom.box(-10, 50, 10, 60)
@@ -301,6 +309,11 @@ def test_cache(tmpdir):
     target_domain = multi_poly.geoms[0]
 
     img_init, _, _ = gt.image_for_domain(target_domain, 6)
+
+    # Do not check the result if the cache is disabled
+    if cache_dir is False:
+        assert gt.cache_path is None
+        return
 
     # Define expected results
     x_y_z_f_h = [
@@ -323,12 +336,12 @@ def test_cache(tmpdir):
     ]
 
     # Check the results
-    cache_dir = os.path.join(tmpdir_str, "GoogleTiles")
-    files = [i for i in os.listdir(cache_dir)]
+    cache_dir_res = os.path.join(gt.cache_path, "GoogleTiles")
+    files = [i for i in os.listdir(cache_dir_res)]
     hashes = {
         f:
         hashlib.md5(
-            np.load(os.path.join(cache_dir, f), allow_pickle=True).data
+            np.load(os.path.join(cache_dir_res, f), allow_pickle=True).data
         ).hexdigest()
         for f in files
     }
@@ -342,12 +355,12 @@ def test_cache(tmpdir):
 
     # Update images in cache (all white)
     for f in files:
-        filename = os.path.join(cache_dir, f)
+        filename = os.path.join(cache_dir_res, f)
         img = np.load(filename, allow_pickle=True)
         img.fill(255)
         np.save(filename, img, allow_pickle=True)
 
-    gt_cache = cimgt.GoogleTiles(cache_path=tmpdir_str)
+    gt_cache = cimgt.GoogleTiles(cache=tmpdir_str)
     gt_cache._image_url = types.MethodType(
         GOOGLE_IMAGE_URL_REPLACEMENT, gt_cache)
     img_cache, _, _ = gt_cache.image_for_domain(target_domain, 6)
