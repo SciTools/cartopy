@@ -247,6 +247,41 @@ class TestMisc:
 
         assert abs(1200 - projected.area) < 1e-5
 
+    def test_attach_short_loop(self):
+        # Geometry comes from a matplotlib contourf.
+        mstring = shapely.wkt.loads(
+            'MULTILINESTRING ('
+            '(-179.9999982118607 71.87500000000001,'
+            '-179.0625 71.87500000000001,'
+            '-179.9999982118607 71.87500000000001))')
+        multi_line_strings = [mstring]
+
+        src = ccrs.PlateCarree()
+        polygons = src._attach_lines_to_boundary(multi_line_strings, True)
+        # Before fixing, this would contain a geometry which would
+        # cause a segmentation fault.
+        assert polygons == []
+
+    def test_project_degenerate_poly(self):
+        # Tests for the same bug as test_attach_short_loop.
+        # This test calls only the public API, but will cause a
+        # segmentation fault when it fails.
+        # Geometry comes from a matplotlib contourf.
+        polygon = shapely.wkt.loads(
+            'POLYGON (('
+            '178.9687499944748 70.625, '
+            '179.0625 71.875, '
+            '180.9375 71.875, '
+            '179.0625 71.875, '
+            '177.1875 71.875, '
+            '178.9687499944748 70.625))')
+
+        source = ccrs.PlateCarree()
+        target = ccrs.PlateCarree()
+        # Before fixing, this would cause a segmentation fault.
+        polygons = target.project_geometry(polygon, source)
+        assert type(polygons) == sgeom.MultiPolygon
+
 
 class TestQuality:
     def setup_class(self):
