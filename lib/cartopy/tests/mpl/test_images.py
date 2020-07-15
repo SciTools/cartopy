@@ -194,7 +194,7 @@ def test_pil_Image():
 @pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
                    reason='Proj Orthographic projection is buggy.',
                    strict=True)
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.5)
+@ImageTesting(['imshow_natural_earth_ortho'])
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resolution='low')

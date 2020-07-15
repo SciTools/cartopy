@@ -7,7 +7,7 @@ env:
           PACKAGES="cython=0.28.5 matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0"
         - NAME="Latest everything."
           PYTHON_VERSION=3.8
-          PACKAGES="cython numpy matplotlib-base pykdtree scipy fiona proj"
+          PACKAGES="cython fiona matplotlib-base numpy proj pykdtree scipy"
 
 
 sudo: false

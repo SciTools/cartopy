@@ -98,7 +98,7 @@ def test_global_pcolor_wrap_no_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'], tolerance=0.5)
+@ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     # By default the coastline feature will be drawn after patches.
@@ -111,7 +111,7 @@ def test_global_scatter_wrap_new_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'], tolerance=0.5)
+@ImageTesting(['global_scatter_wrap'])
 def test_global_scatter_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=0)
@@ -657,7 +657,7 @@ def test_quiver_regrid_with_extent():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_plate_carree'], tolerance=0.5)
+@ImageTesting(['barbs_plate_carree'])
 def test_barbs():
     x = np.arange(-60, 45, 5)
     y = np.arange(30, 75, 5)
@@ -679,7 +679,7 @@ def test_barbs():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_regrid'], tolerance=0.5)
+@ImageTesting(['barbs_regrid'])
 def test_barbs_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

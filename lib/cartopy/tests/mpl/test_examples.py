@@ -30,7 +30,7 @@ class ExampleImageTesting(ImageTesting):
 
 
 @pytest.mark.natural_earth
-@ExampleImageTesting(['global_map'], tolerance=0.5)
+@ExampleImageTesting(['global_map'])
 def test_global_map():
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
@@ -51,7 +51,6 @@ if MPL_VERSION < '3':
     contour_labels_tolerance = 9.8
 else:
     contour_labels_tolerance = 0
-
 
 @pytest.mark.natural_earth
 @ExampleImageTesting(['contour_label'], tolerance=contour_labels_tolerance)
