@@ -37,6 +37,12 @@ class GoogleWTS(metaclass=ABCMeta):
 
     A "tile" in this class refers to the coordinates (x, y, z).
 
+    The tiles can be saved to a cache directory using the cache parameter, so
+    they are downloaded only once. If it is set to True, the default path
+    stored in the cartopy.config dictionary is used. If it is set to a custom
+    path, this path is used instead of the default one. If it is set to False
+    (the default behavior), the tiles are downloaded each time.
+
     """
     _MAX_THREADS = 24
 
@@ -49,7 +55,11 @@ class GoogleWTS(metaclass=ABCMeta):
         # some providers like osm need a user_agent in the request issue #1341
         # osm may reject requests if there are too many of them, in which case
         # a change of user_agent may fix the issue.
+
+        # Enable a cache mechanism when cache is equal to True or to a path.
+        self._default_cache = False
         if cache is True:
+            self._default_cache = True
             self.cache_path = cartopy.config["cache_dir"]
         elif cache is False:
             self.cache_path = None
@@ -99,9 +109,14 @@ class GoogleWTS(metaclass=ABCMeta):
     def _load_cache(self):
         """Load the cache"""
         if self.cache_path is not None:
-            if not os.path.exists(self._cache_dir):
-                os.makedirs(self._cache_dir)
-            self.cache = self.cache.union(set(os.listdir(self._cache_dir)))
+            cache_dir = self._cache_dir
+            if not os.path.exists(cache_dir):
+                os.makedirs(cache_dir)
+                if self._default_cache:
+                    warnings.warn(
+                        'Cartopy created the following directory to cache '
+                        'GoogleWTS tiles: {}'.format(cache_dir))
+            self.cache = self.cache.union(set(os.listdir(cache_dir)))
 
     def _find_images(self, target_domain, target_z, start_tile=(0, 0, 0)):
         """Target domain is a shapely polygon in native coordinates."""

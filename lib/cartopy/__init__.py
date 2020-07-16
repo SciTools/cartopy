@@ -56,6 +56,14 @@ Keys in the config dictionary:
     cartopy will download the appropriate file(s) to a subdirectory of this
     directory, therefore ``data_dir`` should be writable by the user.
 
+``cache_dir``
+    The absolute path to a directory where tiles data are cached when a
+    GoogleWTS sub-class is initialized with `cache=True`. If it is not found
+    cartopy will create it, therefore ``cache_dir`` should be writable by the
+    user. Note that the default cache dir might be accessible by all users,
+    depending on your OS and local configuration. If private cache is
+    mandatory, set cache_dir to a private location.
+
 ``repo_data_dir``
     The absolute path to the directory where the data delivered with the
     cartopy repository is stored.  Typically this will only be set by OS

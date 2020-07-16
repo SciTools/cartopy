@@ -7,6 +7,7 @@
 import hashlib
 import os
 import types
+import warnings
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
@@ -301,7 +302,8 @@ def test_cache(cache_dir, tmpdir):
         config["cache_dir"] = tmpdir.strpath
 
     # Fetch tiles and save them in the cache
-    gt = cimgt.GoogleTiles(cache=tmpdir_str)
+    with warnings.catch_warnings(record=True) as w:
+        gt = cimgt.GoogleTiles(cache=tmpdir_str)
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
 
     ll_target_domain = sgeom.box(-10, 50, 10, 60)
@@ -314,6 +316,12 @@ def test_cache(cache_dir, tmpdir):
     if cache_dir is False:
         assert gt.cache_path is None
         return
+
+    # Check that the warning is properly raised (only when cache is True)
+    if cache_dir is True:
+        assert len(w) == 1
+    else:
+        assert len(w) == 0
 
     # Define expected results
     x_y_z_f_h = [
