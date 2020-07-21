@@ -14,6 +14,7 @@ import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
+from cartopy.tests.mpl import ImageTesting
 from cartopy.tests.mpl.test_caching import CallCounter
 
 
@@ -119,3 +120,15 @@ class Test_Axes_add_geometries():
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"
+
+
+@ImageTesting(['geoaxes_subslice'])
+def test_geoaxes_no_subslice():
+    """Test that we do not trigger matplotlib's line subslice optimization."""
+    # This behavior caused lines with > 1000 points and sorted data to disappear
+
+    fig, axes = plt.subplots(1, 2, subplot_kw={'projection': ccrs.Mercator()})
+    for ax, num_points in zip(axes, [1000, 1001]):
+        lats = np.linspace(35, 37, num_points)
+        lons = np.linspace(-117, -115, num_points)
+        ax.plot(lons, lats, transform=ccrs.PlateCarree())
