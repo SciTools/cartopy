@@ -57,7 +57,7 @@ FEATURE_DEFN_GROUPS = {
         ('cultural', 'admin_0_scale_rank', '110m'),
         ('cultural', 'admin_0_tiny_countries', '110m'),
         ('cultural', 'admin_0_pacific_groupings', '110m'),
-        ('cultural', 'admin_1_states_provinces_shp', '110m'),
+        ('cultural', 'admin_1_states_provinces', '110m'),
         ('cultural', 'admin_1_states_provinces_lines', '110m'),
     ),
 }
