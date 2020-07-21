@@ -47,13 +47,8 @@ def test_global_map():
     ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.Geodetic())
 
 
-if MPL_VERSION < '3':
-    contour_labels_tolerance = 9.8
-else:
-    contour_labels_tolerance = 0
-
 @pytest.mark.natural_earth
-@ExampleImageTesting(['contour_label'], tolerance=contour_labels_tolerance)
+@ExampleImageTesting(['contour_label'], tolerance=0)
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
     fig = plt.figure()
