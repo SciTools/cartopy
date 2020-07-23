@@ -8,7 +8,7 @@ An example of adding contour labels to matplotlib contours.
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
-from cartopy.examples.waves import sample_data
+from waves import sample_data
 
 
 def main():
