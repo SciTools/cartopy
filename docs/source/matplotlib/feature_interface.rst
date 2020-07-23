@@ -87,7 +87,7 @@ For a full list of names in this dictionary:
 Example of using the Feature class with the Matplotlib interface
 ----------------------------------------------------------------
 
-.. figure:: ../gallery/images/sphx_glr_feature_creation_001.png
-   :target: ../gallery/feature_creation.html
+.. figure:: ../gallery/lines_and_polygons/images/sphx_glr_feature_creation_001.png
+   :target: ../gallery/lines_and_polygons/feature_creation.html
    :align: center
    :scale: 50

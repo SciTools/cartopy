@@ -865,6 +865,12 @@ class GeoAxes(matplotlib.axes.Axes):
         self.set_ylim(self.projection.y_limits)
 
     def autoscale_view(self, tight=None, scalex=True, scaley=True):
+        """
+        Autoscale the view limits using the data limits, taking into
+        account the projection of the geoaxes.
+
+        See :meth:`~matplotlib.axes.Axes.imshow()` for more details.
+        """
         matplotlib.axes.Axes.autoscale_view(self, tight=tight,
                                             scalex=scalex, scaley=scaley)
         # Limit the resulting bounds to valid area.
@@ -876,7 +882,6 @@ class GeoAxes(matplotlib.axes.Axes):
             bounds = self.get_ybound()
             self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
                             min(bounds[1], self.projection.y_limits[1]))
-    autoscale_view.__doc__ = matplotlib.axes.Axes.autoscale_view.__doc__
 
     def set_xticks(self, ticks, minor=False, crs=None):
         """
@@ -1591,7 +1596,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def hexbin(self, x, y, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.hexbin'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.hexbin`.
 
         The points are first transformed into the projection of the axes and
         then the hexbin algorithm is computed using the data in the axes
