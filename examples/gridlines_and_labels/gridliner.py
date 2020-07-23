@@ -1,6 +1,7 @@
 """
 Gridlines and tick labels
 -------------------------
+
 These examples demonstrate how to quickly add longitude
 and latitude gridlines and tick labels on a non-rectangular projection.
 
