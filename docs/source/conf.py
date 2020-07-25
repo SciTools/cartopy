@@ -50,7 +50,6 @@ extensions = [
               'matplotlib.sphinxext.plot_directive',
               # Monkey-patch sphinx_gallery to handle cartopy's __tags__
               # example convention.
-              'sphinxext.pre_sphinx_gallery',
               'sphinx_gallery.gen_gallery',
               'sphinx.ext.napoleon'
               ]
@@ -347,7 +346,7 @@ epub_copyright = '2012, Philip Elson, Richard Hattersley'
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'matplotlib': ('https://matplotlib.org', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
     'shapely': ('https://shapely.readthedocs.io/en/latest/', None),
 }
 
