@@ -1742,24 +1742,35 @@ class GeoAxes(matplotlib.axes.Axes):
             wrap_proj_types = (ccrs._RectangularProjection,
                                ccrs._WarpedRectangularProjection,
                                ccrs.InterruptedGoodeHomolosine,
-                               ccrs.Mercator)
+                               ccrs.Mercator,
+                               ccrs.LambertAzimuthalEqualArea,
+                               ccrs.AzimuthalEquidistant,
+                               ccrs.TransverseMercator,
+                               ccrs.Stereographic)
             if isinstance(t, wrap_proj_types) and \
                     isinstance(self.projection, wrap_proj_types):
 
                 C = C.reshape((Ny - 1, Nx - 1))
                 transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
 
-                # Compute the length of edges in transformed coordinates
+                # Compute the length of diagonals in transformed coordinates
                 with np.errstate(invalid='ignore'):
-                    edge_lengths = np.hypot(
-                        np.diff(transformed_pts[..., 0], axis=1),
-                        np.diff(transformed_pts[..., 1], axis=1)
-                    )
-                    to_mask = (
-                        (edge_lengths > abs(self.projection.x_limits[1] -
-                                            self.projection.x_limits[0]) / 2) |
-                        np.isnan(edge_lengths)
-                    )
+                    xs, ys = transformed_pts[..., 0], transformed_pts[..., 1]
+                    diagonal0_lengths = np.hypot(xs[1:, 1:] - xs[:-1, :-1],
+                                                 ys[1:, 1:] - ys[:-1, :-1])
+                    diagonal1_lengths = np.hypot(xs[1:, :-1] - xs[:-1, 1:],
+                                                 ys[1:, :-1] - ys[:-1, 1:])
+                    # The maximum size of the diagonal of any cell, defined to
+                    # be the projection width divided by 2*sqrt(2)
+                    # TODO: Make this dependent on the boundary of the
+                    #       projection which will help with curved boundaries
+                    size_limit = (abs(self.projection.x_limits[1] -
+                                      self.projection.x_limits[0]) /
+                                  (2*np.sqrt(2)))
+                    to_mask = (np.isnan(diagonal0_lengths) |
+                               (diagonal0_lengths > size_limit) |
+                               np.isnan(diagonal1_lengths) |
+                               (diagonal1_lengths > size_limit))
 
                 if np.any(to_mask):
                     if collection.get_cmap()._rgba_bad[3] != 0.0:
@@ -1769,15 +1780,14 @@ class GeoAxes(matplotlib.axes.Axes):
                                       stacklevel=3)
 
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
-                    # a shape of (Ny, Nx-1) and pts has a shape of (Ny*Nx, 2)
+                    # a shape of (Ny-1, Nx-1) and pts has a shape of (Ny*Nx, 2)
 
                     mask = np.zeros(C.shape, dtype=np.bool)
 
-                    # Mask out the neighbouring cells if there was an edge
-                    # found with a large length. NB. Masking too much only has
+                    # Mask out the cells if there was a diagonal found with a
+                    # large length. NB. Masking too much only has
                     # a detrimental impact on performance.
-                    mask[to_mask[:-1, :]] = True  # Edges above a cell.
-                    mask[to_mask[1:, :]] = True  # Edges below a cell.
+                    mask[to_mask] = True
 
                     C_mask = getattr(C, 'mask', None)
 
