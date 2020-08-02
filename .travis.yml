@@ -38,7 +38,7 @@ install:
 
   # Customise the testing environment
   # ---------------------------------
-  - PACKAGES="$PACKAGES filelock owslib pep8 pillow pyepsg pyshp pytest"
+  - PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
   - PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
   - PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
   - |

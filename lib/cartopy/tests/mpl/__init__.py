@@ -12,7 +12,7 @@ import glob
 import shutil
 import warnings
 
-import filelock
+import flufl.lock
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -144,9 +144,10 @@ class ImageTesting:
             if not os.path.isdir(os.path.dirname(result_path)):
                 os.makedirs(os.path.dirname(result_path))
 
-            with filelock.FileLock(result_path + '.lock').acquire():
+            with flufl.lock.Lock(result_path + '.lock'):
                 self.save_figure(figure, result_path)
                 self.do_compare(result_path, expected_path, self.tolerance)
+
 
     def save_figure(self, figure, result_fname):
         """
