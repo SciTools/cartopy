@@ -20,6 +20,7 @@ import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
 from cartopy.examples.waves import sample_data
+from cartopy.tests.mpl import ImageTesting
 
 
 class CallCounter:
@@ -85,7 +86,10 @@ def test_coastline_loading_cache():
     plt.close()
 
 
+# Use an empty ImageTesting decorator to force the switch to
+# the Agg backend (fails on macosx without it)
 @pytest.mark.natural_earth
+@ImageTesting([])
 def test_shapefile_transform_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
     # geometry caching based on geometry object id. This test ensures
