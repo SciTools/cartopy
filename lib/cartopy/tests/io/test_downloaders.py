@@ -148,7 +148,8 @@ def test_natural_earth_downloader(tmpdir):
 
     # check that the file gets downloaded the first time path is called
     with CallCounter(dnld_item, 'acquire_resource') as counter:
-        shp_path = dnld_item.path(format_dict)
+        with pytest.warns(cartopy.io.DownloadWarning, match="Downloading:"):
+            shp_path = dnld_item.path(format_dict)
     assert counter.count == 1, 'Item not downloaded.'
 
     assert shp_path_template.format(**format_dict) == shp_path
