@@ -165,6 +165,7 @@ def test_imshow_rgba():
     ax.set_extent([-30, -20, 60, 70], crs=latlon_crs)
     img = ax.imshow(z1, extent=[-26, -24, 64, 66], transform=latlon_crs)
     assert sum(img.get_array().data[:, 0, 3]) == 0
+    plt.close()
 
 
 def test_imshow_rgb():
@@ -177,6 +178,7 @@ def test_imshow_rgb():
     ax.set_extent([-30, -20, 60, 70], crs=latlon_crs)
     img = ax.imshow(z, extent=[-26, -24, 64, 66], transform=latlon_crs)
     assert sum(img.get_array().data[:, 0, 3]) == 0
+    plt.close()
 
 
 @pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0),
@@ -229,3 +231,4 @@ def test_alpha_2d_warp():
     image_alpha = image.get_alpha()
 
     assert image_data.shape == image_alpha.shape
+    plt.close()
