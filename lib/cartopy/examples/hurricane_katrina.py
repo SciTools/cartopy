@@ -49,7 +49,7 @@ def main():
 
     ax.set_extent([-125, -66.5, 20, 50], ccrs.Geodetic())
 
-    shapename = 'admin_1_states_provinces_lakes_shp'
+    shapename = 'admin_1_states_provinces_lakes'
     states_shp = shpreader.natural_earth(resolution='110m',
                                          category='cultural', name=shapename)
 
