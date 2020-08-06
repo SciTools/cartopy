@@ -328,6 +328,8 @@ class GeoAxes(matplotlib.axes.Axes):
         plt.contourf(x, y, data, transform=cartopy.crs.PlateCarree())
 
     """
+    name = 'cartopy.geoaxes'
+
     def __init__(self, *args, **kwargs):
         """
         Create a GeoAxes object using standard matplotlib
