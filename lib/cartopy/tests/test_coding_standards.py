@@ -65,9 +65,8 @@ class TestLicenseHeaders:
         exclude_patterns = ('build/*',
                             'dist/*',
                             'docs/build/*',
-                            'docs/source/examples/*.py',
-                            'docs/source/sphinxext/*.py',
-                            'lib/cartopy/examples/*.py',
+                            'docs/source/gallery/*',
+                            'examples/*',
                             'lib/cartopy/_version.py',
                             )
 

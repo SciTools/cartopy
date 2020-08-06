@@ -12,7 +12,7 @@ The matplotlib interface can make use of RasterSources via the
 with additional specific methods which make use of this for WMS and WMTS
 (:meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wms` and
 :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts`). An example of using WMTS in
-this way can be found at :ref:`sphx_glr_gallery_wmts.py`.
+this way can be found at :ref:`sphx_glr_gallery_web_services_wmts.py`.
 
 """
 
