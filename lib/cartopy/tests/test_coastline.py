@@ -10,6 +10,7 @@ import cartopy
 import cartopy.io.shapereader as shp
 
 
+@pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
 class TestCoastline:
     def test_robust(self):
