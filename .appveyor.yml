@@ -16,7 +16,7 @@ install:
   - conda config --add channels conda-forge/label/testing
   - if %PYTHON_VERSION%==3.6 conda update conda --yes
   - set ENV_NAME=test-environment
-  - set PACKAGES=%PACKAGES% filelock owslib pep8 pillow pyepsg pyshp pytest
+  - set PACKAGES=%PACKAGES% flufl.lock owslib pep8 pillow pyepsg pyshp pytest
   - set PACKAGES=%PACKAGES% requests setuptools_scm setuptools_scm_git_archive
   - set PACKAGES=%PACKAGES% shapely
   - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%
