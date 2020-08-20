@@ -478,6 +478,22 @@ def test_pcolormesh_single_column_wrap():
     ax.set_global()
 
 
+def test_pcolormesh_diagonal_wrap():
+    # Check that a cell with the top edge on one side of the domain
+    # and the bottom edge on the other gets wrapped properly
+    xs = [[160, 170], [190, 200]]
+    ys = [[-10, -10], [10, 10]]
+    zs = [[0, 1], [0, 1]]
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    mesh = ax.pcolormesh(xs, ys, zs)
+
+    # Check that the quadmesh is masked
+    assert np.ma.is_masked(mesh.get_array())
+    # And that the wrapped_collection is added
+    assert hasattr(mesh, "_wrapped_collection_fix")
+
+
 @pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_goode_wrap'])
