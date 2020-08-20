@@ -129,6 +129,7 @@ class TestWMSRasterSource:
         assert img.shape == (40, 20, 4)
 
 
+@pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')

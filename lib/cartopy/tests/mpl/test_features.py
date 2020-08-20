@@ -14,6 +14,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
+@pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
 @ImageTesting(['natural_earth'])
 def test_natural_earth():
@@ -28,6 +29,7 @@ def test_natural_earth():
     ax.set_ylim((-40, 40))
 
 
+@pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
 @ImageTesting(['natural_earth_custom'])
 def test_natural_earth_custom():

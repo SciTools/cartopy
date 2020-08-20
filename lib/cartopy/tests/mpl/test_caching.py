@@ -110,7 +110,7 @@ def test_shapefile_transform_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
     # geometry caching based on geometry object id. This test ensures
     # it is working.
-    coastline_path = cartopy.io.shapereader.natural_earth(resolution="50m",
+    coastline_path = cartopy.io.shapereader.natural_earth(resolution="110m",
                                                           category='physical',
                                                           name='coastline')
     geoms = cartopy.io.shapereader.Reader(coastline_path).geometries()
@@ -191,6 +191,7 @@ def test_contourf_transform_path_counting():
     plt.close()
 
 
+@pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')

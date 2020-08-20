@@ -69,6 +69,7 @@ class TestLakes:
             'The geometry was loaded in order to create the bounds.'
 
 
+@pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
 class TestRivers:
     def setup_class(self):
