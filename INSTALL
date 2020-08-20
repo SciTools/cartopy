@@ -141,10 +141,6 @@ These packages are required for the full Cartopy test suite to run.
 **flufl.lock** (https://flufllock.readthedocs.io/)
     A platform independent file lock for Python.
 
-**mock** 1.0.1 (https://pypi.python.org/pypi/mock/)
-    Python mocking and patching package for testing. Note that this package
-    is only required to support the Cartopy unit tests.
-
 **pytest** 3.1.0 or later (https://docs.pytest.org/en/latest/)
     Python package for software testing.
 
