@@ -1,3 +1,2 @@
 flufl.lock
-mock>=1.0.1
 pytest>=3.0.0
