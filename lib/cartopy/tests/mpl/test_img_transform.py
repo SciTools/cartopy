@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 
 from cartopy import config
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
 from functools import reduce
@@ -78,22 +78,9 @@ class TestRegrid:
                             target_proj, target_x, target_y)
 
 
-if MPL_VERSION < '2':
-    # Changes in zooming in old versions.
-    regrid_tolerance = 2.5
-elif MPL_VERSION < '2.0.1':
-    regrid_tolerance = 0.5
-elif MPL_VERSION < '2.1.0':
-    # Bug in latest Matplotlib that we don't consider correct.
-    regrid_tolerance = 4.78
-else:
-    # Bug in latest Matplotlib that we don't consider correct.
-    regrid_tolerance = 5.55
-
-
+# Bug in latest Matplotlib that we don't consider correct.
 @pytest.mark.natural_earth
-@ImageTesting(['regrid_image'],
-              tolerance=regrid_tolerance)
+@ImageTesting(['regrid_image'], tolerance=5.55)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',

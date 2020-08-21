@@ -11,7 +11,7 @@ import matplotlib.ticker
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 
 
 def _format_lat(val, i):
@@ -37,16 +37,7 @@ def _format_lon(val, i):
         return '%.0fW' % abs(val)
 
 
-# Text tends to move a lot. Also, pre-2.0.1, the new center_baseline alignment
-# did not exist.
-if MPL_VERSION < '2.0.0':
-    ticks_tolerance = 6.3
-elif '2.0.0' <= MPL_VERSION < '2.0.1':
-    ticks_tolerance = 9
-else:
-    ticks_tolerance = 7
-
-
+ticks_tolerance = 7
 @pytest.mark.natural_earth
 @ImageTesting(['xticks_no_transform'],
               tolerance=ticks_tolerance)
