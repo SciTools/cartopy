@@ -415,6 +415,53 @@ def test_pcolormesh_global_with_wrap3():
     ax.set_global()  # make sure everything is visible
 
 
+@pytest.mark.natural_earth
+@ImageTesting(['pcolormesh_global_wrap3'], tolerance=tolerance)
+def test_pcolormesh_set_array_with_mask():
+    """Testing that set_array works with masked arrays properly."""
+    nx, ny = 33, 17
+    xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
+    ybnds = np.linspace(91.25, -91.25, ny, endpoint=True)
+    xbnds, ybnds = np.meshgrid(xbnds, ybnds)
+
+    data = np.exp(np.sin(np.deg2rad(xbnds)) + np.cos(np.deg2rad(ybnds)))
+
+    # this step is not necessary, but makes the plot even harder to do (i.e.
+    # it really puts cartopy through its paces)
+    ybnds = np.append(ybnds, ybnds[:, 1:2], axis=1)
+    xbnds = np.append(xbnds, xbnds[:, 1:2] + 360, axis=1)
+    data = np.ma.concatenate([data, data[:, 0:1]], axis=1)
+
+    data = data[:-1, :-1]
+    data = np.ma.masked_greater(data, 2.6)
+    norm = plt.Normalize(np.min(data), np.max(data))
+    bad_data = np.ones(data.shape)
+    # Start with the opposite mask and then swap back in the set_array call
+    bad_data_mask = np.ma.array(bad_data, mask=~data.mask)
+
+    ax = plt.subplot(311, projection=ccrs.PlateCarree(-45))
+    c = plt.pcolormesh(xbnds, ybnds, bad_data,
+                       norm=norm, transform=ccrs.PlateCarree())
+    c.set_array(data.ravel())
+    assert c._wrapped_collection_fix is not None, \
+        'No pcolormesh wrapping was done when it should have been.'
+
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    ax = plt.subplot(312, projection=ccrs.PlateCarree(-1.87499952))
+    c2 = plt.pcolormesh(xbnds, ybnds, bad_data_mask,
+                        norm=norm, transform=ccrs.PlateCarree())
+    c2.set_array(data.ravel())
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    ax = plt.subplot(313, projection=ccrs.Robinson(-2))
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+
 @pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_limited_area_wrap'],
@@ -522,6 +569,25 @@ def test_pcolormesh_mercator_wrap():
     ax = plt.axes(projection=ccrs.Mercator())
     ax.coastlines()
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
+
+
+@pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')
+@pytest.mark.natural_earth
+@ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
+def test_pcolormesh_wrap_set_array():
+    x = np.linspace(0, 360, 73)
+    y = np.linspace(-87.5, 87.5, 36)
+    X, Y = np.meshgrid(*[np.deg2rad(c) for c in (x, y)])
+    Z = np.cos(Y) + 0.375 * np.sin(2. * X)
+    Z = Z[:-1, :-1]
+    ax = plt.axes(projection=ccrs.Mercator())
+    norm = plt.Normalize(np.min(Z), np.max(Z))
+    ax.coastlines()
+    # Start off with bad data
+    coll = ax.pcolormesh(x, y, np.ones(Z.shape), norm=norm,
+                         transform=ccrs.PlateCarree())
+    # Now update the plot with the set_array method
+    coll.set_array(Z.ravel())
 
 
 @pytest.mark.xfail(MPL_VERSION < '2.1.0', reason='Matplotlib is broken.')

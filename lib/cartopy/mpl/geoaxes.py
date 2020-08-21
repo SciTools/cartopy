@@ -36,6 +36,7 @@ import cartopy.crs as ccrs
 import cartopy.feature
 import cartopy.img_transform
 import cartopy.mpl.contour
+import cartopy.mpl.geocollection
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
@@ -1799,36 +1800,45 @@ class GeoAxes(matplotlib.axes.Axes):
 
                     collection.set_array(pcolormesh_data.ravel())
 
-                    # now that the pcolormesh has masked the bad values,
-                    # create a pcolor with just those values that were masked
-                    if C_mask is not None:
-                        # remember to re-apply the original data mask
-                        pcolor_data = np.ma.array(C, mask=~mask | C_mask)
-                    else:
-                        pcolor_data = np.ma.array(C, mask=~mask)
-
                     pts = coords.reshape((Ny, Nx, 2))
-                    if np.any(~pcolor_data.mask):
+                    if np.any(mask):
                         # plot with slightly lower zorder to avoid odd issue
                         # where the main plot is obscured
                         zorder = collection.zorder - .1
                         kwargs.pop('zorder', None)
                         kwargs.setdefault('snap', False)
+                        # Plot all of the wrapped cells.
+                        # `pcolor` only draws polygons where the data is not
+                        # masked, so this will only draw a limited subset of
+                        # polygons that were actually wrapped.
+                        # We will add the original data mask in later to
+                        # make sure that set_array can work in future
+                        # calls on the proper sized array inputs.
+                        pcolor_data = np.ma.array(C.data, mask=~mask)
                         pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
                                                  pcolor_data, zorder=zorder,
                                                  **kwargs)
-
+                        # Now add back in the masked data if there was any
+                        if C_mask is not None:
+                            pcolor_data = np.ma.array(C, mask=~mask | C_mask)
+                            # The pcolor_col is now possibly shorter than the
+                            # actual collection, so grab the masked cells
+                            pcolor_col.set_array(pcolor_data[mask].ravel())
                         pcolor_col.set_cmap(cmap)
                         pcolor_col.set_norm(norm)
                         pcolor_col.set_clim(vmin, vmax)
                         # scale the data according to the *original* data
                         pcolor_col.norm.autoscale_None(C)
 
-                        # put the pcolor_col on the pcolormesh collection so
-                        # that if really necessary, users can do things post
+                        # put the pcolor_col and mask on the pcolormesh
+                        # collection so that users can do things post
                         # this method
+                        collection._wrapped_mask = mask.ravel()
                         collection._wrapped_collection_fix = pcolor_col
 
+        # Re-cast the QuadMesh as a GeoQuadMesh to enable future wrapping
+        # updates to the collection as well.
+        collection.__class__ = cartopy.mpl.geocollection.GeoQuadMesh
         # END OF PATCH
         ##############
 
