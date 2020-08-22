@@ -235,14 +235,29 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
         super().__init__(self._original_path, **kwargs)
         self._axes = axes
 
+        # We need to use a TransformWrapper as our transform so that we can
+        # update the transform without breaking others' references to this one.
+        self._trans_wrap = mtransforms.TransformWrapper(self.get_transform())
+
+    def set_transform(self, transform):
+        self._trans_wrap.set(transform)
+        super().set_transform(self._trans_wrap)
+
     def set_boundary(self, path, transform):
         self._original_path = path
         self.set_transform(transform)
         self.stale = True
 
+    # Can remove and use matplotlib's once we support only >= 3.2
+    def set_path(self, path):
+        self._path = path
+
     def _adjust_location(self):
         if self.stale:
-            self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
+            self.set_path(self._original_path.clip_to_bbox(self.axes.viewLim))
+            # Some places in matplotlib's tranform stack cache the actual
+            # path so we trigger an update by invalidating the transform.
+            self._trans_wrap.invalidate()
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):

@@ -132,3 +132,21 @@ def test_geoaxes_no_subslice():
         lats = np.linspace(35, 37, num_points)
         lons = np.linspace(-117, -115, num_points)
         ax.plot(lons, lats, transform=ccrs.PlateCarree())
+
+
+@ImageTesting(['geoaxes_set_boundary_clipping'])
+def test_geoaxes_set_boundary_clipping():
+    """Test that setting the boundary works properly for clipping #1620."""
+    lon, lat = np.meshgrid(np.linspace(-180., 180., 361),
+                           np.linspace(-90., -60., 31))
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 1, 1, projection=ccrs.SouthPolarStereo())
+
+    # Limit the map to -60 degrees latitude and below.
+    ax1.set_extent([-180, 180, -90, -60], ccrs.PlateCarree())
+    ax1.gridlines()
+
+    ax1.contourf(lon, lat, lat, transform=ccrs.PlateCarree())
+
+    ax1.set_boundary(mpath.Path.circle(center=(0.5, 0.5), radius=0.5),
+                     transform=ax1.transAxes)
