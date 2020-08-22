@@ -248,6 +248,10 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
         self.set_transform(transform)
         self.stale = True
 
+    # Can remove and use matplotlib's once we support only >= 3.2
+    def set_path(self, path):
+        self._path = path
+
     def _adjust_location(self):
         if self.stale:
             self.set_path(self._original_path.clip_to_bbox(self.axes.viewLim))
