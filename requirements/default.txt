@@ -1,3 +1,4 @@
 numpy>=1.13.3
 shapely>=1.5.6
 pyshp>=2
+pyproj>=2.5.0

@@ -24,8 +24,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          PACKAGES="cython fiona matplotlib-base numpy proj<8 pykdtree scipy"
-          PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
+          PACKAGES="cython fiona matplotlib-base numpy pyproj proj pykdtree scipy"
+          PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyshp pytest"
           PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
           PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
           conda install $PACKAGES

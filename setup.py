@@ -299,13 +299,6 @@ extensions = [
         library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
         language='c++',
         **extra_extension_args),
-    Extension(
-        'cartopy._crs',
-        ['lib/cartopy/_crs.pyx'],
-        include_dirs=[include_dir, np.get_include()] + proj_includes,
-        libraries=proj_libraries,
-        library_dirs=[library_dir] + proj_library_dirs,
-        **extra_extension_args),
     # Requires proj v4.9
     Extension(
         'cartopy.geodesic._geodesic',

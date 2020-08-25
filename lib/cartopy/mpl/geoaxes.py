@@ -581,7 +581,9 @@ class GeoAxes(matplotlib.axes.Axes):
         A string formatted for the Matplotlib GUI status bar.
 
         """
-        lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
+        lon, lat = self.projection.as_geodetic().transform_point(
+            x, y, self.projection,
+        )
 
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'

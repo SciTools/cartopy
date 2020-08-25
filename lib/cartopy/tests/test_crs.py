@@ -11,14 +11,11 @@ import pickle
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_equal
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
-try:
-    import pyepsg
-except ImportError:
-    pyepsg = None
 import pytest
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
+from cartopy.tests.conftest import PROJ_GE_8
 
 
 class TestCRS:
@@ -53,7 +50,7 @@ class TestCRS:
 
         # results obtained by streetmap.co.uk.
         lat, lon = np.array([50.462023, -3.478831], dtype=np.double)
-        east, north = np.array([295131, 63511], dtype=np.double)
+        east, north = np.array([295132.1,  63512.6], dtype=np.double)
 
         # note the handling of precision here...
         assert_arr_almost_eq(np.array(osgb.transform_point(lon, lat, ll)),
@@ -75,20 +72,23 @@ class TestCRS:
     def test_osgb(self, approx):
         self._check_osgb(ccrs.OSGB(approx=approx))
 
-    @pytest.mark.network
-    @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        assert_almost_equal(uk.x_limits, (-118365.7406176, 751581.5647514),
-                            decimal=3)
-        assert_almost_equal(uk.y_limits, (-5268.1704980, 1272227.7987656),
-                            decimal=2)
-        assert_almost_equal(uk.threshold, 8699.47, decimal=2)
+        if PROJ_GE_8:
+            assert_almost_equal(uk.x_limits, (-104009.357,  688806.007),
+                                decimal=3)
+            assert_almost_equal(uk.y_limits, (-8908.37, 1256558.45),
+                                decimal=2)
+            assert_almost_equal(uk.threshold, 7928.15, decimal=2)
+        else:
+            assert_almost_equal(uk.x_limits, (-118397.001,  751441.779),
+                                decimal=3)
+            assert_almost_equal(uk.y_limits, (-5192.07, 1272149.35),
+                                decimal=2)
+            assert_almost_equal(uk.threshold, 8698.39, decimal=2)
         self._check_osgb(uk)
 
-    @pytest.mark.network
-    @pytest.mark.skipif(pyepsg is None, reason='requires pyepsg')
     def test_epsg_compound_crs(self):
         projection = ccrs.epsg(5973)
         assert projection.epsg_code == 5973
@@ -180,8 +180,12 @@ class TestCRS:
         rugby_moll = ccrs.Mollweide(globe=rugby_globe)
         footy_moll = ccrs.Mollweide(globe=footy_globe)
 
-        rugby_pt = rugby_moll.transform_point(10, 10, ccrs.Geodetic())
-        footy_pt = footy_moll.transform_point(10, 10, ccrs.Geodetic())
+        rugby_pt = rugby_moll.transform_point(
+            10, 10, ccrs.Geodetic(globe=rugby_globe),
+        )
+        footy_pt = footy_moll.transform_point(
+            10, 10, ccrs.Geodetic(globe=footy_globe),
+        )
 
         assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
         assert_arr_almost_eq(footy_pt, (155657, 193479), decimal=0)

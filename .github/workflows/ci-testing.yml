@@ -29,13 +29,13 @@ jobs:
         if: matrix.python-version == '3.6' && matrix.os == 'macos-latest'
         id: minimum-packages
         run: |
-          echo "PACKAGES=cython=0.28.5 matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0" >> $GITHUB_ENV
+          echo "PACKAGES=cython=0.28.5 matplotlib=2.2.2 numpy=1.16 owslib=0.17 pyproj=2.5 proj=6.3.1 scipy=1.2.0" >> $GITHUB_ENV
           echo "CFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped'
         run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy proj<8 pykdtree scipy" >> $GITHUB_ENV
+          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj proj pykdtree scipy" >> $GITHUB_ENV
 
       - name: Coverage packages
         id: coverage
@@ -48,7 +48,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
+          PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyshp pytest"
           PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
           PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
           conda install $PACKAGES
@@ -70,7 +70,7 @@ jobs:
           # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
           python tools/cartopy_feature_download.py gshhs physical --dry-run
           CARTOPY_GIT_DIR=$PWD
-          pytest -n 4 --doctest-modules --pyargs cartopy ${EXTRA_TEST_ARGS}
+          PYPROJ_GLOBAL_CONTEXT=ON pytest -n 4 --doctest-modules --pyargs cartopy ${EXTRA_TEST_ARGS}
 
       - name: Coveralls
         if: steps.coverage.conclusion == 'success'

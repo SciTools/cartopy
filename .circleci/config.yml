@@ -37,7 +37,7 @@ deps-run: &deps-install
         owslib \
         pillow \
         'proj<8' \
-        pyepsg \
+        pyproj \
         pykdtree \
         pyshp \
         requests \

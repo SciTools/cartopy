@@ -58,8 +58,7 @@ def test_set_xticks_no_transform():
 def test_set_xticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
-                  max_latitude=85.,
-                  globe=ccrs.Globe(semimajor_axis=math.degrees(1))))
+                  max_latitude=85.))
     ax.coastlines('110m')
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
     ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
@@ -94,8 +93,7 @@ def test_set_yticks_no_transform():
 def test_set_yticks_cylindrical():
     ax = plt.axes(projection=ccrs.Mercator(
                   min_latitude=-85.,
-                  max_latitude=85.,
-                  globe=ccrs.Globe(semimajor_axis=math.degrees(1))))
+                  max_latitude=85.))
     ax.coastlines('110m')
     ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
     ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
@@ -117,8 +115,7 @@ def test_set_yticks_non_cylindrical():
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),
-                   ccrs.Mercator(globe=ccrs.Globe(
-                       semimajor_axis=math.degrees(1))),
+                   ccrs.Mercator(),
                    ccrs.TransverseMercator(approx=False))
     x = -3.275024
     y = 50.753998

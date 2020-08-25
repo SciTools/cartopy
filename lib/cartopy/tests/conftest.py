@@ -4,6 +4,13 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+from distutils.version import LooseVersion
+
+import pyproj
+
+PROJ_LOOSE_VERSION = LooseVersion(pyproj.proj_version_str)
+PROJ_GE_8 = PROJ_LOOSE_VERSION >= LooseVersion("8.0")
+
 
 def pytest_configure(config):
     # Register additional markers.
