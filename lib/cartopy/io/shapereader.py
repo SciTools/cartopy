@@ -53,7 +53,7 @@ class Record:
     their associated geometry.
 
     """
-    def __init__(self, shape, attributes, fields):
+    def __init__(self, shape, attributes):
         self._shape = shape
 
         self._bounds = None
@@ -67,8 +67,6 @@ class Record:
 
         self.attributes = attributes
         """A dictionary mapping attribute names to attribute values."""
-
-        self._fields = fields
 
     def __repr__(self):
         return '<Record: {!r}, {!r}, <fields>>'.format(
@@ -162,12 +160,9 @@ class BasicReader:
         Return an iterator of :class:`~Record` instances.
 
         """
-        # Ignore the "DeletionFlag" field which always comes first
-        fields = self._reader.fields[1:]
-        field_names = [field[0] for field in fields]
         for shape_record in self._reader.iterShapeRecords()):
             attributes = shape_record.record.as_dict()
-            yield Record(shape_record.shape, attributes, fields)
+            yield Record(shape_record.shape, attributes)
 
 
 class FionaReader:
