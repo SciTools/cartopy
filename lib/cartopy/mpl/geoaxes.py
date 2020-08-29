@@ -68,6 +68,16 @@ A dictionary of background images in the directory specified by the
 CARTOPY_USER_BACKGROUNDS environment variable.
 """
 
+# A list of projections that can have wrapped coordinates.
+_WRAP_PROJECTIONS = (ccrs._RectangularProjection,
+                     ccrs._WarpedRectangularProjection,
+                     ccrs.InterruptedGoodeHomolosine,
+                     ccrs.Mercator,
+                     ccrs.LambertAzimuthalEqualArea,
+                     ccrs.AzimuthalEquidistant,
+                     ccrs.TransverseMercator,
+                     ccrs.Stereographic)
+
 
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
@@ -1786,10 +1796,11 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
+        # Add in an argument checker to handle Matplotlib's potential
+        # interpolation when coordinate wraps are involved
+        args = self._wrap_args(*args, **kwargs)
         result = matplotlib.axes.Axes.pcolormesh(self, *args, **kwargs)
         # Wrap the quadrilaterals if necessary
-        kwargs.setdefault('antialiased', False)
-        kwargs.setdefault('edgecolors', 'None')
         result = self._wrap_quadmesh(result, **kwargs)
         # Re-cast the QuadMesh as a GeoQuadMesh to enable future wrapping
         # updates to the collection as well.
@@ -1798,22 +1809,62 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
+    def _wrap_args(self, *args, **kwargs):
+        """
+        Handle the interpolation when a wrap could be involved with
+        the data coordinates before passing on to Matplotlib.
+        """
+        if (kwargs.get('shading', 'auto') in ('nearest', 'auto') and
+                len(args) == 3 and
+                isinstance(kwargs.get('transform'), _WRAP_PROJECTIONS)):
+            X = np.asanyarray(args[0])
+            Y = np.asanyarray(args[1])
+            nrows, ncols = np.asanyarray(args[2]).shape
+            Nx = X.shape[-1]
+            Ny = Y.shape[0]
+            if X.ndim != 2 or X.shape[0] == 1:
+                x = X.reshape(1, Nx)
+                X = x.repeat(Ny, axis=0)
+            if Y.ndim != 2 or Y.shape[1] == 1:
+                y = Y.reshape(Ny, 1)
+                Y = y.repeat(Nx, axis=1)
+
+            def _interp_grid(X, wrap=0):
+                # helper for below
+                if np.shape(X)[1] > 1:
+                    dX = np.diff(X, axis=1)
+                    # account for the wrap
+                    if wrap:
+                        dX = (dX + wrap/2) % wrap - wrap/2
+                    dX = dX/2
+                    X = np.hstack((X[:, [0]] - dX[:, [0]],
+                                   X[:, :-1] + dX,
+                                   X[:, [-1]] + dX[:, [-1]]))
+                else:
+                    # This is just degenerate, but we can't reliably guess
+                    # a dX if there is just one value.
+                    X = np.hstack((X, X))
+                return X
+            t = kwargs.get('transform')
+            xwrap = abs(t.x_limits[1] - t.x_limits[0])
+            if ncols == Nx:
+                X = _interp_grid(X, wrap=xwrap)
+                Y = _interp_grid(Y)
+            if nrows == Ny:
+                X = _interp_grid(X.T, wrap=xwrap).T
+                Y = _interp_grid(Y.T).T
+
+            args = (X, Y, args[2])
+        return args
+
     def _wrap_quadmesh(self, collection, **kwargs):
         """
         Handles the Quadmesh collection when any of the quadrilaterals
         cross the boundary of the projection.
         """
         t = kwargs.get('transform', None)
-        wrap_proj_types = (ccrs._RectangularProjection,
-                           ccrs._WarpedRectangularProjection,
-                           ccrs.InterruptedGoodeHomolosine,
-                           ccrs.Mercator,
-                           ccrs.LambertAzimuthalEqualArea,
-                           ccrs.AzimuthalEquidistant,
-                           ccrs.TransverseMercator,
-                           ccrs.Stereographic)
-        if not (isinstance(t, wrap_proj_types) and
-                isinstance(self.projection, wrap_proj_types)):
+        if not (isinstance(t, _WRAP_PROJECTIONS) and
+                isinstance(self.projection, _WRAP_PROJECTIONS)):
             # Nothing to do
             return collection
 
@@ -1873,6 +1924,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # where the main plot is obscured
         zorder = collection.zorder - .1
         kwargs.pop('zorder', None)
+        kwargs.pop('shading', None)
         kwargs.setdefault('snap', False)
         vmin = kwargs.pop('vmin', None)
         vmax = kwargs.pop('vmax', None)
@@ -1927,6 +1979,9 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
+        # Add in an argument checker to handle Matplotlib's potential
+        # interpolation when coordinate wraps are involved
+        args = self._wrap_args(*args, **kwargs)
         result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
 
         # Update the datalim for this pcolor.

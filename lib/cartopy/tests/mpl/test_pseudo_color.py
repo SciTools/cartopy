@@ -53,3 +53,34 @@ def test_savefig_tight():
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight')
     plt.close()
+
+
+def test_pcolormesh_arg_interpolation():
+    # Test that making the edges from center point inputs
+    # properly accounts for the wrapped coordinates appearing
+    # in the middle of an array
+    x = [359, 1, 3]
+    y = [-10, 10]
+
+    xs, ys = np.meshgrid(x, y)
+    # Z with the same shape as X/Y to force the interpolation
+    z = np.zeros(xs.shape)
+
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto',
+                         transform=ccrs.PlateCarree())
+
+    # Compare the output coordinates of the generated mesh
+    expected = np.array([[[358, -20],
+                          [360, -20],
+                          [2, -20],
+                          [4, -20]],
+                         [[358, 0],
+                          [360, 0],
+                          [2, 0],
+                          [4, 0]],
+                         [[358, 20],
+                          [360, 20],
+                          [2, 20],
+                          [4, 20]]])
+    np.testing.assert_array_almost_equal(expected, coll._coordinates)
