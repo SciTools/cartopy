@@ -125,7 +125,8 @@ def test_geoaxes_subplot():
 @ImageTesting(['geoaxes_subslice'])
 def test_geoaxes_no_subslice():
     """Test that we do not trigger matplotlib's line subslice optimization."""
-    # This behavior caused lines with > 1000 points and sorted data to disappear
+    # This behavior caused lines with > 1000 points and
+    # sorted data to disappear
 
     fig, axes = plt.subplots(1, 2, subplot_kw={'projection': ccrs.Mercator()})
     for ax, num_points in zip(axes, [1000, 1001]):

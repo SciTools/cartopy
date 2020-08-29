@@ -9,7 +9,6 @@ from unittest import mock
 
 import matplotlib.pyplot as plt
 import numpy as np
-import pytest
 
 import cartopy.crs as ccrs
 
