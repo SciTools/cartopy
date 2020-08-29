@@ -1786,217 +1786,133 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        result = self._pcolormesh_patched(*args, **kwargs)
+        result = matplotlib.axes.Axes.pcolormesh(self, *args, **kwargs)
+        # Wrap the quadrilaterals if necessary
+        kwargs.setdefault('antialiased', False)
+        kwargs.setdefault('edgecolors', 'None')
+        result = self._wrap_quadmesh(result, **kwargs)
+        # Re-cast the QuadMesh as a GeoQuadMesh to enable future wrapping
+        # updates to the collection as well.
+        result.__class__ = cartopy.mpl.geocollection.GeoQuadMesh
+
         self.autoscale_view()
         return result
 
-    def _pcolormesh_patched(self, *args, **kwargs):
+    def _wrap_quadmesh(self, collection, **kwargs):
         """
-        A modified duplicate of :func:`~matplotlib.pyplot.pcolormesh`.
-
-        This function contains patches for Cartopy-specific behaviour, such as
-        using the transform for limit checks, applying longitude wrapping, etc.
-        See PATCH comments below.
-
+        Handles the Quadmesh collection when any of the quadrilaterals
+        cross the boundary of the projection.
         """
-        import matplotlib.colors as mcolors
-        import matplotlib.collections as mcoll
+        t = kwargs.get('transform', None)
+        wrap_proj_types = (ccrs._RectangularProjection,
+                           ccrs._WarpedRectangularProjection,
+                           ccrs.InterruptedGoodeHomolosine,
+                           ccrs.Mercator,
+                           ccrs.LambertAzimuthalEqualArea,
+                           ccrs.AzimuthalEquidistant,
+                           ccrs.TransverseMercator,
+                           ccrs.Stereographic)
+        if not (isinstance(t, wrap_proj_types) and
+                isinstance(self.projection, wrap_proj_types)):
+            # Nothing to do
+            return collection
 
-        # Remove this check when only MPL >= 3.0 is supported.
-        if not getattr(self, '_hold', True):
-            self.cla()
+        # Get the quadmesh data coordinates
+        coords = collection._coordinates
+        Ny, Nx, _ = coords.shape
+        # data array
+        C = collection.get_array().reshape((Ny - 1, Nx - 1))
 
-        alpha = kwargs.pop('alpha', None)
-        norm = kwargs.pop('norm', None)
-        cmap = kwargs.pop('cmap', None)
+        transformed_pts = self.projection.transform_points(
+            t, coords[..., 0], coords[..., 1])
+
+        # Compute the length of diagonals in transformed coordinates
+        # and create a mask where the wrapped cells are of shape (Ny-1, Nx-1)
+        with np.errstate(invalid='ignore'):
+            xs, ys = transformed_pts[..., 0], transformed_pts[..., 1]
+            diagonal0_lengths = np.hypot(xs[1:, 1:] - xs[:-1, :-1],
+                                         ys[1:, 1:] - ys[:-1, :-1])
+            diagonal1_lengths = np.hypot(xs[1:, :-1] - xs[:-1, 1:],
+                                         ys[1:, :-1] - ys[:-1, 1:])
+            # The maximum size of the diagonal of any cell, defined to
+            # be the projection width divided by 2*sqrt(2)
+            # TODO: Make this dependent on the boundary of the
+            #       projection which will help with curved boundaries
+            size_limit = (abs(self.projection.x_limits[1] -
+                              self.projection.x_limits[0]) /
+                          (2 * np.sqrt(2)))
+            mask = (np.isnan(diagonal0_lengths) |
+                    (diagonal0_lengths > size_limit) |
+                    np.isnan(diagonal1_lengths) |
+                    (diagonal1_lengths > size_limit))
+
+        if not np.any(mask):
+            # No wrapping needed
+            return collection
+
+        # We have quadrilaterals that cross the wrap boundary
+        # Now, we need to update the original collection with
+        # a mask over those cells and use pcolor to draw those
+        # cells instead, which will properly handle the wrap.
+
+        if collection.get_cmap()._rgba_bad[3] != 0.0:
+            warnings.warn("The colormap's 'bad' has been set, but "
+                          "in order to wrap pcolormesh across the "
+                          "map it must be fully transparent.",
+                          stacklevel=3)
+
+        # The original data mask (regardless of wrapped cells)
+        C_mask = getattr(C, 'mask', None)
+
+        # create the masked array to be used with this pcolormesh
+        full_mask = mask if C_mask is None else mask | C_mask
+        pcolormesh_data = np.ma.array(C, mask=full_mask)
+        collection.set_array(pcolormesh_data.ravel())
+
+        # plot with slightly lower zorder to avoid odd issue
+        # where the main plot is obscured
+        zorder = collection.zorder - .1
+        kwargs.pop('zorder', None)
+        kwargs.setdefault('snap', False)
         vmin = kwargs.pop('vmin', None)
         vmax = kwargs.pop('vmax', None)
-        antialiased = kwargs.pop('antialiased', False)
-        kwargs.setdefault('edgecolors', 'None')
+        norm = kwargs.pop('norm', None)
+        cmap = kwargs.pop('cmap', None)
+        # Plot all of the wrapped cells.
+        # `pcolor` only draws polygons where the data is not
+        # masked, so this will only draw a limited subset of
+        # polygons that were actually wrapped.
+        # We will add the original data mask in later to
+        # make sure that set_array can work in future
+        # calls on the proper sized array inputs.
+        # NOTE: we don't use C.data here because C.data could
+        #       contain nan's which would be masked in the
+        #       pcolor routines, which we don't want. We will
+        #       fill in the proper data later with set_array()
+        #       calls.
+        pcolor_data = np.ma.array(np.zeros(C.shape),
+                                  mask=~mask)
+        pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
+                                 pcolor_data, zorder=zorder,
+                                 **kwargs)
+        # Now add back in the masked data if there was any
+        full_mask = ~mask if C_mask is None else ~mask | C_mask
+        pcolor_data = np.ma.array(C, mask=full_mask)
+        # The pcolor_col is now possibly shorter than the
+        # actual collection, so grab the masked cells
+        pcolor_col.set_array(pcolor_data[mask].ravel())
 
-        if matplotlib.__version__ < "3.3":
-            shading = kwargs.pop('shading', 'flat')
-            allmatch = (shading == 'gouraud')
-            X, Y, C = self._pcolorargs('pcolormesh', *args, allmatch=allmatch)
-        else:
-            shading = kwargs.pop('shading', 'auto')
-            if shading is None:
-                shading = 'auto'
-            X, Y, C, shading = self._pcolorargs('pcolormesh', *args,
-                                                shading=shading)
+        pcolor_col.set_cmap(cmap)
+        pcolor_col.set_norm(norm)
+        pcolor_col.set_clim(vmin, vmax)
+        # scale the data according to the *original* data
+        pcolor_col.norm.autoscale_None(C)
 
-        Ny, Nx = X.shape
-
-        # convert to one dimensional arrays
-        C = C.ravel()
-        coords = np.column_stack((X.flat, Y.flat)).astype(float, copy=False)
-
-        collection = mcoll.QuadMesh(
-            Nx - 1, Ny - 1, coords,
-            antialiased=antialiased, shading=shading, **kwargs)
-        collection.set_alpha(alpha)
-        collection.set_array(C)
-        if norm is not None:
-            assert(isinstance(norm, mcolors.Normalize))
-        collection.set_cmap(cmap)
-        collection.set_norm(norm)
-        collection.set_clim(vmin, vmax)
-        collection.autoscale_None()
-
-        self.grid(False)
-
-        # Transform from native to data coordinates?
-        t = collection._transform
-        if (not isinstance(t, mtransforms.Transform) and
-                hasattr(t, '_as_mpl_transform')):
-            t = t._as_mpl_transform(self)
-
-        if t and any(t.contains_branch_seperately(self.transData)):
-            trans_to_data = t - self.transData
-            ########################
-            # PATCH
-            # XXX Non-standard Matplotlib thing:
-            # * Check for point existence after transform
-            # * Save non-transformed coords for later work
-            transformed_pts = trans_to_data.transform(coords)
-
-            no_inf = ~np.any(np.isinf(transformed_pts), axis=1)
-            if np.any(no_inf):
-                minx, miny = np.min(transformed_pts[no_inf], axis=0)
-                maxx, maxy = np.max(transformed_pts[no_inf], axis=0)
-            else:
-                minx = maxx = miny = maxy = np.nan
-        else:
-            transformed_pts = coords
-            minx, miny = np.min(coords, axis=0)
-            maxx, maxy = np.max(coords, axis=0)
-        # END OF PATCH
-        ##############
-
-        corners = (minx, miny), (maxx, maxy)
-        ########################
-        # PATCH
-        # XXX Non-standard matplotlib thing.
-        collection._corners = mtransforms.Bbox(corners)
-        collection.get_datalim = lambda transData: collection._corners
-        # END OF PATCH
-        ##############
-
-        self.update_datalim(corners)
-        self.add_collection(collection)
-        self.autoscale_view()
-
-        ########################
-        # PATCH
-        # XXX Non-standard matplotlib thing.
-        # Handle a possible wrap around for rectangular projections.
-        t = kwargs.get('transform', None)
-        if isinstance(t, ccrs.CRS):
-            wrap_proj_types = (ccrs._RectangularProjection,
-                               ccrs._WarpedRectangularProjection,
-                               ccrs.InterruptedGoodeHomolosine,
-                               ccrs.Mercator,
-                               ccrs.LambertAzimuthalEqualArea,
-                               ccrs.AzimuthalEquidistant,
-                               ccrs.TransverseMercator,
-                               ccrs.Stereographic)
-            if isinstance(t, wrap_proj_types) and \
-                    isinstance(self.projection, wrap_proj_types):
-
-                C = C.reshape((Ny - 1, Nx - 1))
-                transformed_pts = transformed_pts.reshape((Ny, Nx, 2))
-
-                # Compute the length of diagonals in transformed coordinates
-                with np.errstate(invalid='ignore'):
-                    xs, ys = transformed_pts[..., 0], transformed_pts[..., 1]
-                    diagonal0_lengths = np.hypot(xs[1:, 1:] - xs[:-1, :-1],
-                                                 ys[1:, 1:] - ys[:-1, :-1])
-                    diagonal1_lengths = np.hypot(xs[1:, :-1] - xs[:-1, 1:],
-                                                 ys[1:, :-1] - ys[:-1, 1:])
-                    # The maximum size of the diagonal of any cell, defined to
-                    # be the projection width divided by 2*sqrt(2)
-                    # TODO: Make this dependent on the boundary of the
-                    #       projection which will help with curved boundaries
-                    size_limit = (abs(self.projection.x_limits[1] -
-                                      self.projection.x_limits[0]) /
-                                  (2*np.sqrt(2)))
-                    to_mask = (np.isnan(diagonal0_lengths) |
-                               (diagonal0_lengths > size_limit) |
-                               np.isnan(diagonal1_lengths) |
-                               (diagonal1_lengths > size_limit))
-
-                if np.any(to_mask):
-                    if collection.get_cmap()._rgba_bad[3] != 0.0:
-                        warnings.warn("The colormap's 'bad' has been set, but "
-                                      "in order to wrap pcolormesh across the "
-                                      "map it must be fully transparent.",
-                                      stacklevel=3)
-
-                    # at this point C has a shape of (Ny-1, Nx-1), to_mask has
-                    # a shape of (Ny-1, Nx-1) and pts has a shape of (Ny*Nx, 2)
-
-                    mask = np.zeros(C.shape, dtype=bool)
-
-                    # Mask out the cells if there was a diagonal found with a
-                    # large length. NB. Masking too much only has
-                    # a detrimental impact on performance.
-                    mask[to_mask] = True
-
-                    C_mask = getattr(C, 'mask', None)
-
-                    # create the masked array to be used with this pcolormesh
-                    full_mask = mask if C_mask is None else mask | C_mask
-                    pcolormesh_data = np.ma.array(C, mask=full_mask)
-
-                    collection.set_array(pcolormesh_data.ravel())
-
-                    pts = coords.reshape((Ny, Nx, 2))
-                    if np.any(mask):
-                        # plot with slightly lower zorder to avoid odd issue
-                        # where the main plot is obscured
-                        zorder = collection.zorder - .1
-                        kwargs.pop('zorder', None)
-                        kwargs.setdefault('snap', False)
-                        # Plot all of the wrapped cells.
-                        # `pcolor` only draws polygons where the data is not
-                        # masked, so this will only draw a limited subset of
-                        # polygons that were actually wrapped.
-                        # We will add the original data mask in later to
-                        # make sure that set_array can work in future
-                        # calls on the proper sized array inputs.
-                        # NOTE: we don't use C.data here because C.data could
-                        #       contain nan's which would be masked in the
-                        #       pcolor routines, which we don't want. We will
-                        #       fill in the proper data later with set_array()
-                        #       calls.
-                        pcolor_data = np.ma.array(np.zeros(C.shape),
-                                                  mask=~mask)
-                        pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
-                                                 pcolor_data, zorder=zorder,
-                                                 **kwargs)
-                        # Now add back in the masked data if there was any
-                        full_mask = ~mask if C_mask is None else ~mask | C_mask
-                        pcolor_data = np.ma.array(C, mask=full_mask)
-                        # The pcolor_col is now possibly shorter than the
-                        # actual collection, so grab the masked cells
-                        pcolor_col.set_array(pcolor_data[mask].ravel())
-                        pcolor_col.set_cmap(cmap)
-                        pcolor_col.set_norm(norm)
-                        pcolor_col.set_clim(vmin, vmax)
-                        # scale the data according to the *original* data
-                        pcolor_col.norm.autoscale_None(C)
-
-                        # put the pcolor_col and mask on the pcolormesh
-                        # collection so that users can do things post
-                        # this method
-                        collection._wrapped_mask = mask.ravel()
-                        collection._wrapped_collection_fix = pcolor_col
-
-        # Re-cast the QuadMesh as a GeoQuadMesh to enable future wrapping
-        # updates to the collection as well.
-        collection.__class__ = cartopy.mpl.geocollection.GeoQuadMesh
-        # END OF PATCH
-        ##############
+        # put the pcolor_col and mask on the pcolormesh
+        # collection so that users can do things post
+        # this method
+        collection._wrapped_mask = mask.ravel()
+        collection._wrapped_collection_fix = pcolor_col
 
         return collection
 
