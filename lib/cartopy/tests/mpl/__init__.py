@@ -5,7 +5,6 @@
 # licensing details.
 
 import base64
-import contextlib
 import distutils
 import os
 import glob
@@ -147,7 +146,6 @@ class ImageTesting:
             with flufl.lock.Lock(result_path + '.lock'):
                 self.save_figure(figure, result_path)
                 self.do_compare(result_path, expected_path, self.tolerance)
-
 
     def save_figure(self, figure, result_fname):
         """
