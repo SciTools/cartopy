@@ -1,0 +1,11 @@
+Version 0.7 (March 21, 2013)
+============================
+
+* Carwyn Pelley added support for 2D arrays of points to :meth:`cartopy.crs.CRS.transform_points`. (:pull:`192`)
+* Phil Elson added control for the gridlines and tick labels drawn with
+  :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`. (:pull:`238`)
+* Various documentation enhancements have been added. (:pull:`247`, :pull:`244` :pull:`240` and :pull:`242`)
+
+This is a quick release which targets two very specific requirements. The goals outlined in the development plan at
+``v0.6`` still remain the primary target for ``v0.8`` and beyond.
+

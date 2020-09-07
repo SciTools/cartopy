@@ -1,0 +1,158 @@
+Version 0.17 (November 16, 2018)
+================================
+
+For a full list of included Pull Requests and closed Issues, please see the
+`0.17 milestone <https://github.com/SciTools/cartopy/milestone/23>`_.
+
+Features
+--------
+* The :class:`cartopy.feature.NaturalEarthFeature` class now allows a
+  :class:`cartopy.feature.AdaptiveScaler` object to be passed as the ``scale``
+  argument. This will automatically choose the appropriate feature scale from
+  the GeoAxes extent. This can also be used interactively while panning and
+  zooming in a figure. :data:`cartopy.feature.NaturalEarthFeature.scale` is
+  now read-only. (:pull:`1102`, :pull:`983`)
+
+* Proj version 5.x is now supported in Cartopy, thanks to hard work by
+  Elliott Sales de Andrade. As part of making this version work, the inner
+  workings and boundaries of many projections were improved.
+  (:pull:`1124`, :pull:`1148`) Elliott also improved support for warped
+  rectangular projections (:pull:`1180`) as well as added support for the
+  Eckert family of projections (:pull:`1168`) and Equal Earth projection.
+  (:pull:`1182`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        eq_earth = ccrs.EqualEarth()
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=eq_earth)
+        ax.set_global()
+        ax.gridlines()
+        ax.stock_img()
+        ax.coastlines()
+        plt.show()
+
+* Greg Lucas contributed functionality to plot day/night across the globe,
+  which was turned into a map feature by Phil Elson. The shading can be added
+  to a map with :data:`cartopy.feature.nightshade.Nightshade(datetime)`. For
+  more information, see the
+  :ref:`sphx_glr_gallery_lines_and_polygons_nightshade.py` example.
+  (:pull:`1135`, :pull:`1181`)
+
+.. figure:: ../gallery/lines_and_polygons/images/sphx_glr_nightshade_001.png
+   :target: ../gallery/lines_and_polygons/nightshade.html
+   :align: center
+
+* Elliott Sales de Andrade added optional support for the use of
+  `pykdtree <https://github.com/storpipfugl/pykdtree>`_
+  when performing image transformations. This module has been demonstrated to
+  be twice as fast as the old code for most of the Cartopy examples, with one
+  example (geostationary) having a 95% reduction in run time. (:pull:`1150`)
+
+* Greg Lucas added a Fiona-based shapefile reader. If
+  `Fiona <https://github.com/Toblerity/Fiona>`_ is installed on
+  a user's system, this will now be the default shapefile reader, adding
+  significant speed improvements. (:pull:`1000`)
+
+* Phil Elson added the ability to control the appearance of Shapely geometries
+  using a function. :func:`cartopy.mpl.geoaxes.GeoAxes.add_geometries` gained
+  a ``styler`` argument that takes a function that given a geometry, returns a
+  dictionary of style keyword arguments. The
+  :ref:`sphx_glr_gallery_lines_and_polygons_hurricane_katrina.py`
+  example has been updated to use this. (:pull:`1019`)
+
+* Kevin Donkers, with help from Phil Elson and Peter Killick, improved the
+  interactivity of panning and zooming images by adding a raster
+  image cache. (:pull:`1192`, :pull:`1195`, :pull:`1197`)
+
+* Peter Killick and Phil Elson improved the use of Cartopy in Jupyter notebook
+  environments by adding an HTML representation for projections. These
+  render vector images of the coastlines using a given
+  projection to enable a quick preview. (:pull:`951`, :pull:`1196`)
+
+* Fixes were added by Elliott Sales de Andrade to support the Matplotlib 3.x
+  series. (:pull:`1130`)
+
+* Ryan May fixed up the `.Geostationary` and `.NearsidePerspective` projections
+  as well as added additional options to the Mercator projection.
+  (:pull:`1189`, :pull:`1043`)
+
+* Andrey Kiselev contributed support for the Equidistant Conic projection.
+  (:pull:`1022`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        eq_conic = ccrs.EquidistantConic()
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=eq_conic)
+        ax.set_global()
+        ax.gridlines()
+        ax.stock_img()
+        ax.coastlines()
+        plt.show()
+
+* Peter Killick updated and improved the interface to Mapbox image tiles.
+  (:pull:`1170`)
+
+* Manuel Garrido and Phil Elson collaborated to add support for more themes
+  for the Stamen map tile set. (:pull:`1013`, :pull:`1188`)
+
+* Support for WMTS sources was made more robust by Alex Crosby.
+  (:pull:`1052`, :pull:`1053`)
+
+* Passing a ``color`` argument to
+  :func:`cartopy.mpl.geoaxes.GeoAxes.add_feature`
+  now overrides default feature ``edgecolor`` and ``facecolor`` thanks to
+  a change by Elliott Sales de Andrade. (:pull:`1029`)
+
+* Phil Elson added :func:`cartopy.geodesic.Geodesic.geometry_length` to
+  calculated the length in physical meters of any Shapely geometry.
+  (:pull:`1096`)
+
+* Elliott Sales de Andrade improved the interpolation code by normalizing
+  values, reducing issues due to precision. (:pull:`1042`)
+
+* Ryan May fixed a few corner cases in the plotting and transform code.
+  (:pull:`1062`, :pull:`1090`)
+
+* A ``pyproject.toml`` file has been added to Cartopy by
+  Elliott Sales de Andrade to make it easier to build Cartopy. Newer
+  versions of pip should now automatically install Cython and NumPy before
+  trying to build Cartopy. (:pull:`1132`)
+
+* Andrew Dawson fixed a crash when calculating the boundary for the
+  Lambert Azimuthal Equal Area projection. (:pull:`1100`)
+
+* Elliott Sales de Andrade and Andrew Dawson removed the use of deprecated
+  functionality in NumPy. (:pull:`1101`, :pull:`1122`)
+
+* Kevin Donkers added all 60 UTM zones to the images in the supported
+  projection documentation. (:pull:`1103`)
+
+* Broken URLs to the SRTM imagery were corrected by Elliott Sales de Andrade.
+  (:pull:`1143`)
+
+Deprecations
+------------
+* :func:`cartopy.mpl.clip_path.clip_path` has been deprecated. It is a simple
+  wrapper for Matplotlib's path clipping, so use that instead. You can replace
+  ``clip_path(subject, clip_bbox)`` by ``subject.clip_to_bbox(clip_bbox)``.
+
+* :class:`cartopy.io.img_tiles.StamenTerrain` has been deprecated. Use
+  ``Stamen('terrain-background')`` instead.
+
+* In CartoPy 0.18, the default value for the ``origin`` argument to
+  :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` will change from ``'lower'``
+  to ``'upper'`` to match the default in Matplotlib.
+
+Incompatible Changes
+--------------------
+* Support for Matplotlib < 1.5.1 and NumPy < 1.10 has been removed.

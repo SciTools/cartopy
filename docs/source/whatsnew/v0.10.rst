@@ -1,0 +1,31 @@
+Version 0.10 (January 17, 2014)
+===============================
+
+We are very pleased to announce that Andrew Dawson was added to the cartopy
+core development team. In this release Andrew has single-handedly
+implemented comprehensive vector transformation and visualisation
+capabilities, including:
+
+* The ability to transform vector fields between different coordinate
+  reference systems via the :meth:`~cartopy.crs.CRS.transform_vectors`
+  CRS method.
+
+* :meth:`GeoAxes.quiver <cartopy.mpl.geoaxes.GeoAxes.quiver>` and
+  :meth:`GeoAxes.barbs <cartopy.mpl.geoaxes.GeoAxes.barbs>` for arrow and
+  barb plotting. More information is available at :ref:`vector_plotting`.
+
+* A regridding function for "regularising" a vector field in the target
+  coordinate system. See also
+  :func:`cartopy.vector_transform.vector_scalar_to_grid`. Both
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.quiver` and
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.barbs` accept the ``regrid_shape``
+  keyword to trigger this behaviour automatically.
+
+* :meth:`GeoAxes.streamplot <cartopy.mpl.geoaxes.GeoAxes.streamplot>` adds
+  the ability to draw streamlines in any projection from a vector field in
+  any other projection.
+
+  .. figure:: ../gallery/vector_data/images/sphx_glr_barbs_001.png
+     :target: ../gallery/vector_data/barbs.html
+     :align: center
+     :scale: 70

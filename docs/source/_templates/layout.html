@@ -3,46 +3,9 @@
 {%- block extrahead %}
 {{ super() }}
 
-     <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-     <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-     <link rel="stylesheet" href="{{ pathto('_static/layout.css', 1) }}" type="text/css" />
-{% endblock %}
-
-
-{% block rootrellink %}
-        <li><a href="{{ pathto('index') }}">home</a>|&nbsp;</li>
-        <li><a href="{{ pathto('gallery/index') }}">gallery</a>|&nbsp;</li>
-
-{% endblock %}
-
-
-
-{% block sidebarlogo %}
-<a href="{{ pathto('index') }}">
-<img src="{{pathto("_static/cartopy.png", 1) }}"
-border="0" alt="Cartopy"/>
-</a>
-
-{% endblock %}
-
-
-{% block footer %}
-
-    <div class="footer">
-    <p style="text-align: left; float: left; margin: 0px; padding: 0 0 0 5px;">Documentation licensed under the <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/" rel="license">Open Government Licence</a></p>
-    {%- if show_copyright %}
-        &copy; <a href="{{ pathto('copyright') }}">British Crown Copyright</a> 2011 - 2018, Met Office
-    {%- endif %}
-    {%- if last_updated %}
-      {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
-    {%- endif %}
-    {%- if show_sphinx %}
-      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
-    {%- endif %}
-    </div>
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+    <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
 
     <!-- Point to the *latest* version switcher. This will allow the latest versions to appear on older documentation. -->
     <script type="text/javascript" src="https://scitools.org.uk/cartopy/docs/latest/_static/version_switch.js"></script>
-
 {% endblock %}

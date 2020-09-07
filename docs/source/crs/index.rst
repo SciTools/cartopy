@@ -7,6 +7,7 @@ the interface described below.
 
 .. autoclass:: cartopy.crs.CRS
    :members:
+   :noindex:
 
    .. data:: globe
 
@@ -20,6 +21,7 @@ which represents the reference ellipsoid (i.e. "wgs84").
 .. autoclass:: cartopy.crs.Globe
    :members:
    :exclude-members: to_proj4_params
+   :noindex:
 
 
 The most common :class:`~cartopy.crs.CRS` subclass is itself another abstract class;
@@ -28,18 +30,23 @@ which could be drawn directly as a map (i.e. on a flat piece of paper). :class:`
 all projections in the :ref:`cartopy_projections`.
 
 .. autoclass:: cartopy.crs.Projection
-    :members:
+   :members:
+   :noindex:
 
 
 There are a few non-:class:`~cartopy.crs.Projection` subclasses. These represent
 coordinate reference systems which are 3 dimensional and could not be drawn directly on a piece of paper.
 
 .. autoclass:: cartopy.crs.Geodetic
+   :noindex:
 
 .. autoclass:: cartopy.crs.Geocentric
+   :noindex:
 
 .. autoclass:: cartopy.crs.RotatedGeodetic
+   :noindex:
 
 There is also a function for calling epsg.io with a specified code, returning the corresponding cartopy projection, see below.
 
 .. autofunction:: cartopy.crs.epsg
+   :noindex:
