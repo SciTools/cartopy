@@ -39,7 +39,6 @@ needs_sphinx = '1.6'
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-              'cartopy.sphinxext.summarise_package',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
@@ -375,13 +374,6 @@ extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
                       'Issue #'),
             'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #'),
             }
-
-
-
-############ package summary extension ###########
-
-summarise_package_names = ['cartopy']
-summarise_package_exclude_directories = [['tests', 'examples', 'sphinxext']]
 
 
 ############ plot directive ##############

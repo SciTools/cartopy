@@ -46,10 +46,6 @@ Features
 * Andrew Dawson wrote a new tutorial for the user guide:
   :ref:`understanding_transform`. (:pull:`914`)
 
-.. figure:: ../tutorials/understanding_transform-6.png
-   :target: ../tutorials/understanding_transform.html
-   :align: center
-
 * Daniel Kirkham and Daryl Herzmann made significant improvements to the
   stability of polygon transformation. The changes reduce the frequency
   of messages such as

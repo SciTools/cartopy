@@ -27,9 +27,6 @@ has been designed to make this process as easy as possible for developers to
 extend, whilst still making it possible for users to configure in their own
 way.
 
-.. autoclass:: cartopy.io.Downloader
-    :members: FORMAT_KEYS, path, url, target_path,
-              pre_downloaded_path, acquire_resource, from_config
 
 An example of specialising this class can be found in
 :mod:`cartopy.io.shapereader.NEShpDownloader` which enables the downloading of
@@ -58,13 +55,6 @@ the ``validate_projection`` and ``fetch_raster`` methods in the form described
 in :class:`~cartopy.io.RasterSource` can be used as a slippy maps source in
 this way.
 
-.. currentmodule:: cartopy.io
-
-.. autoclass:: RasterSource
-    :members:
-
-.. autoclass:: LocatedImage
-
 
 .. currentmodule:: cartopy.mpl.slippy_image_artist
 
@@ -76,4 +66,3 @@ interface, with users often creating a
 :class:`SlippyImageArtist` instance through
 the GeoAxes' :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method.
 
-.. autoclass:: SlippyImageArtist

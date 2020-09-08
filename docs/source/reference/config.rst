@@ -1,5 +1,9 @@
-The cartopy module
-------------------
+.. _config:
+
+Cartopy configuration
+---------------------
+
+.. currentmodule:: cartopy
 
 The top level cartopy module contains the :attr:`~cartopy.config` dictionary which controls various aspects of cartopy's behaviour.
 

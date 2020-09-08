@@ -1,5 +1,6 @@
-Coordinate reference systems in Cartopy
----------------------------------------
+
+Coordinate reference systems
+----------------------------
 
 The :class:`cartopy.crs.CRS` class is the very core of cartopy, all coordinate reference systems
 in cartopy have :class:`~cartopy.crs.CRS` as a parent class, meaning all projections have

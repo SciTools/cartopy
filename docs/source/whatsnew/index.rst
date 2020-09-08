@@ -6,7 +6,7 @@ What's new
 
 This is the list of changes to cartopy between each release. For full details,
 see the `commit logs <https://github.com/scitools/cartopy/commits/>`_. For install and
-upgrade instructions, see :doc:`../installing`.
+upgrade instructions, see :ref:`installing`.
 
 Versions
 --------
