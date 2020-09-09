@@ -70,7 +70,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'cartopy'
-copyright = f'2011 - 2018 British Crown Copyright, 2018 - {datetime.now().year} Cartopy contributors'
+copyright = ('2011 - 2018 British Crown Copyright, '
+             f'2018 - {datetime.now().year} Cartopy contributors')
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -236,10 +237,6 @@ html_show_sphinx = True
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'cartopydoc'
-
-# html_context = {'rellinks': [('genindex', 'General Index', 'I', 'index'),
-#                              ('api_reference/index.rst', 'Module outline', 'O',
-#                               'outline')]}
 
 
 # -- Options for LaTeX output --------------------------------------------------
