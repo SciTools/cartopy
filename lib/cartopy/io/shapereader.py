@@ -160,7 +160,7 @@ class BasicReader:
         Return an iterator of :class:`~Record` instances.
 
         """
-        for shape_record in self._reader.iterShapeRecords()):
+        for shape_record in self._reader.iterShapeRecords():
             attributes = shape_record.record.as_dict()
             yield Record(shape_record.shape, attributes)
 
