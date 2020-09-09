@@ -7,7 +7,7 @@ The :ref:`installation guide <installing>` provides information on getting up an
 Some guides and tutorials demonstrating how to get started running cartopy
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
     crs.rst
     ../matplotlib/intro.rst
@@ -22,3 +22,12 @@ quickly find the reference documentation for known classes or functions.
 
 For those updating from an older version of cartopy, the :ref:`what's new <release>` page
 outlines recent changes, new features, and future development plans.
+
+Once you've gotten started with cartopy, consider citing it, including copyright
+attributions for data, and becoming a contributor on the project.
+
+.. toctree::
+
+    ../citation
+    ../copyright
+    ../contributors

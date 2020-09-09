@@ -18,6 +18,7 @@ to occur on the axes.
 
 .. autosummary::
     :toctree: generated/
+    :template: autosummary/class_without_inherited.rst
 
     GeoAxes
     GeoAxesSubplot
@@ -36,6 +37,7 @@ location information to the plots.
 
 .. autosummary::
     :toctree: generated/
+    :template: autosummary/class_without_inherited.rst
     
     gridliner.Gridliner
     ticker.LongitudeFormatter
@@ -52,6 +54,7 @@ an extension of the Matplotlib Artist interfaces.
 
 .. autosummary::
     :toctree: generated/
+    :template: autosummary/class_without_inherited.rst
 
     feature_artist.FeatureArtist
     slippy_image_artist.SlippyImageArtist

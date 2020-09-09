@@ -132,6 +132,11 @@ exclude_patterns = []
 # The reST default role (used for this markup: `text`) to use for all documents.
 default_role = 'py:obj'
 
+# Handle subclasses of Matplotlib using an :rc: context in documentation
+rst_prolog = """
+.. role:: rc
+"""
+
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
 
@@ -392,8 +397,6 @@ plot_formats = ['png',
 
 ############ autodoc config ##############
 
-autoclass_content = 'both'
-
 # Napoleon settings
 # napoleon_google_docstring = True
 napoleon_numpy_docstring = True
@@ -407,8 +410,3 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = False
 
-# # Numpydoc settings
-# numpydoc_show_class_members = True
-# numpydoc_show_inherited_class_members = False
-# numpydoc_class_members_toctree = False
-# numpydoc_use_blockquotes = True

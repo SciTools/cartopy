@@ -41,7 +41,7 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
-	-rm -rf source/cartopy_outline.rst source/gallery source/matplotlib/coastlines.p?? source/reference/generated
+	-rm -rf source/gallery source/reference/generated
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

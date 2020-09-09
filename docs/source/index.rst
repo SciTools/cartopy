@@ -48,3 +48,6 @@ There are many ways to get involved in the development of cartopy:
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on GitHub <Type%3A%20bug>`).
  * Contribute enhancements and new features on the issue tracker.
  * Chat with users and developers in the `Gitter chat room <https://gitter.im/SciTools/cartopy>`_.
+
+
+

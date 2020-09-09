@@ -635,7 +635,8 @@ class GeoAxes(matplotlib.axes.Axes):
             each circle.
 
 
-        ``**kwargs`` are passed through to `class:ShapelyFeature`.
+        ``**kwargs`` are passed through to
+        :class:`cartopy.feature.ShapelyFeature`.
 
         """
         from cartopy import geodesic
@@ -1246,7 +1247,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def imshow(self, img, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow`.
 
         Parameters
         ----------
@@ -1592,7 +1593,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def contour(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.contour'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.contour`.
 
         Other Parameters
         ----------------
@@ -1620,7 +1621,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def contourf(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf`.
 
         Other Parameters
         ----------------
@@ -1659,7 +1660,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def scatter(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter`.
 
         Other Parameters
         ----------------
@@ -1710,7 +1711,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def pcolormesh(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh`.
 
         Other Parameters
         ----------------
@@ -1724,7 +1725,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _pcolormesh_patched(self, *args, **kwargs):
         """
-        A modified duplicate of :func:`~matplotlib.pyplot.pcolormesh'.
+        A modified duplicate of :func:`~matplotlib.pyplot.pcolormesh`.
 
         This function contains patches for Cartopy-specific behaviour, such as
         using the transform for limit checks, applying longitude wrapping, etc.
@@ -1931,7 +1932,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def pcolor(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor`.
 
         Other Parameters
         ----------------
