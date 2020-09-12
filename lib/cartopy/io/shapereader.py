@@ -257,7 +257,7 @@ else:
 def natural_earth(resolution='110m', category='physical', name='coastline'):
     """
     Return the path to the requested natural earth shapefile,
-    downloading and unziping if necessary.
+    downloading and unzipping if necessary.
 
     To identify valid components for this function, either browse
     NaturalEarthData.com, or if you know what you are looking for, go to
@@ -387,7 +387,7 @@ config['downloaders'].setdefault(_ne_key,
 def gshhs(scale='c', level=1):
     """
     Return the path to the requested GSHHS shapefile,
-    downloading and unziping if necessary.
+    downloading and unzipping if necessary.
 
     """
     # Get hold of the Downloader (typically a GSHHSShpDownloader instance)
