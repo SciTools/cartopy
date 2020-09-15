@@ -447,6 +447,49 @@ def test_pcolormesh_set_array_with_mask():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
+@pytest.mark.natural_earth
+@ImageTesting(['pcolormesh_global_wrap3'], tolerance=tolerance)
+def test_pcolormesh_set_clim_with_mask():
+    """Testing that set_clim works with masked arrays properly."""
+    nx, ny = 33, 17
+    xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
+    ybnds = np.linspace(91.25, -91.25, ny, endpoint=True)
+    xbnds, ybnds = np.meshgrid(xbnds, ybnds)
+
+    data = np.exp(np.sin(np.deg2rad(xbnds)) + np.cos(np.deg2rad(ybnds)))
+
+    # this step is not necessary, but makes the plot even harder to do (i.e.
+    # it really puts cartopy through its paces)
+    ybnds = np.append(ybnds, ybnds[:, 1:2], axis=1)
+    xbnds = np.append(xbnds, xbnds[:, 1:2] + 360, axis=1)
+    data = np.ma.concatenate([data, data[:, 0:1]], axis=1)
+
+    data = data[:-1, :-1]
+    data = np.ma.masked_greater(data, 2.6)
+
+    bad_initial_norm = plt.Normalize(-100, 100)
+
+    ax = plt.subplot(311, projection=ccrs.PlateCarree(-45))
+    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), norm=bad_initial_norm)
+    assert c._wrapped_collection_fix is not None, \
+        'No pcolormesh wrapping was done when it should have been.'
+
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    ax = plt.subplot(312, projection=ccrs.PlateCarree(-1.87499952))
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    ax = plt.subplot(313, projection=ccrs.Robinson(-2))
+    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    # Fix clims on c so that test passes
+    c.set_clim(data.min(), data.max())
+
 
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_limited_area_wrap'], tolerance=1.82)
