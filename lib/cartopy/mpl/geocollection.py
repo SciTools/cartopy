@@ -36,3 +36,11 @@ class GeoQuadMesh(QuadMesh):
         # Now that we have prepared the collection data, call on
         # through to the underlying implementation.
         super(QuadMesh, self).set_array(A)
+
+    def set_clim(self, vmin=None, vmax=None):
+        # Update _wrapped_collection_fix color limits if it is there.
+        if hasattr(self, '_wrapped_collection_fix'):
+            self._wrapped_collection_fix.set_clim(vmin, vmax)
+
+        # Update color limits for the rest of the cells.
+        super().set_clim(vmin, vmax)
