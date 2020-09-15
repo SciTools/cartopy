@@ -43,4 +43,4 @@ class GeoQuadMesh(QuadMesh):
             self._wrapped_collection_fix.set_clim(vmin, vmax)
 
         # Update color limits for the rest of the cells.
-        super(QuadMesh, self).set_clim(vmin, vmax)
+        super().set_clim(vmin, vmax)
