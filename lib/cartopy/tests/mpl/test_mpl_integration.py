@@ -447,6 +447,7 @@ def test_pcolormesh_set_array_with_mask():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
+
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_global_wrap3'], tolerance=tolerance)
 def test_pcolormesh_set_clim_with_mask():
