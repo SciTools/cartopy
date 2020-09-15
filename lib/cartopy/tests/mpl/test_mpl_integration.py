@@ -470,7 +470,8 @@ def test_pcolormesh_set_clim_with_mask():
     bad_initial_norm = plt.Normalize(-100, 100)
 
     ax = plt.subplot(311, projection=ccrs.PlateCarree(-45))
-    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), norm=bad_initial_norm)
+    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
+                       norm=bad_initial_norm)
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
