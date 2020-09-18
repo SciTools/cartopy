@@ -1,7 +1,7 @@
 .. _api.feature:
 
-Feature interface
------------------
+Feature interface (cartopy.feature)
+-----------------------------------
 
 .. currentmodule:: cartopy.feature
 

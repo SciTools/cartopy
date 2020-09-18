@@ -1,12 +1,12 @@
 .. _api.mpl:
 
-Matplotlib interface
---------------------
+Matplotlib interface (cartopy.mpl)
+----------------------------------
 
 Cartopy extends some Matplotlib capabilities to handle geographic
 projections, such as non-rectangular axes and spines.
 
-.. currentmodule:: cartopy.mpl.geoaxes
+.. currentmodule:: cartopy.mpl
 
 Geoaxes
 ~~~~~~~
@@ -20,10 +20,10 @@ to occur on the axes.
     :toctree: generated/
     :template: autosummary/class_without_inherited.rst
 
-    GeoAxes
-    GeoAxesSubplot
-    GeoSpine
-    InterProjectionTransform
+    geoaxes.GeoAxes
+    geoaxes.GeoAxesSubplot
+    geoaxes.GeoSpine
+    geoaxes.InterProjectionTransform
 
 
 .. currentmodule:: cartopy.mpl
@@ -45,7 +45,6 @@ location information to the plots.
     ticker.LongitudeLocator
     ticker.LatitudeLocator
 
-
 Artist extensions
 ~~~~~~~~~~~~~~~~~
 
@@ -59,8 +58,7 @@ an extension of the Matplotlib Artist interfaces.
     feature_artist.FeatureArtist
     slippy_image_artist.SlippyImageArtist
 
-
-.. currentmodule:: cartopy.mpl.patch
+.. currentmodule:: cartopy.mpl
 
 Additional extensions
 ~~~~~~~~~~~~~~~~~~~~~
@@ -72,6 +70,6 @@ between GEOS, Shapely, and Matplotlib paths.
 .. autosummary::
     :toctree: generated/
 
-    geos_to_path
-    path_segments
-    path_to_geos
+    patch.geos_to_path
+    patch.path_segments
+    patch.path_to_geos

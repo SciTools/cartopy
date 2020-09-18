@@ -1,15 +1,15 @@
 .. _api.io:
 
-Input/output capabilities
--------------------------
+.. currentmodule:: cartopy.io
+
+Input/output capabilities (cartopy.io)
+--------------------------------------
 
 Cartopy has many built-in image and map acquisition capabilities. These
 capabilities allow the maps to be loaded, saved, and retrieved in various
 data formats.
 
 .. _api.io.shapereader:
-
-.. currentmodule:: cartopy.io.shapereader
 
 Shapefiles
 ~~~~~~~~~~
@@ -19,17 +19,14 @@ Cartopy provides a basic interface for accessing shapefiles.
 .. autosummary::
     :toctree: generated/
 
-    Reader
-    BasicReader
-    Record
-    natural_earth
-    NEShpDownloader
-    gshhs
-    GSHHSShpDownloader
+    shapereader.Reader
+    shapereader.BasicReader
+    shapereader.Record
+    shapereader.natural_earth
+    shapereader.NEShpDownloader
+    shapereader.gshhs
+    shapereader.GSHHSShpDownloader
 
-
-
-.. currentmodule:: cartopy.io.img_nest
 
 Image collections
 ~~~~~~~~~~~~~~~~~
@@ -37,12 +34,10 @@ Image collections
 .. autosummary::
     :toctree: generated/
 
-    Img
-    ImageCollection
-    NestedImageCollection
+    img_nest.Img
+    img_nest.ImageCollection
+    img_nest.NestedImageCollection
 
-
-.. currentmodule:: cartopy.io.img_tiles
 
 Image tiles
 ~~~~~~~~~~~
@@ -53,20 +48,18 @@ automatically load the proper tile and resolution depending on the desired domai
 .. autosummary::
     :toctree: generated/
 
-    OSM
-    GoogleTiles
-    GoogleWTS
-    MapQuestOSM
-    MapQuestOpenAerial
-    MapboxStyleTiles
-    MapboxTiles
-    OrdnanceSurvey
-    QuadtreeTiles
-    Stamen
-    StamenTerrain
+    img_tiles.OSM
+    img_tiles.GoogleTiles
+    img_tiles.GoogleWTS
+    img_tiles.MapQuestOSM
+    img_tiles.MapQuestOpenAerial
+    img_tiles.MapboxStyleTiles
+    img_tiles.MapboxTiles
+    img_tiles.OrdnanceSurvey
+    img_tiles.QuadtreeTiles
+    img_tiles.Stamen
+    img_tiles.StamenTerrain
 
-
-.. currentmodule:: cartopy.io.ogc_clients
 
 Open Geospatial Consortium (OGC)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -76,12 +69,10 @@ There are several classes to enable interfacing with OGC clients.
 .. autosummary::
     :toctree: generated/
 
-    WFSGeometrySource
-    WMSRasterSource
-    WMTSRasterSource
+    ogc_clients.WFSGeometrySource
+    ogc_clients.WMSRasterSource
+    ogc_clients.WMTSRasterSource
 
-
-.. currentmodule:: cartopy.io.srtm
 
 Shuttle Radar Topography Mission (SRTM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,20 +83,18 @@ using classes and functions defined below.
 .. autosummary::
     :toctree: generated/
 
-    SRTM1Source
-    SRTM3Source
-    SRTMDownloader
-    SRTM3_retrieve
-    read_SRTM
-    read_SRTM1
-    read_SRTM3
-    srtm
-    srtm_composite
-    add_shading
-    fill_gaps
+    srtm.SRTM1Source
+    srtm.SRTM3Source
+    srtm.SRTMDownloader
+    srtm.SRTM3_retrieve
+    srtm.read_SRTM
+    srtm.read_SRTM1
+    srtm.read_SRTM3
+    srtm.srtm
+    srtm.srtm_composite
+    srtm.add_shading
+    srtm.fill_gaps
 
-
-.. currentmodule:: cartopy.io
 
 Base classes and functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
