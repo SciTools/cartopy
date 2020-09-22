@@ -46,6 +46,17 @@ def test_LatitudeFormatter():
     assert result == expected
 
 
+def test_LatitudeFormatter_direction_label():
+    formatter = LatitudeFormatter(direction_label=False)
+    p = ccrs.PlateCarree()
+    formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
+    test_ticks = [-90, -60, -30, 0, 30, 60, 90]
+    result = [formatter(tick) for tick in test_ticks]
+    expected = ['90\u00B0', '60\u00B0', '30\u00B0', '0\u00B0',
+                '30\u00B0', '60\u00B0', '90\u00B0']
+    assert result == expected
+
+
 def test_LatitudeFormatter_degree_symbol():
     formatter = LatitudeFormatter(degree_symbol='')
     p = ccrs.PlateCarree()
@@ -90,6 +101,19 @@ def test_LatitudeFormatter_small_numbers():
     result = [formatter(tick) for tick in test_ticks]
     expected = ['40.1275150\u00B0N', '40.1275152\u00B0N',
                 '40.1275154\u00B0N']
+    assert result == expected
+
+
+def test_LongitudeFormatter_direction_label():
+    formatter = LongitudeFormatter(direction_label=False,
+                                   dateline_direction_label=True,
+                                   zero_direction_label=True)
+    p = ccrs.PlateCarree()
+    formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
+    test_ticks = [-180, -120, -60, 0, 60, 120, 180]
+    result = [formatter(tick) for tick in test_ticks]
+    expected = ['180\u00B0', '120\u00B0', '60\u00B0', '0\u00B0',
+                '60\u00B0', '120\u00B0', '180\u00B0']
     assert result == expected
 
 
@@ -247,7 +271,7 @@ def test_lonlatformatter_non_geoaxes(cls, letter):
                                        id='lon_medium'),
                           pytest.param(LongitudeLocator, -1, 0,
                                        np.array([-60., -50., -40., -30.,
-                                                 -20., -10.,   0.]) / 60,
+                                                 -20., -10., 0.]) / 60,
                                        id='lon_small'),
                           pytest.param(LongitudeLocator, 0, 2 * ONE_MIN,
                                        np.array([0., 18., 36., 54., 72., 90.,
