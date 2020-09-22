@@ -21,8 +21,8 @@ class _PlateCarreeFormatter(Formatter):
 
     _target_projection = ccrs.PlateCarree()
 
-    def __init__(self, degree_symbol='\u00B0', number_format='g',
-                 transform_precision=1e-8, dms=False,
+    def __init__(self, direction_label=True, degree_symbol='\u00B0',
+                 number_format='g', transform_precision=1e-8, dms=False,
                  minute_symbol="'", second_symbol="''",
                  seconds_number_format='g',
                  auto_hide=True):
@@ -31,6 +31,7 @@ class _PlateCarreeFormatter(Formatter):
         for latitude and longitude axes.
 
         """
+        self._direction_labels = direction_label
         self._degree_symbol = degree_symbol
         self._degrees_number_format = number_format
         self._transform_precision = transform_precision
@@ -74,7 +75,10 @@ class _PlateCarreeFormatter(Formatter):
         return self._format_value(projected_value, value)
 
     def _format_value(self, value, original_value):
-        hemisphere = self._hemisphere(value, original_value)
+
+        hemisphere = ''
+        if self._direction_labels:
+            hemisphere = self._hemisphere(value, original_value)
 
         if not self._dms:
             return (self._format_degrees(abs(value)) +
