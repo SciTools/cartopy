@@ -67,7 +67,7 @@ class Record:
 
         self.attributes = attributes
         """A dictionary mapping attribute names to attribute values."""
-        
+
         self._fields = fields
 
     def __repr__(self):
@@ -167,7 +167,7 @@ class BasicReader:
         field_names = [field[0] for field in fields]
         for shape_record in self._reader.iterShapeRecords():
             attributes = shape_record.record.as_dict()
-            yield Record(shape_record.shape, attributes, field_names)
+            yield Record(shape_record.shape, attributes, fields)
 
 
 class FionaReader:
