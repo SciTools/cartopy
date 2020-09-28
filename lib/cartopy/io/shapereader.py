@@ -138,7 +138,7 @@ class BasicReader:
         return self._reader.close()
 
     def __len__(self):
-        return self._reader.numRecords
+        return len(self._reader)
 
     def geometries(self):
         """
@@ -152,8 +152,7 @@ class BasicReader:
         :meth:`~Record.geometry` method.
 
         """
-        for i in range(self._reader.numRecords):
-            shape = self._reader.shape(i)
+        for shape in self._reader.iterShapes():
             # Skip the shape that can not be represented as geometry.
             if shape.shapeType != shapefile.NULL:
                 yield sgeom.shape(shape)
@@ -166,9 +165,8 @@ class BasicReader:
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
         field_names = [field[0] for field in fields]
-        for i in range(self._reader.numRecords):
-            shape_record = self._reader.shapeRecord(i)
-            attributes = dict(zip(field_names, shape_record.record))
+        for shape_record in self._reader.iterShapeRecords():
+            attributes = shape_record.record.as_dict()
             yield Record(shape_record.shape, attributes, fields)
 
 
