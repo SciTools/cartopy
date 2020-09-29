@@ -52,7 +52,7 @@ def test_LatitudeFormatter_direction_label():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['90\u00B0', '60\u00B0', '30\u00B0', '0\u00B0',
+    expected = ['-90\u00B0', '-60\u00B0', '-30\u00B0', '0\u00B0',
                 '30\u00B0', '60\u00B0', '90\u00B0']
     assert result == expected
 
@@ -112,7 +112,7 @@ def test_LongitudeFormatter_direction_label():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['180\u00B0', '120\u00B0', '60\u00B0', '0\u00B0',
+    expected = ['-180\u00B0', '-120\u00B0', '-60\u00B0', '0\u00B0',
                 '60\u00B0', '120\u00B0', '180\u00B0']
     assert result == expected
 
