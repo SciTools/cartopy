@@ -275,6 +275,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
 
         """
         super().__init__(
+            direction_label=direction_label,
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
@@ -285,15 +286,10 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             auto_hide=auto_hide,
         )
 
-        self._direction_labels = direction_label
-
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
 
     def _hemisphere(self, value, value_source_crs):
-
-        if not self._direction_labels:
-            return ''
 
         if value > 0:
             hemisphere = 'N'
@@ -403,6 +399,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             labels = [lon_formatter(value) for value in ticks]
         """
         super().__init__(
+            direction_label=direction_label,
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
@@ -412,7 +409,6 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
         )
-        self._direction_labels = direction_label
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
 
@@ -446,9 +442,6 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         return _PlateCarreeFormatter._format_degrees(self, self._fix_lons(deg))
 
     def _hemisphere(self, value, value_source_crs):
-
-        if not self._direction_labels:
-            return ''
 
         value = self._fix_lons(value)
         # Perform basic hemisphere detection.
