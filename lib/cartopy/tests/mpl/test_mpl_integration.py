@@ -321,8 +321,7 @@ def test_pcolormesh_global_with_wrap1():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-#@pytest.mark.natural_earth
-#@ImageTesting(['pcolormesh_global_wrap1'], tolerance=1.27)
+
 def test_pcolormesh_get_array_with_mask():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -338,7 +337,7 @@ def test_pcolormesh_get_array_with_mask():
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
-    assert np.array_equal(data.ravel(),c.get_array()), \
+    assert np.array_equal(data.ravel(), c.get_array()), \
         'Data supplied does not match data retrieved in wrapped case'
 
     ax.coastlines()
@@ -358,10 +357,10 @@ def test_pcolormesh_get_array_with_mask():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    assert getattr(c,"_wrapped_collection_fix",None) is None, \
+    assert getattr(c, "_wrapped_collection_fix", None) is None, \
         'pcolormesh wrapping was done when it should not have been.'
 
-    assert np.array_equal(data2.ravel(),c.get_array()), \
+    assert np.array_equal(data2.ravel(), c.get_array()), \
         'Data supplied does not match data retrieved in unwrapped case'
 
 tolerance = 1.61
