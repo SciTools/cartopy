@@ -322,6 +322,47 @@ def test_pcolormesh_global_with_wrap1():
     ax.set_global()  # make sure everything is visible
 
 
+def test_pcolormesh_get_array_with_mask():
+    # make up some realistic data with bounds (such as data from the UM)
+    nx, ny = 36, 18
+    xbnds = np.linspace(0, 360, nx, endpoint=True)
+    ybnds = np.linspace(-90, 90, ny, endpoint=True)
+
+    x, y = np.meshgrid(xbnds, ybnds)
+    data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data = data[:-1, :-1]
+
+    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    assert c._wrapped_collection_fix is not None, \
+        'No pcolormesh wrapping was done when it should have been.'
+
+    assert np.array_equal(data.ravel(), c.get_array()), \
+        'Data supplied does not match data retrieved in wrapped case'
+
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    # Case without wrapping
+    nx, ny = 36, 18
+    xbnds = np.linspace(-60, 60, nx, endpoint=True)
+    ybnds = np.linspace(-80, 80, ny, endpoint=True)
+
+    x, y = np.meshgrid(xbnds, ybnds)
+    data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data2 = data[:-1, :-1]
+
+    ax = plt.subplot(212, projection=ccrs.PlateCarree())
+    c = plt.pcolormesh(xbnds, ybnds, data2, transform=ccrs.PlateCarree())
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    assert getattr(c, "_wrapped_collection_fix", None) is None, \
+        'pcolormesh wrapping was done when it should not have been.'
+
+    assert np.array_equal(data2.ravel(), c.get_array()), \
+        'Data supplied does not match data retrieved in unwrapped case'
+
 tolerance = 1.61
 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
     tolerance += 0.8
@@ -564,8 +605,6 @@ def test_pcolormesh_diagonal_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     mesh = ax.pcolormesh(xs, ys, zs)
 
-    # Check that the quadmesh is masked
-    assert np.ma.is_masked(mesh.get_array())
     # And that the wrapped_collection is added
     assert hasattr(mesh, "_wrapped_collection_fix")
 

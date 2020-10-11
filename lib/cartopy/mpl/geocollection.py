@@ -16,6 +16,14 @@ class GeoQuadMesh(QuadMesh):
     # come from GeoAxes.pcolormesh. These methods morph a QuadMesh by
     # fiddling with instance.__class__.
 
+    def get_array(self):
+        # Retrieve the array - use copy to avoid any chance of overwrite
+        A = super(QuadMesh, self).get_array().copy()
+        # If the input array has a mask, retrieve the associated data
+        if hasattr(self, '_wrapped_mask'):
+            A[self._wrapped_mask] = self._wrapped_collection_fix.get_array()
+        return A
+
     def set_array(self, A):
         # raise right away if A is 2-dimensional.
         if A.ndim > 1:
