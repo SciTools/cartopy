@@ -714,6 +714,16 @@ class Gridliner:
                 x=dx, y=dy, units='points')
             kw.update(transform=transform)
 
+            if self.xpadding < 0 or self.ypadding < 0:
+                if kw['ha'] == 'left':
+                    kw['ha'] = 'right'
+                elif kw['ha'] == 'right':
+                    kw['ha'] = 'left'
+                if kw['va'] == 'top':
+                    kw['va'] = 'bottom'
+                elif kw['va'] == 'bottom':
+                    kw['va'] = 'top'
+
         return kw, loc
 
     def _update_labels_visibility(self, renderer):
@@ -783,6 +793,7 @@ class Gridliner:
                 this_patch = artist.get_bbox_patch()
                 this_path = this_patch.get_path().transformed(
                     this_patch.get_transform())
+
                 if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
                     this_path = remove_path_dupes(this_path)
                 center = artist.get_transform().transform_point(
@@ -803,6 +814,7 @@ class Gridliner:
                                         .transformed(self.axes.transData))
                         if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
                             outline_path = remove_path_dupes(outline_path)
+
                     # Inline must be within the map.
                     if ((lonlat == 'lon' and self.x_inline) or
                             (lonlat == 'lat' and self.y_inline)):
@@ -810,9 +822,18 @@ class Gridliner:
                         # clipping can be left to it.
                         if outline_path.contains_point(center):
                             visible = True
-                    # Non-inline must not run through the outline.
-                    elif not outline_path.intersects_path(this_path):
+                    elif not outline_path.intersects_path(this_path,
+                                                          False if
+                                                          self.xpadding < 0 or
+                                                          self.ypadding < 0
+                                                          else True):
                         visible = True
+
+                    # labels must be within map bbox
+                    if (self.xpadding < 0 or self.ypadding < 0) and (
+                            not this_path.intersects_path(
+                                outline_path)):
+                        visible = False
 
                     # Good
                     if visible:

@@ -129,11 +129,16 @@ if MPL_VERSION < "3":
     TOL = 15
 else:
     TOL = 0.5
-grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = TOL
+grid_label_tol = \
+    grid_label_inline_tol = \
+    grid_label_inline_usa_tol = \
+    grid_label_intersect_map_tol = TOL
+
 grid_label_inline_tol += 1.1
 grid_label_image = 'gridliner_labels'
 grid_label_inline_image = 'gridliner_labels_inline'
 grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
+grid_label_intersect_map_image = 'gridliner_labels_intersect_map'
 
 
 @pytest.mark.natural_earth
@@ -388,3 +393,51 @@ def test_gridliner_line_limits():
     for path in paths:
         assert (np.min(path.vertices, axis=0) >= (xlim[0], ylim[0])).all()
         assert (np.max(path.vertices, axis=0) <= (xlim[1], ylim[1])).all()
+
+
+@pytest.mark.natural_earth
+@ImageTesting([grid_label_intersect_map_image],
+              tolerance=grid_label_intersect_map_tol)
+def test_grid_labels_intersect_map():
+    top = 49.3457868  # north lat
+    left = -124.7844079  # west long
+    right = -66.9513812  # east long
+    bottom = 24.7433195  # south lat
+    plt.figure(figsize=(35, 35))
+    for i, proj in enumerate(TEST_PROJS, 1):
+        if isinstance(proj, tuple):
+            proj, kwargs = proj
+        else:
+            kwargs = {}
+        ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
+        try:
+            ax.set_extent([left, right, bottom, top], crs=ccrs.PlateCarree())
+        except Exception:
+            pass
+        ax.set_title(proj, y=1.075)
+        if ccrs.PROJ4_VERSION[:2] == (5, 0) and proj in (
+                ccrs.Orthographic,
+                ccrs.AlbersEqualArea,
+                ccrs.Geostationary,
+                ccrs.NearsidePerspective,
+        ):
+            # Above projections are broken, so skip labels.
+            # Add gridlines anyway to minimize image differences.
+            ax.gridlines()
+        else:
+            gl = ax.gridlines(draw_labels=True, clip_on=True)
+            gl.xpadding = -5
+            gl.ypadding = -5
+        ax.coastlines(resolution="110m")
+    plt.subplots_adjust(wspace=0.35, hspace=0.35)
+
+
+def test_setting_padding_values():
+    plt.figure()
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    gl = ax.gridlines()
+    assert gl.xpadding == 5 and gl.ypadding == 5
+    gl.xpadding = gl.ypadding = 10
+    assert gl.xpadding == 10 and gl.ypadding == 10
+    gl.xpadding = gl.ypadding = -5
+    assert gl.xpadding == -5 and gl.ypadding == -5

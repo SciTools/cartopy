@@ -42,7 +42,6 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
-
 assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
                                     'Matplotlib 1.5.1 or greater.')
 
@@ -301,6 +300,7 @@ class GeoSpine(mspines.Spine):
 
 def _add_transform(func):
     """A decorator that adds and validates the transform keyword argument."""
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         transform = kwargs.get('transform', None)
@@ -314,6 +314,7 @@ def _add_transform(func):
 
         kwargs['transform'] = transform
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -450,7 +451,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.dataLim.set_points(data_lim)
                 self.viewLim.set_points(view_lim)
                 (self.ignore_existing_data_limits,
-                    self._autoscaleXon, self._autoscaleYon) = other
+                 self._autoscaleXon, self._autoscaleYon) = other
 
     def _draw_preprocess(self, renderer):
         """
@@ -654,7 +655,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for lon, lat in zip(lons, lats):
-            circle = geod.circle(lon, lat, rad_km*1e3, n_samples=n_samples)
+            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
             geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
@@ -1349,13 +1350,13 @@ class GeoAxes(matplotlib.axes.Axes):
                 # kwargs['alpha'] is guaranteed to be either 1D, 2D, or None
                 alpha = kwargs.pop('alpha')
                 old_img = img[:, :, 0:3]
-                img = np.zeros(img.shape[:2] + (4, ), dtype=img.dtype)
+                img = np.zeros(img.shape[:2] + (4,), dtype=img.dtype)
                 img[:, :, 0:3] = old_img
                 # Put an alpha channel in if the image was masked.
                 if not np.any(alpha):
                     alpha = 1
-                img[:, :, 3] = np.ma.filled(alpha, fill_value=0) * \
-                    (~np.any(old_img.mask, axis=2))
+                img[:, :, 3] = np.ma.filled(alpha, fill_value=0) * (
+                    ~np.any(old_img.mask, axis=2))
                 if img.dtype.kind == 'u':
                     img[:, :, 3] *= 255
 
@@ -1700,7 +1701,7 @@ class GeoAxes(matplotlib.axes.Axes):
         collection.set_alpha(alpha)
         collection.set_array(C)
         if norm is not None:
-            assert(isinstance(norm, mcolors.Normalize))
+            assert (isinstance(norm, mcolors.Normalize))
         collection.set_cmap(cmap)
         collection.set_norm(norm)
         collection.set_clim(vmin, vmax)
@@ -1782,7 +1783,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     #       projection which will help with curved boundaries
                     size_limit = (abs(self.projection.x_limits[1] -
                                       self.projection.x_limits[0]) /
-                                  (2*np.sqrt(2)))
+                                  (2 * np.sqrt(2)))
                     to_mask = (np.isnan(diagonal0_lengths) |
                                (diagonal0_lengths > size_limit) |
                                np.isnan(diagonal1_lengths) |
