@@ -91,7 +91,7 @@ class _PlateCarreeFormatter(Formatter):
             label = self._format_minutes(mn) + label
 
         if not self._auto_hide_degrees or not label:
-            label = self._format_degrees(deg) + hemisphere + label
+            label = self._format_degrees(deg) + label + hemisphere
 
         return label
 
