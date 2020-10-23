@@ -188,13 +188,13 @@ def test_LongitudeFormatter_small_numbers_180():
 
 @pytest.mark.parametrize("test_ticks,expected",
                          [pytest.param([-3.75, -3.5],
-                                       ["3\u00B0W45'", "3\u00B0W30'"],
+                                       ["3\u00B045'W", "3\u00B030'W"],
                                        id='minutes_no_hide'),
                           pytest.param([-3.5, -3.],
                                        ["30'", "3\u00B0W"],
                                        id='minutes_hide'),
                           pytest.param([-3. - 2 * ONE_MIN - 30 * ONE_SEC],
-                                       ["3\u00B0W2'30''"],
+                                       ["3\u00B02'30''W"],
                                        id='seconds'),
                           ])
 def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
@@ -206,7 +206,7 @@ def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
 
 @pytest.mark.parametrize("test_ticks,expected",
                          [pytest.param([-3.75, -3.5],
-                                       ["3\u00B0S45'", "3\u00B0S30'"],
+                                       ["3\u00B045'S", "3\u00B030'S"],
                                        id='minutes_no_hide'),
                           ])
 def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
