@@ -230,6 +230,26 @@ def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
 
 @pytest.mark.parametrize("test_ticks,expected",
                          [pytest.param([-3.75, -3.5],
+                                       ["-3\u00B045'", "-3\u00B030'"],
+                                       id='minutes_no_hide'),
+                          pytest.param([-3.5, -3.],
+                                       ["30'", "-3\u00B0"],
+                                       id='minutes_hide'),
+                          pytest.param([-3. - 2 * ONE_MIN - 30 * ONE_SEC],
+                                       ["-3\u00B02'30''"],
+                                       id='seconds'),
+                          ])
+def test_LongitudeFormatter_minutes_seconds_direction_label(test_ticks,
+                                                            expected):
+    formatter = LongitudeFormatter(
+        dms=True, auto_hide=True, direction_label=False)
+    formatter.set_locs(test_ticks)
+    result = [formatter(tick) for tick in test_ticks]
+    assert result == expected
+
+
+@pytest.mark.parametrize("test_ticks,expected",
+                         [pytest.param([-3.75, -3.5],
                                        ["3\u00B0S45'", "3\u00B0S30'"],
                                        id='minutes_no_hide'),
                           ])
