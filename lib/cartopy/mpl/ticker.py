@@ -77,11 +77,17 @@ class _PlateCarreeFormatter(Formatter):
     def _format_value(self, value, original_value):
 
         hemisphere = ''
+        sign = ''
+
         if self._direction_labels:
             hemisphere = self._hemisphere(value, original_value)
+        else:
+            if (value != 0 and
+                    self._hemisphere(value, original_value) in ['W', 'S']):
+                sign = '-'
 
         if not self._dms:
-            return (self._format_degrees(abs(value)) +
+            return (sign + self._format_degrees(abs(value)) +
                     hemisphere)
 
         value, deg, mn, sec = self._get_dms(abs(value))
