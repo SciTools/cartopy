@@ -53,7 +53,7 @@ cp-run: &cp-install
   name: Install Cartopy
   command: |
     source activate test-environment
-    pip install -ve .
+    python setup.py develop
 
 doc-run: &doc-build
   name: Build documentation
