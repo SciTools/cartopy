@@ -4,14 +4,17 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+import hashlib
 import os
 import types
+import warnings
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
 import pytest
 import shapely.geometry as sgeom
 
+from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
@@ -285,3 +288,91 @@ def test_ordnance_survey_get_image():
 
     # The extent is the same though
     assert extent1 == extent2
+
+
+@pytest.mark.network
+@pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
+def test_cache(cache_dir, tmpdir):
+    if cache_dir == "tmpdir":
+        tmpdir_str = tmpdir.strpath
+    else:
+        tmpdir_str = cache_dir
+
+    if cache_dir is True:
+        config["cache_dir"] = tmpdir.strpath
+
+    # Fetch tiles and save them in the cache
+    with warnings.catch_warnings(record=True) as w:
+        gt = cimgt.GoogleTiles(cache=tmpdir_str)
+    gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
+
+    ll_target_domain = sgeom.box(-10, 50, 10, 60)
+    multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
+    target_domain = multi_poly.geoms[0]
+
+    img_init, _, _ = gt.image_for_domain(target_domain, 6)
+
+    # Do not check the result if the cache is disabled
+    if cache_dir is False:
+        assert gt.cache_path is None
+        return
+
+    # Check that the warning is properly raised (only when cache is True)
+    if cache_dir is True:
+        assert len(w) == 1
+    else:
+        assert len(w) == 0
+
+    # Define expected results
+    x_y_z_f_h = [
+        (30, 18, 6, '30_18_6.npy', '545db25f1aa348ad85e1f437fd0db0d9'),
+        (30, 19, 6, '30_19_6.npy', '10355add0674bfa33f673ea27a6d1206'),
+        (30, 20, 6, '30_20_6.npy', 'ab3e7f2ed8d71977ac176094973695ae'),
+        (30, 21, 6, '30_21_6.npy', '3e8947b93a6ffa07f22cfea4042a4740'),
+        (31, 18, 6, '31_18_6.npy', 'd0fa58b9146aa99b273eb75256b328cc'),
+        (31, 19, 6, '31_19_6.npy', '9255bd0cd22736bd2c25a9087bd47b20'),
+        (31, 20, 6, '31_20_6.npy', 'ac0f7e32bdf8edb50d1dccf3ec0ef446'),
+        (31, 21, 6, '31_21_6.npy', 'f36b8cc1825bf267b2daead837facae9'),
+        (32, 18, 6, '32_18_6.npy', '9f4ddd90cd1ae76ef2bbc8f0252ead91'),
+        (32, 19, 6, '32_19_6.npy', 'a995803578bb94ecfca8563754717196'),
+        (32, 20, 6, '32_20_6.npy', 'def9e71d77fd6007c77c2a14dfae858f'),
+        (32, 21, 6, '32_21_6.npy', 'a3d7935037019ec58ae78f60e6fb924e'),
+        (33, 18, 6, '33_18_6.npy', '4e51e32da73fb99229817dcd7b7e1f4f'),
+        (33, 19, 6, '33_19_6.npy', 'b9b5057fa012c5788cbbe1e18c9bb512'),
+        (33, 20, 6, '33_20_6.npy', 'b55a7c0a8d86167df496732f85bddcf9'),
+        (33, 21, 6, '33_21_6.npy', '4208ba897c460e9bb0d2469552e127ff')
+    ]
+
+    # Check the results
+    cache_dir_res = os.path.join(gt.cache_path, "GoogleTiles")
+    files = [i for i in os.listdir(cache_dir_res)]
+    hashes = {
+        f:
+        hashlib.md5(
+            np.load(os.path.join(cache_dir_res, f), allow_pickle=True).data
+        ).hexdigest()
+        for f in files
+    }
+
+    assert sorted(files) == [f for x, y, z, f, h in x_y_z_f_h]
+    assert set(files) == gt.cache
+
+    assert sorted(hashes.values()) == sorted([
+        h for x, y, z, f, h in x_y_z_f_h
+    ])
+
+    # Update images in cache (all white)
+    for f in files:
+        filename = os.path.join(cache_dir_res, f)
+        img = np.load(filename, allow_pickle=True)
+        img.fill(255)
+        np.save(filename, img, allow_pickle=True)
+
+    gt_cache = cimgt.GoogleTiles(cache=tmpdir_str)
+    gt_cache._image_url = types.MethodType(
+        GOOGLE_IMAGE_URL_REPLACEMENT, gt_cache)
+    img_cache, _, _ = gt_cache.image_for_domain(target_domain, 6)
+
+    # Check that the new image_for_domain() call used cached images
+    assert gt_cache.cache == gt.cache
+    assert (img_cache == 255).all()
