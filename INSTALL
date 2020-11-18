@@ -56,7 +56,7 @@ for these packages can be found at https://github.com/conda-forge/feedstocks.
 For macOS, the required dependencies can be installed in the following way::
 
     brew install proj geos
-    pip3 install --upgrade cython numpy pyshp
+    pip3 install --upgrade pyshp
     # shapely needs to be built from source to link to geos. If it is already
     # installed, uninstall it by: pip3 uninstall shapely
     pip3 install shapely --no-binary shapely
@@ -78,12 +78,6 @@ to the core packages.
 Further information about the required dependencies can be found here:
 
 **Python** 3.5 or later (https://www.python.org/)
-
-**Cython** 0.28 or later (https://pypi.python.org/pypi/Cython/)
-
-**NumPy** 1.10 or later (https://numpy.org/)
-    Python package for scientific computing including a powerful N-dimensional
-    array object.
 
 **GEOS** 3.3.3 or later (https://trac.osgeo.org/geos/)
     GEOS is an API of spatial predicates and functions for processing geometry
