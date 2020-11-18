@@ -33,6 +33,10 @@ from distutils.spawn import find_executable
 from distutils.sysconfig import get_config_var
 
 from setuptools import Command, Extension, convert_path, setup
+import numpy
+
+print("MY NUMPY VERSION IS", numpy.__version__)
+sys.exit(1)
 
 """
 Distribution definition for Cartopy.
