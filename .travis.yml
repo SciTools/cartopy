@@ -4,10 +4,10 @@ env:
     matrix:
         - NAME="Minimum dependencies."
           PYTHON_VERSION=3.6
-          PACKAGES="cython=0.28.5 matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0"
+          PACKAGES="matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0"
         - NAME="Latest everything."
           PYTHON_VERSION=3.8
-          PACKAGES="cython fiona matplotlib-base numpy proj pykdtree scipy"
+          PACKAGES="fiona matplotlib-base proj pykdtree scipy"
 
 
 sudo: false

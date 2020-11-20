@@ -371,7 +371,6 @@ setup(
     extras_require=extras_require,
     tests_require=tests_require,
 
-    setup_requires=['setuptools_scm', 'setuptools_scm_git_archive'],
     use_scm_version={
         'write_to': 'lib/cartopy/_version.py',
     },
