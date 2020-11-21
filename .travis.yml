@@ -37,11 +37,11 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
-  - PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
-  - PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+  - PACKAGES="$PACKAGES pytest-xdist requests"
+  - PACKAGES="$PACKAGES shapely"
   - |
     if [[ "$NAME" == "Latest everything"* ]]; then
-        PACKAGES="$PACKAGES pytest-cov coveralls";
+        PACKAGES="$PACKAGES cython>=0.29.2 pytest-cov coveralls";
         export CYTHON_COVERAGE=1;
     fi
   - conda create -n $ENV_NAME python=$PYTHON_VERSION $PACKAGES
