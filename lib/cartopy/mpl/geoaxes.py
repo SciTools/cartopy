@@ -1630,16 +1630,44 @@ class GeoAxes(matplotlib.axes.Axes):
         transform
             A :class:`~cartopy.crs.Projection`.
 
+        fast: bool
+            If True, this will transform the input arguments into
+            projection-space and compute the contours, which is
+            significantly faster than computing the contours in
+            data-space and projecting those polygons. The use of
+            the fast-path requires gridded 2-dimensional X and Y
+            input arguments.
+
         """
-        t = kwargs['transform']
-        if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t = t._as_mpl_transform(self)
-        # Set flag to indicate correcting orientation of paths if not ccw
-        if isinstance(t, mtransforms.Transform):
-            for sub_trans, _ in t._iter_break_from_left_to_right():
-                if isinstance(sub_trans, InterProjectionTransform):
-                    if not hasattr(sub_trans, 'force_path_ccw'):
-                        sub_trans.force_path_ccw = True
+        # Handle a fast-path optimization that projects the points before
+        # calculating the contour polygons. This means that the contour
+        # lines will be calculated in projected-space, not data-space.
+        if 'fast' in kwargs and kwargs.pop('fast'):
+            if len(args) < 3:
+                # For the fast-path we need X and Y input points
+                raise ValueError("The X and Y arguments must be provided to "
+                                 "use the fast-path.")
+            x, y = (np.array(i) for i in args[:2])
+            if not (x.ndim == y.ndim == 2):
+                raise ValueError("The X and Y arguments must be gridded "
+                                 "2-dimensional arrays")
+            # Remove the transform from the keyword arguments
+            t = kwargs.pop('transform')
+            pts = self.projection.transform_points(t, x, y)
+            # Use the new X/Y points as the input arguments
+            args = (pts[..., 0], pts[..., 1]) + args[2:]
+        else:
+            # Calculate the contours in data-space, then apply the standard
+            # Cartopy non-affine transforms to those contours
+            t = kwargs.get('transform')
+            if isinstance(t, ccrs.Projection):
+                kwargs['transform'] = t = t._as_mpl_transform(self)
+            # Set flag to indicate correcting orientation of paths if not ccw
+            if isinstance(t, mtransforms.Transform):
+                for sub_trans, _ in t._iter_break_from_left_to_right():
+                    if isinstance(sub_trans, InterProjectionTransform):
+                        if not hasattr(sub_trans, 'force_path_ccw'):
+                            sub_trans.force_path_ccw = True
 
         result = matplotlib.axes.Axes.contourf(self, *args, **kwargs)
 
