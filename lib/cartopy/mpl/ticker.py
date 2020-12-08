@@ -21,8 +21,8 @@ class _PlateCarreeFormatter(Formatter):
 
     _target_projection = ccrs.PlateCarree()
 
-    def __init__(self, degree_symbol='\u00B0', number_format='g',
-                 transform_precision=1e-8, dms=False,
+    def __init__(self, direction_label=True, degree_symbol='\u00B0',
+                 number_format='g', transform_precision=1e-8, dms=False,
                  minute_symbol="'", second_symbol="''",
                  seconds_number_format='g',
                  auto_hide=True):
@@ -31,6 +31,7 @@ class _PlateCarreeFormatter(Formatter):
         for latitude and longitude axes.
 
         """
+        self._direction_labels = direction_label
         self._degree_symbol = degree_symbol
         self._degrees_number_format = number_format
         self._transform_precision = transform_precision
@@ -74,10 +75,19 @@ class _PlateCarreeFormatter(Formatter):
         return self._format_value(projected_value, value)
 
     def _format_value(self, value, original_value):
-        hemisphere = self._hemisphere(value, original_value)
+
+        hemisphere = ''
+        sign = ''
+
+        if self._direction_labels:
+            hemisphere = self._hemisphere(value, original_value)
+        else:
+            if (value != 0 and
+                    self._hemisphere(value, original_value) in ['W', 'S']):
+                sign = '-'
 
         if not self._dms:
-            return (self._format_degrees(abs(value)) +
+            return (sign + self._format_degrees(abs(value)) +
                     hemisphere)
 
         value, deg, mn, sec = self._get_dms(abs(value))
@@ -91,7 +101,7 @@ class _PlateCarreeFormatter(Formatter):
             label = self._format_minutes(mn) + label
 
         if not self._auto_hide_degrees or not label:
-            label = self._format_degrees(deg) + label + hemisphere
+            label = sign + self._format_degrees(deg) + label + hemisphere
 
         return label
 
@@ -115,7 +125,7 @@ class _PlateCarreeFormatter(Formatter):
         degs = np.round(x, self._precision).astype('i')
         y = (x - degs) * 60
         mins = np.round(y, self._precision).astype('i')
-        secs = np.round((y - mins)*60, self._precision - 3)
+        secs = np.round((y - mins) * 60, self._precision - 3)
         return x, degs, mins, secs
 
     def set_locs(self, locs):
@@ -123,7 +133,7 @@ class _PlateCarreeFormatter(Formatter):
         if not self._auto_hide:
             return
         self.locs, degs, mins, secs = self._get_dms(self.locs)
-        secs = np.round(secs, self._precision-3).astype('i')
+        secs = np.round(secs, self._precision - 3).astype('i')
         secs0 = secs == 0
         mins0 = mins == 0
 
@@ -189,7 +199,9 @@ class _PlateCarreeFormatter(Formatter):
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
-    def __init__(self, degree_symbol='\u00B0', number_format='g',
+
+    def __init__(self, direction_label=True,
+                 degree_symbol='\u00B0', number_format='g',
                  transform_precision=1e-8, dms=False,
                  minute_symbol="'", second_symbol="''",
                  seconds_number_format='g', auto_hide=True,
@@ -203,6 +215,11 @@ class LatitudeFormatter(_PlateCarreeFormatter):
 
         Parameters
         ----------
+        direction_label: optional
+            If *True* a direction label (N or S) will be drawn next to
+            latitude labels. If *False* then these
+            labels will not be drawn. Defaults to *True* (draw direction
+            labels).
         degree_symbol: optional
             The character(s) used to represent the degree symbol in the
             tick labels. Defaults to u'\u00B0' which is the unicode
@@ -264,6 +281,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
 
         """
         super().__init__(
+            direction_label=direction_label,
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
@@ -278,6 +296,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
         return target_proj.transform_point(0, value, source_crs)[1]
 
     def _hemisphere(self, value, value_source_crs):
+
         if value > 0:
             hemisphere = 'N'
         elif value < 0:
@@ -291,6 +310,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for a longitude axis."""
 
     def __init__(self,
+                 direction_label=True,
                  zero_direction_label=False,
                  dateline_direction_label=False,
                  degree_symbol='\u00B0',
@@ -310,6 +330,11 @@ class LongitudeFormatter(_PlateCarreeFormatter):
 
         Parameters
         ----------
+        direction_label: optional
+            If *True* a direction label (E or W) will be drawn next to
+            longitude labels. If *False* then these
+            labels will not be drawn. Defaults to *True* (draw direction
+            labels).
         zero_direction_label: optional
             If *True* a direction label (E or W) will be drawn next to
             longitude labels with the value 0. If *False* then these
@@ -380,6 +405,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             labels = [lon_formatter(value) for value in ticks]
         """
         super().__init__(
+            direction_label=direction_label,
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
@@ -422,6 +448,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         return _PlateCarreeFormatter._format_degrees(self, self._fix_lons(deg))
 
     def _hemisphere(self, value, value_source_crs):
+
         value = self._fix_lons(value)
         # Perform basic hemisphere detection.
         if value < 0:
@@ -476,7 +503,7 @@ class LongitudeLocator(MaxNLocator):
             steps = np.array([1, 1.5, 2, 2.5, 3, 5, 10])
 
         else:
-            steps = np.array([1, 10/6., 15/6., 20/6., 30/6., 10])
+            steps = np.array([1, 10 / 6., 15 / 6., 20 / 6., 30 / 6., 10])
 
         self.set_params(steps=np.array(steps))
 
@@ -498,6 +525,7 @@ class LatitudeLocator(LongitudeLocator):
     dms: bool
         Allow the locator to stop on minutes and seconds (False by default)
     """
+
     def tick_values(self, vmin, vmax):
         vmin = max(vmin, -90.)
         vmax = min(vmax, 90.)
