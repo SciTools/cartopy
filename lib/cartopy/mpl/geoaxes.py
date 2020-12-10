@@ -1630,32 +1630,42 @@ class GeoAxes(matplotlib.axes.Axes):
         transform
             A :class:`~cartopy.crs.Projection`.
 
-        fast: bool
+        fast_transform: bool, optional
             If True, this will transform the input arguments into
-            projection-space and compute the contours, which is
-            significantly faster than computing the contours in
-            data-space and projecting those polygons. The use of
-            the fast-path requires gridded 2-dimensional X and Y
-            input arguments.
+            projection-space before computing the contours, which is much
+            faster than computing the contours in data-space and projecting
+            the filled polygons. To use the projection-space method the input
+            arguments X and Y must be provided and be 2-dimensional.
+            The default is False, to compute the contours in data-space.
 
         """
         # Handle a fast-path optimization that projects the points before
         # calculating the contour polygons. This means that the contour
         # lines will be calculated in projected-space, not data-space.
-        if 'fast' in kwargs and kwargs.pop('fast'):
+        if kwargs.pop('fast_transform', False):
             if len(args) < 3:
                 # For the fast-path we need X and Y input points
                 raise ValueError("The X and Y arguments must be provided to "
                                  "use the fast-path.")
-            x, y = (np.array(i) for i in args[:2])
+            x, y, z = (np.array(i) for i in args[:3])
             if not (x.ndim == y.ndim == 2):
                 raise ValueError("The X and Y arguments must be gridded "
                                  "2-dimensional arrays")
+
             # Remove the transform from the keyword arguments
             t = kwargs.pop('transform')
             pts = self.projection.transform_points(t, x, y)
-            # Use the new X/Y points as the input arguments
-            args = (pts[..., 0], pts[..., 1]) + args[2:]
+            x = pts[..., 0].reshape(x.shape)
+            y = pts[..., 1].reshape(y.shape)
+            # The x coordinates could be wrapped, but contourf expects
+            # them to be sorted, so we will reorganize the arrays based on x
+            ind = np.argsort(x, axis=1)
+            x = np.take_along_axis(x, ind, axis=1)
+            y = np.take_along_axis(y, ind, axis=1)
+            z = np.take_along_axis(z, ind, axis=1)
+
+            # Use the new points as the input arguments
+            args = (x, y, z) + args[3:]
         else:
             # Calculate the contours in data-space, then apply the standard
             # Cartopy non-affine transforms to those contours
