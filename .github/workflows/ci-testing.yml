@@ -1,0 +1,93 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.6, 3.9]
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test-environment
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge/label/testing,conda-forge
+
+      - name: Minimum packages
+        # Only run on macos for now
+        # Conda's linux packages don't grab the testing label of matplotlib causing failures due to freetype differences
+        if: ${{ matrix.python-version == '3.6' && matrix.os == 'macos-latest' }}
+        id: minimum-packages
+        run: |
+          echo "PACKAGES=cython=0.28.5 matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0" >> $GITHUB_ENV
+          echo "CFLAGS=-stdlib=libc++" >> $GITHUB_ENV
+
+      - name: Latest packages
+        if: ${{ steps.minimum-packages.conclusion == 'skipped' }}
+        run: |
+          echo "PACKAGES=cython fiona matplotlib-base numpy proj pykdtree scipy" >> $GITHUB_ENV
+
+      - name: Coverage packages
+        id: coverage
+        # only want the coverage to be run on the latest ubuntu
+        if: ${{ matrix.python-version == '3.8' && matrix.os == 'ubuntu-latest' }}
+        run: |
+          echo "PACKAGES=$PACKAGES pytest-cov coveralls" >> $GITHUB_ENV
+          echo "CYTHON_COVERAGE=1" >> $GITHUB_ENV
+          echo "EXTRA_TEST_ARGS=--cov=cartopy -ra" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
+          PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
+          PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+          conda install $PACKAGES
+          conda info -a
+          conda list
+
+      - name: Install Cartopy
+        run: |
+          MPL_CONFIG_DIR=~/.config/matplotlib
+          mkdir -p $MPL_CONFIG_DIR
+          echo "backend : agg" > $MPL_CONFIG_DIR/matplotlibrc
+          pip install --no-deps -e .
+          python -c "import cartopy; print('Version ', cartopy.__version__)"
+
+      - name: Testing
+        id: test
+        run: |
+          # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
+          python tools/feature_download.py gshhs physical --dry-run
+          CARTOPY_GIT_DIR=$PWD
+          pytest -n 4 --doctest-modules --pyargs cartopy ${EXTRA_TEST_ARGS}
+
+      - name: Coveralls
+        if: ${{ steps.coverage.conclusion == 'success' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run:
+          coveralls
+
+      - name: Create image output
+        if: ${{ steps.test.conclusion == 'failure' }}
+        id: image-output
+        run:
+          python -c "import cartopy.tests.mpl; print(cartopy.tests.mpl.failed_images_html())" >> image-failures-${{ matrix.os }}-${{ matrix.python-version }}.html
+
+      # Can't create image output and upload in the same step
+      - name: Upload image results
+        uses: actions/upload-artifact@v2
+        if: ${{ steps.image-output.conclusion == 'success' }}
+        with:
+          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}.html
+          path: image-failures-${{ matrix.os }}-${{ matrix.python-version }}.html
