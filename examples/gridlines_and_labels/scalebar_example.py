@@ -20,7 +20,6 @@ def add_scalebar_to_ax(ax):
     fancy_scalebar(ax,
               location=(0.5, 0.2),
               length=5000,
-              metres_per_unit=1000,
               unit_name='km',
               tol=0.01,
               angle=0)
