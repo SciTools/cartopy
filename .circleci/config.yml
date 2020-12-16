@@ -1,98 +1,21 @@
-# Circle CI configuration file
-# https://circleci.com/docs/
-
 version: 2.1
 
-
-###########################################
-# Define some common steps as YAML anchors.
-#
-
-apt-run:  &apt-install
-  name: Install apt packages
-  command: |
-    apt-get -qq update
-    apt-get install -y \
-      gcc \
-      g++ \
-      make
-
-env-run:  &env-setup
-  # Create the basic testing environment
-  # Mixing conda-forge and defaults in root is a recipe for trouble, so create
-  # a separate environment.
-  name: Setup conda environment
-  command: |
-    conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
-    conda create -n test-environment python=$PYTHON_VERSION
-    conda config --add channels conda-forge
-
-deps-run: &deps-install
-  name: Install Python dependencies
-  command: |
-    conda install -n test-environment --quiet \
-        cython \
-        matplotlib \
-        numpy \
-        owslib \
-        pillow \
-        proj \
-        pyepsg \
-        pykdtree \
-        pyshp \
-        requests \
-        scipy \
-        setuptools_scm \
-        setuptools_scm_git_archive \
-        shapely \
-        $EXTRA_PACKAGES \
-        --file docs/doc-requirements.txt
-    conda list -n test-environment
-
-cp-run: &cp-install
-  name: Install Cartopy
-  command: |
-    source activate test-environment
-    pip install -ve .
-
-doc-run: &doc-build
-  name: Build documentation
-  command: |
-    source activate test-environment
-    make -C docs html
-
-
-##########################################
-# Here is where the real jobs are defined.
-#
+orbs:
+  python: circleci/python@0.2.1
 
 jobs:
-  docs-python3:
-    docker:
-      - image: continuumio/miniconda3:latest
+  build-and-test:
+    executor: python/default
     steps:
       - checkout
-
-      - run: *apt-install
+      - python/load-cache
+      - python/install-deps
+      - python/save-cache
       - run:
-          <<: *env-setup
-          environment:
-            PYTHON_VERSION: 3
-      - run: *deps-install
-      - run: *cp-install
-
-      - run: *doc-build
-
-      - store_artifacts:
-          path: docs/build/html
-
-
-#########################################
-# Defining workflows gets us parallelism.
-#
+          command: ./manage.py test
+          name: Test
 
 workflows:
-  version: 2
-  build:
+  main:
     jobs:
-      - docs-python3
+      - build-and-test
