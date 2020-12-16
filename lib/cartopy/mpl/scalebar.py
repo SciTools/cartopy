@@ -7,7 +7,7 @@ from matplotlib import font_manager as mfonts
 import matplotlib.patches as patches
 
 
-def _axes_to_lonlat(ax, coords):
+def _axes_to_lonlat(ax, coords, projected=False):
     """description:
         Transform the axes coordinates into (lon, lat)
 
@@ -16,7 +16,11 @@ def _axes_to_lonlat(ax, coords):
     data = ax.transData.inverted().transform(display)
     lonlat = ccrs.PlateCarree().transform_point(*data, ax.projection)
 
-    return lonlat
+    if projected:
+        return data
+
+    else:
+        return lonlat
 
 
 def geodesy_distance_between_points(p_start, p_end):
@@ -28,7 +32,7 @@ def geodesy_distance_between_points(p_start, p_end):
     return distances
 
 
-def _point_along_line(ax, start, distance, angle=-90):
+def _point_along_line(ax, start, distance, angle=-90, projected=False):
     """Point at a given distance from start at a given angle.
 
     Args:
@@ -40,30 +44,40 @@ def _point_along_line(ax, start, distance, angle=-90):
     Returns:
         (lon,lat) coords of a point (a (2, 1)-shaped NumPy array)
     """
+
+    start_coords = _axes_to_lonlat(ax, start, projected)
+
     # Direction vector of the line in axes coordinates.
-    geodesic = cgeo.Geodesic()
 
-    start_coords = _axes_to_lonlat(ax, start)
+    if not projected:
+        geodesic = cgeo.Geodesic()
 
-    Direct_R = geodesic.direct(start_coords, angle, distance)
+        Direct_R = geodesic.direct(start_coords, angle, distance)
 
-    longitudes, latitudes, forw_azi = Direct_R.base.T
+        longitudes, latitudes, forw_azi = Direct_R.base.T
 
-    # print('Distance', distance)
-    # print('start_coords: ', start_coords)
-    # print('longitudes: ', longitudes)
+        # print('Distance', distance)
+        # print('start_coords: ', start_coords)
+        # print('longitudes: ', longitudes)
+
+        # actual_dist = geodesic.inverse(start_coords,
+        # target_point).base.ravel()[0]
+        # print('Starting point', start_coords)
+
+        # print('Ending point', target_point)
+
+        # print('Expected distance between points: ', distance)
+
+        # print('Actual distance between points: ', actual_dist)
+
+    if projected:
+        start_coords
+
+        longitudes, latitudes = start_coords
+
+        longitudes = longitudes + np.sin(np.deg2rad(angle)) * distance
 
     target_point = (longitudes, latitudes)
-
-    # actual_dist = geodesic.inverse(start_coords, 
-    #                                target_point).base.ravel()[0]
-    # print('Starting point', start_coords)
-
-    # print('Ending point', target_point)
-
-    # print('Expected distance between points: ', distance)
-
-    # print('Actual distance between points: ', actual_dist)
 
     return start_coords, target_point
 
@@ -118,10 +132,8 @@ def fancy_scalebar(ax,
                    location,
                    length,
                    unit_name='km',
-                   tol=0.01,
                    angle=90,
                    dy=5,
-
                    max_stripes=5,
                    ytick_label_margins=0.25,
                    fontsize=8,
@@ -143,11 +155,19 @@ def fancy_scalebar(ax,
                                            'box_y_coord': 0.01}
                    ):
 
+    proj_units = ax.projection.proj4_params.get('units', 'degrees')
+    if proj_units.startswith('deg'):
+        projected = False
+
+    elif proj_units.startswith('m'):
+        projected = True
+
     # Convert all units and types.
     location = np.asarray(location)  # For vector addition.
 
     # End-point of bar in lon/lat coords.
-    start, end = _point_along_line(ax, location, length, angle=angle)
+    start, end = _point_along_line(
+        ax, location, length, angle=angle, projected=projected)
 
     # choose exact X points as sensible grid ticks with Axis 'ticker' helper
     xcoords = np.empty(max_stripes + 1)
@@ -157,8 +177,10 @@ def fancy_scalebar(ax,
 
     for i in range(0, max_stripes):
 
-        startp, endp = _point_along_line(
-            ax, location, length * (i + 1), angle=angle)
+        startp, endp = _point_along_line(ax, location,
+                                         length * (i + 1),
+                                         angle=angle,
+                                         projected=projected)
 
         xcoords[i + 1] = endp[0]
 
@@ -166,24 +188,24 @@ def fancy_scalebar(ax,
 
         xlabels.append(label)
 
-    print('xcoords: ', xcoords)
-    print('xlabels', xlabels)
-
     # grab min+max for limits
     xl0, xl1 = xcoords.min(), xcoords.max()
-
-    print('Min - Max coords: ', xl0, xl1)
 
     # calculate Axes Y coordinates of box top+bottom
 
     yl0 = start[1]
 
-    yl1 = yl0 + dy
+    ydelta = float(np.diff(ax.get_ylim()))
+
+    yl1 = yl0 + ydelta * dy / 100
 
     y_margin = (yl1 - yl0) * ytick_label_margins
 
     # Setting offset transformer
-    transform = ax.transData
+    if projected:
+        transform = ax.transData
+    else:
+        transform = ax.projection
 
     # fill black/white 'stripes' and draw their boundaries
 
@@ -279,10 +301,11 @@ def fancy_scalebar(ax,
         add_numeric_scale_bar(ax,
                               rect,
                               numeric_scale_bar_kwgs,
-                              fontprops=font_props)
+                              fontprops=font_props,
+                              projected=projected)
 
 
-def _add_numeric_scale_bar(ax, inches_to_cm=1 / 2.54):
+def _add_numeric_scale_bar(ax, inches_to_cm=1 / 2.54, projected=False):
     '''
     Description:
         This function adds a text object, which contains
@@ -314,40 +337,37 @@ def _add_numeric_scale_bar(ax, inches_to_cm=1 / 2.54):
     # Getting distance:
     x0, x1, y0, y1 = ax.get_extent()
 
-    proj4_params = ax.projection.proj4_params
+    lat_mean = np.mean([y0, y1])
 
-    units = proj4_params.get('units', None)
-    # if ax projection is a projected crs:
-    if units is not None:
-        dx_mapa = x1 - x0
+    # Define starting point.
+    start = (x0, lat_mean)
 
-    # in case it is not a projected crs (i.e.: PlateCarree):
-    else:
+    delta_x = bbox_in_data_coords.width  # in degrees
 
-        lon_min = x0
-        lat_mean = np.mean([y0, y1])
+    end = (x0 + delta_x, lat_mean)
 
-        # Define starting point.
-        start = (lon_min, lat_mean)
-
-        delta_x = bbox_in_data_coords.width  # in degrees
-
-        end = (lon_min + delta_x, lat_mean)
-
-        dx_mapa = geodesy_distance_between_points(start, end)
+    if not projected:
+        dx_mapa = geodesy_distance_between_points(start, end)[0]
 
         # meters to cm
         dx_mapa = dx_mapa * 1e2
 
-    # updating dx_mapa, so that it will always be [1 in fig cm: dx_mapa cm]
-    dx_mapa = dx_mapa / dx_fig
+        # updating dx_mapa, so that it will always be [1 in fig cm: dx_mapa cm]
+        dx_mapa = dx_mapa / dx_fig
 
-    # dividing by 10... It fix the error found by comparing with Qgis (why?)
+        # dividing by 10... It fix the error found by comparing with Qgis
+        # (why?)
+        dx_mapa = dx_mapa / 10
 
-    return dx_fig, dx_mapa / 10
+        dx_mapa
+    else:
+        dx_mapa = end[0] - start[0]
+
+    return dx_fig, dx_mapa
 
 
-def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs, fontprops=None):
+def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs, fontprops=None,
+                          projected=False):
     '''
     Description:
         This function adds a text object surrounded by a patch.
@@ -369,7 +389,7 @@ def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs, fontprops=None):
         fontprops = mfonts.FontProperties(size=8,
                                           weight='bold')
 
-    dx_fig, dx_mapa = _add_numeric_scale_bar(ax)
+    dx_fig, dx_mapa = _add_numeric_scale_bar(ax, projected=projected)
 
     rx, ry = patch.get_xy()
 
@@ -383,9 +403,8 @@ def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs, fontprops=None):
           numeric_scale_bar_kwgs['box_y_coord']
           )
 
-    ax.annotate('1:{0:.0f}'.format(dx_mapa[0]),
+    ax.annotate('1:{0:.0f}'.format(dx_mapa),
                 xy=xy,
-
                 xytext=xytext,
                 color='black',
                 weight='bold',

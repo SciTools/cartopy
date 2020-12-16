@@ -18,11 +18,12 @@ from cartopy.mpl.scalebar import fancy_scalebar
 def add_scalebar_to_ax(ax):
 
     fancy_scalebar(ax,
-              location=(0.5, 0.2),
-              length=5000,
-              unit_name='km',
-              tol=0.01,
-              angle=0)
+                   location=(0.5, 0.2),
+                   length=5000,
+                   unit_name='km',
+                   dy=2,
+                   max_stripes=3,
+                   angle=0)
 
 
 def main():
