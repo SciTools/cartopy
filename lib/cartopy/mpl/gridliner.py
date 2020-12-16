@@ -21,7 +21,7 @@ from cartopy.mpl.ticker import (
     LongitudeLocator, LatitudeLocator,
     LongitudeFormatter, LatitudeFormatter)
     
-from formatters import Gridline_Base    
+from .formatters import Gridline_Base    
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
