@@ -6,12 +6,12 @@ import numpy as np
 from matplotlib import font_manager as mfonts
 import matplotlib.patches as patches
 
-from geopy.distance import distance, lonlat
-import geopy
-
 
 def _axes_to_lonlat(ax, coords):
-    """(lon, lat) from axes coordinates."""
+    """description:
+        Transform the axes coordinates into (lon, lat)
+
+       Returns tuple(n,2): in the (lon,lat) format"""
     display = ax.transAxes.transform(coords)
     data = ax.transData.inverted().transform(display)
     lonlat = ccrs.PlateCarree().transform_point(*data, ax.projection)
@@ -19,173 +19,53 @@ def _axes_to_lonlat(ax, coords):
     return lonlat
 
 
-def _upper_bound(start, direction, distance, dist_func):
-    """A point farther than distance from start, in the given direction.
+def geodesy_distance_between_points(p_start, p_end):
+    geodesic = cgeo.Geodesic()
 
-    It doesn't matter which coordinate system start is given in, as long
-    as dist_func takes points in that coordinate system.
+    distances, start_azimuth, end_azimuth = geodesic.inverse(
+        p_start, p_end).base.T
 
-    Args:
-        start:     Starting point for the line.
-        direction  Nonzero (2, 1)-shaped array, a direction vector.
-        distance:  Positive distance to go past.
-        dist_func: A two-argument function which returns distance.
-
-    Returns:
-        Coordinates of a point (a (2, 1)-shaped NumPy array).
-    """
-    if distance <= 0:
-        raise ValueError(f"Minimum distance is not positive: {distance}")
-
-    if np.linalg.norm(direction) == 0:
-        raise ValueError("Direction vector must not be zero.")
-
-    # Exponential search until the distance between start and end is
-    # greater than the given limit.
-    length = 0.1
-    end = start + length * direction
-
-    while dist_func(start, end) < distance:
-        length *= 2
-        end = start + length * direction
-
-    return end
+    return distances
 
 
-def _distance_along_line(start, end, distance, dist_func, tol):
-    """Point at a distance from start on the segment  from start to end.
-
-    It doesn't matter which coordinate system start is given in, as long
-    as dist_func takes points in that coordinate system.
-
-    Args:
-        start:     Starting point for the line.
-        end:       Outer bound on point's location.
-        distance:  Positive distance to travel.
-        dist_func: Two-argument function which returns distance.
-        tol:       Relative error in distance to allow.
-
-    Returns:
-        Coordinates of a point (a (2, 1)-shaped NumPy array).
-    """
-    initial_distance = dist_func(start, end)
-    if initial_distance < distance:
-        raise ValueError(f"End is closer to start ({initial_distance}) than "
-                         f"given distance ({distance}).")
-
-    if tol <= 0:
-        raise ValueError(f"Tolerance is not positive: {tol}")
-
-    # Binary search for a point at the given distance.
-    left = start
-    right = end
-
-    while not np.isclose(dist_func(start, right), distance, rtol=tol):
-        midpoint = (left + right) / 2
-
-        # If midpoint is too close, search in second half.
-        if dist_func(start, midpoint) < distance:
-            left = midpoint
-        # Otherwise the midpoint is too far, so search in first half.
-        else:
-            right = midpoint
-
-    return right
-
-
-def _point_along_line(ax, start, distance, angle=0, tol=0.01):
+def _point_along_line(ax, start, distance, angle=-90):
     """Point at a given distance from start at a given angle.
 
     Args:
         ax:       CartoPy axes.
         start:    Starting point for the line in axes coordinates.
-        distance: Positive physical distance to travel.
-        angle:    Anti-clockwise angle for the bar, in radians. Default: 0
-        tol:      Relative error in distance to allow. Default: 0.01
+        distance: Positive physical distance to travel in meters.
+        angle:    Anti-clockwise angle for the bar, in degrees. Default: 0
 
     Returns:
-        Coordinates of a point (a (2, 1)-shaped NumPy array).
+        (lon,lat) coords of a point (a (2, 1)-shaped NumPy array)
     """
     # Direction vector of the line in axes coordinates.
-    direction = np.array([np.cos(angle), np.sin(angle)])
-
     geodesic = cgeo.Geodesic()
 
-    # Physical distance between points.
-    def dist_func(a_axes, b_axes):
-        a_phys = _axes_to_lonlat(ax, a_axes)
-        b_phys = _axes_to_lonlat(ax, b_axes)
+    start_coords = _axes_to_lonlat(ax, start)
 
-        # Geodesic().inverse returns a NumPy MemoryView like [[distance,
-        # start azimuth, end azimuth]].
-        return geodesic.inverse(a_phys, b_phys).base[0, 0]
+    Direct_R = geodesic.direct(start_coords, angle, distance)
 
-    end = _upper_bound(start, direction, distance, dist_func)
+    longitudes, latitudes, forw_azi = Direct_R.base.T
 
-    return _distance_along_line(start, end, distance, dist_func, tol)
+    # print('Distance', distance)
+    # print('start_coords: ', start_coords)
+    # print('longitudes: ', longitudes)
 
+    target_point = (longitudes, latitudes)
 
-def scale_bar(ax, location, length, metres_per_unit=1000, unit_name='km',
-              tol=0.01, angle=0, color='black', linewidth=3, text_offset=0.005,
-              ha='center', va='bottom', plot_kwargs=None, text_kwargs=None,
-              **kwargs):
-    """Add a scale bar to CartoPy axes.
+    # actual_dist = geodesic.inverse(start_coords, 
+    #                                target_point).base.ravel()[0]
+    # print('Starting point', start_coords)
 
-    For angles between 0 and 90 the text and line may be plotted at
-    slightly different angles for unknown reasons. To work around this,
-    override the 'rotation' keyword argument with text_kwargs.
+    # print('Ending point', target_point)
 
-    Args:
-        ax:              CartoPy axes.
-        location:        Position of left-side of bar in axes coordinates.
-        length:          Geodesic length of the scale bar.
-        metres_per_unit: Number of metres in the given unit. Default: 1000
-        unit_name:       Name of the given unit. Default: 'km'
-        tol:             Allowed relative error in length of bar. Default: 0.01
-        angle:           Anti-clockwise rotation of the bar.
-        color:           Color of the bar and text. Default: 'black'
-        linewidth:       Same argument as for plot.
-        text_offset:     Perpendicular offset for text in axes coordinates.
-                         Default: 0.005
-        ha:              Horizontal alignment. Default: 'center'
-        va:              Vertical alignment. Default: 'bottom'
-        **plot_kwargs:   Keyword arguments for plot, overridden by **kwargs.
-        **text_kwargs:   Keyword arguments for text, overridden by **kwargs.
-        **kwargs:        Keyword arguments for both plot and text.
-    """
-    # Setup kwargs, update plot_kwargs and text_kwargs.
-    if plot_kwargs is None:
-        plot_kwargs = {}
-    if text_kwargs is None:
-        text_kwargs = {}
+    # print('Expected distance between points: ', distance)
 
-    plot_kwargs = {'linewidth': linewidth, 'color': color, **plot_kwargs,
-                   **kwargs}
-    text_kwargs = {'ha': ha, 'va': va, 'rotation': angle, 'color': color,
-                   **text_kwargs, **kwargs}
+    # print('Actual distance between points: ', actual_dist)
 
-    # Convert all units and types.
-    location = np.asarray(location)  # For vector addition.
-    length_metres = length * metres_per_unit
-    angle_rad = angle * np.pi / 180
-
-    # End-point of bar.
-    end = _point_along_line(ax, location, length_metres, angle=angle_rad,
-                            tol=tol)
-
-    # Coordinates are currently in axes coordinates, so use transAxes to
-    # put into data coordinates. *zip(a, b) produces a list of x-coords,
-    # then a list of y-coords.
-    ax.plot(*zip(location, end), transform=ax.transAxes, **plot_kwargs)
-
-    # Push text away from bar in the perpendicular direction.
-    midpoint = (location + end) / 2
-    offset = text_offset * np.array([-np.sin(angle_rad), np.cos(angle_rad)])
-    text_location = midpoint + offset
-
-    # 'rotation' keyword argument is in text_kwargs.
-    ax.text(*text_location, f"{length} {unit_name}", rotation_mode='anchor',
-            transform=ax.transAxes, **text_kwargs)
+    return start_coords, target_point
 
 
 def _add_bbox(ax, list_of_patches, paddings={}, bbox_kwargs={}):
@@ -237,12 +117,10 @@ def _add_bbox(ax, list_of_patches, paddings={}, bbox_kwargs={}):
 def fancy_scalebar(ax,
                    location,
                    length,
-
-                   metres_per_unit=1000,
                    unit_name='km',
                    tol=0.01,
-                   angle=0,
-                   dy=0.05,
+                   angle=90,
+                   dy=5,
 
                    max_stripes=5,
                    ytick_label_margins=0.25,
@@ -258,57 +136,57 @@ def fancy_scalebar(ax,
                    bbox_kwargs={'facecolor': 'w',
                                 'edgecolor': 'k',
                                 'alpha': 0.7},
-                   add_numeric_scale_bar=True,
+                   numeric_scale_bar=True,
                    numeric_scale_bar_kwgs={'x_text_offset': 0,
-                                           'y_text_offset': -20,
+                                           'y_text_offset': -40,
                                            'box_x_coord': 0.5,
                                            'box_y_coord': 0.01}
                    ):
 
     # Convert all units and types.
     location = np.asarray(location)  # For vector addition.
-    length_metres = length * metres_per_unit
-    angle_rad = angle * np.pi / 180
 
-    # End-point of bar.
-    end = _point_along_line(ax, location, length_metres, angle=angle_rad,
-                            tol=tol)
-
-    x0 = location[0]
-    x1 = end[0]
-    ycoord = location[1]
-
-    dx = x1 - x0
+    # End-point of bar in lon/lat coords.
+    start, end = _point_along_line(ax, location, length, angle=angle)
 
     # choose exact X points as sensible grid ticks with Axis 'ticker' helper
-    xcoords = []
-    ycoords = []
-    xlabels = []
+    xcoords = np.empty(max_stripes + 1)
+    xlabels = [0]
 
-    for i in range(0, 1 + max_stripes):
-        dlength = (dx * i) + x0
-        xlabels.append((length_metres * i))
+    xcoords[0] = start[0]
 
-        xcoords.append(dlength)
-        ycoords.append(ycoord)
+    for i in range(0, max_stripes):
 
-    # Convertin x_vals to axes fraction data:
-    xcoords = np.asanyarray(xcoords)
-    ycoords = np.asanyarray(ycoords)
+        startp, endp = _point_along_line(
+            ax, location, length * (i + 1), angle=angle)
+
+        xcoords[i + 1] = endp[0]
+
+        label = length * (i + 1)
+
+        xlabels.append(label)
+
+    print('xcoords: ', xcoords)
+    print('xlabels', xlabels)
 
     # grab min+max for limits
-    xl0, xl1 = xcoords[0], xcoords[-1]
+    xl0, xl1 = xcoords.min(), xcoords.max()
+
+    print('Min - Max coords: ', xl0, xl1)
 
     # calculate Axes Y coordinates of box top+bottom
 
-    yl0, yl1 = ycoord, ycoord + dy
+    yl0 = start[1]
 
-    # calculate Axes Y distance of ticks + label margins
+    yl1 = yl0 + dy
+
     y_margin = (yl1 - yl0) * ytick_label_margins
 
-    transform = ax.transAxes
+    # Setting offset transformer
+    transform = ax.transData
 
     # fill black/white 'stripes' and draw their boundaries
+
     fill_colors = ['black', 'white']
     i_color = 0
 
@@ -360,7 +238,7 @@ def fancy_scalebar(ax,
 
     plt.text(0.5 * (xl0 + xl1),
              yl1 + y_margin,
-             'Km',
+             unit_name,
              color='k',
              verticalalignment='bottom',
              horizontalalignment='center',
@@ -370,10 +248,14 @@ def fancy_scalebar(ax,
              zorder=zorder)
 
     # add numeric labels
+
+    if unit_name == 'km':
+        divider = 1e-3
+
     for x, xlabel in zip(xcoords, xlabels):
         plt.text(x,
                  yl0 - 2 * y_margin,
-                 '{:g}'.format((xlabel) * 0.001),
+                 '{:g}'.format((xlabel * divider)),
                  verticalalignment='top',
                  horizontalalignment='center',
                  fontproperties=font_props,
@@ -392,13 +274,12 @@ def fancy_scalebar(ax,
 
     # get rectangle background bbox
 
-    if add_numeric_scale_bar:
+    if numeric_scale_bar:
 
-        add_numeric_scale_bar(
-            ax,
-            rect,
-            numeric_scale_bar_kwgs,
-            fontprops=font_props)
+        add_numeric_scale_bar(ax,
+                              rect,
+                              numeric_scale_bar_kwgs,
+                              fontprops=font_props)
 
 
 def _add_numeric_scale_bar(ax, inches_to_cm=1 / 2.54):
@@ -447,39 +328,16 @@ def _add_numeric_scale_bar(ax, inches_to_cm=1 / 2.54):
         lat_mean = np.mean([y0, y1])
 
         # Define starting point.
-        start = geopy.Point(lonlat(lon_min, lat_mean))
+        start = (lon_min, lat_mean)
 
         delta_x = bbox_in_data_coords.width  # in degrees
 
-        end = geopy.Point(lonlat(lon_min + delta_x, lat_mean))
-        try:
-            # by defining the ellipsoid
-            ellips = ax.projection.globe.ellipse
+        end = (lon_min + delta_x, lat_mean)
 
-            if ellips == 'WGS84':
-                ellips = 'WGS-84'
-            elif ellips == 'GRS80':
-                ellips = 'GRS-80'
-            elif ellips == 'GRS67':
-                ellips = 'GRS-67'
+        dx_mapa = geodesy_distance_between_points(start, end)
 
-            dx_mapa = distance(start, end, ellipsoid=ellips)
-
-            # meters to cm
-            dx_mapa = dx_mapa.m * 1e2
-
-        except BaseException:
-            print('Non ellipse was defined. Resorting to the standard\
-            wgs84 for distance evaluation')
-
-            # without defining the ellipsod
-            dx_mapa = distance(start, end,
-                               ellipsoid=ax.projection.globe.ellipse)
-
-            # meters to cm
-            dx_mapa = dx_mapa.m * 1e2
-
-        print('distance in x: ', dx_mapa)
+        # meters to cm
+        dx_mapa = dx_mapa * 1e2
 
     # updating dx_mapa, so that it will always be [1 in fig cm: dx_mapa cm]
     dx_mapa = dx_mapa / dx_fig
@@ -525,8 +383,9 @@ def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs, fontprops=None):
           numeric_scale_bar_kwgs['box_y_coord']
           )
 
-    ax.annotate('1:{0:.0f}'.format(dx_mapa),
+    ax.annotate('1:{0:.0f}'.format(dx_mapa[0]),
                 xy=xy,
+
                 xytext=xytext,
                 color='black',
                 weight='bold',
@@ -534,4 +393,5 @@ def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs, fontprops=None):
                 xycoords=patch,
                 textcoords='offset points',
                 font_properties=fontprops,
-                ha='center', va='center')
+                ha='center',
+                va='center')
