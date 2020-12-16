@@ -388,12 +388,10 @@ def test_gridliner_line_limits():
     for path in paths:
         assert (np.min(path.vertices, axis=0) >= (xlim[0], ylim[0])).all()
         assert (np.max(path.vertices, axis=0) <= (xlim[1], ylim[1])).all()
-        
-        
-        
+
 
 def test_gridliner_set_number_of_ticks():
-    fig = plt.figure()
+    plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     # Test a single value passed in which represents (-lim, lim)
@@ -401,41 +399,37 @@ def test_gridliner_set_number_of_ticks():
     gl = ax.gridlines(xlim=xlim, ylim=ylim)
     try:
         gl.set_number_of_ticks(6, 'xlocator')
-     
+
         gl.set_number_of_ticks(4, 'ylocator')
-        
+
         Result = True
-    except:
+    except BaseException:
         Result = False
-        
-    assert( Result ==True)
-    
-    
+
+    assert(Result)
 
 
 def test_gridliner_change_gridline_tick_decimal_separator():
-    fig = plt.figure()
+    plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     # Test a single value passed in which represents (-lim, lim)
     xlim, ylim = 125, 75
     gl = ax.gridlines(xlim=xlim, ylim=ylim)
     try:
-        gl.change_gridline_tick_decimal_separator(gridline_tick_formating='{0:.2f}', 
-                                                  axis='both', 
-                                                  decimal_separator=',', )
-        
-        Result = True
-    except:
-        Result = False
-        
-    assert( Result ==True)
-    
-    
+        gl.change_gridline_tick_decimal_separator(
+            gridline_tick_formating='{0:.2f}', axis='both',
+            decimal_separator=',', )
 
-                
+        Result = True
+    except BaseException:
+        Result = False
+
+    assert(Result)
+
+
 def test_gridliner_set_longitude_hemisphere_str():
-    fig = plt.figure()
+    plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     # Test a single value passed in which represents (-lim, lim)
@@ -443,19 +437,13 @@ def test_gridliner_set_longitude_hemisphere_str():
     gl = ax.gridlines(xlim=xlim, ylim=ylim)
     try:
         gl.set_longitude_hemisphere_str(west_hemisphere_str='W',
-                             east_hemisphere_str='E')
-                             
+                                        east_hemisphere_str='E')
+
         gl.set_latitude_hemisphere_str(north_hemisphere_str='N',
-                            south_hemisphere_str='S')
-        
+                                       south_hemisphere_str='S')
+
         Result = True
-    except:
+    except BaseException:
         Result = False
-        
-    assert( Result ==True)
-                           
-                                       
 
-
-
-        
+    assert(Result)
