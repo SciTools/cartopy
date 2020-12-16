@@ -12,12 +12,12 @@ and a scalebar is created at the bottom-center of the axes.
 import cartopy.crs as ccrs
 
 import matplotlib.pyplot as plt
-from cartopy.mpl.scalebar import scale_bar
+from cartopy.mpl.scalebar import fancy_scalebar
 
 
 def add_scalebar_to_ax(ax):
 
-    scale_bar(ax,
+    fancy_scalebar(ax,
               location=(0.5, 0.2),
               length=5000,
               metres_per_unit=1000,
