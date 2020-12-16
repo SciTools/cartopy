@@ -1,15 +1,14 @@
 import cartopy.crs as ccrs
-from cartopy import feature as cfeature
 import cartopy.geodesic as cgeo
 import matplotlib.pyplot as plt
 import numpy as np
 
 from matplotlib import font_manager as mfonts
-import matplotlib.ticker as mticker
 import matplotlib.patches as patches
 
 from geopy.distance import distance, lonlat
 import geopy
+
 
 def _axes_to_lonlat(ax, coords):
     """(lon, lat) from axes coordinates."""
@@ -178,7 +177,7 @@ def scale_bar(ax, location, length, metres_per_unit=1000, unit_name='km',
     # put into data coordinates. *zip(a, b) produces a list of x-coords,
     # then a list of y-coords.
     ax.plot(*zip(location, end), transform=ax.transAxes, **plot_kwargs)
-    
+
     # Push text away from bar in the perpendicular direction.
     midpoint = (location + end) / 2
     offset = text_offset * np.array([-np.sin(angle_rad), np.cos(angle_rad)])
@@ -189,95 +188,83 @@ def scale_bar(ax, location, length, metres_per_unit=1000, unit_name='km',
             transform=ax.transAxes, **text_kwargs)
 
 
-
-
 def _add_bbox(ax, list_of_patches, paddings={}, bbox_kwargs={}):
-    
     '''
     Description:
         This helper function adds a box behind the scalebar:
-            Code inspired by: https://stackoverflow.com/questions/17086847/box-around-text-in-matplotlib
-    
-    
+            Code inspired by:
+    https://stackoverflow.com/questions/17086847/box-around-text-in-matplotlib
+
+
     '''
-    
+
     zorder = list_of_patches[0].get_zorder() - 1
-    
+
     xmin = min([t.get_window_extent().xmin for t in list_of_patches])
     xmax = max([t.get_window_extent().xmax for t in list_of_patches])
     ymin = min([t.get_window_extent().ymin for t in list_of_patches])
     ymax = max([t.get_window_extent().ymax for t in list_of_patches])
-    
 
     xmin, ymin = ax.transAxes.inverted().transform((xmin, ymin))
     xmax, ymax = ax.transAxes.inverted().transform((xmax, ymax))
 
-    
-    xmin = xmin - ( (xmax-xmin) * paddings['xmin'])
-    ymin = ymin - ( (ymax-ymin) * paddings['ymin'])
-    
-    xmax = xmax + ( (xmax-xmin) * paddings['xmax'])
-    ymax = ymax + ( (ymax-ymin) * paddings['ymax'])
-    
-    width = (xmax-xmin)
-    height = (ymax-ymin)
-    
+    xmin = xmin - ((xmax - xmin) * paddings['xmin'])
+    ymin = ymin - ((ymax - ymin) * paddings['ymin'])
+
+    xmax = xmax + ((xmax - xmin) * paddings['xmax'])
+    ymax = ymax + ((ymax - ymin) * paddings['ymax'])
+
+    width = (xmax - xmin)
+    height = (ymax - ymin)
+
     # Setting xmin according to height
-    
-    
-    rect = patches.Rectangle((xmin,ymin),
-                              width,
-                              height, 
-                              facecolor=bbox_kwargs['facecolor'], 
-                              edgecolor =bbox_kwargs['edgecolor'],
-                              alpha=bbox_kwargs['alpha'], 
-                              transform=ax.transAxes,
-                              fill=True,
-                              clip_on=False,
-                              zorder=zorder)
+
+    rect = patches.Rectangle((xmin, ymin),
+                             width,
+                             height,
+                             facecolor=bbox_kwargs['facecolor'],
+                             edgecolor=bbox_kwargs['edgecolor'],
+                             alpha=bbox_kwargs['alpha'],
+                             transform=ax.transAxes,
+                             fill=True,
+                             clip_on=False,
+                             zorder=zorder)
 
     ax.add_patch(rect)
     return ax, rect
 
 
-
-
-def fancy_scalebar(ax, 
-                   location, 
+def fancy_scalebar(ax,
+                   location,
                    length,
-                   
-                   metres_per_unit=1000, 
+
+                   metres_per_unit=1000,
                    unit_name='km',
-                   tol=0.01, 
+                   tol=0.01,
                    angle=0,
-                   dy = 0.05,
-                   
+                   dy=0.05,
+
                    max_stripes=5,
-                   ytick_label_margins = 0.25,
-                   fontsize= 8,
+                   ytick_label_margins=0.25,
+                   fontsize=8,
                    font_weight='bold',
-                   rotation = 45,
+                   rotation=45,
                    zorder=999,
-                   paddings = {'xmin':0.3,
-                             'xmax':0.3,
-                             'ymin':0.3,
-                             'ymax':0.3},
-    
-                 bbox_kwargs = {'facecolor':'w',
-                                'edgecolor':'k',
-                                'alpha':0.7},
-                 add_numeric_scale_bar=True,
-                 numeric_scale_bar_kwgs={'x_text_offset':0,
-                                         'y_text_offset':-20,
-                                         'box_x_coord':0.5,
-                                         'box_y_coord':0.01}
-                 ):
-    
-    
-   
-    
-    
-    
+                   paddings={'xmin': 0.3,
+                               'xmax': 0.3,
+                               'ymin': 0.3,
+                               'ymax': 0.3},
+
+                   bbox_kwargs={'facecolor': 'w',
+                                'edgecolor': 'k',
+                                'alpha': 0.7},
+                   add_numeric_scale_bar=True,
+                   numeric_scale_bar_kwgs={'x_text_offset': 0,
+                                           'y_text_offset': -20,
+                                           'box_x_coord': 0.5,
+                                           'box_y_coord': 0.01}
+                   ):
+
     # Convert all units and types.
     location = np.asarray(location)  # For vector addition.
     length_metres = length * metres_per_unit
@@ -286,112 +273,101 @@ def fancy_scalebar(ax,
     # End-point of bar.
     end = _point_along_line(ax, location, length_metres, angle=angle_rad,
                             tol=tol)
-    
-    
+
     x0 = location[0]
     x1 = end[0]
     ycoord = location[1]
-    
+
     dx = x1 - x0
-    
-    
+
     # choose exact X points as sensible grid ticks with Axis 'ticker' helper
     xcoords = []
     ycoords = []
     xlabels = []
-    
-    for i in range(0 , 1+ max_stripes):
+
+    for i in range(0, 1 + max_stripes):
         dlength = (dx * i) + x0
-        xlabels.append(  (length_metres * i) )
-        
+        xlabels.append((length_metres * i))
+
         xcoords.append(dlength)
         ycoords.append(ycoord)
-        
+
     # Convertin x_vals to axes fraction data:
     xcoords = np.asanyarray(xcoords)
     ycoords = np.asanyarray(ycoords)
-    
-    
+
     # grab min+max for limits
     xl0, xl1 = xcoords[0], xcoords[-1]
-    
-    
-    # calculate Axes Y coordinates of box top+bottom
-    
-    yl0, yl1 = ycoord, ycoord + dy 
 
-    
+    # calculate Axes Y coordinates of box top+bottom
+
+    yl0, yl1 = ycoord, ycoord + dy
+
     # calculate Axes Y distance of ticks + label margins
-    y_margin = (yl1-yl0)*ytick_label_margins
-    
-    
-    transform=ax.transAxes
-    
-    
+    y_margin = (yl1 - yl0) * ytick_label_margins
+
+    transform = ax.transAxes
+
     # fill black/white 'stripes' and draw their boundaries
     fill_colors = ['black', 'white']
     i_color = 0
-    
+
     filled_boxs = []
-    for xi0, xi1 in zip(xcoords[:-1],xcoords[1:]):
-        
+    for xi0, xi1 in zip(xcoords[:-1], xcoords[1:]):
+
         # fill region
         filled_box = plt.fill(
-                              (xi0, xi1, xi1, xi0, xi0), 
-                              (yl0, yl0, yl1, yl1, yl0),
-                 
-                              fill_colors[i_color],
-                              transform=transform,
-                              clip_on=False,
-                              zorder=zorder
-                            )
-        
+            (xi0, xi1, xi1, xi0, xi0),
+            (yl0, yl0, yl1, yl1, yl0),
+
+            fill_colors[i_color],
+            transform=transform,
+            clip_on=False,
+            zorder=zorder
+        )
+
         filled_boxs.append(filled_box[0])
-        
+
         # draw boundary
-        plt.plot((xi0, xi1, xi1, xi0, xi0), 
+        plt.plot((xi0, xi1, xi1, xi0, xi0),
                  (yl0, yl0, yl1, yl1, yl0),
                  'black',
                  clip_on=False,
-                transform=transform,
-                zorder=zorder)
-        
+                 transform=transform,
+                 zorder=zorder)
+
         i_color = 1 - i_color
-    
+
     # adding boxes
-    
-    
-    ax, rect = _add_bbox(ax, 
-             filled_boxs,
-             bbox_kwargs = bbox_kwargs ,
-             paddings =paddings)
-    
-    
-    
+
+    ax, rect = _add_bbox(ax,
+                         filled_boxs,
+                         bbox_kwargs=bbox_kwargs,
+                         paddings=paddings)
+
     # add short tick lines
     for x in xcoords:
-        plt.plot((x, x), (yl0, yl0-y_margin), 'black', 
+        plt.plot((x, x),
+                 (yl0, yl0 - y_margin),
+                 'black',
                  transform=transform,
                  zorder=zorder,
                  clip_on=False)
-    
-    
-    
+
     # add a scale legend 'Km'
-    font_props = mfonts.FontProperties(size=fontsize, 
+    font_props = mfonts.FontProperties(size=fontsize,
                                        weight=font_weight)
-    
-    plt.text(
-        0.5 * (xl0 + xl1),
-        yl1 + y_margin,
-        'Km',
-        color='k',
-        verticalalignment='bottom',
-        horizontalalignment='center',
-        fontproperties=font_props,
-        transform=transform,
-        clip_on=False,
-        zorder=zorder)
+
+    plt.text(0.5 * (xl0 + xl1),
+             yl1 + y_margin,
+             'Km',
+             color='k',
+             verticalalignment='bottom',
+             horizontalalignment='center',
+             fontproperties=font_props,
+             transform=transform,
+             clip_on=False,
+             zorder=zorder)
 
     # add numeric labels
     for x, xlabel in zip(xcoords, xlabels):
@@ -404,21 +380,158 @@ def fancy_scalebar(ax,
                  transform=transform,
                  rotation=rotation,
                  clip_on=False,
-                 zorder=zorder+1,
-                #bbox=dict(facecolor='red', alpha=0.5) # this would add a box only around the xticks
-                )
-    
-    
+                 zorder=zorder + 1,
+                 # bbox=dict(facecolor='red', alpha=0.5) # this would add a box
+                 # only around the xticks
+                 )
+
     # Adjusting figure borders to ensure that the scalebar is within its limits
 
-    #ax.get_figure().canvas.draw()
-    #ax.get_figure().tight_layout() 
+    # ax.get_figure().canvas.draw()
+    # ax.get_figure().tight_layout()
 
     # get rectangle background bbox
-    
-    
-    
-    
+
     if add_numeric_scale_bar:
-    
-        _add_numeric_scale_bar(ax, rect, numeric_scale_bar_kwgs, fontprops=font_props)
+
+        add_numeric_scale_bar(
+            ax,
+            rect,
+            numeric_scale_bar_kwgs,
+            fontprops=font_props)
+
+
+def _add_numeric_scale_bar(ax, inches_to_cm=1 / 2.54):
+    '''
+    Description:
+        This function adds a text object, which contains
+        the respective numeric scale of the map.
+
+
+    Parameters:
+        ax (cartopy geoaxes)
+
+        inches_to_cm (float): the standard ration of inches to cm
+                              Standard value: inches_to_cm=1/2.54
+    Returns
+        dx_fig(float): the figure relative
+
+        dx_mapa/10 (float): geographical distance of 1cm
+                            in the map in respect to ground
+    '''
+
+    fig = ax.get_figure()
+
+    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+
+    bbox_in_data_coords = (ax.get_window_extent()
+                           .transformed(ax.transData.inverted())
+                           )
+
+    dx_fig = bbox.width * inches_to_cm  # width in cms
+
+    # Getting distance:
+    x0, x1, y0, y1 = ax.get_extent()
+
+    proj4_params = ax.projection.proj4_params
+
+    units = proj4_params.get('units', None)
+    # if ax projection is a projected crs:
+    if units is not None:
+        dx_mapa = x1 - x0
+
+    # in case it is not a projected crs (i.e.: PlateCarree):
+    else:
+
+        lon_min = x0
+        lat_mean = np.mean([y0, y1])
+
+        # Define starting point.
+        start = geopy.Point(lonlat(lon_min, lat_mean))
+
+        delta_x = bbox_in_data_coords.width  # in degrees
+
+        end = geopy.Point(lonlat(lon_min + delta_x, lat_mean))
+        try:
+            # by defining the ellipsoid
+            ellips = ax.projection.globe.ellipse
+
+            if ellips == 'WGS84':
+                ellips = 'WGS-84'
+            elif ellips == 'GRS80':
+                ellips = 'GRS-80'
+            elif ellips == 'GRS67':
+                ellips = 'GRS-67'
+
+            dx_mapa = distance(start, end, ellipsoid=ellips)
+
+            # meters to cm
+            dx_mapa = dx_mapa.m * 1e2
+
+        except BaseException:
+            print('Non ellipse was defined. Resorting to the standard\
+            wgs84 for distance evaluation')
+
+            # without defining the ellipsod
+            dx_mapa = distance(start, end,
+                               ellipsoid=ax.projection.globe.ellipse)
+
+            # meters to cm
+            dx_mapa = dx_mapa.m * 1e2
+
+        print('distance in x: ', dx_mapa)
+
+    # updating dx_mapa, so that it will always be [1 in fig cm: dx_mapa cm]
+    dx_mapa = dx_mapa / dx_fig
+
+    # dividing by 10... It fix the error found by comparing with Qgis (why?)
+
+    return dx_fig, dx_mapa / 10
+
+
+def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs, fontprops=None):
+    '''
+    Description:
+        This function adds a text object surrounded by a patch.
+
+        The Text objection contains the respective numeric scale of the map.
+
+
+    Parameters:
+        ax (cartopy geoaxes)
+
+        patch (matplotlib.patch.box): the patch that will be used as background
+        of the numeric scalebar
+
+    Returns
+        None
+    '''
+
+    if fontprops is None:
+        fontprops = mfonts.FontProperties(size=8,
+                                          weight='bold')
+
+    dx_fig, dx_mapa = _add_numeric_scale_bar(ax)
+
+    rx, ry = patch.get_xy()
+
+    # cy = ry + patch.get_height() / 2.0
+
+    xytext = (numeric_scale_bar_kwgs['x_text_offset'],
+              numeric_scale_bar_kwgs['y_text_offset']
+              )
+
+    xy = (numeric_scale_bar_kwgs['box_x_coord'],
+          numeric_scale_bar_kwgs['box_y_coord']
+          )
+
+    ax.annotate('1:{0:.0f}'.format(dx_mapa),
+                xy=xy,
+                xytext=xytext,
+                color='black',
+                weight='bold',
+                zorder=patch.zorder + 1,
+                xycoords=patch,
+                textcoords='offset points',
+                font_properties=fontprops,
+                ha='center', va='center')
