@@ -14,14 +14,15 @@ import matplotlib.transforms as mtrans
 import matplotlib.path as mpath
 import numpy as np
 import shapely.geometry as sgeom
-
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection
-from cartopy.mpl.ticker import (
-    LongitudeLocator, LatitudeLocator,
-    LongitudeFormatter, LatitudeFormatter)
 
-from .formatters import Gridline_Base
+from cartopy.mpl.ticker import (LongitudeLocator,
+                                LatitudeLocator,
+                                LongitudeFormatter,
+                                LatitudeFormatter)
+
+from cartopy.mpl.formatters import Gridline_Base
 
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
@@ -29,6 +30,7 @@ classic_locator = mticker.MaxNLocator(nbins=9)
 classic_formatter = mticker.ScalarFormatter
 
 _DEGREE_SYMBOL = '\u00B0'
+
 _X_INLINE_PROJS = (
     cartopy.crs.InterruptedGoodeHomolosine,
     cartopy.crs.LambertConformal,

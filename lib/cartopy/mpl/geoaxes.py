@@ -30,7 +30,6 @@ import matplotlib.spines as mspines
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
-
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
@@ -42,6 +41,7 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
+from cartopy.mpl.scalebar import fancy_scalebar
 
 assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
                                     'Matplotlib 1.5.1 or greater.')
@@ -394,6 +394,48 @@ class GeoAxes(matplotlib.axes.Axes):
                       DeprecationWarning,
                       stacklevel=2)
         return self.patch
+
+    def add_scalebar(self,
+                     location,
+                     length,
+                     unit_name='km',
+                     angle=90,
+                     dy=5,
+                     max_stripes=5,
+                     ytick_label_margins=0.25,
+                     fontsize=8,
+                     font_weight='bold',
+                     rotation=45,
+                     zorder=999,
+                     paddings={'xmin': 0.3,
+                               'xmax': 0.3,
+                               'ymin': 0.3,
+                               'ymax': 0.3},
+                     bbox_kwargs={'facecolor': 'w',
+                                  'edgecolor': 'k',
+                                  'alpha': 0.7},
+                     numeric_scale_bar=True,
+                     numeric_scale_bar_kwgs={'x_text_offset': 0,
+                                             'y_text_offset': -40,
+                                             'box_x_coord': 0.5,
+                                             'box_y_coord': 0.01}):
+        fancy_scalebar(ax=self,
+                       location=location,
+                       length=length,
+                       unit_name=unit_name,
+                       angle=angle,
+                       dy=dy,
+                       max_stripes=max_stripes,
+                       ytick_label_margins=ytick_label_margins,
+                       fontsize=fontsize,
+                       font_weight=font_weight,
+                       rotation=rotation,
+                       zorder=zorder,
+                       paddings=paddings,
+                       bbox_kwargs=bbox_kwargs,
+                       numeric_scale_bar=numeric_scale_bar,
+                       numeric_scale_bar_kwgs=numeric_scale_bar_kwgs
+                       )
 
     def add_image(self, factory, *args, **kwargs):
         """
@@ -1450,7 +1492,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if crs is None:
             crs = ccrs.PlateCarree()
+
         from cartopy.mpl.gridliner import Gridliner
+
         gl = Gridliner(
             self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
             ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
