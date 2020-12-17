@@ -5,6 +5,7 @@ import numpy as np
 
 from matplotlib import font_manager as mfonts
 import matplotlib.patches as patches
+import matplotlib.transforms as transforms
 
 
 def _axes_to_lonlat(ax, coords, projected=False):
@@ -21,6 +22,14 @@ def _axes_to_lonlat(ax, coords, projected=False):
 
     else:
         return lonlat
+
+
+def _data_to_axes(ax, coords):
+
+    display = ax.transData.transform(coords)
+    axes_fraction = ax.transAxes.inverted().transform(display)
+
+    return axes_fraction
 
 
 def geodesy_distance_between_points(p_start, p_end):
@@ -82,7 +91,8 @@ def _point_along_line(ax, start, distance, angle=-90, projected=False):
     return start_coords, target_point
 
 
-def _add_bbox(ax, list_of_patches, paddings={}, bbox_kwargs={}):
+def _add_bbox(ax, list_of_patches, paddings={},
+              bbox_kwargs={}, transform=None):
     '''
     Description:
         This helper function adds a box behind the scalebar:
@@ -99,8 +109,8 @@ def _add_bbox(ax, list_of_patches, paddings={}, bbox_kwargs={}):
     ymin = min([t.get_window_extent().ymin for t in list_of_patches])
     ymax = max([t.get_window_extent().ymax for t in list_of_patches])
 
-    xmin, ymin = ax.transAxes.inverted().transform((xmin, ymin))
-    xmax, ymax = ax.transAxes.inverted().transform((xmax, ymax))
+    xmin, ymin = transform.inverted().transform((xmin, ymin))
+    xmax, ymax = transform.inverted().transform((xmax, ymax))
 
     xmin = xmin - ((xmax - xmin) * paddings['xmin'])
     ymin = ymin - ((ymax - ymin) * paddings['ymin'])
@@ -119,7 +129,7 @@ def _add_bbox(ax, list_of_patches, paddings={}, bbox_kwargs={}):
                              facecolor=bbox_kwargs['facecolor'],
                              edgecolor=bbox_kwargs['edgecolor'],
                              alpha=bbox_kwargs['alpha'],
-                             transform=ax.transAxes,
+                             transform=transform,
                              fill=True,
                              clip_on=False,
                              zorder=zorder)
@@ -140,10 +150,10 @@ def fancy_scalebar(ax,
                    font_weight='bold',
                    rotation=45,
                    zorder=999,
-                   paddings={'xmin': 0.3,
-                               'xmax': 0.3,
-                               'ymin': 0.3,
-                               'ymax': 0.3},
+                   paddings={'xmin': 0.1,
+                             'xmax': 0.1,
+                             'ymin': 0.3,
+                             'ymax': 0.8},
 
                    bbox_kwargs={'facecolor': 'w',
                                 'edgecolor': 'k',
@@ -154,6 +164,96 @@ def fancy_scalebar(ax,
                                            'box_x_coord': 0.5,
                                            'box_y_coord': 0.01}
                    ):
+    '''
+    Description
+
+    ----------
+        This function draws a scalebar in the given geoaxes.
+
+    Parameters
+    ----------
+        ax (geoaxes):
+
+        location (length 2 tuple):
+            It sets where the scalebar will be drawn
+            in axes fraction units.
+
+        length (float):
+            The distance in geodesic meters that will be used
+            for generating the scalebar.
+
+        unit_name (str):
+            Standard (km).
+
+
+        angle (int or float): in azimuth degrees.
+            The angle that will be used for evaluating the scalebar.
+
+            If 90 (degrees), the distance between each tick in the
+            scalebar will be evaluated in respect to the longitude
+            of the map.
+
+            If 0 (degrees), the ticks will be evaluated in accordance
+            to variation in the latitude of the map.
+
+        dy (int or float):
+            The hight of the scalebar in axes fraction.
+
+        max_stripes (int):
+            The number of stripes present in the scalebar.
+
+        ytick_label_margins (int or float):
+            The size of the margins for drawing the scalebar ticklabels.
+
+        fontsize (int or float):
+            The fontsize used for drawing the scalebar ticklabels.
+
+        font_weight (str):
+            the fontweight used for drawing the scalebar ticklabels.
+
+        rotation (int or float):
+            the rotation used for drawing the scalebar ticklabels.
+
+        zorder(int):
+            The zorder used for drawing the scalebar.
+
+        paddings (dict):
+            A dictionary defining the padding to draw a background box
+            around the scalebar.
+
+            Example of allowed arguments for padding:
+                {'xmin': 0.3,
+                 'xmax': 0.3,
+                 'ymin': 0.3,
+                 'ymax': 0.3}
+
+        bbox_kwargs (dict):
+            A dictionary defining the background box
+            around the scalebar.
+
+            Example of allowed arguments for padding:
+                {'facecolor': 'w',
+                 'edgecolor': 'k',
+                 'alpha': 0.7}
+
+        numeric_scale_bar(bool):
+            whether or not to draw a number scalebar along side the
+            graphic scalebar. Notice that this option can drastically
+            vary in value, depending on the geoaxes projection used.
+
+        numeric_scale_bar_kwgs (dict):
+            A dictionary defining the numeric scale bar.
+
+            Example of allowed arguments:
+                {'x_text_offset': 0,
+                 'y_text_offset': -40,
+                 'box_x_coord': 0.5,
+                 'box_y_coord': 0.01}
+
+    Returns
+    ----------
+    None
+    '''
 
     proj_units = ax.projection.proj4_params.get('units', 'degrees')
     if proj_units.startswith('deg'):
@@ -165,9 +265,16 @@ def fancy_scalebar(ax,
     # Convert all units and types.
     location = np.asarray(location)  # For vector addition.
 
+    # Map central Y
+
+    central_map = (0.5, 0.5)
+
     # End-point of bar in lon/lat coords.
-    start, end = _point_along_line(
-        ax, location, length, angle=angle, projected=projected)
+    start, end = _point_along_line(ax,
+                                   central_map,
+                                   length,
+                                   angle=angle,
+                                   projected=projected)
 
     # choose exact X points as sensible grid ticks with Axis 'ticker' helper
     xcoords = np.empty(max_stripes + 1)
@@ -175,35 +282,50 @@ def fancy_scalebar(ax,
 
     xcoords[0] = start[0]
 
+    ycoords = np.empty_like(xcoords)
+
     for i in range(0, max_stripes):
 
-        startp, endp = _point_along_line(ax, location,
+        startp, endp = _point_along_line(ax, central_map,
                                          length * (i + 1),
                                          angle=angle,
                                          projected=projected)
 
         xcoords[i + 1] = endp[0]
 
+        ycoords[i + 1] = end[1]
+
         label = length * (i + 1)
 
         xlabels.append(label)
 
-    # grab min+max for limits
-    xl0, xl1 = xcoords.min(), xcoords.max()
+    # calculate Axes Y coordinates of box top+bottom (in axes fraction)
 
-    # calculate Axes Y coordinates of box top+bottom
+    yl0 = location[1]
 
-    yl0 = start[1]
-
-    ydelta = float(np.diff(ax.get_ylim()))
-
-    yl1 = yl0 + ydelta * dy / 100
+    yl1 = yl0 + (1 * dy / 100)
 
     y_margin = (yl1 - yl0) * ytick_label_margins
 
-    # Setting offset transformer
+    # Converting data (or projected) coordinates
+    # back into axes fraction coordinates
+
+    xcoords_in_axes_frac = [_data_to_axes(
+        ax, (x, y))[0] for x, y in zip(xcoords, ycoords)]
+
+    # offset transformer
+
+    translation = transforms.ScaledTranslation(-0.685 + location[0],
+                                               -0.485,
+                                               ax.transAxes)
+    offset = ax.transAxes + translation
+
+    # Setting transformer
+
     if projected:
         transform = ax.transData
+
+        transform = transform + offset
     else:
         transform = ax.projection
 
@@ -213,7 +335,7 @@ def fancy_scalebar(ax,
     i_color = 0
 
     filled_boxs = []
-    for xi0, xi1 in zip(xcoords[:-1], xcoords[1:]):
+    for xi0, xi1 in zip(xcoords_in_axes_frac[:-1], xcoords_in_axes_frac[1:]):
 
         # fill region
         filled_box = plt.fill(
@@ -221,7 +343,7 @@ def fancy_scalebar(ax,
             (yl0, yl0, yl1, yl1, yl0),
 
             fill_colors[i_color],
-            transform=transform,
+            transform=offset,
             clip_on=False,
             zorder=zorder
         )
@@ -233,7 +355,7 @@ def fancy_scalebar(ax,
                  (yl0, yl0, yl1, yl1, yl0),
                  'black',
                  clip_on=False,
-                 transform=transform,
+                 transform=offset,
                  zorder=zorder)
 
         i_color = 1 - i_color
@@ -243,14 +365,15 @@ def fancy_scalebar(ax,
     ax, rect = _add_bbox(ax,
                          filled_boxs,
                          bbox_kwargs=bbox_kwargs,
-                         paddings=paddings)
+                         paddings=paddings,
+                         transform=offset)
 
     # add short tick lines
-    for x in xcoords:
+    for x in xcoords_in_axes_frac:
         plt.plot((x, x),
                  (yl0, yl0 - y_margin),
                  'black',
-                 transform=transform,
+                 transform=offset,
                  zorder=zorder,
                  clip_on=False)
 
@@ -258,14 +381,14 @@ def fancy_scalebar(ax,
     font_props = mfonts.FontProperties(size=fontsize,
                                        weight=font_weight)
 
-    plt.text(0.5 * (xl0 + xl1),
+    plt.text(np.mean(xcoords_in_axes_frac),
              yl1 + y_margin,
              unit_name,
              color='k',
              verticalalignment='bottom',
              horizontalalignment='center',
              fontproperties=font_props,
-             transform=transform,
+             transform=offset,
              clip_on=False,
              zorder=zorder)
 
@@ -274,14 +397,14 @@ def fancy_scalebar(ax,
     if unit_name == 'km':
         divider = 1e-3
 
-    for x, xlabel in zip(xcoords, xlabels):
+    for x, xlabel in zip(xcoords_in_axes_frac, xlabels):
         plt.text(x,
                  yl0 - 2 * y_margin,
                  '{:g}'.format((xlabel * divider)),
                  verticalalignment='top',
                  horizontalalignment='center',
                  fontproperties=font_props,
-                 transform=transform,
+                 transform=offset,
                  rotation=rotation,
                  clip_on=False,
                  zorder=zorder + 1,

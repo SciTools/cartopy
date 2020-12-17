@@ -30,10 +30,13 @@ def intersection_point(p0, p1, p2, p3):
         raise ValueError('Lines are parallel and cannot '
                          'intersect at any one point.')
 
-    x = ((x_1 * y_2 - y_1 * x_2) * (x_3 - x_4) - (x_1 - x_2) * (x_3 *
-         y_4 - y_3 * x_4)) / div
-    y = ((x_1 * y_2 - y_1 * x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 *
-         y_4 - y_3 * x_4)) / div
+    x = ((x_1 * y_2 - y_1 * x_2) *
+         (x_3 - x_4) - (x_1 - x_2) * (x_3 * y_4 - y_3 * x_4)
+         ) / div
+
+    y = ((x_1 * y_2 - y_1 * x_2) * (y_3 - y_4) -
+         (y_1 - y_2) * (x_3 * y_4 - y_3 * x_4)
+         ) / div
 
     return x, y
 
