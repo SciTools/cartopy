@@ -4,10 +4,10 @@ env:
     matrix:
         - NAME="Minimum dependencies."
           PYTHON_VERSION=3.6
-          PACKAGES="cython=0.28.5 matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0"
+          PACKAGES="matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0"
         - NAME="Latest everything."
           PYTHON_VERSION=3.8
-          PACKAGES="cython fiona matplotlib-base numpy proj pykdtree scipy"
+          PACKAGES="fiona matplotlib-base proj pykdtree scipy"
 
 
 sudo: false
@@ -37,11 +37,11 @@ install:
   # Customise the testing environment
   # ---------------------------------
   - PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
-  - PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
-  - PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+  - PACKAGES="$PACKAGES pytest-xdist requests"
+  - PACKAGES="$PACKAGES shapely"
   - |
     if [[ "$NAME" == "Latest everything"* ]]; then
-        PACKAGES="$PACKAGES pytest-cov coveralls";
+        PACKAGES="$PACKAGES cython>=0.29.2 pytest-cov coveralls";
         export CYTHON_COVERAGE=1;
     fi
   - conda create -n $ENV_NAME python=$PYTHON_VERSION $PACKAGES
