@@ -16,9 +16,7 @@ from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
     classic_locator, classic_formatter)
 
-
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
-
 
 TEST_PROJS = [
     ccrs.PlateCarree,
@@ -216,7 +214,6 @@ def test_grid_labels():
               tolerance=grid_label_tol if ccrs.PROJ4_VERSION < (7, 1, 0)
               else 4)
 def test_grid_labels_tight():
-
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
 
@@ -307,7 +304,33 @@ def test_grid_labels_inline_usa():
         else:
             ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
         ax.coastlines(resolution="110m")
+
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
+
+
+@ImageTesting(["gridliner_labels_bbox_style"], tolerance=grid_label_tol)
+def test_gridliner_labels_bbox_style():
+    top = 49.3457868  # north lat
+    left = -124.7844079  # west long
+    right = -66.9513812  # east long
+    bottom = 24.7433195  # south lat
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.coastlines(resolution="110m")
+    ax.set_extent([left, right, bottom, top],
+                  crs=ccrs.PlateCarree())
+    gl = ax.gridlines(draw_labels=True)
+
+    bbox_style = {
+        "pad": 0,
+        "visible": True,
+        "facecolor": "white",
+        "edgecolor": "black",
+        "boxstyle": "round, pad=0.2",
+    }
+
+    gl.labels_bbox_style = bbox_style
 
 
 @pytest.mark.parametrize(

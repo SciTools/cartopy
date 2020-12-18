@@ -271,6 +271,9 @@ class Gridliner:
         #: for styling of the text labels.
         self.ylabel_style = {}
 
+        # bbox style for grid labels
+        self.labels_bbox_style = {'pad': 0, 'visible': False}
+
         #: The padding from the map edge to the x labels in points.
         self.xpadding = 5
 
@@ -600,10 +603,11 @@ class Gridliner:
                         for i, (pt0, pt1) in enumerate([tail, head]):
                             kw, angle, loc = self._segment_to_text_specs(
                                 pt0, pt1, lonlat)
-                            if not getattr(self, loc+'_labels'):
+                            if not getattr(self, loc + '_labels'):
                                 continue
+
                             kw.update(label_style,
-                                      bbox={'pad': 0, 'visible': False})
+                                      bbox=self.labels_bbox_style)
                             text = formatter(tick_value)
 
                             if self.y_inline and lonlat == 'lat':
@@ -646,7 +650,7 @@ class Gridliner:
         """Get appropriate kwargs for a label from lon or lat line segment"""
         x0, y0 = pt0
         x1, y1 = pt1
-        angle = np.arctan2(y0-y1, x0-x1) * 180 / np.pi
+        angle = np.arctan2(y0 - y1, x0 - x1) * 180 / np.pi
         kw, loc = self._segment_angle_to_text_specs(angle, lonlat)
         return kw, angle, loc
 
@@ -679,11 +683,11 @@ class Gridliner:
 
         elif angle > 45:
             loc = 'top'
-            kw.update(ha='center', va='bottom', rotation=angle-90)
+            kw.update(ha='center', va='bottom', rotation=angle - 90)
 
         else:
             loc = 'bottom'
-            kw.update(ha='center', va='top', rotation=angle+90)
+            kw.update(ha='center', va='top', rotation=angle + 90)
 
         return kw, loc
 
@@ -760,7 +764,7 @@ class Gridliner:
                           'va': artist.get_va()}
             # Compute angles to try
             angles = [None]
-            for abs_delta_angle in np.arange(delta_angle, max_delta_angle+1,
+            for abs_delta_angle in np.arange(delta_angle, max_delta_angle + 1,
                                              delta_angle):
                 angles.append(artist._angle + abs_delta_angle)
                 angles.append(artist._angle - abs_delta_angle)
