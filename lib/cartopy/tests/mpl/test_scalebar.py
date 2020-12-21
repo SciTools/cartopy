@@ -16,7 +16,9 @@ def test_scalebar():
     # This behavior caused lines with > 1000 points and
     # sorted data to disappear
 
-    fig, axes = plt.subplots(1, 2, subplot_kw={'projection': ccrs.Mercator()})
+    fig, axes = plt.subplots(1, 2,
+                             subplot_kw={'projection':
+                                         ccrs.Mercator()})
 
     projections = [ccrs.Mercator(), ccrs.PlateCarree()]
 
@@ -26,14 +28,17 @@ def test_scalebar():
             ax.projection = proj
             fancy_scalebar(ax,
                            location=(0.5, 0.2),
-                           length=10000,
-                           metres_per_unit=1000,
+                           length=1000_000,
                            unit_name='km',
-                           tol=0.01,
                            angle=0,
                            max_stripes=5,
                            fontsize=8,
                            dy=0.05)
+
+            ax.gridlines(draw_labels=True)
+            ax.stock_img()
+            ax.coastlines()
+        plt.close('all')
         condition = True
     except BaseException:
         condition = False
@@ -46,9 +51,12 @@ def test_scalebar_within_geoaxes():
     # This behavior caused lines with > 1000 points and
     # sorted data to disappear
 
-    fig, axes = plt.subplots(1, 2, subplot_kw={'projection': ccrs.Mercator()})
+    fig, axes = plt.subplots(1, 2,
+                             subplot_kw={'projection':
+                                         ccrs.Mercator()})
 
-    projections = [ccrs.Mercator(), ccrs.PlateCarree()]
+    projections = [ccrs.Mercator(),
+                   ccrs.PlateCarree()]
 
     axes = axes.ravel()
     try:
@@ -56,13 +64,17 @@ def test_scalebar_within_geoaxes():
             ax.projection = proj
 
             ax.set_extent([-60, -35, -40, 10])
-
-            ax.add_scalebar(location=(0.5, 0.2),
+            ax.gridlines(draw_labels=True)
+            ax.add_scalebar(location=(0.5, 0.5),
                             length=250_000,
                             dy=5,
                             max_stripes=3)
+            ax.stock_img()
+            ax.coastlines()
 
-            fig.show()
+        fig.show()
+
+        plt.close('all')
 
         condition = True
     except BaseException:
