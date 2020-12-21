@@ -5,9 +5,7 @@
 # licensing details.
 
 import matplotlib.pyplot as plt
-
 import cartopy.crs as ccrs
-
 from cartopy.mpl.scalebar import fancy_scalebar
 
 
