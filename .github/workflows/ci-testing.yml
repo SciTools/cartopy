@@ -40,7 +40,7 @@ jobs:
       - name: Coverage packages
         id: coverage
         # only want the coverage to be run on the latest ubuntu
-        if: ${{ matrix.python-version == '3.8' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.python-version == '3.9' && matrix.os == 'ubuntu-latest' }}
         run: |
           echo "PACKAGES=$PACKAGES pytest-cov coveralls" >> $GITHUB_ENV
           echo "CYTHON_COVERAGE=1" >> $GITHUB_ENV

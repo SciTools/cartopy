@@ -1,0 +1,40 @@
+name: Build and upload to PyPI
+
+# Only build on tagged releases
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Build sdist
+    runs-on: ubuntu-18.04
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: test-environment
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge/label/testing,conda-forge
+
+      - name: Install dependencies
+        run: |
+          PACKAGES="cython fiona matplotlib-base numpy proj pykdtree scipy"
+          PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
+          PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
+          PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+          conda install $PACKAGES
+
+      - name: Create sdist
+        run: python setup.py
+
+      - name: Publish Package
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.pypi_token }}
