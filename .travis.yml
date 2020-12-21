@@ -6,7 +6,7 @@ env:
           PYTHON_VERSION=3.6
           PACKAGES="matplotlib=2.2.2 numpy=1.16 owslib=0.17 proj4=5.2.0 scipy=1.2.0"
         - NAME="Latest everything."
-          PYTHON_VERSION=3.8
+          PYTHON_VERSION=3.9
           PACKAGES="fiona matplotlib-base proj pykdtree scipy"
 
 
