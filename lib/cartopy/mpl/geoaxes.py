@@ -41,7 +41,6 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
-from cartopy.mpl.scalebar import fancy_scalebar
 
 assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
                                     'Matplotlib 1.5.1 or greater.')
@@ -369,12 +368,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
-        def scale_bar(*args, **kwargs):
-            return fancy_scalebar(ax=self, *args, **kwargs)
-
-        scale_bar.__doc__ = fancy_scalebar.__doc__
-
-        self.add_scalebar = scale_bar
 
     @property
     def outline_patch(self):

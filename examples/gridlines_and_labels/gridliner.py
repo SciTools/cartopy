@@ -43,11 +43,11 @@ def main():
     gl.top_labels = False
     gl.right_labels = False
     plt.show()
-    
+
     plt.figure(figsize=(7, 3))
     ax3 = plt.axes(projection=ccrs.PlateCarree())
     ax3.set_extent([-65, -40, -15, 10])
-    
+
     # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
     states_provinces = cfeature.NaturalEarthFeature(
         category='cultural',
@@ -55,31 +55,63 @@ def main():
         scale='50m',
         facecolor='none')
     ax3.add_feature(states_provinces, edgecolor='gray')
-    
+
     ax3.coastlines(resolution='110m')
     ax3.coastlines(resolution='110m')
     gl = ax3.gridlines(draw_labels=True)
-    
+
     gl.change_gridline_tick_decimal_separator('{0:.3f}',
                                               axis='both')
-    
+
     gl.set_latitude_hemisphere_str('Norte', 'Sul')
-    
+
     gl.set_longitude_hemisphere_str('O', 'L')
-    
-    
+
     gl.top_labels = False
     gl.right_labels = False
     plt.show()
-    
-    
+
     return plt.gcf().get_axes(), gl
 
+
+def gridliner_with_custom_changes_in_its_ticklabels():
+    import cartopy.feature as cfeature
+    plt.figure(figsize=(7, 3))
+    ax3 = plt.axes(projection=ccrs.PlateCarree())
+    ax3.set_extent([-65, 40, -15, 10])
+
+    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+    states_provinces = cfeature.NaturalEarthFeature(
+        category='cultural',
+        name='admin_1_states_provinces_lines',
+        scale='50m',
+        facecolor='none')
+    ax3.add_feature(states_provinces, edgecolor='gray')
+
+    ax3.coastlines(resolution='110m')
+    ax3.coastlines(resolution='110m')
+    gl = ax3.gridlines(draw_labels=True)
+
+    gl.change_gridline_tick_decimal_separator('{0:.2f}',
+                                              axis='both',
+                                              decimal_separator=',')
+
+    gl.set_latitude_hemisphere_str(' - Norte', ' - Sul')
+
+    gl.set_longitude_hemisphere_str('Oeste', 'Leste')
+
+    gl.top_labels = False
+    gl.right_labels = False
+    plt.show()
+    plt.close('all')
+
+
 if __name__ == '__main__':
+
+    gridliner_with_custom_changes_in_its_ticklabels()
+
     axes, gl = main()
-    
+
     print('N° of axes ', len(axes))
-    
+
     ax = axes[0]
-    
-   
