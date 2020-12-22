@@ -10,9 +10,6 @@ from cartopy.mpl.scalebar import fancy_scalebar
 
 
 def scalebar_invoqued_as_an_independent_object_geoaxes():
-    """Test that we do not trigger matplotlib's line subslice optimization."""
-    # This behavior caused lines with > 1000 points and
-    # sorted data to disappear
 
     fig, axes = plt.subplots(1, 2,
                              subplot_kw={'projection':
@@ -39,9 +36,6 @@ def scalebar_invoqued_as_an_independent_object_geoaxes():
 
 
 def scalebar_from_within_geoaxes():
-    """Test that we do not trigger matplotlib's line subslice optimization."""
-    # This behavior caused lines with > 1000 points and
-    # sorted data to disappear
 
     fig, axes = plt.subplots(1, 2,
                              subplot_kw={'projection':
