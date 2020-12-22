@@ -110,6 +110,35 @@ def test_gridliner():
     plt.subplots_adjust(left=0 + delta, right=1 - delta,
                         top=1 - delta, bottom=0 + delta)
 
+def test_gridliner_with_custom_changes_in_its_ticklabels():
+    import cartopy.feature as cfeature
+    plt.figure(figsize=(7, 3))
+    ax3 = plt.axes(projection=ccrs.PlateCarree())
+    ax3.set_extent([-65, 40, -15, 10])
+    
+    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+    states_provinces = cfeature.NaturalEarthFeature(
+        category='cultural',
+        name='admin_1_states_provinces_lines',
+        scale='50m',
+        facecolor='none')
+    ax3.add_feature(states_provinces, edgecolor='gray')
+    
+    ax3.coastlines(resolution='110m')
+    ax3.coastlines(resolution='110m')
+    gl = ax3.gridlines(draw_labels=True)
+    
+    gl.change_gridline_tick_decimal_separator('{0:.2f}',
+                                              axis='both',
+                                              decimal_separator=',')
+    
+    gl.set_latitude_hemisphere_str(' - Norte', ' - Sul')
+    
+    gl.set_longitude_hemisphere_str('Oeste', 'Leste')
+    
+    gl.top_labels = False
+    gl.right_labels = False
+    plt.show()
 
 def test_gridliner_specified_lines():
     meridians = [0, 60, 120, 180, 240, 360]

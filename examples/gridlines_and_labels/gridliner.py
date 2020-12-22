@@ -43,7 +43,43 @@ def main():
     gl.top_labels = False
     gl.right_labels = False
     plt.show()
-
+    
+    plt.figure(figsize=(7, 3))
+    ax3 = plt.axes(projection=ccrs.PlateCarree())
+    ax3.set_extent([-65, -40, -15, 10])
+    
+    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+    states_provinces = cfeature.NaturalEarthFeature(
+        category='cultural',
+        name='admin_1_states_provinces_lines',
+        scale='50m',
+        facecolor='none')
+    ax3.add_feature(states_provinces, edgecolor='gray')
+    
+    ax3.coastlines(resolution='110m')
+    ax3.coastlines(resolution='110m')
+    gl = ax3.gridlines(draw_labels=True)
+    
+    gl.change_gridline_tick_decimal_separator('{0:.3f}',
+                                              axis='both')
+    
+    gl.set_latitude_hemisphere_str('Norte', 'Sul')
+    
+    gl.set_longitude_hemisphere_str('O', 'L')
+    
+    
+    gl.top_labels = False
+    gl.right_labels = False
+    plt.show()
+    
+    
+    return plt.gcf().get_axes(), gl
 
 if __name__ == '__main__':
-    main()
+    axes, gl = main()
+    
+    print('N° of axes ', len(axes))
+    
+    ax = axes[0]
+    
+   

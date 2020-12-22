@@ -180,6 +180,9 @@ class Gridliner(Gridline_Base):
         used for the map, meridians and parallels can cross both the X axis and
         the Y axis.
         """
+
+        Gridline_Base.__init__(self)
+
         self.axes = axes
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the x
