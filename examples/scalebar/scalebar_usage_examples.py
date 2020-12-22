@@ -36,7 +36,6 @@ def scalebar_invoqued_as_an_independent_object_geoaxes():
         ax.gridlines(draw_labels=True)
         ax.stock_img()
         ax.coastlines()
-    
 
 
 def scalebar_from_within_geoaxes():
@@ -52,7 +51,7 @@ def scalebar_from_within_geoaxes():
                    ccrs.PlateCarree()]
 
     axes = axes.ravel()
-    
+
     for proj, ax in zip(projections, axes):
         ax.projection = proj
 
@@ -66,4 +65,3 @@ def scalebar_from_within_geoaxes():
         ax.coastlines()
 
     fig.show()
-
