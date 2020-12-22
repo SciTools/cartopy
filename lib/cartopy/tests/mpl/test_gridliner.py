@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
@@ -112,24 +113,16 @@ def test_gridliner():
 
 
 def test_gridliner_with_custom_changes_in_its_ticklabels():
-    
+
     try:
-        import cartopy.feature as cfeature
+
         plt.figure(figsize=(7, 3))
-        ax3 = plt.axes(projection=ccrs.PlateCarree())
-        ax3.set_extent([-65, 40, -15, 10])
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        ax.set_extent([-65, 40, -15, 10])
 
-        # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
-        states_provinces = cfeature.NaturalEarthFeature(
-            category='cultural',
-            name='admin_1_states_provinces_lines',
-            scale='50m',
-            facecolor='none')
-        ax3.add_feature(states_provinces, edgecolor='gray')
-
-        ax3.coastlines(resolution='110m')
-        ax3.coastlines(resolution='110m')
-        gl = ax3.gridlines(draw_labels=True)
+        ax.coastlines(resolution='110m')
+        ax.coastlines(resolution='110m')
+        gl = ax.gridlines(draw_labels=True)
 
         gl.change_gridline_tick_decimal_separator('{0:.2f}',
                                                   axis='both',

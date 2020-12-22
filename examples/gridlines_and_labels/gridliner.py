@@ -1,3 +1,10 @@
+# Copyright Cartopy Contributors
+#
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+
+
 """
 Gridlines and tick labels
 -------------------------
@@ -75,6 +82,7 @@ def main():
 
 
 def gridliner_with_custom_changes_in_its_ticklabels():
+
     import cartopy.feature as cfeature
     plt.figure(figsize=(7, 3))
     ax3 = plt.axes(projection=ccrs.PlateCarree())
