@@ -581,7 +581,7 @@ class GeoAxes(matplotlib.axes.Axes):
         ew = 'E' if lon >= 0.0 else 'W'
 
         return (
-            f'{x:.4g}, {y:.4g} '
+            f'{float(x):.4g}, {float(y):.4g} '
             f'({abs(lat):f}\u00b0{ns}, {abs(lon):f}\u00b0{ew})'
         )
 
