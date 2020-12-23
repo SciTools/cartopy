@@ -31,6 +31,9 @@
  alt="zenodo" /></a>
 <a href="https://gitter.im/SciTools/cartopy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge">
 <img src="https://badges.gitter.im/SciTools/cartopy.svg" alt="Gitter Chat" /></a>
+<a href="https://numpy.org/neps/nep-0029-deprecation_policy.html">
+<img src="https://img.shields.io/badge/Follows-NEP29-brightgreen.svg"
+ alt="Follows NEP29" /></a>
 </p>
 <br>
 
