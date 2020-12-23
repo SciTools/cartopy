@@ -52,6 +52,6 @@ class TestLambertAzimuthalEqualArea:
     @pytest.mark.parametrize("latitude", [-90, 90])
     def test_extrema(self, latitude):
         crs = ccrs.LambertAzimuthalEqualArea(central_latitude=latitude)
-        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0={}'.format(latitude),
+        other_args = {'ellps=WGS84', 'lon_0=0.0', f'lat_0={latitude}',
                       'x_0=0.0', 'y_0=0.0'}
         check_proj_params('laea', crs, other_args)

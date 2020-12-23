@@ -34,7 +34,7 @@ class TestLineString:
             else:
                 expected = 1
             assert len(multi_line_string) == expected, \
-                'Unexpected line when working from {} to {}'.format(start, end)
+                f'Unexpected line when working from {start} to {end}'
 
     def test_simple_fragment_count(self):
         projection = ccrs.PlateCarree()

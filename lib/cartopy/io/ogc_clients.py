@@ -765,21 +765,21 @@ class WFSGeometrySource:
         points_data = []
         tree = ElementTree.parse(response)
 
-        for node in tree.findall('.//{}msGeometry'.format(_MAP_SERVER_NS)):
+        for node in tree.findall(f'.//{_MAP_SERVER_NS}msGeometry'):
             # Find LinearRing geometries in our msGeometry node.
-            find_str = './/{gml}LinearRing'.format(gml=_GML_NS)
+            find_str = f'.//{_GML_NS}LinearRing'
             if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 linear_rings_data.extend(data)
 
             # Find LineString geometries in our msGeometry node.
-            find_str = './/{gml}LineString'.format(gml=_GML_NS)
+            find_str = f'.//{_GML_NS}LineString'
             if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 linestrings_data.extend(data)
 
             # Find Point geometries in our msGeometry node.
-            find_str = './/{gml}Point'.format(gml=_GML_NS)
+            find_str = f'.//{_GML_NS}Point'
             if self._node_has_child(node, find_str):
                 data = self._find_polygon_coords(node, find_str)
                 points_data.extend(data)
@@ -823,8 +823,8 @@ class WFSGeometrySource:
             x, y = [], []
 
             # We can have nodes called `coordinates` or `coord`.
-            coordinates_find_str = '{}coordinates'.format(_GML_NS)
-            coords_find_str = '{}coord'.format(_GML_NS)
+            coordinates_find_str = f'{_GML_NS}coordinates'
+            coords_find_str = f'{_GML_NS}coord'
 
             if self._node_has_child(polygon, coordinates_find_str):
                 points = polygon.findtext(coordinates_find_str)
@@ -835,8 +835,8 @@ class WFSGeometrySource:
                     y.append(float(y_val))
             elif self._node_has_child(polygon, coords_find_str):
                 for coord in polygon.findall(coords_find_str):
-                    x.append(float(coord.findtext('{}X'.format(_GML_NS))))
-                    y.append(float(coord.findtext('{}Y'.format(_GML_NS))))
+                    x.append(float(coord.findtext(f'{_GML_NS}X')))
+                    y.append(float(coord.findtext(f'{_GML_NS}Y')))
             else:
                 raise ValueError('Unable to find or parse coordinate values '
                                  'from the XML.')

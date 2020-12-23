@@ -126,7 +126,7 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
             else:
                 fext_types = [fext + 'w', fext[0] + fext[-1] + 'w']
                 fext_types.extend([ext.upper() for ext in fext_types])
-                result = ['{}.{}'.format(froot, ext) for ext in fext_types]
+                result = [f'{froot}.{ext}' for ext in fext_types]
 
         def _convert_basename(name):
             dirname, basename = os.path.split(name)

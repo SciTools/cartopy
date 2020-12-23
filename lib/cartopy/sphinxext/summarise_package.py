@@ -82,7 +82,7 @@ def objects_to_document(module_name):
     try:
         __import__(module_name)
     except ImportError:
-        warnings.warn('Failed to document {}'.format(module_name))
+        warnings.warn(f'Failed to document {module_name}')
         return []
     module = sys.modules[module_name]
     elems = dir(module)
@@ -132,7 +132,7 @@ def main(package_name, exclude_folders=None):
         result += '*' * len(mod) + '\n'
 
         result += '\n'
-        result += '.. currentmodule:: {}\n'.format(mod) + '\n'
+        result += f'.. currentmodule:: {mod}\n' + '\n'
 
         mod_objects = objects_to_document(mod)
         if mod_objects:
@@ -140,7 +140,7 @@ def main(package_name, exclude_folders=None):
 
         table_elements = itertools.cycle(('\n\t', ) + (', ', ) * 3)
         for table_elem, (obj_name, _) in zip(table_elements, mod_objects):
-            result += '{}:py:obj:`{}`'.format(table_elem, obj_name)
+            result += f'{table_elem}:py:obj:`{obj_name}`'
 
         result += '\n'
 
@@ -178,7 +178,7 @@ def gen_summary_rst(app):
                 raise exception
 
     if fnames is None:
-        fnames = ['outline_of_{}.rst'.format(package_name)
+        fnames = [f'outline_of_{package_name}.rst'
                   for package_name in package_names]
     else:
         if isinstance(fnames, str) or len(fnames) != len(package_names):

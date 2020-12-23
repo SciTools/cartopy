@@ -57,7 +57,7 @@ class _SRTMSource(RasterSource):
             self._shape = (3601, 3601)
         else:
             raise ValueError(
-                'Resolution is an unexpected value ({}).'.format(resolution))
+                f'Resolution is an unexpected value ({resolution}).')
         self._resolution = resolution
 
         #: The CRS of the underlying SRTM data.
@@ -348,7 +348,7 @@ def read_SRTM(fh):
         elev.shape = (1201, 1201)
     else:
         raise ValueError(
-            'Shape of SRTM data ({}) is unexpected.'.format(elev.size))
+            f'Shape of SRTM data ({elev.size}) is unexpected.')
 
     fname = os.path.basename(fname)
     y_dir, y, x_dir, x = fname[0], int(fname[1:3]), fname[3], int(fname[4:7])

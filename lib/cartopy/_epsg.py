@@ -64,7 +64,7 @@ class _EPSGProjection(ccrs.Projection):
         self.bounds = (x.min(), x.max(), y.min(), y.max())
 
     def __repr__(self):
-        return '_EPSGProjection({})'.format(self.epsg_code)
+        return f'_EPSGProjection({self.epsg_code})'
 
     @property
     def boundary(self):

@@ -95,14 +95,14 @@ def create_instance(prj_cls, instance_args):
 
     # Format instance arguments into strings
     instance_params = ',\n                            '.join(
-        '{}={}'.format(k, v)
+        f'{k}={v}'
         for k, v in sorted(instance_args.items()))
 
     if instance_params:
         instance_params = '\n                            ' \
                           + instance_params
 
-    instance_creation_code = '{}({})'.format(name, instance_params)
+    instance_creation_code = f'{name}({instance_params})'
 
     prj_inst = prj(**instance_args)
 
@@ -150,7 +150,7 @@ if __name__ == '__main__':
                       np.diff(prj_inst.y_limits))[0]
 
             width = 3 * aspect
-            width = '{:.4f}'.format(width).rstrip('0').rstrip('.')
+            width = f'{width:.4f}'.rstrip('0').rstrip('.')
 
             # Generate plotting code
             code = textwrap.dedent("""

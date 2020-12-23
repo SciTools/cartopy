@@ -238,7 +238,7 @@ class Downloader:
         Caller should close the file handle when finished with it.
 
         """
-        warnings.warn('Downloading: {}'.format(url), DownloadWarning)
+        warnings.warn(f'Downloading: {url}', DownloadWarning)
         return urlopen(url)
 
     @staticmethod
