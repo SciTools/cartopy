@@ -327,7 +327,7 @@ class OSM(GoogleWTS):
 
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'https://a.tile.openstreetmap.org/{}/{}/{}.png'.format(z, x, y)
+        url = f'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'
         return url
 
 
@@ -617,7 +617,7 @@ class OrdnanceSurvey(GoogleWTS):
         self.apikey = apikey
 
         if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:
-            raise ValueError('Invalid layer {}'.format(layer))
+            raise ValueError(f'Invalid layer {layer}')
 
         self.layer = layer
 

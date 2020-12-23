@@ -75,7 +75,7 @@ def test_eccentric_globe():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     mill = ccrs.Miller(central_longitude=lon)
-    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('mill', mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),

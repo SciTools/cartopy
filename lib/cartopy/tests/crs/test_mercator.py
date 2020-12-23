@@ -50,7 +50,7 @@ def test_equality():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     crs = ccrs.Mercator(central_longitude=lon)
-    other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'x_0=0.0', 'y_0=0.0',
+    other_args = {'ellps=WGS84', f'lon_0={lon}', 'x_0=0.0', 'y_0=0.0',
                   'units=m'}
     check_proj_params('merc', crs, other_args)
 
@@ -62,7 +62,7 @@ def test_latitude_true_scale():
     lat_ts = 20.0
     crs = ccrs.Mercator(latitude_true_scale=lat_ts)
     other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0', 'units=m',
-                  'lat_ts={}'.format(lat_ts)}
+                  f'lat_ts={lat_ts}'}
     check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
@@ -74,8 +74,8 @@ def test_easting_northing():
     false_northing = -2000000
     crs = ccrs.Mercator(false_easting=false_easting,
                         false_northing=false_northing)
-    other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0={}'.format(false_easting),
-                  'y_0={}'.format(false_northing), 'units=m'}
+    other_args = {'ellps=WGS84', 'lon_0=0.0', f'x_0={false_easting}',
+                  f'y_0={false_northing}', 'units=m'}
     check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,
@@ -88,7 +88,7 @@ def test_scale_factor():
     crs = ccrs.Mercator(scale_factor=scale_factor,
                         globe=ccrs.Globe(ellipse='sphere'))
     other_args = {'ellps=sphere', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0', 'units=m',
-                  'k_0={:.12f}'.format(scale_factor)}
+                  f'k_0={scale_factor:.12f}'}
     check_proj_params('merc', crs, other_args)
 
     assert_almost_equal(crs.boundary.bounds,

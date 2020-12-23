@@ -79,7 +79,7 @@ def geos_to_path(shape):
         vertices, codes = shape._as_mpl_path()
         return [Path(vertices, codes)]
     else:
-        raise ValueError('Unsupported shape type {}.'.format(type(shape)))
+        raise ValueError(f'Unsupported shape type {type(shape)}.')
 
 
 def path_segments(path, **kwargs):

@@ -196,7 +196,7 @@ class TestMisc:
         # approximately 13262233761329.
         area = projected.area
         assert 2.2e9 < area < 2.3e9, \
-            'Got area {}, expecting ~2.2e9'.format(area)
+            f'Got area {area}, expecting ~2.2e9'
 
     def test_self_intersecting_2(self):
         # Geometry comes from a matplotlib contourf (see #509)
@@ -224,7 +224,7 @@ class TestMisc:
         # Before fixing, this geometry used to fill the whole disk. Approx
         # 1.2e14.
         assert 81330 < area < 81340, \
-            'Got area {}, expecting ~81336'.format(area)
+            f'Got area {area}, expecting ~81336'
 
     def test_same_points_on_boundary_1(self):
         source = ccrs.PlateCarree()

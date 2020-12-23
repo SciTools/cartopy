@@ -799,7 +799,7 @@ class Projection(CRS, metaclass=ABCMeta):
         # "Rewind" the buffer to the start and return it as an svg string.
         buf.seek(0)
         svg = buf.read()
-        return '{}<pre>{}</pre>'.format(svg, escape(object.__repr__(self)))
+        return f'{svg}<pre>{escape(object.__repr__(self))}</pre>'
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
@@ -893,7 +893,7 @@ class Projection(CRS, metaclass=ABCMeta):
                                               line_strings[j].coords[-1],
                                               atol=threshold):
                         if debug:
-                            print('Joining together {} and {}.'.format(i, j))
+                            print(f'Joining together {i} and {j}.')
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
                         combo = sgeom.LineString(last_coords + first_coords)
@@ -1066,7 +1066,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 mid_point = boundary.interpolate(mid_dist)
                 new_thing = _BoundaryPoint(mid_dist, True, mid_point)
                 if debug:
-                    print('Artificially insert boundary: {}'.format(new_thing))
+                    print(f'Artificially insert boundary: {new_thing}')
                 ind = edge_things.index(edge_thing)
                 edge_things.insert(ind, new_thing)
                 prev_thing = None
@@ -1089,7 +1089,7 @@ class Projection(CRS, metaclass=ABCMeta):
                     ax.plot(coords[:, 0], coords[:, 1])
                     ax.text(coords[0, 0], coords[0, 1], thing.data[0])
                     ax.text(coords[-1, 0], coords[-1, 1],
-                            '{}.'.format(thing.data[0]))
+                            f'{thing.data[0]}.')
 
         def filter_last(t):
             return t.kind or t.data[1] == 'first'
@@ -1106,7 +1106,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 sys.stdout.write('+')
                 sys.stdout.flush()
                 print()
-                print('Processing: {}, {}'.format(i, current_ls))
+                print(f'Processing: {i}, {current_ls}')
 
             added_linestring = set()
             while True:
@@ -1115,7 +1115,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 # the next point on the boundary.
                 d_last = boundary_distance(current_ls.coords[-1])
                 if debug:
-                    print('   d_last: {!r}'.format(d_last))
+                    print(f'   d_last: {d_last!r}')
                 next_thing = _find_first_ge(edge_things, d_last)
                 # Remove this boundary point from the edge.
                 edge_things.remove(next_thing)
