@@ -580,8 +580,10 @@ class GeoAxes(matplotlib.axes.Axes):
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'
 
-        return '{:.4g}, {:.4g} ({:f}\u00b0{}, {:f}\u00b0{})'.format(x, y, abs(lat),
-                                                         ns, abs(lon), ew)
+        return (
+            f'{x:.4g}, {y:.4g} '
+            f'({abs(lat):f}\u00b0{ns}, {abs(lon):f}\u00b0{ew})'
+        )
 
     def coastlines(self, resolution='auto', color='black', **kwargs):
         """
