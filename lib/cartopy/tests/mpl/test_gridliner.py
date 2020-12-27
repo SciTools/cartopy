@@ -112,34 +112,6 @@ def test_gridliner():
                         top=1 - delta, bottom=0 + delta)
 
 
-def test_gridliner_with_custom_changes_in_its_ticklabels():
-
-    try:
-
-        plt.figure(figsize=(7, 3))
-        ax = plt.axes(projection=ccrs.PlateCarree())
-        ax.set_extent([-65, 40, -15, 10])
-
-        ax.coastlines(resolution='110m')
-        ax.coastlines(resolution='110m')
-        gl = ax.gridlines(draw_labels=True)
-
-        gl.change_gridline_tick_decimal_separator('{0:.2f}',
-                                                  axis='both',
-                                                  decimal_separator=',')
-
-        gl.set_latitude_hemisphere_str(' - Norte', ' - Sul')
-
-        gl.set_longitude_hemisphere_str('Oeste', 'Leste')
-
-        gl.top_labels = False
-        gl.right_labels = False
-        plt.close('all')
-        assert(True)
-
-    except BaseException:
-        assert(False)
-
 
 def test_gridliner_specified_lines():
     meridians = [0, 60, 120, 180, 240, 360]
@@ -433,38 +405,43 @@ def test_gridliner_set_number_of_ticks():
         gl.set_number_of_ticks(4, 'ylocator')
 
         Result = True
-    except BaseException:
+    except BaseException as e:
+        print(e)
         Result = False
 
     assert(Result)
 
-
+@ImageTesting(['gridliner_ticklabels_decimals_formatted'],
+              # Robinson projection is slightly better in Proj 6+.
+              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner_change_gridline_tick_decimal_separator():
     plt.figure()
-    ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    # Test a single value passed in which represents (-lim, lim)
-    xlim, ylim = 125, 75
-    gl = ax.gridlines(xlim=xlim, ylim=ylim)
+    ax.set_extent([-80, 40.0, 10.0, -30.0])
+    gl = ax.gridlines(draw_labels=True)
     try:
         gl.change_gridline_tick_decimal_separator(
-            gridline_tick_formating='{0:.2f}', axis='both',
-            decimal_separator=',', )
+            gridline_tick_formating='{0:.2f}',
+            axis='both',
+            decimal_separator=',')
 
         Result = True
-    except BaseException:
+    except BaseException as e:
+        print(e)
         Result = False
 
     assert(Result)
 
-
-def test_gridliner_set_longitude_hemisphere_str():
+@ImageTesting(['gridliner_hemisphere_ticklabels_formatted'],
+              # Robinson projection is slightly better in Proj 6+.
+              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+def test_gridliner_hemisphere_ticklabels_formatting():
     plt.figure()
-    ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    # Test a single value passed in which represents (-lim, lim)
-    xlim, ylim = 125, 75
-    gl = ax.gridlines(xlim=xlim, ylim=ylim)
+    ax.set_extent([-80, 40.0, 10.0, -30.0])
+    gl = ax.gridlines(draw_labels=True)
     try:
         gl.set_longitude_hemisphere_str(west_hemisphere_str='W',
                                         east_hemisphere_str='E')
@@ -473,7 +450,8 @@ def test_gridliner_set_longitude_hemisphere_str():
                                        south_hemisphere_str='S')
 
         Result = True
-    except BaseException:
+    except BaseException as e:
+        print(e)
         Result = False
 
     assert(Result)
