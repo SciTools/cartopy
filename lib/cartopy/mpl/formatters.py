@@ -42,7 +42,7 @@ class BASE_CLASS_FORMATER():
                  west_hemisphere_str='W',
                  east_hemisphere_str='E',
                  degree_symbol=None,
-                 gridline_num_format='g',
+                 gl_num_format='g',
                  decimal_separator='.'):
 
         self._west_hemisphere_str = west_hemisphere_str
@@ -54,77 +54,76 @@ class BASE_CLASS_FORMATER():
             self._DEGREE_SYMBOL = _DEGREE_SYMBOL
         else:
             self._DEGREE_SYMBOL = degree_symbol
-            
-        self._gridline_num_format = gridline_num_format
-        
+
+        self._gl_num_format = gl_num_format
+
         self._decimal_separator = decimal_separator
-    
+
     def _reset(self):
         self.__init__(north_hemisphere_str=self.north_hemisphere_str,
                       south_hemisphere_str=self.south_hemisphere_str,
                       west_hemisphere_str=self.west_hemisphere_str,
                       east_hemisphere_str=self.east_hemisphere_str,
                       degree_symbol=self._DEGREE_SYMBOL,
-                      gridline_num_format=self.gridline_num_format)
-    
+                      gl_num_format=self.gl_num_format)
+
     @property
     def west_hemisphere_str(self):
         return self._west_hemisphere_str
-        
+
     @west_hemisphere_str.setter
     def west_hemisphere_str(self, string):
 
         self._west_hemisphere_str = string
-        #self._reset()
-        
-        
+        # self._reset()
+
     @property
     def decimal_separator(self):
         return self._decimal_separator
-    
+
     @decimal_separator.setter
     def decimal_separator(self, decimal_separator):
-        self._decimal_separator = decimal_separator    
-        
+        self._decimal_separator = decimal_separator
+
     @property
     def east_hemisphere_str(self):
         return self._east_hemisphere_str
-        
+
     @east_hemisphere_str.setter
     def east_hemisphere_str(self, string):
-        
+
         self._east_hemisphere_str = string
-        #self._reset()
+        # self._reset()
 
     @property
     def north_hemisphere_str(self):
         return self._north_hemisphere_str
-        
+
     @north_hemisphere_str.setter
     def north_hemisphere_str(self, string):
 
         self._north_hemisphere_str = string
-        #self._reset()
-        
+        # self._reset()
+
     @property
     def south_hemisphere_str(self):
         return self._south_hemisphere_str
-        
+
     @south_hemisphere_str.setter
     def south_hemisphere_str(self, string):
-    
+
         self._south_hemisphere_str = string
-        #self._reset()
+        # self._reset()
 
     @property
-    def gridline_num_format(self):
-        return self._gridline_num_format
-    
-    @gridline_num_format.setter
-    def gridline_num_format(self, num_format):
+    def gl_num_format(self):
+        return self._gl_num_format
 
-        self._gridline_num_format = num_format
-        #self._reset()
+    @gl_num_format.setter
+    def gl_num_format(self, num_format):
+
+        self._gl_num_format = num_format
+        # self._reset()
 
     def _lon_hemisphere(self, longitude):
         """Return the hemisphere (E, W or '' for 0) for the given longitude."""
@@ -158,40 +157,54 @@ class BASE_CLASS_FORMATER():
 
     def _north_south_formatted(self, latitude):
 
-        if self.gridline_num_format == 'g':
-            fmt_string = u'{latitude:{gridline_num_format}}{degree}{hemisphere}'
-            return fmt_string.format(latitude=abs(latitude), gridline_num_format=self.gridline_num_format,
-                                     hemisphere=self._lat_hemisphere(latitude),
-                                     degree=self._DEGREE_SYMBOL)
+        lat_hemisphere = self._lat_hemisphere(latitude)
+
+        if self.gl_num_format == 'g':
+            fmt_string = u'{latitude:{gl_num_format}}\
+                           {degree}{hemisphere}'
+
+            String = fmt_string.format(latitude=abs(latitude),
+                                       gl_num_format=self.gl_num_format,
+                                       hemisphere=lat_hemisphere,
+                                       degree=self._DEGREE_SYMBOL)
+
+            return String
 
         else:
-            coords = '{}'.format(self.gridline_num_format).format(latitude)
+            coords = '{}'.format(self.gl_num_format).format(latitude)
 
-            coord_info = u'{degree}{hemisphere}'.format(degree=self._DEGREE_SYMBOL,
-                                                        hemisphere=self._lat_hemisphere(latitude),
-                                                        )
+            coord_info = (u'{degree}{hemisphere}'
+                          .format(degree=self._DEGREE_SYMBOL,
+                                  hemisphere=lat_hemisphere)
+                          )
 
-            fmt_string = ''.join([coords , coord_info])
+            fmt_string = ''.join([coords, coord_info])
 
-        return  fmt_string.replace('.', self.decimal_separator)
+        return fmt_string.replace('.', self.decimal_separator)
 
     def _east_west_formatted(self, longitude):
-        
-        if self.gridline_num_format == 'g':
-            fmt_string = u'{longitude:{gridline_num_format}}{degree}{hemisphere}'
-        
-            fmt_string = fmt_string.format(longitude=abs(longitude), gridline_num_format=self.gridline_num_format,
-                                     hemisphere=self._lon_hemisphere(longitude),
-                                     degree=self._DEGREE_SYMBOL)
+
+        lon_hemisphere = self._lat_hemisphere(longitude)
+        num_format = self.gl_num_format
+
+        if self.gl_num_format == 'g':
+            fmt_string = u'{longitude:{num_format}}\
+            {degree}{hemisphere}'
+
+            fmt_string = fmt_string.format(longitude=abs(longitude),
+                                           num_format=num_format,
+                                           hemisphere=lon_hemisphere,
+                                           degree=self._DEGREE_SYMBOL)
         else:
 
-            coords = '{}'.format(self.gridline_num_format).format(longitude)
+            coords = '{}'.format(self.gl_num_format).format(longitude)
 
-            coord_info = u'{degree}{hemisphere}'.format(degree=self._DEGREE_SYMBOL,
-                                                        hemisphere=self._lon_hemisphere(longitude)
-                                                        )
+            coord_info = (u'{degree}{hemisphere}'
+                          .format(degree=self._DEGREE_SYMBOL,
+                                  hemisphere=lon_hemisphere)
+                          )
 
-            fmt_string = ''.join([coords , coord_info])
+            fmt_string = ''.join([coords, coord_info])
 
         return fmt_string.replace('.', self.decimal_separator)
 
@@ -202,7 +215,7 @@ class LONGITUDE_FORMATTER_CLASS(BASE_CLASS_FORMATER):
                  west_hemisphere_str='W',
                  east_hemisphere_str='E',
                  degree_symbol=None,
-                 gridline_num_format='g',
+                 gl_num_format='g',
                  decimal_separator='.'):
 
         BASE_CLASS_FORMATER.__init__(
@@ -210,15 +223,14 @@ class LONGITUDE_FORMATTER_CLASS(BASE_CLASS_FORMATER):
             west_hemisphere_str=west_hemisphere_str,
             east_hemisphere_str=east_hemisphere_str,
             degree_symbol=degree_symbol,
-            gridline_num_format=gridline_num_format,
-            decimal_separator = decimal_separator)
+            gl_num_format=gl_num_format,
+            decimal_separator=decimal_separator)
 
         xformatter = mticker.FuncFormatter(lambda v, pos:
                                            self._east_west_formatted(v)
                                            )
-        
-        self.xformatter = xformatter
 
+        self.xformatter = xformatter
 
     def __call__(self, x, pos=None):
 
@@ -234,59 +246,56 @@ class LATITUDE_FORMATTER_CLASS(BASE_CLASS_FORMATER):
                  north_hemisphere_str='N',
                  south_hemisphere_str='S',
                  degree_symbol=None,
-                 gridline_num_format='{0:3f}',
+                 gl_num_format='{0:3f}',
                  decimal_separator='.'):
-        
+
         BASE_CLASS_FORMATER.__init__(
             self,
             north_hemisphere_str=north_hemisphere_str,
             south_hemisphere_str=south_hemisphere_str,
             degree_symbol=degree_symbol,
-            gridline_num_format=gridline_num_format,
-            decimal_separator = decimal_separator)
-
+            gl_num_format=gl_num_format,
+            decimal_separator=decimal_separator)
 
         yformatter = mticker.FuncFormatter(lambda v, pos:
-                                                self._north_south_formatted(v)
+                                           self._north_south_formatted(v)
                                            )
 
         self.yformatter = yformatter
 
-
     def __call__(self, x, pos=None):
-        
+
         return self.yformatter(x, pos)
 
     def set_locs(self, line_ticks):
-        
+
         self.yformatter.set_locs(line_ticks)
 
 #########################################################
 
 
 class Gridline_Base():
-    
+
     def __init__(self,
                  west_hemisphere_str='W',
                  east_hemisphere_str='E',
                  north_hemisphere_str='N',
                  south_hemisphere_str='S',
                  degree_symbol=_DEGREE_SYMBOL,
-                 gridline_num_format='{0:.2f}'):
-        
+                 gl_num_format='{0:.2f}'):
+
         self.LONGITUDE_FORMATTER = LONGITUDE_FORMATTER_CLASS(
-                            degree_symbol=degree_symbol,
-                            west_hemisphere_str=west_hemisphere_str,
-                            east_hemisphere_str=east_hemisphere_str,
-                            gridline_num_format=gridline_num_format)
-        
-        
+            degree_symbol=degree_symbol,
+            west_hemisphere_str=west_hemisphere_str,
+            east_hemisphere_str=east_hemisphere_str,
+            gl_num_format=gl_num_format)
+
         self.LATITUDE_FORMATTER = LATITUDE_FORMATTER_CLASS(
-                            degree_symbol=degree_symbol,
-                            north_hemisphere_str=north_hemisphere_str,
-                            south_hemisphere_str=south_hemisphere_str,
-                            gridline_num_format=gridline_num_format)
-        
+            degree_symbol=degree_symbol,
+            north_hemisphere_str=north_hemisphere_str,
+            south_hemisphere_str=south_hemisphere_str,
+            gl_num_format=gl_num_format)
+
         self.xformatter = self.LONGITUDE_FORMATTER
         self.yformatter = self.LATITUDE_FORMATTER
 
@@ -314,29 +323,27 @@ class Gridline_Base():
 
     def change_gridline_tick_decimal_separator(
             self,
-            gridline_num_format='{0:.2f}',
+            gl_num_format='{0:.2f}',
             axis='both',
             decimal_separator=',',
             degree_symbol=_DEGREE_SYMBOL):
-        
+
         self.LONGITUDE_FORMATTER.decimal_separator = decimal_separator
         self.LATITUDE_FORMATTER.decimal_separator = decimal_separator
-        
+
         self.LONGITUDE_FORMATTER.degree_symbol = degree_symbol
         self.LATITUDE_FORMATTER.degree_symbol = degree_symbol
 
         if axis.lower() == 'both':
-            self.LONGITUDE_FORMATTER.gridline_num_format = gridline_num_format
-            self.LATITUDE_FORMATTER.gridline_num_format = gridline_num_format
-            
-           
+            self.LONGITUDE_FORMATTER.gl_num_format = gl_num_format
+            self.LATITUDE_FORMATTER.gl_num_format = gl_num_format
 
         else:
             if axis.lower().startswith('x'):
-                self.LONGITUDE_FORMATTER.gridline_num_format = gridline_num_format
+                self.LONGITUDE_FORMATTER.gl_num_format = gl_num_format
             else:
-                self.LATITUDE_FORMATTER.gridline_num_format = gridline_num_format
-        
+                self.LATITUDE_FORMATTER.gl_num_format = gl_num_format
+
         self.xformatter = self.LONGITUDE_FORMATTER
         self.yformatter = self.LATITUDE_FORMATTER
 
@@ -346,15 +353,14 @@ class Gridline_Base():
                                      west_hemisphere_str='W',
                                      east_hemisphere_str='E'
                                      ):
-        
+
         self.xformatter.west_hemisphere_str = west_hemisphere_str
         self.xformatter.east_hemisphere_str = east_hemisphere_str
-        
-        
+
     def set_latitude_hemisphere_str(self,
                                     north_hemisphere_str='N',
                                     south_hemisphere_str='S'
                                     ):
-        
+
         self.yformatter.north_hemisphere_str = north_hemisphere_str
         self.yformatter.south_hemisphere_str = south_hemisphere_str

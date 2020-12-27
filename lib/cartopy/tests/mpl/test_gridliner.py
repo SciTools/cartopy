@@ -411,18 +411,19 @@ def test_gridliner_set_number_of_ticks():
 
     assert(Result)
 
+
+@pytest.mark.natural_earth
 @ImageTesting(['gridliner_ticklabels_decimals_formatted'],
-              # Robinson projection is slightly better in Proj 6+.
               tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner_change_gridline_tick_decimal_separator():
     plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    ax.set_extent([-80, 40.0, 10.0, -30.0])
+    ax.set_extent([-80, -40.0, 10.0, -30.0])
     gl = ax.gridlines(draw_labels=True)
     try:
         gl.change_gridline_tick_decimal_separator(
-            gridline_tick_formating='{0:.2f}',
+            gl_num_format='{0:.2f}',
             axis='both',
             decimal_separator=',')
 
@@ -433,14 +434,15 @@ def test_gridliner_change_gridline_tick_decimal_separator():
 
     assert(Result)
 
+
+@pytest.mark.natural_earth
 @ImageTesting(['gridliner_hemisphere_ticklabels_formatted'],
-              # Robinson projection is slightly better in Proj 6+.
               tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner_hemisphere_ticklabels_formatting():
     plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    ax.set_extent([-80, 40.0, 10.0, -30.0])
+    ax.set_extent([-80, -40.0, 10.0, -30.0])
     gl = ax.gridlines(draw_labels=True)
     try:
         gl.set_longitude_hemisphere_str(west_hemisphere_str='W',
