@@ -1,6 +1,68 @@
 What's New in cartopy 0.18
 ==========================
 
+:Release: 0.19.0
+:Date: XXX
+
+For a full list of included Pull Requests and closed Issues, please see the
+`0.19 milestone <https://github.com/SciTools/cartopy/milestone/27>`_.
+
+Features
+--------
+
+* Thomas Grainger restored PEP-517 support to improve installations.
+  (:pull:`1681`)
+
+* @emsterr added the ability to style bounding boxes of labels. (:pull:`1669`)
+
+* Adrien Berchet added the ability to cache downloaded image tiles.
+  (:pull:`1533`)
+
+* Greg Lucas changed the vector interpolations to be strictly in the
+  source coordinates, which removed some erroneous extrapolations.
+  (:pull:`1636`)
+
+* Giacomo Caria added an option to remove the cardinal direction labels
+  from the axes. (:pull:`1662`)
+
+* Greg Lucas added the ability to update data within a pcolormesh plot
+  using `set_array()` to enable animations of the fields. (:pull:`1496`)
+  Liam Bindle extended this capability to update the color limits
+  (:pull:`1655`) and Sebastian David Eastham fixed the return values when
+  `get_array()` was called (:pull:`1656`)
+
+* @htonchia and Greg Lucas fixed an issue with large cells appearing in
+  pcolormesh plots. (:pull:`1622`)
+
+* Philippe Miron added an example to demonstrate how to label specific
+  sides of the plot. (:pull:`1593`)
+
+* Greg Lucas added the option to restrict the limits of gridlines. (:pull:`1574`)
+
+* Kyle Penner fixed extrapolations using an alpha-channel in imshow().
+  (:pull:`1582`)
+
+* Valentin Iovene added pkg-config instructions to help with installations on
+  MacOS. (:pull:`1596`)
+
+* Luke Davis updated the tight bbox calculations to include the gridliner labels.
+  (:pull:`1355`)
+
+* Luke Davis fixed the label padding for gridliners to use points which makes
+  the rendered screen image appear the same as the printed image now.
+  (:pull:`1556`)
+  
+* Daryl Herzmann added the ability to make Hexbin plots. (:pull:`1542`)
+
+* Kyle Penner fixed image plotting when a 2D alpha array is input. (:pull:`1543`)
+
+* Elliott Sales de Andrade and Hugo van Kemenade removed Python 2 support.
+  (:pull:`1516`, :pull:`1517`, :pull:`1540`, :pull:`1544`, and :pull:`1547`)
+
+
+What's New in cartopy 0.18
+==========================
+
 :Release: 0.18.0
 :Date: 3rd May 2020
 
