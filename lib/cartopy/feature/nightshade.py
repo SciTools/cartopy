@@ -126,7 +126,7 @@ def _julian_day(date):
         month += 12
         year -= 1
 
-    B = 2 - int(year/100) + int(int(year/100)/4)
+    B = 2 - year // 100 + (year // 100) // 4
     C = ((second/60 + minute)/60 + hour)/24
 
     JD = (int(365.25*(year + 4716)) + int(30.6001*(month+1)) +

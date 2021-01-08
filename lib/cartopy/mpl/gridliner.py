@@ -393,7 +393,7 @@ class Gridliner:
     def _round(x, base=5):
         if np.isnan(base):
             base = 5
-        return int(base * round(float(x) / base))
+        return int(base * round(x / base))
 
     def _find_midpoints(self, lim, ticks):
         # Find the center point between each lat gridline.

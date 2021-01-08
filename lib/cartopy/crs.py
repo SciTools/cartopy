@@ -703,7 +703,7 @@ class PlateCarree(_CylindricalProjection):
         x_max = a_rad * 180
         y_max = a_rad * 90
         # Set the threshold around 0.5 if the x max is 180.
-        self._threshold = x_max / 360.
+        self._threshold = x_max / 360
         super().__init__(proj4_params, x_max, y_max, globe=globe)
 
     @property
