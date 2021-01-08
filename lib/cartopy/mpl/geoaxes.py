@@ -1349,7 +1349,7 @@ class GeoAxes(matplotlib.axes.Axes):
             # As a workaround to a matplotlib limitation, turn any images
             # which are RGB(A) with a mask into unmasked RGBA images with alpha
             # put into the A channel.
-            if (np.ma.is_masked(img) and len(img.shape) > 2):
+            if np.ma.is_masked(img) and len(img.shape) > 2:
                 # if we don't pop alpha, imshow will apply (erroneously?) a
                 # 1D alpha to the RGBA array
                 # kwargs['alpha'] is guaranteed to be either 1D, 2D, or None
