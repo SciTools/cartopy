@@ -1105,11 +1105,11 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             # return only a subset of the image:
             # set up coordinate arrays:
-            d_lat = 180.0 / img.shape[0]
-            d_lon = 360.0 / img.shape[1]
+            d_lat = 180 / img.shape[0]
+            d_lon = 360 / img.shape[1]
             # latitude starts at 90N for this image:
-            lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2.0)) + 90.0
-            lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2.0)) - 180.0
+            lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2)) + 90
+            lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2)) - 180
 
             # which points are in range:
             lat_in_range = np.logical_and(lat_pts >= extent[2],
@@ -1126,10 +1126,10 @@ class GeoAxes(matplotlib.axes.Axes):
                 # now join them up:
                 img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
                 # now define the extent for output that matches those points:
-                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2.0,
-                              lon_pts[lon_in_range2][-1] + d_lon / 2.0 + 360,
-                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
-                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2,
+                              lon_pts[lon_in_range2][-1] + d_lon / 2 + 360,
+                              lat_pts[lat_in_range][-1] - d_lat / 2,
+                              lat_pts[lat_in_range][0] + d_lat / 2]
             else:
                 # not crossing the dateline, so just find the region:
                 lon_in_range = np.logical_and(lon_pts >= extent[0],
@@ -1349,7 +1349,7 @@ class GeoAxes(matplotlib.axes.Axes):
             # As a workaround to a matplotlib limitation, turn any images
             # which are RGB(A) with a mask into unmasked RGBA images with alpha
             # put into the A channel.
-            if (np.ma.is_masked(img) and len(img.shape) > 2):
+            if np.ma.is_masked(img) and len(img.shape) > 2:
                 # if we don't pop alpha, imshow will apply (erroneously?) a
                 # 1D alpha to the RGBA array
                 # kwargs['alpha'] is guaranteed to be either 1D, 2D, or None

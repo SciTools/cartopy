@@ -71,7 +71,7 @@ def test_transform_PlateCarree_shortcut():
         assert counter.count == 2
 
 
-class Test_InterProjectionTransform():
+class Test_InterProjectionTransform:
     def pc_2_pc(self):
         return InterProjectionTransform(
             ccrs.PlateCarree(), ccrs.PlateCarree())
@@ -97,7 +97,7 @@ class Test_InterProjectionTransform():
         assert self.pc_2_pc() != self.pc_2_rob()
 
 
-class Test_Axes_add_geometries():
+class Test_Axes_add_geometries:
     def teardown_method(self):
         plt.close()
 
