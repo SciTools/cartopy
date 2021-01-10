@@ -684,8 +684,8 @@ def _merge_tiles(tiles):
 
 class AzureMapsTiles(GoogleWTS):
 
-    def __init__(self, subscription_key, tileset_id="microsoft.imagery", api_version="2.0",
-                 desired_tile_form='RGB', cache=False):
+    def __init__(self, subscription_key, tileset_id="microsoft.imagery",
+                 api_version="2.0", desired_tile_form='RGB', cache=False):
         """
         Set up a new instance to retrieve tiles from Azure Maps.
 
@@ -696,12 +696,9 @@ class AzureMapsTiles(GoogleWTS):
         ----------
         subscription_key
             A valid Azure Maps subscription key.
-        username
-            The username for the Mapbox user who defined the Mapbox style.
         tileset_id
-            A tileset ID for a map defined by a Mapbox style. See
-            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid 
-            for details
+            A tileset ID for a map. See
+            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid for details.
         api_version
             API version to use. Defaults to 2.0 as recommended by Microsoft.
 
