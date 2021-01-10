@@ -295,7 +295,8 @@ def test_azuremaps_tiles_api_url():
     tileset_id = 'bar'
     tile = [0, 1, 2]
 
-    exp_url = ('https://atlas.microsoft.com/map/tile?api-version=2.0&tilesetId=bar&x=0&y=1&zoom=2&subscription-key=foo')
+    exp_url = ('https://atlas.microsoft.com/map/tile?api-version=2.0'
+               '&tilesetId=bar&x=0&y=1&zoom=2&subscription-key=foo')
 
     az_maps_sample = cimgt.AzureMapsTiles(subscription_key, tileset_id)
     url_str = az_maps_sample._image_url(tile)
@@ -309,7 +310,8 @@ def test_azuremaps_get_image():
     try:
         api_key = os.environ['AZURE_MAPS_SUBSCRIPTION_KEY']
     except KeyError:
-        pytest.skip('AZURE_MAPS_SUBSCRIPTION_KEY environment variable is unset.')
+        pytest.skip('AZURE_MAPS_SUBSCRIPTION_KEY environment variable '
+                    'is unset.')
 
     am1 = cimgt.AzureMapsTiles(api_key, tileset_id="microsoft.imagery")
     am2 = cimgt.AzureMapsTiles(api_key, tileset_id="microsoft.base.road")

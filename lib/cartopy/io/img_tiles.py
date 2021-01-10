@@ -699,7 +699,7 @@ class AzureMapsTiles(GoogleWTS):
         username
             The username for the Mapbox user who defined the Mapbox style.
         tileset_id
-            A tileset ID for a map defined by a Mapbox style. See 
+            A tileset ID for a map defined by a Mapbox style. See
             https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid 
             for details
         api_version
