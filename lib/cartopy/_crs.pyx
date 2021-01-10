@@ -377,7 +377,7 @@ cdef class CRS:
     def transform_points(self, CRS src_crs not None,
                                 np.ndarray x not None,
                                 np.ndarray y not None,
-                                np.ndarray z=None):
+                                np.ndarray z=None, trap=True):
         """
         transform_points(src_crs, x, y[, z])
 
@@ -399,13 +399,18 @@ cdef class CRS:
             the z coordinates (array), in ``src_crs`` coordinates, to
             transform.  Defaults to None.
             If supplied, its shape must match that of x.
+        trap
+            Whether proj errors for "latitude or longitude exceeded limits" and
+            "tolerance condition error" should be trapped.
 
         Returns
         -------
             Array of shape ``x.shape + (3, )`` in this coordinate system.
 
         """
-        cdef np.ndarray[np.double_t, ndim=2] result
+        cdef:
+            np.ndarray[np.double_t, ndim=2] result
+            int status
 
         result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
 
@@ -446,15 +451,21 @@ cdef class CRS:
 
         # call proj. The result array is modified in place. This is only
         # safe if npts is not 0.
-        if npts:
-            status = _safe_pj_transform(src_crs, self, npts, 3,
-                                        result[:, 0], result[:, 1],
-                                        result[:, 2])
+        if npts == 0:
+            return result
+        status = _safe_pj_transform(src_crs, self, npts, 3,
+                                    result[:, 0], result[:, 1],
+                                    result[:, 2])
+
+        if trap and status == -14 or status == -20:
+            # -14 => "latitude or longitude exceeded limits"
+            # -20 => "tolerance condition error"
+            result[:] = np.nan
+        elif trap and status != 0:
+            raise Proj4Error()
 
         if self.is_geodetic():
             result[:, :2] = np.rad2deg(result[:, :2])
-        #if status:
-        #    raise Proj4Error()
 
         if len(result_shape) > 2:
             return result.reshape(result_shape)
