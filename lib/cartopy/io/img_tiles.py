@@ -684,8 +684,8 @@ def _merge_tiles(tiles):
 
 class AzureMapsTiles(GoogleWTS):
 
-    def __init__(self, subscription_key, tileset_id = "microsoft.imagery", api_version = "2.0",
-                 desired_tile_form='RGB'):
+    def __init__(self, subscription_key, tileset_id="microsoft.imagery", api_version="2.0",
+                 desired_tile_form='RGB', cache=False):
         """
         Set up a new instance to retrieve tiles from Azure Maps.
 
@@ -700,16 +700,20 @@ class AzureMapsTiles(GoogleWTS):
             The username for the Mapbox user who defined the Mapbox style.
         tileset_id
             A tileset ID for a map defined by a Mapbox style. See 
-            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid for details
+            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid 
+            for details
         api_version
             API version to use. Defaults to 2.0 as recommended by Microsoft.
 
         """
-        super().__init__(desired_tile_form=desired_tile_form)
+        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
         self.subscription_key = subscription_key
         self.tileset_id = tileset_id
         self.api_version = api_version
 
     def _image_url(self, tile):
-        return ('https://atlas.microsoft.com/map/tile?api-version={self.api_version}&tilesetId={self.tileset_id}&x={x}&y={y}&zoom={z}&subscription-key={self.subscription_key}'
-                .format(self=self, x=tile[0], y=tile[1], z=tile[2]))
+        url = ('https://atlas.microsoft.com/map/tile?'
+               'api-version={self.api_version}&tilesetId={self.tileset_id}'
+               '&x={x}&y={y}&zoom={z}&'
+               'subscription-key={self.subscription_key}')
+        return url.format(self=self, x=tile[0], y=tile[1], z=tile[2])
