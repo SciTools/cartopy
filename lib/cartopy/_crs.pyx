@@ -353,26 +353,11 @@ cdef class CRS:
 
         """
         cdef:
-            np.ndarray[np.double_t, ndim=1] cx, cy
-            int status
-        cx = np.array([x])
-        cy = np.array([y])
-        if src_crs.is_geodetic():
-            cx *= DEG_TO_RAD
-            cy *= DEG_TO_RAD
-        status = _safe_pj_transform(src_crs, self, 1, 1, cx, cy, None)
+            np.ndarray[np.double_t, ndim=2] result
 
-        if trap and status == -14 or status == -20:
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            cx[0] = cy[0] = np.nan
-        elif trap and status != 0:
-            raise Proj4Error()
+        result = self.transform_points(src_crs, np.array([x]), np.array([y]))
+        return result[0, 0], result[0, 1]
 
-        if self.is_geodetic():
-            cx *= RAD_TO_DEG
-            cy *= RAD_TO_DEG
-        return (cx[0], cy[0])
 
     def transform_points(self, CRS src_crs not None,
                                 np.ndarray x not None,
