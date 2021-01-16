@@ -437,7 +437,6 @@ class Gridliner:
         sup = min(lat_lim[1], crs.y_limits[1])
         lat_ticks = [value for value in lat_ticks if inf <= value <= sup]
 
-
         #####################
         # Gridlines drawing #
         #####################
