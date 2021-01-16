@@ -45,6 +45,10 @@ def test_global_contour_wrap_new_transform():
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data, transform=ccrs.PlateCarree())
+    if MPL_VERSION <= '3.0.0':
+        # Rather than updating image test for old version
+        # Remove when only MPL > 3 is required
+        ax.set_extent((-176.3265306122449, 176.3265306122449, -90.0, 90.0))
 
 
 @pytest.mark.natural_earth
@@ -55,6 +59,10 @@ def test_global_contour_wrap_no_transform():
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data)
+    if MPL_VERSION <= '3.0.0':
+        # Rather than updating image test for old version
+        # Remove when only MPL > 3 is required
+        ax.set_extent((-176.3265306122449, 176.3265306122449, -90.0, 90.0))
 
 
 @pytest.mark.natural_earth
