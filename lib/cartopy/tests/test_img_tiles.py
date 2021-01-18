@@ -305,7 +305,7 @@ def test_azuremaps_tiles_api_url():
 
 @pytest.mark.network
 def test_azuremaps_get_image():
-    # In order to test fetching map images from OS
+    # In order to test fetching map images from Azure Maps
     # an API key needs to be provided
     try:
         api_key = os.environ['AZURE_MAPS_SUBSCRIPTION_KEY']

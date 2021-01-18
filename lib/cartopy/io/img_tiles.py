@@ -689,7 +689,7 @@ class AzureMapsTiles(GoogleWTS):
         """
         Set up a new instance to retrieve tiles from Azure Maps.
 
-        Access to Azure Maps REST API requires an subscription key.
+        Access to Azure Maps REST API requires a subscription key.
         See https://docs.microsoft.com/en-us/azure/azure-maps/azure-maps-authentication#shared-key-authentication/  # noqa: E501
         for details.
 
@@ -699,7 +699,8 @@ class AzureMapsTiles(GoogleWTS):
             A valid Azure Maps subscription key.
         tileset_id
             A tileset ID for a map. See
-            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid for details. # noqa: E501
+            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid  # noqa: E501
+            for details.
         api_version
             API version to use. Defaults to 2.0 as recommended by Microsoft.
 
