@@ -1957,7 +1957,7 @@ class InterruptedGoodeHomolosine(Projection):
         """
         if emphasis == 'land':
             proj4_params = [('proj', 'igh'), ('lon_0', central_longitude)]
-            super().__init__(proj4_params,globe=globe)
+            super().__init__(proj4_params, globe=globe)
 
         elif emphasis == 'ocean':
             if PROJ4_VERSION < (7, 1, 0):
@@ -1966,7 +1966,7 @@ class InterruptedGoodeHomolosine(Projection):
                                  'projection requires Proj version 7.1.0, '
                                  'but you are using ' + _proj_ver)
             proj4_params = [('proj', 'igh_o'), ('lon_0', central_longitude)]
-            super().__init__(proj4_params,globe=globe)
+            super().__init__(proj4_params, globe=globe)
 
         else:
             msg = '`emphasis` needs to be either \'land\' or \'ocean\''
