@@ -1,32 +1,18 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Provide shapely geometry <-> matplotlib path support.
 
-
 See also `Shapely Geometric Objects <see_also_shapely>`_
-and `Matplotlib Path API <http://matplotlib.org/api/path_api.html>`_.
+and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
 
 .. see_also_shapely:
-   http://toblerity.org/shapely/manual.html#geometric-objects
+   https://shapely.readthedocs.io/en/latest/manual.html#geometric-objects
 
 """
-
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 import matplotlib
@@ -167,8 +153,14 @@ def path_to_geos(path, force_ccw=False):
         if len(path_verts) == 0:
             continue
 
-        verts_same_as_first = np.all(path_verts[0, :] == path_verts[1:, :],
-                                     axis=1)
+        if path_codes[-1] == Path.CLOSEPOLY:
+            path_verts[-1, :] = path_verts[0, :]
+
+        verts_same_as_first = np.isclose(path_verts[0, :], path_verts[1:, :],
+                                         rtol=1e-10, atol=1e-13)
+        verts_same_as_first = np.logical_and.reduce(verts_same_as_first,
+                                                    axis=1)
+
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
         elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:

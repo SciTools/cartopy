@@ -1,60 +1,42 @@
-# (C) British Crown Copyright 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import pytest
 
 from cartopy.mpl import style
 
 
-d = dict
-
-
 @pytest.mark.parametrize(
     ('styles', 'expected'),
     [([], {}),
      ([{}, {}, {}], {}),
-     ([{}, d(a=2), d(a=1)], d(a=1)),
-     ([d(fc='red')], d(facecolor='red')),
-     ([d(fc='red', color='blue')], d(facecolor='blue', edgecolor='blue')),
-     ([d(fc='red', facecolor='blue')], d(facecolor='blue')),
-     ([d(color='red')],
-      d(edgecolor='red', facecolor='red')),
-     ([d(edgecolor='blue'), d(color='red')],
-      d(edgecolor='red', facecolor='red')),
-     ([d(edgecolor='blue'), d(color='red')],
-      d(edgecolor='red', facecolor='red')),
-     ([d(color='blue'), d(edgecolor='red')],
-      d(edgecolor='red', facecolor='blue')),
+     ([{}, dict(a=2), dict(a=1)], dict(a=1)),
+     ([dict(fc='red')], dict(facecolor='red')),
+     ([dict(fc='red', color='blue')],
+      dict(facecolor='blue', edgecolor='blue')),
+     ([dict(fc='red', facecolor='blue')], dict(facecolor='blue')),
+     ([dict(color='red')],
+      dict(edgecolor='red', facecolor='red')),
+     ([dict(edgecolor='blue'), dict(color='red')],
+      dict(edgecolor='red', facecolor='red')),
+     ([dict(edgecolor='blue'), dict(color='red')],
+      dict(edgecolor='red', facecolor='red')),
+     ([dict(color='blue'), dict(edgecolor='red')],
+      dict(edgecolor='red', facecolor='blue')),
      # Even if you set an edgecolor, color should trump it.
-     ([d(color='blue'), d(edgecolor='red', color='yellow')],
-      d(edgecolor='yellow', facecolor='yellow')),
+     ([dict(color='blue'), dict(edgecolor='red', color='yellow')],
+      dict(edgecolor='yellow', facecolor='yellow')),
      # Support for 'never' being honoured.
-     ([d(facecolor='never'), d(color='yellow')],
-      d(edgecolor='yellow', facecolor='never')),
-     ([d(lw=1, linewidth=2)],
-      d(linewidth=2)),
-     ([d(lw=1, linewidth=2), d(lw=3)],
-      d(linewidth=3)),
-     ([d(color=None), d(facecolor='red')],
-      d(facecolor='red', edgecolor=None)),
-     ([d(linewidth=1), d(lw=None)],
-      d(linewidth=None)),
+     ([dict(facecolor='never'), dict(color='yellow')],
+      dict(edgecolor='yellow', facecolor='never')),
+     ([dict(lw=1, linewidth=2)], dict(linewidth=2)),
+     ([dict(lw=1, linewidth=2), dict(lw=3)], dict(linewidth=3)),
+     ([dict(color=None), dict(facecolor='red')],
+      dict(facecolor='red', edgecolor=None)),
+     ([dict(linewidth=1), dict(lw=None)], dict(linewidth=None)),
      ]
 )
 def test_merge(styles, expected):
@@ -75,9 +57,9 @@ def test_merge_warning(case, should_warn):
 @pytest.mark.parametrize(
     ('style_d', 'expected'),
     [
-     # Support for 'never' being honoured.
-     (d(facecolor='never', edgecolor='yellow'),
-      d(edgecolor='yellow', facecolor='none')),
+        # Support for 'never' being honoured.
+        (dict(facecolor='never', edgecolor='yellow'),
+         dict(edgecolor='yellow', facecolor='none')),
     ])
 def test_finalize(style_d, expected):
     assert style.finalize(style_d) == expected

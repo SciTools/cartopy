@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import warnings
 
@@ -46,11 +33,11 @@ def srtm_login_or_skip(monkeypatch):
     except KeyError:
         pytest.skip('SRTM_PASSWORD environment variable is unset.')
 
-    from six.moves.urllib.request import (HTTPBasicAuthHandler,
-                                          HTTPCookieProcessor,
-                                          HTTPPasswordMgrWithDefaultRealm,
-                                          build_opener)
-    from six.moves.http_cookiejar import CookieJar
+    from urllib.request import (HTTPBasicAuthHandler,
+                                HTTPCookieProcessor,
+                                HTTPPasswordMgrWithDefaultRealm,
+                                build_opener)
+    from http.cookiejar import CookieJar
 
     password_manager = HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(
@@ -65,7 +52,7 @@ def srtm_login_or_skip(monkeypatch):
     monkeypatch.setattr(cartopy.io, 'urlopen', opener.open)
 
 
-class TestRetrieve(object):
+class TestRetrieve:
     @pytest.mark.parametrize('Source, read_SRTM, max_, min_, pt', [
         (cartopy.io.srtm.SRTM3Source, cartopy.io.srtm.read_SRTM3,
          602, -34, 78),
@@ -76,7 +63,7 @@ class TestRetrieve(object):
         'srtm1',
     ])
     def test_srtm_retrieve(self, Source, read_SRTM, max_, min_, pt,
-                           download_to_temp):
+                           download_to_temp):  # noqa: F811
         # test that the download mechanism for SRTM works
         with warnings.catch_warnings(record=True) as w:
             r = Source().srtm_fname(-4, 50)
@@ -113,11 +100,11 @@ class TestRetrieve(object):
     'srtm3',
     'srtm1',
 ])
-class TestSRTMSource__single_tile(object):
+class TestSRTMSource__single_tile:
     def test_out_of_range(self, Source):
         source = Source()
-        msg = 'No srtm tile found for those coordinates.'
-        with pytest.raises(ValueError, match=msg):
+        match = r'No srtm tile found for those coordinates\.'
+        with pytest.raises(ValueError, match=match):
             source.single_tile(-25, 50)
 
     def test_in_range(self, Source):
@@ -148,7 +135,7 @@ class TestSRTMSource__single_tile(object):
     'srtm3',
     'srtm1',
 ])
-class TestSRTMSource__combined(object):
+class TestSRTMSource__combined:
     def test_trivial(self, Source):
         source = Source()
 

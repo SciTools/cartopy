@@ -1,24 +1,12 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import io
 import os
+import pickle
 import shutil
 import sys
 import warnings
@@ -28,7 +16,6 @@ from numpy.testing import assert_array_equal, assert_array_almost_equal
 from PIL import Image
 import pytest
 import shapely.geometry as sgeom
-from six.moves import cPickle as pickle
 
 from cartopy import config
 import cartopy.io.img_tiles as cimgt
@@ -236,7 +223,7 @@ def test_nest(nest_from_config):
     # floating point values badly
     for img in z1.images:
         if not z0.images[0].bbox().contains(img.bbox()):
-            raise IOError('The test images aren\'t all "contained" by the '
+            raise OSError('The test images aren\'t all "contained" by the '
                           'z0 images, the nest cannot possibly work.\n '
                           'img {!s} not contained by {!s}\nExtents: {!s}; '
                           '{!s}'.format(img, z0.images[0], img.extent,
@@ -318,9 +305,9 @@ def wmts_data():
 
     test_data_version = None
     try:
-        with open(data_version_fname, 'r') as fh:
+        with open(data_version_fname) as fh:
             test_data_version = int(fh.read().strip())
-    except IOError:
+    except OSError:
         pass
     finally:
         if test_data_version != _TEST_DATA_VERSION:

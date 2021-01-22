@@ -1,26 +1,13 @@
-# (C) British Crown Copyright 2013 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 This module contains generic functionality to support Cartopy vector
 transforms.
 
 """
-
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from scipy.interpolate import griddata
@@ -135,12 +122,44 @@ def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
         nx, ny = regrid_shape
     except TypeError:
         nx = ny = regrid_shape
-    if target_proj != src_crs:
-        # Transform the vectors to the target CRS.
-        u, v = target_proj.transform_vectors(src_crs, x, y, u, v)
-        # Convert Coordinates to the target CRS.
-        proj_xyz = target_proj.transform_points(src_crs, x, y)
-        x, y = proj_xyz[..., 0], proj_xyz[..., 1]
-    # Now interpolate to a regular grid in projection space, treating each
-    # component as a scalar field.
-    return _interpolate_to_grid(nx, ny, x, y, u, v, *scalars, **kwargs)
+    if target_proj == src_crs:
+        # Just immediately regrid, interpolate and return
+        return _interpolate_to_grid(nx, ny, x, y, u, v, *scalars, **kwargs)
+
+    # We need to transform the vectors from the source to target frame
+    # Convert coordinates to the target projection.
+    proj_xyz = target_proj.transform_points(src_crs, x, y)
+    targetx, targety = proj_xyz[..., 0], proj_xyz[..., 1]
+
+    # Create the grid in the target frame
+    gridx, gridy = _interpolate_to_grid(nx, ny, targetx, targety, **kwargs)
+
+    # Bring the x/y target grid coordinates back into the source frame
+    src_xyz = src_crs.transform_points(target_proj, gridx, gridy)
+    # Mask the invalid points that were outside the domain
+    src_xyz = np.ma.array(src_xyz, mask=~np.isfinite(src_xyz))
+    sourcex, sourcey = src_xyz[..., 0], src_xyz[..., 1]
+
+    # Now interpolate in the source frame
+    x0, x1 = sourcex.min(), sourcex.max()
+    y0, y1 = sourcey.min(), sourcey.max()
+    xr = x1 - x0
+    yr = y1 - y0
+    # We also need to transform the original source points to the source
+    # projection to account for original points outside the wrapped domain
+    xyz = src_crs.transform_points(src_crs, x, y)
+    x, y = xyz[..., 0], xyz[..., 1]
+    points = np.column_stack([(x.ravel() - x0) / xr,
+                              (y.ravel() - y0) / yr])
+    newx = (sourcex - x0) / xr
+    newy = (sourcey - y0) / yr
+    s_grid_tuple = tuple()
+    for s in (u, v) + scalars:
+        s_grid_tuple += (griddata(points, s.ravel(), (newx, newy),
+                                  method='linear'),)
+
+    u, v = s_grid_tuple[0], s_grid_tuple[1]
+    # Finally, transform the vectors (in the source frame) to the target CRS.
+    u, v = target_proj.transform_vectors(src_crs, sourcex, sourcey, u, v)
+
+    return (gridx, gridy, u, v) + s_grid_tuple[2:]

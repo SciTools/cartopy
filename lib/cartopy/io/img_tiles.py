@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 """
 Implements image tile identification and fetching from various sources.
@@ -24,37 +13,60 @@ The Matplotlib interface can make use of tile objects (defined below) via the
 :class:`MapQuest Open Aerial tileset <MapQuestOpenAerial>` to an existing axes
 at zoom level 2, do ``ax.add_image(MapQuestOpenAerial(), 2)``. An example of
 using tiles in this way can be found at the
-:ref:`sphx_glr_gallery_eyja_volcano.py` example.
+:ref:`sphx_glr_gallery_scalar_data_eyja_volcano.py` example.
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
+import io
+import os
 import warnings
 
 from PIL import Image
 import shapely.geometry as sgeom
 import numpy as np
-import six
 
+import cartopy
 import cartopy.crs as ccrs
 
 
-class GoogleWTS(six.with_metaclass(ABCMeta, object)):
+class GoogleWTS(metaclass=ABCMeta):
     """
     Implement web tile retrieval using the Google WTS coordinate system.
 
     A "tile" in this class refers to the coordinates (x, y, z).
 
+    The tiles can be saved to a cache directory using the cache parameter, so
+    they are downloaded only once. If it is set to True, the default path
+    stored in the cartopy.config dictionary is used. If it is set to a custom
+    path, this path is used instead of the default one. If it is set to False
+    (the default behavior), the tiles are downloaded each time.
+
     """
     _MAX_THREADS = 24
 
-    def __init__(self, desired_tile_form='RGB'):
+    def __init__(self, desired_tile_form='RGB',
+                 user_agent='CartoPy/' + cartopy.__version__, cache=False):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
+        self.user_agent = user_agent
+        # some providers like osm need a user_agent in the request issue #1341
+        # osm may reject requests if there are too many of them, in which case
+        # a change of user_agent may fix the issue.
+
+        # Enable a cache mechanism when cache is equal to True or to a path.
+        self._default_cache = False
+        if cache is True:
+            self._default_cache = True
+            self.cache_path = cartopy.config["cache_dir"]
+        elif cache is False:
+            self.cache_path = None
+        else:
+            self.cache_path = cache
+        self.cache = set({})
+        self._load_cache()
 
     def image_for_domain(self, target_domain, target_z):
         tiles = []
@@ -62,7 +74,7 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
         def fetch_tile(tile):
             try:
                 img, extent, origin = self.get_image(tile)
-            except IOError:
+            except OSError:
                 # Some services 404 for tiles that aren't supposed to be
                 # there (e.g. out of range).
                 raise
@@ -80,11 +92,31 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
                 try:
                     img, x, y, origin = future.result()
                     tiles.append([img, x, y, origin])
-                except IOError:
+                except OSError:
                     pass
 
         img, extent, origin = _merge_tiles(tiles)
         return img, extent, origin
+
+    @property
+    def _cache_dir(self):
+        """Return the name of the cache directory"""
+        return os.path.join(
+            self.cache_path,
+            self.__class__.__name__
+        )
+
+    def _load_cache(self):
+        """Load the cache"""
+        if self.cache_path is not None:
+            cache_dir = self._cache_dir
+            if not os.path.exists(cache_dir):
+                os.makedirs(cache_dir)
+                if self._default_cache:
+                    warnings.warn(
+                        'Cartopy created the following directory to cache '
+                        'GoogleWTS tiles: {}'.format(cache_dir))
+            self.cache = self.cache.union(set(os.listdir(cache_dir)))
 
     def _find_images(self, target_domain, target_z, start_tile=(0, 0, 0)):
         """Target domain is a shapely polygon in native coordinates."""
@@ -98,12 +130,11 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
         domain = sgeom.box(x0, y0, x1, y1)
         if domain.intersects(target_domain):
             if start_tile[2] == target_z:
-                    yield start_tile
+                yield start_tile
             else:
                 for tile in self._subtiles(start_tile):
-                    for result in self._find_images(target_domain, target_z,
-                                                    start_tile=tile):
-                        yield result
+                    yield from self._find_images(target_domain, target_z,
+                                                 start_tile=tile)
 
     find_images = _find_images
 
@@ -174,19 +205,38 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
         pass
 
     def get_image(self, tile):
-        if six.PY3:
-            from urllib.request import urlopen
+        from urllib.request import urlopen, Request, HTTPError, URLError
+
+        if self.cache_path is not None:
+            filename = "_".join([str(i) for i in tile]) + ".npy"
+            cached_file = os.path.join(
+                self._cache_dir,
+                filename
+            )
         else:
-            from urllib2 import urlopen
+            filename = None
+            cached_file = None
 
-        url = self._image_url(tile)
+        if filename in self.cache:
+            img = np.load(cached_file, allow_pickle=False)
+        else:
+            url = self._image_url(tile)
+            try:
+                request = Request(url, headers={"User-Agent": self.user_agent})
+                fh = urlopen(request)
+                im_data = io.BytesIO(fh.read())
+                fh.close()
+                img = Image.open(im_data)
 
-        fh = urlopen(url)
-        im_data = six.BytesIO(fh.read())
-        fh.close()
-        img = Image.open(im_data)
+            except (HTTPError, URLError) as err:
+                print(err)
+                img = Image.fromarray(np.full((256, 256, 3), (250, 250, 250),
+                                              dtype=np.uint8))
 
-        img = img.convert(self.desired_tile_form)
+            img = img.convert(self.desired_tile_form)
+            if self.cache_path is not None:
+                np.save(cached_file, img, allow_pickle=False)
+                self.cache.add(filename)
 
         return img, self.tileextent(tile), 'lower'
 
@@ -194,7 +244,8 @@ class GoogleWTS(six.with_metaclass(ABCMeta, object)):
 class GoogleTiles(GoogleWTS):
     def __init__(self, desired_tile_form='RGB', style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
-                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
+                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
+                 cache=False):
         """
         Parameters
         ----------
@@ -225,8 +276,8 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
                 not Image.core.jpeg_decoder:
             msg = "The '%s' style requires pillow with jpeg decoding support."
             raise ValueError(msg % self.style)
-        return super(GoogleTiles, self).__init__(
-            desired_tile_form=desired_tile_form)
+        return super().__init__(desired_tile_form=desired_tile_form,
+                                cache=cache)
 
     def _image_url(self, tile):
         style_dict = {
@@ -243,15 +294,15 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
 
 class MapQuestOSM(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
-    # http://devblog.mapquest.com/2016/06/15/
+    # https://developer.mapquest.com/web/products/open/map for terms of use
+    # https://devblog.mapquest.com/2016/06/15/
     # modernization-of-mapquest-results-in-changes-to-open-tile-access/
     # this now requires a sign up to a plan
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://otile1.mqcdn.com/tiles/1.0.0/osm/%s/%s/%s.jpg' % (
+        url = 'https://otile1.mqcdn.com/tiles/1.0.0/osm/{}/{}/{}.jpg'.format(
             z, x, y)
-        mqdevurl = ('http://devblog.mapquest.com/2016/06/15/'
+        mqdevurl = ('https://devblog.mapquest.com/2016/06/15/'
                     'modernization-of-mapquest-results-in-changes'
                     '-to-open-tile-access/')
         warnings.warn('{} will require a log in and and will likely'
@@ -260,22 +311,23 @@ class MapQuestOSM(GoogleWTS):
 
 
 class MapQuestOpenAerial(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
+    # https://developer.mapquest.com/web/products/open/map for terms of use
     # The following attribution should be included in the resulting image:
     # "Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture,
     #  Farm Service Agency"
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'http://oatile1.mqcdn.com/tiles/1.0.0/sat/%s/%s/%s.jpg' % (
+        url = 'https://oatile1.mqcdn.com/tiles/1.0.0/sat/{}/{}/{}.jpg'.format(
             z, x, y)
         return url
 
 
 class OSM(GoogleWTS):
-    # http://developer.mapquest.com/web/products/open/map for terms of use
+    # https://operations.osmfoundation.org/policies/tiles/ for terms of use
+
     def _image_url(self, tile):
         x, y, z = tile
-        url = 'https://a.tile.openstreetmap.org/%s/%s/%s.png' % (z, x, y)
+        url = 'https://a.tile.openstreetmap.org/{}/{}/{}.png'.format(z, x, y)
         return url
 
 
@@ -299,8 +351,10 @@ class Stamen(GoogleWTS):
     attribute this imagery.
 
     """
-    def __init__(self, style='toner', desired_tile_form='RGB'):
-        super(Stamen, self).__init__(desired_tile_form=desired_tile_form)
+    def __init__(self, style='toner',
+                 desired_tile_form='RGB', cache=False):
+        super().__init__(desired_tile_form=desired_tile_form,
+                         cache=cache)
         self.style = style
 
     def _image_url(self, tile):
@@ -333,15 +387,18 @@ class StamenTerrain(Stamen):
 
 
     """
-    def __init__(self):
+    def __init__(self, cache=False):
         warnings.warn(
             "The StamenTerrain class was deprecated in v0.17. "
-            "Please use Stamen('terrain-background') instead.")
+            "Please use Stamen('terrain-background') instead.",
+            DeprecationWarning,
+            stacklevel=2)
 
         # NOTE: This subclass of Stamen exists for legacy reasons.
         # No further Stamen subclasses will be accepted as
         # they can easily be created in user code with Stamen(style_name).
-        return super(StamenTerrain, self).__init__(style='terrain-background')
+        return super().__init__(style='terrain-background',
+                                cache=cache)
 
 
 class MapboxTiles(GoogleWTS):
@@ -351,7 +408,7 @@ class MapboxTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
-    def __init__(self, access_token, map_id):
+    def __init__(self, access_token, map_id, cache=False):
         """
         Set up a new Mapbox tiles instance.
 
@@ -369,7 +426,7 @@ class MapboxTiles(GoogleWTS):
         """
         self.access_token = access_token
         self.map_id = map_id
-        super(MapboxTiles, self).__init__()
+        super().__init__(cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -389,7 +446,7 @@ class MapboxStyleTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
-    def __init__(self, access_token, username, map_id):
+    def __init__(self, access_token, username, map_id, cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
 
@@ -412,7 +469,7 @@ class MapboxStyleTiles(GoogleWTS):
         self.access_token = access_token
         self.username = username
         self.map_id = map_id
-        super(MapboxStyleTiles, self).__init__()
+        super().__init__(cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -460,8 +517,7 @@ class QuadtreeTiles(GoogleWTS):
     def quadkey_to_tms(self, quadkey, google=False):
         # algorithm ported from
         # https://msdn.microsoft.com/en-us/library/bb259689.aspx
-        assert isinstance(quadkey, six.string_types), \
-            'quadkey must be a string'
+        assert isinstance(quadkey, str), 'quadkey must be a string'
 
         x = y = 0
         z = len(quadkey)
@@ -528,7 +584,11 @@ class OrdnanceSurvey(GoogleWTS):
     https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
     """
     # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
-    def __init__(self, apikey, layer='Road', desired_tile_form='RGB'):
+    def __init__(self,
+                 apikey,
+                 layer='Road',
+                 desired_tile_form='RGB',
+                 cache=False):
         """
         Parameters
         ----------
@@ -538,13 +598,14 @@ class OrdnanceSurvey(GoogleWTS):
             The style of the Ordnance Survey map tiles. One of 'Outdoor',
             'Road', 'Light', 'Night', 'Leisure'. Defaults to 'Road'.
             Details about the style of layer can be found at:
-             - https://apidocs.os.uk/docs/layer-information
-             - https://apidocs.os.uk/docs/map-styles
+
+            - https://apidocs.os.uk/docs/layer-information
+            - https://apidocs.os.uk/docs/map-styles
         desired_tile_form: optional
             Defaults to 'RGB'.
         """
-        super(OrdnanceSurvey, self).__init__(
-            desired_tile_form=desired_tile_form)
+        super().__init__(desired_tile_form=desired_tile_form,
+                         cache=cache)
         self.apikey = apikey
 
         if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:
@@ -619,3 +680,39 @@ def _merge_tiles(tiles):
         img[img_slice] = tile_img
 
     return img, [min(xs), max(xs), min(ys), max(ys)], 'lower'
+
+
+class AzureMapsTiles(GoogleWTS):
+
+    def __init__(self, subscription_key, tileset_id="microsoft.imagery",
+                 api_version="2.0", desired_tile_form='RGB', cache=False):
+        """
+        Set up a new instance to retrieve tiles from Azure Maps.
+
+        Access to Azure Maps REST API requires a subscription key.
+        See https://docs.microsoft.com/en-us/azure/azure-maps/azure-maps-authentication#shared-key-authentication/  # noqa: E501
+        for details.
+
+        Parameters
+        ----------
+        subscription_key
+            A valid Azure Maps subscription key.
+        tileset_id
+            A tileset ID for a map. See
+            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid  # noqa: E501
+            for details.
+        api_version
+            API version to use. Defaults to 2.0 as recommended by Microsoft.
+
+        """
+        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
+        self.subscription_key = subscription_key
+        self.tileset_id = tileset_id
+        self.api_version = api_version
+
+    def _image_url(self, tile):
+        url = ('https://atlas.microsoft.com/map/tile?'
+               'api-version={self.api_version}&tilesetId={self.tileset_id}'
+               '&x={x}&y={y}&zoom={z}&'
+               'subscription-key={self.subscription_key}')
+        return url.format(self=self, x=tile[0], y=tile[1], z=tile[2])

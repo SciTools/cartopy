@@ -1,3 +1,2 @@
-filelock
-mock>=1.0.1
+flufl.lock
 pytest>=3.0.0

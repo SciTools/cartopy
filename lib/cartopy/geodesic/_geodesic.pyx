@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2015 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 #
 # cython: embedsignature=True
 
@@ -271,13 +260,8 @@ cdef class Geodesic:
             # Polygon.
             result = self.geometry_length(geometry.exterior)
 
-        elif hasattr(geometry, 'coords'):
+        elif hasattr(geometry, 'coords') and not isinstance(geometry, sgeom.Point):
             coords = np.array(geometry.coords)
-
-            # LinearRings are (N, 2), whereas LineStrings are (2, N).
-            if not isinstance(geometry, sgeom.LinearRing):
-                coords = coords.T
-
             result = self.geometry_length(coords)
 
         elif isinstance(geometry, np.ndarray):

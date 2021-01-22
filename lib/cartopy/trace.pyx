@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 #
 # cython: embedsignature=True
 
@@ -23,6 +12,7 @@ to project a `~shapely.geometry.LinearRing` / `~shapely.geometry.LineString`.
 In general, this should never be called manually, instead leaving the
 processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
+from __future__ import print_function
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
@@ -59,6 +49,7 @@ cdef extern from "geos_c.h":
     cdef int GEOS_MULTILINESTRING
 
 from cartopy._crs cimport CRS
+from cartopy._crs import PROJ4_VERSION
 from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
                       pj_strerrno, DEG_TO_RAD)
 from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
@@ -171,6 +162,12 @@ cdef class Interpolator:
     cdef Point end
     cdef projPJ src_proj
     cdef projPJ dest_proj
+    cdef double src_scale
+    cdef double dest_scale
+
+    def __cinit__(self):
+        self.src_scale = 1
+        self.dest_scale = 1
 
     cdef void init(self, projPJ src_proj, projPJ dest_proj):
         self.src_proj = src_proj
@@ -198,8 +195,8 @@ cdef class CartesianInterpolator(Interpolator):
         cdef Point dest_xy
         cdef projLP xy
 
-        xy.u = src_xy.x
-        xy.v = src_xy.y
+        xy.u = src_xy.x * self.src_scale
+        xy.v = src_xy.y * self.src_scale
 
         cdef int status = pj_transform(self.src_proj, self.dest_proj,
                                        1, 1, &xy.u, &xy.v, NULL)
@@ -212,8 +209,8 @@ cdef class CartesianInterpolator(Interpolator):
                 status,
                 pj_strerrno(status)))
 
-        dest_xy.x = xy.u
-        dest_xy.y = xy.v
+        dest_xy.x = xy.u * self.dest_scale
+        dest_xy.y = xy.v * self.dest_scale
         return dest_xy
 
 
@@ -252,8 +249,8 @@ cdef class SphericalInterpolator(Interpolator):
         cdef Point xy
         cdef projLP dest
 
-        dest.u = lonlat.x * DEG_TO_RAD
-        dest.v = lonlat.y * DEG_TO_RAD
+        dest.u = (lonlat.x * DEG_TO_RAD) * self.src_scale
+        dest.v = (lonlat.y * DEG_TO_RAD) * self.src_scale
 
         cdef int status = pj_transform(self.src_proj, self.dest_proj,
                                        1, 1, &dest.u, &dest.v, NULL)
@@ -266,8 +263,8 @@ cdef class SphericalInterpolator(Interpolator):
                 status,
                 pj_strerrno(status)))
 
-        xy.x = dest.u
-        xy.y = dest.v
+        xy.x = dest.u * self.dest_scale
+        xy.y = dest.v * self.dest_scale
         return xy
 
 
@@ -565,6 +562,33 @@ cdef void _project_segment(GEOSContextHandle_t handle,
                 lines.new_line()
 
 
+cdef _interpolator(CRS src_crs, CRS dest_projection):
+    # Get an Interpolator from the given CRS and projection.
+    # Callers must hold a reference to these systems for the lifetime
+    # of the interpolator. If they get garbage-collected while interpolator
+    # exists you *will* segfault.
+
+    cdef Interpolator interpolator
+    if src_crs.is_geodetic():
+        interpolator = SphericalInterpolator()
+    else:
+        interpolator = CartesianInterpolator()
+    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
+    if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
+        # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
+        # See https://github.com/OSGeo/proj#1782.
+        lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
+        if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
+                src_crs.proj4_params.get('o_proj', '') in lonlat and
+                'to_meter' in src_crs.proj4_params):
+            interpolator.src_scale = src_crs.proj4_params['to_meter']
+        if (dest_projection.proj4_params.get('proj', '') == 'ob_tran' and
+                dest_projection.proj4_params.get('o_proj', '') in lonlat and
+                'to_meter' in dest_projection.proj4_params):
+            interpolator.dest_scale = 1 / dest_projection.proj4_params['to_meter']
+    return interpolator
+
+
 def project_linear(geometry not None, CRS src_crs not None,
                    dest_projection not None):
     """
@@ -600,11 +624,7 @@ def project_linear(geometry not None, CRS src_crs not None,
 
     g_domain = geos_from_shapely(dest_projection.domain)
 
-    if src_crs.is_geodetic():
-        interpolator = SphericalInterpolator()
-    else:
-        interpolator = CartesianInterpolator()
-    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
+    interpolator = _interpolator(src_crs, dest_projection)
 
     src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
     gp_domain = GEOSPrepare_r(handle, g_domain)
@@ -623,3 +643,51 @@ def project_linear(geometry not None, CRS src_crs not None,
     del lines, interpolator
     multi_line_string = shapely_from_geos(g_multi_line_string)
     return multi_line_string
+
+
+class _Testing:
+    @staticmethod
+    def straight_and_within(Point l_start, Point l_end,
+                            double t_start, double t_end,
+                            Interpolator interpolator, double threshold,
+                            domain):
+        # This function is for testing/demonstration only.
+        # It is not careful about freeing resources, and it short-circuits
+        # optimisations that are made in the real algorithm (in exchange for
+        # a convenient signature).
+
+        cdef GEOSContextHandle_t handle = get_geos_context_handle()
+
+        cdef GEOSGeometry *g_domain = geos_from_shapely(domain)
+        cdef const GEOSPreparedGeometry *gp_domain
+        gp_domain = GEOSPrepare_r(handle, g_domain)
+        
+        state = get_state(interpolator.project(l_start), gp_domain, handle)
+        cdef bool p_start_inside_domain = state == POINT_IN
+
+        # l_end and l_start should be un-projected.
+        interpolator.set_line(l_start, l_end)
+
+        cdef Point p0 = interpolator.interpolate(t_start)
+        cdef Point p1 = interpolator.interpolate(t_end)
+
+        valid = straightAndDomain(
+            t_start, p0, t_end, p1,
+            interpolator, threshold,
+            handle, gp_domain, p_start_inside_domain)
+
+        GEOSPreparedGeom_destroy_r(handle, gp_domain)
+        return valid
+
+    @staticmethod
+    def interpolator(source_crs, destination_projection):
+        return _interpolator(source_crs, destination_projection)
+
+    @staticmethod
+    def interp_prj_pt(Interpolator interp, const Point &lonlat):
+        return interp.project(lonlat)
+
+    @staticmethod
+    def interp_t_pt(Interpolator interp, const Point &start, const Point &end, double t):
+        interp.set_line(start, end)
+        return interp.interpolate(t)

@@ -1,13 +1,11 @@
 # Copyright Cartopy Contributors
 #
 # This file is part of Cartopy and is released under the LGPL license.
-# See LICENSE in the root of the repository for full licensing details.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+from ._version import version as __version__  # noqa: F401
+import tempfile
 
 __document_these__ = ['config']
 
@@ -20,9 +18,11 @@ import os.path
 _writable_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
 _data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
                          'cartopy')
+_cache_dir = os.path.join(tempfile.gettempdir(), 'cartopy_cache_dir')
 
 config = {'pre_existing_data_dir': '',
           'data_dir': _data_dir,
+          'cache_dir': _cache_dir,
           'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
           'downloaders': {},
           }
@@ -56,6 +56,14 @@ Keys in the config dictionary:
     cartopy will download the appropriate file(s) to a subdirectory of this
     directory, therefore ``data_dir`` should be writable by the user.
 
+``cache_dir``
+    The absolute path to a directory where tiles data are cached when a
+    GoogleWTS sub-class is initialized with `cache=True`. If it is not found
+    cartopy will create it, therefore ``cache_dir`` should be writable by the
+    user. Note that the default cache dir might be accessible by all users,
+    depending on your OS and local configuration. If private cache is
+    mandatory, set cache_dir to a private location.
+
 ``repo_data_dir``
     The absolute path to the directory where the data delivered with the
     cartopy repository is stored.  Typically this will only be set by OS
@@ -70,6 +78,7 @@ Keys in the config dictionary:
 
 del _data_dir
 del _writable_dir
+del _cache_dir
 
 
 # Try importing a siteconfig file which exposes an update_config function,

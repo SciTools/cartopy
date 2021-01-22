@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 from datetime import datetime
 
@@ -52,7 +39,7 @@ def test_julian_day():
     (datetime(2018, 9, 29, 14, 0), -(2 + 32/60), -(32 + 25/60)),
     (datetime(1992, 2, 14, 0, 0), -(13 + 20/60), -(176 + 26/60)),
     (datetime(2030, 6, 21, 0, 0), (23 + 26/60), -(179 + 34/60))
-    ])
+])
 def test_solar_position(dt, true_lat, true_lon):
     lat, lon = _solar_position(dt)
     assert pytest.approx(true_lat, 0.1) == lat

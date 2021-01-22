@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2015 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
@@ -25,11 +12,11 @@ import shapely.geometry as sgeom
 from cartopy import geodesic
 
 
-class TestGeodesic(object):
+class TestGeodesic:
     def setup_class(self):
         """
         Data sampled from the GeographicLib Test Data for Geodesics at:
-        http://geographiclib.sourceforge.net/html/geodesic.html#testgeod
+        https://geographiclib.sourceforge.io/html/geodesic.html#testgeod
 
         """
         self.geod = geodesic.Geodesic()
@@ -151,7 +138,7 @@ def test_geometry_length_ndarray():
 
 def test_geometry_length_linestring():
     geod = geodesic.Geodesic()
-    geom = sgeom.LineString(np.array([lhr, jfk, lhr]).T)
+    geom = sgeom.LineString(np.array([lhr, jfk, lhr]))
     expected = pytest.approx(lhr_to_jfk * 2, abs=1)
     assert geod.geometry_length(geom) == expected
 
@@ -159,8 +146,8 @@ def test_geometry_length_linestring():
 def test_geometry_length_multilinestring():
     geod = geodesic.Geodesic()
     geom = sgeom.MultiLineString(
-        [sgeom.LineString(np.array([lhr, jfk]).T),
-         sgeom.LineString(np.array([tul, jfk]).T)])
+        [sgeom.LineString(np.array([lhr, jfk])),
+         sgeom.LineString(np.array([tul, jfk]))])
     expected = pytest.approx(lhr_to_jfk + jfk_to_tul, abs=1)
     assert geod.geometry_length(geom) == expected
 
@@ -182,5 +169,5 @@ def test_geometry_length_polygon():
 def test_geometry_length_point():
     geod = geodesic.Geodesic()
     geom = sgeom.Point(lhr)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         geod.geometry_length(geom)

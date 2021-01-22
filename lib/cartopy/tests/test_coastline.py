@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import pytest
 
@@ -23,14 +10,16 @@ import cartopy
 import cartopy.io.shapereader as shp
 
 
+@pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
-class TestCoastline(object):
+class TestCoastline:
     def test_robust(self):
         COASTLINE_PATH = shp.natural_earth()
 
         # Make sure all the coastlines can be projected without raising any
         # exceptions.
-        projection = cartopy.crs.TransverseMercator(central_longitude=-90)
+        projection = cartopy.crs.TransverseMercator(central_longitude=-90,
+                                                    approx=False)
         reader = shp.Reader(COASTLINE_PATH)
         all_geometries = list(reader.geometries())
         geometries = []

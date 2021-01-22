@@ -3,7 +3,7 @@
 The cartopy Feature interface
 =============================
 
-The :ref:`data copyright, license and attribution  <referencing_copyright>` can be blended on the map using `text annotations (mpl docs) <https://matplotlib.org/users/annotations_intro.html>`_ as shown in `feature_creation <../gallery/lines_and_polygons/feature_creation.html>`_.
+The :ref:`data copyright, license and attribution  <referencing_copyright>` can be blended on the map using `text annotations (mpl docs) <https://matplotlib.org/users/annotations_intro.html>`_ as shown in `feature_creation <../gallery/feature_creation.html>`_.
 
 .. currentmodule:: cartopy.feature
 
@@ -33,7 +33,7 @@ Natural Earth or GSHHS shapefiles.
 
 To simplify some very common cases, some pre-defined Features exist as :mod:`cartopy.feature`
 constants. The pre-defined Features are all small-scale (1:110m)
-`Natural Earth <http://www.naturalearthdata.com>`_ datasets, and can be added with methods
+`Natural Earth <https://www.naturalearthdata.com>`_ datasets, and can be added with methods
 such as :func:`GeoAxes.add_feature <cartopy.mpl.geoaxes.GeoAxes.add_feature>`:
 
 =======================  ================================================================
@@ -87,7 +87,7 @@ For a full list of names in this dictionary:
 Example of using the Feature class with the Matplotlib interface
 ----------------------------------------------------------------
 
-.. figure:: ../gallery/images/sphx_glr_feature_creation_001.png
-   :target: ../gallery/feature_creation.html
+.. figure:: ../gallery/lines_and_polygons/images/sphx_glr_feature_creation_001.png
+   :target: ../gallery/lines_and_polygons/feature_creation.html
    :align: center
    :scale: 50

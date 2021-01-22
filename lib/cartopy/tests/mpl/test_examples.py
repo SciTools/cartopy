@@ -1,26 +1,14 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import matplotlib.pyplot as plt
 import pytest
 
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+import cartopy.crs as ccrs
+from cartopy.tests.mpl import ImageTesting
 
 
 class ExampleImageTesting(ImageTesting):
@@ -42,16 +30,58 @@ class ExampleImageTesting(ImageTesting):
 
 
 @pytest.mark.natural_earth
-@ExampleImageTesting(['global_map'],
-                     tolerance=4 if MPL_VERSION < '2' else 0)
+@ExampleImageTesting(['global_map'])
 def test_global_map():
-    import cartopy.examples.global_map as example
-    example.main()
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
+
+    # make the map global rather than have it zoom in to
+    # the extents of any plotted data
+    ax.set_global()
+
+    ax.stock_img()
+    ax.coastlines()
+
+    ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
+    ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.PlateCarree())
+    ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.Geodetic())
 
 
 @pytest.mark.natural_earth
-@ExampleImageTesting(['contour_label'],
-                     tolerance=7.5 if MPL_VERSION < '2' else 0)
+@ExampleImageTesting(['contour_label'], tolerance=0)
 def test_contour_label():
-    import cartopy.examples.contour_labels as example
-    example.main()
+    from cartopy.tests.mpl.test_caching import sample_data
+    fig = plt.figure()
+
+    # Setup a global EckertIII map with faint coastlines.
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.EckertIII())
+    ax.set_global()
+    ax.coastlines('110m', alpha=0.1)
+
+    # Use the waves example to provide some sample data, but make it
+    # more dependent on y for more interesting contours.
+    x, y, z = sample_data((20, 40))
+    z = z * -1.5 * y
+
+    # Add colourful filled contours.
+    filled_c = ax.contourf(x, y, z, transform=ccrs.PlateCarree())
+
+    # And black line contours.
+    line_c = ax.contour(x, y, z, levels=filled_c.levels,
+                        colors=['black'],
+                        transform=ccrs.PlateCarree())
+
+    # Uncomment to make the line contours invisible.
+    # plt.setp(line_c.collections, visible=False)
+
+    # Add a colorbar for the filled contour.
+    fig.colorbar(filled_c, orientation='horizontal')
+
+    # Use the line contours to place contour labels.
+    ax.clabel(
+        line_c,  # Typically best results when labelling line contours.
+        colors=['black'],
+        manual=False,  # Automatic placement vs manual placement.
+        inline=True,  # Cut the line where the label will be placed.
+        fmt=' {:.0f} '.format,  # Labes as integers, with some extra space.
+    )

@@ -33,7 +33,7 @@ way.
 
 An example of specialising this class can be found in
 :mod:`cartopy.io.shapereader.NEShpDownloader` which enables the downloading of
-zipped shapefiles from the `<http://www.naturalearthdata.com>`_ website. All
+zipped shapefiles from the `<https://www.naturalearthdata.com>`_ website. All
 known subclasses of :class:`~cartopy.io.Downloader` are listed below for
 reference:
 

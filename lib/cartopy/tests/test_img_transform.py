@@ -1,27 +1,46 @@
-# (C) British Crown Copyright 2014 - 2017, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import numpy as np
 from numpy.testing import assert_array_equal
+import pytest
 
 import cartopy.img_transform as img_trans
 import cartopy.crs as ccrs
+
+
+@pytest.mark.parametrize('xmin, xmax', [
+    (-90, 0), (-90, 90), (-90, None),
+    (0, 90), (0, None),
+    (None, 0), (None, 90), (None, None)])
+@pytest.mark.parametrize('ymin, ymax', [
+    (-45, 0), (-45, 45), (-45, None),
+    (0, 45), (0, None),
+    (None, 0), (None, 45), (None, None)])
+def test_mesh_projection_extent(xmin, xmax, ymin, ymax):
+    proj = ccrs.PlateCarree()
+    nx = 4
+    ny = 2
+
+    target_x, target_y, extent = img_trans.mesh_projection(
+        proj, nx, ny,
+        x_extents=(xmin, xmax),
+        y_extents=(ymin, ymax))
+
+    if xmin is None:
+        xmin = proj.x_limits[0]
+    if xmax is None:
+        xmax = proj.x_limits[1]
+    if ymin is None:
+        ymin = proj.y_limits[0]
+    if ymax is None:
+        ymax = proj.y_limits[1]
+    assert_array_equal(extent, [xmin, xmax, ymin, ymax])
+    assert_array_equal(np.diff(target_x, axis=1), (xmax - xmin) / nx)
+    assert_array_equal(np.diff(target_y, axis=0), (ymax - ymin) / ny)
 
 
 def test_griding_data_std_range():

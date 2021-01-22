@@ -1,27 +1,14 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Define the SlippyImageArtist class, which interfaces with
 :class:`cartopy.io.RasterSource` instances at draw time, for interactive
 dragging and zooming of raster data.
 
 """
-
-from __future__ import (absolute_import, division, print_function)
 
 from matplotlib.image import AxesImage
 import matplotlib.artist
@@ -39,8 +26,10 @@ class SlippyImageArtist(AxesImage):
     """
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
-        super(SlippyImageArtist, self).__init__(ax, **kwargs)
-        self.set_clip_path(ax.background_patch)
+        if matplotlib.__version__ >= '3':
+            # This artist fills the Axes, so should not influence layout.
+            kwargs.setdefault('in_layout', False)
+        super().__init__(ax, **kwargs)
         self.cache = []
 
         ax.figure.canvas.mpl_connect('button_press_event', self.on_press)
@@ -54,6 +43,9 @@ class SlippyImageArtist(AxesImage):
     def on_release(self, event=None):
         self.user_is_interacting = False
         self.stale = True
+
+    def get_window_extent(self, renderer=None):
+        return self.axes.get_window_extent(renderer=renderer)
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
@@ -73,7 +65,7 @@ class SlippyImageArtist(AxesImage):
             self.set_array(img)
             with ax.hold_limits():
                 self.set_extent(extent)
-            super(SlippyImageArtist, self).draw(renderer, *args, **kwargs)
+            super().draw(renderer, *args, **kwargs)
 
     def can_composite(self):
         # As per https://github.com/SciTools/cartopy/issues/689, disable

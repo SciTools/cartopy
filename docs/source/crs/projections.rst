@@ -25,9 +25,9 @@ PlateCarree
 
     for i in range(0, nplots):
         central_longitude = 0 if i == 0 else 180
-        ax = fig.add_subplot(nplots, 1, i+1,
-                             projection=ccrs.PlateCarree(
-                                        central_longitude=central_longitude))
+        ax = fig.add_subplot(
+            nplots, 1, i+1,
+            projection=ccrs.PlateCarree(central_longitude=central_longitude))
         ax.coastlines(resolution='110m')
         ax.gridlines()
 
@@ -139,7 +139,7 @@ Miller
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(4.0915, 3))
+    plt.figure(figsize=(4.0917, 3))
     ax = plt.axes(projection=ccrs.Miller())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -236,7 +236,8 @@ TransverseMercator
     import cartopy.crs as ccrs
 
     plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.TransverseMercator())
+    ax = plt.axes(projection=ccrs.TransverseMercator(
+                            approx=False))
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -308,7 +309,8 @@ OSGB
     import cartopy.crs as ccrs
 
     plt.figure(figsize=(1.6154, 3))
-    ax = plt.axes(projection=ccrs.OSGB())
+    ax = plt.axes(projection=ccrs.OSGB(
+                            approx=False))
     ax.coastlines(resolution='50m')
     ax.gridlines()
 
@@ -535,7 +537,8 @@ OSNI
     import cartopy.crs as ccrs
 
     plt.figure(figsize=(2.4323, 3))
-    ax = plt.axes(projection=ccrs.OSNI())
+    ax = plt.axes(projection=ccrs.OSNI(
+                            approx=False))
     ax.coastlines(resolution='10m')
     ax.gridlines()
 

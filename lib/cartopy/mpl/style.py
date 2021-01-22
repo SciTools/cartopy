@@ -1,29 +1,15 @@
-# (C) British Crown Copyright 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 """
 Handles matplotlib styling in a single consistent place.
 
 """
-import warnings
 
-import six
+import warnings
 
 
 # Define the matplotlib style aliases that cartopy can expand.
@@ -80,10 +66,11 @@ def merge(*style_dicts):
             this_style['edgecolor'] = color
             this_style['facecolor'] = color
 
-        if isinstance(facecolor, six.string_types) and facecolor == 'never':
+        if isinstance(facecolor, str) and facecolor == 'never':
             requested_color = this_style.pop('facecolor', None)
-            setting_color = not (isinstance(requested_color, six.string_types)
-                                 and requested_color.lower() == 'none')
+            setting_color = not (
+                isinstance(requested_color, str) and
+                requested_color.lower() == 'none')
             if (('fc' in orig_style or 'facecolor' in orig_style) and
                     setting_color):
                 warnings.warn('facecolor will have no effect as it has been '

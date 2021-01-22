@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import operator
 import os
@@ -26,13 +13,13 @@ import numpy as np
 import pytest
 
 from cartopy import config
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
 from functools import reduce
 
 
-class TestRegrid(object):
+class TestRegrid:
     def test_array_dims(self):
         # Source data
         source_nx = 100
@@ -91,19 +78,9 @@ class TestRegrid(object):
                             target_proj, target_x, target_y)
 
 
-if MPL_VERSION < '2':
-    # Changes in zooming in old versions.
-    regrid_tolerance = 2.5
-elif '2.0.1' <= MPL_VERSION:
-    # Bug in latest Matplotlib that we don't consider correct.
-    regrid_tolerance = 4.75
-else:
-    regrid_tolerance = 0
-
-
+# Bug in latest Matplotlib that we don't consider correct.
 @pytest.mark.natural_earth
-@ImageTesting(['regrid_image'],
-              tolerance=regrid_tolerance)
+@ImageTesting(['regrid_image'], tolerance=5.55)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',

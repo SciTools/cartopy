@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import datetime
 
@@ -56,7 +43,7 @@ class Nightshade(ShapelyFeature):
 
         # make sure date is UTC, or naive with respect to time zones
         if date.utcoffset():
-            raise ValueError('datetime instance must be UTC, not {0}'.format(
+            raise ValueError('datetime instance must be UTC, not {}'.format(
                              date.tzname()))
 
         # Returns the Greenwich hour angle,
@@ -104,7 +91,7 @@ class Nightshade(ShapelyFeature):
         kwargs.setdefault('alpha', alpha)
 
         geom = sgeom.Polygon(np.column_stack((x, y)))
-        return super(Nightshade, self).__init__(
+        return super().__init__(
             [geom], rotated_pole, **kwargs)
 
 
@@ -139,7 +126,7 @@ def _julian_day(date):
         month += 12
         year -= 1
 
-    B = 2 - int(year/100) + int(int(year/100)/4)
+    B = 2 - year // 100 + (year // 100) // 4
     C = ((second/60 + minute)/60 + hour)/24
 
     JD = (int(365.25*(year + 4716)) + int(30.6001*(month+1)) +

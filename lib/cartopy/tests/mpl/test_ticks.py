@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import math
 
@@ -24,7 +11,7 @@ import matplotlib.ticker
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 
 
 def _format_lat(val, i):
@@ -50,14 +37,7 @@ def _format_lon(val, i):
         return '%.0fW' % abs(val)
 
 
-# Text tends to move a lot. Also, pre-2.0.1, the new center_baseline alignment
-# did not exist.
-if MPL_VERSION < '2.0.0':
-    ticks_tolerance = 6.3
-elif '2.0.0' <= MPL_VERSION < '2.0.1':
-    ticks_tolerance = 9
-else:
-    ticks_tolerance = 7
+ticks_tolerance = 7
 
 
 @pytest.mark.natural_earth
@@ -139,7 +119,7 @@ def test_set_xyticks():
     projections = (ccrs.PlateCarree(),
                    ccrs.Mercator(globe=ccrs.Globe(
                        semimajor_axis=math.degrees(1))),
-                   ccrs.TransverseMercator())
+                   ccrs.TransverseMercator(approx=False))
     x = -3.275024
     y = 50.753998
     for i, prj in enumerate(projections, 1):

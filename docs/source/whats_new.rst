@@ -1,3 +1,127 @@
+What's New in cartopy 0.18
+==========================
+
+:Release: 0.18.0
+:Date: 3rd May 2020
+
+For a full list of included Pull Requests and closed Issues, please see the
+`0.18 milestone <https://github.com/SciTools/cartopy/milestone/25>`_.
+
+Features
+--------
+
+* We are very pleased to announce that Greg Lucas has been added to the cartopy
+  core development team. Greg (@greglucas) added the NightShade feature in the
+  previous release, and has been instrumental in issue and PR triage leading up
+  to 0.18. He has also ensured that CI systems have kept working through
+  various upstream project changes.
+
+* Kevin Donkers and Phil Elson made the AdaptiveScalar the default for Natural
+  Earth Features. This will make the default features look much nicer when
+  plotting on zoomed in axes. (:pull:`1105`)
+
+* Elliott Sales de Andrade added support for Matplotlib 3.2 and 3.3
+  (:pull:`1425`) and Python 3.7 and 3.8 (:pull:`1428`).
+
+* Alan Snow added the ability to use Proj version 6.x (:pull:`1289`) and
+  Elliott Sales de Andrade updated a lot of the tests and build issues for this
+  upgrade (:pull:`1417`).
+
+* Andrew Huang added the ability to put the meridian and parallel gridline
+  labels on the gridlines within the plot boundaries rather than
+  only as labels on the boundary. (:pull:`1089`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        ax.set_global()
+        ax.stock_img()
+        ax.coastlines()
+        ax.gridlines(x_inline=True, draw_labels=True)
+        plt.show()
+
+* Stephane Raynaud added longitude and latitude labeling to all projections. It
+  was previously restricted to the Mercator and PlateCarree projections.
+  (:pull:`1117`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=ccrs.InterruptedGoodeHomolosine())
+        ax.set_global()
+        ax.stock_img()
+        ax.coastlines()
+        ax.gridlines(draw_labels=True)
+        plt.show()
+
+* Phil Elson added the (long awaited!) ability to label contours on GeoAxes. A
+  :ref:`sphx_glr_gallery_scalar_data_contour_labels.py` example has been added to the
+  gallery demonstrating the new capability.  (:pull:`1257`)
+
+  .. figure:: gallery/scalar_data/images/sphx_glr_contour_labels_001.png
+   :target: gallery/scalar_data/contour_labels.html
+   :align: center
+
+* Matthew Bradbury added the ability to query `UK Ordnance Survey
+  <https://apidocs.os.uk/>`_ image tiles. (:pull:`1214`)
+
+* Phil Elson added the ability to fetch image tiles using multiple
+  threads. (:pull:`1232`)
+
+* Elliott Sales de Andrade added a
+  :class:`cartopy.mpl.geoaxes.GeoAxes.GeoSpine` class to replace the
+  :attr:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` that defines the map
+  boundary. (:pull:`1213`)
+
+* Elliott Sales de Andrade improved appearance of plots with tight layout.
+  (:pull:`1213` and :pull:`1422`)
+
+* Ryan May fixed the Geostationary projection boundary so that geometries
+  no longer extend beyond the map domain. (:pull:`1216`)
+
+* Phil Elson added support for style composition of Features. This means that
+  the styles set on a Feature when it is created, and when it is added to an
+  Axes, will be processed consistently.
+
+Deprecations
+------------
+* This will be the last release with Python 2 support.
+
+* The default value for the ``origin`` argument to
+  :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` is now ``'upper'`` to match the
+  default in Matplotlib.
+
+* The :attr:`cartopy.mpl.geoaxes.GeoAxes.outline_patch` attribute is
+  deprecated. In its place, use Matplotlib's standard options for controlling
+  the Axes frame, or access ``GeoAxes.spines['geo']`` directly.
+
+* The :attr:`cartopy.mpl.geoaxes.GeoAxes.background_patch` attribute is
+  deprecated. In its place, use Matplotlib's standard options for controlling
+  the Axes patch, i.e., pass values to the constructor or access
+  ``GeoAxes.patch`` directly.
+
+* The gridliner labelling options
+  :attr:`cartopy.mpl.gridliner.Gridliner.xlabels_top`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.xlabels_bottom`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.ylabels_left`, and
+  :attr:`cartopy.mpl.gridliner.Gridliner.ylabels_right` are deprecated.
+  Instead, use :attr:`cartopy.mpl.gridliner.Gridliner.top_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.bottom_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.left_labels`, or
+  :attr:`cartopy.mpl.gridliner.Gridliner.right_labels`.
+
+--------
+
+
 What's New in cartopy 0.17
 ==========================
 
@@ -42,11 +166,12 @@ Features
 * Greg Lucas contributed functionality to plot day/night across the globe,
   which was turned into a map feature by Phil Elson. The shading can be added
   to a map with :data:`cartopy.feature.nightshade.Nightshade(datetime)`. For
-  more information, see the :ref:`sphx_glr_gallery_nightshade.py` example.
+  more information, see the
+  :ref:`sphx_glr_gallery_lines_and_polygons_nightshade.py` example.
   (:pull:`1135`, :pull:`1181`)
 
-.. figure:: _images/sphx_glr_nightshade_001.png
-   :target: gallery/nightshade.html
+.. figure:: gallery/lines_and_polygons/images/sphx_glr_nightshade_001.png
+   :target: gallery/lines_and_polygons/nightshade.html
    :align: center
 
 * Elliott Sales de Andrade added optional support for the use of
@@ -64,7 +189,7 @@ Features
   using a function. :func:`cartopy.mpl.geoaxes.GeoAxes.add_geometries` gained
   a ``styler`` argument that takes a function that given a geometry, returns a
   dictionary of style keyword arguments. The
-  :ref:`sphx_glr_gallery_hurricane_katrina.py`
+  :ref:`sphx_glr_gallery_lines_and_polygons_hurricane_katrina.py`
   example has been updated to use this. (:pull:`1019`)
 
 * Kevin Donkers, with help from Phil Elson and Peter Killick, improved the
@@ -76,7 +201,7 @@ Features
   render vector images of the coastlines using a given
   projection to enable a quick preview. (:pull:`951`, :pull:`1196`)
 
-* Fixes were added by Elliott Sales de Andrade to support the matplotlib 3.x
+* Fixes were added by Elliott Sales de Andrade to support the Matplotlib 3.x
   series. (:pull:`1130`)
 
 * Ryan May fixed up the `.Geostationary` and `.NearsidePerspective` projections
@@ -153,11 +278,11 @@ Deprecations
 
 * In CartoPy 0.18, the default value for the ``origin`` argument to
   :func:`cartopy.mpl.geoaxes.GeoAxes.imshow` will change from ``'lower'``
-  to ``'upper'`` to match the default in matplotlib.
+  to ``'upper'`` to match the default in Matplotlib.
 
 Incompatible Changes
 --------------------
-* Support for matplotlib < 1.5.1 and NumPy < 1.10 has been removed.
+* Support for Matplotlib < 1.5.1 and NumPy < 1.10 has been removed.
 
 --------
 
@@ -200,7 +325,8 @@ Features
   :data:`cartopy.feature.STATES` was added to easily access administrative
   area boundaries that were previously only accessible by manually
   constructing :class:`~cartopy.feature.NaturalEarthFeature` instances
-  (as is done in the :ref:`sphx_glr_gallery_feature_creation.py` example).
+  (as is done in the
+  :ref:`sphx_glr_gallery_lines_and_polygons_feature_creation.py` example).
   (:pull:`898`)
 
 * Daryl Herzmann and Robert Redl improved cartopy's internal conversion
@@ -213,7 +339,7 @@ Features
 * Andrew Dawson wrote a new tutorial for the user guide:
   :ref:`understanding_transform`. (:pull:`914`)
 
-.. figure:: _images/understanding_transform-6.png
+.. figure:: tutorials/understanding_transform-6.png
    :target: tutorials/understanding_transform.html
    :align: center
 
@@ -239,8 +365,8 @@ Features
 * Kevin Donkers added the 60 UTM projections example to the gallery
   in :pull:`954`:
 
-.. figure:: gallery/images/sphx_glr_utm_all_zones_001.png
-   :target: gallery/utm_all_zones.html
+.. figure:: gallery/miscellanea/images/sphx_glr_utm_all_zones_001.png
+   :target: gallery/miscellanea/utm_all_zones.html
    :align: center
 
 * Andrey Kiselev added support for reading shapes with a third (Z) dimension.
@@ -280,28 +406,28 @@ Features
   CARTOPY_USER_BACKGROUNDS environment variable.
 
 * The Web Map Tile Service (WMTS) interface has been extended so that WMTS
-  layers can be added to geoaxes in different projections.
+  layers can be added to GeoAxes in different projections.
 
 * The :class:`~cartopy.crs.NearsidePerspective` projection has been added.
 
-* Optional kwargs can now be supplied to the
+* Optional keyword arguments can now be supplied to the
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method, which will be passed to
   the OGC WMTS ``gettile`` method.
 
 * New additions to the gallery:
 
-.. figure:: gallery/images/sphx_glr_axes_grid_basic_001.png
-   :target: gallery/axes_grid_basic.html
+.. figure:: gallery/miscellanea/images/sphx_glr_axes_grid_basic_001.png
+   :target: gallery/miscellanea/axes_grid_basic.html
    :align: center
    :scale: 70
 
-.. figure:: gallery/images/sphx_glr_reprojected_wmts_001.png
-   :target: gallery/reprojected_wmts.html
+.. figure:: gallery/web_services/images/sphx_glr_reprojected_wmts_001.png
+   :target: gallery/web_services/reprojected_wmts.html
    :align: center
    :scale: 70
 
-.. figure:: gallery/images/sphx_glr_wmts_time_001.png
-   :target: gallery/wmts_time.html
+.. figure:: gallery/web_services/images/sphx_glr_wmts_time_001.png
+   :target: gallery/web_services/wmts_time.html
    :align: center
    :scale: 70
 
@@ -328,8 +454,8 @@ Features
   convenience function that returns geodetic circles. This is used by
   :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot` which draws Tissot's indicatrices on the axes.
 
-  .. figure:: gallery/images/sphx_glr_tissot_001.png
-     :target: gallery/tissot.html
+  .. figure:: gallery/lines_and_polygons/images/sphx_glr_tissot_001.png
+     :target: gallery/lines_and_polygons/tissot.html
      :align: center
      :scale: 70
 
@@ -351,8 +477,8 @@ Features
 
 * Daniel Eriksson added a new example to the gallery:
 
-  .. figure:: gallery/images/sphx_glr_aurora_forecast_001.png
-     :target: gallery/aurora_forecast.html
+  .. figure:: gallery/scalar_data/images/sphx_glr_aurora_forecast_001.png
+     :target: gallery/scalar_data/aurora_forecast.html
      :align: center
      :scale: 70
 
@@ -395,8 +521,8 @@ Features
 
 * A new example was added to the gallery:
 
-  .. figure:: gallery/images/sphx_glr_eccentric_ellipse_001.png
-     :target: gallery/eccentric_ellipse.html
+  .. figure:: gallery/miscellanea/images/sphx_glr_eccentric_ellipse_001.png
+     :target: gallery/miscellanea/eccentric_ellipse.html
      :align: center
      :scale: 70
 
@@ -438,8 +564,8 @@ Features
   Goode Homolosine map - unsurprisingly this WMS service does not provide IGH imagery, so
   cartopy has had to reproject them from a projection the WMS does support:
 
-  .. figure:: gallery/images/sphx_glr_wms_001.png
-     :target: gallery/wms.html
+  .. figure:: gallery/web_services/images/sphx_glr_wms_001.png
+     :target: gallery/web_services/wms.html
      :align: center
      :scale: 70
 
@@ -450,8 +576,8 @@ Features
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_image` method. The following example demonstrates the
   interface for another source of imagery:
 
-  .. figure:: gallery/images/sphx_glr_image_tiles_001.png
-     :target: gallery/image_tiles.html
+  .. figure:: gallery/web_services/images/sphx_glr_image_tiles_001.png
+     :target: gallery/web_services/image_tiles.html
      :align: center
      :scale: 70
 
@@ -486,8 +612,8 @@ Features
   :class:`matplotlib Path<matplotlib.path.Path>` object, which means that
   arbitrary shaped edges can be achieved:
 
-  .. figure:: gallery/images/sphx_glr_star_shaped_boundary_001.png
-     :target: gallery/star_shaped_boundary.html
+  .. figure:: gallery/miscellanea/images/sphx_glr_star_shaped_boundary_001.png
+     :target: gallery/miscellanea/star_shaped_boundary.html
      :align: center
      :scale: 70
 
@@ -498,28 +624,28 @@ Features
 * New additions to the gallery:
 
 
-  .. figure:: gallery/images/sphx_glr_un_flag_001.png
-     :target: gallery/un_flag.html
+  .. figure:: gallery/miscellanea/images/sphx_glr_un_flag_001.png
+     :target: gallery/miscellanea/un_flag.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/images/sphx_glr_always_circular_stereo_001.png
-     :target: gallery/always_circular_stereo.html
+  .. figure:: gallery/lines_and_polygons/images/sphx_glr_always_circular_stereo_001.png
+     :target: gallery/lines_and_polygons/always_circular_stereo.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/images/sphx_glr_tube_stations_001.png
-     :target: gallery/tube_stations.html
+  .. figure:: gallery/miscellanea/images/sphx_glr_tube_stations_001.png
+     :target: gallery/miscellanea/tube_stations.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/images/sphx_glr_wms_001.png
-     :target: gallery/wms.html
+  .. figure:: gallery/web_services/images/sphx_glr_wms_001.png
+     :target: gallery/web_services/wms.html
      :align: center
      :scale: 70
 
-  .. figure:: gallery/images/sphx_glr_image_tiles_001.png
-     :target: gallery/image_tiles.html
+  .. figure:: gallery/web_services/images/sphx_glr_image_tiles_001.png
+     :target: gallery/web_services/image_tiles.html
      :align: center
      :scale: 70
 
@@ -573,13 +699,13 @@ What's new in cartopy 0.11
   Hattersley to provide interactive pan and zoom OGC web services support for
   a Web Map Tile Service (WMTS) aware axes, which is available through the
   :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method. This includes support
-  for the Google Mercator projection and efficient WTMS tile caching. This new
+  for the Google Mercator projection and efficient WMTS tile caching. This new
   capability determines how to match up the available tiles projections
   with the target projection and chooses the zoom level to best match the pixel
   density in the rendered image.
 
-  .. figure:: gallery/images/sphx_glr_wmts_001.png
-     :target: gallery/wmts.html
+  .. figure:: gallery/web_services/images/sphx_glr_wmts_001.png
+     :target: gallery/web_services/wmts.html
      :align: center
      :scale: 70
 
@@ -604,8 +730,8 @@ What's new in cartopy 0.11
   rectangular projections. The formatters are customizable and can be used to produce
   nice tick labels in a variety of styles:
 
-  .. figure:: gallery/images/sphx_glr_tick_labels_001.png
-     :target: gallery/tick_labels.html
+  .. figure:: gallery/gridlines_and_labels/images/sphx_glr_tick_labels_001.png
+     :target: gallery/gridlines_and_labels/tick_labels.html
      :align: center
      :scale: 70
 
@@ -643,8 +769,8 @@ capabilities, including:
   the ability to draw streamlines in any projection from a vector field in
   any other projection.
 
-  .. figure:: gallery/images/sphx_glr_barbs_001.png
-     :target: gallery/barbs.html
+  .. figure:: gallery/vector_data/images/sphx_glr_barbs_001.png
+     :target: gallery/vector_data/barbs.html
      :align: center
      :scale: 70
 
@@ -673,16 +799,16 @@ What's new in cartopy 0.9
   for some follow on work to fully implement the Google Spherical Mercator (EPSG:3857) projection.
 
 
-    .. figure:: gallery/images/sphx_glr_eyja_volcano_001.png
-       :target: gallery/eyja_volcano.html
+    .. figure:: gallery/scalar_data/images/sphx_glr_eyja_volcano_001.png
+       :target: gallery/scalar_data/eyja_volcano.html
        :align: center
        :scale: 70
 
 * The TransverseMercator class saw a tidy up to include several common arguments (:pull:`pull request <309>`)
 * Bill Little added the Geostationary projection to allow geolocation of satellite imagery.
 
-  .. figure:: gallery/images/sphx_glr_geostationary_001.png
-     :target: gallery/geostationary.html
+  .. figure:: gallery/scalar_data/images/sphx_glr_geostationary_001.png
+     :target: gallery/scalar_data/geostationary.html
      :align: center
      :scale: 70
 
@@ -744,9 +870,9 @@ What's new in cartopy 0.6
 * Phil Elson and Carwyn Pelley extended the cartopy documentation to include
   new tutorials such as :ref:`using_the_shapereader`.
 
-* Ian Edwards :doc:`added a new example <gallery/favicon>` to create a favicon for cartopy.
+* Ian Edwards :doc:`added a new example <gallery/miscellanea/favicon>` to create a favicon for cartopy.
 
-* Phil Elson :doc:`added a new example <gallery/hurricane_katrina>` to show polygon analysis
+* Phil Elson :doc:`added a new example <gallery/lines_and_polygons/hurricane_katrina>` to show polygon analysis
   and visualisation with Shapely and cartopy.
 
 * Edward Campbell added a new :py:class:`cartopy.crs.EuroPP` projection for UTM zone 32.
@@ -811,9 +937,9 @@ Deprecations
 Feature API
 -----------
 
-A new features api is now available, see :doc:`tutorials/using_the_shapereader`.
+A new features API is now available, see :doc:`tutorials/using_the_shapereader`.
 
-.. figure:: gallery/images/sphx_glr_features_001.png
-   :target: gallery/features.html
+.. figure:: gallery/lines_and_polygons/images/sphx_glr_features_001.png
+   :target: gallery/lines_and_polygons/features.html
    :align: center
    :scale: 70

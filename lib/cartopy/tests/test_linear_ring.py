@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2011 - 2017, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import numpy as np
 import pytest
@@ -24,7 +11,7 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 
 
-class TestBoundary(object):
+class TestBoundary:
     def test_cuts(self):
         # Check that fragments do not start or end with one of the
         # original ... ?
@@ -60,7 +47,7 @@ class TestBoundary(object):
         # Check that a ring that is completely out of the map boundary
         # produces an empty result.
         # XXX Check efficiency?
-        projection = ccrs.TransverseMercator(central_longitude=0)
+        projection = ccrs.TransverseMercator(central_longitude=0, approx=True)
 
         rings = [
             # All valid
@@ -86,7 +73,7 @@ class TestBoundary(object):
                     assert mlinestr.is_empty
 
 
-class TestMisc(object):
+class TestMisc:
     def test_small(self):
         # What happens when a small (i.e. < threshold) feature crosses the
         # boundary?

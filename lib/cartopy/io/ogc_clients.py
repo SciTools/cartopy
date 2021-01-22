@@ -1,19 +1,8 @@
-# (C) British Crown Copyright 2014 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 Implements RasterSource classes which can retrieve imagery from web services
 such as WMS and WMTS.
@@ -23,14 +12,9 @@ The matplotlib interface can make use of RasterSources via the
 with additional specific methods which make use of this for WMS and WMTS
 (:meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wms` and
 :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts`). An example of using WMTS in
-this way can be found at :ref:`sphx_glr_gallery_wmts.py`.
-
+this way can be found at :ref:`sphx_glr_gallery_web_services_wmts.py`.
 
 """
-
-from __future__ import (absolute_import, division, print_function)
-
-import six
 
 import collections
 import io
@@ -66,7 +50,7 @@ _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 _CRS_TO_OGC_SRS = collections.OrderedDict(
     [(ccrs.PlateCarree(), 'EPSG:4326'),
      (ccrs.Mercator.GOOGLE, 'EPSG:900913'),
-     (ccrs.OSGB(), 'EPSG:27700')
+     (ccrs.OSGB(approx=True), 'EPSG:27700')
      ])
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
@@ -81,14 +65,14 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:EPSG::3031': 1,
     'urn:ogc:def:crs:EPSG::3413': 1,
     'urn:ogc:def:crs:EPSG::3857': 1,
-    'urn:ogc:def:crs:EPSG:6.18:3:3857': 1
+    'urn:ogc:def:crs:EPSG:6.18.3:3857': 1
 }
 
 _URN_TO_CRS = collections.OrderedDict(
     [('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
      ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
      ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
-     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB()),
+     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB(approx=True)),
      ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
          central_latitude=-90,
          true_scale_latitude=-71)),
@@ -97,7 +81,7 @@ _URN_TO_CRS = collections.OrderedDict(
          central_latitude=90,
          true_scale_latitude=70)),
      ('urn:ogc:def:crs:EPSG::3857', ccrs.GOOGLE_MERCATOR),
-     ('urn:ogc:def:crs:EPSG:6.18:3:3857', ccrs.GOOGLE_MERCATOR)
+     ('urn:ogc:def:crs:EPSG:6.18.3:3857', ccrs.GOOGLE_MERCATOR)
      ])
 
 # XML namespace definitions
@@ -122,7 +106,9 @@ def _warped_located_image(image, source_projection, source_extent,
     else:
         # Convert Image to numpy array (flipping so that origin
         # is 'lower').
-        img, extent = warp_array(np.asanyarray(image)[::-1],
+        # Convert to RGBA to keep the color palette in the regrid process
+        # if any
+        img, extent = warp_array(np.asanyarray(image.convert('RGBA'))[::-1],
                                  source_proj=source_projection,
                                  source_extent=source_extent,
                                  target_proj=output_projection,
@@ -136,19 +122,9 @@ def _warped_located_image(image, source_projection, source_extent,
         # This avoids unsightly grey boundaries appearing when the
         # extent is limited (i.e. not global).
         if np.ma.is_masked(img):
-            if img.shape[2:3] == (3,):
-                # RGB
-                old_img = img
-                img = np.zeros(img.shape[:2] + (4,), dtype=img.dtype)
-                img[:, :, 0:3] = old_img
-                img[:, :, 3] = ~ np.any(old_img.mask, axis=2)
-                if img.dtype.kind == 'u':
-                    img[:, :, 3] *= 255
-            elif img.shape[2:3] == (4,):
-                # RGBA
-                img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
-                                        img[:, :, 3])
-                img = img.data
+            img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
+                                    img[:, :, 3])
+            img = img.data
 
         # Convert warped image array back to an Image, undoing the
         # earlier flip.
@@ -243,10 +219,10 @@ class WMSRasterSource(RasterSource):
         if WebMapService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, six.string_types):
+        if isinstance(service, str):
             service = WebMapService(service)
 
-        if isinstance(layers, six.string_types):
+        if isinstance(layers, str):
             layers = [layers]
 
         if getmap_extra_kwargs is None:
@@ -281,7 +257,7 @@ class WMSRasterSource(RasterSource):
 
         """
         contents = self.service.contents
-        for proj, srs in six.iteritems(_CRS_TO_OGC_SRS):
+        for proj, srs in _CRS_TO_OGC_SRS.items():
             missing = any(srs not in contents[layer].crsOptions for
                           layer in self.layers)
             if not missing:
@@ -311,7 +287,7 @@ class WMSRasterSource(RasterSource):
                                      target_resolution)
 
     def fetch_raster(self, projection, extent, target_resolution):
-        target_resolution = [int(np.ceil(val)) for val in target_resolution]
+        target_resolution = [math.ceil(val) for val in target_resolution]
         wms_srs = self._native_srs(projection)
         if wms_srs is not None:
             wms_proj = projection
@@ -437,9 +413,9 @@ class WMTSRasterSource(RasterSource):
                         break
                 if matrix_set_name is None:
                     # Fail completely.
-                    available_urns = sorted(set(
+                    available_urns = sorted({
                         self.wmts.tilematrixsets[name].crs
-                        for name in matrix_set_names))
+                        for name in matrix_set_names})
                     msg = 'Unable to find tile matrix for projection.'
                     msg += '\n    Projection: ' + str(target_projection)
                     msg += '\n    Available tile CRS URNs:'
@@ -661,7 +637,7 @@ class WMTSRasterSource(RasterSource):
         return big_img, img_extent
 
 
-class WFSGeometrySource(object):
+class WFSGeometrySource:
     """Web Feature Service (WFS) retrieval for Cartopy."""
 
     def __init__(self, service, features, getfeature_extra_kwargs=None):
@@ -682,10 +658,10 @@ class WFSGeometrySource(object):
         if WebFeatureService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if isinstance(service, six.string_types):
+        if isinstance(service, str):
             service = WebFeatureService(service)
 
-        if isinstance(features, six.string_types):
+        if isinstance(features, str):
             features = [features]
 
         if getfeature_extra_kwargs is None:
@@ -712,21 +688,21 @@ class WFSGeometrySource(object):
         """
         # Using first element in crsOptions (default).
         if self._default_urn is None:
-            default_urn = set(self.service.contents[feature].crsOptions[0] for
-                              feature in self.features)
+            default_urn = {self.service.contents[feature].crsOptions[0] for
+                           feature in self.features}
             if len(default_urn) != 1:
                 ValueError('Failed to find a single common default SRS '
                            'across all features (typenames).')
             else:
                 default_urn = default_urn.pop()
 
-            if six.text_type(default_urn) not in _URN_TO_CRS:
+            if str(default_urn) not in _URN_TO_CRS:
                 raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
                                  'cartopy projection.'.format(default_urn))
 
             self._default_urn = default_urn
 
-        return _URN_TO_CRS[six.text_type(self._default_urn)]
+        return _URN_TO_CRS[str(self._default_urn)]
 
     def fetch_geometries(self, projection, extent):
         """

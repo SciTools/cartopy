@@ -1,20 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 """
 Combine the shapefile access of pyshp with the
@@ -39,15 +27,13 @@ geometry representation of shapely:
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-
 import glob
+import io
 import itertools
 import os
 
 import shapely.geometry as sgeom
 import shapefile
-import six
 
 from cartopy.io import Downloader
 from cartopy import config
@@ -61,7 +47,7 @@ except ImportError:
 __all__ = ['Reader', 'Record']
 
 
-class Record(object):
+class Record:
     """
     A single logical entry from a shapefile, combining the attributes with
     their associated geometry.
@@ -85,10 +71,14 @@ class Record(object):
         self._fields = fields
 
     def __repr__(self):
-        return '<Record: %r, %r, <fields>>' % (self.geometry, self.attributes)
+        return '<Record: {!r}, {!r}, <fields>>'.format(
+            self.geometry, self.attributes
+        )
 
     def __str__(self):
-        return 'Record(%s, %s, <fields>)' % (self.geometry, self.attributes)
+        return 'Record({}, {}, <fields>)'.format(
+            self.geometry, self.attributes
+        )
 
     @property
     def bounds(self):
@@ -127,7 +117,7 @@ class FionaRecord(Record):
         self._bounds = geometry.bounds
 
 
-class BasicReader(object):
+class BasicReader:
     """
     Provide an interface for accessing the contents of a shapefile.
 
@@ -148,7 +138,7 @@ class BasicReader(object):
         return self._reader.close()
 
     def __len__(self):
-        return self._reader.numRecords
+        return len(self._reader)
 
     def geometries(self):
         """
@@ -162,8 +152,10 @@ class BasicReader(object):
         :meth:`~Record.geometry` method.
 
         """
-        for i in range(self._reader.numRecords):
-            yield sgeom.shape(self._reader.shape(i))
+        for shape in self._reader.iterShapes():
+            # Skip the shape that can not be represented as geometry.
+            if shape.shapeType != shapefile.NULL:
+                yield sgeom.shape(shape)
 
     def records(self):
         """
@@ -172,14 +164,12 @@ class BasicReader(object):
         """
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
-        field_names = [field[0] for field in fields]
-        for i in range(self._reader.numRecords):
-            shape_record = self._reader.shapeRecord(i)
-            attributes = dict(zip(field_names, shape_record.record))
+        for shape_record in self._reader.iterShapeRecords():
+            attributes = shape_record.record.as_dict()
             yield Record(shape_record.shape, attributes, fields)
 
 
-class FionaReader(object):
+class FionaReader:
     """
     Provides an interface for accessing the contents of a shapefile
     with the fiona library, which has a much faster reader than pyshp.
@@ -264,7 +254,7 @@ else:
 def natural_earth(resolution='110m', category='physical', name='coastline'):
     """
     Return the path to the requested natural earth shapefile,
-    downloading and unziping if necessary.
+    downloading and unzipping if necessary.
 
     To identify valid components for this function, either browse
     NaturalEarthData.com, or if you know what you are looking for, go to
@@ -307,7 +297,7 @@ class NEShpDownloader(Downloader):
     # Define the NaturalEarth URL template. The natural earth website
     # returns a 302 status if accessing directly, so we use the naciscdn
     # URL directly.
-    _NE_URL_TEMPLATE = ('http://naciscdn.org/naturalearth/{resolution}'
+    _NE_URL_TEMPLATE = ('https://naciscdn.org/naturalearth/{resolution}'
                         '/{category}/ne_{resolution}_{name}.zip')
 
     def __init__(self,
@@ -346,7 +336,7 @@ class NEShpDownloader(Downloader):
 
         shapefile_online = self._urlopen(url)
 
-        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
             ext = os.path.splitext(member_path)[1]
@@ -394,7 +384,7 @@ config['downloaders'].setdefault(_ne_key,
 def gshhs(scale='c', level=1):
     """
     Return the path to the requested GSHHS shapefile,
-    downloading and unziping if necessary.
+    downloading and unzipping if necessary.
 
     """
     # Get hold of the Downloader (typically a GSHHSShpDownloader instance)
@@ -426,9 +416,8 @@ class GSHHSShpDownloader(Downloader):
                  url_template=_GSHHS_URL_TEMPLATE,
                  target_path_template=None,
                  pre_downloaded_path_template=''):
-        super(GSHHSShpDownloader, self).__init__(url_template,
-                                                 target_path_template,
-                                                 pre_downloaded_path_template)
+        super().__init__(url_template, target_path_template,
+                         pre_downloaded_path_template)
 
     def zip_file_contents(self, format_dict):
         """
@@ -447,7 +436,7 @@ class GSHHSShpDownloader(Downloader):
         # Download archive.
         url = self.url(format_dict)
         shapefile_online = self._urlopen(url)
-        zfh = ZipFile(six.BytesIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 
         # Iterate through all scales and levels and extract relevant files.

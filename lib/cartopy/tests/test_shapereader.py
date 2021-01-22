@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import os.path
 
@@ -26,7 +13,7 @@ import pytest
 import cartopy.io.shapereader as shp
 
 
-class TestLakes(object):
+class TestLakes:
     def setup_class(self):
         LAKES_PATH = os.path.join(os.path.dirname(__file__),
                                   'lakes_shapefile', 'ne_110m_lakes.shp')
@@ -82,8 +69,9 @@ class TestLakes(object):
             'The geometry was loaded in order to create the bounds.'
 
 
+@pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
-class TestRivers(object):
+class TestRivers:
     def setup_class(self):
         RIVERS_PATH = shp.natural_earth(resolution='110m',
                                         category='physical',

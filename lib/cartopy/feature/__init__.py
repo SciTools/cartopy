@@ -1,32 +1,19 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
+
 """
 This module defines :class:`Feature` instances, for use with
 ax.add_feature().
 
 """
 
-from __future__ import (absolute_import, division, print_function)
-
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import shapely.geometry as sgeom
-import six
 
 import cartopy.io.shapereader as shapereader
 import cartopy.crs
@@ -43,7 +30,6 @@ feature being plotted.
 
 """
 
-
 _NATURAL_EARTH_GEOM_CACHE = {}
 """
 Caches a mapping between (name, category, scale) and a tuple of the
@@ -56,7 +42,7 @@ same projection.
 """
 
 
-class Feature(six.with_metaclass(ABCMeta)):
+class Feature(metaclass=ABCMeta):
     """
     Represents a collection of points, lines and polygons with convenience
     methods for common drawing and filtering operations.
@@ -123,7 +109,7 @@ class Feature(six.with_metaclass(ABCMeta)):
             return self.geometries()
 
 
-class Scaler(object):
+class Scaler:
     """
     General object for handling the scale of the geometries used in a Feature.
     """
@@ -179,7 +165,7 @@ class AdaptiveScaler(Scaler):
         'fine'
 
         """
-        super(AdaptiveScaler, self).__init__(default_scale)
+        super().__init__(default_scale)
         self._default_scale = default_scale
         # Upper limit on extent in degrees.
         self._limits = limits
@@ -227,7 +213,7 @@ class ShapelyFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super(ShapelyFeature, self).__init__(crs, **kwargs)
+        super().__init__(crs, **kwargs)
         self._geoms = tuple(geometries)
 
     def geometries(self):
@@ -238,7 +224,7 @@ class NaturalEarthFeature(Feature):
     """
     A simple interface to Natural Earth shapefiles.
 
-    See http://www.naturalearthdata.com/
+    See https://www.naturalearthdata.com/
 
     """
     def __init__(self, category, name, scale, **kwargs):
@@ -260,20 +246,28 @@ class NaturalEarthFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super(NaturalEarthFeature, self).__init__(cartopy.crs.PlateCarree(),
-                                                  **kwargs)
+        super().__init__(cartopy.crs.PlateCarree(), **kwargs)
         self.category = category
         self.name = name
 
         # Cast the given scale to a (constant) Scaler if a string is passed.
-        if isinstance(scale, six.string_types):
+        if isinstance(scale, str):
             scale = Scaler(scale)
 
         self.scaler = scale
+        # Make sure this is a valid resolution
+        self._validate_scale()
 
     @property
     def scale(self):
         return self.scaler.scale
+
+    def _validate_scale(self):
+        if self.scale not in ('110m', '50m', '10m'):
+            raise ValueError(
+                '{} is not a valid Natural Earth scale. '.format(self.scale) +
+                'Valid scales are "110m", "50m", and "10m".'
+            )
 
     def geometries(self):
         """
@@ -300,7 +294,7 @@ class NaturalEarthFeature(Feature):
         If extent is None, the method returns all geometries for this dataset.
         """
         self.scaler.scale_from_extent(extent)
-        return super(NaturalEarthFeature, self).intersecting_geometries(extent)
+        return super().intersecting_geometries(extent)
 
     def with_scale(self, new_scale):
         """
@@ -352,7 +346,7 @@ class GSHHSFeature(Feature):
 
     """
     def __init__(self, scale='auto', levels=None, **kwargs):
-        super(GSHHSFeature, self).__init__(cartopy.crs.PlateCarree(), **kwargs)
+        super().__init__(cartopy.crs.PlateCarree(), **kwargs)
 
         if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
                          'intermediate', 'i', 'high', 'h', 'full', 'f'):
@@ -451,13 +445,13 @@ class WFSFeature(Feature):
         try:
             from cartopy.io.ogc_clients import WFSGeometrySource
         except ImportError as e:
-            six.raise_from(ImportError(
+            raise ImportError(
                 'WFSFeature requires additional dependencies. If installed '
-                'via pip, try `pip install cartopy[ows]`.\n'), e)
+                'via pip, try `pip install cartopy[ows]`.\n') from e
 
         self.source = WFSGeometrySource(wfs, features)
         crs = self.source.default_projection()
-        super(WFSFeature, self).__init__(crs, **kwargs)
+        super().__init__(crs, **kwargs)
         # Default kwargs
         self._kwargs.setdefault('edgecolor', 'black')
         self._kwargs.setdefault('facecolor', 'none')
@@ -474,38 +468,49 @@ class WFSFeature(Feature):
         return iter(geoms)
 
 
-BORDERS = NaturalEarthFeature('cultural', 'admin_0_boundary_lines_land',
-                              '110m', edgecolor='black', facecolor='never')
-"""Small scale (1:110m) country boundaries."""
-
-STATES = NaturalEarthFeature('cultural', 'admin_1_states_provinces_lakes',
-                             '110m', edgecolor='black', facecolor='none')
-"""Small scale (1:110m) state and province boundaries."""
-
-COASTLINE = NaturalEarthFeature('physical', 'coastline', '110m',
-                                edgecolor='black', facecolor='never')
-"""Small scale (1:110m) coastline, including major islands."""
+auto_scaler = AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
+"""AdaptiveScaler for NaturalEarthFeature. Default scale is '110m'.
+'110m' is used above 50 degrees, '50m' for 50-15 degrees and '10m' below 15
+degrees."""
 
 
-LAKES = NaturalEarthFeature('physical', 'lakes', '110m',
-                            edgecolor='face',
-                            facecolor=COLORS['water'])
-"""Small scale (1:110m) natural and artificial lakes."""
+BORDERS = NaturalEarthFeature(
+    'cultural', 'admin_0_boundary_lines_land',
+    auto_scaler, edgecolor='black', facecolor='never')
+"""Automatically scaled country boundaries."""
 
 
-LAND = NaturalEarthFeature('physical', 'land', '110m',
-                           edgecolor='face',
-                           facecolor=COLORS['land'], zorder=-1)
-"""Small scale (1:110m) land polygons, including major islands."""
+STATES = NaturalEarthFeature(
+    'cultural', 'admin_1_states_provinces_lakes',
+    auto_scaler, edgecolor='black', facecolor='none')
+"""Automatically scaled state and province boundaries."""
 
 
-OCEAN = NaturalEarthFeature('physical', 'ocean', '110m',
-                            edgecolor='face',
-                            facecolor=COLORS['water'], zorder=-1)
-"""Small scale (1:110m) ocean polygons."""
+COASTLINE = NaturalEarthFeature(
+    'physical', 'coastline', auto_scaler,
+    edgecolor='black', facecolor='never')
+"""Automatically scaled coastline, including major islands."""
 
 
-RIVERS = NaturalEarthFeature('physical', 'rivers_lake_centerlines', '110m',
-                             edgecolor=COLORS['water'],
-                             facecolor='never')
-"""Small scale (1:110m) single-line drainages, including lake centerlines."""
+LAKES = NaturalEarthFeature(
+    'physical', 'lakes', auto_scaler,
+    edgecolor='face', facecolor=COLORS['water'])
+"""Automatically scaled natural and artificial lakes."""
+
+
+LAND = NaturalEarthFeature(
+    'physical', 'land', auto_scaler,
+    edgecolor='face', facecolor=COLORS['land'], zorder=-1)
+"""Automatically scaled land polygons, including major islands."""
+
+
+OCEAN = NaturalEarthFeature(
+    'physical', 'ocean', auto_scaler,
+    edgecolor='face', facecolor=COLORS['water'], zorder=-1)
+"""Automatically scaled ocean polygons."""
+
+
+RIVERS = NaturalEarthFeature(
+    'physical', 'rivers_lake_centerlines', auto_scaler,
+    edgecolor=COLORS['water'], facecolor='never')
+"""Automatically scaled single-line drainages, including lake centerlines."""

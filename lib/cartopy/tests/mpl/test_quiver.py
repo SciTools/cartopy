@@ -1,26 +1,10 @@
-# (C) British Crown Copyright 2015 - 2017, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
-from __future__ import (absolute_import, division, print_function)
-
-try:
-    from unittest import mock
-except ImportError:
-    import mock
+from unittest import mock
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -32,7 +16,7 @@ import cartopy.crs as ccrs
 
 # Note, other tests for quiver exist in test_mpl_integration.
 
-class TestQuiverShapes(object):
+class TestQuiverShapes:
     def setup_method(self):
         self.x = np.linspace(-60, 42.5, 10)
         self.y = np.linspace(30, 72.5, 7)
@@ -51,7 +35,7 @@ class TestQuiverShapes(object):
                            self.u.ravel(), self.v.ravel(), transform=self.rp)
         args, kwargs = patch.call_args
         assert len(args) == 5
-        assert sorted(kwargs.keys()) == [u'transform']
+        assert sorted(kwargs.keys()) == ['transform']
         shapes = [arg.shape for arg in args[1:]]
         # Assert that all the shapes have been broadcast.
         assert shapes == [(70, )] * 4
@@ -62,7 +46,7 @@ class TestQuiverShapes(object):
             self.ax.quiver(self.x, self.y, self.u, self.v, transform=self.rp)
         args, kwargs = patch.call_args
         assert len(args) == 5
-        assert sorted(kwargs.keys()) == [u'transform']
+        assert sorted(kwargs.keys()) == ['transform']
         shapes = [arg.shape for arg in args[1:]]
         # Assert that all the shapes have been broadcast.
         assert shapes == [(7, 10)] * 4

@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import contextlib
 import os
@@ -130,7 +117,7 @@ def test_downloading_simple_ascii(download_to_temp):
                              'raised. Got {}.'.format(len(w)))
         assert issubclass(w[0].category, cio.DownloadWarning)
 
-    with open(tmp_fname, 'r') as fh:
+    with open(tmp_fname) as fh:
         fh.readline()
         assert fh.readline() == " * jQuery JavaScript Library v1.8.2\n"
 
@@ -161,7 +148,8 @@ def test_natural_earth_downloader(tmpdir):
 
     # check that the file gets downloaded the first time path is called
     with CallCounter(dnld_item, 'acquire_resource') as counter:
-        shp_path = dnld_item.path(format_dict)
+        with pytest.warns(cartopy.io.DownloadWarning, match="Downloading:"):
+            shp_path = dnld_item.path(format_dict)
     assert counter.count == 1, 'Item not downloaded.'
 
     assert shp_path_template.format(**format_dict) == shp_path

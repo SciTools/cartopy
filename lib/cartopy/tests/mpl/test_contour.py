@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2016 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import matplotlib.pyplot as plt
 from matplotlib.testing.decorators import cleanup
@@ -40,6 +27,11 @@ def test_contour_plot_bounds():
     ax.contourf(x, y, data, levels=np.arange(0, 40, 1))
     assert_array_almost_equal(ax.get_extent(),
                               np.array([x[0], x[-1], y[0], y[-1]]))
+
+    # Levels that don't include data should not fail.
+    plt.figure()
+    ax = plt.axes(projection=proj_lcc)
+    ax.contourf(x, y, data, levels=np.max(data) + np.arange(1, 3))
 
 
 @cleanup
@@ -68,4 +60,16 @@ def test_contour_linear_ring():
                       boundary='symm')
     ax.contourf(lons, lats, vals, np.arange(9), transform=ccrs.PlateCarree())
 
+    plt.draw()
+
+
+def test_contour_update_bounds():
+    """Test that contour updates the extent"""
+    xs, ys = np.meshgrid(np.linspace(0, 360), np.linspace(-80, 80))
+    zs = ys**2
+    ax = plt.axes(projection=ccrs.Orthographic())
+    ax.contour(xs, ys, zs, transform=ccrs.PlateCarree())
+    # Force a draw, which is a smoke test to make sure contouring
+    # doesn't raise with an Orthographic projection
+    # GH issue 1673
     plt.draw()

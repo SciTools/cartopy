@@ -1,31 +1,17 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import gc
 
-import six
-
 try:
     from owslib.wmts import WebMapTileService
-except ImportError as e:
+except ImportError:
     WebMapTileService = None
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
@@ -34,10 +20,26 @@ from cartopy.io.ogc_clients import WMTSRasterSource, _OWSLIB_AVAILABLE
 import cartopy.io.shapereader
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
-from cartopy.examples.waves import sample_data
+from cartopy.tests.mpl import ImageTesting
 
 
-class CallCounter(object):
+def sample_data(shape=(73, 145)):
+    """Return ``lons``, ``lats`` and ``data`` of some fake data."""
+    nlats, nlons = shape
+    lats = np.linspace(-np.pi / 2, np.pi / 2, nlats)
+    lons = np.linspace(0, 2 * np.pi, nlons)
+    lons, lats = np.meshgrid(lons, lats)
+    wave = 0.75 * (np.sin(2 * lats) ** 8) * np.cos(4 * lons)
+    mean = 0.5 * np.cos(2 * lats) * ((np.sin(2 * lats)) ** 2 + 2)
+
+    lats = np.rad2deg(lats)
+    lons = np.rad2deg(lons)
+    data = wave + mean
+
+    return lons, lats, data
+
+
+class CallCounter:
     """
     Exposes a context manager which can count the number of calls to a specific
     function. (useful for cache checking!)
@@ -100,12 +102,15 @@ def test_coastline_loading_cache():
     plt.close()
 
 
+# Use an empty ImageTesting decorator to force the switch to
+# the Agg backend (fails on macosx without it)
 @pytest.mark.natural_earth
+@ImageTesting([])
 def test_shapefile_transform_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
     # geometry caching based on geometry object id. This test ensures
     # it is working.
-    coastline_path = cartopy.io.shapereader.natural_earth(resolution="50m",
+    coastline_path = cartopy.io.shapereader.natural_earth(resolution="110m",
                                                           category='physical',
                                                           name='coastline')
     geoms = cartopy.io.shapereader.Reader(coastline_path).geometries()
@@ -151,8 +156,9 @@ def test_shapefile_transform_cache():
 
 
 def test_contourf_transform_path_counting():
+    fig = plt.figure()
     ax = plt.axes(projection=ccrs.Robinson())
-    ax.figure.canvas.draw()
+    fig.canvas.draw()
 
     # Capture the size of the cache before our test.
     gc.collect()
@@ -164,8 +170,6 @@ def test_contourf_transform_path_counting():
         cs = plt.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
         n_geom = sum([len(c.get_paths()) for c in cs.collections])
         del cs
-        if not six.PY3:
-            del c
         ax.figure.canvas.draw()
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
@@ -187,8 +191,10 @@ def test_contourf_transform_path_counting():
     plt.close()
 
 
+@pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()

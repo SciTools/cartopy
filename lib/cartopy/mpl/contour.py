@@ -1,21 +1,9 @@
-# (C) British Crown Copyright 2011 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
-from __future__ import (absolute_import, division, print_function)
 
 from matplotlib.contour import QuadContourSet
 import matplotlib.path as mpath
@@ -52,7 +40,14 @@ class GeoContourSet(QuadContourSet):
             # list in-place (as the contour label code does in mpl).
             paths = col.get_paths()
 
-            data_t = self.ax.transData
+            # The ax attribute is deprecated in MPL 3.3 in favor of
+            # axes. So, here we test if axes is present and fall back
+            # on the old self.ax to support MPL versions less than 3.3
+            if hasattr(self, "axes"):
+                data_t = self.axes.transData
+            else:
+                data_t = self.ax.transData
+
             # Define the transform that will take us from collection
             # coordinates through to axes projection coordinates.
             col_to_data = col.get_transform() - data_t
@@ -64,7 +59,7 @@ class GeoContourSet(QuadContourSet):
 
             # The collection will now be referenced in axes projection
             # coordinates.
-            col.set_transform(self.ax.transData)
+            col.set_transform(data_t)
 
             # Clear the now incorrectly referenced paths.
             del paths[:]
@@ -95,4 +90,4 @@ class GeoContourSet(QuadContourSet):
 
         # Now that we have prepared the collection paths, call on
         # through to the underlying implementation.
-        super(GeoContourSet, self).clabel(*args, **kwargs)
+        return super().clabel(*args, **kwargs)

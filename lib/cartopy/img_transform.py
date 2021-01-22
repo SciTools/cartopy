@@ -1,26 +1,13 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """
 This module contains generic functionality to support Cartopy image
 transformations.
 
 """
-
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 try:
@@ -34,8 +21,8 @@ import cartopy.crs as ccrs
 
 
 def mesh_projection(projection, nx, ny,
-                    x_extents=[None, None],
-                    y_extents=[None, None]):
+                    x_extents=(None, None),
+                    y_extents=(None, None)):
     """
     Return sample points in the given projection which span the entire
     projection range evenly.
@@ -69,11 +56,17 @@ def mesh_projection(projection, nx, ny,
 
     """
 
+    def extent(specified, default, index):
+        if specified[index] is not None:
+            return specified[index]
+        else:
+            return default[index]
+
     # Establish the x-direction and y-direction extents.
-    x_lower = x_extents[0] or projection.x_limits[0]
-    x_upper = x_extents[1] or projection.x_limits[1]
-    y_lower = y_extents[0] or projection.y_limits[0]
-    y_upper = y_extents[1] or projection.y_limits[1]
+    x_lower = extent(x_extents, projection.x_limits, 0)
+    x_upper = extent(x_extents, projection.x_limits, 1)
+    y_lower = extent(y_extents, projection.y_limits, 0)
+    y_upper = extent(y_extents, projection.y_limits, 1)
 
     # Calculate evenly spaced sample points spanning the
     # extent - excluding endpoint.

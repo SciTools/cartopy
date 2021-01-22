@@ -1,21 +1,8 @@
-# (C) British Crown Copyright 2013 - 2017, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
-
-from __future__ import (absolute_import, division, print_function)
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_array_almost_equal
@@ -40,7 +27,7 @@ def _sample_plate_carree_vector_field():
     return u, v
 
 
-class Test_interpolate_to_grid(object):
+class Test_interpolate_to_grid:
 
     @classmethod
     def setup_class(cls):
@@ -106,7 +93,7 @@ class Test_interpolate_to_grid(object):
         assert_array_almost_equal(s_grid3, expected_s_grid)
 
 
-class Test_vector_scalar_to_grid(object):
+class Test_vector_scalar_to_grid:
 
     @classmethod
     def setup_class(cls):
@@ -156,12 +143,12 @@ class Test_vector_scalar_to_grid(object):
         expected_y_grid = np.array([[5., 5., 5., 5., 5.],
                                     [7.5, 7.5, 7.5, 7.5, 7.5],
                                     [10., 10., 10., 10., 10]])
-        expected_u_grid = np.array([[np.nan, 2., 3., 2., np.nan],
-                                    [np.nan, 2.5, 3.5, 2.5, np.nan],
-                                    [2., 3., 4., 3., 2.]])
-        expected_v_grid = np.array([[np.nan, .8, .3, .8, np.nan],
-                                    [np.nan, 2.675, 2.15, 2.675, np.nan],
-                                    [5.5, 4.75, 4., 4.75, 5.5]])
+        expected_u_grid = np.array([[np.nan, np.nan, 3, np.nan, np.nan],
+                                    [np.nan, 2.3838, 3.5025, 2.6152, np.nan],
+                                    [2, 3.0043, 4, 2.9022, 2]])
+        expected_v_grid = np.array([[np.nan, np.nan, 0.3, np.nan, np.nan],
+                                    [np.nan, 2.6527, 2.1904, 2.4192, np.nan],
+                                    [5.5, 4.6483, 4, 4.47, 5.5]])
 
         x_grid, y_grid, u_grid, v_grid = vec_trans.vector_scalar_to_grid(
             src_crs, target_crs, (5, 3), x_nps, y_nps, u_nps, v_nps)

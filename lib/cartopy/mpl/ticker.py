@@ -1,22 +1,9 @@
-# (C) British Crown Copyright 2014 - 2019, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 """This module contains tools for handling tick marks in cartopy."""
-
-from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from matplotlib.ticker import Formatter, MaxNLocator
@@ -34,9 +21,9 @@ class _PlateCarreeFormatter(Formatter):
 
     _target_projection = ccrs.PlateCarree()
 
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
-                 transform_precision=1e-8, dms=False,
-                 minute_symbol=u"'", second_symbol=u"''",
+    def __init__(self, direction_label=True, degree_symbol='\u00B0',
+                 number_format='g', transform_precision=1e-8, dms=False,
+                 minute_symbol="'", second_symbol="''",
                  seconds_number_format='g',
                  auto_hide=True):
         """
@@ -44,6 +31,7 @@ class _PlateCarreeFormatter(Formatter):
         for latitude and longitude axes.
 
         """
+        self._direction_labels = direction_label
         self._degree_symbol = degree_symbol
         self._degrees_number_format = number_format
         self._transform_precision = transform_precision
@@ -57,11 +45,7 @@ class _PlateCarreeFormatter(Formatter):
         self._precision = 5  # locator precision
 
     def __call__(self, value, pos=None):
-        if self.axis is not None:
-
-            if not isinstance(self.axis.axes, GeoAxes):
-                raise TypeError("This formatter can only be "
-                                "used with cartopy GeoAxes.")
+        if self.axis is not None and isinstance(self.axis.axes, GeoAxes):
 
             # We want to produce labels for values in the familiar Plate Carree
             # projection, so convert the tick values from their own projection
@@ -91,16 +75,25 @@ class _PlateCarreeFormatter(Formatter):
         return self._format_value(projected_value, value)
 
     def _format_value(self, value, original_value):
-        hemisphere = self._hemisphere(value, original_value)
+
+        hemisphere = ''
+        sign = ''
+
+        if self._direction_labels:
+            hemisphere = self._hemisphere(value, original_value)
+        else:
+            if (value != 0 and
+                    self._hemisphere(value, original_value) in ['W', 'S']):
+                sign = '-'
 
         if not self._dms:
-            return (self._format_degrees(abs(value)) +
+            return (sign + self._format_degrees(abs(value)) +
                     hemisphere)
 
         value, deg, mn, sec = self._get_dms(abs(value))
 
         # Format
-        label = u''
+        label = ''
         if sec:
             label = self._format_seconds(sec)
 
@@ -108,7 +101,7 @@ class _PlateCarreeFormatter(Formatter):
             label = self._format_minutes(mn) + label
 
         if not self._auto_hide_degrees or not label:
-            label = self._format_degrees(deg) + hemisphere + label
+            label = sign + self._format_degrees(deg) + label + hemisphere
 
         return label
 
@@ -132,7 +125,7 @@ class _PlateCarreeFormatter(Formatter):
         degs = np.round(x, self._precision).astype('i')
         y = (x - degs) * 60
         mins = np.round(y, self._precision).astype('i')
-        secs = np.round((y - mins)*60, self._precision - 3)
+        secs = np.round((y - mins) * 60, self._precision - 3)
         return x, degs, mins, secs
 
     def set_locs(self, locs):
@@ -140,7 +133,7 @@ class _PlateCarreeFormatter(Formatter):
         if not self._auto_hide:
             return
         self.locs, degs, mins, secs = self._get_dms(self.locs)
-        secs = np.round(secs, self._precision-3).astype('i')
+        secs = np.round(secs, self._precision - 3).astype('i')
         secs0 = secs == 0
         mins0 = mins == 0
 
@@ -165,23 +158,23 @@ class _PlateCarreeFormatter(Formatter):
             number_format = 'd'
         else:
             number_format = self._degrees_number_format
-        return u'{value:{number_format}}{symbol}'.format(
-                value=abs(deg),
-                number_format=number_format,
-                symbol=self._degree_symbol)
+        return '{value:{number_format}}{symbol}'.format(
+            value=abs(deg),
+            number_format=number_format,
+            symbol=self._degree_symbol)
 
     def _format_minutes(self, mn):
         """Format minutes as an integer"""
-        return u'{value:d}{symbol}'.format(
-                value=int(mn),
-                symbol=self._minute_symbol)
+        return '{value:d}{symbol}'.format(
+            value=int(mn),
+            symbol=self._minute_symbol)
 
     def _format_seconds(self, sec):
         """Format seconds as an float"""
-        return u'{value:{fmt}}{symbol}'.format(
-                value=sec,
-                fmt=self._seconds_num_format,
-                symbol=self._second_symbol)
+        return '{value:{fmt}}{symbol}'.format(
+            value=sec,
+            fmt=self._seconds_num_format,
+            symbol=self._second_symbol)
 
     def _apply_transform(self, value, target_proj, source_crs):
         """
@@ -206,9 +199,11 @@ class _PlateCarreeFormatter(Formatter):
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
-    def __init__(self, degree_symbol=u'\u00B0', number_format='g',
+
+    def __init__(self, direction_label=True,
+                 degree_symbol='\u00B0', number_format='g',
                  transform_precision=1e-8, dms=False,
-                 minute_symbol=u"'", second_symbol=u"''",
+                 minute_symbol="'", second_symbol="''",
                  seconds_number_format='g', auto_hide=True,
                  ):
         """
@@ -220,6 +215,11 @@ class LatitudeFormatter(_PlateCarreeFormatter):
 
         Parameters
         ----------
+        direction_label: optional
+            If *True* a direction label (N or S) will be drawn next to
+            latitude labels. If *False* then these
+            labels will not be drawn. Defaults to *True* (draw direction
+            labels).
         degree_symbol: optional
             The character(s) used to represent the degree symbol in the
             tick labels. Defaults to u'\u00B0' which is the unicode
@@ -280,7 +280,8 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             labels = [lat_formatter(value) for value in ticks]
 
         """
-        super(LatitudeFormatter, self).__init__(
+        super().__init__(
+            direction_label=direction_label,
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
@@ -289,12 +290,13 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
-            )
+        )
 
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
 
     def _hemisphere(self, value, value_source_crs):
+
         if value > 0:
             hemisphere = 'N'
         elif value < 0:
@@ -308,14 +310,15 @@ class LongitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for a longitude axis."""
 
     def __init__(self,
+                 direction_label=True,
                  zero_direction_label=False,
                  dateline_direction_label=False,
-                 degree_symbol=u'\u00B0',
+                 degree_symbol='\u00B0',
                  number_format='g',
                  transform_precision=1e-8,
                  dms=False,
-                 minute_symbol=u"'",
-                 second_symbol=u"''",
+                 minute_symbol="'",
+                 second_symbol="''",
                  seconds_number_format='g',
                  auto_hide=True,
                  ):
@@ -327,6 +330,11 @@ class LongitudeFormatter(_PlateCarreeFormatter):
 
         Parameters
         ----------
+        direction_label: optional
+            If *True* a direction label (E or W) will be drawn next to
+            longitude labels. If *False* then these
+            labels will not be drawn. Defaults to *True* (draw direction
+            labels).
         zero_direction_label: optional
             If *True* a direction label (E or W) will be drawn next to
             longitude labels with the value 0. If *False* then these
@@ -396,7 +404,8 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             lon_formatter.set_locs(ticks)
             labels = [lon_formatter(value) for value in ticks]
         """
-        super(LongitudeFormatter, self).__init__(
+        super().__init__(
+            direction_label=direction_label,
             degree_symbol=degree_symbol,
             number_format=number_format,
             transform_precision=transform_precision,
@@ -405,7 +414,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
-            )
+        )
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
 
@@ -439,6 +448,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         return _PlateCarreeFormatter._format_degrees(self, self._fix_lons(deg))
 
     def _hemisphere(self, value, value_source_crs):
+
         value = self._fix_lons(value)
         # Perform basic hemisphere detection.
         if value < 0:
@@ -460,12 +470,13 @@ class LongitudeFormatter(_PlateCarreeFormatter):
 
 
 class LongitudeLocator(MaxNLocator):
-    """A locator for longitudes that works even at very small scale
+    """
+    A locator for longitudes that works even at very small scale.
 
     Parameters
     ----------
     dms: bool
-        Allow the locator to stop on on minutes and seconds (False by default)
+        Allow the locator to stop on minutes and seconds (False by default)
     """
 
     default_params = MaxNLocator.default_params.copy()
@@ -473,9 +484,9 @@ class LongitudeLocator(MaxNLocator):
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
-        MaxNLocator.set_params(self, **kwargs)
         if 'dms' in kwargs:
-            self._dms = kwargs['dms']
+            self._dms = kwargs.pop('dms')
+        MaxNLocator.set_params(self, **kwargs)
 
     def _guess_steps(self, vmin, vmax):
 
@@ -492,7 +503,7 @@ class LongitudeLocator(MaxNLocator):
             steps = np.array([1, 1.5, 2, 2.5, 3, 5, 10])
 
         else:
-            steps = np.array([1, 10/6., 15/6., 20/6., 30/6., 10])
+            steps = np.array([1, 10 / 6., 15 / 6., 20 / 6., 30 / 6., 10])
 
         self.set_params(steps=np.array(steps))
 
@@ -506,13 +517,15 @@ class LongitudeLocator(MaxNLocator):
 
 
 class LatitudeLocator(LongitudeLocator):
-    """A locator for latitudes that works even at very small scale
+    """
+    A locator for latitudes that works even at very small scale.
 
     Parameters
     ----------
     dms: bool
-        Allow the locator to stop on on minutes and seconds (False by default)
+        Allow the locator to stop on minutes and seconds (False by default)
     """
+
     def tick_values(self, vmin, vmax):
         vmin = max(vmin, -90.)
         vmax = min(vmax, 90.)
@@ -525,8 +538,8 @@ class LatitudeLocator(LongitudeLocator):
 
     def _raw_ticks(self, vmin, vmax):
         ticks = LongitudeLocator._raw_ticks(self, vmin, vmax)
-        return [t for t in ticks if t >= -90 and t <= 90]
+        return [t for t in ticks if -90 <= t <= 90]
 
     def bin_boundaries(self, vmin, vmax):
         ticks = LongitudeLocator.bin_boundaries(self, vmin, vmax)
-        return [t for t in ticks if t >= -90 and t <= 90]
+        return [t for t in ticks if -90 <= t <= 90]

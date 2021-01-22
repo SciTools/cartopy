@@ -1,38 +1,24 @@
-# (C) British Crown Copyright 2011 - 2018, Met Office
+# Copyright Cartopy Contributors
 #
-# This file is part of cartopy.
-#
-# cartopy is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the
-# Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# cartopy is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with cartopy.  If not, see <https://www.gnu.org/licenses/>.
+# This file is part of Cartopy and is released under the LGPL license.
+# See COPYING and COPYING.LESSER in the root of the repository for full
+# licensing details.
 
-from __future__ import (absolute_import, division, print_function)
+from unittest import mock
 
 from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
-try:
-    from unittest import mock
-except ImportError:
-    import mock
 import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
+from cartopy.tests.mpl import ImageTesting
 from cartopy.tests.mpl.test_caching import CallCounter
 
 
-class TestNoSpherical(object):
+class TestNoSpherical:
     def setup_method(self):
         self.ax = plt.axes(projection=ccrs.PlateCarree())
         self.data = np.arange(12).reshape((3, 4))
@@ -85,7 +71,7 @@ def test_transform_PlateCarree_shortcut():
         assert counter.count == 2
 
 
-class Test_InterProjectionTransform():
+class Test_InterProjectionTransform:
     def pc_2_pc(self):
         return InterProjectionTransform(
             ccrs.PlateCarree(), ccrs.PlateCarree())
@@ -111,7 +97,7 @@ class Test_InterProjectionTransform():
         assert self.pc_2_pc() != self.pc_2_rob()
 
 
-class Test_Axes_add_geometries():
+class Test_Axes_add_geometries:
     def teardown_method(self):
         plt.close()
 
@@ -134,3 +120,34 @@ class Test_Axes_add_geometries():
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"
+
+
+@ImageTesting(['geoaxes_subslice'])
+def test_geoaxes_no_subslice():
+    """Test that we do not trigger matplotlib's line subslice optimization."""
+    # This behavior caused lines with > 1000 points and
+    # sorted data to disappear
+
+    fig, axes = plt.subplots(1, 2, subplot_kw={'projection': ccrs.Mercator()})
+    for ax, num_points in zip(axes, [1000, 1001]):
+        lats = np.linspace(35, 37, num_points)
+        lons = np.linspace(-117, -115, num_points)
+        ax.plot(lons, lats, transform=ccrs.PlateCarree())
+
+
+@ImageTesting(['geoaxes_set_boundary_clipping'])
+def test_geoaxes_set_boundary_clipping():
+    """Test that setting the boundary works properly for clipping #1620."""
+    lon, lat = np.meshgrid(np.linspace(-180., 180., 361),
+                           np.linspace(-90., -60., 31))
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 1, 1, projection=ccrs.SouthPolarStereo())
+
+    # Limit the map to -60 degrees latitude and below.
+    ax1.set_extent([-180, 180, -90, -60], ccrs.PlateCarree())
+    ax1.gridlines()
+
+    ax1.contourf(lon, lat, lat, transform=ccrs.PlateCarree())
+
+    ax1.set_boundary(mpath.Path.circle(center=(0.5, 0.5), radius=0.5),
+                     transform=ax1.transAxes)
