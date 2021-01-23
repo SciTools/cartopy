@@ -1,4 +1,4 @@
-What's New in cartopy 0.18
+What's New in cartopy 0.19
 ==========================
 
 :Release: 0.19.0
@@ -30,6 +30,10 @@ Features
   Liam Bindle extended this capability to update the color limits
   (:pull:`1655`) and Sebastian David Eastham fixed the return values when
   `get_array()` was called (:pull:`1656`)
+
+.. figure:: gallery/miscellanea/images/sphx_glr_animate_surface_001.gif
+   :target: gallery/miscellanea/animate_surface.html
+   :align: center
 
 * @htonchia and Greg Lucas fixed an issue with large cells appearing in
   pcolormesh plots. (:pull:`1622`)
