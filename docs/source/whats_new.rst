@@ -58,6 +58,23 @@ Features
   
 * Daryl Herzmann added the ability to make Hexbin plots. (:pull:`1542`)
 
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import cartopy.crs as ccrs
+
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=ccrs.Robinson())
+        ax.coastlines()
+
+        x, y = np.meshgrid(np.arange(-179, 181), np.arange(-90, 91))
+        data = np.sqrt(x**2 + y**2)
+        ax.hexbin(x.flatten(), y.flatten(), C=data.flatten(),
+                  gridsize=20, transform=ccrs.PlateCarree())
+        plt.show()
+
 * Kyle Penner fixed image plotting when a 2D alpha array is input. (:pull:`1543`)
 
 * Elliott Sales de Andrade and Hugo van Kemenade removed Python 2 support.
