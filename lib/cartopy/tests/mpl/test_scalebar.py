@@ -10,9 +10,8 @@ from cartopy.mpl.scalebar import fancy_scalebar
 
 
 def test_scalebar():
-    """Test that we do not trigger matplotlib's line subslice optimization."""
-    # This behavior caused lines with > 1000 points and
-    # sorted data to disappear
+    """Test the scalebar"""
+
 
     fig, axes = plt.subplots(1, 2,
                              subplot_kw={'projection':
@@ -45,9 +44,8 @@ def test_scalebar():
 
 
 def test_scalebar_within_geoaxes():
-    """Test that we do not trigger matplotlib's line subslice optimization."""
-    # This behavior caused lines with > 1000 points and
-    # sorted data to disappear
+    """Test scalebat within the geoaxes"""
+
 
     fig, axes = plt.subplots(1, 2,
                              subplot_kw={'projection':
@@ -69,8 +67,6 @@ def test_scalebar_within_geoaxes():
                             max_stripes=3)
             ax.stock_img()
             ax.coastlines()
-
-        fig.show()
 
         plt.close('all')
 
