@@ -1812,7 +1812,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
                     # a shape of (Ny-1, Nx-1) and pts has a shape of (Ny*Nx, 2)
 
-                    mask = np.zeros(C.shape, dtype=np.bool)
+                    mask = np.zeros(C.shape, dtype=bool)
 
                     # Mask out the cells if there was a diagonal found with a
                     # large length. NB. Masking too much only has
