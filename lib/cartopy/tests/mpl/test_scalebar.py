@@ -12,7 +12,6 @@ from cartopy.mpl.scalebar import fancy_scalebar
 def test_scalebar():
     """Test the scalebar"""
 
-
     fig, axes = plt.subplots(1, 2,
                              subplot_kw={'projection':
                                          ccrs.Mercator()})
@@ -45,7 +44,6 @@ def test_scalebar():
 
 def test_scalebar_within_geoaxes():
     """Test scalebat within the geoaxes"""
-
 
     fig, axes = plt.subplots(1, 2,
                              subplot_kw={'projection':
