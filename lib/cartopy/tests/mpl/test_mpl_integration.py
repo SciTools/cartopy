@@ -363,6 +363,7 @@ def test_pcolormesh_get_array_with_mask():
     assert np.array_equal(data2.ravel(), c.get_array()), \
         'Data supplied does not match data retrieved in unwrapped case'
 
+
 tolerance = 1.61
 if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
     tolerance += 0.8
