@@ -1281,7 +1281,7 @@ class LambertAzimuthalEqualArea(Projection):
 
         super().__init__(proj4_params, globe=globe)
 
-        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
 
         # Find the antipode, and shift it a small amount in latitude to
         # approximate the extent of the projection:
@@ -1324,7 +1324,7 @@ class Miller(_RectangularProjection):
             globe = Globe(semimajor_axis=math.degrees(1), ellipse=None)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        a = float(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
 
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
@@ -1457,8 +1457,8 @@ class Stereographic(Projection):
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = np.float(self.globe.semiminor_axis or WGS84_SEMIMINOR_AXIS)
+        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = float(self.globe.semiminor_axis or WGS84_SEMIMINOR_AXIS)
 
         # Note: The magic number has been picked to maintain consistent
         # behaviour with a wgs84 globe. There is no guarantee that the scaling
@@ -1534,7 +1534,7 @@ class Orthographic(Projection):
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
 
         # To stabilise the projection of geometries, we reduce the boundary by
         # a tiny fraction at the cost of the extreme edges.
@@ -2089,8 +2089,8 @@ class Geostationary(_Satellite):
             sweep_axis=sweep_axis)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        h = np.float(satellite_height)
+        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        h = float(satellite_height)
 
         # These are only exact for a spherical Earth, owing to assuming a is
         # constant. Handling elliptical would be much harder for this.
@@ -2156,7 +2156,7 @@ class NearsidePerspective(_Satellite):
         # TODO: Let the globe return the semimajor axis always.
         a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
 
-        h = np.float(satellite_height)
+        h = float(satellite_height)
         max_x = a * np.sqrt(h / (2 * a + h))
         coords = _ellipse_boundary(max_x, max_x,
                                    false_easting, false_northing, 61)
@@ -2299,8 +2299,8 @@ class AzimuthalEquidistant(Projection):
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = np.float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = np.float(self.globe.semiminor_axis or a)
+        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        b = float(self.globe.semiminor_axis or a)
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)

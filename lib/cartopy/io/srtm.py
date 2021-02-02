@@ -485,7 +485,7 @@ class SRTMDownloader(Downloader):
             with open(filename) as f:
                 html = f.read()
 
-        mask = np.zeros((360, 181), dtype=np.bool)
+        mask = np.zeros((360, 181), dtype=bool)
 
         soup = BeautifulSoup(html)
 
