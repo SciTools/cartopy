@@ -15,7 +15,7 @@ if MPL_VERSION < "3":
     TOL = 15
 else:
     TOL = 0.5
-    
+
 grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = TOL
 grid_label_inline_tol += 1.1
 grid_label_image = 'scalebar_plot'
@@ -56,8 +56,6 @@ def test_scalebar():
         condition = False
 
     assert(condition)
-
-
 
 
 @pytest.mark.natural_earth
