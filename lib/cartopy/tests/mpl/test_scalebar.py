@@ -41,7 +41,6 @@ def test_scalebar():
                            location=(0.5, 0.2),
                            length=1000_000,
                            unit_name='km',
-                           angle=0,
                            max_stripes=5,
                            fontsize=8,
                            dy=0.05)
@@ -49,7 +48,6 @@ def test_scalebar():
             ax.gridlines(draw_labels=True)
             ax.stock_img()
             ax.coastlines()
-        plt.close('all')
         condition = True
     except BaseException as err:
         print(err)
@@ -83,8 +81,6 @@ def test_scalebar_within_geoaxes():
                             max_stripes=3)
             ax.stock_img()
             ax.coastlines()
-
-        plt.close('all')
 
         condition = True
     except BaseException as err:
