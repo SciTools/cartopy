@@ -1,6 +1,6 @@
 environment:
     matrix:
-        - PYTHON_VERSION: "3.6"
+        - PYTHON_VERSION: "3.9"
           CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
           PACKAGES: "cython numpy matplotlib-base proj pykdtree scipy"
 
@@ -14,7 +14,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
-  - if %PYTHON_VERSION%==3.6 conda update conda --yes
+  - if %PYTHON_VERSION%==3.9 conda update conda --yes
   - set ENV_NAME=test-environment
   - set PACKAGES=%PACKAGES% flufl.lock owslib pep8 pillow pyepsg pyshp pytest
   - set PACKAGES=%PACKAGES% requests setuptools_scm setuptools_scm_git_archive
