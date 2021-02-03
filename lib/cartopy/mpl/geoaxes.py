@@ -376,6 +376,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         self.add_scalebar = scale_bar
 
+
     @property
     def outline_patch(self):
         """

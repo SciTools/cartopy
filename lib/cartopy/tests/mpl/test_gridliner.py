@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
@@ -109,6 +110,7 @@ def test_gridliner():
     delta = 1.5e-2
     plt.subplots_adjust(left=0 + delta, right=1 - delta,
                         top=1 - delta, bottom=0 + delta)
+
 
 
 def test_gridliner_specified_lines():
@@ -388,3 +390,70 @@ def test_gridliner_line_limits():
     for path in paths:
         assert (np.min(path.vertices, axis=0) >= (xlim[0], ylim[0])).all()
         assert (np.max(path.vertices, axis=0) <= (xlim[1], ylim[1])).all()
+
+
+def test_gridliner_set_number_of_ticks():
+    plt.figure()
+    ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
+    ax.set_global()
+    # Test a single value passed in which represents (-lim, lim)
+    xlim, ylim = 125, 75
+    gl = ax.gridlines(xlim=xlim, ylim=ylim)
+    try:
+        gl.set_number_of_ticks(6, 'xlocator')
+
+        gl.set_number_of_ticks(4, 'ylocator')
+
+        Result = True
+    except BaseException as e:
+        print(e)
+        Result = False
+
+    assert(Result)
+
+
+@pytest.mark.natural_earth
+@ImageTesting(['gridliner_ticklabels_decimals_formatted'],
+              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+def test_gridliner_change_gridline_tick_decimal_separator():
+    plt.figure()
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_global()
+    ax.set_extent([-80, -40.0, 10.0, -30.0])
+    gl = ax.gridlines(draw_labels=True)
+    try:
+        gl.change_gridline_tick_decimal_separator(
+            gl_num_format='{0:.2f}',
+            axis='both',
+            decimal_separator=',')
+
+        Result = True
+    except BaseException as e:
+        print(e)
+        Result = False
+
+    assert(Result)
+
+
+@pytest.mark.natural_earth
+@ImageTesting(['gridliner_hemisphere_ticklabels_formatted'],
+              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+def test_gridliner_hemisphere_ticklabels_formatting():
+    plt.figure()
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_global()
+    ax.set_extent([-80, -40.0, 10.0, -30.0])
+    gl = ax.gridlines(draw_labels=True)
+    try:
+        gl.set_longitude_hemisphere_str(west_hemisphere_str='W',
+                                        east_hemisphere_str='E')
+
+        gl.set_latitude_hemisphere_str(north_hemisphere_str='N',
+                                       south_hemisphere_str='S')
+
+        Result = True
+    except BaseException as e:
+        print(e)
+        Result = False
+
+    assert(Result)
