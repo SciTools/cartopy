@@ -400,7 +400,7 @@ class Gridliner(Gridline_Base):
     def _round(x, base=5):
         if np.isnan(base):
             base = 5
-        return int(base * round(float(x) / base))
+        return int(base * round(x / base))
 
     def _find_midpoints(self, lim, ticks):
         # Find the center point between each lat gridline.
@@ -436,12 +436,13 @@ class Gridliner(Gridline_Base):
         # Get nice ticks within crs domain
         lon_ticks = self.xlocator.tick_values(lon_lim[0], lon_lim[1])
         lat_ticks = self.ylocator.tick_values(lat_lim[0], lat_lim[1])
-        lon_ticks = [value for value in lon_ticks
-                     if value >= max(lon_lim[0], crs.x_limits[0]) and
-                     value <= min(lon_lim[1], crs.x_limits[1])]
-        lat_ticks = [value for value in lat_ticks
-                     if value >= max(lat_lim[0], crs.y_limits[0]) and
-                     value <= min(lat_lim[1], crs.y_limits[1])]
+
+        inf = max(lon_lim[0], crs.x_limits[0])
+        sup = min(lon_lim[1], crs.x_limits[1])
+        lon_ticks = [value for value in lon_ticks if inf <= value <= sup]
+        inf = max(lat_lim[0], crs.y_limits[0])
+        sup = min(lat_lim[1], crs.y_limits[1])
+        lat_ticks = [value for value in lat_ticks if inf <= value <= sup]
 
         #####################
         # Gridlines drawing #

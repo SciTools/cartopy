@@ -76,7 +76,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run:
-          coveralls
+          coveralls --service=github
 
       - name: Create image output
         if: ${{ steps.test.conclusion == 'failure' }}

@@ -290,6 +290,44 @@ def test_ordnance_survey_get_image():
     assert extent1 == extent2
 
 
+def test_azuremaps_tiles_api_url():
+    subscription_key = 'foo'
+    tileset_id = 'bar'
+    tile = [0, 1, 2]
+
+    exp_url = ('https://atlas.microsoft.com/map/tile?api-version=2.0'
+               '&tilesetId=bar&x=0&y=1&zoom=2&subscription-key=foo')
+
+    az_maps_sample = cimgt.AzureMapsTiles(subscription_key, tileset_id)
+    url_str = az_maps_sample._image_url(tile)
+    assert url_str == exp_url
+
+
+@pytest.mark.network
+def test_azuremaps_get_image():
+    # In order to test fetching map images from Azure Maps
+    # an API key needs to be provided
+    try:
+        api_key = os.environ['AZURE_MAPS_SUBSCRIPTION_KEY']
+    except KeyError:
+        pytest.skip('AZURE_MAPS_SUBSCRIPTION_KEY environment variable '
+                    'is unset.')
+
+    am1 = cimgt.AzureMapsTiles(api_key, tileset_id="microsoft.imagery")
+    am2 = cimgt.AzureMapsTiles(api_key, tileset_id="microsoft.base.road")
+
+    tile = (500, 300, 10)
+
+    img1, extent1, _ = am1.get_image(tile)
+    img2, extent2, _ = am2.get_image(tile)
+
+    # Different images for different layers
+    assert img1 != img2
+
+    # The extent is the same though
+    assert extent1 == extent2
+
+
 @pytest.mark.network
 @pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
 def test_cache(cache_dir, tmpdir):
