@@ -7,8 +7,23 @@
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from cartopy.mpl.scalebar import fancy_scalebar
+import pytest
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
+if MPL_VERSION < "3":
+    TOL = 15
+else:
+    TOL = 0.5
+    
+grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = TOL
+grid_label_inline_tol += 1.1
+grid_label_image = 'scalebar_plot'
+grid_label_inline_image = 'scalebar_inline_plot'
+
+
+@pytest.mark.natural_earth
+@ImageTesting([grid_label_image], tolerance=grid_label_tol)
 def test_scalebar():
     """Test the scalebar"""
 
@@ -36,12 +51,17 @@ def test_scalebar():
             ax.coastlines()
         plt.close('all')
         condition = True
-    except BaseException:
+    except BaseException as err:
+        print(err)
         condition = False
 
     assert(condition)
 
 
+
+
+@pytest.mark.natural_earth
+@ImageTesting([grid_label_inline_image], tolerance=grid_label_tol)
 def test_scalebar_within_geoaxes():
     """Test scalebat within the geoaxes"""
 
@@ -69,7 +89,8 @@ def test_scalebar_within_geoaxes():
         plt.close('all')
 
         condition = True
-    except BaseException:
+    except BaseException as err:
+        print(err)
         condition = False
 
     assert(condition)
