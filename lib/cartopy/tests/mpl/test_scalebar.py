@@ -41,7 +41,6 @@ def test_scalebar():
                            location=(0.5, 0.2),
                            length=1000_000,
                            unit_name='km',
-                           angle=0,
                            max_stripes=5,
                            fontsize=8,
                            dy=0.05)
