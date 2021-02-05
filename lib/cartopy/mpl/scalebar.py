@@ -117,7 +117,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
                  pad=0.1,
                  borderpad=0.1,
                  sep=2,
-                 prop=None, 
+                 prop=None,
                  add_ruler=False,
                  ruler_unit='Km',
                  ruler_unit_fontsize=7,
@@ -165,32 +165,28 @@ class AnchoredScaleBar(AnchoredOffsetbox):
                               minimumdescent=True)
 
         # vertically packing a single stripe with respective label
-        
-        
+
         child = VPacker(children=[Txt_xlabel,
                                   ATB],
                         align="right", pad=5, sep=0)
-        
-        
+
         if add_ruler:
-            
+
             Text = TextArea(ruler_unit,
                             textprops=dict(fontsize=ruler_unit_fontsize,
                                            fontweight=ruler_fontweight))
-            
+
             child = VPacker(children=[child, Text],
-                                 align="center", pad=5, sep=0)
-        
+                            align="center", pad=5, sep=0)
+
         else:
-            
+
             Text = TextArea('',
                             textprops=dict(fontsize=ruler_unit_fontsize))
-            
+
             child = VPacker(children=[child, Text],
-                                 align="right", pad=5, sep=0)
-            
-        
-        
+                            align="right", pad=5, sep=0)
+
         # horizontally packing all child packs in a single offsetBox
 
         AnchoredOffsetbox.__init__(self,
@@ -218,7 +214,6 @@ def _add_scalebar(ax,
                   ruler_unit='Km',
                   ruler_fontweight='bold',
                   **kwargs):
-
     """ Add scalebars to axes
     Adds a set of scale bars to *ax*, matching the size
     to the ticks of the plot
@@ -245,8 +240,8 @@ def _add_scalebar(ax,
         proj, ax.get_figure().dpi_scale_trans)
 
     SBs = []
-    
-    average_nticks = min(len(xlabels)-1, len(xcoords)-1)
+
+    average_nticks = min(len(xlabels) - 1, len(xcoords) - 1)
 
     for enum, (xcor, xlabel) in enumerate(zip(xcoords[1:],
                                               xlabels)):
@@ -259,11 +254,11 @@ def _add_scalebar(ax,
         xlabel = int(xlabel)
 
         zorder = 999 - enum
-        
+
         if enum == average_nticks:
             add_ruler = True
-            
-        else: # odd number
+
+        else:  # odd number
             add_ruler = False
 
         sb = AnchoredScaleBar(ax,
@@ -312,7 +307,7 @@ def add_scalebar(ax,
                  max_stripes=5,
                  ytick_label_margins=0.25,
                  fontsize=8,
-                 
+
                  frameon=False,
                  font_weight='bold',
                  rotation=45,
@@ -435,7 +430,6 @@ def add_scalebar(ax,
     if verbose:
         print('Axes is projected? ', projected)
 
-
     # Map central XY data coordinates
     x0, x1, y0, y1 = ax.get_extent()
 
@@ -484,7 +478,7 @@ def add_scalebar(ax,
                   xlabels=xlabels,
                   ylabels=None,
                   loc=4,
-                  
+
                   frameon=frameon,
                   bbox_to_anchor=bbox_to_anchor,
                   fontsize=fontsize,
@@ -494,7 +488,6 @@ def add_scalebar(ax,
                   ruler_fontweight=ruler_fontweight,
                   )
 
-    
 
 if '__main__' == __name__:
 
