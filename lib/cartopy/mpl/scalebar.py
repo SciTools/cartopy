@@ -15,78 +15,6 @@ from matplotlib.offsetbox import AnchoredOffsetbox
 import matplotlib.transforms as transforms
 
 
-class AnchoredScaleBar(AnchoredOffsetbox):
-    def __init__(self, ax,
-                 transform,
-                 width,
-                 height,
-                 zorder,
-                 xlabel,
-                 fc,
-                 ylabels=None,
-                 loc=4,
-                 fontsize=5,
-                 ruler_unit_fontsize=None,
-                 pad=0.1,
-                 borderpad=0.1,
-                 sep=2,
-                 prop=None, **kwargs):
-        """
-        Draw a horizontal and/or vertical  bar with the size in
-        data coordinate of the give axes. A label will be drawn
-        underneath (center-aligned).
-
-        - transform : the coordinate frame (typically axes.transData)
-
-        - sizex,sizey : width of x,y bar, in data units. 0 to omit
-
-        - labelx,labely : labels for x,y bars; None to omit
-
-        - loc : position in containing axes
-
-        - pad, borderpad : padding, in fraction of the legend
-        font size (or prop)
-
-        - sep : separation between labels and bars in points.
-
-        - **kwargs : additional arguments passed to base class
-
-        constructor
-        """
-
-        if ruler_unit_fontsize is None:
-            ruler_unit_fontsize = fontsize * 1.5
-
-        Rect = Rectangle((0, 0),
-                         width, height, fc=fc,
-                         edgecolor='k',
-                         zorder=zorder,)
-
-        ATB = AuxTransformBox(transform)
-
-        ATB.add_artist(Rect)
-
-        Txt_xlabel = TextArea(xlabel,
-                              textprops=dict(fontsize=fontsize),
-                              minimumdescent=True)
-
-        # vertically packing a single stripe with respective label
-
-        child = VPacker(children=[Txt_xlabel,
-                                  ATB],
-                        align="right", pad=5, sep=0)
-
-        # horizontally packing all child packs in a single offsetBox
-
-        AnchoredOffsetbox.__init__(self,
-                                   loc='center left',
-                                   borderpad=borderpad,
-                                   child=child,
-                                   prop=prop,
-                                   frameon=False,
-                                   **kwargs)
-
-
 def sbs_to_patch(sbs, transform, unit, padding=2,
                  bbox_transform='axes fraction',
                  bbox_to_anchor=(0.2, 0.3)):
@@ -175,6 +103,105 @@ def _point_along_line(ax, start, distance, projected=False, verbose=False):
     return start, target_point
 
 
+class AnchoredScaleBar(AnchoredOffsetbox):
+    def __init__(self, ax,
+                 transform,
+                 width,
+                 height,
+                 zorder,
+                 xlabel,
+                 fc,
+                 ylabels=None,
+                 loc=4,
+                 fontsize=5,
+                 pad=0.1,
+                 borderpad=0.1,
+                 sep=2,
+                 prop=None, 
+                 add_ruler=False,
+                 ruler_unit='Km',
+                 ruler_unit_fontsize=7,
+                 ruler_fontweight='bold',
+                 tick_fontweight='light',
+                 **kwargs):
+        """
+        Draw a horizontal and/or vertical  bar with the size in
+        data coordinate of the give axes. A label will be drawn
+        underneath (center-aligned).
+
+        - transform : the coordinate frame (typically axes.transData)
+
+        - sizex,sizey : width of x,y bar, in data units. 0 to omit
+
+        - labelx,labely : labels for x,y bars; None to omit
+
+        - loc : position in containing axes
+
+        - pad, borderpad : padding, in fraction of the legend
+        font size (or prop)
+
+        - sep : separation between labels and bars in points.
+
+        - **kwargs : additional arguments passed to base class
+
+        constructor
+        """
+
+        if ruler_unit_fontsize is None:
+            ruler_unit_fontsize = fontsize * 1.5
+
+        Rect = Rectangle((0, 0),
+                         width, height, fc=fc,
+                         edgecolor='k',
+                         zorder=zorder,)
+
+        ATB = AuxTransformBox(transform)
+
+        ATB.add_artist(Rect)
+
+        Txt_xlabel = TextArea(xlabel,
+                              textprops=dict(fontsize=fontsize,
+                                             fontweight=tick_fontweight),
+                              minimumdescent=True)
+
+        # vertically packing a single stripe with respective label
+        
+        
+        child = VPacker(children=[Txt_xlabel,
+                                  ATB],
+                        align="right", pad=5, sep=0)
+        
+        
+        if add_ruler:
+            
+            Text = TextArea(ruler_unit,
+                            textprops=dict(fontsize=ruler_unit_fontsize,
+                                           fontweight=ruler_fontweight))
+            
+            child = VPacker(children=[child, Text],
+                                 align="center", pad=5, sep=0)
+        
+        else:
+            
+            Text = TextArea('',
+                            textprops=dict(fontsize=ruler_unit_fontsize))
+            
+            child = VPacker(children=[child, Text],
+                                 align="right", pad=5, sep=0)
+            
+        
+        
+        # horizontally packing all child packs in a single offsetBox
+
+        AnchoredOffsetbox.__init__(self,
+                                   loc='center left',
+                                   borderpad=borderpad,
+                                   child=child,
+                                   prop=prop,
+                                   frameon=False,
+                                   **kwargs)
+
+
 def _add_scalebar(ax,
                   projected,
                   xcoords,
@@ -182,13 +209,16 @@ def _add_scalebar(ax,
                   xlabels=None,
                   ylabels=None,
                   loc=4,
-                  fontsize=5,
-                  ruler_unit_fontsize=None,
                   bbox_to_anchor=(0.2, 0.5),
                   bbox_transform='axes fraction',
                   frameon=False,
+                  fontsize=5,
+                  tick_fontweight='light',
+                  ruler_unit_fontsize=None,
                   ruler_unit='Km',
+                  ruler_fontweight='bold',
                   **kwargs):
+
     """ Add scalebars to axes
     Adds a set of scale bars to *ax*, matching the size
     to the ticks of the plot
@@ -215,6 +245,8 @@ def _add_scalebar(ax,
         proj, ax.get_figure().dpi_scale_trans)
 
     SBs = []
+    
+    average_nticks = min(len(xlabels)-1, len(xcoords)-1)
 
     for enum, (xcor, xlabel) in enumerate(zip(xcoords[1:],
                                               xlabels)):
@@ -227,6 +259,12 @@ def _add_scalebar(ax,
         xlabel = int(xlabel)
 
         zorder = 999 - enum
+        
+        if enum == average_nticks:
+            add_ruler = True
+            
+        else: # odd number
+            add_ruler = False
 
         sb = AnchoredScaleBar(ax,
                               blended_transform,
@@ -238,9 +276,13 @@ def _add_scalebar(ax,
                               ylabels=ylabels,
                               loc=loc,
                               fontsize=fontsize,
-                              ruler_unit_fontsize=ruler_unit_fontsize,
                               bbox_transform=ax.transAxes,
                               bbox_to_anchor=bbox_to_anchor,
+                              add_ruler=add_ruler,
+                              ruler_unit=ruler_unit,
+                              ruler_unit_fontsize=ruler_unit_fontsize,
+                              ruler_fontweight=ruler_fontweight,
+                              tick_fontweight=tick_fontweight,
                               **kwargs)
 
         sb.set_clip_on(False)
@@ -260,14 +302,17 @@ def _add_scalebar(ax,
 
 
 def add_scalebar(ax,
-                 location,
+                 bbox_to_anchor,
                  length,
                  ruler_unit='km',
+                 ruler_fontweight='bold',
+                 tick_fontweight='light',
+                 ruler_unit_fontsize=10,
                  dy=5,
                  max_stripes=5,
                  ytick_label_margins=0.25,
                  fontsize=8,
-                 ruler_unit_fontsize=None,
+                 
                  frameon=False,
                  font_weight='bold',
                  rotation=45,
@@ -390,8 +435,6 @@ def add_scalebar(ax,
     if verbose:
         print('Axes is projected? ', projected)
 
-    # Convert all units and types.
-    location = np.asarray(location)  # For vector addition.
 
     # Map central XY data coordinates
     x0, x1, y0, y1 = ax.get_extent()
@@ -441,13 +484,17 @@ def add_scalebar(ax,
                   xlabels=xlabels,
                   ylabels=None,
                   loc=4,
-                  fontsize=fontsize,
-                  ruler_unit_fontsize=ruler_unit_fontsize,
+                  
                   frameon=frameon,
-                  bbox_to_anchor=location,
+                  bbox_to_anchor=bbox_to_anchor,
+                  fontsize=fontsize,
+                  tick_fontweight=tick_fontweight,
+                  ruler_unit_fontsize=ruler_unit_fontsize,
                   ruler_unit=ruler_unit,
+                  ruler_fontweight=ruler_fontweight,
                   )
 
+    
 
 if '__main__' == __name__:
 
@@ -469,13 +516,15 @@ if '__main__' == __name__:
             ax.set_title(ax.projection.__class__.__name__)
 
             add_scalebar(ax,
-                         location=(0.1, 0.1),
+                         bbox_to_anchor=(0.1, 0.2),
                          length=10_000_000,
                          ruler_unit='km',
                          max_stripes=3,
                          fontsize=8,
                          frameon=True,
-                         ruler_unit_fontsize=10,
+                         ruler_unit_fontsize=15,
+                         ruler_fontweight='bold',
+                         tick_fontweight='bold',
                          dy=0.085)
 
             ax.gridlines(draw_labels=True)
