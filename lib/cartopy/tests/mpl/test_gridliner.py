@@ -112,7 +112,6 @@ def test_gridliner():
                         top=1 - delta, bottom=0 + delta)
 
 
-
 def test_gridliner_specified_lines():
     meridians = [0, 60, 120, 180, 240, 360]
     parallels = [-90, -60, -30, 0, 30, 60, 90]

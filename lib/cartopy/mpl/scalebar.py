@@ -8,32 +8,29 @@ import cartopy.crs as ccrs
 import cartopy.geodesic as cgeo
 import matplotlib.pyplot as plt
 import numpy as np
-
-import matplotlib.patches as patches
 from matplotlib.patches import Rectangle
-from matplotlib.offsetbox import (AuxTransformBox, VPacker, HPacker, TextArea)
+from matplotlib.offsetbox import (AuxTransformBox, VPacker, HPacker,
+                                  TextArea)
+from matplotlib.offsetbox import AnchoredOffsetbox
 import matplotlib.transforms as transforms
 
 
-# def _axes_to_lonlat(ax, coords):
-#    """description:
-#        Transform the axes coordinates into (lon, lat)
-#
-#       Returns tuple(n,2): in the (lon,lat) format"""
-#    display = ax.transAxes.transform(coords)
-#    data = ax.transData.inverted().transform(display)
-#    lonlat = ccrs.PlateCarree().transform_point(*data, ax.projection)
-#
-#    return lonlat
-
-
-from matplotlib.offsetbox import AnchoredOffsetbox
-
-
 class AnchoredScaleBar(AnchoredOffsetbox):
-    def __init__(self, ax, transform, xcoords, height, xlabels=None,
-                 ylabels=None, loc=4,
-                 pad=0.1, borderpad=0.1, sep=2, prop=None, **kwargs):
+    def __init__(self, ax,
+                 transform,
+                 width,
+                 height,
+                 zorder,
+                 xlabel,
+                 fc,
+                 ylabels=None,
+                 loc=4,
+                 fontsize=5,
+                 ruler_unit_fontsize=None,
+                 pad=0.1,
+                 borderpad=0.1,
+                 sep=2,
+                 prop=None, **kwargs):
         """
         Draw a horizontal and/or vertical  bar with the size in
         data coordinate of the give axes. A label will be drawn
@@ -57,59 +54,29 @@ class AnchoredScaleBar(AnchoredOffsetbox):
         constructor
         """
 
-        ATBs = []
+        if ruler_unit_fontsize is None:
+            ruler_unit_fontsize = fontsize * 1.5
 
-        for enum, xcor in enumerate(xcoords[1:]):
-            width = xcoords[1] - xcoords[0]
-            if enum % 2 == 0:
-                fc = 'white'
-            else:
-                fc = 'black'
+        Rect = Rectangle((0, 0),
+                         width, height, fc=fc,
+                         edgecolor='k',
+                         zorder=zorder,)
 
-            print('width: {0}'.format(width))
+        ATB = AuxTransformBox(transform)
 
-            Rect = Rectangle((0, 0), width, height, fc=fc, edgecolor='k')
-            ATB = AuxTransformBox(transform)
+        ATB.add_artist(Rect)
 
-            ATB.add_artist(Rect)
+        Txt_xlabel = TextArea(xlabel,
+                              textprops=dict(fontsize=fontsize),
+                              minimumdescent=True)
 
-            xlabel = xlabels[enum]
+        # vertically packing a single stripe with respective label
 
-            xlabel = int(xlabel)
-
-            Txt_xlabel = TextArea(xlabel,
-                                  textprops=dict(fontsize=5),
-                                  minimumdescent=True)
-
-            # vertically packing a single stripe with respective label
-
-            child = VPacker(children=[Txt_xlabel,
-                                      ATB],
-                            align="right", pad=5, sep=0)
-
-            # TODO: add legend to the child
-            # If we use ATBs.append(ATB), the resultant scalebar will have
-            # no ticks next to each strap
-
-            # If we use ATBs.append(child), there will be ticks. Though
-            # there will be spaces between each strap.
-
-            # While there is no solution for the problem, I am suggesting
-            # the first case scenario
-
-            # Therefore (TODO): add legend to the child
-            ATBs.append(ATB)
+        child = VPacker(children=[Txt_xlabel,
+                                  ATB],
+                        align="right", pad=5, sep=0)
 
         # horizontally packing all child packs in a single offsetBox
-
-        Children = HPacker(children=list(ATBs),
-                           align="right", pad=0, sep=0)
-
-        Txt = TextArea('Km',
-                       minimumdescent=False)
-
-        child = VPacker(children=[Children, Txt],
-                        align="center", pad=2, sep=2)
 
         AnchoredOffsetbox.__init__(self,
                                    loc='center left',
@@ -120,47 +87,25 @@ class AnchoredScaleBar(AnchoredOffsetbox):
                                    **kwargs)
 
 
-def add_scalebar(ax, xcoords, height, xlabels=None,
-                 ylabels=None, loc=4,
-                 bbox_to_anchor=(0.2, 0.5),
+def sbs_to_patch(sbs, transform, unit, padding=2,
                  bbox_transform='axes fraction',
-                 **kwargs):
-    """ Add scalebars to axes
-    Adds a set of scale bars to *ax*, matching the size
-    to the ticks of the plot
-    and optionally hiding the x and y axes
-    - ax : the axis to attach ticks to
-    - matchx,matchy : if True, set size of scale bars to spacing
-    between ticks
-                    if False, size should be set using sizex and
-                    sizey params
+                 bbox_to_anchor=(0.2, 0.3)):
 
-    - hidex,hidey : if True, hide x-axis and y-axis of parent
+    # First create a single Patch for all Sbs
+    of1 = HPacker(width=2,
+                  height=1,
+                  pad=1,
+                  sep=0,
+                  align="center",
+                  mode="expand", children=sbs)
 
-    - **kwargs : additional arguments passed to AnchoredScaleBars
-
-    Returns
-        created scalebar object
-    """
-
-    blended_transform = transforms.blended_transform_factory(
-        ax.transData, ax.get_figure().dpi_scale_trans)
-
-    sb = AnchoredScaleBar(ax,
-                          blended_transform,
-                          xcoords,
-                          height,
-                          xlabels=xlabels,
-                          ylabels=ylabels,
-                          loc=loc,
-                          bbox_transform=ax.transAxes,
+    t = AnchoredOffsetbox("upper left",
+                          pad=0.4, frameon=False,
+                          bbox_transform=bbox_transform,
                           bbox_to_anchor=bbox_to_anchor,
-                          **kwargs)
+                          child=of1)
 
-    sb.set_clip_on(False)
-    ax.add_artist(sb)
-
-    return sb
+    return t
 
 
 def get_unit_converter(unit):
@@ -174,23 +119,6 @@ def get_unit_converter(unit):
                    'nm': 1e-9}  # Miles to Km
 
     return lookuptable.get(unit, 'km')
-
-
-def _data_to_axes(ax, coords):
-
-    display = ax.transData.transform(coords)
-    axes_fraction = ax.transAxes.inverted().transform(display)
-
-    return axes_fraction
-
-
-def geodesy_distance_between_points(p_start, p_end):
-    geodesic = cgeo.Geodesic()
-
-    distances, start_azimuth, end_azimuth = geodesic.inverse(
-        p_start, p_end).base.T
-
-    return distances
 
 
 def _point_along_line(ax, start, distance, projected=False, verbose=False):
@@ -247,78 +175,117 @@ def _point_along_line(ax, start, distance, projected=False, verbose=False):
     return start, target_point
 
 
-def _add_bbox(ax, list_of_patches, paddings={},
-              bbox_kwargs={}, transform=None):
-    '''
-    Description:
-        This helper function adds a box behind the scalebar:
-            Code inspired by:
-    https://stackoverflow.com/questions/17086847/box-around-text-in-matplotlib
+def _add_scalebar(ax,
+                  projected,
+                  xcoords,
+                  height,
+                  xlabels=None,
+                  ylabels=None,
+                  loc=4,
+                  fontsize=5,
+                  ruler_unit_fontsize=None,
+                  bbox_to_anchor=(0.2, 0.5),
+                  bbox_transform='axes fraction',
+                  frameon=False,
+                  ruler_unit='Km',
+                  **kwargs):
+    """ Add scalebars to axes
+    Adds a set of scale bars to *ax*, matching the size
+    to the ticks of the plot
+    and optionally hiding the x and y axes
+    - ax : the axis to attach ticks to
+    - matchx,matchy : if True, set size of scale bars to spacing
+    between ticks
+                    if False, size should be set using sizex and
+                    sizey params
+
+    - hidex,hidey : if True, hide x-axis and y-axis of parent
+
+    - **kwargs : additional arguments passed to AnchoredScaleBars
+
+    Returns
+        created scalebar object
+    """
+
+    if not projected:
+        proj = ax.projection._as_mpl_transform(ax)
+    else:
+        proj = ax.transData
+    blended_transform = transforms.blended_transform_factory(
+        proj, ax.get_figure().dpi_scale_trans)
+
+    SBs = []
+
+    for enum, (xcor, xlabel) in enumerate(zip(xcoords[1:],
+                                              xlabels)):
+        width = xcor - xcoords[0]
+        if enum % 2 == 0:
+            fc = 'white'
+        else:
+            fc = 'black'
+
+        xlabel = int(xlabel)
+
+        zorder = 999 - enum
+
+        sb = AnchoredScaleBar(ax,
+                              blended_transform,
+                              width,
+                              height,
+                              zorder,
+                              xlabel,
+                              fc=fc,
+                              ylabels=ylabels,
+                              loc=loc,
+                              fontsize=fontsize,
+                              ruler_unit_fontsize=ruler_unit_fontsize,
+                              bbox_transform=ax.transAxes,
+                              bbox_to_anchor=bbox_to_anchor,
+                              **kwargs)
+
+        sb.set_clip_on(False)
+        sb.set_zorder(zorder)
+        SBs.append(sb)
+
+    # SB = sbs_to_patch(SBs,
+    #                   blended_transform,
+    #                   ruler_unit, padding=2,
+    #                   bbox_transform=ax.transAxes,
+    #                   bbox_to_anchor=bbox_to_anchor,)
+    # ax.add_artist(SB)
+    for sb in SBs:
+        ax.add_artist(sb)
+
+    return sb
 
 
-    '''
-
-    zorder = list_of_patches[0].get_zorder() - 1
-
-    xmin = min([t.get_window_extent().xmin for t in list_of_patches])
-    xmax = max([t.get_window_extent().xmax for t in list_of_patches])
-    ymin = min([t.get_window_extent().ymin for t in list_of_patches])
-    ymax = max([t.get_window_extent().ymax for t in list_of_patches])
-
-    xmin, ymin = transform.inverted().transform((xmin, ymin))
-    xmax, ymax = transform.inverted().transform((xmax, ymax))
-
-    xmin = xmin - ((xmax - xmin) * paddings['xmin'])
-    ymin = ymin - ((ymax - ymin) * paddings['ymin'])
-
-    xmax = xmax + ((xmax - xmin) * paddings['xmax'])
-    ymax = ymax + ((ymax - ymin) * paddings['ymax'])
-
-    width = (xmax - xmin)
-    height = (ymax - ymin)
-
-    # Setting xmin according to height
-
-    rect = patches.Rectangle((xmin, ymin),
-                             width,
-                             height,
-                             facecolor=bbox_kwargs['facecolor'],
-                             edgecolor=bbox_kwargs['edgecolor'],
-                             alpha=bbox_kwargs['alpha'],
-                             transform=transform,
-                             fill=True,
-                             clip_on=False,
-                             zorder=zorder)
-
-    ax.add_patch(rect)
-    return ax, rect
-
-
-def fancy_scalebar(ax,
-                   location,
-                   length,
-                   unit_name='km',
-                   dy=5,
-                   max_stripes=5,
-                   ytick_label_margins=0.25,
-                   fontsize=8,
-                   font_weight='bold',
-                   rotation=45,
-                   zorder=999,
-                   paddings={'xmin': 0.1,
+def add_scalebar(ax,
+                 location,
+                 length,
+                 ruler_unit='km',
+                 dy=5,
+                 max_stripes=5,
+                 ytick_label_margins=0.25,
+                 fontsize=8,
+                 ruler_unit_fontsize=None,
+                 frameon=False,
+                 font_weight='bold',
+                 rotation=45,
+                 zorder=999,
+                 paddings={'xmin': 0.1,
                              'xmax': 0.1,
                              'ymin': 0.3,
                              'ymax': 0.8},
 
-                   bbox_kwargs={'facecolor': 'w',
-                                'edgecolor': 'k',
-                                'alpha': 0.7},
-                   numeric_scale_bar=True,
-                   numeric_scale_bar_kwgs={'x_text_offset': 0,
-                                           'y_text_offset': -40,
-                                           'box_x_coord': 0.5,
-                                           'box_y_coord': 0.01},
-                   verbose=False):
+                 bbox_kwargs={'facecolor': 'w',
+                              'edgecolor': 'k',
+                              'alpha': 0.7},
+                 numeric_scale_bar=True,
+                 numeric_scale_bar_kwgs={'x_text_offset': 0,
+                                         'y_text_offset': -40,
+                                         'box_x_coord': 0.5,
+                                         'box_y_coord': 0.01},
+                 verbose=False):
     '''
     Description
 
@@ -418,7 +385,7 @@ def fancy_scalebar(ax,
         projected = True
 
     # getting the basic unit converter for labeling the xticks
-    unit_converter = get_unit_converter(unit_name)
+    unit_converter = get_unit_converter(ruler_unit)
 
     if verbose:
         print('Axes is projected? ', projected)
@@ -451,6 +418,11 @@ def fancy_scalebar(ax,
         startp, endp = _point_along_line(ax, central_coord_map,
                                          length * (i + 1),
                                          projected=projected)
+        # to ensure that the scalebar will not be so long as to
+        # cause errors in the plot.
+        if i > 0:
+            if endp[0] < xcoords[i]:
+                break
 
         xcoords[i + 1] = endp[0]
 
@@ -462,193 +434,20 @@ def fancy_scalebar(ax,
 
     # Stacking data coordinates (the target ticks of the scalebar) in a list
 
-    add_scalebar(ax, xcoords, dy, xlabels=xlabels, ylabels=None, loc=4
-                 )
+    _add_scalebar(ax,
+                  projected,
+                  xcoords,
+                  dy,
+                  xlabels=xlabels,
+                  ylabels=None,
+                  loc=4,
+                  fontsize=fontsize,
+                  ruler_unit_fontsize=ruler_unit_fontsize,
+                  frameon=frameon,
+                  bbox_to_anchor=location,
+                  ruler_unit=ruler_unit,
+                  )
 
-
-#    # adding boxes
-#
-#    ax, rect = _add_bbox(ax,
-#                         filled_boxs,
-#                         bbox_kwargs=bbox_kwargs,
-#                         paddings=paddings,
-#                         transform=offset)
-#
-#    # add short tick lines
-#    for x in xcoords_in_data_frac:
-#        plt.plot((x, x),
-#                 (yl0, yl0 - y_margin),
-#                 'black',
-#                 transform=offset,
-#                 zorder=zorder,
-#                 clip_on=False)
-#
-#    # add a scale legend 'Km'
-#    font_props = mfonts.FontProperties(size=fontsize,
-#                                       weight=font_weight)
-#
-#    plt.text(np.mean(xcoords_in_data_frac),
-#             yl1 + y_margin,
-#             unit_name,
-#             color='k',
-#             verticalalignment='bottom',
-#             horizontalalignment='center',
-#             fontproperties=font_props,
-#             transform=offset,
-#             clip_on=False,
-#             zorder=zorder)
-#
-#    # add numeric labels
-#
-#    if unit_name == 'km':
-#        divider = 1e-3
-#
-#    for x, xlabel in zip(xcoords_in_data_frac, xlabels):
-#        plt.text(x,
-#                 yl0 - 2 * y_margin,
-#                 '{:g}'.format((xlabel * divider)),
-#                 verticalalignment='top',
-#                 horizontalalignment='center',
-#                 fontproperties=font_props,
-#                 transform=offset,
-#                 rotation=rotation,
-#                 clip_on=False,
-#                 zorder=zorder + 1,
-#                 # bbox=dict(facecolor='red', alpha=0.5)
-#                 # only around the xticks
-#                 )
-#
-#    # Adjusting figure borders to ensure that
-#      the scalebar is within its limits
-#
-#    # ax.get_figure().canvas.draw()
-#    # ax.get_figure().tight_layout()
-#
-#    # get rectangle background bbox
-#
-#    if numeric_scale_bar:
-#
-#        add_numeric_scale_bar(ax,
-#                              rect,
-#                              numeric_scale_bar_kwgs,
-#                              fontprops=font_props,
-#                              projected=projected)
-#
-#
-# def _add_numeric_scale_bar(ax, inches_to_cm=1 / 2.54, projected=False):
-#    '''
-#    Description:
-#        This function adds a text object, which contains
-#        the respective numeric scale of the map.
-#
-#
-#    Parameters:
-#        ax (cartopy geoaxes)
-#
-#        inches_to_cm (float): the standard ration of inches to cm
-#                              Standard value: inches_to_cm=1/2.54
-#    Returns
-#        dx_fig(float): the figure relative
-#
-#        dx_mapa/10 (float): geographical distance of 1cm
-#                            in the map in respect to ground
-#    '''
-#
-#    fig = ax.get_figure()
-#
-#    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-#
-#    bbox_in_data_coords = (ax.get_window_extent()
-#                           .transformed(ax.transData.inverted())
-#                           )
-#
-#    dx_fig = bbox.width * inches_to_cm  # width in cms
-#
-#    # Getting distance:
-#    x0, x1, y0, y1 = ax.get_extent()
-#
-#    lat_mean = np.mean([y0, y1])
-#
-#    # Define starting point.
-#    start = (x0, lat_mean)
-#
-#    delta_x = bbox_in_data_coords.width  # in degrees
-#
-#    end = (x0 + delta_x, lat_mean)
-#
-#    if not projected:
-#        dx_mapa = geodesy_distance_between_points(start, end)[0]
-#
-#        # meters to cm
-#        dx_mapa = dx_mapa * 1e2
-#
-#        # updating dx_mapa, so that it will always
-#          be [1 in fig cm: dx_mapa cm]
-#        dx_mapa = dx_mapa / dx_fig
-#
-#        # dividing by 10... It fix the error found by
-#          comparing with Qgis
-#        # (why?)
-#        dx_mapa = dx_mapa / 10
-#
-#        dx_mapa
-#    else:
-#        dx_mapa = end[0] - start[0]
-#
-#    return dx_fig, dx_mapa
-#
-#
-# def add_numeric_scale_bar(ax, patch, numeric_scale_bar_kwgs,
-#                           fontprops=None,
-#                          projected=False):
-#    '''
-#    Description:
-#        This function adds a text object surrounded by a patch.
-#
-#        The Text objection contains the respective numeric scale
-#        of the map.
-#
-#
-#    Parameters:
-#        ax (cartopy geoaxes)
-#
-#        patch (matplotlib.patch.box): the patch that will be
-# used as background
-#        of the numeric scalebar
-#
-#    Returns
-#        None
-#    '''
-#
-#    if fontprops is None:
-#        fontprops = mfonts.FontProperties(size=8,
-#                                          weight='bold')
-#
-#    dx_fig, dx_mapa = _add_numeric_scale_bar(ax, projected=projected)
-#
-#    rx, ry = patch.get_xy()
-#
-#    # cy = ry + patch.get_height() / 2.0
-#
-#    xytext = (numeric_scale_bar_kwgs['x_text_offset'],
-#              numeric_scale_bar_kwgs['y_text_offset']
-#              )
-#
-#    xy = (numeric_scale_bar_kwgs['box_x_coord'],
-#          numeric_scale_bar_kwgs['box_y_coord']
-#          )
-#
-#    ax.annotate('1:{0:.0f}'.format(dx_mapa),
-#                xy=xy,
-#                xytext=xytext,
-#                color='black',
-#                weight='bold',
-#                zorder=patch.zorder + 1,
-#                xycoords=patch,
-#                textcoords='offset points',
-#                font_properties=fontprops,
-#                ha='center',
-#                va='center')
 
 if '__main__' == __name__:
 
@@ -664,15 +463,20 @@ if '__main__' == __name__:
         axes = axes.ravel()
 
         for proj, ax in zip(projections, axes):
-            ax.projection = proj
-            fancy_scalebar(ax,
-                           location=(0.5, 0.2),
-                           length=1_000_000,
-                           unit_name='km',
 
-                           max_stripes=5,
-                           fontsize=8,
-                           dy=0.05)
+            ax.projection = proj
+
+            ax.set_title(ax.projection.__class__.__name__)
+
+            add_scalebar(ax,
+                         location=(0.1, 0.1),
+                         length=10_000_000,
+                         ruler_unit='km',
+                         max_stripes=3,
+                         fontsize=8,
+                         frameon=True,
+                         ruler_unit_fontsize=10,
+                         dy=0.085)
 
             ax.gridlines(draw_labels=True)
             ax.stock_img()
