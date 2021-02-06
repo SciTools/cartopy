@@ -12,7 +12,7 @@ import cartopy.crs as ccrs
 
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
-from cartopy.mpl import add_scalebar
+from cartopy.mpl.scalebar import add_scalebar
 
 
 # The tolerance on these tests are particularly high because of the high number
