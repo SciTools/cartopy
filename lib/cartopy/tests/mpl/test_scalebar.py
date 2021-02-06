@@ -85,8 +85,7 @@ def test_scalebar2():
 
         ax.set_title(ax.projection.__class__.__name__)
 
-        ax.add_scalebar(ax,
-                        bbox_to_anchor=(0.1, 0.2),
+        ax.add_scalebar(bbox_to_anchor=(0.1, 0.2),
                         length=10_000_000,
                         ruler_unit='km',
                         max_stripes=3,
