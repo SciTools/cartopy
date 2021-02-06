@@ -48,13 +48,15 @@ def test_scalebar():
         ax.set_title(ax.projection.__class__.__name__)
 
         add_scalebar(ax,
-                     location=(0.1, 0.1),
+                     bbox_to_anchor=(0.1, 0.2),
                      length=10_000_000,
                      ruler_unit='km',
                      max_stripes=3,
                      fontsize=8,
                      frameon=True,
-                     ruler_unit_fontsize=10,
+                     ruler_unit_fontsize=15,
+                     ruler_fontweight='bold',
+                     tick_fontweight='bold',
                      dy=0.085)
 
         ax.gridlines(draw_labels=True)
@@ -83,13 +85,16 @@ def test_scalebar2():
 
         ax.set_title(ax.projection.__class__.__name__)
 
-        ax.add_scalebar(location=(0.1, 0.1),
+        ax.add_scalebar(ax,
+                        bbox_to_anchor=(0.1, 0.2),
                         length=10_000_000,
                         ruler_unit='km',
                         max_stripes=3,
                         fontsize=8,
                         frameon=True,
-                        ruler_unit_fontsize=10,
+                        ruler_unit_fontsize=15,
+                        ruler_fontweight='bold',
+                        tick_fontweight='bold',
                         dy=0.085)
 
         ax.gridlines(draw_labels=True)
