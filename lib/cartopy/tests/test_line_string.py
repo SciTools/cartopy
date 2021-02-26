@@ -16,6 +16,9 @@ import cartopy.crs as ccrs
 
 class TestLineString:
     def test_out_of_bounds(self):
+
+        # This test is nonsense
+
         # Check that a line that is completely out of the map boundary produces
         # a valid LineString
         projection = ccrs.TransverseMercator(central_longitude=0, approx=True)

@@ -772,6 +772,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _get_extent_geom(self, crs=None):
         # Perform the calculations for get_extent(), which just repackages it.
+
         with self.hold_limits():
             if self.get_autoscale_on():
                 self.autoscale_view()
@@ -834,9 +835,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = sgeom.polygon.LineString([[x1, y1], [x2, y1],
-                                                  [x2, y2], [x1, y2],
-                                                  [x1, y1]])
+        domain_in_crs = sgeom.Polygon([[x1, y1], [x2, y1],
+                                       [x2, y2], [x1, y2],
+                                       [x1, y1]])
 
         projected = None
 
@@ -850,9 +851,9 @@ class GeoAxes(matplotlib.axes.Axes):
                            isinstance(self.projection, ccrs.PlateCarree)) or
                           crs == self.projection)
         if try_workaround:
-            boundary = self.projection.boundary
-            if boundary.equals(domain_in_crs):
-                projected = boundary
+            proj_domain = self.projection.domain
+            if proj_domain.equals(domain_in_crs):
+                projected = self.projection.boundary
 
         if projected is None:
             projected = self.projection.project_geometry(domain_in_crs, crs)

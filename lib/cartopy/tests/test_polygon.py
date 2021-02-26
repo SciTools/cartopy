@@ -35,6 +35,9 @@ class TestBoundary:
         projection.project_geometry(polygon)
 
     def test_out_of_bounds(self):
+
+        # Also nonsense
+
         # Check that a polygon that is completely out of the map boundary
         # doesn't produce an empty result.
         projection = ccrs.TransverseMercator(central_longitude=0, approx=True)

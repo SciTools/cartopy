@@ -44,6 +44,9 @@ class TestBoundary:
             assert_intersection_with_boundary(coords[-2:])
 
     def test_out_of_bounds(self):
+
+        # Also nonsense
+
         # Check that a ring that is completely out of the map boundary
         # produces an empty result.
         # XXX Check efficiency?

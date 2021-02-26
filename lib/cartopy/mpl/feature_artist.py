@@ -17,9 +17,15 @@ import weakref
 import numpy as np
 import matplotlib.artist
 import matplotlib.collections
+import matplotlib.figure as figure
+
 
 import cartopy.mpl.patch as cpatch
+from cartopy.crs import PlateCarree
 from .style import merge as style_merge, finalize as style_finalize
+
+import shapely.ops as ops
+import shapely.geometry as sgeom
 
 
 class _GeomKey:
@@ -130,6 +136,102 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         self._feature = feature
 
+    def xy_samples(self, lon_sample, lat_sample):
+        feature_crs = self._feature.crs
+        if not isinstance(feature_crs, PlateCarree):
+            x_lims = feature_crs.x_limits
+            y_lims = feature_crs.y_limits
+
+            x_samples, x_sep = np.linspace(*x_lims, 400,
+                                           endpoint=True, retstep=True)
+
+            y_samples, y_sep = np.linspace(*y_lims, 400,
+                                           endpoint=True, retstep=True)
+
+            return x_samples, x_sep, y_samples, y_sep
+        else:
+            # We need to sample the central longitude and latitude, the
+            # antipode, and -1 * (central latitude)
+            x_sample, y_sample = lon_sample, lat_sample
+
+            x_sep = y_sep = 1
+
+            x_offset = x_sample - np.floor(x_sample)
+            x_samples = np.arange(-180. + x_offset, 180. + x_offset, x_sep)
+
+            y_offset = y_sample - np.floor(y_sample)
+            y_samples = np.arange(-90. + y_offset, 90. + y_offset, y_sep)
+
+            if x_offset == 0.:
+                x_samples = np.append(x_samples, 180.)
+            if y_offset == 0.:
+                y_samples = np.append(y_samples, 90.)
+
+            if -y_sample not in y_samples:
+                ind = np.searchsorted(y_samples, -y_sample)
+                y_samples = np.insert(y_samples, ind, -y_sample)
+
+            return x_samples, x_sep, y_samples, y_sep
+
+    def build_invalid_geom(self):
+        ax = self.axes
+        # the following may work after improvements to multipolygon creation
+        # from projection results
+#         feature_crs = self._feature.crs
+#         projection_crs = ax.projection
+#         projection_domain = projection_crs.domain
+#         feature_proj_domain = feature_crs.project_geometry(projection_domain,
+#         projection_crs)
+#         feature_domain = feature_crs.domain
+#         invalid_geom = feature_domain.difference(feature_proj_domain)
+        lon_sample = ax.projection._lon_sample
+        lat_sample = ax.projection._lat_sample
+
+        x_samples, x_sep, y_samples, y_sep = self.xy_samples(
+            lon_sample, lat_sample)
+        x_grid, y_grid = np.meshgrid(x_samples, y_samples)
+        xyz = ax.projection.transform_points(self._feature.crs, x_grid, y_grid)
+        x_proj_grid, y_proj_grid = xyz[:, :, 0], xyz[:, :, 1]
+        inds_x = ~np.isfinite(x_proj_grid)
+        inds_y = ~np.isfinite(y_proj_grid)
+
+        inds = inds_x | inds_y
+        inds_bin = inds.astype(int)
+
+        fig_ = figure.Figure()
+        ax_ = fig_.add_subplot()
+        fcontour = ax_.contourf(x_grid, y_grid,
+                                inds_bin, levels=[0.5, 1.5])
+
+        paths = fcontour.collections[0].get_paths()
+        invalid_geoms = []
+        for path in paths:
+            poly = path.to_polygons()
+            if poly:
+                # 0th path is polygon exterior
+                # Following paths are interior rings
+                exterior = poly[0]
+                exterior = sgeom.LinearRing(exterior)
+                offset = max(x_sep, y_sep)
+                exterior = exterior.parallel_offset(offset, "right",
+                                                    join_style=3)
+                exterior.coords = list(exterior.coords)[::-1]
+                interiors = poly[1:]
+                interiors_shrunk = []
+                for interior in interiors:
+                    interior = sgeom.LinearRing(interior)
+                    interior_shrunk = interior.parallel_offset(offset, "right",
+                                                               join_style=3)
+                    if not interior_shrunk.is_empty:
+                        interior_shrunk.coords = list(
+                                                interior_shrunk.coords)[::-1]
+                        interiors_shrunk.append(interior_shrunk)
+                invalid_geom = sgeom.Polygon(exterior, holes=interiors_shrunk)
+                invalid_geoms.append(invalid_geom)
+
+        invalid_geom = ops.unary_union(invalid_geoms)
+        return invalid_geom
+
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer, *args, **kwargs):
         """
@@ -164,6 +266,9 @@ class FeatureArtist(matplotlib.artist.Artist):
         # Project (if necessary) and convert geometries to matplotlib paths.
         stylised_paths = OrderedDict()
         key = ax.projection
+
+        skip_geoms = ["LineString", "LinearRing", "MultiLineString"]
+
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
             # hashable, we have to use a WeakValueDictionary to manage
@@ -182,23 +287,73 @@ class FeatureArtist(matplotlib.artist.Artist):
             mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
                 geom_key, {})
             geom_paths = mapping.get(key)
-            if geom_paths is None:
-                if ax.projection != feature_crs:
-                    projected_geom = ax.projection.project_geometry(
-                        geom, feature_crs)
-                else:
-                    projected_geom = geom
-                geom_paths = cpatch.geos_to_path(projected_geom)
-                mapping[key] = geom_paths
-
             if not self._styler:
                 style = prepared_kwargs
             else:
-                # Unfreeze, then add the computed style, and then re-freeze.
-                style = style_merge(dict(prepared_kwargs), self._styler(geom))
+                # Unfreeze, then add the computed style,
+                # and then re-freeze.
+                style = style_merge(dict(prepared_kwargs),
+                                    self._styler(geom))
                 style = _freeze(style)
+            if geom_paths is None:
+                # Shapely can't represent the difference between a line and a
+                # polygon. If all geoms are lines, bypass building the polygon
+                # containing points projecting to infinity and use different
+                # masking method.
+                if (ax.projection != feature_crs) & \
+                   (geom.geom_type not in skip_geoms):
+                    if feature_crs not in ax.projection.invalid_geoms.keys():
+                        invalid_geom = self.build_invalid_geom()
+                        ax.projection.invalid_geoms[feature_crs] = invalid_geom
+                        print("ax != feature, missing")
+                    else:
+                        invalid_geom = ax.projection.invalid_geoms[feature_crs]
+                        print("ax != feature, present")
+                    if not geom.is_valid:
+                        geom = geom.buffer(0)
+                    cleaned_geom = geom.difference(invalid_geom)
+                    if not cleaned_geom.is_empty:
+                        projected_geom = ax.projection.project_geometry(
+                                                         cleaned_geom,
+                                                         feature_crs)
+                        geom_paths = cpatch.geos_to_path(projected_geom)
+                        mapping[key] = geom_paths
 
-            stylised_paths.setdefault(style, []).extend(geom_paths)
+                elif (ax.projection != feature_crs) & \
+                     (geom.geom_type in skip_geoms):
+                    if isinstance(geom, sgeom.LineString):
+                        geom = sgeom.MultiLineString([geom])
+                    elif isinstance(geom, sgeom.LinearRing):
+                        geom = [geom]
+                    for subgeom in geom:
+                        x, y = np.array(subgeom.xy)
+                        xyz = ax.projection.transform_points(feature_crs, x, y)
+                        x_proj, y_proj = xyz[:, 0], xyz[:, 1]
+
+                        inds_x = ~np.isfinite(x_proj)
+                        inds_y = ~np.isfinite(y_proj)
+                        inds = inds_x | inds_y
+
+                        x_proj = np.ma.masked_array(x_proj, mask=inds)
+                        clump_slices = np.ma.clump_unmasked(x_proj)
+                        geom_paths = []
+                        for clump_slice in clump_slices:
+                            if clump_slice.stop - clump_slice.start > 1:
+                                xt = x[clump_slice]
+                                yt = y[clump_slice]
+                                cleaned_geom = sgeom.LineString(zip(xt, yt))
+                                projected_geom = \
+                                    ax.projection.project_geometry(
+                                            cleaned_geom, feature_crs
+                                    )
+                                geom_paths.extend(
+                                    cpatch.geos_to_path(projected_geom))
+                        mapping[key] = geom_paths
+                else:
+                    geom_paths = cpatch.geos_to_path(geom)
+                    mapping[key] = geom_paths
+            if geom_paths:
+                stylised_paths.setdefault(style, []).extend(geom_paths)
 
         transform = ax.projection._as_mpl_transform(ax)
 
@@ -214,6 +369,5 @@ class FeatureArtist(matplotlib.artist.Artist):
             c.set_clip_path(ax.patch)
             c.set_figure(ax.figure)
             c.draw(renderer)
-
         # n.b. matplotlib.collection.Collection.draw returns None
         return None
