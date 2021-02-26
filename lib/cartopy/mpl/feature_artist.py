@@ -348,7 +348,10 @@ class FeatureArtist(matplotlib.artist.Artist):
                                     )
                                 geom_paths.extend(
                                     cpatch.geos_to_path(projected_geom))
-                        mapping[key] = geom_paths
+                        if not key in mapping.keys():
+                            mapping[key] = geom_paths
+                        else:
+                            mapping[key].extend(geom_paths)
                 else:
                     geom_paths = cpatch.geos_to_path(geom)
                     mapping[key] = geom_paths
