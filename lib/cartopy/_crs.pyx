@@ -442,7 +442,7 @@ cdef class CRS:
                                     result[:, 0], result[:, 1],
                                     result[:, 2])
 
-        if trap and status == -14 or status == -20:
+        if trap and status in (-14, -20):
             # -14 => "latitude or longitude exceeded limits"
             # -20 => "tolerance condition error"
             result[:] = np.nan
