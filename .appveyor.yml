@@ -2,7 +2,7 @@ environment:
     matrix:
         - PYTHON_VERSION: "3.9"
           CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
-          PACKAGES: "cython numpy matplotlib-base proj pykdtree scipy"
+          PACKAGES: "cython numpy matplotlib-base proj=7 pykdtree scipy"
 
 install:
   # Install miniconda

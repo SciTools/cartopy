@@ -9,4 +9,4 @@ jobs:
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           artifact-path: 0/docs/build/html/index.html
-          circleci-jobs: docs-python2,docs-python3
+          circleci-jobs: docs-python3

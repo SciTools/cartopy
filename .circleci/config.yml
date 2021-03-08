@@ -36,7 +36,7 @@ deps-run: &deps-install
         numpy \
         owslib \
         pillow \
-        proj \
+        'proj<8' \
         pyepsg \
         pykdtree \
         pyshp \
