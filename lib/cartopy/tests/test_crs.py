@@ -284,3 +284,24 @@ def test_transform_points_empty():
     result = crs.transform_points(ccrs.PlateCarree(),
                                   np.array([]), np.array([]))
     assert_array_equal(result, np.array([], dtype=np.float64).reshape(0, 3))
+
+
+def test_transform_points_outside_domain():
+    """Test CRS.transform_points with out of domain arrays."""
+    # Length-1 arrays error out with a bad status code, while
+    # greater than 1 arrays put infinity into the return array
+    # where the bad values occur
+    crs = ccrs.Orthographic()
+    result = crs.transform_points(ccrs.PlateCarree(),
+                                  np.array([-120]), np.array([80]))
+    assert np.all(np.isnan(result))
+    # A length-2 array of the same transform produces "inf" rather
+    # than nan due to PROJ never returning nan itself.
+    result = crs.transform_points(ccrs.PlateCarree(),
+                                  np.array([-120, -120]), np.array([80, 80]))
+    assert np.all(~np.isfinite(result[..., :2]))
+
+    # Test singular transform to make sure it is producing all nan's
+    # the same as the transform_points call with a length-1 array
+    result = crs.transform_point(-120, 80, ccrs.PlateCarree())
+    assert np.all(np.isnan(result))
