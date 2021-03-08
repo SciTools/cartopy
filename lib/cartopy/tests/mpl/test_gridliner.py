@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pytest
+from shapely.geos import geos_version
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -136,6 +137,7 @@ grid_label_inline_image = 'gridliner_labels_inline'
 grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_image], tolerance=grid_label_tol)
 def test_grid_labels():
@@ -209,6 +211,7 @@ def test_grid_labels():
 @pytest.mark.skipif(
     MPL_VERSION < '3.0.0',
     reason='Impossible to override tight layout algorithm in mpl < 3')
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'],
               tolerance=grid_label_tol if ccrs.PROJ4_VERSION < (7, 1, 0)
@@ -251,6 +254,7 @@ def test_grid_labels_tight():
             assert hasattr(gl, '_plotted') and gl._plotted
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_inline_image], tolerance=grid_label_inline_tol)
 def test_grid_labels_inline():
@@ -274,6 +278,7 @@ def test_grid_labels_inline():
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_inline_usa_image],
               tolerance=grid_label_inline_usa_tol)
@@ -308,6 +313,7 @@ def test_grid_labels_inline_usa():
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @ImageTesting(["gridliner_labels_bbox_style"], tolerance=grid_label_tol)
 def test_gridliner_labels_bbox_style():
     top = 49.3457868  # north lat
