@@ -35,7 +35,7 @@ jobs:
       - name: Latest packages
         if: ${{ steps.minimum-packages.conclusion == 'skipped' }}
         run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy proj pykdtree scipy" >> $GITHUB_ENV
+          echo "PACKAGES=cython fiona matplotlib-base numpy proj<8 pykdtree scipy" >> $GITHUB_ENV
 
       - name: Coverage packages
         id: coverage
