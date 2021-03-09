@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import ImageTesting
+from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
 class ExampleImageTesting(ImageTesting):
@@ -47,8 +47,9 @@ def test_global_map():
     ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.Geodetic())
 
 
+contour_image = 'contour_label' if MPL_VERSION < '3.4' else 'contour_label_3.4'
 @pytest.mark.natural_earth
-@ExampleImageTesting(['contour_label'], tolerance=0)
+@ExampleImageTesting([contour_image], tolerance=0)
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
     fig = plt.figure()
