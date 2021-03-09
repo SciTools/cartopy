@@ -51,6 +51,11 @@ def mocked_axes(extent, projection=ccrs.PlateCarree()):
         figure=mock.sentinel.figure)
 
 
+# Need to initialize private renderer properties on the sentinal
+mock.sentinel.renderer._raster_depth = 0
+mock.sentinel.renderer._rasterizing = False
+
+
 def style_from_call(call):
     args, kwargs = call
     # Drop the transform keyword.
