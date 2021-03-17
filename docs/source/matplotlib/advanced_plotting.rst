@@ -111,7 +111,8 @@ Images
     ax = plt.axes(projection=ccrs.PlateCarree())
     plt.title('Hurricane Miriam from the Aqua/MODIS satellite\n'
               '2012 09/26/2012 20:50 UTC')
-
+    
+    ax.use_sticky_edges = False
     # set a margin around the data
     ax.set_xmargin(0.05)
     ax.set_ymargin(0.10)
