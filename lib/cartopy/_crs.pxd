@@ -4,8 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from ._proj4 cimport projPJ
-
 
 cdef class CRS:
     """
@@ -13,7 +11,6 @@ cdef class CRS:
 
     """
 
-    cdef projPJ proj4
     cdef readonly proj4_init
     cdef proj4_params
 

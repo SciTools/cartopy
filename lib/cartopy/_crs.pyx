@@ -19,23 +19,17 @@ import warnings
 import numpy as np
 cimport numpy as np
 
-from cython.operator cimport dereference as deref
 
-
-from ._proj4 cimport (pj_init_plus, pj_free, pj_transform, pj_is_latlong,
-                      pj_strerrno, pj_get_errno_ref, pj_get_release,
-                      DEG_TO_RAD, RAD_TO_DEG)
+from ._proj4 cimport (proj_create, proj_create_crs_to_crs, proj_destroy,
+                      PJ_DIRECTION, proj_trans_generic, proj_angular_output,
+                      proj_errno, proj_context_errno, proj_errno_string, proj_info)
 
 
 cdef double NAN = float('nan')
 
 
-PROJ4_RELEASE = pj_get_release().decode('utf-8')
-_match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
-if _match is not None:
-    PROJ4_VERSION = tuple(int(v) for v in _match.group().split('.'))
-else:
-    PROJ4_VERSION = ()
+projinfo = proj_info()
+PROJ4_VERSION = (projinfo['major'], projinfo['minor'], projinfo['patch'])
 
 WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
@@ -49,67 +43,36 @@ class Proj4Error(Exception):
     proj.4 error reference.
 
     """
-    def __init__(self):
-        cdef int status
-        status = deref(pj_get_errno_ref())
-        msg = 'Error from proj: {}'.format(pj_strerrno(status))
+    def __init__(self, status):
+        msg = 'Error from proj: {}'.format(proj_errno_string(status))
         self.status = status
         Exception.__init__(self, msg)
 
 
-def _safe_pj_transform_611(CRS src_crs not None, CRS tgt_crs not None,
-                           int npts, int offset,
-                           np.ndarray[np.double_t] x not None,
-                           np.ndarray[np.double_t] y not None,
-                           np.ndarray[np.double_t] z):
-    """
-    Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
-
-    See https://github.com/OSGeo/proj#1782.
-    """
-    cdef int status
-
-    lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
-
-    if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
-            src_crs.proj4_params.get('o_proj', '') in lonlat and
-            'to_meter' in src_crs.proj4_params):
-       x *= src_crs.proj4_params['to_meter']
-       y *= src_crs.proj4_params['to_meter']
-
-    if z is not None:
-        status = pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
-                              &x[0], &y[0], &z[0])
-    else:
-        status = pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
-                              &x[0], &y[0], NULL)
-
-    if (tgt_crs.proj4_params.get('proj', '') == 'ob_tran' and
-            tgt_crs.proj4_params.get('o_proj', '') in lonlat and
-           'to_meter' in tgt_crs.proj4_params):
-        x /= tgt_crs.proj4_params['to_meter']
-        y /= tgt_crs.proj4_params['to_meter']
-
-    return status
-
-
-def _safe_pj_transform_pre_611(CRS src_crs not None, CRS tgt_crs not None,
+def _safe_pj_transform(CRS src_crs not None, CRS tgt_crs not None,
                                int npts, int offset,
                                np.ndarray[np.double_t] x not None,
                                np.ndarray[np.double_t] y not None,
                                np.ndarray[np.double_t] z):
-    if z is not None:
-        return pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
-                            &x[0], &y[0], &z[0])
-    else:
-        return pj_transform(src_crs.proj4, tgt_crs.proj4, npts, offset,
-                            &x[0], &y[0], NULL)
+        print("From " + src_crs.proj4_init)
+        print("To " + tgt_crs.proj4_init)
+        pj = proj_create_crs_to_crs(NULL, src_crs.proj4_init.encode('utf-8'), tgt_crs.proj4_init.encode('utf-8'), NULL)
+        if not pj:
+            raise Proj4Error(proj_context_errno(NULL))
 
+        stride = offset * np.dtype(np.double).itemsize
+        print("stride " + str(stride))
+        print("x " + str(x))
+        print("y " + str(y))
+        if z is not None:
+            proj_trans_generic(pj, PJ_DIRECTION.PJ_FWD, &x[0], stride, npts, &y[0], stride, npts, &z[0], stride, npts, NULL, 0, 0)
+        else:
+            proj_trans_generic(pj, PJ_DIRECTION.PJ_FWD, &x[0], stride, npts, &y[0], stride, npts, NULL, 0, 0, NULL, 0, 0)
+        status = proj_errno(pj)
 
-if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
-    _safe_pj_transform = _safe_pj_transform_611
-else:
-    _safe_pj_transform = _safe_pj_transform_pre_611
+        proj_destroy(pj)
+
+        return status
 
 
 class Globe(object):
@@ -173,13 +136,6 @@ cdef class CRS:
     #: Whether this projection can handle ellipses.
     _handles_ellipses = True
 
-    def __cinit__(self):
-        self.proj4 = NULL
-
-    def __dealloc__(self):
-        if self.proj4 != NULL:
-            pj_free(self.proj4)
-
     def __init__(self, proj4_params, globe=None):
         """
         Parameters
@@ -209,8 +165,9 @@ cdef class CRS:
                 warnings.warn('The "{}" projection does not handle elliptical '
                               'globes.'.format(self.__class__.__name__))
         self.globe = globe
-        self.proj4_params = self.globe.to_proj4_params()
-        self.proj4_params.update(proj4_params)
+        print(proj4_params)
+        self.proj4_params = OrderedDict((k, v) for k, v in proj4_params if v is not None)
+        self.proj4_params.update(self.globe.to_proj4_params())
 
         init_items = []
         for k, v in self.proj4_params.items():
@@ -224,12 +181,6 @@ cdef class CRS:
             else:
                 init_items.append('+{}'.format(k))
         self.proj4_init = ' '.join(init_items) + ' +no_defs'
-        proj4_init_bytes = self.proj4_init.encode('utf-8')
-        if self.proj4 != NULL:
-            pj_free(self.proj4)
-        self.proj4 = pj_init_plus(proj4_init_bytes)
-        if not self.proj4:
-            raise Proj4Error()
 
     # Cython uses this method instead of the normal rich comparisons.
     def __richcmp__(self, other, op):
@@ -268,9 +219,8 @@ cdef class CRS:
         state = self.__dict__.copy()
         # Remove the proj4 instance and the proj4_init string, which can
         # be re-created (in __setstate__) from the other arguments.
-        state.pop('proj4', None)
         state.pop('proj4_init', None)
-        state['proj4_params'] = self.proj4_params
+        state['proj4_params'] = list(self.proj4_params.items())
         return state
 
     def __setstate__(self, state):
@@ -325,7 +275,10 @@ cdef class CRS:
         return Geodetic(self.globe)
 
     cpdef is_geodetic(self):
-        return bool(pj_is_latlong(self.proj4))
+        pj = proj_create(NULL, self.proj4_init.encode('utf-8'))
+        geodesic = proj_angular_output(pj, PJ_DIRECTION.PJ_FWD)
+        proj_destroy(pj)
+        return bool(geodesic)
 
     def transform_point(self, double x, double y, CRS src_crs not None, trap=True):
         """
@@ -421,12 +374,8 @@ cdef class CRS:
         npts = x.shape[0]
 
         result = np.empty([npts, 3], dtype=np.double)
-        if src_crs.is_geodetic():
-            result[:, 0] = np.deg2rad(x)
-            result[:, 1] = np.deg2rad(y)
-        else:
-            result[:, 0] = x
-            result[:, 1] = y
+        result[:, 0] = x
+        result[:, 1] = y
         # if a z has been given, put it in the result array which will be
         # transformed in-place
         if z is None:
@@ -442,15 +391,8 @@ cdef class CRS:
                                     result[:, 0], result[:, 1],
                                     result[:, 2])
 
-        if trap and status in (-14, -20):
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            result[:] = np.nan
-        elif trap and status != 0:
-            raise Proj4Error()
-
-        if self.is_geodetic():
-            result[:, :2] = np.rad2deg(result[:, :2])
+        if trap and status != 0:
+            raise Proj4Error(status)
 
         if len(result_shape) > 2:
             return result.reshape(result_shape)

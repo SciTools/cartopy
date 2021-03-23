@@ -50,8 +50,9 @@ cdef extern from "geos_c.h":
 
 from cartopy._crs cimport CRS
 from cartopy._crs import PROJ4_VERSION
-from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
-                      pj_strerrno, DEG_TO_RAD)
+from ._proj4 cimport (PJ, proj_create, proj_create_crs_to_crs, proj_destroy,
+                      PJ_DIRECTION, proj_trans_generic,
+                      proj_errno, proj_errno_string)
 from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
                                   geod_init, geod_geninverse,
                                   geod_lineinit, geod_genposition,
@@ -160,8 +161,8 @@ cdef class LineAccumulator:
 cdef class Interpolator:
     cdef Point start
     cdef Point end
-    cdef projPJ src_proj
-    cdef projPJ dest_proj
+    cdef const char *src_proj
+    cdef const char *dest_proj
     cdef double src_scale
     cdef double dest_scale
 
@@ -169,7 +170,7 @@ cdef class Interpolator:
         self.src_scale = 1
         self.dest_scale = 1
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
+    cdef void init(self, const char *src_proj, const char *dest_proj):
         self.src_proj = src_proj
         self.dest_proj = dest_proj
 
@@ -193,24 +194,23 @@ cdef class CartesianInterpolator(Interpolator):
 
     cdef Point project(self, const Point &src_xy):
         cdef Point dest_xy
-        cdef projLP xy
+        cdef PJ *pj
+        cdef double x = src_xy.x * self.src_scale
+        cdef double y = src_xy.y * self.src_scale
 
-        xy.u = src_xy.x * self.src_scale
-        xy.v = src_xy.y * self.src_scale
+        pj = proj_create_crs_to_crs(NULL, self.src_proj, self.dest_proj, NULL)
 
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &xy.u, &xy.v, NULL)
-        if status in (-14, -20):
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            xy.u = xy.v = HUGE_VAL
-        elif status != 0:
+        cdef int successful = proj_trans_generic(pj, PJ_DIRECTION.PJ_FWD, &x, sizeof(double), 1, &y, sizeof(double), 1, NULL, 0, 0, NULL, 0, 0)
+        proj_destroy(pj)
+
+        if successful != 1:
+            status = proj_errno(pj)
             raise Exception('pj_transform failed: %d\n%s' % (
                 status,
-                pj_strerrno(status)))
+                proj_errno_string(status)))
 
-        dest_xy.x = xy.u * self.dest_scale
-        dest_xy.y = xy.v * self.dest_scale
+        dest_xy.x = x * self.dest_scale
+        dest_xy.y = y * self.dest_scale
         return dest_xy
 
 
@@ -219,13 +219,18 @@ cdef class SphericalInterpolator(Interpolator):
     cdef geod_geodesicline geod_line
     cdef double a13
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
+    cdef void init(self, const char *src_proj, const char *dest_proj):
         self.src_proj = src_proj
         self.dest_proj = dest_proj
 
+        cdef PJ *pj
         cdef double major_axis
         cdef double eccentricity_squared
-        pj_get_spheroid_defn(self.src_proj, &major_axis, &eccentricity_squared)
+        pj = proj_create(NULL, src_proj)
+
+        #major_axis = pj->a
+        #eccentricity_squared = pj->es
+        proj_destroy(pj)
         geod_init(&self.geod, major_axis, 1 - sqrt(1 - eccentricity_squared))
 
     cdef void set_line(self, const Point &start, const Point &end):
@@ -246,26 +251,25 @@ cdef class SphericalInterpolator(Interpolator):
         return self.project(lonlat)
 
     cdef Point project(self, const Point &lonlat):
-        cdef Point xy
-        cdef projLP dest
+        cdef Point dest_xy
+        cdef PJ *pj
+        cdef double x = lonlat.x * self.src_scale
+        cdef double y = lonlat.y * self.src_scale
 
-        dest.u = (lonlat.x * DEG_TO_RAD) * self.src_scale
-        dest.v = (lonlat.y * DEG_TO_RAD) * self.src_scale
+        pj = proj_create_crs_to_crs(NULL, self.src_proj, self.dest_proj, NULL)
 
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &dest.u, &dest.v, NULL)
-        if status in (-14, -20):
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            dest.u = dest.v = HUGE_VAL
-        elif status != 0:
+        cdef int successful = proj_trans_generic(pj, PJ_DIRECTION.PJ_FWD, &x, sizeof(double), 1, &y, sizeof(double), 1, NULL, 0, 0, NULL, 0, 0)
+        proj_destroy(pj)
+
+        if successful != 1:
+            status = proj_errno(pj)
             raise Exception('pj_transform failed: %d\n%s' % (
                 status,
-                pj_strerrno(status)))
+                proj_errno_string(status)))
 
-        xy.x = dest.u * self.dest_scale
-        xy.y = dest.v * self.dest_scale
-        return xy
+        dest_xy.x = x * self.dest_scale
+        dest_xy.y = y * self.dest_scale
+        return dest_xy
 
 
 cdef enum State:
@@ -573,7 +577,7 @@ cdef _interpolator(CRS src_crs, CRS dest_projection):
         interpolator = SphericalInterpolator()
     else:
         interpolator = CartesianInterpolator()
-    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
+    interpolator.init(src_crs.proj4_init.encode('utf-8'), (<CRS>dest_projection).proj4_init.encode('utf-8'))
     if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
         # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
         # See https://github.com/OSGeo/proj#1782.

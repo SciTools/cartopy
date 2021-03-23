@@ -10,19 +10,28 @@ This file declares the Proj API, version 4.
 """
 
 
-cdef extern from "proj_api.h":
-    ctypedef void *projPJ
-    ctypedef struct projLP:
-        double u
-        double v
+cdef extern from "proj.h":
+    ctypedef void *PJ_CONTEXT;
+    ctypedef void *PJ;
+    ctypedef void *PJ_AREA;
+    ctypedef struct PJ_INFO:
+        int     major
+        int     minor
+        int     patch
+        char   *release
+        char   *version
+        char   *searchpath
+    ctypedef enum PJ_DIRECTION:
+        PJ_FWD   =  1
+        PJ_IDENT =  0
+        PJ_INV   = -1
 
-    projPJ pj_init_plus(char *) nogil
-    void pj_free(projPJ) nogil
-    void pj_get_spheroid_defn(projPJ, double *, double *) nogil
-    int pj_transform(projPJ, projPJ, long, int, double *, double *, double *) nogil
-    int pj_is_latlong(projPJ) nogil
-    char *pj_strerrno(int) nogil
-    int *pj_get_errno_ref() nogil
-    char *pj_get_release() nogil
-    cdef double DEG_TO_RAD
-    cdef double RAD_TO_DEG
+    PJ *proj_create(PJ_CONTEXT *, const char *) nogil;
+    PJ *proj_create_crs_to_crs(PJ_CONTEXT *, const char *, const char *, PJ_AREA *) nogil;
+    PJ *proj_destroy(PJ *) nogil;
+    size_t proj_trans_generic(PJ *, PJ_DIRECTION, double *, size_t, size_t, double *, size_t, size_t, double *, size_t, size_t, double *, size_t, size_t) nogil;
+    int proj_angular_output(PJ *, PJ_DIRECTION) nogil;
+    int proj_context_errno(PJ_CONTEXT *) nogil;
+    int proj_errno(PJ *) nogil;
+    char *proj_errno_string(int) nogil;
+    PJ_INFO proj_info() nogil;

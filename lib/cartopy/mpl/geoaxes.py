@@ -581,7 +581,7 @@ class GeoAxes(matplotlib.axes.Axes):
         A string formatted for the Matplotlib GUI status bar.
 
         """
-        lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
+        lon, lat = ccrs.Geodetic(self.projection.globe).transform_point(x, y, self.projection)
 
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'
@@ -663,7 +663,7 @@ class GeoAxes(matplotlib.axes.Axes):
             circle = geod.circle(lon, lat, rad_km*1e3, n_samples=n_samples)
             geoms.append(sgeom.Polygon(circle))
 
-        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
+        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(self.projection.globe),
                                                  **kwargs)
         return self.add_feature(feature)
 

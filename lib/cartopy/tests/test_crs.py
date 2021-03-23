@@ -180,8 +180,8 @@ class TestCRS:
         rugby_moll = ccrs.Mollweide(globe=rugby_globe)
         footy_moll = ccrs.Mollweide(globe=footy_globe)
 
-        rugby_pt = rugby_moll.transform_point(10, 10, ccrs.Geodetic())
-        footy_pt = footy_moll.transform_point(10, 10, ccrs.Geodetic())
+        rugby_pt = rugby_moll.transform_point(10, 10, ccrs.Geodetic(globe=rugby_globe))
+        footy_pt = footy_moll.transform_point(10, 10, ccrs.Geodetic(globe=rugby_globe))
 
         assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
         assert_arr_almost_eq(footy_pt, (155657, 193479), decimal=0)
