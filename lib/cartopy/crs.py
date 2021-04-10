@@ -312,72 +312,7 @@ class Projection(CRS, metaclass=ABCMeta):
         else:
             return []
 
-    def _project_multipolygon(self, geometry, src_crs):
-        # Project the polygon exterior/interior rings.
-        # Each source ring will result in either a ring, or one or more
-        # lines.
-        rings = []
-        multi_lines = []
-        for polygon in geometry:
-            if src_crs.is_geodetic():
-                is_ccw = True
-            else:
-                is_ccw = polygon.exterior.is_ccw
-            for src_ring in [polygon.exterior] + list(polygon.interiors):
-                p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
-                if p_rings:
-                    rings.extend(p_rings)
-                if len(p_mline) > 0:
-                    multi_lines.append(p_mline)
-
-            # Convert any lines to rings by attaching them to the boundary.
-            if multi_lines:
-                rings.extend(self._attach_lines_to_boundary(multi_lines,
-                                                            is_ccw))
-
-        # Resolve all the inside vs. outside rings, and convert to the
-        # final MultiPolygon.
-        exteriors, interiors = self._rings_to_multi_polygon(rings, is_ccw)
-        if exteriors or interiors:
-            if not interiors:
-                multi_poly = sgeom.MultiPolygon(exteriors)
-            elif not exteriors:
-                multi_poly_holes = ops.unary_union(interiors)
-                boundary_poly = self.domain
-                multi_poly = boundary_poly.difference(multi_poly_holes)
-                if isinstance(multi_poly, sgeom.Polygon):
-                    multi_poly = sgeom.MultiPolygon([multi_poly])
-            else:
-                multi_poly_bits = ops.unary_union(exteriors)
-                multi_poly_holes = ops.unary_union(interiors)
-                holes_envelope = multi_poly_holes.envelope
-                if holes_envelope.contains(multi_poly_bits.envelope):
-                    print("everything flipped")
-                    multi_poly = holes_envelope.difference(
-                            multi_poly_holes.difference(multi_poly_bits)
-                            )
-                else:
-                    multi_poly = multi_poly_bits.difference(multi_poly_holes)
-                if isinstance(multi_poly, sgeom.Polygon):
-                    multi_poly = sgeom.MultiPolygon([multi_poly])
-        else:
-            multi_poly = sgeom.MultiPolygon()
-#         geoms = []
-#         for geom in geometry.geoms:
-#             r = self._project_polygon(geom, src_crs)
-#             if r:
-#                 geoms.extend(r.geoms)
-#         if geoms:
-#             result = sgeom.MultiPolygon(geoms)
-#         else:
-#             result = sgeom.MultiPolygon()
-        return multi_poly
-
-    def _project_polygon(self, polygon, src_crs):
-        """
-        Return the projected polygon(s) derived from the given polygon.
-
-        """
+    def _make_rings_lines(self, polygon, rings, multi_lines, src_crs):
         # Determine orientation of polygon.
         # TODO: Consider checking the internal rings have the opposite
         # orientation to the external rings?
@@ -385,11 +320,9 @@ class Projection(CRS, metaclass=ABCMeta):
             is_ccw = True
         else:
             is_ccw = polygon.exterior.is_ccw
-        # Project the polygon exterior/interior rings.
+        # Project the polygon exterior/interior rings
         # Each source ring will result in either a ring, or one or more
         # lines.
-        rings = []
-        multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
             p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
             if p_rings:
@@ -400,7 +333,9 @@ class Projection(CRS, metaclass=ABCMeta):
         # Convert any lines to rings by attaching them to the boundary.
         if multi_lines:
             rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
+        return rings, multi_lines, is_ccw
 
+    def _construct_multipolygon(self, rings, is_ccw):
         # Resolve all the inside vs. outside rings, and convert to the
         # final MultiPolygon.
         exteriors, interiors = self._rings_to_multi_polygon(rings, is_ccw)
@@ -418,7 +353,6 @@ class Projection(CRS, metaclass=ABCMeta):
                 multi_poly_holes = ops.unary_union(interiors)
                 holes_envelope = multi_poly_holes.envelope
                 if holes_envelope.contains(multi_poly_bits.envelope):
-                    print("everything flipped")
                     multi_poly = holes_envelope.difference(
                             multi_poly_holes.difference(multi_poly_bits)
                             )
@@ -430,6 +364,31 @@ class Projection(CRS, metaclass=ABCMeta):
             multi_poly = sgeom.MultiPolygon()
 
         return multi_poly
+
+    def _project_multipolygon(self, geometry, src_crs):
+        rings = []
+        multi_lines = []
+        polygons = []
+        for polygon in geometry:
+            rings, multi_lines, is_ccw = self._make_rings_lines(
+                                           polygon, rings, multi_lines, src_crs
+                                           )
+            polygons.extend(list(self._construct_multipolygon(rings, is_ccw)))
+            rings = []
+            multi_lines = []
+        return sgeom.MultiPolygon(polygons)
+
+    def _project_polygon(self, polygon, src_crs):
+        """
+        Return the projected polygon(s) derived from the given polygon.
+
+        """
+        rings = []
+        multi_lines = []
+        rings, multi_lines, is_ccw = self._make_rings_lines(
+            polygon, rings, multi_lines, src_crs
+            )
+        return self._construct_multipolygon(rings, is_ccw)
 
     def _attach_lines_to_boundary(self, multi_line_strings, is_ccw):
         """
@@ -627,6 +586,13 @@ class Projection(CRS, metaclass=ABCMeta):
         return linear_rings
 
     def _rings_to_multi_polygon(self, rings, is_ccw):
+        # _project_linear_rings sometimes creates multiple exterior rings
+        # encircling the entire domain or almost the entire domain
+        # In this case, the method is:
+        # for each exterior ring find all interior rings contained by it
+        # create polygons
+        # if there are leftover interior rings, store them as Polygons to
+        # be added as holes by upstream multipolygon constructors
         exterior_rings = []
         interior_rings = []
         for ring in rings:
@@ -646,16 +612,12 @@ class Projection(CRS, metaclass=ABCMeta):
             for i, interior_ring in enumerate(interior_rings[:]):
                 if prep_polygon.contains(interior_ring):
                     holes.append(interior_ring)
-#                     interior_rings.remove(interior_ring)
                     interior_ring_flags.append(i)
                 elif polygon.crosses(interior_ring):
                     # Likely that we have an invalid geometry such as
                     # that from #509 or #537.
                     holes.append(interior_ring)
-#                     interior_rings.remove(interior_ring)
                     interior_ring_flags.append(i)
-#             if polygon.bounds == self.domain.bounds and not holes:
-#                 pass
             else:
                 polygon = sgeom.Polygon(exterior_ring, holes=holes)
                 polygon_bits.append(polygon)
@@ -663,21 +625,22 @@ class Projection(CRS, metaclass=ABCMeta):
                           if i not in interior_ring_flags]
 
         extra_holes = []
-        # Any left over "interior" rings need "inverting" with respect
-        # to the boundary.
         if interior_rings:
             boundary_poly = self.domain
-            x3, y3, x4, y4 = boundary_poly.bounds
-            bx = (x4 - x3) * 0.1
-            by = (y4 - y3) * 0.1
-            x3 -= bx
-            y3 -= by
-            x4 += bx
-            y4 += by
             polygon_bits = [poly.buffer(0) for poly in polygon_bits]
             if isinstance(self, PlateCarree):
-                # This should only run when called by
-                # _ViewClippedPathPatch.draw
+                # to set the initial plot extent _gen_axes_patch calls
+                # _ViewClippedPathPatch.draw, which calls
+                # _rings_to_multi_polygon with a geometry from project_geometry
+                #
+                # if set_extent() is not invoked this geometry represents the
+                # region in [-180, 180, -90, 90] that projects to infinity in
+                # the target projection
+                #
+                # the geometry sometimes is an interior ring with no exterior
+                # ring
+                #
+                # if this happens we have to invert the interior ring
                 polygon = sgeom.Polygon(interior_rings[0])
                 # Invert the polygon
                 polygon = boundary_poly.difference(polygon)
@@ -689,22 +652,6 @@ class Projection(CRS, metaclass=ABCMeta):
                         polygon = polygon.buffer(0)
                     if not polygon.is_empty:
                         extra_holes.append(polygon)
-#         if polygon_bits or extra_holes:
-#             if not extra_holes:
-#                 multi_poly = sgeom.MultiPolygon(polygon_bits)
-#             elif not polygon_bits:
-#                 multi_poly_holes = ops.unary_union(extra_holes)
-#                 multi_poly = boundary_poly.difference(multi_poly_holes)
-#                 if isinstance(multi_poly, sgeom.Polygon):
-#                     multi_poly = sgeom.MultiPolygon([multi_poly])
-#             else:
-#                 multi_poly_bits = ops.unary_union(polygon_bits)
-#                 multi_poly_holes = ops.unary_union(extra_holes)
-#                 multi_poly = multi_poly_bits.difference(multi_poly_holes)
-#                 if isinstance(multi_poly, sgeom.Polygon):
-#                     multi_poly = sgeom.MultiPolygon([multi_poly])
-#         else:
-#             multi_poly = sgeom.MultiPolygon()
         return polygon_bits, extra_holes
 
     def quick_vertices_transform(self, vertices, src_crs):

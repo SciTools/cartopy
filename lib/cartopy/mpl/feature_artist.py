@@ -145,8 +145,16 @@ class FeatureArtist(matplotlib.artist.Artist):
             x_samples, x_sep = np.linspace(*x_lims, 400,
                                            endpoint=True, retstep=True)
 
+            if 0. not in x_samples:
+                x_samples = np.insert(x_samples,
+                                      np.searchsorted(x_samples, 0.), 0.)
+
             y_samples, y_sep = np.linspace(*y_lims, 400,
                                            endpoint=True, retstep=True)
+
+            if 0. not in y_samples:
+                y_samples = np.insert(y_samples,
+                                      np.searchsorted(y_samples, 0.), 0.)
 
             return x_samples, x_sep, y_samples, y_sep
         else:
@@ -200,6 +208,10 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         fig_ = figure.Figure()
         ax_ = fig_.add_subplot()
+        # Method: create contours around the points that project to infinity
+        # Then contract the exterior rings and expand the interior rings to
+        # buffer the contours
+        # Create Polygons from the rings
         fcontour = ax_.contourf(x_grid, y_grid,
                                 inds_bin, levels=[0.5, 1.5])
 
@@ -209,12 +221,17 @@ class FeatureArtist(matplotlib.artist.Artist):
             poly = path.to_polygons()
             if poly:
                 # 0th path is polygon exterior
-                # Following paths are interior rings
+                # Subsequent paths are interior rings
                 exterior = poly[0]
                 exterior = sgeom.LinearRing(exterior)
                 offset = max(x_sep, y_sep)
                 exterior = exterior.parallel_offset(offset, "right",
                                                     join_style=3)
+                # Point of discussion:
+                # parallel_offset can output a MultiLineString from LinearRing
+                # input. Do we want to catch this behavior?
+                if isinstance(exterior, sgeom.MultiLineString):
+                    raise NotImplementedError
                 exterior.coords = list(exterior.coords)[::-1]
                 interiors = poly[1:]
                 interiors_shrunk = []
@@ -222,6 +239,7 @@ class FeatureArtist(matplotlib.artist.Artist):
                     interior = sgeom.LinearRing(interior)
                     interior_shrunk = interior.parallel_offset(offset, "right",
                                                                join_style=3)
+                    # Again the possibility of a MultiLineString
                     if not interior_shrunk.is_empty:
                         interior_shrunk.coords = list(
                                                 interior_shrunk.coords)[::-1]
@@ -305,10 +323,8 @@ class FeatureArtist(matplotlib.artist.Artist):
                     if feature_crs not in ax.projection.invalid_geoms.keys():
                         invalid_geom = self.build_invalid_geom()
                         ax.projection.invalid_geoms[feature_crs] = invalid_geom
-                        print("ax != feature, missing")
                     else:
                         invalid_geom = ax.projection.invalid_geoms[feature_crs]
-                        print("ax != feature, present")
                     if not geom.is_valid:
                         geom = geom.buffer(0)
                     cleaned_geom = geom.difference(invalid_geom)
@@ -348,7 +364,7 @@ class FeatureArtist(matplotlib.artist.Artist):
                                     )
                                 geom_paths.extend(
                                     cpatch.geos_to_path(projected_geom))
-                        if not key in mapping.keys():
+                        if key not in mapping.keys():
                             mapping[key] = geom_paths
                         else:
                             mapping[key].extend(geom_paths)
