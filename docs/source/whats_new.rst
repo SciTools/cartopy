@@ -2,7 +2,7 @@ What's New in cartopy 0.19
 ==========================
 
 :Release: 0.19.0
-:Date: XXX
+:Date: 21st Apr 2021
 
 For a full list of included Pull Requests and closed Issues, please see the
 `0.19 milestone <https://github.com/SciTools/cartopy/milestone/27>`_.
