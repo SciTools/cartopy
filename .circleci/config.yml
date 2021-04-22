@@ -32,7 +32,7 @@ deps-run: &deps-install
   command: |
     conda install -n test-environment --quiet \
         cython \
-        matplotlib \
+        'matplotlib>3.3' \
         numpy \
         owslib \
         pillow \
