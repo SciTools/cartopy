@@ -31,7 +31,7 @@ jobs:
           conda install $PACKAGES
 
       - name: Create sdist
-        run: python setup.py sdist
+        run: python setup.py build_ext sdist
 
       - name: Publish Package
         uses: pypa/gh-action-pypi-publish@master
