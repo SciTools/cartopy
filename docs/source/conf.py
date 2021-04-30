@@ -82,16 +82,16 @@ version = cartopy.__version__
 release = cartopy.__version__
 
 
-# if (hasattr(owslib, '__version__') and
-#         LooseVersion(owslib.__version__) >= '0.19.2'):
-#     expected_failing_examples = []
-# else:
-# OWSLib WMTS support is broken.
-expected_failing_examples = [
-    '../../examples/web_services/reprojected_wmts.py',
-    '../../examples/web_services/wmts.py',
-    '../../examples/web_services/wmts_time.py',
-]
+if (hasattr(owslib, '__version__') and
+        LooseVersion(owslib.__version__) >= '0.19.2'):
+    expected_failing_examples = []
+else:
+    # OWSLib WMTS support is broken.
+    expected_failing_examples = [
+        '../../examples/web_services/reprojected_wmts.py',
+        '../../examples/web_services/wmts.py',
+        '../../examples/web_services/wmts_time.py',
+    ]
 
 subsection_order = ExplicitOrder(['../../examples/lines_and_polygons',
                                   '../../examples/scalar_data',
