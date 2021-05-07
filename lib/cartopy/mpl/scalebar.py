@@ -39,12 +39,12 @@ def sbs_to_patch(sbs, transform, unit, padding=2,
 def get_unit_converter(unit):
 
     lookuptable = {'km': 1000,
-                   'mi': 1.60934 * 1000,
+                   'mi': 1.60934 * 1000,  # Miles to Km
                    'dm': 1e-1,
                    'cm': 1e-2,
                    'mm': 1e-3,
                    'um': 1e-6,
-                   'nm': 1e-9}  # Miles to Km
+                   'nm': 1e-9} 
 
     return lookuptable.get(unit, 'km')
 
@@ -334,50 +334,71 @@ def add_scalebar(ax,
 
     Parameters
     ----------
-        ax (geoaxes):
+        ax (geoaxes): the geoaxes that the scalebar wil be plotted on.
 
-        location (length 2 tuple):
+
+        bbox_to_anchor (length 2 tuple):
             It sets where the scalebar will be drawn
             in axes fraction units.
+
 
         length (float):
             The distance in geodesic meters that will be used
             for generating the scalebar.
 
-        unit_name (str):
-            Standard (km).
+
+        ruler_unit (str): the unit scale that will be used for the geodesic distance.
+            Standard: km
+
+            Options available are presented within the lookuptable dictionary of the "get_unit_converter" function, and are presented below. 
+                  lookuptable = {'km': 1000,
+                                 'mi': 1.60934 * 1000,  # Miles to Km
+                                 'dm': 1e-1,
+                                 'cm': 1e-2,
+                                 'mm': 1e-3,
+                                 'um': 1e-6,
+                                 'nm': 1e-9} 
 
 
-        angle (int or float): in azimuth degrees.
-            The angle that will be used for evaluating the scalebar.
+        ruler_fontweight (str): the fontweight that will be used for the ruler unit that will be plotted on the scalebar
+            Standard: 'bold'
+        
 
-            If 90 (degrees), the distance between each tick in the
-            scalebar will be evaluated in respect to the longitude
-            of the map.
+        ruler_unit_fontsize (float or int): the size that will be used for the ruler_unit within the scalebar
+            Standard: 10
 
-            If 0 (degrees), the ticks will be evaluated in accordance
-            to variation in the latitude of the map.
+
+        tick_fontweight (str): the fontweight that will be applied on the ticks of the scalebar
+            Standard:'light'
+
 
         dy (int or float):
             The hight of the scalebar in axes fraction.
 
+
         max_stripes (int):
             The number of stripes present in the scalebar.
+
 
         ytick_label_margins (int or float):
             The size of the margins for drawing the scalebar ticklabels.
 
+
         fontsize (int or float):
             The fontsize used for drawing the scalebar ticklabels.
+
 
         font_weight (str):
             the fontweight used for drawing the scalebar ticklabels.
 
+
         rotation (int or float):
             the rotation used for drawing the scalebar ticklabels.
 
+
         zorder(int):
             The zorder used for drawing the scalebar.
+
 
         paddings (dict):
             A dictionary defining the padding to draw a background box
@@ -389,6 +410,7 @@ def add_scalebar(ax,
                  'ymin': 0.3,
                  'ymax': 0.3}
 
+
         bbox_kwargs (dict):
             A dictionary defining the background box
             around the scalebar.
@@ -398,10 +420,12 @@ def add_scalebar(ax,
                  'edgecolor': 'k',
                  'alpha': 0.7}
 
+
         numeric_scale_bar(bool):
             whether or not to draw a number scalebar along side the
             graphic scalebar. Notice that this option can drastically
             vary in value, depending on the geoaxes projection used.
+
 
         numeric_scale_bar_kwgs (dict):
             A dictionary defining the numeric scale bar.
@@ -411,6 +435,7 @@ def add_scalebar(ax,
                  'y_text_offset': -40,
                  'box_x_coord': 0.5,
                  'box_y_coord': 0.01}
+
 
     Returns
     ----------
