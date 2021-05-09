@@ -38,6 +38,8 @@ def _format_lon(val, i):
 
 
 ticks_tolerance = 7
+
+
 @pytest.mark.natural_earth
 @ImageTesting(['xticks_no_transform'],
               tolerance=ticks_tolerance)

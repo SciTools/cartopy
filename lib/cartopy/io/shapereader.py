@@ -164,7 +164,6 @@ class BasicReader:
         """
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
-        field_names = [field[0] for field in fields]
         for shape_record in self._reader.iterShapeRecords():
             attributes = shape_record.record.as_dict()
             yield Record(shape_record.shape, attributes, fields)
@@ -317,7 +316,7 @@ class NEShpDownloader(Downloader):
         natural earth zip file.
 
         """
-        for ext in ['.shp', '.dbf', '.shx']:
+        for ext in ['.shp', '.dbf', '.shx', '.prj', '.cpg']:
             yield ('ne_{resolution}_{name}'
                    '{extension}'.format(extension=ext, **format_dict))
 

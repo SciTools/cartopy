@@ -61,3 +61,15 @@ def test_contour_linear_ring():
     ax.contourf(lons, lats, vals, np.arange(9), transform=ccrs.PlateCarree())
 
     plt.draw()
+
+
+def test_contour_update_bounds():
+    """Test that contour updates the extent"""
+    xs, ys = np.meshgrid(np.linspace(0, 360), np.linspace(-80, 80))
+    zs = ys**2
+    ax = plt.axes(projection=ccrs.Orthographic())
+    ax.contour(xs, ys, zs, transform=ccrs.PlateCarree())
+    # Force a draw, which is a smoke test to make sure contouring
+    # doesn't raise with an Orthographic projection
+    # GH issue 1673
+    plt.draw()
