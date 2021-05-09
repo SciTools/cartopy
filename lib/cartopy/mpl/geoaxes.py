@@ -1487,7 +1487,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Keyword Parameters
         ------------------
-        **kwargs
+        **kwargs: dict
             All other keywords control line properties.  These are passed
             through to :class:`matplotlib.collections.Collection`.
 
