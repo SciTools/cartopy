@@ -162,7 +162,7 @@ class Projection(CRS, metaclass=ABCMeta):
         # "Rewind" the buffer to the start and return it as an svg string.
         buf.seek(0)
         svg = buf.read()
-        return '{}<pre>{}</pre>'.format(svg, escape(repr(self)))
+        return f'{svg}<pre>{escape(repr(self))}</pre>'
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
@@ -452,7 +452,7 @@ class Projection(CRS, metaclass=ABCMeta):
                     ax.plot(coords[:, 0], coords[:, 1])
                     ax.text(coords[0, 0], coords[0, 1], thing.data[0])
                     ax.text(coords[-1, 0], coords[-1, 1],
-                            '{}.'.format(thing.data[0]))
+                            f'{thing.data[0]}.')
 
         def filter_last(t):
             return t.kind or t.data[1] == 'first'

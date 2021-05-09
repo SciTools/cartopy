@@ -179,7 +179,7 @@ def get_proj_libraries():
     proj_libraries = ["proj"]
     if os.name == "nt" and (6, 0, 0) <= proj_version < (6, 3, 0):
         proj_libraries = [
-            "proj_{}_{}".format(proj_version[0], proj_version[1])
+            f"proj_{proj_version[0]}_{proj_version[1]}"
         ]
     return proj_libraries
 
