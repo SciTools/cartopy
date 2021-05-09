@@ -1267,12 +1267,13 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 
 class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0, globe=None):
-        proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude)]
-        if globe is None:
-            globe = Globe(semimajor_axis=math.degrees(1))
-        a_rad = math.radians(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        x_max = a_rad * 180
-        y_max = a_rad * 90
+        globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
+        proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude),
+                        ('to_meter', math.radians(1) * (
+                            globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
+                        ('vto_meter', 1)]
+        x_max = 180
+        y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
         self.threshold = x_max / 360
         super().__init__(proj4_params, x_max, y_max, globe=globe)
@@ -1287,7 +1288,7 @@ class PlateCarree(_CylindricalProjection):
         >>> src = ccrs.PlateCarree(central_longitude=10)
         >>> bboxes, offset = ccrs.PlateCarree()._bbox_and_offset(src)
         >>> print(bboxes)
-        [[-180.0, -170.0], [-170.0, 180.0]]
+        [[-180, -170.0], [-170.0, 180]]
         >>> print(offset)
         10.0
 
@@ -1336,7 +1337,6 @@ class PlateCarree(_CylindricalProjection):
             potential = (self_params == src_params and
                          self.y_limits[0] <= ys.min() and
                          self.y_limits[1] >= ys.max())
-
             if potential:
                 mod = np.diff(src_crs.x_limits)[0]
                 bboxes, proj_offset = self._bbox_and_offset(src_crs)
