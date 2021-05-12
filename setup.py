@@ -294,7 +294,8 @@ else:
 
         proj_includes = [
             proj_include[2:] if proj_include.startswith('-I') else
-            proj_include for proj_include in shlex.split(proj_includes.decode())]
+            proj_include for proj_include in shlex.split(
+                proj_includes.decode())]
 
         proj_libraries = []
         proj_library_dirs = []
