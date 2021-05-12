@@ -29,11 +29,11 @@ import io
 import os
 import subprocess
 import warnings
-from collections import defaultdict
 import distutils
+import shlex
+from collections import defaultdict
 from distutils.spawn import find_executable
 from distutils.sysconfig import get_config_var
-import shlex
 
 from setuptools import Command, Extension, convert_path, setup
 
