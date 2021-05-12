@@ -213,11 +213,11 @@ def find_proj_version_if_no_pkgconfig(conda=None):
                 distutils.errors.DistutilsExecError,
                 subprocess.CalledProcessError):
             warnings.warn(
-                'Unable to determine Proj version. Ensure you have %s or later '
-                'installed, or installation may fail. '
-                'If proj is installed but not detected, consider pre-setting environment '
-                'variables (such as CFLAGS, INCLUDE, etc.) to make proj.h (or proj_api.h) '
-                'visible for detection.' % (
+                'Unable to determine Proj version. Ensure you have %s '
+                'or later installed, or installation may fail. '
+                'If proj is installed but not detected, consider pre-setting '
+                'environment variables (such as CFLAGS, INCLUDE, etc.) '
+                'to make proj.h (or proj_api.h) visible for detection.' % (
                     '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
             proj_version = (0, 0, 0)
     finally:
