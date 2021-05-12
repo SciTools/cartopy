@@ -161,11 +161,12 @@ def find_proj_version_if_no_pkgconfig(conda=None):
                 file=sys.stderr)
             exit(1)
 
-    # If user doesn't use conda, we'll try detecting proj's version by its header,
-    # assuming that user set required environment variables such as "INCLUDE", etc.
-    # This is due to two reasons: there is a package manager that doesn't provide a proj
-    # executable, like vcpkg on Windows, and there is a python package called "proj"
-    # that has nothing to do with projection.
+    # If user doesn't use conda, we'll try detecting proj's version by
+    # its header, assuming that user set required environment variables
+    # such as "INCLUDE", etc. This is due to two reasons: there is a package
+    # manager that doesn't provide a proj executable, like vcpkg on Windows,
+    # and there is a python package called "proj" that has nothing to do with
+    # projection.
     import tempfile
 
     tmpc = tempfile.mktemp(suffix=".c")
@@ -191,7 +192,9 @@ def find_proj_version_if_no_pkgconfig(conda=None):
         io.open(tmpc, "w").write(srcs[0])
         objs = cc.compile([tmpc])
         cc.link_executable(objs, tmpbin)
-        proj_version = tuple(map(int, subprocess.check_output([tmpbin]).decode().strip().split(".")))
+        proj_version = tuple(
+            map(int, subprocess.check_output(
+                [tmpbin]).decode().strip().split(".")))
     except (
             OSError, ValueError,
             distutils.errors.CompileError,
@@ -201,7 +204,9 @@ def find_proj_version_if_no_pkgconfig(conda=None):
             io.open(tmpc, "w").write(srcs[1])
             objs = cc.compile([tmpc])
             cc.link_executable(objs, tmpbin)
-            proj_version = tuple(map(int, list(subprocess.check_output([tmpbin]).decode().strip())))
+            proj_version = tuple(
+                map(int, list(subprocess.check_output(
+                    [tmpbin]).decode().strip())))
         except (
                 OSError, ValueError,
                 distutils.errors.CompileError,
