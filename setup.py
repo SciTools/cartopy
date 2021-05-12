@@ -25,12 +25,15 @@ Make sure you have pip >= 9.0.1.
 
 
 import fnmatch
+import io
 import os
 import subprocess
 import warnings
 from collections import defaultdict
+import distutils
 from distutils.spawn import find_executable
 from distutils.sysconfig import get_config_var
+import shlex
 
 from setuptools import Command, Extension, convert_path, setup
 
@@ -130,10 +133,10 @@ else:
               file=sys.stderr)
         exit(1)
 
-    geos_includes = geos_includes.decode().split()
+    geos_includes = shlex.split(geos_includes.decode())
     geos_libraries = []
     geos_library_dirs = []
-    for entry in geos_clibs.decode().split():
+    for entry in shlex.split(geos_clibs.decode()):
         if entry.startswith('-L'):
             geos_library_dirs.append(entry[2:])
         elif entry.startswith('-l'):
@@ -141,33 +144,84 @@ else:
 
 
 # Proj
-def find_proj_version_by_program(conda=None):
-    proj = find_executable('proj')
-    if proj is None:
-        print(
-            'Proj {} must be installed.'.format(
-                '.'.join(str(v) for v in PROJ_MIN_VERSION)),
-            file=sys.stderr)
-        exit(1)
+def find_proj_version_if_no_pkgconfig(conda=None):
+    if conda is not None:
+        proj = find_executable('proj')
+        if proj is None:
+            print(
+                'Proj {} must be installed.'.format(
+                    '.'.join(str(v) for v in PROJ_MIN_VERSION)),
+                file=sys.stderr)
+            exit(1)
 
-    if conda is not None and conda not in proj:
-        print(
-            'Proj {} must be installed in Conda environment "{}".'.format(
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
-            file=sys.stderr)
-        exit(1)
+        if conda not in proj:
+            print(
+                'Proj {} must be installed in Conda environment "{}".'.format(
+                    '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
+                file=sys.stderr)
+            exit(1)
 
+    # If user doesn't use conda, we'll try detecting proj's version by its header,
+    # assuming that user set required environment variables such as "INCLUDE", etc.
+    # This is due to two reasons: there is a package manager that doesn't provide a proj
+    # executable, like vcpkg on Windows, and there is a python package called "proj"
+    # that has nothing to do with projection.
+    import tempfile
+
+    tmpc = tempfile.mktemp(suffix=".c")
+    cc = distutils.ccompiler.new_compiler()
+    tmpbin = os.path.splitext(tmpc)[0]
+    srcs = [r"""\
+        #include <stdio.h>
+        #include <proj.h>
+        int main()
+        {
+            printf("%d.%d.%d",
+                PROJ_VERSION_MAJOR, PROJ_VERSION_MINOR, PROJ_VERSION_PATCH);
+        }""", r"""\
+        #include <stdio.h>
+        #define ACCEPT_USE_OF_DEPRECATED_PROJ_API_H
+        #include <proj_api.h>
+        int main()
+        {
+            printf("%d", PJ_VERSION);
+        }"""
+        ]
     try:
-        proj_version = subprocess.check_output([proj],
-                                               stderr=subprocess.STDOUT)
-        proj_version = proj_version.split()[1].split(b'.')
-        proj_version = tuple(int(v.strip(b',')) for v in proj_version)
-    except (OSError, IndexError, ValueError, subprocess.CalledProcessError):
-        warnings.warn(
-            'Unable to determine Proj version. Ensure you have %s or later '
-            'installed, or installation may fail.' % (
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
-        proj_version = (0, 0, 0)
+        io.open(tmpc, "w").write(srcs[0])
+        objs = cc.compile([tmpc])
+        cc.link_executable(objs, tmpbin)
+        proj_version = tuple(map(int, subprocess.check_output([tmpbin]).decode().strip().split(".")))
+    except (
+            OSError, ValueError,
+            distutils.errors.CompileError,
+            distutils.errors.DistutilsExecError,
+            subprocess.CalledProcessError):
+        try:
+            io.open(tmpc, "w").write(srcs[1])
+            objs = cc.compile([tmpc])
+            cc.link_executable(objs, tmpbin)
+            proj_version = tuple(map(int, list(subprocess.check_output([tmpbin]).decode().strip())))
+        except (
+                OSError, ValueError,
+                distutils.errors.CompileError,
+                distutils.errors.DistutilsExecError,
+                subprocess.CalledProcessError):
+            warnings.warn(
+                'Unable to determine Proj version. Ensure you have %s or later '
+                'installed, or installation may fail. '
+                'If proj is installed but not detected, consider pre-setting environment '
+                'variables (such as CFLAGS, INCLUDE, etc.) to make proj.h (or proj_api.h) '
+                'visible for detection.' % (
+                    '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
+            proj_version = (0, 0, 0)
+    finally:
+        os.remove(tmpc)
+        ext = ""
+        if cc.exe_extension:
+            ext = cc.exe_extension
+        if os.path.exists(tmpbin + ext):
+            os.remove(tmpbin + ext)
 
     return proj_version
 
@@ -189,7 +243,7 @@ if conda is not None and conda in sys.prefix:
     # Conda does not provide pkg-config compatibility, but the search paths
     # should be set up so that nothing extra is required. We'll still check
     # the version, though.
-    proj_version = find_proj_version_by_program(conda)
+    proj_version = find_proj_version_if_no_pkgconfig(conda)
     if proj_version < PROJ_MIN_VERSION:
         print(
             'Proj version %s is installed, but cartopy requires at least '
@@ -212,7 +266,7 @@ else:
                                                  'proj'])
         proj_clibs = subprocess.check_output(['pkg-config', '--libs', 'proj'])
     except (OSError, ValueError, subprocess.CalledProcessError):
-        proj_version = find_proj_version_by_program()
+        proj_version = find_proj_version_if_no_pkgconfig()
         if proj_version < PROJ_MIN_VERSION:
             print(
                 'Proj version %s is installed, but cartopy requires at least '
@@ -235,11 +289,11 @@ else:
 
         proj_includes = [
             proj_include[2:] if proj_include.startswith('-I') else
-            proj_include for proj_include in proj_includes.decode().split()]
+            proj_include for proj_include in shlex.split(proj_includes.decode())]
 
         proj_libraries = []
         proj_library_dirs = []
-        for entry in proj_clibs.decode().split():
+        for entry in shlex.split(proj_clibs.decode()):
             if entry.startswith('-L'):
                 proj_library_dirs.append(entry[2:])
             elif entry.startswith('-l'):
