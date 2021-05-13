@@ -285,8 +285,6 @@ class FeatureArtist(matplotlib.artist.Artist):
         stylised_paths = OrderedDict()
         key = ax.projection
 
-        skip_geoms = ["LineString", "LinearRing", "MultiLineString"]
-
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
             # hashable, we have to use a WeakValueDictionary to manage
@@ -314,12 +312,7 @@ class FeatureArtist(matplotlib.artist.Artist):
                                     self._styler(geom))
                 style = _freeze(style)
             if geom_paths is None:
-                # Shapely can't represent the difference between a line and a
-                # polygon. If all geoms are lines, bypass building the polygon
-                # containing points projecting to infinity and use different
-                # masking method.
-                if (ax.projection != feature_crs) & \
-                   (geom.geom_type not in skip_geoms):
+                if ax.projection != feature_crs:
                     if feature_crs not in ax.projection.invalid_geoms.keys():
                         invalid_geom = self.build_invalid_geom()
                         ax.projection.invalid_geoms[feature_crs] = invalid_geom
@@ -334,40 +327,6 @@ class FeatureArtist(matplotlib.artist.Artist):
                                                          feature_crs)
                         geom_paths = cpatch.geos_to_path(projected_geom)
                         mapping[key] = geom_paths
-
-                elif (ax.projection != feature_crs) & \
-                     (geom.geom_type in skip_geoms):
-                    if isinstance(geom, sgeom.LineString):
-                        geom = sgeom.MultiLineString([geom])
-                    elif isinstance(geom, sgeom.LinearRing):
-                        geom = [geom]
-                    for subgeom in geom:
-                        x, y = np.array(subgeom.xy)
-                        xyz = ax.projection.transform_points(feature_crs, x, y)
-                        x_proj, y_proj = xyz[:, 0], xyz[:, 1]
-
-                        inds_x = ~np.isfinite(x_proj)
-                        inds_y = ~np.isfinite(y_proj)
-                        inds = inds_x | inds_y
-
-                        x_proj = np.ma.masked_array(x_proj, mask=inds)
-                        clump_slices = np.ma.clump_unmasked(x_proj)
-                        geom_paths = []
-                        for clump_slice in clump_slices:
-                            if clump_slice.stop - clump_slice.start > 1:
-                                xt = x[clump_slice]
-                                yt = y[clump_slice]
-                                cleaned_geom = sgeom.LineString(zip(xt, yt))
-                                projected_geom = \
-                                    ax.projection.project_geometry(
-                                            cleaned_geom, feature_crs
-                                    )
-                                geom_paths.extend(
-                                    cpatch.geos_to_path(projected_geom))
-                        if key not in mapping.keys():
-                            mapping[key] = geom_paths
-                        else:
-                            mapping[key].extend(geom_paths)
                 else:
                     geom_paths = cpatch.geos_to_path(geom)
                     mapping[key] = geom_paths
