@@ -753,20 +753,25 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         styler = kwargs.pop('styler', None)
-        has_LineString = False
-        try:
-            for g in iter(tuple(geoms)):
-                if isinstance(g, sgeom.LineString):
-                    has_LineString = True
-                    break
-        except TypeError:
-            if isinstance(geoms, sgeom.LineString):
-                has_LineString = True
 
-        if has_LineString:
-            kwargs['facecolor'] = 'none'
-            if 'edgecolor' not in kwargs or kwargs['edgecolor'] == 'face':
-                kwargs['edgecolor'] = mpl.rcParams['patch.edgecolor']
+        if (not callable(styler)) and ('facecolor' not in kwargs):
+            styler_kw = styler
+
+            def styler(geom):
+                styler_g = styler_kw if styler_kw else dict()
+                styler_g = styler_g.copy()
+
+                if isinstance(geom, sgeom.LineString):
+                    styler_g['facecolor'] = 'none'
+                    if ('edgecolor' not in kwargs) or (
+                            kwargs['edgecolor'] == 'face'):
+                        styler_g['edgecolor'] = mpl.rcParams['patch.edgecolor']
+                    else:
+                        styler_g['edgecolor'] = kwargs['edgecolor']
+                    return styler_g
+                else:
+                    return styler_kw
+
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
         return self.add_feature(feature, styler=styler)
 
