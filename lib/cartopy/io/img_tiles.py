@@ -450,8 +450,6 @@ class MapboxTiles(GoogleWTS):
         return url
 
 
-
-
 class MapboxStyleTiles(GoogleWTS):
     """
     Implement web tile retrieval from a user-defined Mapbox style. For more

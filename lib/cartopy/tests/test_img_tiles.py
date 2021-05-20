@@ -213,7 +213,6 @@ def test_mapbox_tiles_api_url():
     exp_url = ('https://api.mapbox.com/styles/v1/bar/tiles'
                '/2/0/1?access_token=foo')
 
-
     mapbox_sample = cimgt.MapboxTiles(token, map_name)
     url_str = mapbox_sample._image_url(tile)
     assert url_str == exp_url
