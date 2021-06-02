@@ -210,7 +210,7 @@ def test_mapbox_tiles_api_url():
     token = 'foo'
     map_name = 'bar'
     tile = [0, 1, 2]
-    exp_url = ('https://api.mapbox.com/styles/v1/bar/tiles'
+    exp_url = ('https://api.mapbox.com/styles/v1/mapbox/bar/tiles'
                '/2/0/1?access_token=foo')
 
     mapbox_sample = cimgt.MapboxTiles(token, map_name)
