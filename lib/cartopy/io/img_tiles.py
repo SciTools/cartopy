@@ -421,8 +421,13 @@ class MapboxTiles(GoogleWTS):
             A valid Mapbox API access token.
         map_id
             An ID for a publicly accessible map (provided by Mapbox).
-            This is the map whose tiles will be retrieved through this process.
-
+            This is the map whose tiles will be retrieved through this process
+            and is specified through the Mapbox Styles API
+            (https://docs.mapbox.com/api/maps/styles/)
+            Examples:
+              map_id='streets-v11'
+              map_id='outdoors-v11'
+              map_id='satellite-v9'
         """
         self.access_token = access_token
         self.map_id = map_id
@@ -430,7 +435,8 @@ class MapboxTiles(GoogleWTS):
 
     def _image_url(self, tile):
         x, y, z = tile
-        url = ('https://api.mapbox.com/v4/mapbox.{id}/{z}/{x}/{y}.png'
+
+        url = ('https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}'
                '?access_token={token}'.format(z=z, y=y, x=x,
                                               id=self.map_id,
                                               token=self.access_token))
