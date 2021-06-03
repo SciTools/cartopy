@@ -54,7 +54,7 @@ TEST_PROJS = [
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner1'],
               # Robinson projection is slightly better in Proj 6+.
-              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.62)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -110,6 +110,13 @@ def test_gridliner():
     delta = 1.5e-2
     plt.subplots_adjust(left=0 + delta, right=1 - delta,
                         top=1 - delta, bottom=0 + delta)
+
+
+@ImageTesting(['gridliner_orthographic'])
+def test_gridliner_orthographic():
+    plt.figure(figsize=(4, 4))
+    ax = plt.subplot(111, projection=ccrs.Orthographic())
+    ax.gridlines(ccrs.PlateCarree())
 
 
 def test_gridliner_specified_lines():
