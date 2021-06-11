@@ -212,7 +212,7 @@ def test_multiple_projections():
                    ccrs.SouthPolarStereo(),
                    ccrs.Orthographic(),
                    ccrs.Mollweide(),
-                   ccrs.InterruptedGoodeHomolosine(),
+                   ccrs.InterruptedGoodeHomolosine(emphasis='land'),
                    ccrs.EckertI(),
                    ccrs.EckertII(),
                    ccrs.EckertIII(),
@@ -644,7 +644,7 @@ def test_pcolormesh_goode_wrap():
     X, Y = np.meshgrid(*[np.deg2rad(c) for c in (x, y)])
     Z = np.cos(Y) + 0.375 * np.sin(2. * X)
     Z = Z[:-1, :-1]
-    ax = plt.axes(projection=ccrs.InterruptedGoodeHomolosine())
+    ax = plt.axes(projection=ccrs.InterruptedGoodeHomolosine(emphasis='land'))
     ax.coastlines()
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
 

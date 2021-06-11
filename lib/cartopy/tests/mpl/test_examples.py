@@ -48,6 +48,8 @@ def test_global_map():
 
 
 contour_image = 'contour_label' if MPL_VERSION < '3.4' else 'contour_label_3.4'
+
+
 @pytest.mark.natural_earth
 @ExampleImageTesting([contour_image], tolerance=0)
 def test_contour_label():
