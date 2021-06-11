@@ -16,7 +16,7 @@ import numpy as np
 import shapely.geometry as sgeom
 
 import cartopy
-from cartopy.crs import Projection, _RectangularProjection
+from cartopy.crs import Projection, _RectangularProjection, PlateCarree
 from cartopy.mpl.ticker import (
     LongitudeLocator, LatitudeLocator,
     LongitudeFormatter, LatitudeFormatter)
@@ -38,6 +38,14 @@ _POLAR_PROJS = (
     cartopy.crs.SouthPolarStereo,
     cartopy.crs.Stereographic
 )
+_ROTATE_LABEL_PROJS = _POLAR_PROJS + (
+    cartopy.crs.AlbersEqualArea,
+    cartopy.crs.AzimuthalEquidistant,
+    cartopy.crs.EquidistantConic,
+    cartopy.crs.LambertConformal,
+    cartopy.crs.TransverseMercator,
+    cartopy.crs.Gnomonic,
+    )
 
 
 def _fix_lons(lons):
@@ -106,7 +114,10 @@ class Gridliner:
                  ylocator=None, collection_kwargs=None,
                  xformatter=None, yformatter=None, dms=False,
                  x_inline=None, y_inline=None, auto_inline=True,
-                 xlim=None, ylim=None):
+                 xlim=None, ylim=None, rotate_labels=None,
+                 xlabel_style=None, ylabel_style=None, labels_bbox_style=None,
+                 xpadding=5, ypadding=5, offset_angle=25,
+                 auto_update=False):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -121,6 +132,23 @@ class Gridliner:
         draw_labels: optional
             Toggle whether to draw labels. For finer control, attributes of
             :class:`Gridliner` may be modified individually. Defaults to False.
+
+            - string: "x" or "y" to only draw labels of the respective
+              coordinate in the CRS.
+            - list: Can contain the side identifiers and/or coordinate
+              types to select which ones to draw.
+              For all labels one would use
+              `["x", "y", "top", "bottom", "left", "right", "geo"]`.
+            - dict: The keys are the side identifiers
+              ("top", "bottom", "left", "right") and the values are the
+              coordinates ("x", "y"); this way you can precisely
+              decide what kind of label to draw and where.
+              For x labels on the bottom and y labels on the right you
+              could pass in `{"bottom": "x", "left": "y"}`.
+
+            Note that, by default, x and y labels are not drawn on left/right
+            and top/bottom edges respectively, unless explicitly requested.
+
         xlocator: optional
             A :class:`matplotlib.ticker.Locator` instance which will be used
             to determine the locations of the gridlines in the x-coordinate of
@@ -166,6 +194,36 @@ class Gridliner:
             way to the edge of the boundary. ylim can be a single number or
             a (min, max) tuple. If a single number, the limits will be
             (-ylim, +ylim).
+        rotate_labels: optional, bool, str
+            Allow the rotation of non-inline labels.
+
+            - False: Do not rotate the labels.
+            - True: Rotate the labels parallel to the gridlines.
+            - None: no rotation except for some projections (default).
+            - A float: Rotate labels by this value in degrees.
+
+        xlabel_style: dict
+            A dictionary passed through to ``ax.text`` on x label creation
+            for styling of the text labels.
+        ylabel_style: dict
+            A dictionary passed through to ``ax.text`` on y label creation
+            for styling of the text labels.
+        labels_bbox_style: dict
+            bbox style for all text labels
+        xpadding: float
+            Padding for x labels. If negative, the labels are
+            drawn inside the map.
+        ypadding: float
+            Padding for y labels. If negative, the labels are
+            drawn inside the map.
+        offset_angle: float
+            Difference of angle in degrees from 90 to define when
+            a label must be flipped to be more readable.
+            For example, a value of 10 makes a vertical top label to be
+            flipped only at 100 degrees.
+        auto_update: bool
+            Whether to redraw the gridlines and labels when the figure is
+            updated.
 
         Notes
         -----
@@ -184,7 +242,7 @@ class Gridliner:
             if not isinstance(xlocator, mticker.Locator):
                 xlocator = mticker.FixedLocator(xlocator)
             self.xlocator = xlocator
-        elif isinstance(crs, cartopy.crs.PlateCarree):
+        elif isinstance(crs, PlateCarree):
             self.xlocator = LongitudeLocator(dms=dms)
         else:
             self.xlocator = classic_locator
@@ -195,13 +253,13 @@ class Gridliner:
             if not isinstance(ylocator, mticker.Locator):
                 ylocator = mticker.FixedLocator(ylocator)
             self.ylocator = ylocator
-        elif isinstance(crs, cartopy.crs.PlateCarree):
+        elif isinstance(crs, PlateCarree):
             self.ylocator = LatitudeLocator(dms=dms)
         else:
             self.ylocator = classic_locator
 
         if xformatter is None:
-            if isinstance(crs, cartopy.crs.PlateCarree):
+            if isinstance(crs, PlateCarree):
                 xformatter = LongitudeFormatter(dms=dms)
             else:
                 xformatter = classic_formatter()
@@ -209,24 +267,64 @@ class Gridliner:
         self.xformatter = xformatter
 
         if yformatter is None:
-            if isinstance(crs, cartopy.crs.PlateCarree):
+            if isinstance(crs, PlateCarree):
                 yformatter = LatitudeFormatter(dms=dms)
             else:
                 yformatter = classic_formatter()
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
         self.yformatter = yformatter
 
-        #: Whether to draw labels on the top of the map.
-        self.top_labels = draw_labels
+        # Draw label argument
+        if isinstance(draw_labels, list):
 
-        #: Whether to draw labels on the bottom of the map.
-        self.bottom_labels = draw_labels
+            # Select to which coordinate it is applied
+            if 'x' not in draw_labels and 'y' not in draw_labels:
+                value = True
+            elif 'x' in draw_labels and 'y' in draw_labels:
+                value = ['x', 'y']
+            elif 'x' in draw_labels:
+                value = 'x'
+            else:
+                value = 'y'
 
-        #: Whether to draw labels on the left hand side of the map.
-        self.left_labels = draw_labels
+            #: Whether to draw labels on the top of the map.
+            self.top_labels = value if 'top' in draw_labels else False
 
-        #: Whether to draw labels on the right hand side of the map.
-        self.right_labels = draw_labels
+            #: Whether to draw labels on the bottom of the map.
+            self.bottom_labels = value if 'bottom' in draw_labels else False
+
+            #: Whether to draw labels on the left hand side of the map.
+            self.left_labels = value if 'left' in draw_labels else False
+
+            #: Whether to draw labels on the right hand side of the map.
+            self.right_labels = value if 'right' in draw_labels else False
+
+            #: Whether to draw labels near the geographic limits of the map.
+            self.geo_labels = value if 'geo' in draw_labels else False
+
+        elif isinstance(draw_labels, dict):
+
+            self.top_labels = draw_labels.get('top', False)
+            self.bottom_labels = draw_labels.get('bottom', False)
+            self.left_labels = draw_labels.get('left', False)
+            self.right_labels = draw_labels.get('right', False)
+            self.geo_labels = draw_labels.get('geo', False)
+
+        else:
+
+            self.top_labels = draw_labels
+            self.bottom_labels = draw_labels
+            self.left_labels = draw_labels
+            self.right_labels = draw_labels
+            self.geo_labels = draw_labels
+
+        for loc in 'top', 'bottom', 'left', 'right', 'geo':
+            value = getattr(self, loc + '_labels')
+            if isinstance(value, str):
+                value = value.lower()
+            if (not isinstance(value, (list, bool)) and
+                    value not in ('x', 'y')):
+                raise ValueError(f"Invalid draw_labels argument: {value}")
 
         if auto_inline:
             if isinstance(self.axes.projection, _X_INLINE_PROJS):
@@ -252,6 +350,18 @@ class Gridliner:
         elif not auto_inline:
             self.y_inline = False
 
+        # Apply inline args
+        if not draw_labels:
+            self.inline_labels = False
+        elif self.x_inline and self.y_inline:
+            self.inline_labels = True
+        elif self.x_inline:
+            self.inline_labels = "x"
+        elif self.y_inline:
+            self.inline_labels = "y"
+        else:
+            self.inline_labels = False
+
         # Gridline limits so that the gridlines don't extend all the way
         # to the edge of the boundary
         self.xlim = xlim
@@ -265,23 +375,31 @@ class Gridliner:
 
         #: A dictionary passed through to ``ax.text`` on x label creation
         #: for styling of the text labels.
-        self.xlabel_style = {}
+        self.xlabel_style = xlabel_style or {}
 
         #: A dictionary passed through to ``ax.text`` on y label creation
         #: for styling of the text labels.
-        self.ylabel_style = {}
+        self.ylabel_style = ylabel_style or {}
 
-        # bbox style for grid labels
-        self.labels_bbox_style = {'pad': 0, 'visible': False}
+        #: bbox style for grid labels
+        self.labels_bbox_style = (
+            labels_bbox_style or {'pad': 0, 'visible': False})
 
         #: The padding from the map edge to the x labels in points.
-        self.xpadding = 5
+        self.xpadding = xpadding
 
         #: The padding from the map edge to the y labels in points.
-        self.ypadding = 5
+        self.ypadding = ypadding
 
-        #: Allow the rotation of labels.
-        self.rotate_labels = True
+        #: Control the rotation of labels.
+        if rotate_labels is None:
+            rotate_labels = (
+                self.axes.projection.__class__ in _ROTATE_LABEL_PROJS)
+        if not isinstance(rotate_labels, (bool, float, int)):
+            raise ValueError("Invalid rotate_labels argument")
+        self.rotate_labels = rotate_labels
+
+        self.offset_angle = offset_angle
 
         # Current transform
         self.crs = crs
@@ -306,8 +424,12 @@ class Gridliner:
         #: The y gridlines which were created at draw time.
         self.yline_artists = []
 
-        # Plotted status
-        self._plotted = False
+        # List of all labels (Label objects)
+        self._labels = []
+
+        # Draw status
+        self._drawn = False
+        self._auto_update = auto_update
 
         # Check visibility of labels at each draw event
         # (or once drawn, only at resize event ?)
@@ -362,17 +484,69 @@ class Gridliner:
         self.right_labels = value
 
     def _draw_event(self, event):
-        if self.has_labels():
-            self._update_labels_visibility(event.renderer)
+        self._draw_gridliner(renderer=event.renderer)
 
     def has_labels(self):
-        return hasattr(self, '_labels') and self._labels
+        return len(self._labels) != 0
 
     @property
     def label_artists(self):
-        if self.has_labels():
-            return self._labels
-        return []
+        """All the labels which were created at draw time"""
+        return [label.artist for label in self._labels]
+
+    @property
+    def top_label_artists(self):
+        """The top labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.loc == "top"]
+
+    @property
+    def bottom_label_artists(self):
+        """The bottom labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.loc == "bottom"]
+
+    @property
+    def left_label_artists(self):
+        """The left labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.loc == "left"]
+
+    @property
+    def right_label_artists(self):
+        """The right labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.loc == "right"]
+
+    @property
+    def geo_label_artists(self):
+        """The geo spine labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.loc == "geo"]
+
+    @property
+    def x_inline_label_artists(self):
+        """The x-coordinate inline labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.loc == "x_inline"]
+
+    @property
+    def y_inline_label_artists(self):
+        """The y-coordinate inline labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.loc == "y_inline"]
+
+    @property
+    def xlabel_artists(self):
+        """The x-coordinate labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.xy == "x"]
+
+    @property
+    def ylabel_artists(self):
+        """The y-coordinate labels which were created at draw time"""
+        return [label.artist for label in self._labels
+                if label.xy == "y"]
 
     def _crs_transform(self):
         """
@@ -411,16 +585,59 @@ class Gridliner:
                      self._round(np.percentile(lim, uq), cent))
         return midpoints
 
+    def _draw_this_label(self, xylabel, loc):
+        """Should I draw this kind of label here?"""
+        draw_labels = getattr(self, loc+'_labels')
+
+        # By default, only x on top/bottom and only y on left/right
+        if draw_labels is True and loc != 'geo':
+            draw_labels = (
+                "x" if loc in ["top", "bottom"] else "y")
+
+        # Don't draw
+        if not draw_labels:
+            return False
+
+        # Explicit x or y
+        if isinstance(draw_labels, str):
+            draw_labels = [draw_labels]
+
+        # Explicit list of x and/or y
+        if isinstance(draw_labels, list) and xylabel not in draw_labels:
+            return False
+
+        return True
+
     def _draw_gridliner(self, nx=None, ny=None, renderer=None):
-        """Create Artists for all visible elements and add to our Axes."""
-        # Check status
-        if self._plotted:
+        """Create Artists for all visible elements and add to our Axes.
+
+        The following rules apply for the visibility of labels:
+
+        - X-type labels are plotted along the bottom, top and geo spines.
+        - Y-type labels are plotted along the left, right and geo spines.
+        - A label must not overlap another label marked as visible.
+        - A label must not overlap the map boundary.
+        - When a label is about to be hidden, its padding is slightly
+          increase until it can be drawn or until a padding limit is reached.
+        """
+        # Update only when needed or requested
+        if self._drawn and not self._auto_update:
             return
-        self._plotted = True
+        self._drawn = True
+
+        # Clear lists of artists
+        for lines in self.xline_artists + self.yline_artists:
+            if lines in self.axes.collections:
+                self.axes.collections.remove(lines)
+        self.xline_artists.clear()
+        self.yline_artists.clear()
+        for label in self._labels:
+            if label.artist in self.axes.texts:
+                self.axes.texts.remove(label.artist)
+        self._labels.clear()
 
         # Inits
         lon_lim, lat_lim = self._axes_domain(nx=nx, ny=ny)
-
         transform = self._crs_transform()
         rc_params = matplotlib.rcParams
         n_steps = self.n_steps
@@ -458,8 +675,8 @@ class Gridliner:
             lat_max = max(lat_max, max(lat_ticks))
         lon_lines = np.empty((len(lon_ticks), n_steps, 2))
         lon_lines[:, :, 0] = np.array(lon_ticks)[:, np.newaxis]
-        lon_lines[:, :, 1] = np.linspace(lat_min, lat_max,
-                                         n_steps)[np.newaxis, :]
+        lon_lines[:, :, 1] = np.linspace(
+            lat_min, lat_max, n_steps)[np.newaxis, :]
 
         if self.xlines:
             nx = len(lon_lines) + 1
@@ -494,43 +711,108 @@ class Gridliner:
         # Label drawing #
         #################
 
-        self.bottom_label_artists = []
-        self.top_label_artists = []
-        self.left_label_artists = []
-        self.right_label_artists = []
         if not (self.left_labels or self.right_labels or
-                self.bottom_labels or self.top_labels):
+                self.bottom_labels or self.top_labels or
+                self.inline_labels or self.geo_labels):
             return
         self._assert_can_draw_ticks()
 
-        # Get the real map boundaries
-        map_boundary_vertices = self.axes.patch.get_path().vertices
-        map_boundary = sgeom.Polygon(map_boundary_vertices)
+        # Inits for labels
+        max_padding_factor = 5
+        delta_padding_factor = 0.2
+        spines_specs = {
+            'left': {
+                'index': 0,
+                'coord_type': "x",
+                'opcmp': operator.le,
+                'opval': max,
+                },
+            'bottom': {
+                'index': 1,
+                'coord_type': "y",
+                'opcmp': operator.le,
+                'opval': max,
+                },
+            'right': {
+                'index': 0,
+                'coord_type': "x",
+                'opcmp': operator.ge,
+                'opval': min,
+                },
+            'top': {
+                'index': 1,
+                'coord_type': "y",
+                'opcmp': operator.ge,
+                'opval': min,
+                },
+        }
+        for side, specs in spines_specs.items():
+            bbox = self.axes.spines[side].get_window_extent(renderer)
+            specs['coords'] = [
+                getattr(bbox, specs['coord_type']+idx) for idx in "01"]
 
-        self._labels = []
+        def remove_path_dupes(path):
+            """
+            Remove duplicate points in a path (zero-length segments).
+
+            This is necessary only for Matplotlib 3.1.0 -- 3.1.2, because
+            Path.intersects_path incorrectly returns True for any paths with
+            such segments.
+            """
+            segment_length = np.diff(path.vertices, axis=0)
+            mask = np.logical_or.reduce(segment_length != 0, axis=1)
+            mask = np.append(mask, True)
+            path = mpath.Path(np.compress(mask, path.vertices, axis=0),
+                              np.compress(mask, path.codes, axis=0))
+            return path
+
+        def update_artist(artist, renderer):
+            artist.update_bbox_position_size(renderer)
+            this_patch = artist.get_bbox_patch()
+            this_path = this_patch.get_path().transformed(
+                this_patch.get_transform())
+            if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
+                this_path = remove_path_dupes(this_path)
+            return this_path
+
+        # Get the real map boundaries
+        self.axes.spines["geo"].get_window_extent(renderer)  # update coords
+        map_boundary_path = self.axes.spines["geo"].get_path().transformed(
+            self.axes.spines["geo"].get_transform())
+        if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
+            map_boundary_path = remove_path_dupes(map_boundary_path)
+        map_boundary_vertices = map_boundary_path.vertices
+        map_boundary = sgeom.Polygon(map_boundary_vertices)
 
         if self.x_inline:
             y_midpoints = self._find_midpoints(lat_lim, lat_ticks)
         if self.y_inline:
             x_midpoints = self._find_midpoints(lon_lim, lon_ticks)
 
-        for lonlat, lines, line_ticks, formatter, label_style in (
-                ('lon', lon_lines, lon_ticks,
-                 self.xformatter, self.xlabel_style),
-                ('lat', lat_lines, lat_ticks,
-                 self.yformatter, self.ylabel_style)):
+        for xylabel, lines, line_ticks, formatter, label_style in (
+                ('x', lon_lines, lon_ticks,
+                 self.xformatter, self.xlabel_style.copy()),
+                ('y', lat_lines, lat_ticks,
+                 self.yformatter, self.ylabel_style.copy())):
+
+            x_inline = self.x_inline and xylabel == 'x'
+            y_inline = self.y_inline and xylabel == 'y'
+            padding = getattr(self, xylabel + "padding")
+            bbox_style = self.labels_bbox_style.copy()
+            if "bbox" in label_style:
+                bbox_style.update(label_style["bbox"])
+            label_style["bbox"] = bbox_style
 
             formatter.set_locs(line_ticks)
 
-            for line, tick_value in zip(lines, line_ticks):
+            for line_coords, tick_value in zip(lines, line_ticks):
                 # Intersection of line with map boundary
-                line = self.axes.projection.transform_points(
-                    crs, line[:, 0], line[:, 1])[:, :2]
-                infs = np.isinf(line).any(axis=1)
-                line = line.compress(~infs, axis=0)
-                if line.size == 0:
+                line_coords = self._crs_transform().transform(line_coords)
+                infs = np.isnan(line_coords).any(axis=1)
+                line_coords = line_coords.compress(~infs, axis=0)
+                if line_coords.size == 0:
                     continue
-                line = sgeom.LineString(line)
+                line = sgeom.LineString(line_coords)
                 if line.intersects(map_boundary):
                     intersection = line.intersection(map_boundary)
                     del line
@@ -539,9 +821,11 @@ class Gridliner:
                     if isinstance(intersection, sgeom.MultiPoint):
                         if len(intersection) < 2:
                             continue
-                        tails = [[(pt.x, pt.y) for pt in intersection[:2]]]
+                        n2 = min(len(intersection), 3)
+                        tails = [[(pt.x, pt.y)
+                                  for pt in intersection[:n2:n2-1]]]
                         heads = [[(pt.x, pt.y)
-                                  for pt in intersection[-1:-3:-1]]]
+                                  for pt in intersection[-1:-n2-1:-n2+1]]]
                     elif isinstance(intersection, (sgeom.LineString,
                                                    sgeom.MultiLineString)):
                         if isinstance(intersection, sgeom.LineString):
@@ -561,8 +845,9 @@ class Gridliner:
                         for inter in intersection:
                             if len(inter.coords) < 2:
                                 continue
-                            tails.append(inter.coords[:2])
-                            heads.append(inter.coords[-1:-3:-1])
+                            n2 = min(len(inter.coords), 8)
+                            tails.append(inter.coords[:n2:n2-1])
+                            heads.append(inter.coords[-1:-n2-1:-n2+1])
                         if not tails:
                             continue
                     elif isinstance(intersection,
@@ -602,16 +887,32 @@ class Gridliner:
                     # Loop on head and tail and plot label by extrapolation
                     for tail, head in zip(tails, heads):
                         for i, (pt0, pt1) in enumerate([tail, head]):
-                            kw, angle, loc = self._segment_to_text_specs(
-                                pt0, pt1, lonlat)
-                            if not getattr(self, loc + '_labels'):
-                                continue
 
-                            kw.update(label_style,
-                                      bbox=self.labels_bbox_style)
-                            text = formatter(tick_value)
+                            # Initial text specs
+                            x0, y0 = pt0
+                            if x_inline or y_inline:
+                                kw = {'rotation': 0,
+                                      'transform': PlateCarree(),
+                                      'ha': 'center', 'va': 'center'}
+                                loc = "inline"
+                            else:
+                                x1, y1 = pt1
+                                segment_angle = (np.arctan2(y0 - y1, x0 - x1)
+                                                 * 180 / np.pi)
+                                loc = self._get_loc_from_spine_intersection(
+                                    spines_specs, xylabel, x0, y0)
+                                if not self._draw_this_label(xylabel, loc):
+                                    visible = False
+                                kw = self._get_text_specs(
+                                    segment_angle, loc, xylabel)
+                                kw['transform'] = self._get_padding_transform(
+                                    segment_angle, loc, xylabel)
+                            kw.update(label_style)
 
-                            if self.y_inline and lonlat == 'lat':
+                            # Get x and y in data coords
+                            pt0 = self.axes.transData.inverted(
+                                ).transform_point(pt0)
+                            if y_inline:
                                 # 180 degrees isn't formatted with a
                                 # suffix and adds confusion if it's inline
                                 if abs(tick_value) == 180:
@@ -624,7 +925,7 @@ class Gridliner:
                                 x = pt0[0]
                                 y_set = False
 
-                            if self.x_inline and lonlat == 'lon':
+                            if x_inline:
                                 if abs(tick_value) == 180:
                                     continue
                                 x = tick_value
@@ -633,202 +934,248 @@ class Gridliner:
                             elif not y_set:
                                 y = pt0[1]
 
-                            tt = self.axes.text(x, y, text, **kw)
-                            tt._angle = angle
-                            priority = (((lonlat == 'lon') and
-                                         loc in ('bottom', 'top')) or
-                                        ((lonlat == 'lat') and
-                                         loc in ('left', 'right')))
-                            self._labels.append((lonlat, priority, tt))
-                            getattr(self, loc + '_label_artists').append(tt)
+                            # Add text to the plot
+                            text = formatter(tick_value)
+                            artist = self.axes.text(x, y, text, **kw)
 
-        # Sort labels
+                            # Update loc from spine overlapping now
+                            # that we have a bbox of the label
+                            this_path = update_artist(artist, renderer)
+                            if not x_inline and not y_inline and loc == 'geo':
+                                new_loc = self._get_loc_from_spine_overlapping(
+                                    spines_specs, xylabel, this_path)
+                                if new_loc and loc != new_loc:
+                                    loc = new_loc
+                                    transform = self._get_padding_transform(
+                                        segment_angle, loc, xylabel)
+                                    artist.set_transform(transform)
+                                    artist.update(
+                                        self._get_text_specs(
+                                            segment_angle, loc, xylabel))
+                                    artist.update(label_style.copy())
+                                    this_path = update_artist(artist, renderer)
+
+                            # Is this kind label allowed to be drawn?
+                            if not self._draw_this_label(xylabel, loc):
+                                visible = False
+
+                            elif x_inline or y_inline:
+                                # Check that it does not overlap the map
+                                # Inline must be within the map.
+                                # TODO: When Matplotlib clip path
+                                # works on text, this
+                                # clipping can be left to it.
+                                center = artist.get_transform(
+                                    ).transform_point(
+                                        artist.get_position())
+                                visible = (map_boundary_path
+                                           .contains_point(center))
+                            else:
+                                # Now loop on padding factors until it does not
+                                # overlaps the boundary
+                                visible = True
+                                padding_factor = 1
+                                while padding_factor < max_padding_factor:
+
+                                    # Non-inline must not run through
+                                    # the outline.
+                                    if map_boundary_path.intersects_path(
+                                            this_path, filled=padding > 0):
+                                        visible = False
+
+                                        # Apply new padding
+                                        transform = (
+                                            self._get_padding_transform(
+                                                segment_angle, loc, xylabel,
+                                                padding_factor))
+                                        artist.set_transform(transform)
+                                        this_path = update_artist(
+                                            artist, renderer)
+                                        padding_factor += delta_padding_factor
+
+                                    else:
+                                        visible = True
+                                        break
+
+                                else:
+                                    visible = False
+
+                            # Updates
+                            label = Label(artist, this_path, xylabel, loc)
+                            label.set_visible(visible)
+                            self._labels.append(label)
+
+        # Now check overlapping of ordered visible labels
         if self._labels:
-            self._labels.sort(key=operator.itemgetter(0), reverse=True)
-            self._update_labels_visibility(renderer)
+            self._labels.sort(
+                key=operator.attrgetter("priority"), reverse=True)
+            visible_labels = []
+            for label in self._labels:
+                if label.get_visible():
+                    for other_label in visible_labels:
+                        if label.check_overlapping(other_label):
+                            break
+                    else:
+                        visible_labels.append(label)
 
-    def _segment_to_text_specs(self, pt0, pt1, lonlat):
-        """Get appropriate kwargs for a label from lon or lat line segment"""
-        x0, y0 = pt0
-        x1, y1 = pt1
-        angle = np.arctan2(y0 - y1, x0 - x1) * 180 / np.pi
-        kw, loc = self._segment_angle_to_text_specs(angle, lonlat)
-        return kw, angle, loc
-
-    def _text_angle_to_specs_(self, angle, lonlat):
-        """Get specs for a rotated label from its angle in degrees"""
-
+    def _get_loc_from_angle(self, angle):
         angle %= 360
         if angle > 180:
             angle -= 360
-
-        if ((self.x_inline and lonlat == 'lon') or
-                (self.y_inline and lonlat == 'lat')):
-            kw = {'rotation': 0, 'rotation_mode': 'anchor',
-                  'ha': 'center', 'va': 'center'}
-            loc = 'bottom'
-            return kw, loc
-
-        # Default options
-        kw = {'rotation': angle, 'rotation_mode': 'anchor'}
-
-        # Options that depend in which quarter the angle falls
         if abs(angle) <= 45:
             loc = 'right'
-            kw.update(ha='left', va='center')
-
         elif abs(angle) >= 135:
             loc = 'left'
-            kw.update(ha='right', va='center')
-            kw['rotation'] -= np.sign(angle) * 180
-
         elif angle > 45:
             loc = 'top'
-            kw.update(ha='center', va='bottom', rotation=angle - 90)
-
-        else:
+        else:  # (-135, -45)
             loc = 'bottom'
-            kw.update(ha='center', va='top', rotation=angle + 90)
+        return loc
 
-        return kw, loc
+    def _get_loc_from_spine_overlapping(
+            self, spines_specs, xylabel, label_path):
+        """Try to get the location from side spines and label path
 
-    def _segment_angle_to_text_specs(self, angle, lonlat):
-        """Get appropriate kwargs for a given text angle"""
-        kw, loc = self._text_angle_to_specs_(angle, lonlat)
-        if not self.rotate_labels:
-            angle = {'top': 90., 'right': 0.,
-                     'bottom': -90., 'left': 180.}[loc]
-            del kw['rotation']
+        Returns None if it does not apply
 
-        if ((self.x_inline and lonlat == 'lon') or
-                (self.y_inline and lonlat == 'lat')):
-            kw.update(transform=cartopy.crs.PlateCarree())
-        else:
-            xpadding = (self.xpadding if self.xpadding is not None
-                        else matplotlib.rc_params['xtick.major.pad'])
-            ypadding = (self.ypadding if self.ypadding is not None
-                        else matplotlib.rc_params['ytick.major.pad'])
-            dx = ypadding * np.cos(angle * np.pi / 180)
-            dy = xpadding * np.sin(angle * np.pi / 180)
-            transform = mtrans.offset_copy(
-                self.axes.transData, self.axes.figure,
-                x=dx, y=dy, units='points')
-            kw.update(transform=transform)
+        For instance, for each side, if any of label_path x coordinates
+        are beyond this side, the distance to this side is computed.
+        If several sides are matching (max 2), then the one with a greater
+        distance is kept.
 
-        return kw, loc
+        This helps finding the side of labels for non-rectangular projection
+        with a rectangular map boundary.
 
-    def _update_labels_visibility(self, renderer):
-        """Update the visibility of each plotted label
-
-        The following rules apply:
-
-        - Labels are plotted and checked by order of priority,
-          with a high priority for longitude labels at the bottom and
-          top of the map, and the reverse for latitude labels.
-        - A label must not overlap another label marked as visible.
-        - A label must not overlap the map boundary.
-        - When a label is about to be hidden, other angles are tried in the
-          absolute given limit of max_delta_angle by increments of delta_angle
-          of difference from the original angle.
         """
-        if renderer is None or not self._labels:
-            return
-        paths = []
-        outline_path = None
-        delta_angle = 22.5
-        max_delta_angle = 45
-        axes_children = self.axes.get_children()
+        side_max = dist_max = None
+        for side, specs in spines_specs.items():
+            if specs['coord_type'] == xylabel:
+                continue
 
-        def remove_path_dupes(path):
-            """
-            Remove duplicate points in a path (zero-length segments).
+            label_coords = label_path.vertices[:-1, specs['index']]
 
-            This is necessary only for Matplotlib 3.1.0 -- 3.1.2, because
-            Path.intersects_path incorrectly returns True for any paths with
-            such segments.
-            """
-            segment_length = np.diff(path.vertices, axis=0)
-            mask = np.logical_or.reduce(segment_length != 0, axis=1)
-            mask = np.append(mask, True)
-            path = mpath.Path(np.compress(mask, path.vertices, axis=0),
-                              np.compress(mask, path.codes, axis=0))
-            return path
-
-        for lonlat, priority, artist in self._labels:
-
-            if artist not in axes_children:
-                warnings.warn('The labels of this gridliner do not belong to '
-                              'the gridliner axes')
-
-            orig_specs = {'rotation': artist.get_rotation(),
-                          'ha': artist.get_ha(),
-                          'va': artist.get_va()}
-            # Compute angles to try
-            angles = [None]
-            for abs_delta_angle in np.arange(delta_angle, max_delta_angle + 1,
-                                             delta_angle):
-                angles.append(artist._angle + abs_delta_angle)
-                angles.append(artist._angle - abs_delta_angle)
-
-            # Loop on angles until it works
-            for angle in angles:
-                if ((self.x_inline and lonlat == 'lon') or
-                        (self.y_inline and lonlat == 'lat')):
-                    angle = 0
-
-                if angle is not None:
-                    specs, _ = self._segment_angle_to_text_specs(angle, lonlat)
-                    artist.update(specs)
-
-                artist.update_bbox_position_size(renderer)
-                this_patch = artist.get_bbox_patch()
-                this_path = this_patch.get_path().transformed(
-                    this_patch.get_transform())
-                if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
-                    this_path = remove_path_dupes(this_path)
-                center = artist.get_transform().transform_point(
-                    artist.get_position())
-                visible = False
-
-                for path in paths:
-
-                    # Check it does not overlap another label
-                    if this_path.intersects_path(path):
-                        break
-
-                else:
-
-                    # Finally check that it does not overlap the map
-                    if outline_path is None:
-                        outline_path = (self.axes.patch.get_path()
-                                        .transformed(self.axes.transData))
-                        if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
-                            outline_path = remove_path_dupes(outline_path)
-                    # Inline must be within the map.
-                    if ((lonlat == 'lon' and self.x_inline) or
-                            (lonlat == 'lat' and self.y_inline)):
-                        # TODO: When Matplotlib clip path works on text, this
-                        # clipping can be left to it.
-                        if outline_path.contains_point(center):
-                            visible = True
-                    # Non-inline must not run through the outline.
-                    elif not outline_path.intersects_path(this_path):
-                        visible = True
-
-                    # Good
-                    if visible:
-                        break
-
-                if ((self.x_inline and lonlat == 'lon') or
-                        (self.y_inline and lonlat == 'lat')):
-                    break
-
-            # Action
-            artist.set_visible(visible)
-            if not visible:
-                artist.update(orig_specs)
+            spine_coord = specs['opval'](specs['coords'])
+            if not specs['opcmp'](label_coords, spine_coord).any():
+                continue
+            if specs['opcmp'] is operator.ge:  # top, right
+                dist = label_coords.min() - spine_coord
             else:
-                paths.append(this_path)
+                dist = spine_coord - label_coords.max()
+
+            if side_max is None or dist > dist_max:
+                side_max = side
+                dist_max = dist
+        if side_max is None:
+            return "geo"
+        return side_max
+
+    def _get_loc_from_spine_intersection(self, spines_specs, xylabel, x, y):
+        """Get the loc the intersection of a gridline with a spine
+
+        Defaults to "geo".
+        """
+        if xylabel == "x":
+            sides = ["bottom", "top", "left", "right"]
+        else:
+            sides = ["left", "right", "bottom", "top"]
+        for side in sides:
+            xy = x if side in ["left", "right"] else y
+            coords = np.round(spines_specs[side]["coords"], 2)
+            if round(xy, 2) in coords:
+                return side
+        return "geo"
+
+    def _get_text_specs(self, angle, loc, xylabel):
+        """Get rotation and alignments specs for a single label"""
+
+        # Angle from -180 to 180
+        if angle > 180:
+            angle -= 360
+
+        # Fake for geo spine
+        if loc == "geo":
+            loc = self._get_loc_from_angle(angle)
+
+        # Check rotation
+        if not self.rotate_labels:
+
+            # No rotation
+            kw = {'rotation': 0, "ha": "center", "va": "center"}
+            if loc == 'right':
+                kw.update(ha='left')
+            elif loc == 'left':
+                kw.update(ha='right')
+            elif loc == 'top':
+                kw.update(va='bottom')
+            elif loc == 'bottom':
+                kw.update(va='top')
+            # kw.update(self._get_alignments_from_loc(loc))
+
+        else:
+
+            # Rotation along gridlines
+            if (isinstance(self.rotate_labels, (float, int)) and
+                    not isinstance(self.rotate_labels, bool)):
+                angle = self.rotate_labels
+            kw = {'rotation': angle, 'rotation_mode': 'anchor', 'va': 'center'}
+            if (angle < 90+self.offset_angle and
+                    angle > -90 + self.offset_angle):
+                kw.update(ha="left", rotation=angle)
+            else:
+                kw.update(ha="right", rotation=angle+180)
+
+        # Inside labels
+        if getattr(self, xylabel+"padding") < 0:
+            if "ha" in kw:
+                if kw["ha"] == "left":
+                    kw["ha"] = "right"
+                elif kw["ha"] == "right":
+                    kw["ha"] = "left"
+            if "va" in kw:
+                if kw["va"] == "top":
+                    kw["va"] = "bottom"
+                elif kw["va"] == "bottom":
+                    kw["va"] = "top"
+
+        return kw
+
+    @staticmethod
+    def _get_alignments_from_loc(loc):
+        kw = dict(ha="center", va="center")
+        if loc == 'right':
+            kw.update(ha='left')
+        elif loc == 'left':
+            kw.update(ha='right')
+        elif loc == 'top':
+            kw.update(va='bottom')
+        elif loc == 'bottom':
+            kw.update(va='top')
+            kw.update(va='center')
+        return kw
+
+    def _get_padding_transform(
+            self, padding_angle, loc, xylabel, padding_factor=1):
+        """Get transform from angle and padding for non-inline labels"""
+
+        # No rotation
+        if self.rotate_labels is False and loc != "geo":
+            padding_angle = {
+                'top': 90., 'right': 0., 'bottom': -90., 'left': 180.}[loc]
+
+        # Padding
+        if xylabel == "x":
+            padding = (self.xpadding if self.xpadding is not None
+                       else matplotlib.rc_params['xtick.major.pad'])
+        else:
+            padding = (self.ypadding if self.ypadding is not None
+                       else matplotlib.rc_params['ytick.major.pad'])
+        dx = padding_factor * padding * np.cos(padding_angle * np.pi / 180)
+        dy = padding_factor * padding * np.sin(padding_angle * np.pi / 180)
+
+        # Final transform
+        return mtrans.offset_copy(
+            self.axes.transData, fig=self.axes.figure,
+            x=dx, y=dy, units='points')
 
     def _assert_can_draw_ticks(self):
         """
@@ -837,7 +1184,7 @@ class Gridliner:
 
         """
         # Check labelling is supported, currently a limited set of options.
-        if not isinstance(self.crs, cartopy.crs.PlateCarree):
+        if not isinstance(self.crs, PlateCarree):
             raise TypeError('Cannot label {crs.__class__.__name__} gridlines.'
                             ' Only PlateCarree gridlines are currently '
                             'supported.'.format(crs=self.crs))
@@ -926,3 +1273,27 @@ class Gridliner:
                 lat_range = (-self.ylim, self.ylim)
 
         return lon_range, lat_range
+
+
+class Label(object):
+    """Helper class to manage the attributes for a single label"""
+
+    def __init__(self, artist, path, xy, loc):
+
+        self.artist = artist
+        self.loc = loc
+        self.path = path
+        self.xy = xy
+        self.priority = loc in ["left", "right", "top", "bottom"]
+
+    def set_visible(self, value):
+        self.artist.set_visible(value)
+
+    def get_visible(self):
+        return self.artist.get_visible()
+
+    def check_overlapping(self, label):
+        overlapping = self.path.intersects_path(label.path)
+        if overlapping:
+            self.set_visible(False)
+        return overlapping

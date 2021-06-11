@@ -1374,7 +1374,9 @@ class GeoAxes(matplotlib.axes.Axes):
                   xlocs=None, ylocs=None, dms=False,
                   x_inline=None, y_inline=None, auto_inline=True,
                   xformatter=None, yformatter=None, xlim=None, ylim=None,
-                  **kwargs):
+                  rotate_labels=None, xlabel_style=None, ylabel_style=None,
+                  labels_bbox_style=None, xpadding=5, ypadding=5,
+                  offset_angle=25, auto_update=False, **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1386,7 +1388,25 @@ class GeoAxes(matplotlib.axes.Axes):
             which gridlines are drawn.
             Defaults to :class:`cartopy.crs.PlateCarree`.
         draw_labels: optional
-            Label gridlines like axis ticks, around the edge.
+            Toggle whether to draw labels. For finer control, attributes of
+            :class:`Gridliner` may be modified individually. Defaults to False.
+
+            - string: "x" or "y" to only draw labels of the respective
+              coordinate in the CRS.
+            - list: Can contain the side identifiers and/or coordinate
+              types to select which ones to draw.
+              For all labels one would use
+              `["x", "y", "top", "bottom", "left", "right", "geo"]`.
+            - dict: The keys are the side identifiers
+              ("top", "bottom", "left", "right") and the values are the
+              coordinates ("x", "y"); this way you can precisely
+              decide what kind of label to draw and where.
+              For x labels on the bottom and y labels on the right you
+              could pass in `{"bottom": "x", "left": "y"}`.
+
+            Note that, by default, x and y labels are not drawn on left/right
+            and top/bottom edges respectively unless explicitly requested.
+
         xlocs: optional
             An iterable of gridline locations or a
             :class:`matplotlib.ticker.Locator` instance which will be
@@ -1433,6 +1453,36 @@ class GeoAxes(matplotlib.axes.Axes):
             way to the edge of the boundary. ylim can be a single number or
             a (min, max) tuple. If a single number, the limits will be
             (-ylim, +ylim).
+        rotate_labels: optional, bool, str
+            Allow the rotation of non-inline labels.
+
+            - False: Do not rotate the labels.
+            - True: Rotate the labels parallel to the gridlines.
+            - None: no rotation except for some projections (default).
+            - A float: Rotate labels by this value in degrees.
+
+        xlabel_style: dict
+            A dictionary passed through to ``ax.text`` on x label creation
+            for styling of the text labels.
+        ylabel_style: dict
+            A dictionary passed through to ``ax.text`` on y label creation
+            for styling of the text labels.
+        labels_bbox_style: dict
+            bbox style for all text labels.
+        xpadding: float
+            Padding for x labels. If negative, the labels are
+            drawn inside the map.
+        ypadding: float
+            Padding for y labels. If negative, the labels are
+            drawn inside the map.
+        offset_angle: float
+            Difference of angle in degrees from 90 to define when
+            a label must be flipped to be more readable.
+            For example, a value of 10 makes a vertical top label to be
+            flipped only at 100 degrees.
+        auto_update: bool
+            Whether to update the grilines and labels when the plot is
+            refreshed.
 
         Keyword Parameters
         ------------------
@@ -1461,7 +1511,12 @@ class GeoAxes(matplotlib.axes.Axes):
             self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
             ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
             x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline,
-            xformatter=xformatter, yformatter=yformatter, xlim=xlim, ylim=ylim)
+            xformatter=xformatter, yformatter=yformatter,
+            xlim=xlim, ylim=ylim, rotate_labels=rotate_labels,
+            xlabel_style=xlabel_style, ylabel_style=ylabel_style,
+            labels_bbox_style=labels_bbox_style,
+            xpadding=xpadding, ypadding=ypadding, offset_angle=offset_angle,
+            auto_update=auto_update)
         self._gridliners.append(gl)
         return gl
 
