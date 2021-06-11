@@ -1976,7 +1976,7 @@ class InterruptedGoodeHomolosine(Projection):
         epsilon = 1e-10
 
         # Obtain boundary points
-        n = 91
+        n = 31
         if emphasis == 'land':
             top_interrupted_lons = (-40.0,)
             bottom_interrupted_lons = (80.0, -20.0, -100.0)
