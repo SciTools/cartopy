@@ -1947,14 +1947,14 @@ class InterruptedGoodeHomolosine(Projection):
         """
         Parameters
         ----------
-        central_longitude: optional
-            The central longitude. Defaults to 0.
-        globe: :class:`cartopy.crs.Globe`, optional
-            If omitted, a default globe is created.
-        emphasis: optional
-            Options "land" and "ocean" are available. Defaults to "land"
-
+        central_longitude : float, optional
+            The central longitude, by default 0
+        globe : :class:`cartopy.crs.Globe`, optional
+            If omitted, a default Globe object is created, by default None
+        emphasis : str, optional
+            Options 'land' and 'ocean' are available, by default 'land'
         """
+
         if emphasis == 'land':
             proj4_params = [('proj', 'igh'), ('lon_0', central_longitude)]
             super().__init__(proj4_params, globe=globe)
