@@ -1356,6 +1356,44 @@ class PlateCarree(_CylindricalProjection):
 
         return return_value
 
+    def transform_points(self, src_crs, x, y, z=None, trap=True):
+        """
+        transform_points(src_crs, x, y[, z])
+
+        Transform the given coordinates, in the given source
+        coordinate system (``src_crs``), to this coordinate system.
+
+        Parameters
+        ----------
+        src_crs
+            instance of :class:`CRS` that represents the
+            coordinate system of ``x``, ``y`` and ``z``.
+        x
+            the x coordinates (array), in ``src_crs`` coordinates,
+            to transform.  May be 1 or 2 dimensional.
+        y
+            the y coordinates (array), in ``src_crs`` coordinates,
+            to transform.  Its shape must match that of x.
+        z: optional
+            the z coordinates (array), in ``src_crs`` coordinates, to
+            transform.  Defaults to None.
+            If supplied, its shape must match that of x.
+        trap
+            Whether proj errors for "latitude or longitude exceeded limits" and
+            "tolerance condition error" should be trapped.
+
+        Returns
+        -------
+            Array of shape ``x.shape + (3, )`` in this coordinate system.
+
+        """
+        if self == src_crs:
+            # convert from [0,360] to [-180,180]
+            x = np.array(x, copy=False)
+            to_180 = x > 180
+            x[to_180] = (((x[to_180] + 180) % 360) - 180)
+        return super().transform_points(src_crs, x, y, z, trap=trap)
+
 
 class TransverseMercator(Projection):
     """

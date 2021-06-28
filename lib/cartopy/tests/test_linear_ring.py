@@ -175,4 +175,4 @@ class TestMisc:
 
         # Test area of smallest Polygon that contains all the points in the
         # geometry.
-        assert round(abs(mlinestr.convex_hull.area - 2347.75623076), 7) == 0
+        assert round(abs(mlinestr.convex_hull.area - 2347.7562), 4) == 0

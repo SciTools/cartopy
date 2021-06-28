@@ -169,13 +169,19 @@ cdef class Interpolator:
     cdef readonly transformer
     cdef double src_scale
     cdef double dest_scale
+    cdef bint to_180
 
     def __cinit__(self):
         self.src_scale = 1
         self.dest_scale = 1
+        self.to_180 = False
 
     cdef void init(self, src_crs, dest_crs) except *:
         self.transformer = Transformer.from_crs(src_crs, dest_crs, always_xy=True)
+        self.to_180 = (
+            self.transformer.name == "noop" and
+            src_crs.__class__.__name__ == "PlateCarree"
+        )
 
     cdef void set_line(self, const Point &start, const Point &end):
         self.start = start
@@ -197,10 +203,13 @@ cdef class CartesianInterpolator(Interpolator):
 
     cdef Point project(self, const Point &src_xy) except *:
         cdef Point dest_xy
+        cdef double src_xy_x = src_xy.x
+        if self.to_180 and src_xy_x > 180:
+            src_xy_x = (((src_xy_x + 180) % 360) - 180)
 
         try:
             xx, yy = self.transformer.transform(
-                src_xy.x * self.src_scale,
+                src_xy_x * self.src_scale,
                 src_xy.y * self.src_scale,
                 errcheck=True
             )
