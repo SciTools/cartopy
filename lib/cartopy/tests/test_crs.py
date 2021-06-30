@@ -15,7 +15,6 @@ import pytest
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
-from cartopy.tests.conftest import PROJ_GE_8
 
 
 class TestCRS:
@@ -75,7 +74,7 @@ class TestCRS:
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        if PROJ_GE_8:
+        if ccrs.PROJ4_VERSION >= (8, 0, 0):
             assert_almost_equal(uk.x_limits, (-104009.357,  688806.007),
                                 decimal=3)
             assert_almost_equal(uk.y_limits, (-8908.37, 1256558.45),
@@ -181,10 +180,10 @@ class TestCRS:
         footy_moll = ccrs.Mollweide(globe=footy_globe)
 
         rugby_pt = rugby_moll.transform_point(
-            10, 10, ccrs.Geodetic(globe=rugby_globe),
+            10, 10, rugby_moll.as_geodetic(),
         )
         footy_pt = footy_moll.transform_point(
-            10, 10, ccrs.Geodetic(globe=footy_globe),
+            10, 10, footy_moll.as_geodetic(),
         )
 
         assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
