@@ -16,7 +16,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-pytestmark = pytest.mark.skipif(ccrs.PROJ4_VERSION < (5, 2, 0),
+pytestmark = pytest.mark.skipif(ccrs.PROJ_VERSION < (5, 2, 0),
                                 reason='Proj is too old.')
 
 

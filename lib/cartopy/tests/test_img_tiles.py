@@ -31,7 +31,7 @@ KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
                  (8, 9, 4): (0, 2504688.542848654,
                              -5009377.085697312, -2504688.542848654),
                  }
-if ccrs.PROJ4_VERSION == (5, 0, 0):
+if ccrs.PROJ_VERSION == (5, 0, 0):
     KNOWN_EXTENTS = {
         (0, 0, 0): (-20037508.342789244, 20037508.342789244,
                     -19994827.892149, 19994827.892149),
@@ -158,7 +158,7 @@ def test_image_for_domain():
     ll_extent = ccrs.Geodetic().transform_points(gt.crs,
                                                  np.array(extent[:2]),
                                                  np.array(extent[2:]))
-    if ccrs.PROJ4_VERSION == (5, 0, 0):
+    if ccrs.PROJ_VERSION == (5, 0, 0):
         assert_arr_almost(ll_extent[:, :2],
                           [[-11.25, 49.033955],
                            [11.25, 61.687101]])

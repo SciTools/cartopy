@@ -74,7 +74,7 @@ class TestCRS:
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        if ccrs.PROJ4_VERSION >= (8, 0, 0):
+        if ccrs.PROJ_VERSION >= (8, 0, 0):
             assert_almost_equal(uk.x_limits, (-104009.357,  688806.007),
                                 decimal=3)
             assert_almost_equal(uk.y_limits, (-8908.37, 1256558.45),

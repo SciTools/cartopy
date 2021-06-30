@@ -17,7 +17,7 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
-_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
+_ROB_TOL = 0.5 if ccrs.PROJ_VERSION < (4, 9) else 0.111
 _CONTOUR_STYLE = _STREAMPLOT_STYLE = 'classic'
 _CONTOUR_TOL = 0.5
 if MPL_VERSION >= '3.0.0':
@@ -191,7 +191,7 @@ def test_simple_global():
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections4' if ccrs.PROJ4_VERSION < (5, 0, 0)
+@ImageTesting(['multiple_projections4' if ccrs.PROJ_VERSION < (5, 0, 0)
                else 'multiple_projections5'],
               tolerance=0.81)
 def test_multiple_projections():
@@ -240,7 +240,7 @@ def test_multiple_projections():
                  transform=ccrs.Geodetic())
 
 
-@pytest.mark.skipif(ccrs.PROJ4_VERSION < (5, 2, 0),
+@pytest.mark.skipif(ccrs.PROJ_VERSION < (5, 2, 0),
                     reason='Proj is too old.')
 @pytest.mark.natural_earth
 @ImageTesting(['multiple_projections520'])
@@ -375,7 +375,7 @@ def test_pcolormesh_get_array_with_mask():
 
 
 tolerance = 1.61
-if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
+if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0):
     tolerance += 0.8
 
 
@@ -411,7 +411,7 @@ def test_pcolormesh_global_with_wrap2():
 
 
 tolerance = 1.39
-if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
+if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0):
     tolerance += 1.4
 
 

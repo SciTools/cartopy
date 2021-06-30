@@ -63,9 +63,9 @@ from pyproj.exceptions import ProjError
 PROJ4_RELEASE = proj_version_str
 _match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
 if _match is not None:
-    PROJ4_VERSION = tuple(int(v) for v in _match.group().split('.'))
+    PROJ_VERSION = tuple(int(v) for v in _match.group().split('.'))
 else:
-    PROJ4_VERSION = ()
+    PROJ_VERSION = ()
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -595,7 +595,7 @@ def _interpolator(src_crs, dest_projection):
     else:
         interpolator = CartesianInterpolator()
     interpolator.init(src_crs, dest_projection)
-    if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
+    if (6, 1, 1) <= PROJ_VERSION < (6, 3, 0):
         # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
         # See https://github.com/OSGeo/proj#1782.
         lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')

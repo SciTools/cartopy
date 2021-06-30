@@ -44,7 +44,7 @@ def test_ellipse_globe():
                       match='does not handle elliptical globes.') as w:
         ortho = ccrs.Orthographic(globe=globe)
         assert len(w) == (2
-                          if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0)
+                          if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0)
                           else 1)
 
     other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0'}
@@ -62,7 +62,7 @@ def test_eccentric_globe():
                       match='does not handle elliptical globes.') as w:
         ortho = ccrs.Orthographic(globe=globe)
         assert len(w) == (2
-                          if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0)
+                          if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0)
                           else 1)
 
     other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0'}

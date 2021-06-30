@@ -27,7 +27,7 @@ import cartopy.trace
 
 __document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
 
-PROJ4_VERSION = cartopy.trace.PROJ4_VERSION
+PROJ_VERSION = cartopy.trace.PROJ_VERSION
 WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
 
@@ -78,7 +78,7 @@ def _safe_pj_transform_pre_611(src_crs, tgt_crs, x, y, z=None, trap=True):
     return xx, yy, zz
 
 
-if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
+if (6, 1, 1) <= PROJ_VERSION < (6, 3, 0):
     _safe_pj_transform = _safe_pj_transform_611
 else:
     _safe_pj_transform = _safe_pj_transform_pre_611
@@ -1438,7 +1438,7 @@ class TransverseMercator(Projection):
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
-        if PROJ4_VERSION < (6, 0, 0):
+        if PROJ_VERSION < (6, 0, 0):
             if not approx:
                 proj4_params[0] = ('proj', 'etmerc')
         else:
@@ -1994,8 +1994,8 @@ class Stereographic(Projection):
         # incorrect transformation with lon_0=0 (see
         # https://github.com/OSGeo/proj.4/issues/194).
         if central_latitude == 0:
-            if PROJ4_VERSION != ():
-                if PROJ4_VERSION < (5, 0, 0):
+            if PROJ_VERSION != ():
+                if PROJ_VERSION < (5, 0, 0):
                     warnings.warn(
                         'The Stereographic projection in Proj older than '
                         '5.0.0 incorrectly transforms points when '
@@ -2087,8 +2087,8 @@ class Orthographic(Projection):
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  globe=None):
-        if PROJ4_VERSION != ():
-            if (5, 0, 0) <= PROJ4_VERSION < (5, 1, 0):
+        if PROJ_VERSION != ():
+            if (5, 0, 0) <= PROJ_VERSION < (5, 1, 0):
                 warnings.warn(
                     'The Orthographic projection in the v5.0.x series of Proj '
                     'incorrectly transforms points. Use this projection with '
@@ -2322,10 +2322,10 @@ class EqualEarth(_WarpedRectangularProjection):
             If omitted, a default globe is created.
 
         """
-        if PROJ4_VERSION < (5, 2, 0):
+        if PROJ_VERSION < (5, 2, 0):
             raise ValueError('The EqualEarth projection requires Proj version '
                              '5.2.0, but you are using {}.'
-                             .format('.'.join(str(v) for v in PROJ4_VERSION)))
+                             .format('.'.join(str(v) for v in PROJ_VERSION)))
 
         proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
         super().__init__(proj_params, central_longitude,
@@ -2411,8 +2411,8 @@ class Robinson(_WarpedRectangularProjection):
         # Warn when using Robinson with proj 4.8 due to discontinuity at
         # 40 deg N introduced by incomplete fix to issue #113 (see
         # https://github.com/OSGeo/proj.4/issues/113).
-        if PROJ4_VERSION != ():
-            if (4, 8) <= PROJ4_VERSION < (4, 9):
+        if PROJ_VERSION != ():
+            if (4, 8) <= PROJ_VERSION < (4, 9):
                 warnings.warn('The Robinson projection in the v4.8.x series '
                               'of Proj contains a discontinuity at '
                               '40 deg latitude. Use this projection with '
@@ -2869,8 +2869,8 @@ class AzimuthalEquidistant(Projection):
         # Warn when using Azimuthal Equidistant with proj < 4.9.2 due to
         # incorrect transformation past 90 deg distance (see
         # https://github.com/OSGeo/proj.4/issues/246).
-        if PROJ4_VERSION != ():
-            if PROJ4_VERSION < (4, 9, 2):
+        if PROJ_VERSION != ():
+            if PROJ_VERSION < (4, 9, 2):
                 warnings.warn('The Azimuthal Equidistant projection in Proj '
                               'older than 4.9.2 incorrectly transforms points '
                               'farther than 90 deg from the origin. Use this '
