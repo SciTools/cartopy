@@ -260,7 +260,7 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     # XXX NB. target_x and target_y must currently be rectangular (i.e.
     # be a 2d np array)
-    geo_cent = source_cs.as_geocentric()
+    geo_cent = source_cs
     xyz = geo_cent.transform_points(source_cs,
                                     source_x_coords.flatten(),
                                     source_y_coords.flatten())

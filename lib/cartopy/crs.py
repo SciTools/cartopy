@@ -1356,7 +1356,7 @@ class PlateCarree(_CylindricalProjection):
 
         return return_value
 
-    def transform_points(self, src_crs, x, y, z=None, trap=True):
+    def transform_points(self, src_crs, x, y, z=None, trap=False):
         """
         transform_points(src_crs, x, y[, z])
 
