@@ -297,6 +297,11 @@ def test_transform_points_outside_domain():
     crs = ccrs.Orthographic()
     result = crs.transform_points(ccrs.PlateCarree(),
                                   np.array([-120]), np.array([80]))
+    assert np.all(np.isnan(result[..., :2]))
+    assert result[..., -1] == 0
+    result = crs.transform_points(ccrs.PlateCarree(),
+                                  np.array([-120]), np.array([80]),
+                                  trap=True)
     assert np.all(np.isnan(result))
     # A length-2 array of the same transform produces "inf" rather
     # than nan due to PROJ never returning nan itself.
