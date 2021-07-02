@@ -45,17 +45,6 @@ def test_lambert_south():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['mercator_squashed'])
-def test_mercator_squashed():
-    globe = ccrs.Globe(semimajor_axis=10000, semiminor_axis=9000,
-                       ellipse=None)
-    crs = ccrs.Mercator(globe=globe, min_latitude=-40, max_latitude=40)
-    ax = plt.axes(projection=crs)
-    ax.coastlines()
-    ax.gridlines()
-
-
-@pytest.mark.natural_earth
 @cleanup
 def test_repr_html():
     pc = ccrs.PlateCarree()
