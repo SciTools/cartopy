@@ -318,7 +318,7 @@ class CRS(_CRS):
         ).reshape((1, 3))
         return result[0, 0], result[0, 1]
 
-    def transform_points(self, src_crs, x, y, z=None, trap=True):
+    def transform_points(self, src_crs, x, y, z=None, trap=False):
         """
         transform_points(src_crs, x, y[, z])
 
@@ -388,6 +388,9 @@ class CRS(_CRS):
                     result[:] = np.nan
                 else:
                     raise
+
+            if not trap:
+                result[np.isinf(result)] = np.nan
 
         if len(result_shape) > 2:
             return result.reshape(result_shape)
@@ -2451,7 +2454,7 @@ class Robinson(_WarpedRectangularProjection):
             result = super().transform_point(x, y, src_crs, trap=trap)
         return result
 
-    def transform_points(self, src_crs, x, y, z=None, trap=True):
+    def transform_points(self, src_crs, x, y, z=None, trap=False):
         """
         Capture and handle NaNs in input points -- else as parent function,
         :meth:`_WarpedRectangularProjection.transform_points`.
