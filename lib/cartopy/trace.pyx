@@ -180,7 +180,7 @@ cdef class Interpolator:
         self.transformer = Transformer.from_crs(src_crs, dest_crs, always_xy=True)
         self.to_180 = (
             self.transformer.name == "noop" and
-            src_crs.__class__.__name__ == "PlateCarree"
+            src_crs.__class__.__name__ in ("PlateCarree", "RotatedPole")
         )
 
     cdef void set_line(self, const Point &start, const Point &end):
