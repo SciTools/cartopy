@@ -11,6 +11,7 @@ import pickle
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_equal
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
+import pyproj
 import pytest
 import shapely.geometry as sgeom
 
@@ -313,3 +314,21 @@ def test_transform_points_outside_domain():
     # the same as the transform_points call with a length-1 array
     result = crs.transform_point(-120, 80, ccrs.PlateCarree())
     assert np.all(np.isnan(result))
+
+
+def test_projection__from_string():
+    crs = ccrs.Projection("NAD83 / Pennsylvania South")
+    assert crs.globe.to_proj4_params() == {
+        "datum": "NAD83",
+        "a": crs.ellipsoid.semi_major_metre,
+        "b": crs.ellipsoid.semi_minor_metre,
+        "rf": crs.ellipsoid.inverse_flattening,
+    }
+    assert_almost_equal(
+        crs.bounds,
+        [361633.1351868, 859794.6690229, 45575.5693199, 209415.9845754],
+    )
+
+
+def test_crs__from_pyproj_crs():
+    assert ccrs.CRS(pyproj.CRS("EPSG:4326")) == "EPSG:4326"

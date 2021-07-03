@@ -167,7 +167,10 @@ class CRS(_CRS):
 
         """
         # for compatibility with pyproj.CRS and rasterio.crs.CRS
-        proj4_params = getattr(proj4_params, "to_wkt", proj4_params)
+        try:
+            proj4_params = proj4_params.to_wkt()
+        except AttributeError:
+            pass
 
         if globe is not None and isinstance(proj4_params, str):
             raise ValueError("Cannot have 'globe' with string params.")
@@ -183,7 +186,7 @@ class CRS(_CRS):
             if a != b or globe.ellipse is not None:
                 warnings.warn('The "{}" projection does not handle elliptical '
                               'globes.'.format(self.__class__.__name__))
-        self.globe = globe
+        self._globe = globe
         if isinstance(proj4_params, str):
             self._proj4_params = {}
             self.proj4_init = proj4_params
@@ -264,6 +267,28 @@ class CRS(_CRS):
             geoaxes.InterProjectionTransform(self, axes.projection) +
             axes.transData
         )
+
+    @property
+    def globe(self):
+        if self._globe is not None:
+            return self._globe
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                "You will likely lose important projection information",
+                UserWarning,
+            )
+            proj_params = self.to_dict()
+
+        self._globe = Globe(
+            ellipse=proj_params.get("ellps"),
+            datum=proj_params.get("datum"),
+            semimajor_axis=self.ellipsoid.semi_major_metre,
+            semiminor_axis=self.ellipsoid.semi_minor_metre,
+            inverse_flattening=self.ellipsoid.inverse_flattening,
+        )
+        return self._globe
 
     @property
     def proj4_params(self):
