@@ -174,7 +174,7 @@ class CRS(_CRS):
             pass
         # handle PROJ JSON
         if (
-            isinstance(proj4_params, dict)  and
+            isinstance(proj4_params, dict) and
             "proj" not in proj4_params and
             "init" not in proj4_params
         ):
@@ -288,7 +288,9 @@ class CRS(_CRS):
         """
         return CRS(
             {
-                "$schema": "https://proj.org/schemas/v0.2/projjson.schema.json",
+                "$schema": (
+                    "https://proj.org/schemas/v0.2/projjson.schema.json"
+                ),
                 "type": "GeodeticCRS",
                 "name": "unknown",
                 "datum": self.datum.to_json_dict(),
