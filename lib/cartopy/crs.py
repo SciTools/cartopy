@@ -419,7 +419,7 @@ class CRS(_CRS):
         if npts:
             if self == src_crs and isinstance(src_crs, _CylindricalProjection):
                 # convert from [0,360] to [-180,180]
-                x = np.array(x, copy=False)
+                x = np.array(x, copy=True)
                 to_180 = x > 180
                 x[to_180] = (((x[to_180] + 180) % 360) - 180)
             try:
