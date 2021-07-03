@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import math
 import re
 import warnings
 
@@ -193,7 +192,7 @@ def test_simple_global():
 @pytest.mark.natural_earth
 @ImageTesting(['multiple_projections4' if ccrs.PROJ_VERSION < (5, 0, 0)
                else 'multiple_projections5'],
-              tolerance=0.81)
+              tolerance=2)
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
@@ -201,9 +200,7 @@ def test_multiple_projections():
                    ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
                    ccrs.OSGB(approx=True),
                    ccrs.TransverseMercator(approx=True),
-                   ccrs.Mercator(
-                       globe=ccrs.Globe(semimajor_axis=math.degrees(1)),
-                       min_latitude=-85., max_latitude=85.),
+                   ccrs.Mercator(min_latitude=-85., max_latitude=85.),
                    ccrs.LambertCylindrical(),
                    ccrs.Miller(),
                    ccrs.Gnomonic(),
@@ -232,12 +229,10 @@ def test_multiple_projections():
         ax.coastlines(resolution="110m")
 
         plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-
         plt.plot([-0.08, 132], [51.53, 43.17], color='red',
                  transform=ccrs.PlateCarree())
-
         plt.plot([-0.08, 132], [51.53, 43.17], color='blue',
-                 transform=ccrs.Geodetic())
+                 transform=prj.as_geodetic())
 
 
 @pytest.mark.skipif(ccrs.PROJ_VERSION < (5, 2, 0),

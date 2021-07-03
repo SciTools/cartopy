@@ -640,12 +640,14 @@ class RotatedGeodetic(CRS):
             A :class:`cartopy.crs.Globe`.  Defaults to a "WGS84" datum.
 
         """
+        globe = globe or Globe(datum='WGS84')
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
                         ('o_lon_p', central_rotated_longitude),
                         ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
-                        ('to_meter', math.radians(1))]
-        globe = globe or Globe(datum='WGS84')
+                        ('to_meter', math.radians(1) * (
+                            globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
+
         super().__init__(proj4_params, globe=globe)
 
 
@@ -1717,9 +1719,11 @@ GOOGLE_MERCATOR = Mercator.GOOGLE
 
 
 class LambertCylindrical(_RectangularProjection):
-    def __init__(self, central_longitude=0.0):
-        proj4_params = [('proj', 'cea'), ('lon_0', central_longitude)]
-        globe = Globe(semimajor_axis=math.degrees(1))
+    def __init__(self, central_longitude=0.0, globe=None):
+        globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
+        proj4_params = [('proj', 'cea'), ('lon_0', central_longitude),
+                        ('to_meter', math.radians(1) * (
+                            globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
         super().__init__(proj4_params, 180, math.degrees(1), globe=globe)
 
 
@@ -1923,10 +1927,9 @@ class Miller(_RectangularProjection):
 
     def __init__(self, central_longitude=0.0, globe=None):
         if globe is None:
-            globe = Globe(semimajor_axis=math.degrees(1), ellipse=None)
+            globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
 
-        # TODO: Let the globe return the semimajor axis always.
-        a = float(globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
 
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
@@ -1968,12 +1971,13 @@ class RotatedPole(_CylindricalProjection):
             datum.
 
         """
-
+        globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
                         ('o_lon_p', central_rotated_longitude),
                         ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
-                        ('to_meter', math.radians(1))]
+                        ('to_meter', math.radians(1) * (
+                            globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
         super().__init__(proj4_params, 180, 90, globe=globe)
 
 
