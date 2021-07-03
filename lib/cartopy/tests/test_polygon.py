@@ -289,7 +289,7 @@ class TestQuality:
                                       pole_latitude=37.5)
         polygon = sgeom.Polygon([
             (177.5, -57.38460319),
-            (180.0, -57.445077),
+            (180.1, -57.445077),
             (175.0, -57.19913331),
         ])
         self.multi_polygon = projection.project_geometry(polygon)
