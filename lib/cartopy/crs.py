@@ -747,6 +747,9 @@ class Projection(CRS, metaclass=ABCMeta):
             domain = self._domain = sgeom.Polygon(self.boundary)
         return domain
 
+    def is_geodetic(self):
+        return False
+
     def _determine_longitude_bounds(self, central_longitude):
         # In new proj, using exact limits will wrap-around, so subtract a
         # small epsilon:
