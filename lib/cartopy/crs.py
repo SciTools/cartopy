@@ -417,7 +417,9 @@ class CRS(_CRS):
 
         result = np.empty([npts, 3], dtype=np.double)
         if npts:
-            if self == src_crs and isinstance(src_crs, _CylindricalProjection):
+            if self == src_crs and (
+                    isinstance(src_crs, _CylindricalProjection) or
+                    self.is_geodetic()):
                 # convert from [0,360] to [-180,180]
                 x = np.array(x, copy=True)
                 to_180 = x > 180
