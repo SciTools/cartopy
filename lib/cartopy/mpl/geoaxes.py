@@ -798,7 +798,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 warnings.warn('Approximating coordinate system {!r} with a '
                               'RotatedPole projection.'.format(crs))
             elif hasattr(crs, 'is_geodetic') and crs.is_geodetic():
-                proj = ccrs.PlateCarree(crs.globe)
+                proj = ccrs.PlateCarree(globe=crs.globe)
                 warnings.warn('Approximating coordinate system {!r} with the '
                               'PlateCarree projection.'.format(crs))
             else:
