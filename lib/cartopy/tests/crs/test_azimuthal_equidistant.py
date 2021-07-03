@@ -21,7 +21,7 @@ class TestAzimuthalEquidistant:
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20037508.34278924, 20037508.34278924], decimal=6)
         assert_almost_equal(np.array(aeqd.y_limits),
-                            [-20037508.34278924, 20037508.34278924], decimal=6)
+                            [-19970326.371123,  19970326.371123], decimal=6)
 
     def test_eccentric_globe(self):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
@@ -47,7 +47,7 @@ class TestAzimuthalEquidistant:
         assert_almost_equal(np.array(aeqd_offset.x_limits),
                             [-20036274.34278924, 20038742.34278924], decimal=6)
         assert_almost_equal(np.array(aeqd_offset.y_limits),
-                            [-20041829.34278924, 20033187.34278924], decimal=6)
+                            [-19974647.371123,  19966005.371123], decimal=6)
 
     def test_grid(self):
         # USGS Professional Paper 1395, pp 196--197, Table 30
@@ -159,7 +159,7 @@ class TestAzimuthalEquidistant:
                             # TODO: This is wrong. Globe.semiminor_axis does
                             # not account for flattening.
                             # [-19970827.86969727, 19970827.86969727]
-                            [-20038296.88254529, 20038296.88254529], decimal=6)
+                            [-19970827.86969727, 19970827.86969727], decimal=6)
 
         result = aeqd.transform_point(5.0, 80.0, geodetic)
 
@@ -186,10 +186,7 @@ class TestAzimuthalEquidistant:
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-19987726.36931940, 20087726.36931940], decimal=6)
         assert_almost_equal(np.array(aeqd.y_limits),
-                            # TODO: This is wrong. Globe.semiminor_axis does
-                            # not account for flattening.
-                            # [-19919796.94787477, 20019796.94787477]
-                            [-19987726.36931940, 20087726.36931940], decimal=6)
+                            [-19919796.94787477, 20019796.94787477], decimal=6)
 
         pt_lat = 13 + (20 + 20.53846 / 60) / 60
         pt_lon = 144 + (38 + 7.19265 / 60) / 60
@@ -220,10 +217,7 @@ class TestAzimuthalEquidistant:
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20009068.84931940, 20066383.88931940], decimal=6)
         assert_almost_equal(np.array(aeqd.y_limits),
-                            # TODO: This is wrong. Globe.semiminor_axis does
-                            # not account for flattening.
-                            # [-19902596.95787477, 20036996.93787477]
-                            [-19970526.37931940, 20104926.35931940], decimal=6)
+                            [-19902596.95787477, 20036996.93787477], decimal=6)
 
         pt_lat = 15 + (14 + 47.4930 / 60) / 60
         pt_lon = 145 + (47 + 34.9080 / 60) / 60

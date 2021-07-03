@@ -13,6 +13,7 @@ between them.
 from abc import ABCMeta
 from collections import OrderedDict
 import io
+import json
 import math
 import warnings
 
@@ -171,6 +172,13 @@ class CRS(_CRS):
             proj4_params = proj4_params.to_wkt()
         except AttributeError:
             pass
+        # handle PROJ JSON
+        if (
+            isinstance(proj4_params, dict)  and
+            "proj" not in proj4_params and
+            "init" not in proj4_params
+        ):
+            proj4_params = json.dumps(proj4_params)
 
         if globe is not None and isinstance(proj4_params, str):
             raise ValueError("Cannot have 'globe' with string params.")
@@ -186,7 +194,7 @@ class CRS(_CRS):
             if a != b or globe.ellipse is not None:
                 warnings.warn('The "{}" projection does not handle elliptical '
                               'globes.'.format(self.__class__.__name__))
-        self._globe = globe
+        self.globe = globe
         if isinstance(proj4_params, str):
             self._proj4_params = {}
             self.proj4_init = proj4_params
@@ -269,28 +277,6 @@ class CRS(_CRS):
         )
 
     @property
-    def globe(self):
-        if self._globe is not None:
-            return self._globe
-
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                "You will likely lose important projection information",
-                UserWarning,
-            )
-            proj_params = self.to_dict()
-
-        self._globe = Globe(
-            ellipse=proj_params.get("ellps"),
-            datum=proj_params.get("datum"),
-            semimajor_axis=self.ellipsoid.semi_major_metre,
-            semiminor_axis=self.ellipsoid.semi_minor_metre,
-            inverse_flattening=self.ellipsoid.inverse_flattening,
-        )
-        return self._globe
-
-    @property
     def proj4_params(self):
         return dict(self._proj4_params)
 
@@ -300,7 +286,37 @@ class CRS(_CRS):
         CRS.
 
         """
-        return Geocentric(self.globe)
+        return CRS(
+            {
+                "$schema": "https://proj.org/schemas/v0.2/projjson.schema.json",
+                "type": "GeodeticCRS",
+                "name": "unknown",
+                "datum": self.datum.to_json_dict(),
+                "coordinate_system": {
+                    "subtype": "Cartesian",
+                    "axis": [
+                        {
+                            "name": "Geocentric X",
+                            "abbreviation": "X",
+                            "direction": "geocentricX",
+                            "unit": "metre"
+                        },
+                        {
+                            "name": "Geocentric Y",
+                            "abbreviation": "Y",
+                            "direction": "geocentricY",
+                            "unit": "metre"
+                        },
+                        {
+                            "name": "Geocentric Z",
+                            "abbreviation": "Z",
+                            "direction": "geocentricZ",
+                            "unit": "metre"
+                        }
+                    ]
+                }
+            }
+        )
 
     def as_geodetic(self):
         """
@@ -1866,7 +1882,7 @@ class LambertAzimuthalEqualArea(Projection):
 
         super().__init__(proj4_params, globe=globe)
 
-        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        a = float(self.ellipsoid.semi_major_metre or WGS84_SEMIMAJOR_AXIS)
 
         # Find the antipode, and shift it a small amount in latitude to
         # approximate the extent of the projection:
@@ -2027,8 +2043,8 @@ class Stereographic(Projection):
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = float(self.globe.semiminor_axis or WGS84_SEMIMINOR_AXIS)
+        a = float(self.ellipsoid.semi_major_metre or WGS84_SEMIMAJOR_AXIS)
+        b = float(self.ellipsoid.semi_minor_metre or WGS84_SEMIMINOR_AXIS)
 
         # Note: The magic number has been picked to maintain consistent
         # behaviour with a wgs84 globe. There is no guarantee that the scaling
@@ -2100,7 +2116,7 @@ class Orthographic(Projection):
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        a = float(self.ellipsoid.semi_major_metre or WGS84_SEMIMAJOR_AXIS)
 
         # To stabilise the projection of geometries, we reduce the boundary by
         # a tiny fraction at the cost of the extreme edges.
@@ -2675,7 +2691,7 @@ class Geostationary(_Satellite):
             sweep_axis=sweep_axis)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
+        a = float(self.ellipsoid.semi_major_metre or WGS84_SEMIMAJOR_AXIS)
         h = float(satellite_height)
 
         # These are only exact for a spherical Earth, owing to assuming a is
@@ -2740,7 +2756,7 @@ class NearsidePerspective(_Satellite):
             globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        a = self.ellipsoid.semi_major_metre or WGS84_SEMIMAJOR_AXIS
 
         h = float(satellite_height)
         max_x = a * np.sqrt(h / (2 * a + h))
@@ -2883,8 +2899,8 @@ class AzimuthalEquidistant(Projection):
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
-        a = float(self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)
-        b = float(self.globe.semiminor_axis or a)
+        a = float(self.ellipsoid.semi_major_metre or WGS84_SEMIMAJOR_AXIS)
+        b = float(self.ellipsoid.semi_minor_metre or a)
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)

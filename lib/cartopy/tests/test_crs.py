@@ -318,12 +318,7 @@ def test_transform_points_outside_domain():
 
 def test_projection__from_string():
     crs = ccrs.Projection("NAD83 / Pennsylvania South")
-    assert crs.globe.to_proj4_params() == {
-        "datum": "NAD83",
-        "a": crs.ellipsoid.semi_major_metre,
-        "b": crs.ellipsoid.semi_minor_metre,
-        "rf": crs.ellipsoid.inverse_flattening,
-    }
+    assert crs.as_geocentric().datum.name == "North American Datum 1983"
     assert_almost_equal(
         crs.bounds,
         [361633.1351868, 859794.6690229, 45575.5693199, 209415.9845754],
