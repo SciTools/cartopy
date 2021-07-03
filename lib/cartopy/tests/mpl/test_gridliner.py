@@ -129,9 +129,10 @@ def test_gridliner_specified_lines():
 if MPL_VERSION < "3":
     TOL = 15
 else:
-    TOL = 0.5
+    TOL = 3.1
 grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = TOL
-grid_label_inline_tol += 1.1
+grid_label_tol += 0.8
+grid_label_inline_tol += 1.6
 grid_label_image = 'gridliner_labels'
 grid_label_inline_image = 'gridliner_labels_inline'
 grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
