@@ -479,8 +479,8 @@ class LongitudeLocator(MaxNLocator):
         Allow the locator to stop on minutes and seconds (False by default)
     """
 
-    default_params = MaxNLocator.default_params.copy()
-    default_params.update(nbins=8, dms=False)
+    def __init__(self, nbins=8, *, dms=False, **kwargs):
+        super().__init__(nbins=nbins, dms=dms, **kwargs)
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
