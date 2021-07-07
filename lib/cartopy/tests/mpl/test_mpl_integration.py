@@ -16,52 +16,24 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
-_ROB_TOL = 0.5 if ccrs.PROJ_VERSION < (4, 9) else 0.111
-_CONTOUR_STYLE = _STREAMPLOT_STYLE = 'classic'
-_CONTOUR_TOL = 0.5
-if MPL_VERSION >= '3.0.0':
-    _CONTOUR_IMAGE = 'global_contour_wrap'
-    _CONTOUR_STYLE = 'mpl20'
-    if MPL_VERSION < '3.2.0':
-        _CONTOUR_TOL = 0.74
-    if MPL_VERSION >= '3.2.0':
-        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.2.0'
-    else:
-        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
-    # Should have been the case for anything but _1.4.3, but we don't want to
-    # regenerate those images again.
-    _STREAMPLOT_STYLE = 'mpl20'
-else:
-    _CONTOUR_IMAGE = 'global_contour_wrap_mpl_pre_3.0.0'
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_2.2.2'
-
-
 @pytest.mark.natural_earth
-@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE, tolerance=_CONTOUR_TOL)
+@ImageTesting(['global_contour_wrap'], style='mpl20')
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data, transform=ccrs.PlateCarree())
-    if MPL_VERSION <= '3.0.0':
-        # Rather than updating image test for old version
-        # Remove when only MPL > 3 is required
-        ax.set_extent((-176.3265306122449, 176.3265306122449, -90.0, 90.0))
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE, tolerance=_CONTOUR_TOL)
+@ImageTesting(['global_contour_wrap'], style='mpl20')
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data)
-    if MPL_VERSION <= '3.0.0':
-        # Rather than updating image test for old version
-        # Remove when only MPL > 3 is required
-        ax.set_extent((-176.3265306122449, 176.3265306122449, -90.0, 90.0))
 
 
 @pytest.mark.natural_earth
@@ -129,7 +101,7 @@ def test_global_scatter_wrap_no_transform():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < '3' else 0.5)
+              tolerance=2 if MPL_VERSION < '3.2' else 0.5)
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -146,7 +118,7 @@ def test_global_hexbin_wrap():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < '3' else 0.5)
+              tolerance=2 if MPL_VERSION < '3.2' else 0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -282,7 +254,7 @@ def test_cursor_values():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['natural_earth_interface'], tolerance=_ROB_TOL)
+@ImageTesting(['natural_earth_interface'], tolerance=0.111)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 
@@ -742,7 +714,7 @@ def test_quiver_regrid():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_regrid_with_extent'], tolerance=0.53)
+@ImageTesting(['quiver_regrid_with_extent'], tolerance=0.54)
 def test_quiver_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -853,7 +825,7 @@ def test_barbs_1d_transformed():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_STREAMPLOT_IMAGE], style=_STREAMPLOT_STYLE, tolerance=0.54)
+@ImageTesting(['streamplot'], style='mpl20', tolerance=0.54)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
