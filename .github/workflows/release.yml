@@ -24,14 +24,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          PACKAGES="cython fiona matplotlib-base numpy proj pykdtree scipy"
+          PACKAGES="cython fiona matplotlib-base numpy proj<8 pykdtree scipy"
           PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyepsg pyshp pytest"
           PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
           PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
           conda install $PACKAGES
 
       - name: Create sdist
-        run: python setup.py sdist
+        run: python setup.py build_ext sdist
 
       - name: Publish Package
         uses: pypa/gh-action-pypi-publish@master

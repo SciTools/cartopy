@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pytest
+from shapely.geos import geos_version
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -137,6 +138,7 @@ grid_label_inline_image = 'gridliner_labels_inline'
 grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_image], tolerance=grid_label_tol)
 def test_grid_labels():
@@ -151,8 +153,8 @@ def test_grid_labels():
 
     # Check that adding labels to Mercator gridlines gives an error.
     # (Currently can only label PlateCarree gridlines.)
-    ax = fig.add_subplot(3, 2, 2,
-                         projection=ccrs.PlateCarree(central_longitude=180))
+    ax = fig.add_subplot(
+        3, 2, 2, projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines(resolution="110m")
 
     ax.set_title('Known bug')
@@ -184,11 +186,14 @@ def test_grid_labels():
     # trigger a draw at this point and check the appropriate artists are
     # populated on the gridliner instance
     fig.canvas.draw()
-
-    assert len(gl.bottom_label_artists) == 4
-    assert len(gl.top_label_artists) == 0
-    assert len(gl.left_label_artists) == 0
-    assert len(gl.right_label_artists) != 0
+    assert len([
+        lb for lb in gl.bottom_label_artists if lb.get_visible()]) == 4
+    assert len([
+        lb for lb in gl.top_label_artists if lb.get_visible()]) == 0
+    assert len([
+        lb for lb in gl.left_label_artists if lb.get_visible()]) == 0
+    assert len([
+        lb for lb in gl.right_label_artists if lb.get_visible()]) != 0
     assert len(gl.xline_artists) == 0
 
     ax = fig.add_subplot(3, 2, 5, projection=crs_pc)
@@ -210,6 +215,7 @@ def test_grid_labels():
 @pytest.mark.skipif(
     MPL_VERSION < '3.0.0',
     reason='Impossible to override tight layout algorithm in mpl < 3')
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'],
               tolerance=grid_label_tol if ccrs.PROJ4_VERSION < (7, 1, 0)
@@ -246,12 +252,13 @@ def test_grid_labels_tight():
     # Apply tight layout
     fig.tight_layout()
 
-    # Ensure gridliners were plotted
+    # Ensure gridliners were drawn
     for ax in fig.axes:
         for gl in ax._gridliners:
-            assert hasattr(gl, '_plotted') and gl._plotted
+            assert hasattr(gl, '_drawn') and gl._drawn
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_inline_image], tolerance=grid_label_inline_tol)
 def test_grid_labels_inline():
@@ -275,6 +282,7 @@ def test_grid_labels_inline():
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_inline_usa_image],
               tolerance=grid_label_inline_usa_tol)
@@ -309,6 +317,7 @@ def test_grid_labels_inline_usa():
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
+@pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @ImageTesting(["gridliner_labels_bbox_style"], tolerance=grid_label_tol)
 def test_gridliner_labels_bbox_style():
     top = 49.3457868  # north lat
@@ -456,3 +465,54 @@ def test_gridliner_hemisphere_ticklabels_formatting():
         Result = False
 
     assert(Result)
+
+
+@pytest.mark.parametrize(
+    "draw_labels, result",
+    [
+        (True,
+         {'left': ['70°E', '40°N'],
+          'right': ['130°E', '40°N', '50°N'],
+          'top': ['130°E', '50°N', '100°E', '70°E'],
+          'bottom': ['100°E']}),
+        (False,
+         {'left': [],
+          'right': [],
+          'top': [],
+          'bottom': []}),
+        (['top', 'left'],
+         {'left': ['70°E', '40°N'],
+          'right': [],
+
+          'top': ['130°E', '100°E', '50°N', '70°E'],
+          'bottom': []}),
+        ({'top': 'x', 'right': 'y'},
+         {'left': [],
+          'right': ['40°N', '50°N'],
+          'top': ['100°E', '130°E', '70°E'],
+          'bottom': []}),
+        ({'left': 'x'},
+         {'left': ['70°E'],
+          'right': [],
+          'top': [],
+          'bottom': []}),
+        ({'top': 'y'},
+         {'left': [],
+          'right': [],
+          'top': ['50°N'],
+          'bottom': []}),
+     ])
+def test_gridliner_draw_labels_param(draw_labels, result):
+    plt.figure()
+    lambert_crs = ccrs.LambertConformal(central_longitude=105)
+    ax = plt.axes(projection=lambert_crs)
+    ax.set_extent([75, 130, 18, 54], crs=ccrs.PlateCarree())
+    gl = ax.gridlines(draw_labels=draw_labels, rotate_labels=False, dms=True,
+                      x_inline=False, y_inline=False)
+    gl.xlocator = mticker.FixedLocator([70, 100, 130])
+    gl.ylocator = mticker.FixedLocator([40, 50])
+    plt.show()
+    res = {}
+    for loc in 'left', 'right', 'top', 'bottom':
+        artists = getattr(gl, loc+'_label_artists')
+        res[loc] = [a.get_text() for a in artists if a.get_visible()]

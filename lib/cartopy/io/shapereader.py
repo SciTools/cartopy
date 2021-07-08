@@ -316,7 +316,7 @@ class NEShpDownloader(Downloader):
         natural earth zip file.
 
         """
-        for ext in ['.shp', '.dbf', '.shx']:
+        for ext in ['.shp', '.dbf', '.shx', '.prj', '.cpg']:
             yield ('ne_{resolution}_{name}'
                    '{extension}'.format(extension=ext, **format_dict))
 
