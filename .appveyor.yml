@@ -2,7 +2,7 @@ environment:
     matrix:
         - PYTHON_VERSION: "3.9"
           CONDA_INSTALL_LOCN: "C:\\Miniconda3-x64"
-          PACKAGES: "cython numpy matplotlib-base proj=7 pykdtree scipy"
+          PACKAGES: "cython numpy matplotlib-base pyproj pykdtree scipy"
 
 install:
   # Install miniconda
@@ -17,7 +17,7 @@ install:
   - set ENV_NAME=test-environment
   - set PACKAGES=%PACKAGES% flufl.lock owslib pep8 pillow pyshp pytest
   - set PACKAGES=%PACKAGES% requests setuptools_scm setuptools_scm_git_archive
-  - set PACKAGES=%PACKAGES% shapely pyproj
+  - set PACKAGES=%PACKAGES% shapely
   - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%
   - activate %ENV_NAME%
   - set INCLUDE=%CONDA_PREFIX%\Library\include;%INCLUDE%
