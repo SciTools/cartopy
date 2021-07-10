@@ -29,7 +29,7 @@ jobs:
         if: matrix.python-version == '3.7' && matrix.os == 'macos-latest'
         id: minimum-packages
         run: |
-          echo "PACKAGES=cython=0.28.5 matplotlib=3.1 numpy=1.18 owslib=0.17 pyproj=2.5 proj=6.3.1 scipy=1.2.0" >> $GITHUB_ENV
+          echo "PACKAGES=cython=0.28.5 matplotlib=3.1 numpy=1.18 owslib=0.17 pyproj=2.6 proj=6.3.1 scipy=1.2.0" >> $GITHUB_ENV
           echo "CFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
       - name: Latest packages
