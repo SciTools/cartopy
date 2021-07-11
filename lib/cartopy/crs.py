@@ -1376,11 +1376,16 @@ class RotatedPole(_CylindricalProjection):
                         ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
+        self._threshold = 0.5
         super().__init__(proj4_params, 180, 90, globe=globe)
 
     @property
     def threshold(self):
-        return 0.5
+        return self._threshold
+
+    @threshold.setter
+    def threshold(self, t):
+        self._threshold = t
 
 
 class Gnomonic(Projection):
