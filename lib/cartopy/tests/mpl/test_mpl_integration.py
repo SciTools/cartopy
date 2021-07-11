@@ -162,9 +162,8 @@ def test_simple_global():
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections4' if ccrs.PROJ_VERSION < (5, 0, 0)
-               else 'multiple_projections5'],
-              tolerance=2)
+@ImageTesting(['multiple_projections5'],
+              tolerance=2.05)
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
@@ -825,7 +824,8 @@ def test_barbs_1d_transformed():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['streamplot'], style='mpl20', tolerance=0.54)
+@ImageTesting(['streamplot'], style='mpl20',
+              tolerance=42 if MPL_VERSION < "3.2" else 0.54)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
