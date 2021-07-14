@@ -1,7 +1,3 @@
 sphinx
-netCDF4
-iris
-iris-sample-data
-cf_units
 sphinx-gallery
 beautifulsoup4
