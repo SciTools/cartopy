@@ -105,11 +105,11 @@ class Projection(CRS, metaclass=ABCMeta):
             t = 0.5
             self._threshold = t
         return t
-    
+
     @threshold.setter
     def threshold(self, t):
         self._threshold = t
-        
+
     @property
     def cw_boundary(self):
         try:
