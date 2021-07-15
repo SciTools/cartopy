@@ -99,12 +99,7 @@ class Projection(CRS, metaclass=ABCMeta):
 
     @property
     def threshold(self):
-        try:
-            t = self._threshold
-        except AttributeError:
-            t = 0.5
-            self._threshold = t
-        return t
+        return self._threshold
 
     @threshold.setter
     def threshold(self, t):
@@ -846,6 +841,8 @@ class TransverseMercator(Projection):
                 proj4_params += [('approx', None)]
         super().__init__(proj4_params, globe=globe)
 
+        self._threshold = 1e4
+
     @property
     def boundary(self):
         x0, x1 = self.x_limits
@@ -947,6 +944,7 @@ class UTM(Projection):
         if southern_hemisphere:
             proj4_params.append(('south', None))
         super().__init__(proj4_params, globe=globe)
+        self._threshold = 1e2
 
     @property
     def boundary(self):
@@ -1207,6 +1205,8 @@ class LambertConformal(Projection):
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+
+        self._threshold = 1e5
 
     def __eq__(self, other):
         res = super().__eq__(other)
