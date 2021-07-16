@@ -99,7 +99,7 @@ class Projection(CRS, metaclass=ABCMeta):
 
     @property
     def threshold(self):
-        return self._threshold
+        return getattr(self, '_threshold', 0.5)
 
     @threshold.setter
     def threshold(self, t):
