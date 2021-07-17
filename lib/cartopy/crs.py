@@ -707,7 +707,7 @@ class PlateCarree(_CylindricalProjection):
         x_max = a_rad * 180
         y_max = a_rad * 90
         # Set the threshold around 0.5 if the x max is 180.
-        self._threshold = x_max / 360
+        self.threshold = x_max / 360
         super().__init__(proj4_params, x_max, y_max, globe=globe)
 
     def _bbox_and_offset(self, other_plate_carree):
@@ -841,7 +841,7 @@ class TransverseMercator(Projection):
                 proj4_params += [('approx', None)]
         super().__init__(proj4_params, globe=globe)
 
-        self._threshold = 1e4
+        self.threshold = 1e4
 
     @property
     def boundary(self):
@@ -944,7 +944,7 @@ class UTM(Projection):
         if southern_hemisphere:
             proj4_params.append(('south', None))
         super().__init__(proj4_params, globe=globe)
-        self._threshold = 1e2
+        self.threshold = 1e2
 
     @property
     def boundary(self):
@@ -1051,7 +1051,7 @@ class Mercator(Projection):
                                        np.array([min_latitude, max_latitude]))
         self._x_limits = tuple(limits[..., 0])
         self._y_limits = tuple(limits[..., 1])
-        self._threshold = min(np.diff(self.x_limits)[0] / 720,
+        self.threshold = min(np.diff(self.x_limits)[0] / 720,
                               np.diff(self.y_limits)[0] / 360)
 
     def __eq__(self, other):
@@ -1206,7 +1206,7 @@ class LambertConformal(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
 
-        self._threshold = 1e5
+        self.threshold = 1e5
 
     def __eq__(self, other):
         res = super().__eq__(other)
@@ -1282,7 +1282,7 @@ class LambertAzimuthalEqualArea(Projection):
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
-        self._threshold = np.diff(self._x_limits)[0] * 1e-3
+        self.threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
     def boundary(self):
@@ -1310,7 +1310,7 @@ class Miller(_RectangularProjection):
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
         # (lambda-lambda0)=180 and phi=90 to get limits.
-        self._threshold = 0.5
+        self.threshold = 0.5
         super().__init__(proj4_params, a * np.pi, a * 2.303412543376391,
                          globe=globe)
 
@@ -1366,7 +1366,7 @@ class Gnomonic(Projection):
                         ('lon_0', central_longitude)]
         super().__init__(proj4_params, globe=globe)
         self._max = 5e7
-        self._threshold = 1e5
+        self.threshold = 1e5
 
     @property
     def boundary(self):
@@ -1443,7 +1443,7 @@ class Stereographic(Projection):
         coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
                                    false_easting, false_northing, 91)
         self._boundary = sgeom.LinearRing(coords.T)
-        self._threshold = np.diff(self._x_limits)[0] * 1e-3
+        self.threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
     def boundary(self):
@@ -1511,7 +1511,7 @@ class Orthographic(Projection):
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
-        self._threshold = np.diff(self._x_limits)[0] * 0.02
+        self.threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
     def boundary(self):
@@ -1603,7 +1603,7 @@ class _Eckert(_WarpedRectangularProjection, metaclass=ABCMeta):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self._threshold = 1e5
+        self.threshold = 1e5
 
 
 class EckertI(_Eckert):
@@ -1728,7 +1728,7 @@ class EqualEarth(_WarpedRectangularProjection):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self._threshold = 1e5
+        self.threshold = 1e5
 
 
 class Mollweide(_WarpedRectangularProjection):
@@ -1769,7 +1769,7 @@ class Mollweide(_WarpedRectangularProjection):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self._threshold = 1e5
+        self.threshold = 1e5
 
 
 class Robinson(_WarpedRectangularProjection):
@@ -1825,7 +1825,7 @@ class Robinson(_WarpedRectangularProjection):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self._threshold = 1e4
+        self.threshold = 1e4
 
     def transform_point(self, x, y, src_crs):
         """
@@ -1982,7 +1982,7 @@ class InterruptedGoodeHomolosine(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
 
-        self._threshold = 2e4
+        self.threshold = 2e4
 
     @property
     def boundary(self):
@@ -2016,7 +2016,7 @@ class _Satellite(Projection):
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
-        self._threshold = np.diff(self._x_limits)[0] * 0.02
+        self.threshold = np.diff(self._x_limits)[0] * 0.02
 
     @property
     def boundary(self):
@@ -2218,7 +2218,7 @@ class AlbersEqualArea(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
 
-        self._threshold = 1e5
+        self.threshold = 1e5
 
     @property
     def boundary(self):
@@ -2295,7 +2295,7 @@ class AzimuthalEquidistant(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
 
-        self._threshold = 1e5
+        self.threshold = 1e5
 
     @property
     def boundary(self):
@@ -2359,7 +2359,7 @@ class Sinusoidal(Projection):
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
-        self._threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
+        self.threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
 
     @property
     def boundary(self):
@@ -2448,7 +2448,7 @@ class EquidistantConic(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
 
-        self._threshold = 1e5
+        self.threshold = 1e5
 
     @property
     def boundary(self):
