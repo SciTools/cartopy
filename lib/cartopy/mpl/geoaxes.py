@@ -754,7 +754,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         styler = kwargs.pop('styler', None)
 
-        if (not callable(styler)) and ('facecolor' not in kwargs):
+        if not callable(styler) and 'facecolor' not in kwargs:
             styler_kw = styler
 
             def styler(geom):
