@@ -758,13 +758,11 @@ class GeoAxes(matplotlib.axes.Axes):
             styler_kw = styler
 
             def styler(geom):
-                styler_g = styler_kw if styler_kw else dict()
-                styler_g = styler_g.copy()
+                styler_g = styler_kw.copy() if styler_kw else {}
 
                 if isinstance(geom, sgeom.LineString):
                     styler_g['facecolor'] = 'none'
-                    if ('edgecolor' not in kwargs) or (
-                            kwargs['edgecolor'] == 'face'):
+                    if kwargs.get('edgecolor', 'face') == 'face':
                         styler_g['edgecolor'] = mpl.rcParams['patch.edgecolor']
                     else:
                         styler_g['edgecolor'] = kwargs['edgecolor']
