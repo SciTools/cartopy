@@ -187,20 +187,6 @@ cdef class Interpolator:
         self.start = start
         self.end = end
 
-    cdef Point interpolate(self, double t) except *:
-        raise NotImplementedError
-
-    cdef Point project(self, const Point &point) except *:
-        raise NotImplementedError
-
-
-cdef class CartesianInterpolator(Interpolator):
-    cdef Point interpolate(self, double t) except *:
-        cdef Point xy
-        xy.x = self.start.x + (self.end.x - self.start.x) * t
-        xy.y = self.start.y + (self.end.y - self.start.y) * t
-        return self.project(xy)
-
     cdef Point project(self, const Point &src_xy) except *:
         cdef Point dest_xy
         cdef double src_xy_x = src_xy.x
@@ -229,6 +215,17 @@ cdef class CartesianInterpolator(Interpolator):
         dest_xy.x = xx * self.dest_scale
         dest_xy.y = yy * self.dest_scale
         return dest_xy
+
+    cdef Point interpolate(self, double t) except *:
+        raise NotImplementedError
+
+
+cdef class CartesianInterpolator(Interpolator):
+    cdef Point interpolate(self, double t) except *:
+        cdef Point xy
+        xy.x = self.start.x + (self.end.x - self.start.x) * t
+        xy.y = self.start.y + (self.end.y - self.start.y) * t
+        return self.project(xy)
 
 
 cdef class SphericalInterpolator(Interpolator):
@@ -261,32 +258,6 @@ cdef class SphericalInterpolator(Interpolator):
                          NULL)
 
         return self.project(lonlat)
-
-    cdef Point project(self, const Point &lonlat) except *:
-        cdef Point xy
-
-        try:
-            xx, yy = self.transformer.transform(
-                lonlat.x * self.src_scale,
-                lonlat.y * self.src_scale,
-                errcheck=True
-            )
-        except ProjError as err:
-            msg = str(err).lower()
-            if (
-                "latitude" in msg or
-                "longitude" in msg or
-                "outside of projection domain" in msg or
-                "tolerance condition error" in msg
-            ):
-                xx = HUGE_VAL
-                yy = HUGE_VAL
-            else:
-                raise
-
-        xy.x = xx * self.dest_scale
-        xy.y = yy * self.dest_scale
-        return xy
 
 
 cdef enum State:
