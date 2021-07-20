@@ -280,10 +280,6 @@ with open(os.path.join(HERE, 'README.md')) as fh:
 
 
 cython_coverage_enabled = os.environ.get('CYTHON_COVERAGE', None)
-if proj_version >= (6, 0, 0):
-    extra_extension_args["define_macros"].append(
-        ('ACCEPT_USE_OF_DEPRECATED_PROJ_API_H', '1')
-    )
 if cython_coverage_enabled:
     extra_extension_args["define_macros"].append(
         ('CYTHON_TRACE_NOGIL', '1')
