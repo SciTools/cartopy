@@ -54,16 +54,21 @@ from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
                                   GEOD_ARCMODE, GEOD_LATITUDE, GEOD_LONGITUDE)
 
 import re
+import warnings
+
 import shapely.geometry as sgeom
 from shapely.geos import lgeos
 from pyproj import Transformer, proj_version_str
 from pyproj.exceptions import ProjError
 
 
-PROJ4_RELEASE = proj_version_str
-_match = re.search(r"\d+\.\d+.\d+", PROJ4_RELEASE)
+_match = re.search(r"\d+\.\d+.\d+", proj_version_str)
 if _match is not None:
     PROJ_VERSION = tuple(int(v) for v in _match.group().split('.'))
+    if PROJ_VERSION < (8, 0, 0):
+        warnings.warn(
+            "PROJ 8+ is required. Current version: {}".format(proj_version_str)
+        )
 else:
     PROJ_VERSION = ()
 
