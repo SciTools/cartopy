@@ -324,7 +324,7 @@ class GSHHSFeature(Feature):
         The dataset scale. One of 'auto', 'coarse', 'low', 'intermediate',
         'high, or 'full' (default is 'auto').
     levels
-        A list of integers 1-4 corresponding to the desired GSHHS feature
+        A list of integers 1-6 corresponding to the desired GSHHS feature
         levels to draw (default is [1] which corresponds to coastlines).
 
     Other Parameters

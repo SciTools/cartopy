@@ -31,6 +31,7 @@ import glob
 import io
 import itertools
 import os
+from urllib.error import HTTPError
 
 import shapely.geometry as sgeom
 import shapefile
@@ -408,9 +409,12 @@ class GSHHSShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'scale', 'level')
 
-    _GSHHS_URL_TEMPLATE = ('https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-                           'gshhs/oldversions/version2.2.0/'
-                           'GSHHS_shp_2.2.0.zip')
+    gshhs_version = '2.3.7'
+
+    _GSHHS_URL_TEMPLATE = (
+        'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
+        'gshhs/latest/gshhg-shp-' + gshhs_version + '.zip'
+    )
 
     def __init__(self,
                  url_template=_GSHHS_URL_TEMPLATE,
@@ -435,15 +439,43 @@ class GSHHSShpDownloader(Downloader):
 
         # Download archive.
         url = self.url(format_dict)
-        shapefile_online = self._urlopen(url)
+        try:
+            shapefile_online = self._urlopen(url)
+        # error handling:
+        except HTTPError:
+            try:
+                """
+                case if GSHHS has had an update
+                without changing the naming convention
+                """
+                url = (
+                    'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
+                    'gshhs/oldversions/version' + self.gshhs_version + '/'
+                    'gshhg-shp-' + self.gshhs_version + '.zip'
+                )
+                shapefile_online = self._urlopen(url)
+            except HTTPError:
+                """
+                case if GSHHS has had an update
+                with changing the naming convention
+                """
+                url = (
+                    'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
+                    'gshhs/oldversions/version2.3.6/'
+                    'gshhg-shp-2.3.6.zip'
+                )
+                shapefile_online = self._urlopen(url)
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 
         # Iterate through all scales and levels and extract relevant files.
         modified_format_dict = dict(format_dict)
         scales = ('c', 'l', 'i', 'h', 'f')
-        levels = (1, 2, 3, 4)
+        levels = (1, 2, 3, 4, 5, 6)
         for scale, level in itertools.product(scales, levels):
+            # the combination c4 does not occur for some reason
+            if scale == "c" and level == 4:
+                continue
             modified_format_dict.update({'scale': scale, 'level': level})
             target_path = self.target_path(modified_format_dict)
             target_dir = os.path.dirname(target_path)
