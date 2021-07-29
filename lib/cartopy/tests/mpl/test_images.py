@@ -38,7 +38,7 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 @pytest.mark.xfail(ccrs.PROJ4_VERSION == (5, 0, 0),
                    reason='Proj returns slightly different bounds.',
                    strict=True)
-@ImageTesting(['web_tiles'], tolerance=5.8)
+@ImageTesting(['web_tiles'], tolerance=5.91)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = sgeom.Polygon([[extent[0], extent[1]],
