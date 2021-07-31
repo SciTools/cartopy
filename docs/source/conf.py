@@ -16,7 +16,9 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-import sys, os
+from datetime import datetime
+import os
+import sys
 
 import cartopy
 from distutils.version import LooseVersion
@@ -37,7 +39,6 @@ needs_sphinx = '1.6'
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-              'cartopy.sphinxext.summarise_package',
               'sphinx.ext.autodoc',
               'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
@@ -69,8 +70,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'cartopy'
-copyright = '2011 - 2018 British Crown Copyright'  # the template will need
-# updating if this is changed
+copyright = ('2011 - 2018 British Crown Copyright, '
+             f'2018 - {datetime.now().year} Cartopy contributors')
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -132,6 +133,11 @@ exclude_patterns = []
 # The reST default role (used for this markup: `text`) to use for all documents.
 default_role = 'py:obj'
 
+# Handle subclasses of Matplotlib using an :rc: context in documentation
+rst_prolog = """
+.. role:: rc
+"""
+
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
 
@@ -154,10 +160,18 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinxdoc'
+html_theme = 'pydata_sphinx_theme'
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
+
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+html_theme_options = {
+    "external_links": [],
+    "github_url": "https://github.com/SciTools/cartopy",
+}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -168,12 +182,12 @@ html_theme = 'sphinxdoc'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = None
+html_logo = "_static/cartopy.png"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-# html_favicon = None
+html_favicon = "_static/favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -223,10 +237,6 @@ html_show_sphinx = True
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'cartopydoc'
-
-html_context = {'rellinks': [('genindex', 'General Index', 'I', 'index'),
-                             ('cartopy_outline', 'Module outline', 'O',
-                              'outline')]}
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -368,14 +378,6 @@ extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
             }
 
 
-
-############ package summary extension ###########
-
-summarise_package_names = ['cartopy']
-summarise_package_exclude_directories = [['tests', 'examples', 'sphinxext']]
-summarise_package_fnames = ['cartopy_outline.rst']
-
-
 ############ plot directive ##############
 
 plot_html_show_formats = False
@@ -392,8 +394,6 @@ plot_formats = ['png',
 
 ############ autodoc config ##############
 
-autoclass_content = 'both'
-
 # Napoleon settings
 # napoleon_google_docstring = True
 napoleon_numpy_docstring = True
@@ -407,8 +407,3 @@ napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = False
 
-# # Numpydoc settings
-# numpydoc_show_class_members = True
-# numpydoc_show_inherited_class_members = False
-# numpydoc_class_members_toctree = False
-# numpydoc_use_blockquotes = True

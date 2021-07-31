@@ -1,0 +1,57 @@
+Version 0.11 (June 19, 2014)
+============================
+
+
+* Richard Hattersley added :func:`~cartopy.crs.epsg` support for generating
+  a Cartopy projection at run-time based on the EPSG code of a projected
+  coordinate system. This mechanism utilises https://epsg.io/ as a coordinate
+  system resource and employs EPSG request caching using
+  `pyepsg <https://github.com/rhattersley/pyepsg>`_
+
+* Phil Elson added :class:`~cartopy.io.ogc_clients.WMSRasterSource` which
+  provides interactive pan and zoom OGC web services support for a Web Map
+  Service (WMS) aware axes. This capability may be added to an axes via the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wms` method. Generic interactive
+  slippy map panning and zooming capability is managed through the new
+  :class:`~cartopy.mpl.slippy_image_artist.SlippyImageArtist` and use of the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method.
+
+* :class:`~cartopy.io.ogc_clients.WMTSRasterSource` was added by Richard
+  Hattersley to provide interactive pan and zoom OGC web services support for
+  a Web Map Tile Service (WMTS) aware axes, which is available through the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method. This includes support
+  for the Google Mercator projection and efficient WMTS tile caching. This new
+  capability determines how to match up the available tiles projections
+  with the target projection and chooses the zoom level to best match the pixel
+  density in the rendered image.
+
+  .. figure:: ../gallery/web_services/images/sphx_glr_wmts_001.png
+     :target: ../gallery/web_services/wmts.html
+     :align: center
+     :scale: 70
+
+* Thomas Lecocq added functionality to :mod:`cartopy.io.srtm` allowing
+  intelligent filling of missing elevation data, as well as a function to
+  compute elevation shading for relief style mapping. An example has been added
+  which uses both of these functions to produce a grayscale shaded relief map
+
+* Lion Krischer extended the capability of
+  :class:`~cartopy.io.img_tiles.GoogleTiles` to allow support for **street**,
+  **satellite**, **terrain** and **street_only** style Google Map tiles.
+
+* Nat Wilson's contribution brought us a major step closer to Python 3 compatibility.
+
+* Support for the :class:`~cartopy.crs.UTM` projection was added by Mark Hedley.
+
+* Andrew Dawson has added a new convenience utility function
+  :func:`~cartopy.util.add_cyclic_point` to add a cyclic point to an array and
+  optionally to a corresponding 1D coordinate.
+
+* Andrew Dawson added formatters for producing longitude/latitude tick labels for
+  rectangular projections. The formatters are customizable and can be used to produce
+  nice tick labels in a variety of styles:
+
+  .. figure:: ../gallery/gridlines_and_labels/images/sphx_glr_tick_labels_001.png
+     :target: ../gallery/gridlines_and_labels/tick_labels.html
+     :align: center
+     :scale: 70

@@ -1,0 +1,134 @@
+Version 0.12 (April 14, 2015)
+=============================
+
+Features
+--------
+
+* We are very pleased to announce that Elliott Sales de Andrade was added to the cartopy
+  core development team. Elliott has added several new projections in this release, as well
+  as setting up cartopy's Python 3 testing on TravisCI and generally improving the cartopy
+  codebase.
+
+* Installing cartopy became much easier for conda users. A ``scitools`` channel has been
+  added which makes getting cartopy and all of its dependencies on Linux, OSX and
+  Windows possible with::
+
+     conda install -c scitools cartopy
+
+* Support for Python 3, specifically 3.3 and 3.4, has been added. Some features that depend
+  on OWSLib will not be available as it does not support Python 3.
+
+* Two new projections, :class:`~cartopy.crs.AzimuthalEquidistant` and
+  :class:`~cartopy.crs.AlbersEqualArea` have been added. See the :ref:`cartopy_projections`
+  for the full list of projections now available in cartopy.
+
+* The Web Map Service (WMS) interface has been extended to support on-the-fly reprojection
+  of imagery if the service does not support the projection of the map being drawn.
+  The following example demonstrates the process by adding WMS imagery to an Interrupted
+  Goode Homolosine map - unsurprisingly this WMS service does not provide IGH imagery, so
+  cartopy has had to reproject them from a projection the WMS does support:
+
+  .. figure:: ../gallery/web_services/images/sphx_glr_wms_001.png
+     :target: ../gallery/web_services/wms.html
+     :align: center
+     :scale: 70
+
+* Peter Killick added an interface for accessing MapBox tiles using the MapBox
+  Developer API. A MapBox client can be created with,
+  :class:`~cartopy.io.img_tiles.MapboxTiles` and as with the other imagery from a simple URL
+  based imagery service, it can be added to a :class:`~cartopy.mpl.geoaxes.GeoAxes` with the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_image` method. The following example demonstrates the
+  interface for another source of imagery:
+
+  .. figure:: ../gallery/web_services/images/sphx_glr_image_tiles_001.png
+     :target: ../gallery/web_services/image_tiles.html
+     :align: center
+     :scale: 70
+
+* Some improvements were made to the geometry transformation algorithm to improve
+  the stability of geometry winding. Several cases of geometries being incorrectly
+  inverted when transformed have now been resolved. (:pull:`545`)
+
+* Mark Hedley added the ``central_rotated_longitude`` keyword to
+  :class:`cartopy.crs.RotatedPole`, which is particularly useful for limited area
+  rotated pole models in areas such as New Zealand:
+
+    .. plot::
+       :width: 200pt
+
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        rpole = ccrs.RotatedPole(pole_longitude=171.77,
+                                 pole_latitude=49.55,
+                                 central_rotated_longitude=180)
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=rpole)
+        ax.set_global()
+        ax.gridlines()
+        ax.stock_img()
+        ax.coastlines()
+        plt.show()
+
+* A new method has been added to the :class:`~cartopy.mpl.geoaxes.GeoAxes` to
+  allow control of the neatline of a map drawn with the Matplotlib interface.
+  The method, :meth:`~cartopy.mpl.geoaxes.GeoAxes.set_boundary`, takes a
+  :class:`matplotlib Path<matplotlib.path.Path>` object, which means that
+  arbitrary shaped edges can be achieved:
+
+  .. figure:: ../gallery/miscellanea/images/sphx_glr_star_shaped_boundary_001.png
+     :target: ../gallery/miscellanea/star_shaped_boundary.html
+     :align: center
+     :scale: 70
+
+* A new SRTM3 RasterSource has been implemented allowing interactive pan/zoom
+  of 3 arc-second elevation data from the Shuttle Radar Topography Mission.
+  The SRTM example has also been updated to use the new interface.
+
+* New additions to the gallery:
+
+
+  .. figure:: ../gallery/miscellanea/images/sphx_glr_un_flag_001.png
+     :target: ../gallery/miscellanea/un_flag.html
+     :align: center
+     :scale: 70
+
+  .. figure:: ../gallery/lines_and_polygons/images/sphx_glr_always_circular_stereo_001.png
+     :target: ../gallery/lines_and_polygons/always_circular_stereo.html
+     :align: center
+     :scale: 70
+
+  .. figure:: ../gallery/miscellanea/images/sphx_glr_tube_stations_001.png
+     :target: ../gallery/miscellanea/tube_stations.html
+     :align: center
+     :scale: 70
+
+  .. figure:: ../gallery/web_services/images/sphx_glr_wms_001.png
+     :target: ../gallery/web_services/wms.html
+     :align: center
+     :scale: 70
+
+  .. figure:: ../gallery/web_services/images/sphx_glr_image_tiles_001.png
+     :target: ../gallery/web_services/image_tiles.html
+     :align: center
+     :scale: 70
+
+
+Deprecations
+------------
+* The SRTM module has been re-factored for simplicity and to take advantage
+  of the new :ref:`raster source interface <raster-source-interface>`. Some
+  methods have therefore been deprecated and will be removed in future
+  releases. The function :func:`cartopy.io.srtm.srtm` has been replaced with
+  the :meth:`cartopy.io.srtm.SRTM3Source.single_tile` method. Similarly,
+  :func:`cartopy.io.srtm.srtm_composite` and
+  :func:`cartopy.io.srtm.SRTM3_retrieve` have been replaced with the
+  :meth:`cartopy.io.srtm.SRTM3Source.combined` and
+  :meth:`cartopy.io.srtm.SRTM3Source.srtm_fname` methods respectively.
+
+* The :class:`cartopy.io.RasterSource.fetch_raster` interface has been
+  changed such that a sequence of :class:`cartopy.io.LocatedImage` must be
+  returned, rather than a single image and its associated extent.
+
+* The ``secant_latitudes`` keyword in :class:`cartopy.crs.LambertConformal` has
+  been deprecated in favour of ``standard_parallels``.

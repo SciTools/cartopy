@@ -111,7 +111,7 @@ def create_instance(prj_cls, instance_args):
 
 if __name__ == '__main__':
     fname = os.path.join(os.path.dirname(__file__), 'source',
-                         'crs', 'projections.rst')
+                         'reference', 'projections.rst')
     table = open(fname, 'w')
 
     notes = """
@@ -121,9 +121,6 @@ if __name__ == '__main__':
         .. It is included in the repository only to aid detection of changes.
 
         .. _cartopy_projections:
-
-        Cartopy projection list
-        =======================
 
         """
     table.write(textwrap.dedent(notes))

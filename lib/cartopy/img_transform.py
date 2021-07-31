@@ -40,10 +40,10 @@ def mesh_projection(projection, nx, ny,
         The number of sample points in the projection y-direction.
     x_extents: optional
         The (lower, upper) x-direction extent of the projection.
-        Defaults to the :attribute:`~cartopy.crs.Projection.x_limits`.
+        Defaults to the :attr:`~cartopy.crs.Projection.x_limits`.
     y_extents: optional
         The (lower, upper) y-direction extent of the projection.
-        Defaults to the :attribute:`~cartopy.crs.Projection.y_limits`.
+        Defaults to the :attr:`~cartopy.crs.Projection.y_limits`.
 
     Returns
     -------
@@ -123,7 +123,7 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
     """
     Regrid the data array from the source projection to the target projection.
 
-    Also see, :function:`~cartopy.img_transform.regrid`.
+    Also see, :func:`~cartopy.img_transform.regrid`.
 
     Parameters
     ----------

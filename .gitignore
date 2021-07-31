@@ -25,6 +25,7 @@ docs/source/cartopy/examples/
 docs/source/cartopy_outline.rst
 docs/source/gallery
 docs/source/matplotlib/coastlines.p??
+docs/source/*/generated/
 
 # some data files:
 lib/cartopy/data/SRTM3

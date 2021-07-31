@@ -14,19 +14,9 @@ easy to install and extremely portable. However, for heavy duty shapefile I/O `F
 .. _Fiona: https://fiona.readthedocs.io/
 .. _GeoPandas: http://geopandas.org/
 
-
-
+Detailed API for the shapereader functionality can be found in the :ref:`documentation <api.io.shapereader>`
 
 .. currentmodule:: cartopy.io.shapereader
-
-.. autoclass:: Reader
-    :members:
-    :undoc-members:
-
-.. autoclass:: Record
-    :members:
-    :undoc-members:
-
 
 Helper functions for shapefile acquisition
 -------------------------------------------
@@ -36,12 +26,8 @@ Cartopy provides an interface for access to frequently used data such as the
 the `NaturalEarthData <https://www.naturalearthdata.com/>`_ website.
 These interfaces allow the user to define the data programmatically, and if the data does not exist
 on disk, it will be retrieved from the appropriate source (normally by
-downloading the data from the internet). Currently the interfaces available are:
-
-
-.. autofunction:: natural_earth
-
-.. autofunction:: gshhs
+downloading the data from the internet). Currently the interfaces available are
+:func:`natural_earth` and :func:`gshhs`.
 
 
 Using the shapereader
