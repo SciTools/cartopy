@@ -58,6 +58,7 @@ doc-run: &doc-build
   name: Build documentation
   command: |
     source activate test-environment
+    PYPROJ_GLOBAL_CONTEXT=ON
     make -C docs html
 
 
