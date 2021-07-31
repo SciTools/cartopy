@@ -252,21 +252,14 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         The data array regridded in the target projection.
 
     """
-
-    # n.b. source_cs is actually a projection (the coord system of the
-    # source coordinates), but not necessarily the native projection of
-    # the source array (i.e. you can provide a warped image with lat lon
-    # coordinates).
-
-    # XXX NB. target_x and target_y must currently be rectangular (i.e.
-    # be a 2d np array)
-    geo_cent = source_cs
-    xyz = geo_cent.transform_points(source_cs,
-                                    source_x_coords.flatten(),
-                                    source_y_coords.flatten())
-    target_xyz = geo_cent.transform_points(target_proj,
-                                           target_x_points.flatten(),
-                                           target_y_points.flatten())
+    # Stack our original xyz array, this will also wrap coords when necessary
+    xyz = source_cs.transform_points(source_cs,
+                                     source_x_coords.flatten(),
+                                     source_y_coords.flatten())
+    # Transform the target points into the source projection
+    target_xyz = source_cs.transform_points(target_proj,
+                                            target_x_points.flatten(),
+                                            target_y_points.flatten())
 
     if _is_pykdtree:
         kdtree = pykdtree.kdtree.KDTree(xyz)
@@ -297,14 +290,11 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
 
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.
-    # XXX THIS ONLY NEEDS TO BE DONE FOR (PSEUDO-)CYLINDRICAL PROJECTIONS
-    # (OR ANY OTHERS WHICH HAVE THE CONCEPT OF WRAPPING)
-    source_desired_xyz = source_cs.transform_points(target_proj,
-                                                    target_x_points.flatten(),
-                                                    target_y_points.flatten())
+    # NOTE: This only needs to be done for (pseudo-)cylindrical projections,
+    # or any others which have the concept of wrapping
     back_to_target_xyz = target_proj.transform_points(source_cs,
-                                                      source_desired_xyz[:, 0],
-                                                      source_desired_xyz[:, 1])
+                                                      target_xyz[:, 0],
+                                                      target_xyz[:, 1])
     back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny,
                                                         desired_nx)
     back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny,
@@ -327,10 +317,10 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     # Transform the target points to the source projection and mask any points
     # that fall outside the original source domain.
     if mask_extrapolated:
-        target_in_source_xyz = source_cs.transform_points(
-            target_proj, target_x_points, target_y_points)
-        target_in_source_x = target_in_source_xyz[..., 0]
-        target_in_source_y = target_in_source_xyz[..., 1]
+        target_in_source_x = target_xyz[:, 0].reshape(desired_ny,
+                                                      desired_nx)
+        target_in_source_y = target_xyz[:, 1].reshape(desired_ny,
+                                                      desired_nx)
 
         bounds = _determine_bounds(source_x_coords, source_y_coords, source_cs)
 
