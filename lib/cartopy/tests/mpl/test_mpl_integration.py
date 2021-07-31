@@ -680,7 +680,7 @@ def test_quiver_rotated_pole():
     v = -2. * np.cos(2. * np.deg2rad(y2d)) * np.sin(np.deg2rad(x2d))
     mag = (u**2 + v**2)**.5
     rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
-    plot_extent = [x[0]-360, x[-1]-360, y[0], y[-1]]
+    plot_extent = [x[0], x[-1], y[0], y[-1]]
     # plot on native projection
     plt.figure(figsize=(6, 6))
     ax = plt.subplot(211, projection=rp)
