@@ -305,3 +305,25 @@ def test_transform_points_outside_domain():
     # the same as the transform_points call with a length-1 array
     result = crs.transform_point(-120, 80, ccrs.PlateCarree())
     assert np.all(np.isnan(result))
+
+
+def test_lonlatgeom_attrs():
+    projs = []
+
+    def recurse_projs(cls):
+        for subcls in cls.__subclasses__():
+            if not subcls.__subclasses__():
+                projs.append(subcls)
+            else:
+                pass
+            recurse_projs(subcls)
+    recurse_projs(ccrs.Projection)
+
+    for proj in projs:
+        if proj.__name__ == "UTM":
+            proj_instance = proj(1)
+        else:
+            proj_instance = proj()
+        assert hasattr(proj_instance, "_lon_sample")
+        assert hasattr(proj_instance, "_lat_sample")
+        assert hasattr(proj_instance, "invalid_geoms")

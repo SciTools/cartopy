@@ -18,6 +18,7 @@ import warnings
 import numpy as np
 import shapely.geometry as sgeom
 from shapely.prepared import prep
+import shapely.ops as ops
 
 from cartopy._crs import (CRS, Geodetic, Globe, PROJ4_VERSION,
                           WGS84_SEMIMAJOR_AXIS, WGS84_SEMIMINOR_AXIS)
@@ -311,23 +312,7 @@ class Projection(CRS, metaclass=ABCMeta):
         else:
             return []
 
-    def _project_multipolygon(self, geometry, src_crs):
-        geoms = []
-        for geom in geometry.geoms:
-            r = self._project_polygon(geom, src_crs)
-            if r:
-                geoms.extend(r.geoms)
-        if geoms:
-            result = sgeom.MultiPolygon(geoms)
-        else:
-            result = sgeom.MultiPolygon()
-        return result
-
-    def _project_polygon(self, polygon, src_crs):
-        """
-        Return the projected polygon(s) derived from the given polygon.
-
-        """
+    def _make_rings_lines(self, polygon, rings, multi_lines, src_crs):
         # Determine orientation of polygon.
         # TODO: Consider checking the internal rings have the opposite
         # orientation to the external rings?
@@ -335,11 +320,9 @@ class Projection(CRS, metaclass=ABCMeta):
             is_ccw = True
         else:
             is_ccw = polygon.exterior.is_ccw
-        # Project the polygon exterior/interior rings.
+        # Project the polygon exterior/interior rings
         # Each source ring will result in either a ring, or one or more
         # lines.
-        rings = []
-        multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
             p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
             if p_rings:
@@ -350,10 +333,62 @@ class Projection(CRS, metaclass=ABCMeta):
         # Convert any lines to rings by attaching them to the boundary.
         if multi_lines:
             rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
+        return rings, multi_lines, is_ccw
 
+    def _construct_multipolygon(self, rings, is_ccw):
         # Resolve all the inside vs. outside rings, and convert to the
         # final MultiPolygon.
-        return self._rings_to_multi_polygon(rings, is_ccw)
+        exteriors, interiors = self._rings_to_multi_polygon(rings, is_ccw)
+        if exteriors or interiors:
+            if not interiors:
+                multi_poly = sgeom.MultiPolygon(exteriors)
+            elif not exteriors:
+                multi_poly_holes = ops.unary_union(interiors)
+                boundary_poly = self.domain
+                multi_poly = boundary_poly.difference(multi_poly_holes)
+                if isinstance(multi_poly, sgeom.Polygon):
+                    multi_poly = sgeom.MultiPolygon([multi_poly])
+            else:
+                multi_poly_bits = ops.unary_union(exteriors)
+                multi_poly_holes = ops.unary_union(interiors)
+                holes_envelope = multi_poly_holes.envelope
+                if holes_envelope.contains(multi_poly_bits.envelope):
+                    multi_poly = holes_envelope.difference(
+                            multi_poly_holes.difference(multi_poly_bits)
+                            )
+                else:
+                    multi_poly = multi_poly_bits.difference(multi_poly_holes)
+                if isinstance(multi_poly, sgeom.Polygon):
+                    multi_poly = sgeom.MultiPolygon([multi_poly])
+        else:
+            multi_poly = sgeom.MultiPolygon()
+
+        return multi_poly
+
+    def _project_multipolygon(self, geometry, src_crs):
+        rings = []
+        multi_lines = []
+        polygons = []
+        for polygon in geometry:
+            rings, multi_lines, is_ccw = self._make_rings_lines(
+                                           polygon, rings, multi_lines, src_crs
+                                           )
+            polygons.extend(list(self._construct_multipolygon(rings, is_ccw)))
+            rings = []
+            multi_lines = []
+        return sgeom.MultiPolygon(polygons)
+
+    def _project_polygon(self, polygon, src_crs):
+        """
+        Return the projected polygon(s) derived from the given polygon.
+
+        """
+        rings = []
+        multi_lines = []
+        rings, multi_lines, is_ccw = self._make_rings_lines(
+            polygon, rings, multi_lines, src_crs
+            )
+        return self._construct_multipolygon(rings, is_ccw)
 
     def _attach_lines_to_boundary(self, multi_line_strings, is_ccw):
         """
@@ -551,6 +586,13 @@ class Projection(CRS, metaclass=ABCMeta):
         return linear_rings
 
     def _rings_to_multi_polygon(self, rings, is_ccw):
+        # _project_linear_rings sometimes creates multiple exterior rings
+        # encircling the entire domain or almost the entire domain
+        # In this case, the method is:
+        # for each exterior ring find all interior rings contained by it
+        # create polygons
+        # if there are leftover interior rings, store them as Polygons to
+        # be added as holes by upstream multipolygon constructors
         exterior_rings = []
         interior_rings = []
         for ring in rings:
@@ -559,65 +601,58 @@ class Projection(CRS, metaclass=ABCMeta):
             else:
                 exterior_rings.append(ring)
 
+        interior_ring_flags = []
         polygon_bits = []
-
         # Turn all the exterior rings into polygon definitions,
         # "slurping up" any interior rings they contain.
         for exterior_ring in exterior_rings:
             polygon = sgeom.Polygon(exterior_ring)
             prep_polygon = prep(polygon)
             holes = []
-            for interior_ring in interior_rings[:]:
+            for i, interior_ring in enumerate(interior_rings[:]):
                 if prep_polygon.contains(interior_ring):
                     holes.append(interior_ring)
-                    interior_rings.remove(interior_ring)
+                    interior_ring_flags.append(i)
                 elif polygon.crosses(interior_ring):
                     # Likely that we have an invalid geometry such as
                     # that from #509 or #537.
                     holes.append(interior_ring)
-                    interior_rings.remove(interior_ring)
-            polygon_bits.append((exterior_ring.coords,
-                                 [ring.coords for ring in holes]))
+                    interior_ring_flags.append(i)
+            else:
+                polygon = sgeom.Polygon(exterior_ring, holes=holes)
+                polygon_bits.append(polygon)
+        interior_rings = [ring for i, ring in enumerate(interior_rings)
+                          if i not in interior_ring_flags]
 
-        # Any left over "interior" rings need "inverting" with respect
-        # to the boundary.
+        extra_holes = []
         if interior_rings:
             boundary_poly = self.domain
-            x3, y3, x4, y4 = boundary_poly.bounds
-            bx = (x4 - x3) * 0.1
-            by = (y4 - y3) * 0.1
-            x3 -= bx
-            y3 -= by
-            x4 += bx
-            y4 += by
-            for ring in interior_rings:
-                # Use shapely buffer in an attempt to fix invalid geometries
-                polygon = sgeom.Polygon(ring).buffer(0)
-                if not polygon.is_empty and polygon.is_valid:
-                    x1, y1, x2, y2 = polygon.bounds
-                    bx = (x2 - x1) * 0.1
-                    by = (y2 - y1) * 0.1
-                    x1 -= bx
-                    y1 -= by
-                    x2 += bx
-                    y2 += by
-                    box = sgeom.box(min(x1, x3), min(y1, y3),
-                                    max(x2, x4), max(y2, y4))
-
-                    # Invert the polygon
-                    polygon = box.difference(polygon)
-
-                    # Intersect the inverted polygon with the boundary
-                    polygon = boundary_poly.intersection(polygon)
-
+            polygon_bits = [poly.buffer(0) for poly in polygon_bits]
+            if isinstance(self, PlateCarree):
+                # to set the initial plot extent _gen_axes_patch calls
+                # _ViewClippedPathPatch.draw, which calls
+                # _rings_to_multi_polygon with a geometry from project_geometry
+                #
+                # if set_extent() is not invoked this geometry represents the
+                # region in [-180, 180, -90, 90] that projects to infinity in
+                # the target projection
+                #
+                # the geometry sometimes is an interior ring with no exterior
+                # ring
+                #
+                # if this happens we have to invert the interior ring
+                polygon = sgeom.Polygon(interior_rings[0])
+                # Invert the polygon
+                polygon = boundary_poly.difference(polygon)
+                polygon_bits.append(polygon)
+            else:
+                for ring in interior_rings:
+                    polygon = sgeom.Polygon(ring)
+                    if not polygon.is_valid:
+                        polygon = polygon.buffer(0)
                     if not polygon.is_empty:
-                        polygon_bits.append(polygon)
-
-        if polygon_bits:
-            multi_poly = sgeom.MultiPolygon(polygon_bits)
-        else:
-            multi_poly = sgeom.MultiPolygon()
-        return multi_poly
+                        extra_holes.append(polygon)
+        return polygon_bits, extra_holes
 
     def quick_vertices_transform(self, vertices, src_crs):
         """
@@ -653,9 +688,13 @@ class _RectangularProjection(Projection, metaclass=ABCMeta):
     is symmetric about the origin.
 
     """
-    def __init__(self, proj4_params, half_width, half_height, globe=None):
+    def __init__(self, proj4_params, half_width, half_height,
+                 x_sample=None, y_sample=None, globe=None):
         self._half_width = half_width
         self._half_height = half_height
+        self._lon_sample = x_sample or 0.
+        self._lat_sample = y_sample or 0.
+        self.invalid_geoms = {}
         super().__init__(proj4_params, globe=globe)
 
     @property
@@ -704,7 +743,8 @@ class PlateCarree(_CylindricalProjection):
         y_max = a_rad * 90
         # Set the threshold around 0.5 if the x max is 180.
         self._threshold = x_max / 360
-        super().__init__(proj4_params, x_max, y_max, globe=globe)
+        super().__init__(proj4_params, x_max, y_max,
+                         x_sample=central_longitude, globe=globe)
 
     @property
     def threshold(self):
@@ -840,6 +880,9 @@ class TransverseMercator(Projection):
             if approx:
                 proj4_params += [('approx', None)]
         super().__init__(proj4_params, globe=globe)
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def threshold(self):
@@ -855,11 +898,11 @@ class TransverseMercator(Projection):
 
     @property
     def x_limits(self):
-        return (-2e7, 2e7)
+        return (-1.55e7, 1.55e7)
 
     @property
     def y_limits(self):
-        return (-1e7, 1e7)
+        return (-2e7, 1.8e7)
 
 
 class OSGB(TransverseMercator):
@@ -946,6 +989,9 @@ class UTM(Projection):
         if southern_hemisphere:
             proj4_params.append(('south', None))
         super().__init__(proj4_params, globe=globe)
+        self._lon_sample = 0.
+        self._lat_sample = 0.
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -1058,6 +1104,9 @@ class Mercator(Projection):
         self._y_limits = tuple(limits[..., 1])
         self._threshold = min(np.diff(self.x_limits)[0] / 720,
                               np.diff(self.y_limits)[0] / 360)
+        self._lon_sample = central_longitude
+        self._lat_sample = (min_latitude + max_latitude)/2.
+        self.invalid_geoms = {}
 
     def __eq__(self, other):
         res = super().__eq__(other)
@@ -1108,7 +1157,8 @@ class LambertCylindrical(_RectangularProjection):
     def __init__(self, central_longitude=0.0):
         proj4_params = [('proj', 'cea'), ('lon_0', central_longitude)]
         globe = Globe(semimajor_axis=math.degrees(1))
-        super().__init__(proj4_params, 180, math.degrees(1), globe=globe)
+        super().__init__(proj4_params, 180, math.degrees(1),
+                         x_sample=central_longitude, globe=globe)
 
     @property
     def threshold(self):
@@ -1218,6 +1268,9 @@ class LambertConformal(Projection):
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     def __eq__(self, other):
         res = super().__eq__(other)
@@ -1298,6 +1351,9 @@ class LambertAzimuthalEqualArea(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -1330,7 +1386,7 @@ class Miller(_RectangularProjection):
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
         # (lambda-lambda0)=180 and phi=90 to get limits.
         super().__init__(proj4_params, a * np.pi, a * 2.303412543376391,
-                         globe=globe)
+                         x_sample=central_longitude, globe=globe)
 
     @property
     def threshold(self):
@@ -1376,7 +1432,8 @@ class RotatedPole(_CylindricalProjection):
                         ('o_lat_p', pole_latitude),
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1))]
-        super().__init__(proj4_params, 180, 90, globe=globe)
+        super().__init__(proj4_params, 180, 90, x_sample=pole_longitude,
+                         y_sample=pole_latitude, globe=globe)
 
     @property
     def threshold(self):
@@ -1392,6 +1449,9 @@ class Gnomonic(Projection):
                         ('lon_0', central_longitude)]
         super().__init__(proj4_params, globe=globe)
         self._max = 5e7
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -1473,6 +1533,9 @@ class Stereographic(Projection):
                                    false_easting, false_northing, 91)
         self._boundary = sgeom.LinearRing(coords.T)
         self._threshold = np.diff(self._x_limits)[0] * 1e-3
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -1545,6 +1608,9 @@ class Orthographic(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
         self._threshold = np.diff(self._x_limits)[0] * 0.02
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -1591,6 +1657,9 @@ class _WarpedRectangularProjection(Projection, metaclass=ABCMeta):
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+        self._lon_sample = central_longitude
+        self._lat_sample = 0.
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -1988,6 +2057,9 @@ class InterruptedGoodeHomolosine(Projection):
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+        self._lon_sample = central_longitude
+        self._lat_sample = 0.
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -2018,6 +2090,8 @@ class _Satellite(Projection):
         if sweep_axis:
             proj4_params.append(('sweep', sweep_axis))
         super().__init__(proj4_params, globe=globe)
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
 
     def _set_boundary(self, coords):
         self._boundary = sgeom.LinearRing(coords.T)
@@ -2026,6 +2100,7 @@ class _Satellite(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
         self._threshold = np.diff(self._x_limits)[0] * 0.02
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -2230,6 +2305,9 @@ class AlbersEqualArea(Projection):
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -2309,6 +2387,9 @@ class AzimuthalEquidistant(Projection):
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -2377,6 +2458,9 @@ class Sinusoidal(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
         self._threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
+        self._lon_sample = central_longitude
+        self._lat_sample = 0.
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
@@ -2468,6 +2552,9 @@ class EquidistantConic(Projection):
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
+        self._lon_sample = central_longitude
+        self._lat_sample = central_latitude
+        self.invalid_geoms = {}
 
     @property
     def boundary(self):
