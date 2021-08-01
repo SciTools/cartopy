@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
+from .helpers import check_proj_params
 
 
 @pytest.mark.parametrize('approx', [True, False])
@@ -21,15 +22,55 @@ class TestTransverseMercator:
         self.point_b = (0.5, 50.5)
         self.src_crs = ccrs.PlateCarree()
 
+    def check_args(self, approx, proj, other_args):
+        if ccrs.PROJ4_VERSION < (6, 0, 0):
+            other_args = {*other_args, 'lon_0=0.0', 'lat_0=0.0', 'k=1.0',
+                          'x_0=0.0', 'y_0=0.0', 'units=m'}
+            check_proj_params('tmerc' if approx else 'etmerc', proj,
+                              other_args)
+        else:
+            other_args = {*other_args, 'lon_0=0.0', 'lat_0=0.0', 'k=1.0',
+                          'x_0=0.0', 'y_0=0.0', 'units=m'}
+            if approx:
+                other_args.add('approx')
+            check_proj_params('tmerc', proj, other_args)
+
     def test_default(self, approx):
         proj = ccrs.TransverseMercator(approx=approx)
+        self.check_args(approx, proj, {'ellps=WGS84'})
+
+        np.testing.assert_array_almost_equal(proj.x_limits, (-2e7, 2e7),
+                                             decimal=-5)
+        np.testing.assert_array_almost_equal(proj.y_limits, (-1e7, 1e7),
+                                             decimal=-5)
+
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
         np.testing.assert_array_almost_equal(res,
                                              (-245269.53181, 5627508.74355),
                                              decimal=5)
+
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
         np.testing.assert_array_almost_equal(res, (35474.63566645,
                                                    5596583.41949901))
+
+    def test_sphere_globe(self, approx):
+        if not approx:
+            pytest.skip('Not supported by proj.')
+
+        globe = ccrs.Globe(semimajor_axis=1000, ellipse=None)
+        proj = ccrs.TransverseMercator(approx=approx, globe=globe)
+        self.check_args(approx, proj, {'a=1000'})
+
+        np.testing.assert_array_almost_equal(proj.x_limits,
+                                             (-3141.592654, 3141.592654))
+        np.testing.assert_array_almost_equal(proj.y_limits,
+                                             (-1570.796327, 1570.796327))
+
+        res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
+        np.testing.assert_array_almost_equal(res, (-38.377488, 886.259630))
+
+        res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
+        np.testing.assert_array_almost_equal(res, (5.550816, 881.409961))
 
     def test_osgb_vals(self, approx):
         proj = ccrs.TransverseMercator(central_longitude=-2,
