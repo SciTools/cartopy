@@ -20,7 +20,7 @@ _data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
                          'cartopy')
 _cache_dir = os.path.join(tempfile.gettempdir(), 'cartopy_cache_dir')
 
-config = {'pre_existing_data_dir': '',
+config = {'pre_existing_data_dir': os.environ.get('CARTOPY_DATA_DIR', ''),
           'data_dir': _data_dir,
           'cache_dir': _cache_dir,
           'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
