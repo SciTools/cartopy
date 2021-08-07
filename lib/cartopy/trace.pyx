@@ -194,13 +194,10 @@ cdef class Interpolator:
 
     cdef Point project(self, const Point &src_xy) except *:
         cdef Point dest_xy
-        cdef double src_xy_x = src_xy.x
-        if self.to_180 and src_xy_x > 180:
-            src_xy_x = (((src_xy_x + 180) % 360) - 180)
 
         try:
             xx, yy = self.transformer.transform(
-                src_xy_x * self.src_scale,
+                src_xy.x * self.src_scale,
                 src_xy.y * self.src_scale,
                 errcheck=True
             )
@@ -216,6 +213,9 @@ cdef class Interpolator:
                 yy = HUGE_VAL
             else:
                 raise
+
+        if self.to_180 and xx > 180 and xx != HUGE_VAL:
+            xx = (((xx + 180) % 360) - 180)
 
         dest_xy.x = xx * self.dest_scale
         dest_xy.y = yy * self.dest_scale
