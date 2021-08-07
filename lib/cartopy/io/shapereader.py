@@ -53,6 +53,7 @@ class Record:
     their associated geometry.
 
     """
+
     def __init__(self, shape, attributes, fields):
         self._shape = shape
 
@@ -111,6 +112,7 @@ class FionaRecord(Record):
     with the FionaReader.
 
     """
+
     def __init__(self, geometry, attributes):
         self._geometry = geometry
         self.attributes = attributes
@@ -125,6 +127,7 @@ class BasicReader:
     :meth:`~Reader.records` and :meth:`~Reader.geometries`.
 
     """
+
     def __init__(self, filename):
         # Validate the filename/shapefile
         self._reader = reader = shapefile.Reader(filename)
@@ -178,6 +181,7 @@ class FionaReader:
     :meth:`~Reader.records` and :meth:`~Reader.geometries`.
 
     """
+
     def __init__(self, filename, bbox=None):
         self._data = []
 

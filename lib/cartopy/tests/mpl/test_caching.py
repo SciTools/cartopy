@@ -60,6 +60,7 @@ class CallCounter:
 
 
     """
+
     def __init__(self, parent, function_name):
         self.count = 0
         self.parent = parent

@@ -144,7 +144,7 @@ def test_imshow_wrapping():
 def test_imshow_rgba():
     # tests that the alpha of a RGBA array passed to imshow is set to 0
     # instead of masked
-    z = np.ones((100, 100))*0.5
+    z = np.ones((100, 100)) * 0.5
     cmap = cm.get_cmap()
     norm = colors.Normalize(vmin=0, vmax=1)
     z1 = cmap(norm(z))
@@ -160,7 +160,7 @@ def test_imshow_rgba():
 def test_imshow_rgb():
     # tests that the alpha of a RGB array passed to imshow is set to 0
     # instead of masked
-    z = np.ones((100, 100, 3))*0.5
+    z = np.ones((100, 100, 3)) * 0.5
     plt_crs = ccrs.LambertAzimuthalEqualArea()
     latlon_crs = ccrs.PlateCarree()
     ax = plt.axes(projection=plt_crs)

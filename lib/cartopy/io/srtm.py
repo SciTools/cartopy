@@ -31,6 +31,7 @@ class _SRTMSource(RasterSource):
     interface <raster-source-interface>`.
 
     """
+
     def __init__(self, resolution, downloader, max_nx, max_ny):
         """
         Parameters
@@ -175,6 +176,7 @@ class SRTM3Source(_SRTMSource):
     interface <raster-source-interface>`.
 
     """
+
     def __init__(self, downloader=None, max_nx=3, max_ny=3):
         """
         Parameters
@@ -202,6 +204,7 @@ class SRTM1Source(_SRTMSource):
     interface <raster-source-interface>`.
 
     """
+
     def __init__(self, downloader=None, max_nx=3, max_ny=3):
         """
         Parameters
@@ -253,12 +256,12 @@ def add_shading(elevation, azimuth, altitude):
     azimuth = np.deg2rad(azimuth)
     altitude = np.deg2rad(altitude)
     x, y = np.gradient(elevation)
-    slope = np.pi/2. - np.arctan(np.sqrt(x*x + y*y))
+    slope = np.pi / 2. - np.arctan(np.sqrt(x * x + y * y))
     # -x here because of pixel orders in the SRTM tile
     aspect = np.arctan2(-x, y)
     shaded = np.sin(altitude) * np.sin(slope)\
         + np.cos(altitude) * np.cos(slope)\
-        * np.cos((azimuth - np.pi/2.) - aspect)
+        * np.cos((azimuth - np.pi / 2.) - aspect)
     return shaded
 
 
@@ -398,6 +401,7 @@ class SRTMDownloader(Downloader):
     available to download.
 
     """
+
     def __init__(self,
                  target_path_template,
                  pre_downloaded_path_template='',

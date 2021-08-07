@@ -44,7 +44,7 @@ def get_unit_converter(unit):
                    'cm': 1e-2,
                    'mm': 1e-3,
                    'um': 1e-6,
-                   'nm': 1e-9} 
+                   'nm': 1e-9}
 
     return lookuptable.get(unit, 'km')
 
@@ -347,28 +347,33 @@ def add_scalebar(ax,
             for generating the scalebar.
 
 
-        ruler_unit (str): the unit scale that will be used for the geodesic distance.
+        ruler_unit (str): the unit scale that will be used
+        for the geodesic distance.
             Standard: km
 
-            Options available are presented within the lookuptable dictionary of the "get_unit_converter" function, and are presented below. 
+            Options available are presented within the lookuptable dictionary
+            of the "get_unit_converter" function, and are presented below.
                   lookuptable = {'km': 1000,
                                  'mi': 1.60934 * 1000,  # Miles to Km
                                  'dm': 1e-1,
                                  'cm': 1e-2,
                                  'mm': 1e-3,
                                  'um': 1e-6,
-                                 'nm': 1e-9} 
+                                 'nm': 1e-9}
 
 
-        ruler_fontweight (str): the fontweight that will be used for the ruler unit that will be plotted on the scalebar
+        ruler_fontweight (str): the fontweight that will be used for
+        the ruler unit that will be plotted on the scalebar
             Standard: 'bold'
-        
 
-        ruler_unit_fontsize (float or int): the size that will be used for the ruler_unit within the scalebar
+
+        ruler_unit_fontsize (float or int): the size that will be
+        used for the ruler_unit within the scalebar
             Standard: 10
 
 
-        tick_fontweight (str): the fontweight that will be applied on the ticks of the scalebar
+        tick_fontweight (str): the fontweight that will be applied on
+        the ticks of the scalebar
             Standard:'light'
 
 

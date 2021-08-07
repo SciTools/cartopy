@@ -13,7 +13,6 @@ from matplotlib.font_manager import FontProperties
 import numpy as np
 
 
-
 def main():
     fig = plt.figure(figsize=[8, 8])
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.SouthPolarStereo())

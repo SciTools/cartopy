@@ -35,7 +35,7 @@ def plate_carree_plot():
     for i in range(0, nplots):
         central_longitude = 0 if i == 0 else 180
         ax = fig.add_subplot(
-            nplots, 1, i+1,
+            nplots, 1, i + 1,
             projection=ccrs.PlateCarree(central_longitude=central_longitude))
         ax.coastlines(resolution='110m')
         ax.gridlines()
@@ -50,8 +50,8 @@ def utm_plot():
     fig = plt.figure(figsize=(10, 3))
 
     for i in range(0, nplots):
-        ax = fig.add_subplot(1, nplots, i+1,
-                             projection=ccrs.UTM(zone=i+1,
+        ax = fig.add_subplot(1, nplots, i + 1,
+                             projection=ccrs.UTM(zone=i + 1,
                                                  southern_hemisphere=True))
         ax.coastlines(resolution='110m')
         ax.gridlines()

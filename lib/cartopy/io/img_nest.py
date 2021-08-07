@@ -178,12 +178,12 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                              'supported.')
         ul_corner = (float(lines[4]), float(lines[5]))
 
-        min_x, max_x = (ul_corner[0] - pix_size[0]/2.,
-                        ul_corner[0] + pix_size[0]*im_shape[0] -
-                        pix_size[0]/2.)
-        min_y, max_y = (ul_corner[1] - pix_size[1]/2.,
-                        ul_corner[1] + pix_size[1]*im_shape[1] -
-                        pix_size[1]/2.)
+        min_x, max_x = (ul_corner[0] - pix_size[0] / 2.,
+                        ul_corner[0] + pix_size[0] * im_shape[0] -
+                        pix_size[0] / 2.)
+        min_y, max_y = (ul_corner[1] - pix_size[1] / 2.,
+                        ul_corner[1] + pix_size[1] * im_shape[1] -
+                        pix_size[1] / 2.)
         return (min_x, max_x, min_y, max_y), pix_size
 
 
