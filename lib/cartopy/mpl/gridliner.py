@@ -14,18 +14,23 @@ import matplotlib.transforms as mtrans
 import matplotlib.path as mpath
 import numpy as np
 import shapely.geometry as sgeom
-
 import cartopy
 from cartopy.crs import Projection, _RectangularProjection, PlateCarree
-from cartopy.mpl.ticker import (
-    LongitudeLocator, LatitudeLocator,
-    LongitudeFormatter, LatitudeFormatter)
+
+from cartopy.mpl.ticker import (LongitudeLocator,
+                                LatitudeLocator,
+                                LongitudeFormatter,
+                                LatitudeFormatter)
+
+from cartopy.mpl.formatters import Gridline_Base
+
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
 classic_formatter = mticker.ScalarFormatter
 
 _DEGREE_SYMBOL = '\u00B0'
+
 _X_INLINE_PROJS = (
     cartopy.crs.InterruptedGoodeHomolosine,
     cartopy.crs.LambertConformal,
@@ -45,13 +50,12 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
     cartopy.crs.LambertConformal,
     cartopy.crs.TransverseMercator,
     cartopy.crs.Gnomonic,
-    )
+)
 
 
 def _fix_lons(lons):
     """
     Fix the given longitudes into the range ``[-180, 180]``.
-
     """
     lons = np.array(lons, copy=False, ndmin=1)
     fixed_lons = ((lons + 180) % 360) - 180
@@ -105,7 +109,7 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                            _north_south_formatted(v))
 
 
-class Gridliner:
+class Gridliner(Gridline_Base):
     # NOTE: In future, one of these objects will be add-able to a GeoAxes (and
     # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
@@ -117,123 +121,164 @@ class Gridliner:
                  xlim=None, ylim=None, rotate_labels=None,
                  xlabel_style=None, ylabel_style=None, labels_bbox_style=None,
                  xpadding=5, ypadding=5, offset_angle=25,
-                 auto_update=False):
+                 auto_update=False,
+                 cardinal_coords=dict(west_hemisphere_symbol='W',
+                                      east_hemisphere_symbol='E',
+                                      north_hemisphere_symbol='N',
+                                      south_hemisphere_symbol='S')
+                 ):
         """
-        Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
-        to add gridlines and tick labels to a map.
+            Description
+            ----------
+            Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
+            to add gridlines and tick labels to a map.
 
-        Parameters
-        ----------
-        axes
-            The :class:`cartopy.mpl.geoaxes.GeoAxes` object to be drawn on.
-        crs
-            The :class:`cartopy.crs.CRS` defining the coordinate system that
-            the gridlines are drawn in.
-        draw_labels: optional
-            Toggle whether to draw labels. For finer control, attributes of
-            :class:`Gridliner` may be modified individually. Defaults to False.
+            Parameters
+            ----------
+            axes
+                The :class:`cartopy.mpl.geoaxes.GeoAxes` object
+                to be drawn on.
 
-            - string: "x" or "y" to only draw labels of the respective
-              coordinate in the CRS.
-            - list: Can contain the side identifiers and/or coordinate
-              types to select which ones to draw.
-              For all labels one would use
-              `["x", "y", "top", "bottom", "left", "right", "geo"]`.
-            - dict: The keys are the side identifiers
-              ("top", "bottom", "left", "right") and the values are the
-              coordinates ("x", "y"); this way you can precisely
-              decide what kind of label to draw and where.
-              For x labels on the bottom and y labels on the right you
-              could pass in `{"bottom": "x", "left": "y"}`.
+            crs
+                The :class:`cartopy.crs.CRS` defining the
+                coordinate system that the gridlines are drawn in.
 
-            Note that, by default, x and y labels are not drawn on left/right
-            and top/bottom edges respectively, unless explicitly requested.
+            draw_labels: optional
+                Toggle whether to draw labels.
+                For finer control, attributes of
+                :class:`Gridliner` may be modified individually.
+                    Defaults to False.
 
-        xlocator: optional
-            A :class:`matplotlib.ticker.Locator` instance which will be used
-            to determine the locations of the gridlines in the x-coordinate of
-            the given CRS. Defaults to None, which implies automatic locating
-            of the gridlines.
-        ylocator: optional
-            A :class:`matplotlib.ticker.Locator` instance which will be used
-            to determine the locations of the gridlines in the y-coordinate of
-            the given CRS. Defaults to None, which implies automatic locating
-            of the gridlines.
-        xformatter: optional
-            A :class:`matplotlib.ticker.Formatter` instance to format labels
-            for x-coordinate gridlines. It defaults to None, which implies the
-            use of a :class:`cartopy.mpl.ticker.LongitudeFormatter` initiated
-            with the ``dms`` argument, if the crs is of
-            :class:`~cartopy.crs.PlateCarree` type.
-        yformatter: optional
-            A :class:`matplotlib.ticker.Formatter` instance to format labels
-            for y-coordinate gridlines. It defaults to None, which implies the
-            use of a :class:`cartopy.mpl.ticker.LatitudeFormatter` initiated
-            with the ``dms`` argument, if the crs is of
-            :class:`~cartopy.crs.PlateCarree` type.
-        collection_kwargs: optional
-            Dictionary controlling line properties, passed to
-            :class:`matplotlib.collections.Collection`. Defaults to None.
-        dms: bool
-            When default locators and formatters are used,
-            ticks are able to stop on minutes and seconds if minutes
-            is set to True, and not fraction of degrees.
-        x_inline: optional
-            Toggle whether the x labels drawn should be inline.
-        y_inline: optional
-            Toggle whether the y labels drawn should be inline.
-        auto_inline: optional
-            Set x_inline and y_inline automatically based on projection.
-        xlim: optional
-            Set a limit for the gridlines so that they do not go all the
-            way to the edge of the boundary. xlim can be a single number or
-            a (min, max) tuple. If a single number, the limits will be
-            (-xlim, +xlim).
-        ylim: optional
-            Set a limit for the gridlines so that they do not go all the
-            way to the edge of the boundary. ylim can be a single number or
-            a (min, max) tuple. If a single number, the limits will be
-            (-ylim, +ylim).
-        rotate_labels: optional, bool, str
-            Allow the rotation of non-inline labels.
+                - string: "x" or "y" to only draw labels of the respective
+                  coordinate in the CRS.
+                - list: Can contain the side identifiers and/or coordinate
+                  types to select which ones to draw.
+                  For all labels one would use
+                  `["x", "y", "top", "bottom", "left", "right", "geo"]`.
+                - dict: The keys are the side identifiers
+                  ("top", "bottom", "left", "right") and the values are the
+                  coordinates ("x", "y"); this way you can precisely
+                  decide what kind of label to draw and where.
+                  For x labels on the bottom and y labels on the right you
+                  could pass in `{"bottom": "x", "left": "y"}`.
 
-            - False: Do not rotate the labels.
-            - True: Rotate the labels parallel to the gridlines.
-            - None: no rotation except for some projections (default).
-            - A float: Rotate labels by this value in degrees.
+                Note that, by default, x and y labels are not drawn
+                on left/right and top/bottom edges respectively,
+                unless explicitly requested.
 
-        xlabel_style: dict
-            A dictionary passed through to ``ax.text`` on x label creation
-            for styling of the text labels.
-        ylabel_style: dict
-            A dictionary passed through to ``ax.text`` on y label creation
-            for styling of the text labels.
-        labels_bbox_style: dict
-            bbox style for all text labels
-        xpadding: float
-            Padding for x labels. If negative, the labels are
-            drawn inside the map.
-        ypadding: float
-            Padding for y labels. If negative, the labels are
-            drawn inside the map.
-        offset_angle: float
-            Difference of angle in degrees from 90 to define when
-            a label must be flipped to be more readable.
-            For example, a value of 10 makes a vertical top label to be
-            flipped only at 100 degrees.
-        auto_update: bool
-            Whether to redraw the gridlines and labels when the figure is
-            updated.
+            xlocator: optional
+                A :class:`matplotlib.ticker.Locator` instance
+                which will be used to determine the locations
+                of the gridlines in the x-coordinate of the given CRS.
+                Defaults to None, which implies automatic locating
+                of the gridlines.
 
-        Notes
-        -----
-        The "x" and "y" labels for locators and formatters do not necessarily
-        correspond to X and Y, but to the first and second coordinates of the
-        specified CRS. For the common case of PlateCarree gridlines, these
-        correspond to longitudes and latitudes. Depending on the projection
-        used for the map, meridians and parallels can cross both the X axis and
-        the Y axis.
+            ylocator: optional
+                A :class:`matplotlib.ticker.Locator` instance which
+                will be used to determine the locations of the
+                gridlines in the y-coordinate of the given CRS.
+                Defaults to None, which implies automatic locating
+                of the gridlines.
+
+            xformatter: optional
+                A :class:`matplotlib.ticker.Formatter` instance to
+                format labels for x-coordinate gridlines.
+                It defaults to None, which implies the use of
+                a :class:`cartopy.mpl.ticker.LongitudeFormatter`
+                initiated with the ``dms`` argument, if the crs is
+                of :class:`~cartopy.crs.PlateCarree` type.
+
+            yformatter: optional
+                A :class:`matplotlib.ticker.Formatter` instance
+                to format labels for y-coordinate gridlines.
+                It defaults to None, which implies the use of
+                a :class:`cartopy.mpl.ticker.LatitudeFormatter`
+                initiated with the ``dms`` argument, if the
+                crs is of :class:`~cartopy.crs.PlateCarree` type.
+
+            collection_kwargs: optional
+                Dictionary controlling line properties, passed to
+                :class:`matplotlib.collections.Collection`.
+                Defaults to None.
+
+            dms: bool
+                When default locators and formatters are used,
+                ticks are able to stop on minutes and seconds
+                if minutes is set to True, and not fraction
+                of degrees.
+
+            x_inline: optional
+                Toggle whether the x labels drawn should be inline.
+
+            y_inline: optional
+                Toggle whether the y labels drawn should be inline.
+
+            auto_inline: optional
+                Set x_inline and y_inline automatically based on projection.
+
+            xlim: optional
+                Set a limit for the gridlines so that they do not go all the
+                way to the edge of the boundary. xlim can be a single number or
+                a (min, max) tuple. If a single number, the limits will be
+                (-xlim, +xlim).
+
+            ylim: optional
+                Set a limit for the gridlines so that they do not go all the
+                way to the edge of the boundary. ylim can be a single number or
+                a (min, max) tuple. If a single number, the limits will be
+                (-ylim, +ylim).
+
+            rotate_labels: optional, bool, str
+                Allow the rotation of non-inline labels.
+
+                - False: Do not rotate the labels.
+                - True: Rotate the labels parallel to the gridlines.
+                - None: no rotation except for some projections (default).
+                - A float: Rotate labels by this value in degrees.
+
+            xlabel_style: dict
+                A dictionary passed through to ``ax.text`` on x label creation
+                for styling of the text labels.
+
+            ylabel_style: dict
+                A dictionary passed through to ``ax.text`` on y label creation
+                for styling of the text labels.
+
+            labels_bbox_style: dict
+                bbox style for all text labels
+
+            xpadding: float
+                Padding for x labels. If negative, the labels are
+                drawn inside the map.
+
+            ypadding: float
+                Padding for y labels. If negative, the labels are
+                drawn inside the map.
+
+            offset_angle: float
+                Difference of angle in degrees from 90 to define when
+                a label must be flipped to be more readable.
+                For example, a value of 10 makes a vertical top label to be
+                flipped only at 100 degrees.
+
+            auto_update: bool
+                Whether to redraw the gridlines and labels when the figure is
+                updated.
+
+            Notes
+            -----
+            The "x" and "y" labels for locators and formatters do
+            not necessarily correspond to X and Y, but to the first
+            and second coordinates of the specified CRS. For the
+            common case of PlateCarree gridlines, these correspond
+            to longitudes and latitudes. Depending on the projection
+            used for the map, meridians and parallels can cross both
+            the X axis and the Y axis.
+
         """
+
+        Gridline_Base.__init__(self, **cardinal_coords)
+
         self.axes = axes
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the x
@@ -265,14 +310,13 @@ class Gridliner:
                 xformatter = classic_formatter()
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lon labels.
         self.xformatter = xformatter
+        self.xformatter = self.base_xformatter
 
         if yformatter is None:
             if isinstance(crs, PlateCarree):
                 yformatter = LatitudeFormatter(dms=dms)
             else:
                 yformatter = classic_formatter()
-        #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
-        self.yformatter = yformatter
 
         # Draw label argument
         if isinstance(draw_labels, list):
@@ -299,9 +343,6 @@ class Gridliner:
             #: Whether to draw labels on the right hand side of the map.
             self.right_labels = value if 'right' in draw_labels else False
 
-            #: Whether to draw labels near the geographic limits of the map.
-            self.geo_labels = value if 'geo' in draw_labels else False
-
         elif isinstance(draw_labels, dict):
 
             self.top_labels = draw_labels.get('top', False)
@@ -317,6 +358,13 @@ class Gridliner:
             self.left_labels = draw_labels
             self.right_labels = draw_labels
             self.geo_labels = draw_labels
+
+        self.yformatter = self.base_yformatter
+        #: Whether to draw labels on the top of the map.
+        self.top_labels = draw_labels
+
+        #: Whether to draw labels near the geographic limits of the map.
+        self.geo_labels = value if 'geo' in draw_labels else False
 
         for loc in 'top', 'bottom', 'left', 'right', 'geo':
             value = getattr(self, loc + '_labels')
@@ -434,6 +482,28 @@ class Gridliner:
         # Check visibility of labels at each draw event
         # (or once drawn, only at resize event ?)
         self.axes.figure.canvas.mpl_connect('draw_event', self._draw_event)
+
+    def set_number_of_ticks(self, nbins=4, locator='xlocator'):
+        '''
+            Description:
+                This is a helper function for setting (inplace) \
+                the maximum number of ticks in the gridliner
+
+            Parameters:
+                nbins (int): number of bins to use in the given locator (axis)
+
+                locator(str): the gridliner locator to set the number of bins
+                    Standard value: 'xlocator'
+                    Available options: ['xlocator', 'ylocator']
+
+            Return
+                self (gridliner instance)
+
+        '''
+
+        Max_Ticks = mticker.MaxNLocator(nbins)
+
+        setattr(self, locator, Max_Ticks)
 
     @property
     def xlabels_top(self):
@@ -567,7 +637,7 @@ class Gridliner:
     def _round(x, base=5):
         if np.isnan(base):
             base = 5
-        return int(base * round(x / base))
+        return int(base * round(float(x) / base))
 
     def _find_midpoints(self, lim, ticks):
         # Find the center point between each lat gridline.
@@ -587,7 +657,7 @@ class Gridliner:
 
     def _draw_this_label(self, xylabel, loc):
         """Should I draw this kind of label here?"""
-        draw_labels = getattr(self, loc+'_labels')
+        draw_labels = getattr(self, loc + '_labels')
 
         # By default, only x on top/bottom and only y on left/right
         if draw_labels is True and loc != 'geo':
@@ -646,13 +716,12 @@ class Gridliner:
         # Get nice ticks within crs domain
         lon_ticks = self.xlocator.tick_values(lon_lim[0], lon_lim[1])
         lat_ticks = self.ylocator.tick_values(lat_lim[0], lat_lim[1])
-
-        inf = max(lon_lim[0], crs.x_limits[0])
-        sup = min(lon_lim[1], crs.x_limits[1])
-        lon_ticks = [value for value in lon_ticks if inf <= value <= sup]
-        inf = max(lat_lim[0], crs.y_limits[0])
-        sup = min(lat_lim[1], crs.y_limits[1])
-        lat_ticks = [value for value in lat_ticks if inf <= value <= sup]
+        lon_ticks = [value for value in lon_ticks
+                     if value >= max(lon_lim[0], crs.x_limits[0]) and
+                     value <= min(lon_lim[1], crs.x_limits[1])]
+        lat_ticks = [value for value in lat_ticks
+                     if value >= max(lat_lim[0], crs.y_limits[0]) and
+                     value <= min(lat_lim[1], crs.y_limits[1])]
 
         #####################
         # Gridlines drawing #
@@ -663,15 +732,10 @@ class Gridliner:
             collection_kwargs = {}
         collection_kwargs = collection_kwargs.copy()
         collection_kwargs['transform'] = transform
-        if not any(x in collection_kwargs.keys() for x in ['c', 'color']):
-            collection_kwargs.setdefault('color',
-                                         rc_params['grid.color'])
-        if not any(x in collection_kwargs.keys() for x in ['ls', 'linestyle']):
-            collection_kwargs.setdefault('linestyle',
-                                         rc_params['grid.linestyle'])
-        if not any(x in collection_kwargs.keys() for x in ['lw', 'linewidth']):
-            collection_kwargs.setdefault('linewidth',
-                                         rc_params['grid.linewidth'])
+        # XXX doesn't gracefully handle lw vs linewidth aliases...
+        collection_kwargs.setdefault('color', rc_params['grid.color'])
+        collection_kwargs.setdefault('linestyle', rc_params['grid.linestyle'])
+        collection_kwargs.setdefault('linewidth', rc_params['grid.linewidth'])
 
         # Meridians
         lat_min, lat_max = lat_lim
@@ -731,30 +795,30 @@ class Gridliner:
                 'coord_type': "x",
                 'opcmp': operator.le,
                 'opval': max,
-                },
+            },
             'bottom': {
                 'index': 1,
                 'coord_type': "y",
                 'opcmp': operator.le,
                 'opval': max,
-                },
+            },
             'right': {
                 'index': 0,
                 'coord_type': "x",
                 'opcmp': operator.ge,
                 'opval': min,
-                },
+            },
             'top': {
                 'index': 1,
                 'coord_type': "y",
                 'opcmp': operator.ge,
                 'opval': min,
-                },
+            },
         }
         for side, specs in spines_specs.items():
             bbox = self.axes.spines[side].get_window_extent(renderer)
             specs['coords'] = [
-                getattr(bbox, specs['coord_type']+idx) for idx in "01"]
+                getattr(bbox, specs['coord_type'] + idx) for idx in "01"]
 
         def remove_path_dupes(path):
             """
@@ -828,9 +892,9 @@ class Gridliner:
                             continue
                         n2 = min(len(intersection), 3)
                         tails = [[(pt.x, pt.y)
-                                  for pt in intersection[:n2:n2-1]]]
+                                  for pt in intersection[:n2:n2 - 1]]]
                         heads = [[(pt.x, pt.y)
-                                  for pt in intersection[-1:-n2-1:-n2+1]]]
+                                  for pt in intersection[-1:-n2 - 1:-n2 + 1]]]
                     elif isinstance(intersection, (sgeom.LineString,
                                                    sgeom.MultiLineString)):
                         if isinstance(intersection, sgeom.LineString):
@@ -851,8 +915,8 @@ class Gridliner:
                             if len(inter.coords) < 2:
                                 continue
                             n2 = min(len(inter.coords), 8)
-                            tails.append(inter.coords[:n2:n2-1])
-                            heads.append(inter.coords[-1:-n2-1:-n2+1])
+                            tails.append(inter.coords[:n2:n2 - 1])
+                            heads.append(inter.coords[-1:-n2 - 1:-n2 + 1])
                         if not tails:
                             continue
                     elif isinstance(intersection,
@@ -884,7 +948,7 @@ class Gridliner:
                         heads = [xy]
                     else:
                         warnings.warn(
-                            'Unsupported intersection geometry for gridline '
+                            'Unsupported intersection geometry for gridline ' +
                             'labels: ' + intersection.__class__.__name__)
                         continue
                     del intersection
@@ -902,8 +966,8 @@ class Gridliner:
                                 loc = "inline"
                             else:
                                 x1, y1 = pt1
-                                segment_angle = (np.arctan2(y0 - y1, x0 - x1)
-                                                 * 180 / np.pi)
+                                segment_angle = (np.arctan2(y0 - y1, x0 - x1) *
+                                                 180 / np.pi)
                                 loc = self._get_loc_from_spine_intersection(
                                     spines_specs, xylabel, x0, y0)
                                 if not self._draw_this_label(xylabel, loc):
@@ -916,7 +980,7 @@ class Gridliner:
 
                             # Get x and y in data coords
                             pt0 = self.axes.transData.inverted(
-                                ).transform_point(pt0)
+                            ).transform_point(pt0)
                             if y_inline:
                                 # 180 degrees isn't formatted with a
                                 # suffix and adds confusion if it's inline
@@ -971,8 +1035,8 @@ class Gridliner:
                                 # works on text, this
                                 # clipping can be left to it.
                                 center = artist.get_transform(
-                                    ).transform_point(
-                                        artist.get_position())
+                                ).transform_point(
+                                    artist.get_position())
                                 visible = (map_boundary_path
                                            .contains_point(center))
                             else:
@@ -1123,14 +1187,14 @@ class Gridliner:
                     not isinstance(self.rotate_labels, bool)):
                 angle = self.rotate_labels
             kw = {'rotation': angle, 'rotation_mode': 'anchor', 'va': 'center'}
-            if (angle < 90+self.offset_angle and
+            if (angle < 90 + self.offset_angle and
                     angle > -90 + self.offset_angle):
                 kw.update(ha="left", rotation=angle)
             else:
-                kw.update(ha="right", rotation=angle+180)
+                kw.update(ha="right", rotation=angle + 180)
 
         # Inside labels
-        if getattr(self, xylabel+"padding") < 0:
+        if getattr(self, xylabel + "padding") < 0:
             if "ha" in kw:
                 if kw["ha"] == "left":
                     kw["ha"] = "right"
