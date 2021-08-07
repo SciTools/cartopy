@@ -364,10 +364,10 @@ class Gridliner(Gridline_Base):
         self.top_labels = draw_labels
 
         #: Whether to draw labels near the geographic limits of the map.
-        
+
         if isinstance(draw_labels, bool):
             self.geo_labels = False
-        else:    
+        else:
             self.geo_labels = value if 'geo' in draw_labels else False
 
         for loc in 'top', 'bottom', 'left', 'right', 'geo':
