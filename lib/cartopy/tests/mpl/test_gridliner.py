@@ -432,8 +432,9 @@ def test_gridliner_line_limits():
          {'left': [],
           'right': [],
           'top': ['50°N'],
-          'bottom': []}),
-     ])
+          'bottom': []})
+    ]
+)
 def test_gridliner_draw_labels_param(draw_labels, result):
     plt.figure()
     lambert_crs = ccrs.LambertConformal(central_longitude=105)
@@ -445,7 +446,7 @@ def test_gridliner_draw_labels_param(draw_labels, result):
     gl.ylocator = mticker.FixedLocator([40, 50])
     res = {}
     for loc in 'left', 'right', 'top', 'bottom':
-        artists = getattr(gl, loc+'_label_artists')
+        artists = getattr(gl, loc + '_label_artists')
         res[loc] = [a.get_text() for a in artists if a.get_visible()]
 
 
