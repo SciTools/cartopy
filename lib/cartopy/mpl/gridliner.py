@@ -666,10 +666,15 @@ class Gridliner(Gridline_Base):
             collection_kwargs = {}
         collection_kwargs = collection_kwargs.copy()
         collection_kwargs['transform'] = transform
-        # XXX doesn't gracefully handle lw vs linewidth aliases...
-        collection_kwargs.setdefault('color', rc_params['grid.color'])
-        collection_kwargs.setdefault('linestyle', rc_params['grid.linestyle'])
-        collection_kwargs.setdefault('linewidth', rc_params['grid.linewidth'])
+        if not any(x in collection_kwargs.keys() for x in ['c', 'color']):
+            collection_kwargs.setdefault('color',
+                                         rc_params['grid.color'])
+        if not any(x in collection_kwargs.keys() for x in ['ls', 'linestyle']):
+            collection_kwargs.setdefault('linestyle',
+                                         rc_params['grid.linestyle'])
+        if not any(x in collection_kwargs.keys() for x in ['lw', 'linewidth']):
+            collection_kwargs.setdefault('linewidth',
+                                         rc_params['grid.linewidth'])
 
         # Meridians
         lat_min, lat_max = lat_lim

@@ -5,7 +5,6 @@ Using cartopy with matplotlib
     :hidden:
 
     advanced_plotting.rst
-    geoaxes.rst
     gridliner.rst
 
 

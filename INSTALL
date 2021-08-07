@@ -1,5 +1,5 @@
-Installing Cartopy
-==================
+Installation
+============
 
 Conda pre-built binaries
 ------------------------
@@ -62,12 +62,12 @@ For macOS, the required dependencies can be installed in the following way::
     pip3 install shapely --no-binary shapely
 
 Still on macOS, make sure you have installed pkg-config and set the
-`PKG_CONFIG_PATH` environment variable as follows
+`PKG_CONFIG_PATH` environment variable as follows::
 
     brew install pkg-config
     export PKG_CONFIG_PATH=/usr/local/bin/pkgconfig
 
-Then you can install cartopy using
+Then you can install cartopy using::
 
     pip3 install cartopy
 

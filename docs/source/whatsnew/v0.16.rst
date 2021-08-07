@@ -1,0 +1,85 @@
+Version 0.16 (February 21, 2018)
+================================
+
+Features
+--------
+
+* We are very pleased to announce that Ryan May has been added to the cartopy
+  core development team. Ryan (@dopplershift) brings a wealth of experience,
+  and has already made significant contributions to the Matplotlib interface,
+  extended projections, and helped modernise the development infrastructure.
+
+* The :class:`~cartopy.crs.Gnomonic` projection was brought up-to-date to
+  include the ``central_longitude`` argument. (:pull:`855`)
+
+* Ryan May improved the formulation of the boundary ellipse for the
+  :class:`~cartopy.crs.Geostationary` projection and added the
+  ``sweep_angle_axis`` keyword argument. (:pull:`890`, :pull:`897`)
+
+* Elliott Sales de Andrade made a number of micro-optimisations to the
+  Matplotlib interface, fixed a number of documentation issues with
+  Python 3 and added Matplotlib 2.0 & 2.1 compatibility. (:pull:`886`,
+  :pull:`901`, :pull:`780`, :pull:`773`, :pull:`977`)
+
+* Tick padding was added to the gridliner.
+  :data:`cartopy.mpl.gridliner.Gridliner.xpadding` and
+  :data:`~cartopy.mpl.gridliner.Gridliner.ypadding` relate. (:pull:`783`)
+
+* Ryan May added the :meth:`~cartopy.feature.NaturalEarthFeature.with_scale`
+  method to the NaturalEarthFeature class.
+  For example, it is now possible to access higher resolution land features
+  with ``cartopy.feature.LAND.with_scale('50m')``. In addition to this,
+  :data:`cartopy.feature.STATES` was added to easily access administrative
+  area boundaries that were previously only accessible by manually
+  constructing :class:`~cartopy.feature.NaturalEarthFeature` instances
+  (as is done in the
+  :ref:`sphx_glr_gallery_lines_and_polygons_feature_creation.py` example).
+  (:pull:`898`)
+
+* Daryl Herzmann and Robert Redl improved cartopy's internal conversion
+  between Shapely objects and Matplotlib Paths. (:pull:`885` & :pull:`1021`)
+
+* Åsmund Steen Skjæveland fixed :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot`
+  to use the documented units of kilometres, where before it had been using
+  metres. (:pull:`904`)
+
+* Andrew Dawson wrote a new tutorial for the user guide:
+  :ref:`understanding_transform`. (:pull:`914`)
+
+* Daniel Kirkham and Daryl Herzmann made significant improvements to the
+  stability of polygon transformation. The changes reduce the frequency
+  of messages such as
+  ``Unidentified problem with geometry, linestring being re-added`` and
+  ``Self-intersection at or near point <X> <Y>`` occurring.
+  (:pull:`974` and :pull:`903`)
+
+* Chris Holdgraf and Corinne Bosley worked collaboratively to bring
+  `sphinx-gallery <https://github.com/sphinx-gallery/sphinx-gallery>`_ to the
+  cartopy docs. (:pull:`969`)
+
+* Ray Bell neatened up many of the examples to explicitly pass the coordinate
+  system when calling :meth:`~cartopy.mpl.geoaxes.GeoAxes.set_extent`.
+  (:pull:`975`)
+
+* Ryan May changed the default zorder of LAND and OCEAN to -1, thus fixing
+  an issue with LAND/OCEAN appearing above some data elements such as
+  vectors. (:pull:`916`)
+
+* Kevin Donkers added the 60 UTM projections example to the gallery
+  in :pull:`954`:
+
+.. figure:: ../gallery/miscellanea/images/sphx_glr_utm_all_zones_001.png
+   :target: ../gallery/miscellanea/utm_all_zones.html
+   :align: center
+
+* Andrey Kiselev added support for reading shapes with a third (Z) dimension.
+  (:pull:`958`)
+
+* Corinne Bosley standardised the docstring format for improved readability
+  and visual consistency. (:pull:`987`)
+
+* Cartopy now no longer enables :func:`shapely.speedups` at cartopy import
+  time. (:pull:`990`)
+
+* Mahé Perrette and Ryan May collaborated to improve the
+  :class:`~cartopy.crs.Stereographic` projection. (:pull:`929`)

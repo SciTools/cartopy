@@ -5,6 +5,15 @@ Citing cartopy
 
 If cartopy played an important part in your research then please add us to your reference list by using one of the recommendations below.
 
+
+*********************************
+Latest release DOI through Zenodo
+*********************************
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1182735.svg
+   :target: https://doi.org/10.5281/zenodo.1182735
+
+
 ************
 BibTeX entry 
 ************

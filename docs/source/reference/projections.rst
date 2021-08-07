@@ -6,9 +6,6 @@
 
 .. _cartopy_projections:
 
-Cartopy projection list
-=======================
-
 PlateCarree
 -----------
 

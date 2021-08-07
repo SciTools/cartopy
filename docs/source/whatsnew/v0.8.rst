@@ -1,0 +1,11 @@
+Version 0.8 (June 3, 2013)
+==========================
+
+* Bill Little added support for the OSNI projection and enhanced the image nest capability. (:pull:`263`)
+* :class:`cartopy.io.img_nest.Img` has been extended to include a
+  :func:`cartopy.io.img_nest.Img.from_world_file` static method for
+  easier loading of georeferenced images.
+* Phil Elson added a major performance improvement when plotting data from PlateCarree onto a
+  PlateCarree map. (:pull:`260`)
+* Byron Blay and Richard Hattersley added a :class:`cartopy.crs.Globe` class to encapsulate ellipsoid and optionally
+  datum information for CRSs. Globe handling in many projections, including Stereographic, has been added.

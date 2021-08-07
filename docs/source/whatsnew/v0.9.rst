@@ -1,0 +1,33 @@
+Version 0.9 (September 12, 2013)
+================================
+
+* We are very pleased to announce that Bill Little was added to the cartopy
+  core development team. Bill has made some excellent contributions to cartopy,
+  and `his presentation at EuroScipy'13 on
+  "Iris & Cartopy" <https://www.euroscipy.org/2013/schedule/presentation/35/>`_
+  was voted best talk of the conference.
+* Other talks and tutorials during this release cycle include Phil Elson's `talk at SciPy'13
+  (with video) <https://conference.scipy.org/scipy2013/presentation_detail.php?id=132>`_,
+  `Thomas Lecocq's tutorial at EuroSciPy
+  <https://www.euroscipy.org/2013/schedule/presentation/27/>`_
+  and a forthcoming `talk at FOSS4G <http://2013.foss4g.org/conf/programme/presentations/29/>`_.
+* Christoph Gohlke updated cartopy to support Windows 7.
+* The Plate Carree projection was updated to fully handle arbitrary globe definitions.
+* Peter Killick updated the Mercator class' default globe to WGS84. His refactor paved the way
+  for some follow on work to fully implement the Google Spherical Mercator (EPSG:3857) projection.
+
+
+    .. figure:: ../gallery/scalar_data/images/sphx_glr_eyja_volcano_001.png
+       :target: ../gallery/scalar_data/eyja_volcano.html
+       :align: center
+       :scale: 70
+
+* The TransverseMercator class saw a tidy up to include several common arguments (:pull:`pull request <309>`)
+* Bill Little added the Geostationary projection to allow geolocation of satellite imagery.
+
+  .. figure:: ../gallery/scalar_data/images/sphx_glr_geostationary_001.png
+     :target: ../gallery/scalar_data/geostationary.html
+     :align: center
+     :scale: 70
+
+* Byron Blay added the :class:`Lambert conformal conic projection <cartopy.crs.LambertConformal>`.
