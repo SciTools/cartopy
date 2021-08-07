@@ -156,9 +156,6 @@ class TestAzimuthalEquidistant:
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20038296.88254529, 20038296.88254529], decimal=6)
         assert_almost_equal(np.array(aeqd.y_limits),
-                            # TODO: This is wrong. Globe.semiminor_axis does
-                            # not account for flattening.
-                            # [-19970827.86969727, 19970827.86969727]
                             [-19970827.86969727, 19970827.86969727], decimal=6)
 
         result = aeqd.transform_point(5.0, 80.0, geodetic)
