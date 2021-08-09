@@ -32,7 +32,7 @@ TEST_PROJS = [
     ccrs.Robinson,
     ccrs.Sinusoidal,
     ccrs.Stereographic,
-    ccrs.InterruptedGoodeHomolosine,
+    (ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
     (ccrs.RotatedPole,
      dict(pole_longitude=180.0,
           pole_latitude=36.0,
