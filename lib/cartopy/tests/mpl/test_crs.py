@@ -13,6 +13,27 @@ from cartopy.tests.mpl import ImageTesting
 
 
 @pytest.mark.natural_earth
+@ImageTesting(["igh_land"])
+def test_igh_land():
+    crs = ccrs.InterruptedGoodeHomolosine(emphasis="land")
+    ax = plt.axes(projection=crs)
+    ax.coastlines()
+    ax.gridlines()
+
+
+@pytest.mark.skipif(ccrs.PROJ4_VERSION < (7, 1, 0), reason="Proj is too old.")
+@pytest.mark.natural_earth
+@ImageTesting(["igh_ocean"])
+def test_igh_ocean():
+    crs = ccrs.InterruptedGoodeHomolosine(
+        central_longitude=-160, emphasis="ocean"
+    )
+    ax = plt.axes(projection=crs)
+    ax.coastlines()
+    ax.gridlines()
+
+
+@pytest.mark.natural_earth
 @ImageTesting(['lambert_conformal_south'])
 def test_lambert_south():
     # Reference image: https://www.icsm.gov.au/mapping/map_projections.html

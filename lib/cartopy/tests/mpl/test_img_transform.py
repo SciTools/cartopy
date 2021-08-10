@@ -96,7 +96,7 @@ def test_regrid_image():
     # Target grid
     target_nx = 300
     target_ny = 300
-    target_proj = ccrs.InterruptedGoodeHomolosine()
+    target_proj = ccrs.InterruptedGoodeHomolosine(emphasis='land')
     target_x, target_y, target_extent = im_trans.mesh_projection(target_proj,
                                                                  target_nx,
                                                                  target_ny)
