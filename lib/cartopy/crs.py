@@ -1052,7 +1052,7 @@ class Mercator(Projection):
         self._x_limits = tuple(limits[..., 0])
         self._y_limits = tuple(limits[..., 1])
         self.threshold = min(np.diff(self.x_limits)[0] / 720,
-                              np.diff(self.y_limits)[0] / 360)
+                             np.diff(self.y_limits)[0] / 360)
 
     def __eq__(self, other):
         res = super().__eq__(other)
@@ -1310,7 +1310,6 @@ class Miller(_RectangularProjection):
         proj4_params = [('proj', 'mill'), ('lon_0', central_longitude)]
         # See Snyder, 1987. Eqs (11-1) and (11-2) substituting maximums of
         # (lambda-lambda0)=180 and phi=90 to get limits.
-        self.threshold = 0.5
         super().__init__(proj4_params, a * np.pi, a * 2.303412543376391,
                          globe=globe)
 
