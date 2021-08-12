@@ -186,6 +186,16 @@ class TestCRS:
         assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
         assert_arr_almost_eq(footy_pt, (155657, 193479), decimal=0)
 
+    def test_globe_defaults(self):
+        """Regression test for #564"""
+        default_globe = ccrs.Globe()
+        assert default_globe.ellipse == 'WGS84'
+
+        eccentric_globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500)
+        assert not eccentric_globe.ellipse
+        assert eccentric_globe.semimajor_axis == 1000
+        assert eccentric_globe.semiminor_axis == 500
+
     def test_project_point(self):
         point = sgeom.Point([0, 45])
         multi_point = sgeom.MultiPoint([point, sgeom.Point([180, 45])])

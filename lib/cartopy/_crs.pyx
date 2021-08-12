@@ -117,7 +117,7 @@ class Globe(object):
     Define an ellipsoid and, optionally, how to relate it to the real world.
 
     """
-    def __init__(self, datum=None, ellipse='WGS84',
+    def __init__(self, datum=None, ellipse=None,
                  semimajor_axis=None, semiminor_axis=None,
                  flattening=None, inverse_flattening=None,
                  towgs84=None, nadgrids=None):
@@ -127,7 +127,7 @@ class Globe(object):
         datum
             Proj "datum" definition. Defaults to None.
         ellipse
-            Proj "ellps" definition. Defaults to 'WGS84'.
+            Proj "ellps" definition. Defaults to 'WGS84' if no arguments given.
         semimajor_axis
             Semimajor axis of the spheroid / ellipsoid.  Defaults to None.
         semiminor_axis
@@ -142,8 +142,13 @@ class Globe(object):
             Passed through to the Proj definition.  Defaults to None.
 
         """
+        args = (datum, ellipse, semimajor_axis, semiminor_axis,
+                flattening, inverse_flattening, towgs84, nadgrids)
+        args_defaults = zip(args, self.__init__.__defaults__)
+        all_defaults = all(arg == default for arg, default in args_defaults)
+
         self.datum = datum
-        self.ellipse = ellipse
+        self.ellipse = 'WGS84' if all_defaults else ellipse
         self.semimajor_axis = semimajor_axis
         self.semiminor_axis = semiminor_axis
         self.flattening = flattening
