@@ -689,6 +689,8 @@ class Projection(CRS, metaclass=ABCMeta):
             x = points[:, 0]
             y = points[:, 1]
             self.bounds = (x.min(), x.max(), y.min(), y.max())
+            x0, x1, y0, y1 = self.bounds
+            self.threshold = min(x1 - x0, y1 - y0) / 100.
 
     @property
     def boundary(self):
@@ -711,13 +713,6 @@ class Projection(CRS, metaclass=ABCMeta):
             raise NotImplementedError
         x0, x1, y0, y1 = self.bounds
         return (y0, y1)
-
-    @property
-    def threshold(self):
-        if self.bounds is None:
-            raise NotImplementedError
-        x0, x1, y0, y1 = self.bounds
-        return min(x1 - x0, y1 - y0) / 100.
 
     @property
     def threshold(self):
