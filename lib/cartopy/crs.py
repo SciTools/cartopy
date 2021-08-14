@@ -2537,8 +2537,8 @@ class InterruptedGoodeHomolosine(Projection):
             super().__init__(proj4_params, globe=globe)
 
         elif emphasis == 'ocean':
-            if PROJ4_VERSION < (7, 1, 0):
-                _proj_ver = '.'.join(str(v) for v in PROJ4_VERSION)
+            if PROJ_VERSION < (7, 1, 0):
+                _proj_ver = '.'.join(str(v) for v in PROJ_VERSION)
                 raise ValueError('The Interrupted Goode Homolosine ocean '
                                  'projection requires Proj version 7.1.0, '
                                  'but you are using ' + _proj_ver)

@@ -21,7 +21,7 @@ def test_igh_land():
     ax.gridlines()
 
 
-@pytest.mark.skipif(ccrs.PROJ4_VERSION < (7, 1, 0), reason="Proj is too old.")
+@pytest.mark.skipif(ccrs.PROJ_VERSION < (7, 1, 0), reason="Proj is too old.")
 @pytest.mark.natural_earth
 @ImageTesting(["igh_ocean"])
 def test_igh_ocean():
