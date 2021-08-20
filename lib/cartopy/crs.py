@@ -2709,17 +2709,18 @@ class Geostationary(_Satellite):
 
         # TODO: Let the globe return the semimajor axis always.
         a = float(self.ellipsoid.semi_major_metre or WGS84_SEMIMAJOR_AXIS)
+        b = float(self.ellipsoid.semi_minor_metre or WGS84_SEMIMINOR_AXIS)
         h = float(satellite_height)
 
-        # These are only exact for a spherical Earth, owing to assuming a is
-        # constant. Handling elliptical would be much harder for this.
-        sin_max_th = a / (a + h)
-        tan_max_th = a / np.sqrt((a + h) ** 2 - a ** 2)
+        t = np.linspace(0, -2 * np.pi, 91)  # Clockwise boundary.
+        th = np.arctan(a / b * np.tan(t))
+        r = np.hypot(a * np.cos(th), b * np.sin(th))
+        sin_max_th = r / (a + h)
+        tan_max_th = r / np.sqrt((a + h) ** 2 - r ** 2)
 
         # Using Napier's rules for right spherical triangles
         # See R2 and R6 (x and y coords are h * b and h * a, respectively):
         # https://en.wikipedia.org/wiki/Spherical_trigonometry
-        t = np.linspace(0, -2 * np.pi, 61)  # Clockwise boundary.
         coords = np.vstack([np.arctan(tan_max_th * np.cos(t)),
                             np.arcsin(sin_max_th * np.sin(t))])
         coords *= h
