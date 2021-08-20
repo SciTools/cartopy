@@ -2683,7 +2683,7 @@ class Geostationary(_Satellite):
         central_longitude: float, optional
             The central longitude. Defaults to 0.
         satellite_height: float, optional
-            The height of the satellite. Defaults to 35785831 meters
+            The height of the satellite. Defaults to 35785831 metres
             (true geostationary orbit).
         false_easting:
             X offset from planar origin in metres. Defaults to 0.
