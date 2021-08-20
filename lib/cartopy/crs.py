@@ -2712,17 +2712,39 @@ class Geostationary(_Satellite):
         b = float(self.ellipsoid.semi_minor_metre or WGS84_SEMIMINOR_AXIS)
         h = float(satellite_height)
 
-        t = np.linspace(0, -2 * np.pi, 91)  # Clockwise boundary.
-        th = np.arctan(a / b * np.tan(t))
-        r = np.hypot(a * np.cos(th), b * np.sin(th))
-        sin_max_th = r / (a + h)
-        tan_max_th = r / np.sqrt((a + h) ** 2 - r ** 2)
+        # To find the bound we trace around where the line from the satellite
+        # is tangent to the surface. This involves trigonometry on a sphere
+        # centered at the satellite. The two scanning angles form two legs of
+        # triangle on this sphere--the hypotenuse "c" (angle arc) is controlled
+        # by distance from center to the edge of the ellipse being seen.
 
-        # Using Napier's rules for right spherical triangles
-        # See R2 and R6 (x and y coords are h * b and h * a, respectively):
-        # https://en.wikipedia.org/wiki/Spherical_trigonometry
-        coords = np.vstack([np.arctan(tan_max_th * np.cos(t)),
-                            np.arcsin(sin_max_th * np.sin(t))])
+        # This is one of the angles in the spherical triangle and used to
+        # rotate around and "scan" the boundary
+        angleA = np.linspace(0, -2 * np.pi, 91)  # Clockwise boundary.
+
+        # Convert the angle around center to the proper value to use in the
+        # parametric form of an ellipse
+        th = np.arctan(a / b * np.tan(angleA))
+
+        # Given the position on the ellipse, what is the distance from center
+        # to the ellipse--and thus the tangent point
+        r = np.hypot(a * np.cos(th), b * np.sin(th))
+
+        # Using this distance, solve for sin and tan of c in the triangle from
+        # the satellite, Earth center, and tangent point
+        center_dist = a + h
+        sin_c = r / center_dist
+        tan_c = r / np.sqrt(center_dist ** 2 - r ** 2)
+
+        # Using Napier's rules for right spherical triangles R2 and R6,
+        # (See https://en.wikipedia.org/wiki/Spherical_trigonometry), we can
+        # solve for arc angles b and a, which are our x and y scanning angles,
+        # respectively.
+        coords = np.vstack([np.arctan(np.cos(angleA) * tan_c),  # R6
+                            np.arcsin(np.sin(angleA) * sin_c)])  # R2
+
+        # Need to multiply scanning angles by satellite height to get to the
+        # actual native coordinates for the projection.
         coords *= h
         coords += np.array([[false_easting], [false_northing]])
         self._set_boundary(coords)
