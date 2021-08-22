@@ -13,6 +13,7 @@ In general, this should never be called manually, instead leaving the
 processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
 from __future__ import print_function
+from functools import lru_cache
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
@@ -559,6 +560,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
                 lines.new_line()
 
 
+@lru_cache(maxsize=4)
 def _interpolator(src_crs, dest_projection):
     # Get an Interpolator from the given CRS and projection.
     # Callers must hold a reference to these systems for the lifetime
