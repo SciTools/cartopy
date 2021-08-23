@@ -2729,12 +2729,24 @@ class Geostationary(_Satellite):
         # Given the position on the ellipse, what is the distance from center
         # to the ellipse--and thus the tangent point
         r = np.hypot(a * np.cos(th), b * np.sin(th))
+        sat_dist = a + h
 
-        # Using this distance, solve for sin and tan of c in the triangle from
-        # the satellite, Earth center, and tangent point
-        center_dist = a + h
-        sin_c = r / center_dist
-        tan_c = r / np.sqrt(center_dist ** 2 - r ** 2)
+        # Using this distance, solve for sin and tan of c in the triangle that
+        # includes the satellite, Earth center, and tangent point--we need to
+        # figure out the location of this tangent point on the elliptical
+        # cross-section through the Earth towards the satellite, where the
+        # major axis is a and the minor is r. With the ellipse centered on the
+        # Earth and the satellite on the y-axis (at y = a + h = sat_dist), the
+        # equation for an ellipse and some calculus gives us the tangent point
+        # (x0, y0) as:
+        # y0 = a**2 / sat_dist
+        # x0 = r * np.sqrt(1 - a**2 / sat_dist**2)
+        # which gives:
+        # sin_c = x0 / np.hypot(x0, sat_dist - y0)
+        # tan_c = x0 / (sat_dist - y0)
+        # A bit of algebra combines these to give directly:
+        sin_c = r / np.sqrt(sat_dist ** 2 - a ** 2 + r ** 2)
+        tan_c = r / np.sqrt(sat_dist ** 2 - a ** 2)
 
         # Using Napier's rules for right spherical triangles R2 and R6,
         # (See https://en.wikipedia.org/wiki/Spherical_trigonometry), we can
