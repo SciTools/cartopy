@@ -222,6 +222,13 @@ class CRS(_CRS):
             self.proj4_init = ' '.join(init_items) + ' +no_defs'
         super().__init__(self.proj4_init)
 
+    def __eq__(self, other):
+        if isinstance(other, CRS):
+            # Fast path Cartopy's CRS
+            return self.proj4_init == other.proj4_init
+        # For everything else, we let pyproj handle the comparison
+        return super().__eq__(other)
+
     def __hash__(self):
         """Hash the CRS based on its proj4_init string."""
         return hash(self.proj4_init)
