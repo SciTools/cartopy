@@ -223,9 +223,9 @@ class CRS(_CRS):
         super().__init__(self.proj4_init)
 
     def __eq__(self, other):
-        if isinstance(other, CRS):
+        if isinstance(other, CRS) and self.proj4_init == other.proj4_init:
             # Fast path Cartopy's CRS
-            return self.proj4_init == other.proj4_init
+            return True
         # For everything else, we let pyproj handle the comparison
         return super().__eq__(other)
 
