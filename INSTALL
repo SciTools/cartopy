@@ -90,8 +90,10 @@ Further information about the required dependencies can be found here:
 **pyshp** 2.0 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
-**PROJ** 4.9.0 or later (https://proj4.org/)
-    Cartographic Projections library.
+**PROJ** 8.0.0 or later (https://proj.org/).
+
+**pyproj** 3.0.0 or later (https://github.com/pyproj4/pyproj/)
+    Python interface to PROJ (cartographic projections and coordinate transformations library).
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
@@ -108,9 +110,6 @@ to install these optional dependencies.
 
 **Pillow** 1.7.8 or later (https://pypi.python.org/pypi/Pillow/2.3.0)
     A popular fork of PythonImagingLibrary.
-
-**pyepsg** 0.4.0 or later (https://github.com/rhattersley/pyepsg)
-    A simple Python interface to https://epsg.io
 
 **pykdtree** 1.2.2 or later (https://github.com/storpipfugl/pykdtree)
     A fast kd-tree implementation that is used for faster warping

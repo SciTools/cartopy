@@ -21,7 +21,7 @@ def test_igh_land():
     ax.gridlines()
 
 
-@pytest.mark.skipif(ccrs.PROJ4_VERSION < (7, 1, 0), reason="Proj is too old.")
+@pytest.mark.skipif(ccrs.PROJ_VERSION < (7, 1, 0), reason="Proj is too old.")
 @pytest.mark.natural_earth
 @ImageTesting(["igh_ocean"])
 def test_igh_ocean():
@@ -39,17 +39,6 @@ def test_lambert_south():
     # Reference image: https://www.icsm.gov.au/mapping/map_projections.html
     crs = ccrs.LambertConformal(central_longitude=140, cutoff=65,
                                 standard_parallels=(-30, -60))
-    ax = plt.axes(projection=crs)
-    ax.coastlines()
-    ax.gridlines()
-
-
-@pytest.mark.natural_earth
-@ImageTesting(['mercator_squashed'])
-def test_mercator_squashed():
-    globe = ccrs.Globe(semimajor_axis=10000, semiminor_axis=9000,
-                       ellipse=None)
-    crs = ccrs.Mercator(globe=globe, min_latitude=-40, max_latitude=40)
     ax = plt.axes(projection=crs)
     ax.coastlines()
     ax.gridlines()

@@ -46,10 +46,8 @@ def transform_fn_factory(target_crs, source_crs):
 
 def main():
     # Define the two coordinate systems with different ellipses.
-    wgs84 = ccrs.PlateCarree(globe=ccrs.Globe(datum='WGS84',
-                                              ellipse='WGS84'))
-    sphere = ccrs.PlateCarree(globe=ccrs.Globe(datum='WGS84',
-                                               ellipse='sphere'))
+    wgs84 = ccrs.PlateCarree(globe=ccrs.Globe(ellipse='WGS84'))
+    sphere = ccrs.PlateCarree(globe=ccrs.Globe(ellipse='sphere'))
 
     # Define the coordinate system of the data we have from Natural Earth and
     # acquire the 1:10m physical coastline shapefile.

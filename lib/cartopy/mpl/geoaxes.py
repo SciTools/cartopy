@@ -581,7 +581,9 @@ class GeoAxes(matplotlib.axes.Axes):
         A string formatted for the Matplotlib GUI status bar.
 
         """
-        lon, lat = ccrs.Geodetic().transform_point(x, y, self.projection)
+        lon, lat = self.projection.as_geodetic().transform_point(
+            x, y, self.projection,
+        )
 
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'
@@ -796,7 +798,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 warnings.warn('Approximating coordinate system {!r} with a '
                               'RotatedPole projection.'.format(crs))
             elif hasattr(crs, 'is_geodetic') and crs.is_geodetic():
-                proj = ccrs.PlateCarree(crs.globe)
+                proj = ccrs.PlateCarree(globe=crs.globe)
                 warnings.warn('Approximating coordinate system {!r} with the '
                               'PlateCarree projection.'.format(crs))
             else:

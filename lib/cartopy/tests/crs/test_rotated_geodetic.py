@@ -12,7 +12,8 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-common_other_args = {'o_proj=latlon', 'to_meter=0.0174532925199433'}
+common_other_args = {'o_proj=latlon', 'to_meter=111319.4907932736',
+                     'a=6378137.0'}
 
 
 def test_default():

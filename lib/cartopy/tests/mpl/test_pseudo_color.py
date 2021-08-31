@@ -14,13 +14,13 @@ import cartopy.crs as ccrs
 
 
 def test_pcolormesh_partially_masked():
-    data = np.ma.masked_all((30, 40))
+    data = np.ma.masked_all((40, 30))
     data[0:100] = 10
 
     # Check that a partially masked data array does trigger a pcolor call.
     with mock.patch('cartopy.mpl.geoaxes.GeoAxes.pcolor') as pcolor:
         ax = plt.axes(projection=ccrs.PlateCarree())
-        ax.pcolormesh(np.linspace(-90, 90, 40), np.linspace(0, 360, 30), data)
+        ax.pcolormesh(np.linspace(0, 360, 30), np.linspace(-90, 90, 40), data)
         assert pcolor.call_count == 1, ("pcolor should have been called "
                                         "exactly once.")
         plt.close()

@@ -19,9 +19,9 @@ class TestStereographic:
         check_proj_params('stere', stereo, other_args)
 
         assert_almost_equal(np.array(stereo.x_limits),
-                            [-5e7, 5e7], decimal=4)
+                            [-5e7, 5e7], decimal=3)
         assert_almost_equal(np.array(stereo.y_limits),
-                            [-5e7, 5e7], decimal=4)
+                            [-5e7, 5e7], decimal=3)
 
     def test_eccentric_globe(self):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,

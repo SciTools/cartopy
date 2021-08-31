@@ -13,6 +13,7 @@ In general, this should never be called manually, instead leaving the
 processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
 from __future__ import print_function
+from functools import lru_cache
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
@@ -48,18 +49,29 @@ cdef extern from "geos_c.h":
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
     cdef int GEOS_MULTILINESTRING
 
-from cartopy._crs cimport CRS
-from cartopy._crs import PROJ4_VERSION
-from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
-                      pj_strerrno, DEG_TO_RAD)
 from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
                                   geod_init, geod_geninverse,
                                   geod_lineinit, geod_genposition,
                                   GEOD_ARCMODE, GEOD_LATITUDE, GEOD_LONGITUDE)
 
+import re
+import warnings
 
 import shapely.geometry as sgeom
 from shapely.geos import lgeos
+from pyproj import Transformer, proj_version_str
+from pyproj.exceptions import ProjError
+
+
+_match = re.search(r"\d+\.\d+.\d+", proj_version_str)
+if _match is not None:
+    PROJ_VERSION = tuple(int(v) for v in _match.group().split('.'))
+    if PROJ_VERSION < (8, 0, 0):
+        warnings.warn(
+            "PROJ 8+ is required. Current version: {}".format(proj_version_str)
+        )
+else:
+    PROJ_VERSION = ()
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -160,58 +172,66 @@ cdef class LineAccumulator:
 cdef class Interpolator:
     cdef Point start
     cdef Point end
-    cdef projPJ src_proj
-    cdef projPJ dest_proj
+    cdef readonly transformer
     cdef double src_scale
     cdef double dest_scale
+    cdef bint to_180
 
     def __cinit__(self):
         self.src_scale = 1
         self.dest_scale = 1
+        self.to_180 = False
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
-        self.src_proj = src_proj
-        self.dest_proj = dest_proj
+    cdef void init(self, src_crs, dest_crs) except *:
+        self.transformer = Transformer.from_crs(src_crs, dest_crs, always_xy=True)
+        self.to_180 = (
+            self.transformer.name == "noop" and
+            src_crs.__class__.__name__ in ("PlateCarree", "RotatedPole")
+        )
 
     cdef void set_line(self, const Point &start, const Point &end):
         self.start = start
         self.end = end
 
-    cdef Point interpolate(self, double t):
-        raise NotImplementedError
+    cdef Point project(self, const Point &src_xy) except *:
+        cdef Point dest_xy
 
-    cdef Point project(self, const Point &point):
+        try:
+            xx, yy = self.transformer.transform(
+                src_xy.x * self.src_scale,
+                src_xy.y * self.src_scale,
+                errcheck=True
+            )
+        except ProjError as err:
+            msg = str(err).lower()
+            if (
+                "latitude" in msg or
+                "longitude" in msg or
+                "outside of projection domain" in msg or
+                "tolerance condition error" in msg
+            ):
+                xx = HUGE_VAL
+                yy = HUGE_VAL
+            else:
+                raise
+
+        if self.to_180 and xx > 180 and xx != HUGE_VAL:
+            xx = (((xx + 180) % 360) - 180)
+
+        dest_xy.x = xx * self.dest_scale
+        dest_xy.y = yy * self.dest_scale
+        return dest_xy
+
+    cdef Point interpolate(self, double t) except *:
         raise NotImplementedError
 
 
 cdef class CartesianInterpolator(Interpolator):
-    cdef Point interpolate(self, double t):
+    cdef Point interpolate(self, double t) except *:
         cdef Point xy
         xy.x = self.start.x + (self.end.x - self.start.x) * t
         xy.y = self.start.y + (self.end.y - self.start.y) * t
         return self.project(xy)
-
-    cdef Point project(self, const Point &src_xy):
-        cdef Point dest_xy
-        cdef projLP xy
-
-        xy.u = src_xy.x * self.src_scale
-        xy.v = src_xy.y * self.src_scale
-
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &xy.u, &xy.v, NULL)
-        if status in (-14, -20):
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            xy.u = xy.v = HUGE_VAL
-        elif status != 0:
-            raise Exception('pj_transform failed: %d\n%s' % (
-                status,
-                pj_strerrno(status)))
-
-        dest_xy.x = xy.u * self.dest_scale
-        dest_xy.y = xy.v * self.dest_scale
-        return dest_xy
 
 
 cdef class SphericalInterpolator(Interpolator):
@@ -219,14 +239,14 @@ cdef class SphericalInterpolator(Interpolator):
     cdef geod_geodesicline geod_line
     cdef double a13
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
-        self.src_proj = src_proj
-        self.dest_proj = dest_proj
+    cdef void init(self, src_crs, dest_crs) except *:
+        self.transformer = Transformer.from_crs(src_crs, dest_crs, always_xy=True)
 
-        cdef double major_axis
-        cdef double eccentricity_squared
-        pj_get_spheroid_defn(self.src_proj, &major_axis, &eccentricity_squared)
-        geod_init(&self.geod, major_axis, 1 - sqrt(1 - eccentricity_squared))
+        cdef double major_axis = src_crs.ellipsoid.semi_major_metre
+        cdef double flattening = 0
+        if src_crs.ellipsoid.inverse_flattening > 0:
+            flattening = 1 / src_crs.ellipsoid.inverse_flattening
+        geod_init(&self.geod, major_axis, flattening)
 
     cdef void set_line(self, const Point &start, const Point &end):
         cdef double azi1
@@ -236,7 +256,7 @@ cdef class SphericalInterpolator(Interpolator):
         geod_lineinit(&self.geod_line, &self.geod, start.y, start.x, azi1,
                       GEOD_LATITUDE | GEOD_LONGITUDE);
 
-    cdef Point interpolate(self, double t):
+    cdef Point interpolate(self, double t) except *:
         cdef Point lonlat
 
         geod_genposition(&self.geod_line, GEOD_ARCMODE, self.a13 * t,
@@ -244,28 +264,6 @@ cdef class SphericalInterpolator(Interpolator):
                          NULL)
 
         return self.project(lonlat)
-
-    cdef Point project(self, const Point &lonlat):
-        cdef Point xy
-        cdef projLP dest
-
-        dest.u = (lonlat.x * DEG_TO_RAD) * self.src_scale
-        dest.v = (lonlat.y * DEG_TO_RAD) * self.src_scale
-
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &dest.u, &dest.v, NULL)
-        if status in (-14, -20):
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            dest.u = dest.v = HUGE_VAL
-        elif status != 0:
-            raise Exception('pj_transform failed: %d\n%s' % (
-                status,
-                pj_strerrno(status)))
-
-        xy.x = dest.u * self.dest_scale
-        xy.y = dest.v * self.dest_scale
-        return xy
 
 
 cdef enum State:
@@ -301,7 +299,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
                             Interpolator interpolator, double threshold,
                             GEOSContextHandle_t handle,
                             const GEOSPreparedGeometry *gp_domain,
-                            bool inside):
+                            bool inside) except *:
     """
     Return whether the given line segment is suitable as an
     approximation of the projection of the source line.
@@ -428,7 +426,7 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
                  GEOSContextHandle_t handle,
                  const GEOSPreparedGeometry *gp_domain, const State &state,
                  Interpolator interpolator, double threshold,
-                 double &t_min, Point &p_min, double &t_max, Point &p_max):
+                 double &t_min, Point &p_min, double &t_max, Point &p_max) except *:
     cdef double t_current
     cdef Point p_current
     cdef bool valid
@@ -483,7 +481,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
                            unsigned int src_idx_from, unsigned int src_idx_to,
                            Interpolator interpolator,
                            const GEOSPreparedGeometry *gp_domain,
-                           double threshold, LineAccumulator lines):
+                           double threshold, LineAccumulator lines) except *:
     cdef Point p_current, p_min, p_max, p_end
     cdef double t_current, t_min, t_max
     cdef State state
@@ -562,7 +560,8 @@ cdef void _project_segment(GEOSContextHandle_t handle,
                 lines.new_line()
 
 
-cdef _interpolator(CRS src_crs, CRS dest_projection):
+@lru_cache(maxsize=4)
+def _interpolator(src_crs, dest_projection):
     # Get an Interpolator from the given CRS and projection.
     # Callers must hold a reference to these systems for the lifetime
     # of the interpolator. If they get garbage-collected while interpolator
@@ -573,8 +572,8 @@ cdef _interpolator(CRS src_crs, CRS dest_projection):
         interpolator = SphericalInterpolator()
     else:
         interpolator = CartesianInterpolator()
-    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
-    if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
+    interpolator.init(src_crs, dest_projection)
+    if (6, 1, 1) <= PROJ_VERSION < (6, 3, 0):
         # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
         # See https://github.com/OSGeo/proj#1782.
         lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
@@ -589,7 +588,7 @@ cdef _interpolator(CRS src_crs, CRS dest_projection):
     return interpolator
 
 
-def project_linear(geometry not None, CRS src_crs not None,
+def project_linear(geometry not None, src_crs not None,
                    dest_projection not None):
     """
     Project a geometry from one projection to another.

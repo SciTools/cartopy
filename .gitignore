@@ -53,6 +53,7 @@ benchmarks/envs/
 *.swp
 .ipynb_checkpoints/
 .idea/
+.vscode/
 
 # Operating system files
 \.DS_Store

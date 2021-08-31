@@ -54,7 +54,7 @@ TEST_PROJS = [
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner1'],
               # Robinson projection is slightly better in Proj 6+.
-              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+              tolerance=0.7 if ccrs.PROJ_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -129,9 +129,10 @@ def test_gridliner_specified_lines():
 if MPL_VERSION < "3":
     TOL = 15
 else:
-    TOL = 0.5
+    TOL = 3.1
 grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = TOL
-grid_label_inline_tol += 1.1
+grid_label_tol += 0.8
+grid_label_inline_tol += 1.6
 grid_label_image = 'gridliner_labels'
 grid_label_inline_image = 'gridliner_labels_inline'
 grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
@@ -217,7 +218,7 @@ def test_grid_labels():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'],
-              tolerance=grid_label_tol if ccrs.PROJ4_VERSION < (7, 1, 0)
+              tolerance=grid_label_tol if ccrs.PROJ_VERSION < (7, 1, 0)
               else 4)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
@@ -268,7 +269,7 @@ def test_grid_labels_inline():
         else:
             kwargs = {}
         ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
-        if (ccrs.PROJ4_VERSION[:2] == (5, 0) and
+        if (ccrs.PROJ_VERSION[:2] == (5, 0) and
                 proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
                          ccrs.Geostationary, ccrs.NearsidePerspective)):
             # Above projections are broken, so skip labels.
@@ -303,7 +304,7 @@ def test_grid_labels_inline_usa():
         except Exception:
             pass
         ax.set_title(proj, y=1.075)
-        if (ccrs.PROJ4_VERSION[:2] == (5, 0) and
+        if (ccrs.PROJ_VERSION[:2] == (5, 0) and
                 proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
                          ccrs.Geostationary, ccrs.NearsidePerspective)):
             # Above projections are broken, so skip labels.

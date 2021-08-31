@@ -20,13 +20,13 @@ _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
 # Increase tolerance if using older proj releases
-if ccrs.PROJ4_VERSION >= (6, 3, 1):
+if ccrs.PROJ_VERSION >= (6, 3, 1):
     _TRANSFORM_TOL = 7
-elif ccrs.PROJ4_VERSION >= (4, 9):
+elif ccrs.PROJ_VERSION >= (4, 9):
     _TRANSFORM_TOL = 0
 else:
     _TRANSFORM_TOL = -1
-_LIMIT_TOL = -1  # if ccrs.PROJ4_VERSION < (5, 2, 0) else 7
+_LIMIT_TOL = -1  # if ccrs.PROJ_VERSION < (5, 2, 0) else 7
 
 
 def test_default():

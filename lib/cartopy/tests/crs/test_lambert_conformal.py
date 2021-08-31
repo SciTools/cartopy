@@ -69,17 +69,17 @@ class Test_LambertConformal_standard_parallels:
     def test_single_spole(self):
         s_pole_crs = ccrs.LambertConformal(standard_parallels=[-1.])
         assert_array_almost_equal(s_pole_crs.x_limits,
-                                  (-19840440, 19840440.),
+                                  (-19939660, 19939660),
                                   decimal=0)
         assert_array_almost_equal(s_pole_crs.y_limits,
-                                  (-370239953, -8191953),
+                                  (-735590302, -8183795),
                                   decimal=0)
 
     def test_single_npole(self):
         n_pole_crs = ccrs.LambertConformal(standard_parallels=[1.])
         assert_array_almost_equal(n_pole_crs.x_limits,
-                                  (-20222156, 20222156),
+                                  (-20130569,  20130569),
                                   decimal=0)
         assert_array_almost_equal(n_pole_crs.y_limits,
-                                  (-8164817, 360848720),
+                                  (-8170229, 726200683),
                                   decimal=0)
