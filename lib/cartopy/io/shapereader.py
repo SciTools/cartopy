@@ -295,11 +295,10 @@ class NEShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'resolution', 'category', 'name')
 
-    # Define the NaturalEarth URL template. The natural earth website
-    # returns a 302 status if accessing directly, so we use the naciscdn
-    # URL directly.
-    _NE_URL_TEMPLATE = ('https://naciscdn.org/naturalearth/{resolution}'
-                        '/{category}/ne_{resolution}_{name}.zip')
+    # Define the NaturalEarth URL template. Shapefiles are hosted on AWS since
+    # 2021: https://github.com/nvkelso/natural-earth-vector/issues/445
+    _NE_URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/'
+                        '{resolution}_{category}/ne_{resolution}_{name}.zip')
 
     def __init__(self,
                  url_template=_NE_URL_TEMPLATE,
