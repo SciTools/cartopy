@@ -298,8 +298,8 @@ class NEShpDownloader(Downloader):
     # Define the NaturalEarth URL template. The natural earth website
     # returns a 302 status if accessing directly, so we use the naciscdn
     # URL directly.
-    _NE_URL_TEMPLATE = ('https://naciscdn.org/naturalearth/{resolution}'
-                        '/{category}/ne_{resolution}_{name}.zip')
+    _NE_URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/'
+                        '{resolution}_{category}/ne_{resolution}_{name}.zip')
 
     def __init__(self,
                  url_template=_NE_URL_TEMPLATE,
