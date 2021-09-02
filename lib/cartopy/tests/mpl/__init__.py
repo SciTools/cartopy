@@ -5,7 +5,7 @@
 # licensing details.
 
 import base64
-import distutils
+from distutils.version import LooseVersion
 import os
 import glob
 import shutil
@@ -18,8 +18,7 @@ import matplotlib.patches as mpatches
 from matplotlib.testing import setup as mpl_setup
 import matplotlib.testing.compare as mcompare
 
-
-MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
+MPL_VERSION = LooseVersion(mpl.__version__)
 
 
 class ImageTesting:
