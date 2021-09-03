@@ -25,8 +25,9 @@ from cartopy.io import Downloader, DownloadWarning
 ALL_SCALES = ('110m', '50m', '10m')
 
 # See https://github.com/SciTools/cartopy/pull/1833
-URL_TEMPLATE = "https://naturalearth.s3.amazonaws.com/{resolution}_{category}/ne_{resolution}_{name}.zip"
-SHP_NE_SPEC = ("shapefiles", "natural_earth")
+URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/{resolution}_'
+                '{category}/ne_{resolution}_{name}.zip')
+SHP_NE_SPEC = ('shapefiles', 'natural_earth')
 
 FEATURE_DEFN_GROUPS = {
     # Only need one GSHHS resolution because they *all* get downloaded
@@ -132,11 +133,12 @@ if __name__ == '__main__':
         config['repo_data_dir'] = config['data_dir']
     if args.no_warn:
         import warnings
-        warnings.filterwarnings("ignore", category=DownloadWarning)
+        warnings.filterwarnings('ignore', category=DownloadWarning)
 
     # Enforce use of stable AWS endpoint, regardless of cartopy version.
-    # In doing so, this allows users to download this script and execute it with
-    # any version of cartopy, thus taking advantage of the stable AWS endpoint.
+    # In doing so, this allows users to download this script and execute it
+    # with any version of cartopy, thus taking advantage of the stable AWS
+    # endpoint.
     # This removes the need to backport the associated fix
     # https://github.com/SciTools/cartopy/pull/1833.
     config['downloaders'][SHP_NE_SPEC].url_template = URL_TEMPLATE
