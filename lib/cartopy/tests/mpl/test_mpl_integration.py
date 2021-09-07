@@ -16,8 +16,12 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
+# This is due to a change in MPL 3.5 contour line paths changing
+# ever so slightly.
+contour_tol = 2.24
 @pytest.mark.natural_earth
-@ImageTesting(['global_contour_wrap'], style='mpl20')
+@ImageTesting(['global_contour_wrap'], style='mpl20',
+              tolerance=contour_tol)
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -27,7 +31,8 @@ def test_global_contour_wrap_new_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_contour_wrap'], style='mpl20')
+@ImageTesting(['global_contour_wrap'], style='mpl20',
+              tolerance=contour_tol)
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -209,7 +214,7 @@ def test_multiple_projections():
 @pytest.mark.skipif(ccrs.PROJ_VERSION < (5, 2, 0),
                     reason='Proj is too old.')
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections520'])
+@ImageTesting(['multiple_projections520'], tolerance=0.65)
 def test_multiple_projections_520():
     # Test projections added in Proj 5.2.0.
 
@@ -253,7 +258,7 @@ def test_cursor_values():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['natural_earth_interface'], tolerance=0.111)
+@ImageTesting(['natural_earth_interface'], tolerance=0.21)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 
@@ -376,7 +381,7 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global()  # make sure everything is visible
 
 
-tolerance = 1.39
+tolerance = 1.42
 if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0):
     tolerance += 1.4
 
