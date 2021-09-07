@@ -17,6 +17,7 @@ import weakref
 import numpy as np
 import matplotlib.artist
 import matplotlib.collections
+import matplotlib.colors
 
 import cartopy.mpl.patch as cpatch
 from .style import merge as style_merge, finalize as style_finalize
@@ -123,10 +124,21 @@ class FeatureArtist(matplotlib.artist.Artist):
         elif feature.kwargs.get('zorder') is not None:
             self.set_zorder(feature.kwargs['zorder'])
         else:
-            # The class attribute matplotlib.collections.PathCollection.zorder
-            # was removed after mpl v1.2.0, so the hard-coded value of 1 is
-            # used instead.
-            self.set_zorder(1)
+            style = style_finalize(style_merge(feature.kwargs, self._kwargs))
+            collection = matplotlib.collections.PathCollection
+            # Added in Matplotlib 3.4.
+            if hasattr(collection, '_get_default_facecolor'):
+                default_facecolor = collection._get_default_facecolor(None)
+            else:
+                import matplotlib as mpl
+                default_facecolor = mpl.rcParams['patch.facecolor']
+            feature_facecolor = style.get('facecolor', default_facecolor)
+            if matplotlib.colors.same_color(feature_facecolor, 'none'):
+                # Match zorder of matplotlib.collections.LineCollection.
+                self.set_zorder(2)
+            else:
+                # Match zorder of matplotlib.collections.PathCollection.
+                self.set_zorder(1)
 
         self._feature = feature
 
