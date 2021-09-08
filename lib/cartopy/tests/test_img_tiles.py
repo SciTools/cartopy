@@ -47,12 +47,11 @@ if ccrs.PROJ_VERSION == (5, 0, 0):
 
 
 def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
-    url = ('https://chart.googleapis.com/chart?chst=d_text_outline&'
-           'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
-           'Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')'
-           '|Zoom%20' + str(tile[2]) + '||||||______________________'
-           '______')
-    return url
+    x, y, z = tile
+    return (f'https://chart.googleapis.com/chart?chst=d_text_outline&'
+            f'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
+            f'Google:%20%20({x},{y})|Zoom%20{z}||||||'
+            f'____________________________')
 
 
 def test_google_tile_styles():
@@ -243,8 +242,8 @@ def test_ordnance_survey_tile_styles():
 
     ref_url = ('https://api2.ordnancesurvey.co.uk/'
                'mapping_api/v1/service/wmts?'
-               'key=None&height=256&width=256&tilematrixSet=EPSG%3A3857&'
-               'version=1.0.0&style=true&layer={layer}%203857&'
+               'key=None&height=256&width=256&version=1.0.0&'
+               'tilematrixSet=EPSG%3A3857&style=true&layer={layer}%203857&'
                'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
                'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
     tile = ["1", "2", "3"]

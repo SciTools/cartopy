@@ -198,8 +198,8 @@ class CRS(_CRS):
             a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
             b = globe.semiminor_axis or a
             if a != b or globe.ellipse is not None:
-                warnings.warn('The "{}" projection does not handle elliptical '
-                              'globes.'.format(self.__class__.__name__))
+                warnings.warn(f'The {self.__class__.__name__!r} projection '
+                              'does not handle elliptical globes.')
         self.globe = globe
         if isinstance(proj4_params, str):
             self._proj4_params = {}
@@ -212,13 +212,13 @@ class CRS(_CRS):
             for k, v in self._proj4_params.items():
                 if v is not None:
                     if isinstance(v, float):
-                        init_items.append('+{}={:.16}'.format(k, v))
+                        init_items.append(f'+{k}={v:.16}')
                     elif isinstance(v, np.float32):
-                        init_items.append('+{}={:.8}'.format(k, v))
+                        init_items.append(f'+{k}={v:.8}')
                     else:
-                        init_items.append('+{}={}'.format(k, v))
+                        init_items.append(f'+{k}={v}')
                 else:
-                    init_items.append('+{}'.format(k))
+                    init_items.append(f'+{k}')
             self.proj4_init = ' '.join(init_items) + ' +no_defs'
         super().__init__(self.proj4_init)
 
@@ -799,7 +799,7 @@ class Projection(CRS, metaclass=ABCMeta):
         # "Rewind" the buffer to the start and return it as an svg string.
         buf.seek(0)
         svg = buf.read()
-        return '{}<pre>{}</pre>'.format(svg, escape(object.__repr__(self)))
+        return f'{svg}<pre>{escape(object.__repr__(self))}</pre>'
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
@@ -833,8 +833,7 @@ class Projection(CRS, metaclass=ABCMeta):
         geom_type = geometry.geom_type
         method_name = self._method_map.get(geom_type)
         if not method_name:
-            raise ValueError('Unsupported geometry '
-                             'type {!r}'.format(geom_type))
+            raise ValueError(f'Unsupported geometry type {geom_type!r}')
         return getattr(self, method_name)(geometry, src_crs)
 
     def _project_point(self, point, src_crs):
@@ -893,7 +892,7 @@ class Projection(CRS, metaclass=ABCMeta):
                                               line_strings[j].coords[-1],
                                               atol=threshold):
                         if debug:
-                            print('Joining together {} and {}.'.format(i, j))
+                            print(f'Joining together {i} and {j}.')
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
                         combo = sgeom.LineString(last_coords + first_coords)
@@ -1066,7 +1065,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 mid_point = boundary.interpolate(mid_dist)
                 new_thing = _BoundaryPoint(mid_dist, True, mid_point)
                 if debug:
-                    print('Artificially insert boundary: {}'.format(new_thing))
+                    print(f'Artificially insert boundary: {new_thing}')
                 ind = edge_things.index(edge_thing)
                 edge_things.insert(ind, new_thing)
                 prev_thing = None
@@ -1089,7 +1088,7 @@ class Projection(CRS, metaclass=ABCMeta):
                     ax.plot(coords[:, 0], coords[:, 1])
                     ax.text(coords[0, 0], coords[0, 1], thing.data[0])
                     ax.text(coords[-1, 0], coords[-1, 1],
-                            '{}.'.format(thing.data[0]))
+                            f'{thing.data[0]}.')
 
         def filter_last(t):
             return t.kind or t.data[1] == 'first'
@@ -1106,7 +1105,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 sys.stdout.write('+')
                 sys.stdout.flush()
                 print()
-                print('Processing: {}, {}'.format(i, current_ls))
+                print(f'Processing: {i}, {current_ls}')
 
             added_linestring = set()
             while True:
@@ -1115,7 +1114,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 # the next point on the boundary.
                 d_last = boundary_distance(current_ls.coords[-1])
                 if debug:
-                    print('   d_last: {!r}'.format(d_last))
+                    print(f'   d_last: {d_last!r}')
                 next_thing = _find_first_ge(edge_things, d_last)
                 # Remove this boundary point from the edge.
                 edge_things.remove(next_thing)
@@ -1796,8 +1795,7 @@ class LambertConformal(Projection):
 
         if not 1 <= n_parallels <= 2:
             raise ValueError('1 or 2 standard parallels must be specified. '
-                             'Got {} ({})'.format(n_parallels,
-                                                  standard_parallels))
+                             f'Got {n_parallels} ({standard_parallels})')
 
         proj4_params.append(('lat_1', standard_parallels[0]))
         if n_parallels == 2:
@@ -2353,9 +2351,9 @@ class EqualEarth(_WarpedRectangularProjection):
 
         """
         if PROJ_VERSION < (5, 2, 0):
+            _proj_ver = '.'.join(str(v) for v in PROJ_VERSION)
             raise ValueError('The EqualEarth projection requires Proj version '
-                             '5.2.0, but you are using {}.'
-                             .format('.'.join(str(v) for v in PROJ_VERSION)))
+                             f'5.2.0, but you are using {_proj_ver}.')
 
         proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
         super().__init__(proj_params, central_longitude,
@@ -2549,7 +2547,7 @@ class InterruptedGoodeHomolosine(Projection):
                 _proj_ver = '.'.join(str(v) for v in PROJ_VERSION)
                 raise ValueError('The Interrupted Goode Homolosine ocean '
                                  'projection requires Proj version 7.1.0, '
-                                 'but you are using ' + _proj_ver)
+                                 f'but you are using {_proj_ver}')
             proj4_params = [('proj', 'igh_o'), ('lon_0', central_longitude)]
             super().__init__(proj4_params, globe=globe)
 
@@ -3120,9 +3118,7 @@ class _BoundaryPoint:
         self.data = data
 
     def __repr__(self):
-        return '_BoundaryPoint({!r}, {!r}, {})'.format(
-            self.distance, self.kind, self.data
-        )
+        return f'_BoundaryPoint({self.distance!r}, {self.kind!r}, {self.data})'
 
 
 def _find_first_ge(a, x):

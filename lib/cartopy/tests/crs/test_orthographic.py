@@ -77,7 +77,7 @@ def test_eccentric_globe():
 @pytest.mark.parametrize('lon', [-10, 0, 10])
 def test_central_params(lat, lon):
     ortho = ccrs.Orthographic(central_latitude=lat, central_longitude=lon)
-    other_args = {'lat_0={}'.format(lat), 'lon_0={}'.format(lon),
+    other_args = {f'lat_0={lat}', f'lon_0={lon}',
                   'a=6378137.0'}
     check_proj_params('ortho', ortho, other_args)
 

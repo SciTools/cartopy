@@ -272,7 +272,7 @@ def test_lonlatformatter_non_geoaxes(cls, letter):
     ax.xaxis.set_major_formatter(cls(degree_symbol='', dms=False))
     fig.canvas.draw()
     ticklabels = [t.get_text() for t in ax.get_xticklabels()]
-    assert ticklabels == ['{:g}{}'.format(v, letter) for v in ticks]
+    assert ticklabels == [f'{v:g}{letter}' for v in ticks]
     plt.close()
 
 

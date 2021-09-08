@@ -78,11 +78,10 @@ def add_cyclic_point(data, coord=None, axis=-1):
         if coord.ndim != 1:
             raise ValueError('The coordinate must be 1-dimensional.')
         if len(coord) != data.shape[axis]:
-            raise ValueError('The length of the coordinate does not match '
-                             'the size of the corresponding dimension of '
-                             'the data array: len(coord) = {}, '
-                             'data.shape[{}] = {}.'.format(
-                                 len(coord), axis, data.shape[axis]))
+            raise ValueError(f'The length of the coordinate does not match '
+                             f'the size of the corresponding dimension of '
+                             f'the data array: len(coord) = {len(coord)}, '
+                             f'data.shape[{axis}] = {data.shape[axis]}.')
         delta_coord = np.diff(coord)
         if not np.allclose(delta_coord, delta_coord[0]):
             raise ValueError('The coordinate must be equally spaced.')

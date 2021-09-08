@@ -102,9 +102,8 @@ class InterProjectionTransform(mtransforms.Transform):
         mtransforms.Transform.__init__(self)
 
     def __repr__(self):
-        return ('< {!s} {!s} -> {!s} >'.format(self.__class__.__name__,
-                                               self.source_projection,
-                                               self.target_projection))
+        return (f'< {self.__class__.__name__!s} {self.source_projection!s} '
+                f'-> {self.target_projection!s} >')
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -313,9 +312,9 @@ def _add_transform(func):
         if (func.__name__ in non_spherical_funcs and
                 isinstance(transform, ccrs.CRS) and
                 not isinstance(transform, ccrs.Projection)):
-            raise ValueError('Invalid transform: Spherical {} '
+            raise ValueError(f'Invalid transform: Spherical {func.__name__} '
                              'is not supported - consider using '
-                             'PlateCarree/RotatedPole.'.format(func.__name__))
+                             'PlateCarree/RotatedPole.')
 
         kwargs['transform'] = transform
         return func(self, *args, **kwargs)
@@ -588,8 +587,10 @@ class GeoAxes(matplotlib.axes.Axes):
         ns = 'N' if lat >= 0.0 else 'S'
         ew = 'E' if lon >= 0.0 else 'W'
 
-        return u'%.4g, %.4g (%f\u00b0%s, %f\u00b0%s)' % (x, y, abs(lat),
-                                                         ns, abs(lon), ew)
+        return (
+            f'{x:.4g}, {y:.4g} '
+            f'({abs(lat):f}\u00b0{ns}, {abs(lon):f}\u00b0{ew})'
+        )
 
     def coastlines(self, resolution='auto', color='black', **kwargs):
         """
@@ -795,15 +796,15 @@ class GeoAxes(matplotlib.axes.Axes):
             if isinstance(crs, ccrs.RotatedGeodetic):
                 proj = ccrs.RotatedPole(crs.proj4_params['lon_0'] - 180,
                                         crs.proj4_params['o_lat_p'])
-                warnings.warn('Approximating coordinate system {!r} with a '
-                              'RotatedPole projection.'.format(crs))
+                warnings.warn(f'Approximating coordinate system {crs!r} with '
+                              'a RotatedPole projection.')
             elif hasattr(crs, 'is_geodetic') and crs.is_geodetic():
                 proj = ccrs.PlateCarree(globe=crs.globe)
-                warnings.warn('Approximating coordinate system {!r} with the '
-                              'PlateCarree projection.'.format(crs))
+                warnings.warn(f'Approximating coordinate system {crs!r} with '
+                              'the PlateCarree projection.')
             else:
                 raise ValueError('Cannot determine extent in'
-                                 ' coordinate system {!r}'.format(crs))
+                                 f' coordinate system {crs!r}')
 
         # Calculate intersection with boundary and project if necessary.
         boundary_poly = sgeom.Polygon(self.projection.boundary)
@@ -865,12 +866,11 @@ class GeoAxes(matplotlib.axes.Axes):
             # the projection extents, so try and give a better error message.
             x1, y1, x2, y2 = projected.bounds
         except ValueError:
-            msg = ('Failed to determine the required bounds in projection '
-                   'coordinates. Check that the values provided are within '
-                   'the valid range (x_limits=[{xlim[0]}, {xlim[1]}], '
-                   'y_limits=[{ylim[0]}, {ylim[1]}]).')
-            raise ValueError(msg.format(xlim=self.projection.x_limits,
-                                        ylim=self.projection.y_limits))
+            raise ValueError(
+                'Failed to determine the required bounds in projection '
+                'coordinates. Check that the values provided are within the '
+                f'valid range (x_limits={self.projection.x_limits}, '
+                f'y_limits={self.projection.y_limits}).')
 
         self.set_xlim([x1, x2])
         self.set_ylim([y1, y2])
@@ -1076,9 +1076,10 @@ class GeoAxes(matplotlib.axes.Axes):
         try:
             fname = _USER_BG_IMGS[name][resolution]
         except KeyError:
-            msg = ('Image "{}" and resolution "{}" are not present in '
-                   'the user background image metadata in directory "{}"')
-            raise ValueError(msg.format(name, resolution, bgdir))
+            raise ValueError(
+                f'Image {name!r} and resolution {resolution!r} are not '
+                f'present in the user background image metadata in directory '
+                f'{bgdir!r}')
         # Now obtain the image data from file or cache:
         fpath = os.path.join(bgdir, fname)
         if cache:
@@ -1190,19 +1191,18 @@ class GeoAxes(matplotlib.axes.Axes):
                     # check that this image type has the required info:
                     for required in required_info:
                         if required not in _USER_BG_IMGS[img_type]:
-                            msg = ('User background metadata file "{}", '
-                                   'image type "{}", does not specify '
-                                   'metadata item "{}"')
-                            raise ValueError(msg.format(json_file, img_type,
-                                                        required))
+                            raise ValueError(
+                                f'User background metadata file {json_file!r},'
+                                f' image type {img_type!r}, does not specify'
+                                f' metadata item {required!r}')
                     for resln in _USER_BG_IMGS[img_type]:
                         # the required_info items are not resolutions:
                         if resln not in required_info:
                             img_it_r = _USER_BG_IMGS[img_type][resln]
                             test_file = os.path.join(bgdir, img_it_r)
                             if not os.path.isfile(test_file):
-                                msg = 'File "{}" not found'
-                                raise ValueError(msg.format(test_file))
+                                raise ValueError(
+                                    f'File "{test_file}" not found')
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """

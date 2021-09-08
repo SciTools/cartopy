@@ -60,7 +60,7 @@ def test_central_longitude(emphasis, lon):
     igh = ccrs.InterruptedGoodeHomolosine(
         central_longitude=lon, emphasis=emphasis
     )
-    other_args = {"ellps=WGS84", "lon_0={}".format(lon)}
+    other_args = {"ellps=WGS84", f"lon_0={lon}"}
     if emphasis == "land":
         check_proj_params("igh", igh, other_args)
     elif emphasis == "ocean":

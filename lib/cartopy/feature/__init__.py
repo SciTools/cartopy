@@ -265,7 +265,7 @@ class NaturalEarthFeature(Feature):
     def _validate_scale(self):
         if self.scale not in ('110m', '50m', '10m'):
             raise ValueError(
-                '{} is not a valid Natural Earth scale. '.format(self.scale) +
+                f'{self.scale!r} is not a valid Natural Earth scale. '
                 'Valid scales are "110m", "50m", and "10m".'
             )
 
@@ -350,7 +350,7 @@ class GSHHSFeature(Feature):
 
         if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
                          'intermediate', 'i', 'high', 'h', 'full', 'f'):
-            raise ValueError("Unknown GSHHS scale '{}'.".format(scale))
+            raise ValueError(f"Unknown GSHHS scale {scale!r}.")
         self._scale = scale
 
         if levels is None:
@@ -358,8 +358,7 @@ class GSHHSFeature(Feature):
         self._levels = set(levels)
         unknown_levels = self._levels.difference([1, 2, 3, 4])
         if unknown_levels:
-            raise ValueError("Unknown GSHHS levels "
-                             "'{}'.".format(unknown_levels))
+            raise ValueError(f"Unknown GSHHS levels {unknown_levels!r}.")
 
         # Default kwargs
         self._kwargs.setdefault('edgecolor', 'black')

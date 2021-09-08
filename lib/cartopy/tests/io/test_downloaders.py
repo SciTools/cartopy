@@ -113,8 +113,8 @@ def test_downloading_simple_ascii(download_to_temp):
     with warnings.catch_warnings(record=True) as w:
         assert dnld_item.path(format_dict) == tmp_fname
 
-        assert len(w) == 1, ('Expected a single download warning to be '
-                             'raised. Got {}.'.format(len(w)))
+        assert len(w) == 1, \
+            f'Expected a single download warning to be raised. Got {len(w)}.'
         assert issubclass(w[0].category, cio.DownloadWarning)
 
     with open(tmp_fname) as fh:
@@ -163,9 +163,8 @@ def test_natural_earth_downloader(tmpdir):
     exts = ['.shp', '.shx']
     for ext in exts:
         stem = os.path.splitext(shp_path)[0]
-        msg = "Shapefile's {0} file doesn't exist in {1}{0}".format(ext,
-                                                                    stem)
-        assert os.path.exists(stem + ext), msg
+        assert os.path.exists(stem + ext), \
+            f"Shapefile's {ext} file doesn't exist in {stem}{ext}"
 
     # check that providing a pre downloaded path actually works
     pre_dnld = NEShpDownloader(target_path_template='/not/a/real/file.txt',

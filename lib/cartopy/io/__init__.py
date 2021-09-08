@@ -238,7 +238,7 @@ class Downloader:
         Caller should close the file handle when finished with it.
 
         """
-        warnings.warn('Downloading: {}'.format(url), DownloadWarning)
+        warnings.warn(f'Downloading: {url}', DownloadWarning)
         return urlopen(url)
 
     @staticmethod
@@ -294,7 +294,7 @@ class Downloader:
             # some strange things like not having any downloaders defined
             # in the config...
             raise ValueError('No generic downloadable item in the config '
-                             'dictionary for {}'.format(specification))
+                             f'dictionary for {specification}')
 
         return result_downloader
 

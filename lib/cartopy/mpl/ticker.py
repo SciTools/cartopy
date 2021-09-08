@@ -158,23 +158,15 @@ class _PlateCarreeFormatter(Formatter):
             number_format = 'd'
         else:
             number_format = self._degrees_number_format
-        return '{value:{number_format}}{symbol}'.format(
-            value=abs(deg),
-            number_format=number_format,
-            symbol=self._degree_symbol)
+        return f'{abs(deg):{number_format}}{self._degree_symbol}'
 
     def _format_minutes(self, mn):
         """Format minutes as an integer"""
-        return '{value:d}{symbol}'.format(
-            value=int(mn),
-            symbol=self._minute_symbol)
+        return f'{int(mn):d}{self._minute_symbol}'
 
     def _format_seconds(self, sec):
         """Format seconds as an float"""
-        return '{value:{fmt}}{symbol}'.format(
-            value=sec,
-            fmt=self._seconds_num_format,
-            symbol=self._second_symbol)
+        return f'{sec:{self._seconds_num_format}}{self._second_symbol}'
 
     def _apply_transform(self, value, target_proj, source_crs):
         """

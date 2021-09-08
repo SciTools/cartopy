@@ -79,11 +79,11 @@ def download_features(group_names, dry_run=True):
             format_dict = {'config': config, 'scale': feature._scale,
                            'level': level}
             if dry_run:
-                print('URL: {}'.format(downloader.url(format_dict)))
+                print(f'URL: {downloader.url(format_dict)}')
             else:
                 downloader.path(format_dict)
                 geoms = list(feature.geometries())
-                print('Feature {} length: {}'.format(feature, len(geoms)))
+                print(f'Feature {feature} length: {len(geoms)}')
         else:
             for category, name, scales in feature_defns:
                 if not isinstance(scales, tuple):
@@ -97,7 +97,7 @@ def download_features(group_names, dry_run=True):
                     format_dict = {'config': config, 'category': category,
                                    'name': name, 'resolution': scale}
                     if dry_run:
-                        print('URL: {}'.format(downloader.url(format_dict)))
+                        print(f'URL: {downloader.url(format_dict)}')
                     else:
                         downloader.path(format_dict)
                         geoms = list(feature.geometries())

@@ -57,7 +57,7 @@ class _SRTMSource(RasterSource):
             self._shape = (3601, 3601)
         else:
             raise ValueError(
-                'Resolution is an unexpected value ({}).'.format(resolution))
+                f'Resolution is an unexpected value ({resolution}).')
         self._resolution = resolution
 
         #: The CRS of the underlying SRTM data.
@@ -69,7 +69,7 @@ class _SRTMSource(RasterSource):
 
         if self.downloader is None:
             self.downloader = Downloader.from_config(
-                ('SRTM', 'SRTM' + str(resolution)))
+                ('SRTM', f'SRTM{resolution}'))
 
         #: A tuple of (max_x_tiles, max_y_tiles).
         self._max_tiles = (max_nx, max_ny)
@@ -83,9 +83,8 @@ class _SRTMSource(RasterSource):
 
         """
         if not self.validate_projection(projection):
-            raise ValueError(
-                'Unsupported projection for the SRTM{} source.'.format(
-                    self._resolution))
+            raise ValueError(f'Unsupported projection for the '
+                             f'SRTM{self._resolution} source.')
 
         min_x, max_x, min_y, max_y = extent
         min_x, min_y = np.floor([min_x, min_y])
@@ -94,15 +93,13 @@ class _SRTMSource(RasterSource):
         skip = False
         if nx > self._max_tiles[0]:
             warnings.warn(
-                'Required SRTM{} tile count ({}) exceeds maximum ({}). '
-                'Increase max_nx limit.'.format(self._resolution, nx,
-                                                self._max_tiles[0]))
+                f'Required SRTM{self._resolution} tile count ({nx}) exceeds '
+                f'maximum ({self._max_tiles[0]}). Increase max_nx limit.')
             skip = True
         if ny > self._max_tiles[1]:
             warnings.warn(
-                'Required SRTM{} tile count ({}) exceeds maximum ({}). '
-                'Increase max_ny limit.'.format(self._resolution, ny,
-                                                self._max_tiles[1]))
+                f'Required SRTM{self._resolution} tile count ({ny}) exceeds '
+                f'maximum ({self._max_tiles[1]}). Increase max_ny limit.')
             skip = True
         if skip:
             return []
@@ -124,7 +121,7 @@ class _SRTMSource(RasterSource):
         y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
 
         srtm_downloader = Downloader.from_config(
-            ('SRTM', 'SRTM' + str(self._resolution)))
+            ('SRTM', f'SRTM{self._resolution}'))
         params = {'config': config, 'resolution': self._resolution,
                   'x': x, 'y': y}
 
@@ -348,7 +345,7 @@ def read_SRTM(fh):
         elev.shape = (1201, 1201)
     else:
         raise ValueError(
-            'Shape of SRTM data ({}) is unexpected.'.format(elev.size))
+            f'Shape of SRTM data ({elev.size}) is unexpected.')
 
     fname = os.path.basename(fname)
     y_dir, y, x_dir, x = fname[0], int(fname[1:3]), fname[3], int(fname[4:7])

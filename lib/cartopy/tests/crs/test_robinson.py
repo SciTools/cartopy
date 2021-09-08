@@ -96,7 +96,7 @@ def test_offset():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     robin = ccrs.Robinson(central_longitude=lon)
-    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('robin', robin, other_args)
 
     assert_almost_equal(robin.x_limits,

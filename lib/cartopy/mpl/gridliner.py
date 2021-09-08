@@ -25,7 +25,6 @@ degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
 classic_formatter = mticker.ScalarFormatter
 
-_DEGREE_SYMBOL = '\u00B0'
 _X_INLINE_PROJS = (
     cartopy.crs.InterruptedGoodeHomolosine,
     cartopy.crs.LambertConformal,
@@ -84,17 +83,13 @@ def _lat_hemisphere(latitude):
 
 
 def _east_west_formatted(longitude, num_format='g'):
-    fmt_string = '{longitude:{num_format}}{degree}{hemisphere}'
-    return fmt_string.format(longitude=abs(longitude), num_format=num_format,
-                             hemisphere=_lon_hemisphere(longitude),
-                             degree=_DEGREE_SYMBOL)
+    hemisphere = _lon_hemisphere(longitude)
+    return f'{abs(longitude):{num_format}}\N{Degree Sign}{hemisphere}'
 
 
 def _north_south_formatted(latitude, num_format='g'):
-    fmt_string = '{latitude:{num_format}}{degree}{hemisphere}'
-    return fmt_string.format(latitude=abs(latitude), num_format=num_format,
-                             hemisphere=_lat_hemisphere(latitude),
-                             degree=_DEGREE_SYMBOL)
+    hemisphere = _lat_hemisphere(latitude)
+    return f'{abs(latitude):{num_format}}\N{Degree Sign}{hemisphere}'
 
 
 #: A formatter which turns longitude values into nice longitudes such as 110W
@@ -319,7 +314,7 @@ class Gridliner:
             self.geo_labels = draw_labels
 
         for loc in 'top', 'bottom', 'left', 'right', 'geo':
-            value = getattr(self, loc + '_labels')
+            value = getattr(self, f'{loc}_labels')
             if isinstance(value, str):
                 value = value.lower()
             if (not isinstance(value, (list, bool)) and
@@ -802,7 +797,7 @@ class Gridliner:
 
             x_inline = self.x_inline and xylabel == 'x'
             y_inline = self.y_inline and xylabel == 'y'
-            padding = getattr(self, xylabel + "padding")
+            padding = getattr(self, f'{xylabel}padding')
             bbox_style = self.labels_bbox_style.copy()
             if "bbox" in label_style:
                 bbox_style.update(label_style["bbox"])
@@ -885,7 +880,7 @@ class Gridliner:
                     else:
                         warnings.warn(
                             'Unsupported intersection geometry for gridline '
-                            'labels: ' + intersection.__class__.__name__)
+                            f'labels: {intersection.__class__.__name__}')
                         continue
                     del intersection
 
@@ -1190,9 +1185,9 @@ class Gridliner:
         """
         # Check labelling is supported, currently a limited set of options.
         if not isinstance(self.crs, PlateCarree):
-            raise TypeError('Cannot label {crs.__class__.__name__} gridlines.'
-                            ' Only PlateCarree gridlines are currently '
-                            'supported.'.format(crs=self.crs))
+            raise TypeError(f'Cannot label {self.crs.__class__.__name__} '
+                            'gridlines. Only PlateCarree gridlines are '
+                            'currently supported.')
         return True
 
     def _axes_domain(self, nx=None, ny=None):

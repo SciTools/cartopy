@@ -23,4 +23,4 @@ class _EPSGProjection(ccrs.Projection):
         super().__init__(crs.to_wkt())
 
     def __repr__(self):
-        return '_EPSGProjection({})'.format(self.epsg_code)
+        return f'_EPSGProjection({self.epsg_code})'
