@@ -294,7 +294,7 @@ class Downloader:
             # some strange things like not having any downloaders defined
             # in the config...
             raise ValueError('No generic downloadable item in the config '
-                             'dictionary for {}'.format(specification))
+                             f'dictionary for {specification}')
 
         return result_downloader
 

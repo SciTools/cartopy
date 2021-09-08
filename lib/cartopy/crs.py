@@ -198,8 +198,8 @@ class CRS(_CRS):
             a = globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
             b = globe.semiminor_axis or a
             if a != b or globe.ellipse is not None:
-                warnings.warn('The "{}" projection does not handle elliptical '
-                              'globes.'.format(self.__class__.__name__))
+                warnings.warn(f'The {self.__class__.__name__!r} projection '
+                              'does not handle elliptical globes.')
         self.globe = globe
         if isinstance(proj4_params, str):
             self._proj4_params = {}
@@ -212,13 +212,13 @@ class CRS(_CRS):
             for k, v in self._proj4_params.items():
                 if v is not None:
                     if isinstance(v, float):
-                        init_items.append('+{}={:.16}'.format(k, v))
+                        init_items.append(f'+{k}={v:.16}')
                     elif isinstance(v, np.float32):
-                        init_items.append('+{}={:.8}'.format(k, v))
+                        init_items.append(f'+{k}={v:.8}')
                     else:
-                        init_items.append('+{}={}'.format(k, v))
+                        init_items.append(f'+{k}={v}')
                 else:
-                    init_items.append('+{}'.format(k))
+                    init_items.append(f'+{k}')
             self.proj4_init = ' '.join(init_items) + ' +no_defs'
         super().__init__(self.proj4_init)
 
@@ -833,8 +833,7 @@ class Projection(CRS, metaclass=ABCMeta):
         geom_type = geometry.geom_type
         method_name = self._method_map.get(geom_type)
         if not method_name:
-            raise ValueError('Unsupported geometry '
-                             'type {!r}'.format(geom_type))
+            raise ValueError(f'Unsupported geometry type {geom_type!r}')
         return getattr(self, method_name)(geometry, src_crs)
 
     def _project_point(self, point, src_crs):
@@ -1796,8 +1795,7 @@ class LambertConformal(Projection):
 
         if not 1 <= n_parallels <= 2:
             raise ValueError('1 or 2 standard parallels must be specified. '
-                             'Got {} ({})'.format(n_parallels,
-                                                  standard_parallels))
+                             f'Got {n_parallels} ({standard_parallels})')
 
         proj4_params.append(('lat_1', standard_parallels[0]))
         if n_parallels == 2:
@@ -2353,9 +2351,9 @@ class EqualEarth(_WarpedRectangularProjection):
 
         """
         if PROJ_VERSION < (5, 2, 0):
+            _proj_ver = '.'.join(str(v) for v in PROJ_VERSION)
             raise ValueError('The EqualEarth projection requires Proj version '
-                             '5.2.0, but you are using {}.'
-                             .format('.'.join(str(v) for v in PROJ_VERSION)))
+                             f'5.2.0, but you are using {_proj_ver}.')
 
         proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
         super().__init__(proj_params, central_longitude,
@@ -2549,7 +2547,7 @@ class InterruptedGoodeHomolosine(Projection):
                 _proj_ver = '.'.join(str(v) for v in PROJ_VERSION)
                 raise ValueError('The Interrupted Goode Homolosine ocean '
                                  'projection requires Proj version 7.1.0, '
-                                 'but you are using ' + _proj_ver)
+                                 f'but you are using {_proj_ver}')
             proj4_params = [('proj', 'igh_o'), ('lon_0', central_longitude)]
             super().__init__(proj4_params, globe=globe)
 
@@ -3120,9 +3118,7 @@ class _BoundaryPoint:
         self.data = data
 
     def __repr__(self):
-        return '_BoundaryPoint({!r}, {!r}, {})'.format(
-            self.distance, self.kind, self.data
-        )
+        return f'_BoundaryPoint({self.distance!r}, {self.kind!r}, {self.data})'
 
 
 def _find_first_ge(a, x):

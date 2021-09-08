@@ -232,8 +232,8 @@ class WMSRasterSource(RasterSource):
             raise ValueError('One or more layers must be defined.')
         for layer in layers:
             if layer not in service.contents:
-                raise ValueError('The {!r} layer does not exist in '
-                                 'this service.'.format(layer))
+                raise ValueError(f'The {layer!r} layer does not exist in '
+                                 'this service.')
 
         #: The OWSLib WebMapService instance.
         self.service = service
@@ -358,8 +358,8 @@ class WMTSRasterSource(RasterSource):
         try:
             layer = wmts.contents[layer_name]
         except KeyError:
-            raise ValueError('Invalid layer name {!r} for WMTS at {!r}'.format(
-                layer_name, wmts.url))
+            raise ValueError(
+                f'Invalid layer name {layer_name!r} for WMTS at {wmts.url!r}')
 
         #: The OWSLib WebMapTileService instance.
         self.wmts = wmts
@@ -410,7 +410,7 @@ class WMTSRasterSource(RasterSource):
                         self.wmts.tilematrixsets[name].crs
                         for name in matrix_set_names})
                     msg = 'Unable to find tile matrix for projection.'
-                    msg += '\n    Projection: ' + str(target_projection)
+                    msg += f'\n    Projection: {target_projection}'
                     msg += '\n    Available tile CRS URNs:'
                     msg += '\n        ' + '\n        '.join(available_urns)
                     raise ValueError(msg)
@@ -655,8 +655,8 @@ class WFSGeometrySource:
             raise ValueError('One or more features must be specified.')
         for feature in features:
             if feature not in service.contents:
-                raise ValueError('The {!r} feature does not exist in this '
-                                 'service.'.format(feature))
+                raise ValueError(
+                    f'The {feature!r} feature does not exist in this service.')
 
         self.service = service
         self.features = features
@@ -681,8 +681,9 @@ class WFSGeometrySource:
                 default_urn = default_urn.pop()
 
             if str(default_urn) not in _URN_TO_CRS:
-                raise ValueError('Unknown mapping from SRS/CRS_URN {!r} to '
-                                 'cartopy projection.'.format(default_urn))
+                raise ValueError(
+                    f'Unknown mapping from SRS/CRS_URN {default_urn!r} to '
+                    'cartopy projection.')
 
             self._default_urn = default_urn
 
@@ -711,7 +712,7 @@ class WFSGeometrySource:
         """
         if self.default_projection() != projection:
             raise ValueError('Geometries are only available in projection '
-                             '{!r}.'.format(self.default_projection()))
+                             f'{self.default_projection()!r}.')
 
         min_x, max_x, min_y, max_y = extent
         response = self.service.getfeature(typename=self.features,
@@ -732,15 +733,14 @@ class WFSGeometrySource:
                 if srs in _URN_TO_CRS:
                     geom_proj = _URN_TO_CRS[srs]
                     if geom_proj != projection:
-                        raise ValueError('The geometries are not in expected '
-                                         'projection. Expected {!r}, got '
-                                         '{!r}.'.format(projection, geom_proj))
+                        raise ValueError(
+                            'The geometries are not in expected projection. '
+                            f'Expected {projection!r}, got {geom_proj!r}.')
                 else:
-                    msg = 'Unable to verify matching projections due ' \
-                          'to incomplete mappings from SRS identifiers ' \
-                          'to cartopy projections. The geometries have ' \
-                          'an SRS of {!r}.'.format(srs)
-                    warnings.warn(msg)
+                    warnings.warn(
+                        'Unable to verify matching projections due to '
+                        'incomplete mappings from SRS identifiers to cartopy '
+                        f'projections. The geometries have an SRS of {srs!r}.')
         return geoms
 
     def _to_shapely_geoms(self, response):

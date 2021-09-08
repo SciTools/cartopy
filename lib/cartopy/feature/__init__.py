@@ -358,8 +358,7 @@ class GSHHSFeature(Feature):
         self._levels = set(levels)
         unknown_levels = self._levels.difference([1, 2, 3, 4])
         if unknown_levels:
-            raise ValueError("Unknown GSHHS levels "
-                             "'{}'.".format(unknown_levels))
+            raise ValueError(f"Unknown GSHHS levels {unknown_levels!r}.")
 
         # Default kwargs
         self._kwargs.setdefault('edgecolor', 'black')

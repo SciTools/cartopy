@@ -75,7 +75,7 @@ class TestLicenseHeaders:
         except ValueError as e:
             # Caught the case where this is not a git repo.
             return pytest.skip('cartopy installation did not look like a git '
-                               'repo: ' + str(e))
+                               f'repo: {e}')
 
         failed = []
         for fname in sorted(tracked_files):

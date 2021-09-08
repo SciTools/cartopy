@@ -116,15 +116,13 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         froot, fext = os.path.splitext(fname)
         # If there was no extension to the filename.
         if froot == fname:
-            result = ['{}.{}'.format(fname, 'w'),
-                      '{}.{}'.format(fname, 'W')]
+            result = [f'{fname}.w', f'{fname}.W']
         else:
             fext = fext[1::].lower()
             if len(fext) < 3:
-                result = ['{}.{}'.format(fname, 'w'),
-                          '{}.{}'.format(fname, 'W')]
+                result = [f'{fname}.w', f'{fname}.W']
             else:
-                fext_types = [fext + 'w', fext[0] + fext[-1] + 'w']
+                fext_types = [f'{fext}w', f'{fext[0]}{fext[-1]}w']
                 fext_types.extend([ext.upper() for ext in fext_types])
                 result = [f'{froot}.{ext}' for ext in fext_types]
 
@@ -240,8 +238,8 @@ class ImageCollection:
                 if os.path.exists(fworld):
                     break
             else:
-                msg = 'Image file {!r} has no associated world file'
-                raise ValueError(msg.format(img))
+                raise ValueError(
+                    f'Image file {img!r} has no associated world file')
 
             self.images.append(img_class.from_world_file(img, fworld))
 
@@ -354,8 +352,8 @@ class NestedImageCollection:
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
-            msg = '{!r} is not one of the possible collections.'
-            raise ValueError(msg.format(target_z))
+            raise ValueError(
+                f'{target_z!r} is not one of the possible collections.')
 
         tiles = []
         for tile in self.find_images(target_domain, target_z):
@@ -408,8 +406,8 @@ class NestedImageCollection:
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
-            msg = '{!r} is not one of the possible collections.'
-            raise ValueError(msg.format(target_z))
+            raise ValueError(
+                f'{target_z!r} is not one of the possible collections.')
 
         if start_tiles is None:
             start_tiles = ((self._collections[0].name, img)

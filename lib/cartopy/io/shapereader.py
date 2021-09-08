@@ -72,14 +72,10 @@ class Record:
         self._fields = fields
 
     def __repr__(self):
-        return '<Record: {!r}, {!r}, <fields>>'.format(
-            self.geometry, self.attributes
-        )
+        return f'<Record: {self.geometry!r}, {self.attributes!r}, <fields>>'
 
     def __str__(self):
-        return 'Record({}, {}, <fields>)'.format(
-            self.geometry, self.attributes
-        )
+        return f'Record({self.geometry}, {self.attributes}, <fields>)'
 
     @property
     def bounds(self):
@@ -412,7 +408,7 @@ class GSHHSShpDownloader(Downloader):
 
     _GSHHS_URL_TEMPLATE = (
         'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-        'gshhs/latest/gshhg-shp-' + gshhs_version + '.zip'
+        f'gshhs/latest/gshhg-shp-{gshhs_version}.zip'
     )
 
     def __init__(self,
@@ -448,9 +444,9 @@ class GSHHSShpDownloader(Downloader):
                 without changing the naming convention
                 """
                 url = (
-                    'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-                    'gshhs/oldversions/version' + self.gshhs_version + '/'
-                    'gshhg-shp-' + self.gshhs_version + '.zip'
+                    f'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
+                    f'gshhs/oldversions/version{self.gshhs_version}/'
+                    f'gshhg-shp-{self.gshhs_version}.zip'
                 )
                 shapefile_online = self._urlopen(url)
             except HTTPError:
@@ -513,7 +509,7 @@ class GSHHSShpDownloader(Downloader):
         self.acquire_all_resources(format_dict)
         if not os.path.exists(target_path):
             raise RuntimeError('Failed to download and extract GSHHS '
-                               'shapefile to {!r}.'.format(target_path))
+                               f'shapefile to {target_path!r}.')
         return target_path
 
     @staticmethod

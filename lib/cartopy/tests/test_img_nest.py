@@ -223,11 +223,11 @@ def test_nest(nest_from_config):
     # floating point values badly
     for img in z1.images:
         if not z0.images[0].bbox().contains(img.bbox()):
-            raise OSError('The test images aren\'t all "contained" by the '
-                          'z0 images, the nest cannot possibly work.\n '
-                          'img {!s} not contained by {!s}\nExtents: {!s}; '
-                          '{!s}'.format(img, z0.images[0], img.extent,
-                                        z0.images[0].extent))
+            raise OSError(
+                'The test images aren\'t all "contained" by the z0 images, '
+                'the nest cannot possibly work.\n'
+                f'img {img!s} not contained by {z0.images[0]!s}\n'
+                f'Extents: {img.extent!s}; {z0.images[0].extent!s}')
     nest_z0_z1 = cimg_nest.NestedImageCollection('aerial test',
                                                  crs,
                                                  [z0, z1])
@@ -312,7 +312,7 @@ def wmts_data():
     finally:
         if test_data_version != _TEST_DATA_VERSION:
             warnings.warn('WMTS test data is out of date, regenerating at '
-                          '{}.'.format(_TEST_DATA_DIR))
+                          f'{_TEST_DATA_DIR}.')
             shutil.rmtree(_TEST_DATA_DIR)
             os.makedirs(_TEST_DATA_DIR)
             with open(data_version_fname, 'w') as fh:
