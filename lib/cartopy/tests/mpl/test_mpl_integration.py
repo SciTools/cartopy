@@ -605,6 +605,19 @@ def test_pcolormesh_diagonal_wrap():
     assert hasattr(mesh, "_wrapped_collection_fix")
 
 
+def test_pcolormesh_nan_wrap():
+    # Check that data with nan's as input still creates
+    # the proper number of pcolor cells and those aren't
+    # masked in the process.
+    xs, ys = np.meshgrid([120, 160, 200], [-30, 0, 30])
+    data = np.ones((2, 2)) * np.nan
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    mesh = ax.pcolormesh(xs, ys, data)
+    pcolor = getattr(mesh, "_wrapped_collection_fix")
+    assert len(pcolor.get_paths()) == 2
+
+
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_goode_wrap'])
 def test_pcolormesh_goode_wrap():

@@ -1901,16 +1901,24 @@ class GeoAxes(matplotlib.axes.Axes):
                         # We will add the original data mask in later to
                         # make sure that set_array can work in future
                         # calls on the proper sized array inputs.
-                        pcolor_data = np.ma.array(C.data, mask=~mask)
+                        # NOTE: we don't use C.data here because C.data could
+                        #       contain nan's which would be masked in the
+                        #       pcolor routines, which we don't want. We will
+                        #       fill in the proper data later with set_array()
+                        #       calls.
+                        pcolor_data = np.ma.array(np.zeros(C.shape),
+                                                  mask=~mask)
                         pcolor_col = self.pcolor(pts[..., 0], pts[..., 1],
                                                  pcolor_data, zorder=zorder,
                                                  **kwargs)
                         # Now add back in the masked data if there was any
                         if C_mask is not None:
                             pcolor_data = np.ma.array(C, mask=~mask | C_mask)
-                            # The pcolor_col is now possibly shorter than the
-                            # actual collection, so grab the masked cells
-                            pcolor_col.set_array(pcolor_data[mask].ravel())
+                        else:
+                            pcolor_data = np.ma.array(C, mask=~mask)
+                        # The pcolor_col is now possibly shorter than the
+                        # actual collection, so grab the masked cells
+                        pcolor_col.set_array(pcolor_data[mask].ravel())
                         pcolor_col.set_cmap(cmap)
                         pcolor_col.set_norm(norm)
                         pcolor_col.set_clim(vmin, vmax)
