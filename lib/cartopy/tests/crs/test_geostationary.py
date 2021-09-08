@@ -32,8 +32,8 @@ class TestGeostationary:
         check_proj_params(self.expected_proj_name, geos, other_args)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-5434177.81588539, -5434177.81588539,
-                             5434177.81588539, 5434177.81588539),
+                            (-5434177.81588539, -5412932.3767,
+                             5434177.81588539, 5412932.3767),
                             decimal=4)
 
     def test_low_orbit(self):
@@ -45,13 +45,13 @@ class TestGeostationary:
         check_proj_params(self.expected_proj_name, geos, other_args)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-785616.1189, -785616.1189,
-                             785616.1189, 785616.1189),
+                            (-785616.1189, -783815.6629,
+                             785616.1189, 783815.6629),
                             decimal=4)
 
         # Checking that this isn't just a simple elliptical border
         assert_almost_equal(geos.boundary.coords[7],
-                            (697323.205, -453041.0626),
+                            (750051.0347, -305714.8243),
                             decimal=4)
 
     def test_eastings(self):
@@ -64,8 +64,8 @@ class TestGeostationary:
         check_proj_params(self.expected_proj_name, geos, other_args)
 
         assert_almost_equal(geos.boundary.bounds,
-                            (-434177.81588539, -5559177.81588539,
-                             10434177.81588539, 5309177.81588539),
+                            (-434177.81588539, -5537932.3767,
+                             10434177.81588539, 5287932.3767),
                             decimal=4)
 
     def test_sweep(self):
