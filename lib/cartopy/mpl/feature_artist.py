@@ -112,21 +112,18 @@ class FeatureArtist(matplotlib.artist.Artist):
             color = self._kwargs.pop('color')
             self._kwargs['facecolor'] = self._kwargs['edgecolor'] = color
 
-        # Set default zorder so that features are drawn before
-        # lines e.g. contours but after images.
+        # Set default zorder so that features are drawn under
+        # lines e.g. contours but over images and filled patches.
         # Note that the zorder of Patch, PatchCollection and PathCollection
         # are all 1 by default. Assuming equal zorder drawing takes place in
-        # the following order: collections, patches, lines (default zorder=2),
-        # text (default zorder=3), then other artists e.g. FeatureArtist.
+        # the following order: collections, patches, FeatureArtist, lines,
+        # text.
         if self._kwargs.get('zorder') is not None:
             self.set_zorder(self._kwargs['zorder'])
         elif feature.kwargs.get('zorder') is not None:
             self.set_zorder(feature.kwargs['zorder'])
         else:
-            # The class attribute matplotlib.collections.PathCollection.zorder
-            # was removed after mpl v1.2.0, so the hard-coded value of 1 is
-            # used instead.
-            self.set_zorder(1)
+            self.set_zorder(1.5)
 
         self._feature = feature
 
