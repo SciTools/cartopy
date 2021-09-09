@@ -115,7 +115,7 @@ class FeatureArtist(matplotlib.artist.Artist):
         # Set default zorder so that features are drawn under
         # lines e.g. contours but over images and filled patches.
         # Note that the zorder of Patch, PatchCollection and PathCollection
-        # are all 1 by default. Assuming equal zorder drawing takes place in
+        # are all 1 by default. Assuming default zorder, drawing takes place in
         # the following order: collections, patches, FeatureArtist, lines,
         # text.
         if self._kwargs.get('zorder') is not None:
