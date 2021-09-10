@@ -1880,10 +1880,8 @@ class GeoAxes(matplotlib.axes.Axes):
                     C_mask = getattr(C, 'mask', None)
 
                     # create the masked array to be used with this pcolormesh
-                    if C_mask is not None:
-                        pcolormesh_data = np.ma.array(C, mask=mask | C_mask)
-                    else:
-                        pcolormesh_data = np.ma.array(C, mask=mask)
+                    full_mask = mask if C_mask is None else mask | C_mask
+                    pcolormesh_data = np.ma.array(C, mask=full_mask)
 
                     collection.set_array(pcolormesh_data.ravel())
 
@@ -1912,10 +1910,8 @@ class GeoAxes(matplotlib.axes.Axes):
                                                  pcolor_data, zorder=zorder,
                                                  **kwargs)
                         # Now add back in the masked data if there was any
-                        if C_mask is not None:
-                            pcolor_data = np.ma.array(C, mask=~mask | C_mask)
-                        else:
-                            pcolor_data = np.ma.array(C, mask=~mask)
+                        full_mask = ~mask if C_mask is None else ~mask | C_mask
+                        pcolor_data = np.ma.array(C, mask=full_mask)
                         # The pcolor_col is now possibly shorter than the
                         # actual collection, so grab the masked cells
                         pcolor_col.set_array(pcolor_data[mask].ravel())
