@@ -43,8 +43,8 @@ from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
 
-assert mpl.__version__ >= '1.5.1', ('Cartopy is only supported with '
-                                    'Matplotlib 1.5.1 or greater.')
+assert mpl.__version__ >= '3.1', \
+    'Cartopy is only supported with Matplotlib 3.1 or greater.'
 
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
 """

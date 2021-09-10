@@ -17,7 +17,7 @@ from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
     classic_locator, classic_formatter)
 
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import ImageTesting
 
 TEST_PROJS = [
     ccrs.PlateCarree,
@@ -126,11 +126,7 @@ def test_gridliner_specified_lines():
 
 # The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-if MPL_VERSION < "3":
-    TOL = 15
-else:
-    TOL = 3.1
-grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = TOL
+grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = 3.1
 grid_label_tol += 0.8
 grid_label_inline_tol += 1.6
 grid_label_image = 'gridliner_labels'
@@ -212,9 +208,6 @@ def test_grid_labels():
     plt.subplots_adjust(wspace=0.25, hspace=0.25)
 
 
-@pytest.mark.skipif(
-    MPL_VERSION < '3.0.0',
-    reason='Impossible to override tight layout algorithm in mpl < 3')
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'],
