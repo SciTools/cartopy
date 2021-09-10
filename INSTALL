@@ -77,7 +77,7 @@ to the core packages.
 
 Further information about the required dependencies can be found here:
 
-**Python** 3.5 or later (https://www.python.org/)
+**Python** 3.7 or later (https://www.python.org/)
 
 **GEOS** 3.3.3 or later (https://trac.osgeo.org/geos/)
     GEOS is an API of spatial predicates and functions for processing geometry
