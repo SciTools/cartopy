@@ -43,33 +43,26 @@ def add_cyclic_point(data, coord=None, axis=-1):
     Adding a cyclic point to a data array, where the cyclic dimension is
     the right-most dimension
 
-    .. testsetup::
-        >>> from distutils.version import LooseVersion
-        >>> import numpy as np
-        >>> if LooseVersion(np.__version__) >= '1.14.0':
-        ...     # To provide consistent doctests.
-        ...     np.set_printoptions(legacy='1.13')
-
     >>> import numpy as np
     >>> data = np.ones([5, 6]) * np.arange(6)
     >>> cyclic_data = add_cyclic_point(data)
     >>> print(cyclic_data)  # doctest: +NORMALIZE_WHITESPACE
-    [[ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]]
+    [[0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]]
 
     Adding a cyclic point to a data array and an associated coordinate
 
     >>> lons = np.arange(0, 360, 60)
     >>> cyclic_data, cyclic_lons = add_cyclic_point(data, coord=lons)
     >>> print(cyclic_data)  # doctest: +NORMALIZE_WHITESPACE
-    [[ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]
-     [ 0. 1. 2. 3. 4. 5. 0.]]
+    [[0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]
+     [0. 1. 2. 3. 4. 5. 0.]]
     >>> print(cyclic_lons)
     [  0  60 120 180 240 300 360]
 
