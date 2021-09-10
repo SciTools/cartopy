@@ -1,2 +1,2 @@
-OWSLib>=0.8.11
+OWSLib>=0.18.0
 pillow>=1.7.8

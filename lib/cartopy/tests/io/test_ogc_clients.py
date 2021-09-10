@@ -35,16 +35,10 @@ class TestWMSRasterSource:
 
     def test_string_service(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
-        if isinstance(WebMapService, type):
-            # OWSLib < 0.13.0
-            assert isinstance(source.service, WebMapService)
-        else:
-            # OWSLib >= 0.13.0: WebMapService is a function that creates
-            # instances of these two classes.
-            from owslib.map.wms111 import WebMapService_1_1_1
-            from owslib.map.wms130 import WebMapService_1_3_0
-            assert isinstance(source.service,
-                              (WebMapService_1_1_1, WebMapService_1_3_0))
+        from owslib.map.wms111 import WebMapService_1_1_1
+        from owslib.map.wms130 import WebMapService_1_3_0
+        assert isinstance(source.service,
+                          (WebMapService_1_1_1, WebMapService_1_3_0))
         assert isinstance(source.layers, list)
         assert source.layers == [self.layer]
 
