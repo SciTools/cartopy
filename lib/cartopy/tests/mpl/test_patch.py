@@ -4,9 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import matplotlib
 from matplotlib.path import Path
-import pytest
 import shapely.geometry as sgeom
 
 import cartopy.mpl.patch as cpatch
@@ -29,8 +27,6 @@ class Test_path_to_geos:
         assert [type(geom) for geom in geoms] == [sgeom.Point] * 4
         assert len(geoms) == 4
 
-    @pytest.mark.skipif(matplotlib.__version__ < '2.2.0',
-                        reason='Paths may not be closed with old Matplotlib.')
     def test_non_polygon_loop(self):
         p = Path([[0, 10], [170, 20], [-170, 30], [0, 10]],
                  codes=[1, 2, 2, 2])

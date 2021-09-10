@@ -100,7 +100,7 @@ Optional Dependencies
 To make the most of Cartopy by enabling additional functionality, you may want
 to install these optional dependencies.
 
-**Matplotlib** 1.5.1 or later (https://matplotlib.org/)
+**Matplotlib** 3.1 or later (https://matplotlib.org/)
     Python package for 2D plotting. Python package required for any
     graphical capabilities.
 
