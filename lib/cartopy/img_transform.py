@@ -269,10 +269,7 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     else:
         # Versions of scipy >= v0.16 added the balanced_tree argument,
         # which caused the KDTree to hang with this input.
-        try:
-            kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
-        except TypeError:
-            kdtree = scipy.spatial.cKDTree(xyz)
+        kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
         _, indices = kdtree.query(target_xyz, k=1)
     mask = indices >= len(xyz)
     indices[mask] = 0
