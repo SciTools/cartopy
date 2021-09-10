@@ -104,7 +104,7 @@ to install these optional dependencies.
     Python package for 2D plotting. Python package required for any
     graphical capabilities.
 
-**GDAL** version 1.10.0 (https://gdal.org/)
+**GDAL** version 2.3.2 (https://gdal.org/)
     GDAL is a translator library for raster and vector geospatial data formats,
     which has powerful data transformation and processing capabilities.
 
