@@ -37,9 +37,6 @@ def test_wms_tight_layout():
 
 
 @pytest.mark.network
-@pytest.mark.xfail((5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0),
-                   reason='Proj Orthographic projection is buggy.',
-                   strict=True)
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @ImageTesting(['wms'], tolerance=0.02)
 def test_wms():

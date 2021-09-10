@@ -92,9 +92,8 @@ class TestOSNI:
     def test_default(self, approx):
         proj = ccrs.OSNI(approx=approx)
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(
-            res, (275614.26762651594, 386984.206429612),
-            decimal=0 if ccrs.PROJ_VERSION < (5, 0, 0) else 6)
+        np.testing.assert_array_almost_equal(res,
+                                             (275614.267627, 386984.206430))
 
     def test_nan(self):
         proj = ccrs.OSNI(approx=True)

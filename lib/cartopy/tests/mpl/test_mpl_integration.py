@@ -211,8 +211,6 @@ def test_multiple_projections():
                  transform=prj.as_geodetic())
 
 
-@pytest.mark.skipif(ccrs.PROJ_VERSION < (5, 2, 0),
-                    reason='Proj is too old.')
 @pytest.mark.natural_earth
 @ImageTesting(['multiple_projections520'], tolerance=0.65)
 def test_multiple_projections_520():
@@ -345,15 +343,8 @@ def test_pcolormesh_get_array_with_mask():
         'Data supplied does not match data retrieved in unwrapped case'
 
 
-tolerance = 1.87
-if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0):
-    tolerance += 0.8
-
-
 @pytest.mark.natural_earth
-@ImageTesting(
-    ['pcolormesh_global_wrap2'],
-    tolerance=tolerance)
+@ImageTesting(['pcolormesh_global_wrap2'], tolerance=1.87)
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -381,15 +372,8 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global()  # make sure everything is visible
 
 
-tolerance = 1.42
-if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0):
-    tolerance += 1.4
-
-
 @pytest.mark.natural_earth
-@ImageTesting(
-    ['pcolormesh_global_wrap3'],
-    tolerance=tolerance)
+@ImageTesting(['pcolormesh_global_wrap3'], tolerance=1.42)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -430,7 +414,7 @@ def test_pcolormesh_global_with_wrap3():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap3'], tolerance=tolerance)
+@ImageTesting(['pcolormesh_global_wrap3'], tolerance=1.42)
 def test_pcolormesh_set_array_with_mask():
     """Testing that set_array works with masked arrays properly."""
     nx, ny = 33, 17
@@ -480,7 +464,7 @@ def test_pcolormesh_set_array_with_mask():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap3'], tolerance=tolerance)
+@ImageTesting(['pcolormesh_global_wrap3'], tolerance=1.42)
 def test_pcolormesh_set_clim_with_mask():
     """Testing that set_clim works with masked arrays properly."""
     nx, ny = 33, 17

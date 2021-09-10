@@ -19,25 +19,14 @@ from .helpers import check_proj_params
 _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
-# Increase tolerance if using older proj releases
-if ccrs.PROJ_VERSION >= (6, 3, 1):
-    _TRANSFORM_TOL = 7
-elif ccrs.PROJ_VERSION >= (4, 9):
-    _TRANSFORM_TOL = 0
-else:
-    _TRANSFORM_TOL = -1
-_LIMIT_TOL = -1  # if ccrs.PROJ_VERSION < (5, 2, 0) else 7
-
 
 def test_default():
     robin = ccrs.Robinson()
     other_args = {'a=6378137.0', 'lon_0=0'}
     check_proj_params('robin', robin, other_args)
 
-    assert_almost_equal(robin.x_limits,
-                        [-17005833.3305252, 17005833.3305252])
-    assert_almost_equal(robin.y_limits,
-                        [-8625154.6651000, 8625154.6651000], _LIMIT_TOL)
+    assert_almost_equal(robin.x_limits, [-17005833.3305252, 17005833.3305252])
+    assert_almost_equal(robin.y_limits, [-8625154.6651000, 8625154.6651000])
 
 
 def test_sphere_globe():
@@ -47,8 +36,7 @@ def test_sphere_globe():
     check_proj_params('robin', robin, other_args)
 
     assert_almost_equal(robin.x_limits, [-2666.2696851, 2666.2696851])
-    assert_almost_equal(robin.y_limits, [-1352.3000000, 1352.3000000],
-                        _LIMIT_TOL)
+    assert_almost_equal(robin.y_limits, [-1352.3000000, 1352.3000000])
 
 
 def test_ellipse_globe():
@@ -63,8 +51,7 @@ def test_ellipse_globe():
 
     # Limits are the same as default since ellipses are not supported.
     assert_almost_equal(robin.x_limits, [-17005833.3305252, 17005833.3305252])
-    assert_almost_equal(robin.y_limits, [-8625154.6651000, 8625154.6651000],
-                        _LIMIT_TOL)
+    assert_almost_equal(robin.y_limits, [-8625154.6651000, 8625154.6651000])
 
 
 def test_eccentric_globe():
@@ -80,8 +67,7 @@ def test_eccentric_globe():
 
     # Limits are the same as spheres since ellipses are not supported.
     assert_almost_equal(robin.x_limits, [-2666.2696851, 2666.2696851])
-    assert_almost_equal(robin.y_limits, [-1352.3000000, 1352.3000000],
-                        _LIMIT_TOL)
+    assert_almost_equal(robin.y_limits, [-1352.3000000, 1352.3000000])
 
 
 def test_offset():
@@ -99,11 +85,9 @@ def test_central_longitude(lon):
     other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('robin', robin, other_args)
 
-    assert_almost_equal(robin.x_limits,
-                        [-17005833.3305252, 17005833.3305252],
+    assert_almost_equal(robin.x_limits, [-17005833.3305252, 17005833.3305252],
                         decimal=5)
-    assert_almost_equal(robin.y_limits,
-                        [-8625154.6651000, 8625154.6651000], _LIMIT_TOL)
+    assert_almost_equal(robin.y_limits, [-8625154.6651000, 8625154.6651000])
 
 
 def test_transform_point():
@@ -115,8 +99,7 @@ def test_transform_point():
 
     # this way has always worked
     result = _CRS_ROB.transform_point(35.0, 70.0, _CRS_PC)
-    assert_array_almost_equal(result, (2376187.2182271, 7275318.1162980),
-                              _TRANSFORM_TOL)
+    assert_array_almost_equal(result, (2376187.2182271, 7275318.1162980))
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_point(np.nan, 70.0, _CRS_PC)
@@ -139,16 +122,14 @@ def test_transform_points():
                                        np.array([35.0]),
                                        np.array([70.0]))
     assert_array_almost_equal(result,
-                              [[2376187.2182271, 7275318.1162980, 0]],
-                              _TRANSFORM_TOL)
+                              [[2376187.2182271, 7275318.1162980, 0]])
 
     result = _CRS_ROB.transform_points(_CRS_PC,
                                        np.array([35.0]),
                                        np.array([70.0]),
                                        np.array([0.0]))
     assert_array_almost_equal(result,
-                              [[2376187.2182271, 7275318.1162980, 0]],
-                              _TRANSFORM_TOL)
+                              [[2376187.2182271, 7275318.1162980, 0]])
 
     # this always did something, but result has altered
     result = _CRS_ROB.transform_points(_CRS_PC,

@@ -589,18 +589,6 @@ def _interpolator(src_crs, dest_projection):
     else:
         interpolator = CartesianInterpolator()
     interpolator.init(src_crs, dest_projection)
-    if (6, 1, 1) <= PROJ_VERSION < (6, 3, 0):
-        # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
-        # See https://github.com/OSGeo/proj#1782.
-        lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
-        if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
-                src_crs.proj4_params.get('o_proj', '') in lonlat and
-                'to_meter' in src_crs.proj4_params):
-            interpolator.src_scale = src_crs.proj4_params['to_meter']
-        if (dest_projection.proj4_params.get('proj', '') == 'ob_tran' and
-                dest_projection.proj4_params.get('o_proj', '') in lonlat and
-                'to_meter' in dest_projection.proj4_params):
-            interpolator.dest_scale = 1 / dest_projection.proj4_params['to_meter']
     return interpolator
 
 

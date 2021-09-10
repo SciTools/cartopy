@@ -54,7 +54,7 @@ TEST_PROJS = [
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner1'],
               # Robinson projection is slightly better in Proj 6+.
-              tolerance=0.7 if ccrs.PROJ_VERSION >= (6, 0, 0) else 0.5)
+              tolerance=0.7)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -210,9 +210,7 @@ def test_grid_labels():
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_tight'],
-              tolerance=grid_label_tol if ccrs.PROJ_VERSION < (7, 1, 0)
-              else 4)
+@ImageTesting(['gridliner_labels_tight'], tolerance=4)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -262,14 +260,7 @@ def test_grid_labels_inline():
         else:
             kwargs = {}
         ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
-        if (ccrs.PROJ_VERSION[:2] == (5, 0) and
-                proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
-                         ccrs.Geostationary, ccrs.NearsidePerspective)):
-            # Above projections are broken, so skip labels.
-            # Add gridlines anyway to minimize image differences.
-            ax.gridlines()
-        else:
-            ax.gridlines(draw_labels=True, auto_inline=True)
+        ax.gridlines(draw_labels=True, auto_inline=True)
         ax.coastlines(resolution="110m")
         ax.set_title(proj, y=1.075)
     plt.subplots_adjust(wspace=0.35, hspace=0.35)
@@ -297,14 +288,7 @@ def test_grid_labels_inline_usa():
         except Exception:
             pass
         ax.set_title(proj, y=1.075)
-        if (ccrs.PROJ_VERSION[:2] == (5, 0) and
-                proj in (ccrs.Orthographic, ccrs.AlbersEqualArea,
-                         ccrs.Geostationary, ccrs.NearsidePerspective)):
-            # Above projections are broken, so skip labels.
-            # Add gridlines anyway to minimize image differences.
-            ax.gridlines()
-        else:
-            ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+        ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
         ax.coastlines(resolution="110m")
 
     plt.subplots_adjust(wspace=0.35, hspace=0.35)

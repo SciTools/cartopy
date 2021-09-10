@@ -18,8 +18,6 @@ from .helpers import check_proj_params
 
 @pytest.mark.parametrize("emphasis", ["land", "ocean"])
 def test_default(emphasis):
-    if emphasis == "ocean" and ccrs.PROJ_VERSION < (7, 1, 0):
-        pytest.skip()
     igh = ccrs.InterruptedGoodeHomolosine(emphasis=emphasis)
     other_args = {"ellps=WGS84", "lon_0=0"}
     if emphasis == "land":
@@ -36,8 +34,6 @@ def test_default(emphasis):
 
 @pytest.mark.parametrize("emphasis", ["land", "ocean"])
 def test_eccentric_globe(emphasis):
-    if emphasis == "ocean" and ccrs.PROJ_VERSION < (7, 1, 0):
-        pytest.skip()
     globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500, ellipse=None)
     igh = ccrs.InterruptedGoodeHomolosine(globe=globe, emphasis=emphasis)
     other_args = {"a=1000", "b=500", "lon_0=0"}
@@ -55,8 +51,6 @@ def test_eccentric_globe(emphasis):
     [("land", -10.0), ("land", 10.0), ("ocean", -10.0), ("ocean", 10.0)],
 )
 def test_central_longitude(emphasis, lon):
-    if emphasis == "ocean" and ccrs.PROJ_VERSION < (7, 1, 0):
-        pytest.skip()
     igh = ccrs.InterruptedGoodeHomolosine(
         central_longitude=lon, emphasis=emphasis
     )

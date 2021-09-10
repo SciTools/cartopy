@@ -62,7 +62,7 @@ except ImportError:
 
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 7, 2)
-PROJ_MIN_VERSION = (4, 9, 0)
+PROJ_MIN_VERSION = (8, 0, 0)
 
 
 def file_walk_relative(top, remove=''):
@@ -172,18 +172,6 @@ def find_proj_version_by_program(conda=None):
     return proj_version
 
 
-def get_proj_libraries():
-    """
-    This function gets the PROJ libraries to cythonize with
-    """
-    proj_libraries = ["proj"]
-    if os.name == "nt" and (6, 0, 0) <= proj_version < (6, 3, 0):
-        proj_libraries = [
-            "proj_{}_{}".format(proj_version[0], proj_version[1])
-        ]
-    return proj_libraries
-
-
 conda = os.getenv('CONDA_DEFAULT_ENV')
 if conda is not None and conda in sys.prefix:
     # Conda does not provide pkg-config compatibility, but the search paths
@@ -199,7 +187,7 @@ if conda is not None and conda in sys.prefix:
         exit(1)
 
     proj_includes = []
-    proj_libraries = get_proj_libraries()
+    proj_libraries = ["proj"]
     proj_library_dirs = []
 
 else:
@@ -222,7 +210,7 @@ else:
             exit(1)
 
         proj_includes = []
-        proj_libraries = get_proj_libraries()
+        proj_libraries = ["proj"]
         proj_library_dirs = []
     else:
         if proj_version < PROJ_MIN_VERSION:
