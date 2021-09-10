@@ -87,7 +87,7 @@ Further information about the required dependencies can be found here:
     Python package for the manipulation and analysis of planar geometric
     objects.
 
-**pyshp** 2.0 or later (https://pypi.python.org/pypi/pyshp)
+**pyshp** 2.1 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
 **PROJ** 8.0.0 or later (https://proj.org/).
