@@ -134,7 +134,7 @@ These packages are required for the full Cartopy test suite to run.
 **flufl.lock** (https://flufllock.readthedocs.io/)
     A platform independent file lock for Python.
 
-**pytest** 3.1.0 or later (https://docs.pytest.org/en/latest/)
+**pytest** 5.1.2 or later (https://docs.pytest.org/en/latest/)
     Python package for software testing.
 
 **pep8** 1.3.3 or later (https://pypi.python.org/pypi/pep8)

@@ -329,14 +329,14 @@ def test_azuremaps_get_image():
 
 @pytest.mark.network
 @pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
-def test_cache(cache_dir, tmpdir):
+def test_cache(cache_dir, tmp_path):
     if cache_dir == "tmpdir":
-        tmpdir_str = tmpdir.strpath
+        tmpdir_str = str(tmp_path)
     else:
         tmpdir_str = cache_dir
 
     if cache_dir is True:
-        config["cache_dir"] = tmpdir.strpath
+        config["cache_dir"] = str(tmp_path)
 
     # Fetch tiles and save them in the cache
     with warnings.catch_warnings(record=True) as w:
