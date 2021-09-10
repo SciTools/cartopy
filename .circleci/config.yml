@@ -1,6 +1,7 @@
 # Circle CI configuration file
 # https://circleci.com/docs/
 
+---
 version: 2.1
 
 
@@ -8,7 +9,7 @@ version: 2.1
 # Define some common steps as YAML anchors.
 #
 
-apt-run:  &apt-install
+apt-run: &apt-install
   name: Install apt packages
   command: |
     apt-get -qq update
@@ -17,15 +18,18 @@ apt-run:  &apt-install
       g++ \
       make
 
-env-run:  &env-setup
+env-run: &env-setup
   # Create the basic testing environment
   # Mixing conda-forge and defaults in root is a recipe for trouble, so create
   # a separate environment.
   name: Setup conda environment
   command: |
-    conda config --set always_yes yes --set changeps1 no --set show_channel_urls yes
-    conda create -n test-environment python=$PYTHON_VERSION
+    conda config \
+        --set always_yes yes \
+        --set changeps1 no \
+        --set show_channel_urls yes
     conda config --add channels conda-forge
+    conda create -n test-environment python=$PYTHON_VERSION
 
 deps-run: &deps-install
   name: Install Python dependencies
