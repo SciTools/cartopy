@@ -11,25 +11,16 @@ This module defines the Geodesic class which can interface with the Proj
 geodesic functions.
 
 """
-from cpython.mem cimport PyMem_Malloc
-from cpython.mem cimport PyMem_Free
 import numpy as np
-cimport numpy as np
-cimport cython
-from cython.parallel cimport prange
+import pyproj
 import shapely.geometry as sgeom
 
-from ._geodesic cimport geod_geodesic, geod_init, geod_direct, geod_inverse
 
-
-cdef class Geodesic:
+class Geodesic:
     """
     Define an ellipsoid on which to solve geodesic problems.
 
     """
-    cdef geod_geodesic* geod
-    cdef double radius
-    cdef double flattening
 
     def __init__(self, radius=6378137.0, flattening=1/298.257223563):
         """
@@ -46,27 +37,16 @@ cdef class Geodesic:
             Defaults to the WGS84 flattening (1/298.257223563).
 
         """
-        # This method exists solely for docstrings. The __cinit__ method is
-        # where the real work happens. Make sure to keep the signatures synced.
-
-    def __cinit__(self, radius=6378137.0, flattening=1/298.257223563):
-        # allocate some memory (filled with random data)
-        self.geod = <geod_geodesic*> PyMem_Malloc(sizeof(geod_geodesic))
-        if not self.geod:
-            raise MemoryError()
-        geod_init(self.geod, radius, flattening)
+        if flattening > 1:
+            flattening = 1 / flattening
+        self.geod = pyproj.Geod(a=radius, f=flattening)
         self.radius = radius
         self.flattening = flattening
 
-    def __dealloc__(self):
-        # Free allocated memory.
-        PyMem_Free(self.geod)
-
     def __str__(self):
-        fmt = self.radius, 1/self.flattening
-        return '<Geodesic: radius=%0.3f, flattening=1/%0.3f>' % fmt
+        return (f'<Geodesic: radius={self.radius:0.3f}, '
+                f'flattening=1/{1/self.flattening:0.3f}>')
 
-    @cython.boundscheck(False)
     def direct(self, points, azimuths, distances):
         """
         Solve the direct geodesic problem where the length of the geodesic is
@@ -95,10 +75,6 @@ cdef class Geodesic:
 
         """
 
-        cdef int n_points, i
-        cdef double[:, :] pts, orig_pts
-        cdef double[:] azims, dists
-
         # Create numpy arrays from inputs, and ensure correct shape. Note:
         # reshape(-1) returns a 1D array from a 0 dimensional array as required
         # for broadcasting.
@@ -123,19 +99,11 @@ cdef class Geodesic:
         if dists.size == 1:
             dists = np.repeat(dists, n_points)
 
-        cdef double[:, :] return_pts = np.empty((n_points, 3),
-                                                dtype=np.float64)
+        lons, lats, azims = self.geod.fwd(pts[:, 0], pts[:, 1], azims, dists)
+        # Convert back azimuth to forward azimuth.
+        azims += np.where(azims > 0, -180, 180)
+        return np.column_stack([lons, lats, azims])
 
-        with nogil:
-            for i in prange(n_points):
-                geod_direct(self.geod,
-                            pts[i, 1], pts[i, 0], azims[i], dists[i],
-                            &return_pts[i, 1], &return_pts[i, 0],
-                            &return_pts[i, 2])
-
-        return return_pts
-
-    @cython.boundscheck(False)
     def inverse(self, points, endpoints):
         """
         Solve the inverse geodesic problem.
@@ -160,17 +128,13 @@ cdef class Geodesic:
 
         """
 
-        cdef int n_points, i
-        cdef double[:, :] pts, epts, orig_pts
-
         # Create numpy arrays from inputs, and ensure correct shape.
         points = np.array(points, dtype=np.float64)
         endpoints = np.array(endpoints, dtype=np.float64)
 
         if points.ndim > 2 or (points.ndim == 2 and points.shape[1] != 2):
             raise ValueError(
-                'Expecting input points to be (N, 2), got {}'
-                ''.format(points.shape))
+                f'Expecting input points to be (N, 2), got {points.shape}')
 
         pts = points.reshape((-1, 2))
         epts = endpoints.reshape((-1, 2))
@@ -191,18 +155,13 @@ cdef class Geodesic:
             epts = np.empty([n_points, 2], dtype=np.float64)
             epts[:, :] = orig_pts
 
-        cdef double[:, :] results = np.empty((n_points, 3), dtype=np.float64)
+        start_azims, end_azims, dists = self.geod.inv(pts[:, 0], pts[:, 1],
+                                                      epts[:, 0], epts[:, 1])
+        # Convert back azimuth to forward azimuth.
+        end_azims += np.where(end_azims > 0, -180, 180)
+        return np.column_stack([dists, start_azims, end_azims])
 
-        with nogil:
-            for i in prange(n_points):
-                geod_inverse(self.geod, pts[i, 1], pts[i, 0], epts[i, 1],
-                             epts[i, 0], &results[i, 0], &results[i, 1],
-                             &results[i, 2])
-
-        return results
-
-    def circle(self, double lon, double lat, double radius, int n_samples=180,
-               endpoint=False):
+    def circle(self, lon, lat, radius, n_samples=180, endpoint=False):
         """
         Find a geodesic circle of given radius at a given point.
 
@@ -226,11 +185,9 @@ cdef class Geodesic:
 
         """
 
-        cdef int i
-
         # Put the input arguments into c-typed values.
-        cdef double[:, :] center = np.array([lon, lat]).reshape((1, 2))
-        cdef double[:] radius_m = np.asarray(radius).reshape(1)
+        center = np.array([lon, lat]).reshape((1, 2))
+        radius_m = np.asarray(radius).reshape(1)
 
         azimuths = np.linspace(360., 0., n_samples,
                                endpoint=endpoint).astype(np.double)
@@ -260,7 +217,8 @@ cdef class Geodesic:
             # Polygon.
             result = self.geometry_length(geometry.exterior)
 
-        elif hasattr(geometry, 'coords') and not isinstance(geometry, sgeom.Point):
+        elif (hasattr(geometry, 'coords') and
+                not isinstance(geometry, sgeom.Point)):
             coords = np.array(geometry.coords)
             result = self.geometry_length(coords)
 
@@ -271,6 +229,6 @@ cdef class Geodesic:
             result = distances.sum()
 
         else:
-            raise TypeError('Unhandled type {}'.format(geometry.__class__))
+            raise TypeError(f'Unhandled type {geometry.__class__}')
 
         return result
