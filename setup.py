@@ -61,7 +61,7 @@ except ImportError:
 
 
 # Please keep in sync with INSTALL file.
-GEOS_MIN_VERSION = (3, 3, 3)
+GEOS_MIN_VERSION = (3, 7, 2)
 PROJ_MIN_VERSION = (4, 9, 0)
 
 
