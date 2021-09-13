@@ -60,7 +60,7 @@ def main():
     projection = ccrs.Geostationary(globe=globe)
 
     fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1, projection=projection, frameon=False)
+    ax = fig.add_subplot(1, 1, 1, projection=projection)
     ax.imshow(img, transform=crs, extent=extent)
     fig.text(.075, .012, "Image credit: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA/PSI",
              bbox={'facecolor': 'w', 'edgecolor': 'k'})
