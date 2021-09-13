@@ -47,9 +47,9 @@ FORCE_CYTHON = os.environ.get('FORCE_CYTHON', False)
 
 if not IS_SDIST or FORCE_CYTHON:
     import Cython
-    if Cython.__version__ < '0.28':
+    if Cython.__version__ < '0.29':
         raise ImportError(
-            "Cython 0.28+ is required to install cartopy from source.")
+            "Cython 0.29+ is required to install cartopy from source.")
 
     from Cython.Distutils import build_ext as cy_build_ext
 
@@ -61,7 +61,7 @@ except ImportError:
 
 
 # Please keep in sync with INSTALL file.
-GEOS_MIN_VERSION = (3, 3, 3)
+GEOS_MIN_VERSION = (3, 7, 2)
 PROJ_MIN_VERSION = (4, 9, 0)
 
 
