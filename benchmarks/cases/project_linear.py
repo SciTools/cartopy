@@ -6,7 +6,6 @@
 
 import cartopy.io.shapereader as shpreader
 import cartopy.crs as ccrs
-import shapely.geometry as sgeom
 
 
 class Oceans:
@@ -14,9 +13,8 @@ class Oceans:
         shpfilename = shpreader.natural_earth(
             resolution='50m', category='physical', name='ocean')
         reader = shpreader.Reader(shpfilename)
-        oceans = reader.geometries()
-        oceans = sgeom.MultiPolygon(oceans)
-        self.geoms = oceans
+        oceans = list(reader.geometries())
+        self.geoms = oceans[0]
 
 
 OCEAN = Oceans()
