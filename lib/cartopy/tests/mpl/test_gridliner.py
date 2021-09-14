@@ -427,7 +427,7 @@ def test_gridliner_line_limits():
           'right': [],
           'top': ['50°N'],
           'bottom': []}),
-     ])
+    ])
 def test_gridliner_draw_labels_param(draw_labels, result):
     plt.figure()
     lambert_crs = ccrs.LambertConformal(central_longitude=105)
