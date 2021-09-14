@@ -47,13 +47,21 @@
     //
     "matrix": {
         "numpy": [""],
-        "cython": [""],
         "matplotlib": [""],
-        "proj4": [""],
+        "pyproj": [],
         "pykdtree": [""],
         "scipy": [""],
         "fiona": [""]
     },
+
+    // Change the build command to pre-install build-time dependencies. We
+    // don't put this in matrix, because these are not things we will ever want
+    // to compare versions.
+    "build_command": [
+        "python -mpip install cython setuptools-scm",
+        "python setup.py build",
+        "PIP_NO_BUILD_ISOLATION=false python -mpip wheel --no-deps --no-index -w {build_cache_dir} {build_dir}"
+    ],
 
     // The directory (relative to the current directory) that benchmarks are
     // stored in.  If not provided, defaults to "benchmarks"
