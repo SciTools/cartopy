@@ -8,42 +8,22 @@ import cartopy.io.shapereader as shpreader
 import cartopy.crs as ccrs
 
 
-class Oceans:
-    def prepare(self):
+class Suite:
+    params = [
+        ('PlateCarree', 'NorthPolarStereo', 'Robinson',
+         'InterruptedGoodeHomolosine'),
+        ('110m', '50m'),
+    ]
+    param_names = ['projection', 'resolution']
+
+    def setup(self, projection, resolution):
         shpfilename = shpreader.natural_earth(
-            resolution='50m', category='physical', name='ocean')
+            resolution=resolution, category='physical', name='ocean')
         reader = shpreader.Reader(shpfilename)
         oceans = list(reader.geometries())
         self.geoms = oceans[0]
 
+        self.projection = getattr(ccrs, projection)()
 
-OCEAN = Oceans()
-
-
-def use_setup(setup_fn):
-    # A decorator to create a decorator...
-    def decorator(test_func):
-        # This decorator attaches the setup function to the test.
-        test_func.setup = setup_fn
-        return test_func
-    return decorator
-
-
-@use_setup(OCEAN.prepare)
-def time_ocean_pc():
-    ccrs.PlateCarree().project_geometry(OCEAN.geoms)
-
-
-@use_setup(OCEAN.prepare)
-def time_ocean_np():
-    ccrs.NorthPolarStereo().project_geometry(OCEAN.geoms)
-
-
-@use_setup(OCEAN.prepare)
-def time_ocean_rob():
-    ccrs.Robinson().project_geometry(OCEAN.geoms)
-
-
-@use_setup(OCEAN.prepare)
-def time_ocean_igh():
-    ccrs.InterruptedGoodeHomolosine().project_geometry(OCEAN.geoms)
+    def time_project_linear(self, projection, resolution):
+        self.projection.project_geometry(self.geoms)
