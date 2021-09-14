@@ -44,7 +44,7 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
     cartopy.crs.LambertConformal,
     cartopy.crs.TransverseMercator,
     cartopy.crs.Gnomonic,
-    )
+)
 
 
 def _fix_lons(lons):
@@ -582,7 +582,7 @@ class Gridliner:
 
     def _draw_this_label(self, xylabel, loc):
         """Should I draw this kind of label here?"""
-        draw_labels = getattr(self, loc+'_labels')
+        draw_labels = getattr(self, loc + '_labels')
 
         # By default, only x on top/bottom and only y on left/right
         if draw_labels is True and loc != 'geo':
@@ -726,30 +726,30 @@ class Gridliner:
                 'coord_type': "x",
                 'opcmp': operator.le,
                 'opval': max,
-                },
+            },
             'bottom': {
                 'index': 1,
                 'coord_type': "y",
                 'opcmp': operator.le,
                 'opval': max,
-                },
+            },
             'right': {
                 'index': 0,
                 'coord_type': "x",
                 'opcmp': operator.ge,
                 'opval': min,
-                },
+            },
             'top': {
                 'index': 1,
                 'coord_type': "y",
                 'opcmp': operator.ge,
                 'opval': min,
-                },
+            },
         }
         for side, specs in spines_specs.items():
             bbox = self.axes.spines[side].get_window_extent(renderer)
             specs['coords'] = [
-                getattr(bbox, specs['coord_type']+idx) for idx in "01"]
+                getattr(bbox, specs['coord_type'] + idx) for idx in "01"]
 
         def remove_path_dupes(path):
             """
@@ -823,9 +823,9 @@ class Gridliner:
                             continue
                         n2 = min(len(intersection), 3)
                         tails = [[(pt.x, pt.y)
-                                  for pt in intersection[:n2:n2-1]]]
+                                  for pt in intersection[:n2:n2 - 1]]]
                         heads = [[(pt.x, pt.y)
-                                  for pt in intersection[-1:-n2-1:-n2+1]]]
+                                  for pt in intersection[-1:-n2 - 1:-n2 + 1]]]
                     elif isinstance(intersection, (sgeom.LineString,
                                                    sgeom.MultiLineString)):
                         if isinstance(intersection, sgeom.LineString):
@@ -846,8 +846,8 @@ class Gridliner:
                             if len(inter.coords) < 2:
                                 continue
                             n2 = min(len(inter.coords), 8)
-                            tails.append(inter.coords[:n2:n2-1])
-                            heads.append(inter.coords[-1:-n2-1:-n2+1])
+                            tails.append(inter.coords[:n2:n2 - 1])
+                            heads.append(inter.coords[-1:-n2 - 1:-n2 + 1])
                         if not tails:
                             continue
                     elif isinstance(intersection,
@@ -897,8 +897,8 @@ class Gridliner:
                                 loc = "inline"
                             else:
                                 x1, y1 = pt1
-                                segment_angle = (np.arctan2(y0 - y1, x0 - x1)
-                                                 * 180 / np.pi)
+                                segment_angle = (np.arctan2(
+                                    y0 - y1, x0 - x1) * 180 / np.pi)
                                 loc = self._get_loc_from_spine_intersection(
                                     spines_specs, xylabel, x0, y0)
                                 if not self._draw_this_label(xylabel, loc):
@@ -911,7 +911,7 @@ class Gridliner:
 
                             # Get x and y in data coords
                             pt0 = self.axes.transData.inverted(
-                                ).transform_point(pt0)
+                            ).transform_point(pt0)
                             if y_inline:
                                 # 180 degrees isn't formatted with a
                                 # suffix and adds confusion if it's inline
@@ -966,8 +966,8 @@ class Gridliner:
                                 # works on text, this
                                 # clipping can be left to it.
                                 center = artist.get_transform(
-                                    ).transform_point(
-                                        artist.get_position())
+                                ).transform_point(
+                                    artist.get_position())
                                 visible = (map_boundary_path
                                            .contains_point(center))
                             else:
@@ -1118,14 +1118,14 @@ class Gridliner:
                     not isinstance(self.rotate_labels, bool)):
                 angle = self.rotate_labels
             kw = {'rotation': angle, 'rotation_mode': 'anchor', 'va': 'center'}
-            if (angle < 90+self.offset_angle and
+            if (angle < 90 + self.offset_angle and
                     angle > -90 + self.offset_angle):
                 kw.update(ha="left", rotation=angle)
             else:
-                kw.update(ha="right", rotation=angle+180)
+                kw.update(ha="right", rotation=angle + 180)
 
         # Inside labels
-        if getattr(self, xylabel+"padding") < 0:
+        if getattr(self, xylabel + "padding") < 0:
             if "ha" in kw:
                 if kw["ha"] == "left":
                     kw["ha"] = "right"
