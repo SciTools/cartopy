@@ -49,10 +49,26 @@ cdef extern from "geos_c.h":
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
     cdef int GEOS_MULTILINESTRING
 
-from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
-                                  geod_init, geod_geninverse,
-                                  geod_lineinit, geod_genposition,
-                                  GEOD_ARCMODE, GEOD_LATITUDE, GEOD_LONGITUDE)
+cdef extern from "geodesic.h":
+    # External imports of Proj4.9 functions
+    cdef struct geod_geodesic:
+        pass
+    cdef struct geod_geodesicline:
+        pass
+
+    void geod_init(geod_geodesic*, double, double) nogil
+    double geod_geninverse(geod_geodesic*, double, double, double, double,
+                           double*, double*, double*, double*, double*,
+                           double*, double*) nogil
+    void geod_lineinit(geod_geodesicline*, geod_geodesic*, double, double,
+                       double, int) nogil
+    void geod_genposition(geod_geodesicline*, int, double, double*,
+                          double*, double*, double*, double*, double*,
+                          double*, double*) nogil
+
+    cdef int GEOD_ARCMODE
+    cdef int GEOD_LATITUDE
+    cdef int GEOD_LONGITUDE
 
 import re
 import warnings
