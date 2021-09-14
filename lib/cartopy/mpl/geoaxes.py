@@ -68,16 +68,6 @@ A dictionary of background images in the directory specified by the
 CARTOPY_USER_BACKGROUNDS environment variable.
 """
 
-# A list of projections that can have wrapped coordinates.
-_WRAP_PROJECTIONS = (ccrs._RectangularProjection,
-                     ccrs._WarpedRectangularProjection,
-                     ccrs.InterruptedGoodeHomolosine,
-                     ccrs.Mercator,
-                     ccrs.LambertAzimuthalEqualArea,
-                     ccrs.AzimuthalEquidistant,
-                     ccrs.TransverseMercator,
-                     ccrs.Stereographic)
-
 
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
@@ -1816,7 +1806,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if (kwargs.get('shading', 'auto') in ('nearest', 'auto') and
                 len(args) == 3 and
-                isinstance(kwargs.get('transform'), _WRAP_PROJECTIONS)):
+                getattr(kwargs.get('transform'), '_wrappable', False)):
             X = np.asanyarray(args[0])
             Y = np.asanyarray(args[1])
             nrows, ncols = np.asanyarray(args[2]).shape
@@ -1863,8 +1853,8 @@ class GeoAxes(matplotlib.axes.Axes):
         cross the boundary of the projection.
         """
         t = kwargs.get('transform', None)
-        if not (isinstance(t, _WRAP_PROJECTIONS) and
-                isinstance(self.projection, _WRAP_PROJECTIONS)):
+        if not (getattr(t, '_wrappable', False) and
+                getattr(self.projection, '_wrappable', False)):
             # Nothing to do
             return collection
 
