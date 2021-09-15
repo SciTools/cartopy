@@ -161,8 +161,8 @@ class AnchoredScaleBar(AnchoredOffsetbox):
 
         Txt_xlabel = TextArea(s=xlabel,
                               textprops=dict(fontsize=fontsize,
-                                             fontweight=tick_fontweight),
-                              minimumdescent=True)
+                                             fontweight=tick_fontweight)
+                              )
 
         # vertically packing a single stripe with respective label
 
