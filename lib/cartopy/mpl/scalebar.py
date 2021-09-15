@@ -181,7 +181,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
 
         else:
 
-            Text = TextArea(loc='',
+            Text = TextArea(s='',
                             textprops=dict(fontsize=ruler_unit_fontsize))
 
             child = VPacker(children=[child, Text],
