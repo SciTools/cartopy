@@ -30,7 +30,6 @@ import matplotlib.spines as mspines
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
-
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
@@ -305,12 +304,7 @@ def _add_transform(func):
         transform = kwargs.get('transform', None)
         if transform is None:
             transform = self.projection
-        # Raise an error if any of these functions try to use
-        # a spherical source CRS.
-        non_spherical_funcs = ['contour', 'contourf', 'pcolormesh', 'pcolor',
-                               'quiver', 'barbs', 'streamplot']
-        if (func.__name__ in non_spherical_funcs and
-                isinstance(transform, ccrs.CRS) and
+        if (isinstance(transform, ccrs.CRS) and
                 not isinstance(transform, ccrs.Projection)):
             raise ValueError(f'Invalid transform: Spherical {func.__name__} '
                              'is not supported - consider using '
@@ -505,12 +499,11 @@ class GeoAxes(matplotlib.axes.Axes):
         #       caching the resulting image;
         #       buffering the result by 10%...;
         if not self._done_img_factory:
-            for factory, factory_args, factory_kwargs in self.img_factories:
+            for factory, args, kwargs in self.img_factories:
                 img, extent, origin = factory.image_for_domain(
-                    self._get_extent_geom(factory.crs), factory_args[0])
+                    self._get_extent_geom(factory.crs), args[0])
                 self.imshow(img, extent=extent, origin=origin,
-                            transform=factory.crs, *factory_args[1:],
-                            **factory_kwargs)
+                            transform=factory.crs, *args[1:], **kwargs)
         self._done_img_factory = True
 
         return matplotlib.axes.Axes.draw(self, renderer=renderer, **kwargs)
@@ -638,8 +631,7 @@ class GeoAxes(matplotlib.axes.Axes):
             each circle.
 
 
-        ``**kwargs`` are passed through to
-        :class:`cartopy.feature.ShapelyFeature`.
+        ``**kwargs`` are passed through to `class:ShapelyFeature`.
 
         """
         from cartopy import geodesic
@@ -664,7 +656,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for lon, lat in zip(lons, lats):
-            circle = geod.circle(lon, lat, rad_km*1e3, n_samples=n_samples)
+            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
             geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
@@ -1109,11 +1101,11 @@ class GeoAxes(matplotlib.axes.Axes):
         else:
             # return only a subset of the image:
             # set up coordinate arrays:
-            d_lat = 180 / img.shape[0]
-            d_lon = 360 / img.shape[1]
+            d_lat = 180.0 / img.shape[0]
+            d_lon = 360.0 / img.shape[1]
             # latitude starts at 90N for this image:
-            lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2)) + 90
-            lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2)) - 180
+            lat_pts = (np.arange(img.shape[0]) * -d_lat - (d_lat / 2.0)) + 90.0
+            lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2.0)) - 180.0
 
             # which points are in range:
             lat_in_range = np.logical_and(lat_pts >= extent[2],
@@ -1130,10 +1122,10 @@ class GeoAxes(matplotlib.axes.Axes):
                 # now join them up:
                 img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
                 # now define the extent for output that matches those points:
-                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2,
-                              lon_pts[lon_in_range2][-1] + d_lon / 2 + 360,
-                              lat_pts[lat_in_range][-1] - d_lat / 2,
-                              lat_pts[lat_in_range][0] + d_lat / 2]
+                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2.0,
+                              lon_pts[lon_in_range2][-1] + d_lon / 2.0 + 360,
+                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                              lat_pts[lat_in_range][0] + d_lat / 2.0]
             else:
                 # not crossing the dateline, so just find the region:
                 lon_in_range = np.logical_and(lon_pts >= extent[0],
@@ -1249,7 +1241,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def imshow(self, img, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow`.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.imshow'.
 
         Parameters
         ----------
@@ -1352,7 +1344,7 @@ class GeoAxes(matplotlib.axes.Axes):
             # As a workaround to a matplotlib limitation, turn any images
             # which are RGB(A) with a mask into unmasked RGBA images with alpha
             # put into the A channel.
-            if np.ma.is_masked(img) and len(img.shape) > 2:
+            if (np.ma.is_masked(img) and len(img.shape) > 2):
                 # if we don't pop alpha, imshow will apply (erroneously?) a
                 # 1D alpha to the RGBA array
                 # kwargs['alpha'] is guaranteed to be either 1D, 2D, or None
@@ -1379,7 +1371,9 @@ class GeoAxes(matplotlib.axes.Axes):
                   xformatter=None, yformatter=None, xlim=None, ylim=None,
                   rotate_labels=None, xlabel_style=None, ylabel_style=None,
                   labels_bbox_style=None, xpadding=5, ypadding=5,
-                  offset_angle=25, auto_update=False, **kwargs):
+                  offset_angle=25, auto_update=False,
+                  geoaxes_kwargs={},
+                  **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1489,7 +1483,11 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Keyword Parameters
         ------------------
-        **kwargs: dict
+        **geoaxes_kwargs: optional
+            All geoaxes_kwargs will be passed to the Geoaxes instance.
+            See gridliner.py and formatters.py for more details on these
+            other kwarg parameters.
+        **kwargs
             All other keywords control line properties.  These are passed
             through to :class:`matplotlib.collections.Collection`.
 
@@ -1509,7 +1507,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if crs is None:
             crs = ccrs.PlateCarree()
+
         from cartopy.mpl.gridliner import Gridliner
+
         gl = Gridliner(
             self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
             ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
@@ -1519,7 +1519,9 @@ class GeoAxes(matplotlib.axes.Axes):
             xlabel_style=xlabel_style, ylabel_style=ylabel_style,
             labels_bbox_style=labels_bbox_style,
             xpadding=xpadding, ypadding=ypadding, offset_angle=offset_angle,
-            auto_update=auto_update)
+            auto_update=auto_update,
+            **geoaxes_kwargs)
+
         self._gridliners.append(gl)
         return gl
 
@@ -1595,7 +1597,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def contour(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.contour`.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.contour'.
 
         Other Parameters
         ----------------
@@ -1605,6 +1607,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
 
+<<<<<<< HEAD
         # We need to compute the dataLim correctly for contours.
         bboxes = [col.get_datalim(self.transData)
                   for col in result.collections
@@ -1613,6 +1616,8 @@ class GeoAxes(matplotlib.axes.Axes):
             extent = mtransforms.Bbox.union(bboxes)
             self.dataLim.update_from_data_xy(extent.get_points(), ignore=False)
 
+=======
+>>>>>>> 5202258512a4585c80a7545466d5c644314ae9b8
         self.autoscale_view()
 
         # Re-cast the contour as a GeoContourSet.
@@ -1623,7 +1628,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def contourf(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf`.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf'.
 
         Other Parameters
         ----------------
@@ -1662,7 +1667,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def scatter(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter`.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.scatter'.
 
         Other Parameters
         ----------------
@@ -1713,7 +1718,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def pcolormesh(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh`.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolormesh'.
 
         Other Parameters
         ----------------
@@ -1727,7 +1732,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _pcolormesh_patched(self, *args, **kwargs):
         """
-        A modified duplicate of :func:`~matplotlib.pyplot.pcolormesh`.
+        A modified duplicate of :func:`~matplotlib.pyplot.pcolormesh'.
 
         This function contains patches for Cartopy-specific behaviour, such as
         using the transform for limit checks, applying longitude wrapping, etc.
@@ -1854,7 +1859,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     #       projection which will help with curved boundaries
                     size_limit = (abs(self.projection.x_limits[1] -
                                       self.projection.x_limits[0]) /
-                                  (2*np.sqrt(2)))
+                                  (2 * np.sqrt(2)))
                     to_mask = (np.isnan(diagonal0_lengths) |
                                (diagonal0_lengths > size_limit) |
                                np.isnan(diagonal1_lengths) |
@@ -1870,7 +1875,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     # at this point C has a shape of (Ny-1, Nx-1), to_mask has
                     # a shape of (Ny-1, Nx-1) and pts has a shape of (Ny*Nx, 2)
 
-                    mask = np.zeros(C.shape, dtype=bool)
+                    mask = np.zeros(C.shape, dtype=np.bool)
 
                     # Mask out the cells if there was a diagonal found with a
                     # large length. NB. Masking too much only has
@@ -1938,7 +1943,7 @@ class GeoAxes(matplotlib.axes.Axes):
     @_add_transform
     def pcolor(self, *args, **kwargs):
         """
-        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor`.
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.pcolor'.
 
         Other Parameters
         ----------------

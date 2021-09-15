@@ -10,9 +10,10 @@ from matplotlib.ticker import Formatter, MaxNLocator
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
+from cartopy.mpl.formatters import CardinalDirections
 
 
-class _PlateCarreeFormatter(Formatter):
+class _PlateCarreeFormatter(Formatter, CardinalDirections):
     """
     Base class for formatting ticks on geographical axes using a
     rectangular projection (e.g. Plate Carree, Mercator).
@@ -43,6 +44,8 @@ class _PlateCarreeFormatter(Formatter):
         self._auto_hide_degrees = False
         self._auto_hide_minutes = False
         self._precision = 5  # locator precision
+
+        CardinalDirections.__init__(self)
 
     def __call__(self, value, pos=None):
         if self.axis is not None and isinstance(self.axis.axes, GeoAxes):
@@ -82,8 +85,10 @@ class _PlateCarreeFormatter(Formatter):
         if self._direction_labels:
             hemisphere = self._hemisphere(value, original_value)
         else:
+            WSL = [self.west_hemisphere_symbol, self.south_hemisphere_symbol]
+
             if (value != 0 and
-                    self._hemisphere(value, original_value) in ['W', 'S']):
+                    self._hemisphere(value, original_value) in WSL):
                 sign = '-'
 
         if not self._dms:
@@ -272,17 +277,20 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             labels = [lat_formatter(value) for value in ticks]
 
         """
-        super().__init__(
-            direction_label=direction_label,
-            degree_symbol=degree_symbol,
-            number_format=number_format,
-            transform_precision=transform_precision,
-            dms=dms,
-            minute_symbol=minute_symbol,
-            second_symbol=second_symbol,
-            seconds_number_format=seconds_number_format,
-            auto_hide=auto_hide,
-        )
+
+        Plate_args = dict(direction_label=direction_label,
+                          degree_symbol=degree_symbol,
+                          number_format=number_format,
+                          transform_precision=transform_precision,
+                          dms=dms,
+                          minute_symbol=minute_symbol,
+                          second_symbol=second_symbol,
+                          seconds_number_format=seconds_number_format,
+                          auto_hide=auto_hide)
+
+        _PlateCarreeFormatter.__init__(self,
+                                       **Plate_args
+                                       )
 
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
@@ -290,9 +298,9 @@ class LatitudeFormatter(_PlateCarreeFormatter):
     def _hemisphere(self, value, value_source_crs):
 
         if value > 0:
-            hemisphere = 'N'
+            hemisphere = self.north_hemisphere_symbol
         elif value < 0:
-            hemisphere = 'S'
+            hemisphere = self.south_hemisphere_symbol
         else:
             hemisphere = ''
         return hemisphere
@@ -396,17 +404,21 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             lon_formatter.set_locs(ticks)
             labels = [lon_formatter(value) for value in ticks]
         """
-        super().__init__(
-            direction_label=direction_label,
-            degree_symbol=degree_symbol,
-            number_format=number_format,
-            transform_precision=transform_precision,
-            dms=dms,
-            minute_symbol=minute_symbol,
-            second_symbol=second_symbol,
-            seconds_number_format=seconds_number_format,
-            auto_hide=auto_hide,
-        )
+
+        Plate_args = dict(direction_label=direction_label,
+                          degree_symbol=degree_symbol,
+                          number_format=number_format,
+                          transform_precision=transform_precision,
+                          dms=dms,
+                          minute_symbol=minute_symbol,
+                          second_symbol=second_symbol,
+                          seconds_number_format=seconds_number_format,
+                          auto_hide=auto_hide)
+
+        _PlateCarreeFormatter.__init__(self,
+                                       **Plate_args
+                                       )
+
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
 
@@ -444,18 +456,18 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         value = self._fix_lons(value)
         # Perform basic hemisphere detection.
         if value < 0:
-            hemisphere = 'W'
+            hemisphere = self.west_hemisphere_symbol
         elif value > 0:
-            hemisphere = 'E'
+            hemisphere = self.east_hemisphere_symbol
         else:
             hemisphere = ''
         # Correct for user preferences:
         if value == 0 and self._zero_direction_labels:
             # Use the original tick value to determine the hemisphere.
             if value_source_crs < 0:
-                hemisphere = 'E'
+                hemisphere = self.east_hemisphere_symbol
             else:
-                hemisphere = 'W'
+                hemisphere = self.west_hemisphere_symbol
         if value in (-180, 180) and not self._dateline_direction_labels:
             hemisphere = ''
         return hemisphere
