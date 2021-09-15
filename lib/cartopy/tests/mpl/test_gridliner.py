@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
@@ -437,8 +438,7 @@ def test_gridliner_draw_labels_param(draw_labels, result):
                       x_inline=False, y_inline=False)
     gl.xlocator = mticker.FixedLocator([70, 100, 130])
     gl.ylocator = mticker.FixedLocator([40, 50])
-    plt.show()
     res = {}
     for loc in 'left', 'right', 'top', 'bottom':
-        artists = getattr(gl, loc+'_label_artists')
+        artists = getattr(gl, loc + '_label_artists')
         res[loc] = [a.get_text() for a in artists if a.get_visible()]

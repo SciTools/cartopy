@@ -13,6 +13,7 @@ from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 class ExampleImageTesting(ImageTesting):
     """Subclasses ImageTesting to nullify the plt.show commands."""
+
     def __call__(self, test_func):
         fn = ImageTesting.__call__(self, test_func)
 

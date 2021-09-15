@@ -30,7 +30,6 @@ import matplotlib.spines as mspines
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
-
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
@@ -42,6 +41,7 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 from cartopy.vector_transform import vector_scalar_to_grid
 
+from cartopy.mpl.scalebar import add_scalebar
 
 assert mpl.__version__ >= '3.1', \
     'Cartopy is only supported with Matplotlib 3.1 or greater.'
@@ -373,6 +373,13 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
+        def scale_bar(*args, **kwargs):
+            return add_scalebar(ax=self, *args, **kwargs)
+
+        scale_bar.__doc__ = add_scalebar.__doc__
+
+        self.add_scalebar = scale_bar
+
     @property
     def outline_patch(self):
         """
@@ -664,7 +671,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for lon, lat in zip(lons, lats):
-            circle = geod.circle(lon, lat, rad_km*1e3, n_samples=n_samples)
+            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
             geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
@@ -1509,7 +1516,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         if crs is None:
             crs = ccrs.PlateCarree()
+
         from cartopy.mpl.gridliner import Gridliner
+
         gl = Gridliner(
             self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
             ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
@@ -1854,7 +1863,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     #       projection which will help with curved boundaries
                     size_limit = (abs(self.projection.x_limits[1] -
                                       self.projection.x_limits[0]) /
-                                  (2*np.sqrt(2)))
+                                  (2 * np.sqrt(2)))
                     to_mask = (np.isnan(diagonal0_lengths) |
                                (diagonal0_lengths > size_limit) |
                                np.isnan(diagonal1_lengths) |

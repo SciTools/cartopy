@@ -640,6 +640,7 @@ class RotatedGeodetic(CRS):
     central_rotated_longitude value.
 
     """
+
     def __init__(self, pole_longitude, pole_latitude,
                  central_rotated_longitude=0.0, globe=None):
         """
@@ -1289,6 +1290,7 @@ class _RectangularProjection(Projection, metaclass=ABCMeta):
     is symmetric about the origin.
 
     """
+
     def __init__(self, proj4_params, half_width, half_height, globe=None):
         self._half_width = half_width
         self._half_height = half_height
@@ -1427,6 +1429,7 @@ class TransverseMercator(Projection):
     A Transverse Mercator projection.
 
     """
+
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
                  scale_factor=1.0, globe=None, approx=None):
@@ -1556,6 +1559,7 @@ class UTM(Projection):
     Universal Transverse Mercator projection.
 
     """
+
     def __init__(self, zone, southern_hemisphere=False, globe=None):
         """
         Parameters
@@ -1590,13 +1594,13 @@ class UTM(Projection):
     def x_limits(self):
         easting = 5e5
         # allow 50% overflow
-        return (0 - easting/2, 2 * easting + easting/2)
+        return (0 - easting / 2, 2 * easting + easting / 2)
 
     @property
     def y_limits(self):
         northing = 1e7
         # allow 50% overflow
-        return (0 - northing, 2 * northing + northing/2)
+        return (0 - northing, 2 * northing + northing / 2)
 
 
 class EuroPP(UTM):
@@ -1606,6 +1610,7 @@ class EuroPP(UTM):
     Ellipsoid is International 1924, Datum is ED50.
 
     """
+
     def __init__(self):
         globe = Globe(ellipse='intl')
         super().__init__(32, globe=globe)
@@ -2674,6 +2679,7 @@ class Geostationary(_Satellite):
     the satellite.
 
     """
+
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None,
                  sweep_axis='y'):

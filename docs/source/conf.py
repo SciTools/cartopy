@@ -19,7 +19,6 @@
 from datetime import datetime
 import os
 import sys
-
 import cartopy
 from distutils.version import LooseVersion
 import matplotlib
@@ -31,7 +30,7 @@ from sphinx_gallery.sorting import ExampleTitleSortKey, ExplicitOrder
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# -- General configuration -----------------------------------------------------
+# -- General configuration -----------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 needs_sphinx = '1.6'
@@ -130,7 +129,8 @@ sphinx_gallery_conf = {
 # directories to ignore when looking for source files.
 exclude_patterns = []
 
-# The reST default role (used for this markup: `text`) to use for all documents.
+# The reST default role (used for this markup: `text`) to use for all
+# documents.
 default_role = 'py:obj'
 
 # Handle subclasses of Matplotlib using an :rc: context in documentation
@@ -156,7 +156,7 @@ pygments_style = 'sphinx'
 # modindex_common_prefix = []
 
 
-# -- Options for HTML output ---------------------------------------------------
+# -- Options for HTML output ---------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -239,26 +239,26 @@ html_show_sphinx = True
 htmlhelp_basename = 'cartopydoc'
 
 
-# -- Options for LaTeX output --------------------------------------------------
+# -- Options for LaTeX output --------------------------------------------
 
 latex_elements = {
-                    # The paper size ('letterpaper' or 'a4paper').
-                    # 'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
 
-                    # The font size ('10pt', '11pt' or '12pt').
-                    # 'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
 
-                    # Additional stuff for the LaTeX preamble.
-                    # 'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'cartopy.tex', 'Cartopy Introduction',
-   'Philip Elson, Richard Hattersley', 'manual', False),
-  ('introductory_examples/index', 'cartopy_examples.tex', 'Cartopy examples',
-   'Philip Elson, Richard Hattersley', 'manual', True)
+    ('index', 'cartopy.tex', 'Cartopy Introduction',
+     'Philip Elson, Richard Hattersley', 'manual', False),
+    ('introductory_examples/index', 'cartopy_examples.tex', 'Cartopy examples',
+        'Philip Elson, Richard Hattersley', 'manual', True)
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -282,7 +282,7 @@ latex_documents = [
 # latex_domain_indices = True
 
 
-# -- Options for manual page output --------------------------------------------
+# -- Options for manual page output --------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
@@ -295,16 +295,16 @@ man_pages = [
 # man_show_urls = False
 
 
-# -- Options for Texinfo output ------------------------------------------------
+# -- Options for Texinfo output ------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'cartopy', 'cartopy Documentation',
-   'Philip Elson, Richard Hattersley', 'cartopy',
-   'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'cartopy', 'cartopy Documentation',
+     'Philip Elson, Richard Hattersley', 'cartopy',
+     'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -317,7 +317,7 @@ texinfo_documents = [
 # texinfo_show_urls = 'footnote'
 
 
-# -- Options for Epub output ---------------------------------------------------
+# -- Options for Epub output ---------------------------------------------
 
 # Bibliographic Dublin Core info.
 epub_title = 'cartopy'
@@ -371,12 +371,11 @@ intersphinx_mapping = {
 
 ############ extlinks extension ############
 extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
-                      'issues labeled with '),
+                       'issues labeled with '),
             'issue': ('https://github.com/SciTools/cartopy/issues/%s',
                       'Issue #'),
             'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #'),
             }
-
 
 ############ plot directive ##############
 
