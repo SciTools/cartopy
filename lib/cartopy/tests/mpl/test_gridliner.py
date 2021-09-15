@@ -393,6 +393,7 @@ def test_gridliner_line_limits():
         assert (np.min(path.vertices, axis=0) >= (xlim[0], ylim[0])).all()
         assert (np.max(path.vertices, axis=0) <= (xlim[1], ylim[1])).all()
 
+
 @pytest.mark.natural_earth
 @ImageTesting(['gridliner_labels_tight'],
               tolerance=grid_label_tol if ccrs.PROJ_VERSION < (7, 1, 0)
