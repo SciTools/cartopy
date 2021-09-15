@@ -1607,7 +1607,6 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
 
-<<<<<<< HEAD
         # We need to compute the dataLim correctly for contours.
         bboxes = [col.get_datalim(self.transData)
                   for col in result.collections
@@ -1616,8 +1615,6 @@ class GeoAxes(matplotlib.axes.Axes):
             extent = mtransforms.Bbox.union(bboxes)
             self.dataLim.update_from_data_xy(extent.get_points(), ignore=False)
 
-=======
->>>>>>> 5202258512a4585c80a7545466d5c644314ae9b8
         self.autoscale_view()
 
         # Re-cast the contour as a GeoContourSet.
