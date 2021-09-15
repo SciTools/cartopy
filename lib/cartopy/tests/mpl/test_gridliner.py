@@ -394,79 +394,6 @@ def test_gridliner_line_limits():
         assert (np.max(path.vertices, axis=0) <= (xlim[1], ylim[1])).all()
 
 
-@pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_tight'],
-              tolerance=grid_label_tol if ccrs.PROJ_VERSION < (7, 1, 0)
-              else 4)
-def test_gridliner_set_number_of_ticks():
-    plt.figure()
-    ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
-    ax.set_global()
-    # Test a single value passed in which represents (-lim, lim)
-    xlim, ylim = 125, 75
-    gl = ax.gridlines(xlim=xlim, ylim=ylim)
-    try:
-        gl.set_number_of_ticks(6, 'xlocator')
-
-        gl.set_number_of_ticks(4, 'ylocator')
-
-        Result = True
-    except BaseException as e:
-        print(e)
-        Result = False
-
-    assert(Result)
-
-
-@pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_tight'],
-              tolerance=grid_label_tol if ccrs.PROJ_VERSION < (7, 1, 0)
-              else 4)
-def test_gridliner_change_gridline_tick_decimal_separator():
-    plt.figure()
-    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    ax.set_global()
-    ax.set_extent([-80, -40.0, 10.0, -30.0])
-    gl = ax.gridlines(draw_labels=True)
-    try:
-        gl.change_gridline_tick_decimal_separator(
-            gl_num_format='{0:.2f}',
-            axis='both',
-            decimal_separator=',')
-
-        Result = True
-    except BaseException as e:
-        print(e)
-        Result = False
-
-    assert(Result)
-
-
-@pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_tight'],
-              tolerance=grid_label_tol if ccrs.PROJ_VERSION < (7, 1, 0)
-              else 4)
-def test_gridliner_hemisphere_ticklabels_formatting():
-    plt.figure()
-    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    ax.set_global()
-    ax.set_extent([-80, -40.0, 10.0, -30.0])
-    gl = ax.gridlines(draw_labels=True)
-    try:
-        gl.set_longitude_hemisphere_str(west_hemisphere_str='W',
-                                        east_hemisphere_str='E')
-
-        gl.set_latitude_hemisphere_str(north_hemisphere_str='N',
-                                       south_hemisphere_str='S')
-
-        Result = True
-    except BaseException as e:
-        print(e)
-        Result = False
-
-    assert(Result)
-
-
 @pytest.mark.parametrize(
     "draw_labels, result",
     [
@@ -511,7 +438,6 @@ def test_gridliner_draw_labels_param(draw_labels, result):
                       x_inline=False, y_inline=False)
     gl.xlocator = mticker.FixedLocator([70, 100, 130])
     gl.ylocator = mticker.FixedLocator([40, 50])
-    plt.show()
     res = {}
     for loc in 'left', 'right', 'top', 'bottom':
         artists = getattr(gl, loc + '_label_artists')
