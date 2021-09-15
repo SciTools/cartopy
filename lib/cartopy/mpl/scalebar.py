@@ -70,7 +70,7 @@ def _point_along_line(ax, start, distance, projected=False, verbose=False):
 
         Direct_R = geodesic.direct(start, 90, distance)
 
-        target_longitude, target_latitude, forw_azi = Direct_R.base.T
+        target_longitude, target_latitude, forw_azi = Direct_R.T
 
         target_point = ([target_longitude[0], target_latitude[0]])
 
