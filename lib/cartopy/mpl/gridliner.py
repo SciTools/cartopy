@@ -29,11 +29,8 @@ degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
 classic_formatter = mticker.ScalarFormatter
 
-<<<<<<< HEAD
-=======
 _DEGREE_SYMBOL = '\u00B0'
 
->>>>>>> 5202258512a4585c80a7545466d5c644314ae9b8
 _X_INLINE_PROJS = (
     cartopy.crs.InterruptedGoodeHomolosine,
     cartopy.crs.LambertConformal,
@@ -951,13 +948,8 @@ class Gridliner(Gridline_Base):
                         heads = [xy]
                     else:
                         warnings.warn(
-<<<<<<< HEAD
-                            'Unsupported intersection geometry for gridline '
-                            f'labels: {intersection.__class__.__name__}')
-=======
                             'Unsupported intersection geometry for gridline ' +
                             'labels: ' + intersection.__class__.__name__)
->>>>>>> 5202258512a4585c80a7545466d5c644314ae9b8
                         continue
                     del intersection
 
@@ -965,22 +957,17 @@ class Gridliner(Gridline_Base):
                     for tail, head in zip(tails, heads):
                         for i, (pt0, pt1) in enumerate([tail, head]):
 
-                            # Initial text specs
-                            x0, y0 = pt0
                             if x_inline or y_inline:
                                 kw = {'rotation': 0,
                                       'transform': PlateCarree(),
                                       'ha': 'center', 'va': 'center'}
                                 loc = "inline"
                             else:
+                                # Initial text specs
+                                x0, y0 = pt0
                                 x1, y1 = pt1
-<<<<<<< HEAD
                                 segment_angle = (np.arctan2(
                                     y0 - y1, x0 - x1) * 180 / np.pi)
-=======
-                                segment_angle = (np.arctan2(y0 - y1, x0 - x1) *
-                                                 180 / np.pi)
->>>>>>> 5202258512a4585c80a7545466d5c644314ae9b8
                                 loc = self._get_loc_from_spine_intersection(
                                     spines_specs, xylabel, x0, y0)
                                 if not self._draw_this_label(xylabel, loc):
