@@ -75,7 +75,7 @@ def _point_along_line(ax, start, distance, projected=False, verbose=False):
         target_point = ([target_longitude[0], target_latitude[0]])
 
         actual_dist = geodesic.inverse(start,
-                                       target_point).base.ravel()[0]
+                                       target_point).ravel()[0]
         if verbose:
 
             print('Starting point', start)
