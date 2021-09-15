@@ -96,9 +96,9 @@ def test_coastline_loading_cache():
         ax2.coastlines()
         plt.draw()
 
-    assert counter.count == 0, ('The shapereader Reader class was created {} '
-                                'times, indicating that the caching is not '
-                                'working.'.format(counter.count))
+    assert counter.count == 0, (
+        f'The shapereader Reader class was created {counter.count} times, '
+        f'indicating that the caching is not working.')
 
     plt.close()
 
@@ -136,10 +136,9 @@ def test_shapefile_transform_cache():
 
     # Without caching the count would have been
     # n_calls * n_geom, but should now be just n_geom.
-    assert counter.count == n_geom, ('The given geometry was transformed too '
-                                     'many times (expected: {}; got {}) - the'
-                                     ' caching is not working.'
-                                     ''.format(n_geom, counter.count))
+    assert counter.count == n_geom, (
+        f'The given geometry was transformed too many times (expected: '
+        f'{n_geom}; got {counter.count}) - the caching is not working.')
 
     # Check the cache has an entry for each geometry.
     assert len(FeatureArtist._geom_key_to_geometry_cache) == n_geom
@@ -175,10 +174,10 @@ def test_contourf_transform_path_counting():
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom.
-    msg = ('The given geometry was transformed too many times (expected: {}; '
-           'got {}) - the caching is not working.'
-           '').format(n_geom, path_to_geos_counter.count)
-    assert path_to_geos_counter.count == n_geom, msg
+    assert path_to_geos_counter.count == n_geom, (
+        f'The given geometry was transformed too many times (expected: '
+        f'{n_geom}; got {path_to_geos_counter.count}) - the caching is not '
+        f'working.')
 
     # Check the cache has an entry for each geometry.
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size + n_geom
@@ -214,11 +213,9 @@ def test_wmts_tile_caching():
     with gettile_counter:
         source.fetch_raster(crs, extent, resolution)
     n_tiles = 2
-    assert gettile_counter.count == n_tiles, ('Too many tile requests - '
-                                              'expected {}, got {}.'.format(
-                                                  n_tiles,
-                                                  gettile_counter.count)
-                                              )
+    assert gettile_counter.count == n_tiles, (
+        f'Too many tile requests - expected {n_tiles}, got '
+        f'{gettile_counter.count}.')
     gc.collect()
     assert len(image_cache) == 1
     assert len(image_cache[wmts]) == 1
@@ -229,11 +226,9 @@ def test_wmts_tile_caching():
     # call count will stay the same.
     with gettile_counter:
         source.fetch_raster(crs, extent, resolution)
-    assert gettile_counter.count == n_tiles, ('Too many tile requests - '
-                                              'expected {}, got {}.'.format(
-                                                  n_tiles,
-                                                  gettile_counter.count)
-                                              )
+    assert gettile_counter.count == n_tiles, (
+        f'Too many tile requests - expected {n_tiles}, got '
+        f'{gettile_counter.count}.')
     gc.collect()
     assert len(image_cache) == 1
     assert len(image_cache[wmts]) == 1

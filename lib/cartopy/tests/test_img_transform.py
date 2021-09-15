@@ -43,7 +43,7 @@ def test_mesh_projection_extent(xmin, xmax, ymin, ymax):
     assert_array_equal(np.diff(target_y, axis=0), (ymax - ymin) / ny)
 
 
-def test_griding_data_std_range():
+def test_gridding_data_std_range():
     # Data which exists inside the standard projection bounds i.e.
     # [-180, 180].
     target_prj = ccrs.PlateCarree()
@@ -76,7 +76,7 @@ def test_griding_data_std_range():
     assert_array_equal(expected_mask, image.mask)
 
 
-def test_griding_data_outside_projection():
+def test_gridding_data_outside_projection():
     # Data which exists outside the standard projection e.g. [0, 360] rather
     # than [-180, 180].
     target_prj = ccrs.PlateCarree()
@@ -94,10 +94,10 @@ def test_griding_data_outside_projection():
 
     # The expected image. n.b. on a map the data is reversed in the y axis.
     expected = np.array(
-        [[3, 3, 3, 3, 3, 3, 3, 3],
-         [3, 3, 3, 3, 3, 1, 2, 2],
-         [2, 2, 3, 1, 1, 1, 1, 2],
-         [1, 1, 1, 1, 1, 1, 1, 1]], dtype=np.float64)
+        [[3, 3, 3, 3, 3, 2, 2, 2],
+         [3, 3, 3, 3, 1, 1, 2, 2],
+         [3, 3, 3, 3, 1, 1, 1, 2],
+         [3, 3, 3, 1, 1, 1, 1, 1]], dtype=np.float64)
 
     expected_mask = np.array(
         [[True, True, True, True, True, True, True, True],

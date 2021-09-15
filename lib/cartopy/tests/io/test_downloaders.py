@@ -49,7 +49,7 @@ def config_replace(replacement_dict):
 
 
 @pytest.fixture
-def download_to_temp(tmpdir_factory):
+def download_to_temp(tmp_path_factory):
     """
     Context manager which defaults the "data_dir" to a temporary directory
     which is automatically cleaned up on exit.
@@ -58,7 +58,7 @@ def download_to_temp(tmpdir_factory):
     old_downloads_dict = cartopy.config['downloaders'].copy()
     old_dir = cartopy.config['data_dir']
 
-    tmp_dir = tmpdir_factory.mktemp('cartopy_data')
+    tmp_dir = tmp_path_factory.mktemp('cartopy_data')
     cartopy.config['data_dir'] = str(tmp_dir)
     try:
         yield tmp_dir
@@ -103,7 +103,7 @@ def test_downloading_simple_ascii(download_to_temp):
 
     format_dict = {'name': 'jquery'}
 
-    target_template = str(download_to_temp.join('{name}.txt'))
+    target_template = str(download_to_temp / '{name}.txt')
     tmp_fname = target_template.format(**format_dict)
 
     dnld_item = cio.Downloader(file_url, target_template)
@@ -113,8 +113,8 @@ def test_downloading_simple_ascii(download_to_temp):
     with warnings.catch_warnings(record=True) as w:
         assert dnld_item.path(format_dict) == tmp_fname
 
-        assert len(w) == 1, ('Expected a single download warning to be '
-                             'raised. Got {}.'.format(len(w)))
+        assert len(w) == 1, \
+            f'Expected a single download warning to be raised. Got {len(w)}.'
         assert issubclass(w[0].category, cio.DownloadWarning)
 
     with open(tmp_fname) as fh:
@@ -128,7 +128,7 @@ def test_downloading_simple_ascii(download_to_temp):
 
 
 @pytest.mark.network
-def test_natural_earth_downloader(tmpdir):
+def test_natural_earth_downloader(tmp_path):
     # downloads a file to a temporary location, and uses that temporary
     # location, then:
     #   * Checks that the file is only downloaded once even when calling
@@ -136,7 +136,7 @@ def test_natural_earth_downloader(tmpdir):
     #   * Checks that shapefiles have all the necessary files when downloaded
     #   * Checks that providing a path in a download item gets used rather
     #     than triggering another download
-    shp_path_template = str(tmpdir.join('{category}_{resolution}_{name}.shp'))
+    shp_path_template = str(tmp_path / '{category}_{resolution}_{name}.shp')
 
     # picking a small-ish file to speed up download times, the file itself
     # isn't important - it is the download mechanism that is.
@@ -163,9 +163,8 @@ def test_natural_earth_downloader(tmpdir):
     exts = ['.shp', '.shx']
     for ext in exts:
         stem = os.path.splitext(shp_path)[0]
-        msg = "Shapefile's {0} file doesn't exist in {1}{0}".format(ext,
-                                                                    stem)
-        assert os.path.exists(stem + ext), msg
+        assert os.path.exists(stem + ext), \
+            f"Shapefile's {ext} file doesn't exist in {stem}{ext}"
 
     # check that providing a pre downloaded path actually works
     pre_dnld = NEShpDownloader(target_path_template='/not/a/real/file.txt',

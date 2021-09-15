@@ -18,13 +18,13 @@ from .helpers import check_proj_params
 
 def test_default():
     mill = ccrs.Miller()
-    other_args = {'a=57.29577951308232', 'lon_0=0.0'}
+    other_args = {'a=6378137.0', 'lon_0=0.0'}
     check_proj_params('mill', mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),
-                        [-180, 180])
+                        [-20037508.3427892, 20037508.3427892])
     assert_almost_equal(np.array(mill.y_limits),
-                        [-131.9758172, 131.9758172])
+                        [-14691480.7691731, 14691480.7691731])
 
 
 def test_sphere_globe():
@@ -75,13 +75,13 @@ def test_eccentric_globe():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     mill = ccrs.Miller(central_longitude=lon)
-    other_args = {'a=57.29577951308232', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('mill', mill, other_args)
 
     assert_almost_equal(np.array(mill.x_limits),
-                        [-180, 180])
+                        [-20037508.3427892, 20037508.3427892])
     assert_almost_equal(np.array(mill.y_limits),
-                        [-131.9758172, 131.9758172])
+                        [-14691480.7691731, 14691480.7691731])
 
 
 def test_grid():

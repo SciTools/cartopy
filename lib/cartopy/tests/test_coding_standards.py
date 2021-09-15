@@ -51,7 +51,7 @@ class TestLicenseHeaders:
         """
         # Check the ".git" folder exists at the repo dir.
         if not os.path.isdir(os.path.join(REPO_DIR, '.git')):
-            raise ValueError('{} is not a git repository.'.format(REPO_DIR))
+            raise ValueError(f'{REPO_DIR} is not a git repository.')
 
         output = subprocess.check_output(['git', 'ls-tree', '-z', '-r',
                                           '--name-only', 'HEAD'],
@@ -75,7 +75,7 @@ class TestLicenseHeaders:
         except ValueError as e:
             # Caught the case where this is not a git repo.
             return pytest.skip('cartopy installation did not look like a git '
-                               'repo: ' + str(e))
+                               f'repo: {e}')
 
         failed = []
         for fname in sorted(tracked_files):

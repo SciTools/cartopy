@@ -50,8 +50,8 @@ def vesta_image():
     img_globe = ccrs.Globe(semimajor_axis=285000., semiminor_axis=229000.,
                            ellipse=None)
     img_proj = ccrs.PlateCarree(globe=img_globe)
-    img_extent = (-895353.906273091, 895353.906273091,
-                  447676.9531365455, -447676.9531365455)
+    img_extent = (-180, 180,
+                  -90, 90)
     return img, img_globe, img_proj, img_extent
 
 

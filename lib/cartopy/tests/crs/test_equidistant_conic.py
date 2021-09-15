@@ -57,7 +57,7 @@ class TestEquidistantConic:
     def test_central_longitude(self, lon):
         eqdc = ccrs.EquidistantConic()
         eqdc_offset = ccrs.EquidistantConic(central_longitude=lon)
-        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'lat_0=0.0',
+        other_args = {'ellps=WGS84', f'lon_0={lon}', 'lat_0=0.0',
                       'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj_params('eqdc', eqdc_offset, other_args)
 

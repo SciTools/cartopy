@@ -27,9 +27,8 @@ class SlippyImageArtist(AxesImage):
 
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
-        if matplotlib.__version__ >= '3':
-            # This artist fills the Axes, so should not influence layout.
-            kwargs.setdefault('in_layout', False)
+        # This artist fills the Axes, so should not influence layout.
+        kwargs.setdefault('in_layout', False)
         super().__init__(ax, **kwargs)
         self.cache = []
 

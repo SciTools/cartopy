@@ -31,7 +31,7 @@ KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
                  (8, 9, 4): (0, 2504688.542848654,
                              -5009377.085697312, -2504688.542848654),
                  }
-if ccrs.PROJ4_VERSION == (5, 0, 0):
+if ccrs.PROJ_VERSION == (5, 0, 0):
     KNOWN_EXTENTS = {
         (0, 0, 0): (-20037508.342789244, 20037508.342789244,
                     -19994827.892149, 19994827.892149),
@@ -47,12 +47,11 @@ if ccrs.PROJ4_VERSION == (5, 0, 0):
 
 
 def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
-    url = ('https://chart.googleapis.com/chart?chst=d_text_outline&'
-           'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
-           'Google:%20%20(' + str(tile[0]) + ',' + str(tile[1]) + ')'
-           '|Zoom%20' + str(tile[2]) + '||||||______________________'
-           '______')
-    return url
+    x, y, z = tile
+    return (f'https://chart.googleapis.com/chart?chst=d_text_outline&'
+            f'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
+            f'Google:%20%20({x},{y})|Zoom%20{z}||||||'
+            f'____________________________')
 
 
 def test_google_tile_styles():
@@ -158,7 +157,7 @@ def test_image_for_domain():
     ll_extent = ccrs.Geodetic().transform_points(gt.crs,
                                                  np.array(extent[:2]),
                                                  np.array(extent[2:]))
-    if ccrs.PROJ4_VERSION == (5, 0, 0):
+    if ccrs.PROJ_VERSION == (5, 0, 0):
         assert_arr_almost(ll_extent[:, :2],
                           [[-11.25, 49.033955],
                            [11.25, 61.687101]])
@@ -243,8 +242,8 @@ def test_ordnance_survey_tile_styles():
 
     ref_url = ('https://api2.ordnancesurvey.co.uk/'
                'mapping_api/v1/service/wmts?'
-               'key=None&height=256&width=256&tilematrixSet=EPSG%3A3857&'
-               'version=1.0.0&style=true&layer={layer}%203857&'
+               'key=None&height=256&width=256&version=1.0.0&'
+               'tilematrixSet=EPSG%3A3857&style=true&layer={layer}%203857&'
                'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
                'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
     tile = ["1", "2", "3"]
@@ -330,14 +329,14 @@ def test_azuremaps_get_image():
 
 @pytest.mark.network
 @pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
-def test_cache(cache_dir, tmpdir):
+def test_cache(cache_dir, tmp_path):
     if cache_dir == "tmpdir":
-        tmpdir_str = tmpdir.strpath
+        tmpdir_str = str(tmp_path)
     else:
         tmpdir_str = cache_dir
 
     if cache_dir is True:
-        config["cache_dir"] = tmpdir.strpath
+        config["cache_dir"] = str(tmp_path)
 
     # Fetch tiles and save them in the cache
     with warnings.catch_warnings(record=True) as w:

@@ -1,2 +1,2 @@
 flufl.lock
-pytest>=3.0.0
+pytest>=5.1.2

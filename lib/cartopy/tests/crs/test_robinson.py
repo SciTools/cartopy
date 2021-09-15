@@ -20,13 +20,13 @@ _CRS_PC = ccrs.PlateCarree()
 _CRS_ROB = ccrs.Robinson()
 
 # Increase tolerance if using older proj releases
-if ccrs.PROJ4_VERSION >= (6, 3, 1):
+if ccrs.PROJ_VERSION >= (6, 3, 1):
     _TRANSFORM_TOL = 7
-elif ccrs.PROJ4_VERSION >= (4, 9):
+elif ccrs.PROJ_VERSION >= (4, 9):
     _TRANSFORM_TOL = 0
 else:
     _TRANSFORM_TOL = -1
-_LIMIT_TOL = -1  # if ccrs.PROJ4_VERSION < (5, 2, 0) else 7
+_LIMIT_TOL = -1  # if ccrs.PROJ_VERSION < (5, 2, 0) else 7
 
 
 def test_default():
@@ -96,7 +96,7 @@ def test_offset():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     robin = ccrs.Robinson(central_longitude=lon)
-    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('robin', robin, other_args)
 
     assert_almost_equal(robin.x_limits,

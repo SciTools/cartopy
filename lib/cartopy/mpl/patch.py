@@ -15,7 +15,6 @@ and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
 """
 
 import numpy as np
-import matplotlib
 from matplotlib.path import Path
 import shapely.geometry as sgeom
 
@@ -79,7 +78,7 @@ def geos_to_path(shape):
         vertices, codes = shape._as_mpl_path()
         return [Path(vertices, codes)]
     else:
-        raise ValueError('Unsupported shape type {}.'.format(type(shape)))
+        raise ValueError(f'Unsupported shape type {type(shape)}.')
 
 
 def path_segments(path, **kwargs):
@@ -165,11 +164,6 @@ def path_to_geos(path, force_ccw=False):
             geom = sgeom.Point(path_verts[0, :])
         elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:
             geom = sgeom.Polygon(path_verts[:-1, :])
-        elif (matplotlib.__version__ < '2.2.0' and
-                # XXX A path can be given which does not end with close poly,
-                # in that situation, we have to guess?
-                path_verts.shape[0] > 3 and verts_same_as_first[-1]):
-            geom = sgeom.Polygon(path_verts)
         else:
             geom = sgeom.LineString(path_verts)
 

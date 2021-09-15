@@ -5,7 +5,7 @@
 # licensing details.
 
 import base64
-import distutils
+from distutils.version import LooseVersion
 import os
 import glob
 import shutil
@@ -18,8 +18,7 @@ import matplotlib.patches as mpatches
 from matplotlib.testing import setup as mpl_setup
 import matplotlib.testing.compare as mcompare
 
-
-MPL_VERSION = distutils.version.LooseVersion(mpl.__version__)
+MPL_VERSION = LooseVersion(mpl.__version__)
 
 
 class ImageTesting:
@@ -122,15 +121,13 @@ class ImageTesting:
             version of ImageTesting, they will be closed for you.
 
         """
-        n_figures_msg = ('Expected %s figures (based  on the number of '
-                         'image result filenames), but there are %s figures '
-                         'available. The most likely reason for this is that '
-                         'this test is producing too many figures, '
-                         '(alternatively if not using ImageCompare as a '
-                         'decorator, it is possible that a test run prior to '
-                         'this one has not closed its figures).'
-                         '' % (len(self.img_names), len(figures))
-                         )
+        n_figures_msg = (
+            f'Expected {len(self.img_names)} figures (based  on the number of '
+            f'image result filenames), but there are {len(figures)} figures '
+            f'available. The most likely reason for this is that this test is '
+            f'producing too many figures, (alternatively if not using '
+            f'ImageCompare as a decorator, it is possible that a test run '
+            f'prior to this one has not closed its figures).')
         assert len(figures) == len(self.img_names), n_figures_msg
 
         for img_name, figure in zip(self.img_names, figures):
@@ -175,11 +172,10 @@ class ImageTesting:
                                       tol=tol, in_decorator=True)
 
         if err:
-            msg = ('Images were different (RMS: %s).\n%s %s %s\nConsider '
-                   'running idiff to inspect these differences.'
-                   '' % (err['rms'], err['actual'],
-                         err['expected'], err['diff']))
-            assert False, msg
+            assert False, (
+                f"Images were different (RMS: {err['rms']}).\n"
+                f"{err['actual']} {err['expected']} {err['diff']}\n"
+                f"Consider running idiff to inspect these differences.")
 
     def __call__(self, test_func):
         """Called when the decorator is applied to a function."""

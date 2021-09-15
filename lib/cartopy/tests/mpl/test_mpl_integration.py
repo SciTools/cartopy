@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import math
 import re
 import warnings
 
@@ -17,52 +16,29 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 
-_ROB_TOL = 0.5 if ccrs.PROJ4_VERSION < (4, 9) else 0.111
-_CONTOUR_STYLE = _STREAMPLOT_STYLE = 'classic'
-_CONTOUR_TOL = 0.5
-if MPL_VERSION >= '3.0.0':
-    _CONTOUR_IMAGE = 'global_contour_wrap'
-    _CONTOUR_STYLE = 'mpl20'
-    if MPL_VERSION < '3.2.0':
-        _CONTOUR_TOL = 0.74
-    if MPL_VERSION >= '3.2.0':
-        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.2.0'
-    else:
-        _STREAMPLOT_IMAGE = 'streamplot_mpl_3.0.0'
-    # Should have been the case for anything but _1.4.3, but we don't want to
-    # regenerate those images again.
-    _STREAMPLOT_STYLE = 'mpl20'
-else:
-    _CONTOUR_IMAGE = 'global_contour_wrap_mpl_pre_3.0.0'
-    _STREAMPLOT_IMAGE = 'streamplot_mpl_2.2.2'
-
-
+# This is due to a change in MPL 3.5 contour line paths changing
+# ever so slightly.
+contour_tol = 2.24
 @pytest.mark.natural_earth
-@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE, tolerance=_CONTOUR_TOL)
+@ImageTesting(['global_contour_wrap'], style='mpl20',
+              tolerance=contour_tol)
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data, transform=ccrs.PlateCarree())
-    if MPL_VERSION <= '3.0.0':
-        # Rather than updating image test for old version
-        # Remove when only MPL > 3 is required
-        ax.set_extent((-176.3265306122449, 176.3265306122449, -90.0, 90.0))
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_CONTOUR_IMAGE], style=_CONTOUR_STYLE, tolerance=_CONTOUR_TOL)
+@ImageTesting(['global_contour_wrap'], style='mpl20',
+              tolerance=contour_tol)
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     plt.contour(x, y, data)
-    if MPL_VERSION <= '3.0.0':
-        # Rather than updating image test for old version
-        # Remove when only MPL > 3 is required
-        ax.set_extent((-176.3265306122449, 176.3265306122449, -90.0, 90.0))
 
 
 @pytest.mark.natural_earth
@@ -130,7 +106,7 @@ def test_global_scatter_wrap_no_transform():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < '3' else 0.5)
+              tolerance=2 if MPL_VERSION < '3.2' else 0.5)
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -147,7 +123,7 @@ def test_global_hexbin_wrap():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < '3' else 0.5)
+              tolerance=2 if MPL_VERSION < '3.2' else 0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -191,9 +167,8 @@ def test_simple_global():
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections4' if ccrs.PROJ4_VERSION < (5, 0, 0)
-               else 'multiple_projections5'],
-              tolerance=0.81)
+@ImageTesting(['multiple_projections5'],
+              tolerance=2.05)
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
@@ -201,9 +176,7 @@ def test_multiple_projections():
                    ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
                    ccrs.OSGB(approx=True),
                    ccrs.TransverseMercator(approx=True),
-                   ccrs.Mercator(
-                       globe=ccrs.Globe(semimajor_axis=math.degrees(1)),
-                       min_latitude=-85., max_latitude=85.),
+                   ccrs.Mercator(min_latitude=-85., max_latitude=85.),
                    ccrs.LambertCylindrical(),
                    ccrs.Miller(),
                    ccrs.Gnomonic(),
@@ -232,18 +205,16 @@ def test_multiple_projections():
         ax.coastlines(resolution="110m")
 
         plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-
         plt.plot([-0.08, 132], [51.53, 43.17], color='red',
                  transform=ccrs.PlateCarree())
-
         plt.plot([-0.08, 132], [51.53, 43.17], color='blue',
-                 transform=ccrs.Geodetic())
+                 transform=prj.as_geodetic())
 
 
-@pytest.mark.skipif(ccrs.PROJ4_VERSION < (5, 2, 0),
+@pytest.mark.skipif(ccrs.PROJ_VERSION < (5, 2, 0),
                     reason='Proj is too old.')
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections520'])
+@ImageTesting(['multiple_projections520'], tolerance=0.65)
 def test_multiple_projections_520():
     # Test projections added in Proj 5.2.0.
 
@@ -265,19 +236,19 @@ def test_multiple_projections_520():
 
 def test_cursor_values():
     ax = plt.axes(projection=ccrs.NorthPolarStereo())
-    x, y = np.array([-969100.]), np.array([-4457000.])
+    x, y = np.array([-969100., -4457000.])
     r = ax.format_coord(x, y)
     assert (r.encode('ascii', 'ignore') ==
             b'-9.691e+05, -4.457e+06 (50.716617N, 12.267069W)')
 
     ax = plt.axes(projection=ccrs.PlateCarree())
-    x, y = np.array([-181.5]), np.array([50.])
+    x, y = np.array([-181.5, 50.])
     r = ax.format_coord(x, y)
     assert (r.encode('ascii', 'ignore') ==
             b'-181.5, 50 (50.000000N, 178.500000E)')
 
     ax = plt.axes(projection=ccrs.Robinson())
-    x, y = np.array([16060595.2]), np.array([2363093.4])
+    x, y = np.array([16060595.2, 2363093.4])
     r = ax.format_coord(x, y)
     assert re.search(b'1.606e\\+07, 2.363e\\+06 '
                      b'\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)',
@@ -287,7 +258,7 @@ def test_cursor_values():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['natural_earth_interface'], tolerance=_ROB_TOL)
+@ImageTesting(['natural_earth_interface'], tolerance=0.21)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 
@@ -374,8 +345,8 @@ def test_pcolormesh_get_array_with_mask():
         'Data supplied does not match data retrieved in unwrapped case'
 
 
-tolerance = 1.61
-if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
+tolerance = 1.87
+if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0):
     tolerance += 0.8
 
 
@@ -410,8 +381,8 @@ def test_pcolormesh_global_with_wrap2():
     ax.set_global()  # make sure everything is visible
 
 
-tolerance = 1.39
-if (5, 0, 0) <= ccrs.PROJ4_VERSION < (5, 1, 0):
+tolerance = 1.42
+if (5, 0, 0) <= ccrs.PROJ_VERSION < (5, 1, 0):
     tolerance += 1.4
 
 
@@ -634,6 +605,19 @@ def test_pcolormesh_diagonal_wrap():
     assert hasattr(mesh, "_wrapped_collection_fix")
 
 
+def test_pcolormesh_nan_wrap():
+    # Check that data with nan's as input still creates
+    # the proper number of pcolor cells and those aren't
+    # masked in the process.
+    xs, ys = np.meshgrid([120, 160, 200], [-30, 0, 30])
+    data = np.ones((2, 2)) * np.nan
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    mesh = ax.pcolormesh(xs, ys, data)
+    pcolor = getattr(mesh, "_wrapped_collection_fix")
+    assert len(pcolor.get_paths()) == 2
+
+
 @pytest.mark.natural_earth
 @ImageTesting(['pcolormesh_goode_wrap'])
 def test_pcolormesh_goode_wrap():
@@ -747,7 +731,7 @@ def test_quiver_regrid():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_regrid_with_extent'], tolerance=0.53)
+@ImageTesting(['quiver_regrid_with_extent'], tolerance=0.54)
 def test_quiver_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -858,7 +842,8 @@ def test_barbs_1d_transformed():
 
 
 @pytest.mark.natural_earth
-@ImageTesting([_STREAMPLOT_IMAGE], style=_STREAMPLOT_STYLE, tolerance=0.54)
+@ImageTesting(['streamplot'], style='mpl20',
+              tolerance=42 if MPL_VERSION < "3.2" else 0.54)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

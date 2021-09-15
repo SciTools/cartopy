@@ -67,72 +67,61 @@ def _save_world(fname, args):
         fh.write(_world.format(**args))
 
 
-def test_intersect(tmpdir):
+def test_intersect(tmp_path):
     # Zoom level zero.
     # File 1: Parent space of all images.
-    z_0_dir = tmpdir.mkdir('z_0')
+    z_0_dir = tmp_path / 'z_0'
+    z_0_dir.mkdir()
     world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                  y_pix_size=2, x_center=1, y_center=1)
     im = Image.new('RGB', (50, 50))
-    fname = z_0_dir.join('p0.tfw')
-    _save_world(str(fname), world)
-    fname = z_0_dir.join('p0.tif')
-    im.save(str(fname))
+    _save_world(z_0_dir / 'p0.tfw', world)
+    im.save(z_0_dir / 'p0.tif')
 
     # Zoom level one.
     # File 1: complete containment within p0.
-    z_1_dir = tmpdir.mkdir('z_1')
+    z_1_dir = tmp_path / 'z_1'
+    z_1_dir.mkdir()
     world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                  y_pix_size=2, x_center=21, y_center=21)
     im = Image.new('RGB', (30, 30))
-    fname = z_1_dir.join('p1.tfw')
-    _save_world(str(fname), world)
-    fname = z_1_dir.join('p1.tif')
-    im.save(str(fname))
+    _save_world(z_1_dir / 'p1.tfw', world)
+    im.save(z_1_dir / 'p1.tif')
 
     # Zoom level two.
     # File 1: intersect right edge with p1 left edge.
-    z_2_dir = tmpdir.mkdir('z_2')
+    z_2_dir = tmp_path / 'z_2'
+    z_2_dir.mkdir()
     world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                  y_pix_size=2, x_center=6, y_center=21)
     im = Image.new('RGB', (5, 5))
-    fname = z_2_dir.join('p2-1.tfw')
-    _save_world(str(fname), world)
-    fname = z_2_dir.join('p2-1.tif')
-    im.save(str(fname))
+    _save_world(z_2_dir / 'p2-1.tfw', world)
+    im.save(z_2_dir / 'p2-1.tif')
     # File 2: intersect upper right corner with p1
     #         lower left corner.
     world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                  y_pix_size=2, x_center=6, y_center=6)
     im = Image.new('RGB', (5, 5))
-    fname = z_2_dir.join('p2-2.tfw')
-    _save_world(str(fname), world)
-    fname = z_2_dir.join('p2-2.tif')
-    im.save(str(fname))
+    _save_world(z_2_dir / 'p2-2.tfw', world)
+    im.save(z_2_dir / 'p2-2.tif')
     # File 3: complete containment within p1.
     world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                  y_pix_size=2, x_center=41, y_center=41)
     im = Image.new('RGB', (5, 5))
-    fname = z_2_dir.join('p2-3.tfw')
-    _save_world(str(fname), world)
-    fname = z_2_dir.join('p2-3.tif')
-    im.save(str(fname))
+    _save_world(z_2_dir / 'p2-3.tfw', world)
+    im.save(z_2_dir / 'p2-3.tif')
     # File 4: overlap with p1 right edge.
     world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                  y_pix_size=2, x_center=76, y_center=61)
     im = Image.new('RGB', (5, 5))
-    fname = z_2_dir.join('p2-4.tfw')
-    _save_world(str(fname), world)
-    fname = z_2_dir.join('p2-4.tif')
-    im.save(str(fname))
+    _save_world(z_2_dir / 'p2-4.tfw', world)
+    im.save(z_2_dir / 'p2-4.tif')
     # File 5: overlap with p1 bottom right corner.
     world = dict(x_pix_size=2, y_rotation=0, x_rotation=0,
                  y_pix_size=2, x_center=76, y_center=76)
     im = Image.new('RGB', (5, 5))
-    fname = z_2_dir.join('p2-5.tfw')
-    _save_world(str(fname), world)
-    fname = z_2_dir.join('p2-5.tif')
-    im.save(str(fname))
+    _save_world(z_2_dir / 'p2-5.tfw', world)
+    im.save(z_2_dir / 'p2-5.tif')
 
     # Provided in reverse order in order to test the area sorting.
     items = [('dummy-z-2', str(z_2_dir)),
@@ -223,11 +212,11 @@ def test_nest(nest_from_config):
     # floating point values badly
     for img in z1.images:
         if not z0.images[0].bbox().contains(img.bbox()):
-            raise OSError('The test images aren\'t all "contained" by the '
-                          'z0 images, the nest cannot possibly work.\n '
-                          'img {!s} not contained by {!s}\nExtents: {!s}; '
-                          '{!s}'.format(img, z0.images[0], img.extent,
-                                        z0.images[0].extent))
+            raise OSError(
+                'The test images aren\'t all "contained" by the z0 images, '
+                'the nest cannot possibly work.\n'
+                f'img {img!s} not contained by {z0.images[0]!s}\n'
+                f'Extents: {img.extent!s}; {z0.images[0].extent!s}')
     nest_z0_z1 = cimg_nest.NestedImageCollection('aerial test',
                                                  crs,
                                                  [z0, z1])
@@ -312,7 +301,7 @@ def wmts_data():
     finally:
         if test_data_version != _TEST_DATA_VERSION:
             warnings.warn('WMTS test data is out of date, regenerating at '
-                          '{}.'.format(_TEST_DATA_DIR))
+                          f'{_TEST_DATA_DIR}.')
             shutil.rmtree(_TEST_DATA_DIR)
             os.makedirs(_TEST_DATA_DIR)
             with open(data_version_fname, 'w') as fh:

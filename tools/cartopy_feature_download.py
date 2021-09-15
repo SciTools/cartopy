@@ -10,19 +10,24 @@ the data used by various Feature instances.
 
 For detail on how to use this tool, execute it with the `-h` option:
 
-    python download.py -h
+    python cartopy_feature_download.py -h
 
 """
 
 import argparse
+import pathlib
 
 from cartopy import config
 from cartopy.feature import Feature, GSHHSFeature, NaturalEarthFeature
-from cartopy.io import Downloader
+from cartopy.io import Downloader, DownloadWarning
 
 
 ALL_SCALES = ('110m', '50m', '10m')
 
+# See https://github.com/SciTools/cartopy/pull/1833
+URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/{resolution}_'
+                '{category}/ne_{resolution}_{name}.zip')
+SHP_NE_SPEC = ('shapefiles', 'natural_earth')
 
 FEATURE_DEFN_GROUPS = {
     # Only need one GSHHS resolution because they *all* get downloaded
@@ -74,11 +79,11 @@ def download_features(group_names, dry_run=True):
             format_dict = {'config': config, 'scale': feature._scale,
                            'level': level}
             if dry_run:
-                print('URL: {}'.format(downloader.url(format_dict)))
+                print(f'URL: {downloader.url(format_dict)}')
             else:
                 downloader.path(format_dict)
                 geoms = list(feature.geometries())
-                print('Feature {} length: {}'.format(feature, len(geoms)))
+                print(f'Feature {feature} length: {len(geoms)}')
         else:
             for category, name, scales in feature_defns:
                 if not isinstance(scales, tuple):
@@ -92,7 +97,7 @@ def download_features(group_names, dry_run=True):
                     format_dict = {'config': config, 'category': category,
                                    'name': name, 'resolution': scale}
                     if dry_run:
-                        print('URL: {}'.format(downloader.url(format_dict)))
+                        print(f'URL: {downloader.url(format_dict)}')
                     else:
                         downloader.path(format_dict)
                         geoms = list(feature.geometries())
@@ -114,11 +119,28 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument('--ignore-repo-data', action='store_true',
                         help='ignore existing repo data when downloading')
+    parser.add_argument('--no-warn',
+                        action='store_true',
+                        help='ignore cartopy "DownloadWarning" warnings')
     args = parser.parse_args()
 
     if args.output:
-        config['pre_existing_data_dir'] = args.output
-        config['data_dir'] = args.output
+        target_dir = pathlib.Path(args.output).expanduser().resolve()
+        target_dir.mkdir(parents=True, exist_ok=True)
+        config['pre_existing_data_dir'] = target_dir
+        config['data_dir'] = target_dir
     if args.ignore_repo_data:
         config['repo_data_dir'] = config['data_dir']
+    if args.no_warn:
+        import warnings
+        warnings.filterwarnings('ignore', category=DownloadWarning)
+
+    # Enforce use of stable AWS endpoint, regardless of cartopy version.
+    # In doing so, this allows users to download this script and execute it
+    # with any version of cartopy, thus taking advantage of the stable AWS
+    # endpoint.
+    # This removes the need to backport the associated fix
+    # https://github.com/SciTools/cartopy/pull/1833.
+    config['downloaders'][SHP_NE_SPEC].url_template = URL_TEMPLATE
+
     download_features(args.group_names, dry_run=args.dry_run)

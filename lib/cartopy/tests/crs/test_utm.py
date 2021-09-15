@@ -20,7 +20,7 @@ from .helpers import check_proj_params
 def test_default(south):
     zone = 1  # Limits are fixed, so don't bother checking other zones.
     utm = ccrs.UTM(zone, southern_hemisphere=south)
-    other_args = {'ellps=WGS84', 'units=m', 'zone={}'.format(zone)}
+    other_args = {'ellps=WGS84', 'units=m', f'zone={zone}'}
     if south:
         other_args |= {'south'}
     check_proj_params('utm', utm, other_args)

@@ -9,7 +9,7 @@
 # and/or pip.
 import sys
 
-PYTHON_MIN_VERSION = (3, 5)
+PYTHON_MIN_VERSION = (3, 7)
 
 if sys.version_info < PYTHON_MIN_VERSION:
     error = """
@@ -47,9 +47,9 @@ FORCE_CYTHON = os.environ.get('FORCE_CYTHON', False)
 
 if not IS_SDIST or FORCE_CYTHON:
     import Cython
-    if Cython.__version__ < '0.28':
+    if Cython.__version__ < '0.29':
         raise ImportError(
-            "Cython 0.28+ is required to install cartopy from source.")
+            "Cython 0.29+ is required to install cartopy from source.")
 
     from Cython.Distutils import build_ext as cy_build_ext
 
@@ -61,7 +61,7 @@ except ImportError:
 
 
 # Please keep in sync with INSTALL file.
-GEOS_MIN_VERSION = (3, 3, 3)
+GEOS_MIN_VERSION = (3, 7, 2)
 PROJ_MIN_VERSION = (4, 9, 0)
 
 
@@ -280,10 +280,6 @@ with open(os.path.join(HERE, 'README.md')) as fh:
 
 
 cython_coverage_enabled = os.environ.get('CYTHON_COVERAGE', None)
-if proj_version >= (6, 0, 0):
-    extra_extension_args["define_macros"].append(
-        ('ACCEPT_USE_OF_DEPRECATED_PROJ_API_H', '1')
-    )
 if cython_coverage_enabled:
     extra_extension_args["define_macros"].append(
         ('CYTHON_TRACE_NOGIL', '1')
@@ -298,21 +294,6 @@ extensions = [
         libraries=proj_libraries + geos_libraries,
         library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
         language='c++',
-        **extra_extension_args),
-    Extension(
-        'cartopy._crs',
-        ['lib/cartopy/_crs.pyx'],
-        include_dirs=[include_dir, np.get_include()] + proj_includes,
-        libraries=proj_libraries,
-        library_dirs=[library_dir] + proj_library_dirs,
-        **extra_extension_args),
-    # Requires proj v4.9
-    Extension(
-        'cartopy.geodesic._geodesic',
-        ['lib/cartopy/geodesic/_geodesic.pyx'],
-        include_dirs=[include_dir, np.get_include()] + proj_includes,
-        libraries=proj_libraries,
-        library_dirs=[library_dir] + proj_library_dirs,
         **extra_extension_args),
 ]
 
@@ -398,26 +379,24 @@ setup(
     cmdclass=cmdclass,
     python_requires='>=' + '.'.join(str(n) for n in PYTHON_MIN_VERSION),
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Framework :: Matplotlib',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 '
-        'or later (LGPLv3+)',
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: Microsoft :: Windows',
-        'Operating System :: POSIX',
-        'Operating System :: POSIX :: AIX',
-        'Operating System :: POSIX :: Linux',
-        'Programming Language :: C++',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3 :: Only',
-        'Topic :: Scientific/Engineering',
-        'Topic :: Scientific/Engineering :: GIS',
-        'Topic :: Scientific/Engineering :: Visualization',
-    ],
+            'Development Status :: 4 - Beta',
+            'Framework :: Matplotlib',
+            'License :: OSI Approved :: GNU Lesser General Public License v3 '
+            'or later (LGPLv3+)',
+            'Operating System :: MacOS :: MacOS X',
+            'Operating System :: Microsoft :: Windows',
+            'Operating System :: POSIX',
+            'Operating System :: POSIX :: AIX',
+            'Operating System :: POSIX :: Linux',
+            'Programming Language :: C++',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
+            'Programming Language :: Python :: 3 :: Only',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Scientific/Engineering :: GIS',
+            'Topic :: Scientific/Engineering :: Visualization',
+          ],
 )

@@ -20,7 +20,7 @@ _data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
                          'cartopy')
 _cache_dir = os.path.join(tempfile.gettempdir(), 'cartopy_cache_dir')
 
-config = {'pre_existing_data_dir': '',
+config = {'pre_existing_data_dir': os.environ.get('CARTOPY_DATA_DIR', ''),
           'data_dir': _data_dir,
           'cache_dir': _cache_dir,
           'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
@@ -35,6 +35,9 @@ is possible to provide site wide customisations by including a
 should contain a function called ``update_config`` which takes the config
 dictionary instance as its first and only argument (from where it is
 possible to update the dictionary howsoever desired).
+
+It is also possible to provide site wide customizations for pre-existing data
+via an environment variable `CARTOPY_DATA_DIR`.
 
 For users without write permission to the cartopy source directory, a package
 called ``cartopy_userconfig`` should be made importable (consider putting it

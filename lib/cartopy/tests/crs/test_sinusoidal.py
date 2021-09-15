@@ -49,7 +49,7 @@ class TestSinusoidal:
     @pytest.mark.parametrize('lon', [-10.0, 10.0])
     def test_central_longitude(self, lon):
         crs = ccrs.Sinusoidal(central_longitude=lon)
-        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon),
+        other_args = {'ellps=WGS84', f'lon_0={lon}',
                       'x_0=0.0', 'y_0=0.0'}
         check_proj_params('sinu', crs, other_args)
 
