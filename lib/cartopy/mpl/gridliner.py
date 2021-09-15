@@ -14,19 +14,16 @@ import matplotlib.transforms as mtrans
 import matplotlib.path as mpath
 import numpy as np
 import shapely.geometry as sgeom
+
 import cartopy
-from cartopy.mpl.ticker import (LongitudeLocator,
-                                LatitudeLocator,
-                                LongitudeFormatter,
-                                LatitudeFormatter)
 from cartopy.crs import Projection, _RectangularProjection, PlateCarree
+from cartopy.mpl.ticker import (
+    LongitudeLocator, LatitudeLocator,
+    LongitudeFormatter, LatitudeFormatter)
+
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
 classic_formatter = mticker.ScalarFormatter
-
-
-_DEGREE_SYMBOL = '\u00B0'
-
 
 _X_INLINE_PROJS = (
     cartopy.crs.InterruptedGoodeHomolosine,
@@ -53,6 +50,7 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
 def _fix_lons(lons):
     """
     Fix the given longitudes into the range ``[-180, 180]``.
+
     """
     lons = np.array(lons, copy=False, ndmin=1)
     fixed_lons = ((lons + 180) % 360) - 180
@@ -102,7 +100,7 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                            _north_south_formatted(v))
 
 
-class Gridliner():
+class Gridliner:
     # NOTE: In future, one of these objects will be add-able to a GeoAxes (and
     # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
@@ -231,7 +229,6 @@ class Gridliner():
         used for the map, meridians and parallels can cross both the X axis and
         the Y axis.
         """
-
         self.axes = axes
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the x
@@ -900,11 +897,8 @@ class Gridliner():
                                 loc = "inline"
                             else:
                                 x1, y1 = pt1
-
-                                segment_angle = (np.arctan2(y0 - y1,
-                                                 x0 - x1) *
-                                                 180 / np.pi)
-
+                                segment_angle = (np.arctan2(
+                                    y0 - y1, x0 - x1) * 180 / np.pi)
                                 loc = self._get_loc_from_spine_intersection(
                                     spines_specs, xylabel, x0, y0)
                                 if not self._draw_this_label(xylabel, loc):
