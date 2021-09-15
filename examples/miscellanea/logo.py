@@ -9,8 +9,8 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import matplotlib.textpath
 import matplotlib.patches
+import matplotlib.transforms
 from matplotlib.font_manager import FontProperties
-import numpy as np
 
 
 def main():
@@ -21,24 +21,23 @@ def main():
     ax.gridlines()
 
     # generate a matplotlib path representing the word "cartopy"
-    fp = FontProperties(family='Bitstream Vera Sans', weight='bold')
+    fp = FontProperties(family='DejaVu Sans', weight='bold')
     logo_path = matplotlib.textpath.TextPath((-175, -35), 'cartopy',
-                                             size=1, prop=fp)
+                                             size=80, prop=fp)
     # scale the letters up to sensible longitude and latitude sizes
-    logo_path._vertices *= np.array([80, 160])
+    transform = matplotlib.transforms.Affine2D().scale(1, 2).translate(0, 35)
 
     # add a background image
     im = ax.stock_img()
-    # clip the image according to the logo_path. mpl v1.2.0 does not support
-    # the transform API that cartopy makes use of, so we have to convert the
-    # projection into a transform manually
-    plate_carree_transform = ccrs.PlateCarree()._as_mpl_transform(ax)
-    im.set_clip_path(logo_path, transform=plate_carree_transform)
+    # Apply the scale transform and then the map coordinate transform
+    plate_carree_transform = (transform +
+                              ccrs.PlateCarree()._as_mpl_transform(ax))
 
     # add the path as a patch, drawing black outlines around the text
     patch = matplotlib.patches.PathPatch(logo_path,
                                          facecolor='none', edgecolor='black',
-                                         transform=ccrs.PlateCarree())
+                                         transform=plate_carree_transform)
+    im.set_clip_path(patch)
     ax.add_patch(patch)
 
     plt.show()
