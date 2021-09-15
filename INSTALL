@@ -10,15 +10,14 @@ installation is as easy as::
 
     conda install -c conda-forge cartopy
 
-
 Other pre-built binaries
 ------------------------
 
 Additional pre-built binaries can be found at a variety of sources, including:
- * Christoph Gohlke (https://www.lfd.uci.edu/~gohlke/pythonlibs/)
-   maintains unofficial Windows binaries of cartopy.
- * `OSGeo Live <https://live.osgeo.org>`_.
 
+* Christoph Gohlke (https://www.lfd.uci.edu/~gohlke/pythonlibs/)
+  maintains unofficial Windows binaries of cartopy.
+* `OSGeo Live <https://live.osgeo.org>`_.
 
 Building from source
 --------------------
@@ -43,9 +42,9 @@ using the `setup.py` file::
     # python setup.py build_ext -I/path/to/include -L/path/to/lib
     python setup.py install
 
-
 Required dependencies
 ~~~~~~~~~~~~~~~~~~~~~
+
 In order to install Cartopy, or to access its basic functionality, it will be
 necessary to first install **GEOS**, **Shapely**, and
 **pyshp**. Many of these packages can be installed using pip or
@@ -78,6 +77,7 @@ to the core packages.
 Further information about the required dependencies can be found here:
 
 **Python** 3.7 or later (https://www.python.org/)
+    Python 2 support was removed in v0.19.
 
 **GEOS** 3.7.2 or later (https://trac.osgeo.org/geos/)
     GEOS is an API of spatial predicates and functions for processing geometry
@@ -90,13 +90,15 @@ Further information about the required dependencies can be found here:
 **pyshp** 2.1 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
-**PROJ** 8.0.0 or later (https://proj.org/).
+**PROJ** 8.0.0 or later (https://proj.org/)
+    Coordinate transformation library.
 
 **pyproj** 3.0.0 or later (https://github.com/pyproj4/pyproj/)
     Python interface to PROJ (cartographic projections and coordinate transformations library).
 
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
+
 To make the most of Cartopy by enabling additional functionality, you may want
 to install these optional dependencies.
 
@@ -126,9 +128,9 @@ to install these optional dependencies.
 **Fiona** 1.0 or later (https://github.com/Toblerity/Fiona)
     A Python package for reading shapefiles that is faster than pyshp.
 
-
 Testing Dependencies
 ~~~~~~~~~~~~~~~~~~~~
+
 These packages are required for the full Cartopy test suite to run.
 
 **flufl.lock** (https://flufllock.readthedocs.io/)
