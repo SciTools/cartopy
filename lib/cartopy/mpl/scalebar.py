@@ -159,7 +159,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
 
         ATB.add_artist(Rect)
 
-        Txt_xlabel = TextArea(loc=xlabel,
+        Txt_xlabel = TextArea(s=xlabel,
                               textprops=dict(fontsize=fontsize,
                                              fontweight=tick_fontweight),
                               minimumdescent=True)
@@ -172,7 +172,7 @@ class AnchoredScaleBar(AnchoredOffsetbox):
 
         if add_ruler:
 
-            Text = TextArea(loc=ruler_unit,
+            Text = TextArea(s=ruler_unit,
                             textprops=dict(fontsize=ruler_unit_fontsize,
                                            fontweight=ruler_fontweight))
 
