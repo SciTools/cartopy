@@ -19,7 +19,6 @@ from cartopy.mpl.ticker import (LongitudeLocator,
                                 LatitudeLocator,
                                 LongitudeFormatter,
                                 LatitudeFormatter)
-from cartopy.mpl.formatters import Gridline_Base
 from cartopy.crs import Projection, _RectangularProjection, PlateCarree
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
@@ -103,7 +102,7 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                            _north_south_formatted(v))
 
 
-class Gridliner(Gridline_Base):
+class Gridliner():
     # NOTE: In future, one of these objects will be add-able to a GeoAxes (and
     # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
     # method on draw. This will enable automatic gridline resolution
@@ -232,8 +231,6 @@ class Gridliner(Gridline_Base):
         used for the map, meridians and parallels can cross both the X axis and
         the Y axis.
         """
-
-        Gridline_Base.__init__(self)
 
         self.axes = axes
 
