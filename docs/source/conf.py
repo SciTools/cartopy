@@ -21,9 +21,9 @@ import os
 import sys
 
 import cartopy
-from distutils.version import LooseVersion
 import matplotlib
 import owslib
+from packaging.version import parse as parse_version
 from sphinx_gallery.sorting import ExampleTitleSortKey, ExplicitOrder
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -84,7 +84,7 @@ release = cartopy.__version__
 
 
 if (hasattr(owslib, '__version__') and
-        LooseVersion(owslib.__version__) >= '0.19.2'):
+        parse_version(owslib.__version__) >= parse_version('0.19.2')):
     expected_failing_examples = []
 else:
     # OWSLib WMTS support is broken.

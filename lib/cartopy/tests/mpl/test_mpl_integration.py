@@ -9,6 +9,7 @@ import warnings
 
 import numpy as np
 import matplotlib.pyplot as plt
+from packaging.version import parse as parse_version
 import pytest
 
 import cartopy.crs as ccrs
@@ -106,7 +107,7 @@ def test_global_scatter_wrap_no_transform():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < '3.2' else 0.5)
+              tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -123,7 +124,7 @@ def test_global_hexbin_wrap():
 
 @pytest.mark.natural_earth
 @ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < '3.2' else 0.5)
+              tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -827,7 +828,7 @@ def test_barbs_1d_transformed():
 
 @pytest.mark.natural_earth
 @ImageTesting(['streamplot'], style='mpl20',
-              tolerance=42 if MPL_VERSION < "3.2" else 0.54)
+              tolerance=42 if MPL_VERSION < parse_version('3.2') else 0.54)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

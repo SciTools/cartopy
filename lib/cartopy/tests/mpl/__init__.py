@@ -5,7 +5,6 @@
 # licensing details.
 
 import base64
-from distutils.version import LooseVersion
 import os
 import glob
 import shutil
@@ -17,8 +16,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.testing import setup as mpl_setup
 import matplotlib.testing.compare as mcompare
+import packaging.version
 
-MPL_VERSION = LooseVersion(mpl.__version__)
+
+MPL_VERSION = packaging.version.parse(mpl.__version__)
 
 
 class ImageTesting:
@@ -200,7 +201,7 @@ class ImageTesting:
                 plt.close('all')
 
             with mpl.style.context(self.style):
-                if MPL_VERSION >= '3.2.0':
+                if MPL_VERSION >= packaging.version.parse('3.2.0'):
                     mpl.rcParams['text.kerning_factor'] = 6
 
                 r = test_func(*args, **kwargs)
