@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+import itertools
 import operator
 import warnings
 
@@ -586,8 +587,7 @@ class Gridliner:
 
         # By default, only x on top/bottom and only y on left/right
         if draw_labels is True and loc != 'geo':
-            draw_labels = (
-                "x" if loc in ["top", "bottom"] else "y")
+            draw_labels = "x" if loc in ["top", "bottom"] else "y"
 
         # Don't draw
         if not draw_labels:
@@ -813,197 +813,188 @@ class Gridliner:
                 if line_coords.size == 0:
                     continue
                 line = sgeom.LineString(line_coords)
-                if line.intersects(map_boundary):
-                    intersection = line.intersection(map_boundary)
-                    del line
-                    if intersection.is_empty:
+                if not line.intersects(map_boundary):
+                    continue
+                intersection = line.intersection(map_boundary)
+                del line
+                if intersection.is_empty:
+                    continue
+                if isinstance(intersection, sgeom.MultiPoint):
+                    if len(intersection) < 2:
                         continue
-                    if isinstance(intersection, sgeom.MultiPoint):
-                        if len(intersection) < 2:
+                    n2 = min(len(intersection), 3)
+                    tails = [[(pt.x, pt.y)
+                              for pt in intersection[:n2:n2 - 1]]]
+                    heads = [[(pt.x, pt.y)
+                              for pt in intersection[-1:-n2 - 1:-n2 + 1]]]
+                elif isinstance(intersection, (sgeom.LineString,
+                                               sgeom.MultiLineString)):
+                    if isinstance(intersection, sgeom.LineString):
+                        intersection = [intersection]
+                    elif len(intersection) > 4:
+                        # Gridline and map boundary are parallel and they
+                        # intersect themselves too much it results in a
+                        # multiline string that must be converted to a single
+                        # linestring. This is an empirical workaround for a
+                        # problem that can probably be solved in a cleaner way.
+                        xy = np.append(intersection[0], intersection[-1],
+                                       axis=0)
+                        intersection = [sgeom.LineString(xy)]
+                    tails = []
+                    heads = []
+                    for inter in intersection:
+                        if len(inter.coords) < 2:
                             continue
-                        n2 = min(len(intersection), 3)
-                        tails = [[(pt.x, pt.y)
-                                  for pt in intersection[:n2:n2 - 1]]]
-                        heads = [[(pt.x, pt.y)
-                                  for pt in intersection[-1:-n2 - 1:-n2 + 1]]]
-                    elif isinstance(intersection, (sgeom.LineString,
-                                                   sgeom.MultiLineString)):
-                        if isinstance(intersection, sgeom.LineString):
-                            intersection = [intersection]
-                        elif len(intersection) > 4:
-                            # Gridline and map boundary are parallel
-                            # and they intersect themselves too much
-                            # it results in a multiline string
-                            # that must be converted to a single linestring.
-                            # This is an empirical workaround for a problem
-                            # that can probably be solved in a cleaner way.
-                            xy = np.append(intersection[0], intersection[-1],
-                                           axis=0)
-                            intersection = [sgeom.LineString(xy)]
-                        tails = []
-                        heads = []
-                        for inter in intersection:
-                            if len(inter.coords) < 2:
-                                continue
-                            n2 = min(len(inter.coords), 8)
-                            tails.append(inter.coords[:n2:n2 - 1])
-                            heads.append(inter.coords[-1:-n2 - 1:-n2 + 1])
-                        if not tails:
-                            continue
-                    elif isinstance(intersection,
-                                    sgeom.collection.GeometryCollection):
-                        # This is a collection of Point and LineString that
-                        # represent the same gridline.
-                        # We only consider the first geometries, merge their
-                        # coordinates and keep first two points to get only one
-                        # tail ...
-                        xy = []
-                        for geom in intersection.geoms:
-                            for coord in geom.coords:
-                                xy.append(coord)
-                                if len(xy) == 2:
-                                    break
+                        n2 = min(len(inter.coords), 8)
+                        tails.append(inter.coords[:n2:n2 - 1])
+                        heads.append(inter.coords[-1:-n2 - 1:-n2 + 1])
+                    if not tails:
+                        continue
+                elif isinstance(intersection,
+                                sgeom.collection.GeometryCollection):
+                    # This is a collection of Point and LineString that
+                    # represent the same gridline.  We only consider the first
+                    # geometries, merge their coordinates and keep first two
+                    # points to get only one tail ...
+                    xy = []
+                    for geom in intersection.geoms:
+                        for coord in geom.coords:
+                            xy.append(coord)
                             if len(xy) == 2:
                                 break
-                        tails = [xy]
-                        # ... and the last geometries, merge their coordinates
-                        # and keep last two points to get only one head.
-                        xy = []
-                        for geom in reversed(intersection.geoms):
-                            for coord in reversed(geom.coords):
-                                xy.append(coord)
-                                if len(xy) == 2:
-                                    break
+                        if len(xy) == 2:
+                            break
+                    tails = [xy]
+                    # ... and the last geometries, merge their coordinates and
+                    # keep last two points to get only one head.
+                    xy = []
+                    for geom in reversed(intersection.geoms):
+                        for coord in reversed(geom.coords):
+                            xy.append(coord)
                             if len(xy) == 2:
                                 break
-                        heads = [xy]
+                        if len(xy) == 2:
+                            break
+                    heads = [xy]
+                else:
+                    warnings.warn(
+                        'Unsupported intersection geometry for gridline '
+                        f'labels: {intersection.__class__.__name__}')
+                    continue
+                del intersection
+
+                # Loop on head and tail and plot label by extrapolation
+                for i, (pt0, pt1) in itertools.chain.from_iterable(
+                        enumerate(pair) for pair in zip(tails, heads)):
+
+                    # Initial text specs
+                    x0, y0 = pt0
+                    if x_inline or y_inline:
+                        kw = {'rotation': 0, 'transform': PlateCarree(),
+                              'ha': 'center', 'va': 'center'}
+                        loc = 'inline'
                     else:
-                        warnings.warn(
-                            'Unsupported intersection geometry for gridline '
-                            f'labels: {intersection.__class__.__name__}')
-                        continue
-                    del intersection
+                        x1, y1 = pt1
+                        segment_angle = np.arctan2(y0 - y1,
+                                                   x0 - x1) * 180 / np.pi
+                        loc = self._get_loc_from_spine_intersection(
+                            spines_specs, xylabel, x0, y0)
+                        if not self._draw_this_label(xylabel, loc):
+                            visible = False
+                        kw = self._get_text_specs(segment_angle, loc, xylabel)
+                        kw['transform'] = self._get_padding_transform(
+                            segment_angle, loc, xylabel)
+                    kw.update(label_style)
 
-                    # Loop on head and tail and plot label by extrapolation
-                    for tail, head in zip(tails, heads):
-                        for i, (pt0, pt1) in enumerate([tail, head]):
+                    # Get x and y in data coords
+                    pt0 = self.axes.transData.inverted().transform_point(pt0)
+                    if y_inline:
+                        # 180 degrees isn't formatted with a suffix and adds
+                        # confusion if it's inline.
+                        if abs(tick_value) == 180:
+                            continue
+                        x = x_midpoints[i]
+                        y = tick_value
+                        kw.update(clip_on=True)
+                        y_set = True
+                    else:
+                        x = pt0[0]
+                        y_set = False
 
-                            # Initial text specs
-                            x0, y0 = pt0
-                            if x_inline or y_inline:
-                                kw = {'rotation': 0,
-                                      'transform': PlateCarree(),
-                                      'ha': 'center', 'va': 'center'}
-                                loc = "inline"
-                            else:
-                                x1, y1 = pt1
-                                segment_angle = (np.arctan2(
-                                    y0 - y1, x0 - x1) * 180 / np.pi)
-                                loc = self._get_loc_from_spine_intersection(
-                                    spines_specs, xylabel, x0, y0)
-                                if not self._draw_this_label(xylabel, loc):
-                                    visible = False
-                                kw = self._get_text_specs(
-                                    segment_angle, loc, xylabel)
-                                kw['transform'] = self._get_padding_transform(
-                                    segment_angle, loc, xylabel)
-                            kw.update(label_style)
+                    if x_inline:
+                        if abs(tick_value) == 180:
+                            continue
+                        x = tick_value
+                        y = y_midpoints[i]
+                        kw.update(clip_on=True)
+                    elif not y_set:
+                        y = pt0[1]
 
-                            # Get x and y in data coords
-                            pt0 = self.axes.transData.inverted(
-                            ).transform_point(pt0)
-                            if y_inline:
-                                # 180 degrees isn't formatted with a
-                                # suffix and adds confusion if it's inline
-                                if abs(tick_value) == 180:
-                                    continue
-                                x = x_midpoints[i]
-                                y = tick_value
-                                kw.update(clip_on=True)
-                                y_set = True
-                            else:
-                                x = pt0[0]
-                                y_set = False
+                    # Add text to the plot
+                    text = formatter(tick_value)
+                    artist = self.axes.text(x, y, text, **kw)
 
-                            if x_inline:
-                                if abs(tick_value) == 180:
-                                    continue
-                                x = tick_value
-                                y = y_midpoints[i]
-                                kw.update(clip_on=True)
-                            elif not y_set:
-                                y = pt0[1]
-
-                            # Add text to the plot
-                            text = formatter(tick_value)
-                            artist = self.axes.text(x, y, text, **kw)
-
-                            # Update loc from spine overlapping now
-                            # that we have a bbox of the label
+                    # Update loc from spine overlapping now that we have a bbox
+                    # of the label.
+                    this_path = update_artist(artist, renderer)
+                    if not x_inline and not y_inline and loc == 'geo':
+                        new_loc = self._get_loc_from_spine_overlapping(
+                            spines_specs, xylabel, this_path)
+                        if new_loc and loc != new_loc:
+                            loc = new_loc
+                            transform = self._get_padding_transform(
+                                segment_angle, loc, xylabel)
+                            artist.set_transform(transform)
+                            artist.update(
+                                self._get_text_specs(
+                                    segment_angle, loc, xylabel))
+                            artist.update(label_style.copy())
                             this_path = update_artist(artist, renderer)
-                            if not x_inline and not y_inline and loc == 'geo':
-                                new_loc = self._get_loc_from_spine_overlapping(
-                                    spines_specs, xylabel, this_path)
-                                if new_loc and loc != new_loc:
-                                    loc = new_loc
-                                    transform = self._get_padding_transform(
-                                        segment_angle, loc, xylabel)
-                                    artist.set_transform(transform)
-                                    artist.update(
-                                        self._get_text_specs(
-                                            segment_angle, loc, xylabel))
-                                    artist.update(label_style.copy())
-                                    this_path = update_artist(artist, renderer)
 
-                            # Is this kind label allowed to be drawn?
-                            if not self._draw_this_label(xylabel, loc):
+                    # Is this kind label allowed to be drawn?
+                    if not self._draw_this_label(xylabel, loc):
+                        visible = False
+
+                    elif x_inline or y_inline:
+                        # Check that it does not overlap the map.
+                        # Inline must be within the map.
+                        # TODO: When Matplotlib clip path works on text, this
+                        # clipping can be left to it.
+                        center = (artist
+                                  .get_transform()
+                                  .transform_point(artist.get_position()))
+                        visible = map_boundary_path.contains_point(center)
+                    else:
+                        # Now loop on padding factors until it does not overlap
+                        # the boundary.
+                        visible = True
+                        padding_factor = 1
+                        while padding_factor < max_padding_factor:
+
+                            # Non-inline must not run through the outline.
+                            if map_boundary_path.intersects_path(
+                                    this_path, filled=padding > 0):
                                 visible = False
 
-                            elif x_inline or y_inline:
-                                # Check that it does not overlap the map
-                                # Inline must be within the map.
-                                # TODO: When Matplotlib clip path
-                                # works on text, this
-                                # clipping can be left to it.
-                                center = artist.get_transform(
-                                ).transform_point(
-                                    artist.get_position())
-                                visible = (map_boundary_path
-                                           .contains_point(center))
+                                # Apply new padding.
+                                transform = self._get_padding_transform(
+                                    segment_angle, loc, xylabel,
+                                    padding_factor)
+                                artist.set_transform(transform)
+                                this_path = update_artist(artist, renderer)
+                                padding_factor += delta_padding_factor
+
                             else:
-                                # Now loop on padding factors until it does not
-                                # overlaps the boundary
                                 visible = True
-                                padding_factor = 1
-                                while padding_factor < max_padding_factor:
+                                break
 
-                                    # Non-inline must not run through
-                                    # the outline.
-                                    if map_boundary_path.intersects_path(
-                                            this_path, filled=padding > 0):
-                                        visible = False
+                        else:
+                            visible = False
 
-                                        # Apply new padding
-                                        transform = (
-                                            self._get_padding_transform(
-                                                segment_angle, loc, xylabel,
-                                                padding_factor))
-                                        artist.set_transform(transform)
-                                        this_path = update_artist(
-                                            artist, renderer)
-                                        padding_factor += delta_padding_factor
-
-                                    else:
-                                        visible = True
-                                        break
-
-                                else:
-                                    visible = False
-
-                            # Updates
-                            label = Label(artist, this_path, xylabel, loc)
-                            label.set_visible(visible)
-                            self._labels.append(label)
+                    # Updates
+                    label = Label(artist, this_path, xylabel, loc)
+                    label.set_visible(visible)
+                    self._labels.append(label)
 
         # Now check overlapping of ordered visible labels
         if self._labels:
