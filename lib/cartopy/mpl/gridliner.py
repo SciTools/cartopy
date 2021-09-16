@@ -1090,7 +1090,6 @@ class Gridliner:
                 kw.update(va='bottom')
             elif loc == 'bottom':
                 kw.update(va='top')
-            # kw.update(self._get_alignments_from_loc(loc))
 
         else:
 
@@ -1118,20 +1117,6 @@ class Gridliner:
                 elif kw["va"] == "bottom":
                     kw["va"] = "top"
 
-        return kw
-
-    @staticmethod
-    def _get_alignments_from_loc(loc):
-        kw = dict(ha="center", va="center")
-        if loc == 'right':
-            kw.update(ha='left')
-        elif loc == 'left':
-            kw.update(ha='right')
-        elif loc == 'top':
-            kw.update(va='bottom')
-        elif loc == 'bottom':
-            kw.update(va='top')
-            kw.update(va='center')
         return kw
 
     def _get_padding_transform(
