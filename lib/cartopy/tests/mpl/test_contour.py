@@ -97,8 +97,9 @@ def test_contour_update_bounds():
     plt.draw()
 
 
+@pytest.mark.parametrize('func', ['contour', 'contourf'])
 @cleanup
-def test_contourf_transform_first():
+def test_contourf_transform_first(func):
     """Test the fast-path option for filled contours."""
     # Gridded data that needs to be wrapped
     x = np.arange(360)
@@ -107,24 +108,25 @@ def test_contourf_transform_first():
     z = xx + yy**2
 
     ax = plt.axes(projection=ccrs.PlateCarree())
+    test_func = getattr(ax, func)
     # Can't handle just Z input with the transform_first
     with pytest.raises(ValueError,
                        match="The X and Y arguments must be provided"):
-        ax.contourf(z, transform=ccrs.PlateCarree(),
-                    transform_first=True)
+        test_func(z, transform=ccrs.PlateCarree(),
+                  transform_first=True)
     # X and Y must also be 2-dimensional
     with pytest.raises(ValueError,
                        match="The X and Y arguments must be gridded"):
-        ax.contourf(x, y, z, transform=ccrs.PlateCarree(),
-                    transform_first=True)
+        test_func(x, y, z, transform=ccrs.PlateCarree(),
+                  transform_first=True)
 
     # When calculating the contour in projection-space the extent
     # will now be the extent of the transformed points (-179, 180, -25, 25)
-    ax.contourf(xx, yy, z, transform=ccrs.PlateCarree(),
-                transform_first=True)
+    test_func(xx, yy, z, transform=ccrs.PlateCarree(),
+              transform_first=True)
     assert_array_almost_equal(ax.get_extent(), (-179, 180, -25, 25))
 
     # The extent without the transform_first should be all the way out to -180
-    ax.contourf(xx, yy, z, transform=ccrs.PlateCarree(),
-                transform_first=False)
+    test_func(xx, yy, z, transform=ccrs.PlateCarree(),
+              transform_first=False)
     assert_array_almost_equal(ax.get_extent(), (-180, 180, -25, 25))
