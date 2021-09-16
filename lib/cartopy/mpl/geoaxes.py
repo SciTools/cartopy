@@ -321,6 +321,50 @@ def _add_transform(func):
     return wrapper
 
 
+def _add_transform_first(func):
+    """
+    A decorator that adds and validates the transform_first keyword argument.
+
+    This handles a fast-path optimization that projects the points before
+    creating any patches or lines. This means that the lines/patches will be
+    calculated in projected-space, not data-space. It requires the first
+    three arguments to be x, y, and z and all must be two-dimensional to use
+    the fast-path option.
+
+    This should be added after the _add_transform wrapper so that a transform
+    is guaranteed to be present.
+    """
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if kwargs.pop('transform_first', False):
+            if len(args) < 3:
+                # For the fast-path we need X and Y input points
+                raise ValueError("The X and Y arguments must be provided to "
+                                 "use the transform_first=True fast-path.")
+            x, y, z = (np.array(i) for i in args[:3])
+            if not (x.ndim == y.ndim == 2):
+                raise ValueError("The X and Y arguments must be gridded "
+                                 "2-dimensional arrays")
+
+            # Remove the transform from the keyword arguments
+            t = kwargs.pop('transform')
+            # Transform all of the x and y points
+            pts = self.projection.transform_points(t, x, y)
+            x = pts[..., 0].reshape(x.shape)
+            y = pts[..., 1].reshape(y.shape)
+            # The x coordinates could be wrapped, but matplotlib expects
+            # them to be sorted, so we will reorganize the arrays based on x
+            ind = np.argsort(x, axis=1)
+            x = np.take_along_axis(x, ind, axis=1)
+            y = np.take_along_axis(y, ind, axis=1)
+            z = np.take_along_axis(z, ind, axis=1)
+
+            # Use the new points as the input arguments
+            args = (x, y, z) + args[3:]
+        return func(self, *args, **kwargs)
+    return wrapper
+
+
 class GeoAxes(matplotlib.axes.Axes):
     """
     A subclass of :class:`matplotlib.axes.Axes` which represents a
@@ -1593,6 +1637,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.spines['geo'].set_boundary(path, transform)
 
     @_add_transform
+    @_add_transform_first
     def contour(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contour`.
@@ -1601,6 +1646,16 @@ class GeoAxes(matplotlib.axes.Axes):
         ----------------
         transform
             A :class:`~cartopy.crs.Projection`.
+
+        transform_first : bool, optional
+            If True, this will transform the input arguments into
+            projection-space before computing the contours, which is much
+            faster than computing the contours in data-space and projecting
+            the filled polygons. Using this method does not handle wrapped
+            coordinates as well and can produce misleading contours in the
+            middle of the domain. To use the projection-space method the input
+            arguments X and Y must be provided and be 2-dimensional.
+            The default is False, to compute the contours in data-space.
 
         """
         result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
@@ -1621,6 +1676,7 @@ class GeoAxes(matplotlib.axes.Axes):
         return result
 
     @_add_transform
+    @_add_transform_first
     def contourf(self, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.contourf`.
@@ -1630,8 +1686,17 @@ class GeoAxes(matplotlib.axes.Axes):
         transform
             A :class:`~cartopy.crs.Projection`.
 
+        transform_first : bool, optional
+            If True, this will transform the input arguments into
+            projection-space before computing the contours, which is much
+            faster than computing the contours in data-space and projecting
+            the filled polygons. Using this method does not handle wrapped
+            coordinates as well and can produce misleading contours in the
+            middle of the domain. To use the projection-space method the input
+            arguments X and Y must be provided and be 2-dimensional.
+            The default is False, to compute the contours in data-space.
         """
-        t = kwargs['transform']
+        t = kwargs.get('transform')
         if isinstance(t, ccrs.Projection):
             kwargs['transform'] = t = t._as_mpl_transform(self)
         # Set flag to indicate correcting orientation of paths if not ccw
