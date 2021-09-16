@@ -426,14 +426,8 @@ def test_gridliner_line_limits():
          {'left': [],
           'right': [],
           'top': ['50°N'],
-<<<<<<< HEAD
           'bottom': []}),
     ])
-=======
-          'bottom': []})
-    ]
-)
->>>>>>> 5202258512a4585c80a7545466d5c644314ae9b8
 def test_gridliner_draw_labels_param(draw_labels, result):
     plt.figure()
     lambert_crs = ccrs.LambertConformal(central_longitude=105)
@@ -449,8 +443,8 @@ def test_gridliner_draw_labels_param(draw_labels, result):
         res[loc] = [a.get_text() for a in artists if a.get_visible()]
 
 
-@pytest.mark.natural_earth
-@ImageTesting(['gridline_with_Max_ticknumbers'], tolerance=grid_label_tol)
+@ pytest.mark.natural_earth
+@ ImageTesting(['gridline_with_Max_ticknumbers'], tolerance=grid_label_tol)
 def test_gridliner_set_number_of_ticks():
     plt.figure()
     ax = plt.subplot(1, 1, 1,
@@ -472,9 +466,9 @@ def test_gridliner_set_number_of_ticks():
     assert(Result)
 
 
-@pytest.mark.natural_earth
-@ImageTesting(['gridliner_hemisphere_ticklabels_formatted'],
-              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+@ pytest.mark.natural_earth
+@ ImageTesting(['gridliner_hemisphere_ticklabels_formatted'],
+               tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner_change_gridline_tick_decimal_separator():
     plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
@@ -495,9 +489,9 @@ def test_gridliner_change_gridline_tick_decimal_separator():
     assert(Result)
 
 
-@pytest.mark.natural_earth
-@ImageTesting(['gridliner_hemisphere_ticklabels_formatted1'],
-              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+@ pytest.mark.natural_earth
+@ ImageTesting(['gridliner_hemisphere_ticklabels_formatted1'],
+               tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner_hemisphere_ticklabels_formatting1():
     plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
@@ -520,9 +514,9 @@ def test_gridliner_hemisphere_ticklabels_formatting1():
     assert(Result)
 
 
-@pytest.mark.natural_earth
-@ImageTesting(['gridliner_hemisphere_ticklabels_formatted2'],
-              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+@ pytest.mark.natural_earth
+@ ImageTesting(['gridliner_hemisphere_ticklabels_formatted2'],
+               tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner_hemisphere_ticklabels_formatting2():
     plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
@@ -540,9 +534,9 @@ def test_gridliner_hemisphere_ticklabels_formatting2():
     assert(Result)
 
 
-@pytest.mark.natural_earth
-@ImageTesting(['gridliner_hemisphere_ticklabels_formatted3'],
-              tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
+@ pytest.mark.natural_earth
+@ ImageTesting(['gridliner_hemisphere_ticklabels_formatted3'],
+               tolerance=0.7 if ccrs.PROJ4_VERSION >= (6, 0, 0) else 0.5)
 def test_gridliner_hemisphere_ticklabels_formatting3():
     plt.figure()
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
