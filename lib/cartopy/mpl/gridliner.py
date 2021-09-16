@@ -634,7 +634,6 @@ class Gridliner:
         # Inits
         lon_lim, lat_lim = self._axes_domain(nx=nx, ny=ny)
         transform = self._crs_transform()
-        rc_params = matplotlib.rcParams
         n_steps = self.n_steps
         crs = self.crs
 
@@ -658,15 +657,15 @@ class Gridliner:
             collection_kwargs = {}
         collection_kwargs = collection_kwargs.copy()
         collection_kwargs['transform'] = transform
-        if not any(x in collection_kwargs.keys() for x in ['c', 'color']):
+        if not any(x in collection_kwargs for x in ['c', 'color']):
             collection_kwargs.setdefault('color',
-                                         rc_params['grid.color'])
-        if not any(x in collection_kwargs.keys() for x in ['ls', 'linestyle']):
+                                         matplotlib.rcParams['grid.color'])
+        if not any(x in collection_kwargs for x in ['ls', 'linestyle']):
             collection_kwargs.setdefault('linestyle',
-                                         rc_params['grid.linestyle'])
-        if not any(x in collection_kwargs.keys() for x in ['lw', 'linewidth']):
+                                         matplotlib.rcParams['grid.linestyle'])
+        if not any(x in collection_kwargs for x in ['lw', 'linewidth']):
             collection_kwargs.setdefault('linewidth',
-                                         rc_params['grid.linewidth'])
+                                         matplotlib.rcParams['grid.linewidth'])
 
         # Meridians
         lat_min, lat_max = lat_lim
@@ -711,9 +710,8 @@ class Gridliner:
         # Label drawing #
         #################
 
-        if not (self.left_labels or self.right_labels or
-                self.bottom_labels or self.top_labels or
-                self.inline_labels or self.geo_labels):
+        if not any((self.left_labels, self.right_labels, self.bottom_labels,
+                    self.top_labels, self.inline_labels, self.geo_labels)):
             return
         self._assert_can_draw_ticks()
 
@@ -781,8 +779,7 @@ class Gridliner:
             self.axes.spines["geo"].get_transform())
         if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
             map_boundary_path = remove_path_dupes(map_boundary_path)
-        map_boundary_vertices = map_boundary_path.vertices
-        map_boundary = sgeom.Polygon(map_boundary_vertices)
+        map_boundary = sgeom.Polygon(map_boundary_path.vertices)
 
         if self.x_inline:
             y_midpoints = self._find_midpoints(lat_lim, lat_ticks)
@@ -850,8 +847,7 @@ class Gridliner:
                         heads.append(inter.coords[-1:-n2 - 1:-n2 + 1])
                     if not tails:
                         continue
-                elif isinstance(intersection,
-                                sgeom.collection.GeometryCollection):
+                elif isinstance(intersection, sgeom.GeometryCollection):
                     # This is a collection of Point and LineString that
                     # represent the same gridline.  We only consider the first
                     # geometries, merge their coordinates and keep first two
@@ -967,14 +963,13 @@ class Gridliner:
                     else:
                         # Now loop on padding factors until it does not overlap
                         # the boundary.
-                        visible = True
+                        visible = False
                         padding_factor = 1
                         while padding_factor < max_padding_factor:
 
                             # Non-inline must not run through the outline.
                             if map_boundary_path.intersects_path(
                                     this_path, filled=padding > 0):
-                                visible = False
 
                                 # Apply new padding.
                                 transform = self._get_padding_transform(
@@ -987,9 +982,6 @@ class Gridliner:
                             else:
                                 visible = True
                                 break
-
-                        else:
-                            visible = False
 
                     # Updates
                     label = Label(artist, this_path, xylabel, loc)
@@ -1156,10 +1148,10 @@ class Gridliner:
         # Padding
         if xylabel == "x":
             padding = (self.xpadding if self.xpadding is not None
-                       else matplotlib.rc_params['xtick.major.pad'])
+                       else matplotlib.rcParams['xtick.major.pad'])
         else:
             padding = (self.ypadding if self.ypadding is not None
-                       else matplotlib.rc_params['ytick.major.pad'])
+                       else matplotlib.rcParams['ytick.major.pad'])
         dx = padding_factor * padding * np.cos(padding_angle * np.pi / 180)
         dy = padding_factor * padding * np.sin(padding_angle * np.pi / 180)
 
