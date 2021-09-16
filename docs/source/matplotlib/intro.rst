@@ -129,5 +129,5 @@ those points *on the globe* rather than 2d Cartesian space.
          :meth:`~matplotlib.axes.Axes.set_ylim`).
 
 
-In the :doc:`next section <advanced_plotting>`, examples of contouring, block plotting and adding
+In the :doc:`next section <advanced_plotting>`, examples of contouring and adding
 geo-located images are provided for more advanced map based visualisations.
