@@ -47,12 +47,9 @@ def test_global_map():
     ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.Geodetic())
 
 
-<<<<<<< HEAD
-=======
 contour_image = 'contour_label' if MPL_VERSION < '3.4' else 'contour_label_3.4'
 
 
->>>>>>> 5202258512a4585c80a7545466d5c644314ae9b8
 @pytest.mark.natural_earth
 @ExampleImageTesting(['contour_label'],
                      tolerance=9.9 if MPL_VERSION < "3.2" else 0.5)
