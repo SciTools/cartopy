@@ -1630,19 +1630,18 @@ class GeoAxes(matplotlib.axes.Axes):
         transform
             A :class:`~cartopy.crs.Projection`.
 
-        fast_transform: bool, optional
+        transform_first : bool, optional
             If True, this will transform the input arguments into
             projection-space before computing the contours, which is much
             faster than computing the contours in data-space and projecting
             the filled polygons. To use the projection-space method the input
             arguments X and Y must be provided and be 2-dimensional.
             The default is False, to compute the contours in data-space.
-
         """
         # Handle a fast-path optimization that projects the points before
         # calculating the contour polygons. This means that the contour
         # lines will be calculated in projected-space, not data-space.
-        if kwargs.pop('fast_transform', False):
+        if kwargs.pop('transform_first', False):
             if len(args) < 3:
                 # For the fast-path we need X and Y input points
                 raise ValueError("The X and Y arguments must be provided to "
