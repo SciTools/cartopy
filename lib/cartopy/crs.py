@@ -39,42 +39,7 @@ WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 
-def _safe_pj_transform_611(src_crs, tgt_crs, x, y, z=None, trap=True):
-    """
-    Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
-
-    See https://github.com/OSGeo/proj#1782.
-    """
-    lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
-
-    if (
-        src_crs.proj4_params.get('proj', '') == 'ob_tran' and
-        src_crs.proj4_params.get('o_proj', '') in lonlat and
-        'to_meter' in src_crs.proj4_params
-    ):
-        x *= src_crs.proj4_params['to_meter']
-        y *= src_crs.proj4_params['to_meter']
-
-    transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
-    transformed_coords = transformer.transform(x, y, z, errcheck=trap)
-    if z is None:
-        xx, yy = transformed_coords
-        zz = 0
-    else:
-        xx, yy, zz = transformed_coords
-
-    if (
-        tgt_crs.proj4_params.get('proj', '') == 'ob_tran' and
-        tgt_crs.proj4_params.get('o_proj', '') in lonlat and
-        'to_meter' in tgt_crs.proj4_params
-    ):
-        xx /= tgt_crs.proj4_params['to_meter']
-        yy /= tgt_crs.proj4_params['to_meter']
-
-    return xx, yy, zz
-
-
-def _safe_pj_transform_pre_611(src_crs, tgt_crs, x, y, z=None, trap=True):
+def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
     transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
     transformed_coords = transformer.transform(x, y, z, errcheck=trap)
     if z is None:
@@ -83,12 +48,6 @@ def _safe_pj_transform_pre_611(src_crs, tgt_crs, x, y, z=None, trap=True):
     else:
         xx, yy, zz = transformed_coords
     return xx, yy, zz
-
-
-if (6, 1, 1) <= PROJ_VERSION < (6, 3, 0):
-    _safe_pj_transform = _safe_pj_transform_611
-else:
-    _safe_pj_transform = _safe_pj_transform_pre_611
 
 
 class Globe(object):
@@ -1465,12 +1424,8 @@ class TransverseMercator(Projection):
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('units', 'm')]
-        if PROJ_VERSION < (6, 0, 0):
-            if not approx:
-                proj4_params[0] = ('proj', 'etmerc')
-        else:
-            if approx:
-                proj4_params += [('approx', None)]
+        if approx:
+            proj4_params += [('approx', None)]
         super().__init__(proj4_params, globe=globe)
 
         self.threshold = 1e4
@@ -2018,25 +1973,6 @@ class Stereographic(Projection):
                  false_easting=0.0, false_northing=0.0,
                  true_scale_latitude=None,
                  scale_factor=None, globe=None):
-        # Warn when using Stereographic with proj < 5.0.0 due to
-        # incorrect transformation with lon_0=0 (see
-        # https://github.com/OSGeo/proj.4/issues/194).
-        if central_latitude == 0:
-            if PROJ_VERSION != ():
-                if PROJ_VERSION < (5, 0, 0):
-                    warnings.warn(
-                        'The Stereographic projection in Proj older than '
-                        '5.0.0 incorrectly transforms points when '
-                        'central_latitude=0. Use this projection with '
-                        'caution.',
-                        stacklevel=2)
-            else:
-                warnings.warn(
-                    'Cannot determine Proj version. The Stereographic '
-                    'projection may be unreliable and should be used with '
-                    'caution.',
-                    stacklevel=2)
-
         proj4_params = [('proj', 'stere'), ('lat_0', central_latitude),
                         ('lon_0', central_longitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
@@ -2115,19 +2051,6 @@ class Orthographic(Projection):
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  globe=None):
-        if PROJ_VERSION != ():
-            if (5, 0, 0) <= PROJ_VERSION < (5, 1, 0):
-                warnings.warn(
-                    'The Orthographic projection in the v5.0.x series of Proj '
-                    'incorrectly transforms points. Use this projection with '
-                    'caution.',
-                    stacklevel=2)
-        else:
-            warnings.warn(
-                'Cannot determine Proj version. The Orthographic projection '
-                'may be unreliable and should be used with caution.',
-                stacklevel=2)
-
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude)]
         super().__init__(proj4_params, globe=globe)
@@ -2350,11 +2273,6 @@ class EqualEarth(_WarpedRectangularProjection):
             If omitted, a default globe is created.
 
         """
-        if PROJ_VERSION < (5, 2, 0):
-            _proj_ver = '.'.join(str(v) for v in PROJ_VERSION)
-            raise ValueError('The EqualEarth projection requires Proj version '
-                             f'5.2.0, but you are using {_proj_ver}.')
-
         proj_params = [('proj', 'eqearth'), ('lon_0', central_longitude)]
         super().__init__(proj_params, central_longitude,
                          false_easting=false_easting,
@@ -2436,22 +2354,6 @@ class Robinson(_WarpedRectangularProjection):
                 This projection does not handle elliptical globes.
 
         """
-        # Warn when using Robinson with proj 4.8 due to discontinuity at
-        # 40 deg N introduced by incomplete fix to issue #113 (see
-        # https://github.com/OSGeo/proj.4/issues/113).
-        if PROJ_VERSION != ():
-            if (4, 8) <= PROJ_VERSION < (4, 9):
-                warnings.warn('The Robinson projection in the v4.8.x series '
-                              'of Proj contains a discontinuity at '
-                              '40 deg latitude. Use this projection with '
-                              'caution.',
-                              stacklevel=2)
-        else:
-            warnings.warn('Cannot determine Proj version. The Robinson '
-                          'projection may be unreliable and should be used '
-                          'with caution.',
-                          stacklevel=2)
-
         proj4_params = [('proj', 'robin'), ('lon_0', central_longitude)]
         super().__init__(proj4_params, central_longitude,
                          false_easting=false_easting,
@@ -2543,11 +2445,6 @@ class InterruptedGoodeHomolosine(Projection):
             super().__init__(proj4_params, globe=globe)
 
         elif emphasis == 'ocean':
-            if PROJ_VERSION < (7, 1, 0):
-                _proj_ver = '.'.join(str(v) for v in PROJ_VERSION)
-                raise ValueError('The Interrupted Goode Homolosine ocean '
-                                 'projection requires Proj version 7.1.0, '
-                                 f'but you are using {_proj_ver}')
             proj4_params = [('proj', 'igh_o'), ('lon_0', central_longitude)]
             super().__init__(proj4_params, globe=globe)
 
@@ -2929,22 +2826,6 @@ class AzimuthalEquidistant(Projection):
             globe is created.
 
         """
-        # Warn when using Azimuthal Equidistant with proj < 4.9.2 due to
-        # incorrect transformation past 90 deg distance (see
-        # https://github.com/OSGeo/proj.4/issues/246).
-        if PROJ_VERSION != ():
-            if PROJ_VERSION < (4, 9, 2):
-                warnings.warn('The Azimuthal Equidistant projection in Proj '
-                              'older than 4.9.2 incorrectly transforms points '
-                              'farther than 90 deg from the origin. Use this '
-                              'projection with caution.',
-                              stacklevel=2)
-        else:
-            warnings.warn('Cannot determine Proj version. The Azimuthal '
-                          'Equidistant projection may be unreliable and '
-                          'should be used with caution.',
-                          stacklevel=2)
-
         proj4_params = [('proj', 'aeqd'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude),
                         ('x_0', false_easting), ('y_0', false_northing)]
