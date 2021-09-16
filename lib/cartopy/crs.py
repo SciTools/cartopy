@@ -2420,7 +2420,7 @@ class InterruptedGoodeHomolosine(Projection):
     ocean features.
 
     Original Reference:
-    Goode, J. P., 1925: The Homolosine Projection: A new device for
+        Goode, J. P., 1925: The Homolosine Projection: A new device for
         portraying the Earth's surface entire. Annals of the
         Association of American Geographers, 15:3, 119-125,
         DOI: 10.1080/00045602509356949
