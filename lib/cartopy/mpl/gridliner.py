@@ -621,14 +621,12 @@ class Gridliner:
         self._drawn = True
 
         # Clear lists of artists
-        for lines in self.xline_artists + self.yline_artists:
-            if lines in self.axes.collections:
-                self.axes.collections.remove(lines)
+        for lines in [*self.xline_artists, *self.yline_artists]:
+            lines.remove()
         self.xline_artists.clear()
         self.yline_artists.clear()
         for label in self._labels:
-            if label.artist in self.axes.texts:
-                self.axes.texts.remove(label.artist)
+            label.artist.remove()
         self._labels.clear()
 
         # Inits
