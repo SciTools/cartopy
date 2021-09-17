@@ -571,7 +571,9 @@ def test_pcolormesh_single_column_wrap():
     plt.figure(figsize=(10, 6))
 
     ax = plt.subplot(111, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral')
+    # TODO: Remove snap when updating this image
+    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
+                   snap=False)
     ax.coastlines()
     ax.set_global()
 
@@ -615,7 +617,8 @@ def test_pcolormesh_goode_wrap():
     Z = Z[:-1, :-1]
     ax = plt.axes(projection=ccrs.InterruptedGoodeHomolosine(emphasis='land'))
     ax.coastlines()
-    ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree())
+    # TODO: Remove snap when updating this image
+    ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree(), snap=False)
 
 
 @pytest.mark.natural_earth

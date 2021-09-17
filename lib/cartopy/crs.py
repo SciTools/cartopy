@@ -641,6 +641,8 @@ class Projection(CRS, metaclass=ABCMeta):
         'MultiLineString': '_project_multiline',
         'MultiPolygon': '_project_multipolygon',
     }
+    # Whether or not this projection can handle wrapped coordinates
+    _wrappable = False
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1248,6 +1250,8 @@ class _RectangularProjection(Projection, metaclass=ABCMeta):
     is symmetric about the origin.
 
     """
+    _wrappable = True
+
     def __init__(self, proj4_params, half_width, half_height, globe=None):
         self._half_width = half_width
         self._half_height = half_height
@@ -1273,6 +1277,7 @@ class _CylindricalProjection(_RectangularProjection, metaclass=ABCMeta):
     want to allow x values to wrap around.
 
     """
+    _wrappable = True
 
 
 def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
@@ -1386,6 +1391,8 @@ class TransverseMercator(Projection):
     A Transverse Mercator projection.
 
     """
+    _wrappable = True
+
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
                  scale_factor=1.0, globe=None, approx=None):
@@ -1579,6 +1586,7 @@ class Mercator(Projection):
     A Mercator projection.
 
     """
+    _wrappable = True
 
     def __init__(self, central_longitude=0.0,
                  min_latitude=-80.0, max_latitude=84.0,
@@ -1826,6 +1834,7 @@ class LambertAzimuthalEqualArea(Projection):
     A Lambert Azimuthal Equal-Area projection.
 
     """
+    _wrappable = True
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
@@ -1969,6 +1978,8 @@ class Gnomonic(Projection):
 
 
 class Stereographic(Projection):
+    _wrappable = True
+
     def __init__(self, central_latitude=0.0, central_longitude=0.0,
                  false_easting=0.0, false_northing=0.0,
                  true_scale_latitude=None,
@@ -2082,6 +2093,8 @@ class Orthographic(Projection):
 
 
 class _WarpedRectangularProjection(Projection, metaclass=ABCMeta):
+    _wrappable = True
+
     def __init__(self, proj4_params, central_longitude,
                  false_easting=None, false_northing=None, globe=None):
         if false_easting is not None:
@@ -2428,6 +2441,8 @@ class InterruptedGoodeHomolosine(Projection):
     A central_longitude value of -160 is recommended for the oceanic view.
 
     """
+    _wrappable = True
+
     def __init__(self, central_longitude=0, globe=None, emphasis='land'):
         """
         Parameters
@@ -2804,6 +2819,7 @@ class AzimuthalEquidistant(Projection):
     This projection provides accurate angles about and distances through the
     central position. Other angles, distances, or areas may be distorted.
     """
+    _wrappable = True
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
