@@ -302,3 +302,17 @@ def test_LongitudeLocator(cls, vmin, vmax, expected):
     locator = cls(dms=True)
     result = locator.tick_values(vmin, vmax)
     np.testing.assert_allclose(result, expected)
+
+
+def test_lonlatformatter_decimal_point():
+    xticker = LongitudeFormatter(decimal_point=',', number_format='0.2f')
+    yticker = LatitudeFormatter(decimal_point=',', number_format='0.2f')
+    assert xticker(-10) == "10,00°W"
+    assert yticker(-10) == "10,00°S"
+
+
+def test_lonlatformatter_cardinal_labels():
+    xticker = LongitudeFormatter(cardinal_labels={'west': 'O'})
+    yticker = LatitudeFormatter(cardinal_labels={'south': 'South'})
+    assert xticker(-10) == "10°O"
+    assert yticker(-10) == "10°South"

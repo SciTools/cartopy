@@ -1423,7 +1423,8 @@ class GeoAxes(matplotlib.axes.Axes):
                   xformatter=None, yformatter=None, xlim=None, ylim=None,
                   rotate_labels=None, xlabel_style=None, ylabel_style=None,
                   labels_bbox_style=None, xpadding=5, ypadding=5,
-                  offset_angle=25, auto_update=False, **kwargs):
+                  offset_angle=25, auto_update=False, formatter_kwargs=None,
+                  **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1530,6 +1531,10 @@ class GeoAxes(matplotlib.axes.Axes):
         auto_update: bool
             Whether to update the grilines and labels when the plot is
             refreshed.
+        formatter_kwargs: dict, optional
+            Options passed to the default formatters.
+            See :class:`~cartopy.mpl.ticker.LongitudeFormatter` and
+            :class:`~cartopy.mpl.ticker.LatitudeFormatter`
 
         Keyword Parameters
         ------------------
@@ -1563,7 +1568,7 @@ class GeoAxes(matplotlib.axes.Axes):
             xlabel_style=xlabel_style, ylabel_style=ylabel_style,
             labels_bbox_style=labels_bbox_style,
             xpadding=xpadding, ypadding=ypadding, offset_angle=offset_angle,
-            auto_update=auto_update)
+            auto_update=auto_update, formatter_kwargs=formatter_kwargs)
         self._gridliners.append(gl)
         return gl
 
