@@ -784,6 +784,12 @@ class Gridliner:
         if self.y_inline:
             x_midpoints = self._find_midpoints(lon_lim, lon_ticks)
 
+        # Cache a few things so they aren't re-calculated in the loops.
+        crs_transform = self._crs_transform().transform
+        inverse_data_transform = self.axes.transData.inverted().transform_point
+        if self.x_inline or self.y_inline:
+            pc_transform = PlateCarree()
+
         for xylabel, lines, line_ticks, formatter, label_style in (
                 ('x', lon_lines, lon_ticks,
                  self.xformatter, self.xlabel_style.copy()),
@@ -802,7 +808,7 @@ class Gridliner:
 
             for line_coords, tick_value in zip(lines, line_ticks):
                 # Intersection of line with map boundary
-                line_coords = self._crs_transform().transform(line_coords)
+                line_coords = crs_transform(line_coords)
                 infs = np.isnan(line_coords).any(axis=1)
                 line_coords = line_coords.compress(~infs, axis=0)
                 if line_coords.size == 0:
@@ -884,7 +890,7 @@ class Gridliner:
                     # Initial text specs
                     x0, y0 = pt0
                     if x_inline or y_inline:
-                        kw = {'rotation': 0, 'transform': PlateCarree(),
+                        kw = {'rotation': 0, 'transform': pc_transform,
                               'ha': 'center', 'va': 'center'}
                         loc = 'inline'
                     else:
@@ -901,7 +907,7 @@ class Gridliner:
                     kw.update(label_style)
 
                     # Get x and y in data coords
-                    pt0 = self.axes.transData.inverted().transform_point(pt0)
+                    pt0 = inverse_data_transform(pt0)
                     if y_inline:
                         # 180 degrees isn't formatted with a suffix and adds
                         # confusion if it's inline.
