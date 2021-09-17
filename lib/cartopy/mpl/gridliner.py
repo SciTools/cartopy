@@ -630,20 +630,17 @@ class Gridliner:
         self._drawn = True
 
         # Clear lists of artists
-        for lines in self.xline_artists + self.yline_artists:
-            if lines in self.axes.collections:
-                self.axes.collections.remove(lines)
+        for lines in [*self.xline_artists, *self.yline_artists]:
+            lines.remove()
         self.xline_artists.clear()
         self.yline_artists.clear()
         for label in self._labels:
-            if label.artist in self.axes.texts:
-                self.axes.texts.remove(label.artist)
+            label.artist.remove()
         self._labels.clear()
 
         # Inits
         lon_lim, lat_lim = self._axes_domain(nx=nx, ny=ny)
         transform = self._crs_transform()
-        rc_params = matplotlib.rcParams
         n_steps = self.n_steps
         crs = self.crs
 
@@ -667,15 +664,15 @@ class Gridliner:
             collection_kwargs = {}
         collection_kwargs = collection_kwargs.copy()
         collection_kwargs['transform'] = transform
-        if not any(x in collection_kwargs.keys() for x in ['c', 'color']):
+        if not any(x in collection_kwargs for x in ['c', 'color']):
             collection_kwargs.setdefault('color',
-                                         rc_params['grid.color'])
-        if not any(x in collection_kwargs.keys() for x in ['ls', 'linestyle']):
+                                         matplotlib.rcParams['grid.color'])
+        if not any(x in collection_kwargs for x in ['ls', 'linestyle']):
             collection_kwargs.setdefault('linestyle',
-                                         rc_params['grid.linestyle'])
-        if not any(x in collection_kwargs.keys() for x in ['lw', 'linewidth']):
+                                         matplotlib.rcParams['grid.linestyle'])
+        if not any(x in collection_kwargs for x in ['lw', 'linewidth']):
             collection_kwargs.setdefault('linewidth',
-                                         rc_params['grid.linewidth'])
+                                         matplotlib.rcParams['grid.linewidth'])
 
         # Meridians
         lat_min, lat_max = lat_lim
@@ -720,9 +717,8 @@ class Gridliner:
         # Label drawing #
         #################
 
-        if not (self.left_labels or self.right_labels or
-                self.bottom_labels or self.top_labels or
-                self.inline_labels or self.geo_labels):
+        if not any((self.left_labels, self.right_labels, self.bottom_labels,
+                    self.top_labels, self.inline_labels, self.geo_labels)):
             return
         self._assert_can_draw_ticks()
 
@@ -790,13 +786,18 @@ class Gridliner:
             self.axes.spines["geo"].get_transform())
         if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
             map_boundary_path = remove_path_dupes(map_boundary_path)
-        map_boundary_vertices = map_boundary_path.vertices
-        map_boundary = sgeom.Polygon(map_boundary_vertices)
+        map_boundary = sgeom.Polygon(map_boundary_path.vertices)
 
         if self.x_inline:
             y_midpoints = self._find_midpoints(lat_lim, lat_ticks)
         if self.y_inline:
             x_midpoints = self._find_midpoints(lon_lim, lon_ticks)
+
+        # Cache a few things so they aren't re-calculated in the loops.
+        crs_transform = self._crs_transform().transform
+        inverse_data_transform = self.axes.transData.inverted().transform_point
+        if self.x_inline or self.y_inline:
+            pc_transform = PlateCarree()
 
         for xylabel, lines, line_ticks, formatter, label_style in (
                 ('x', lon_lines, lon_ticks,
@@ -816,7 +817,7 @@ class Gridliner:
 
             for line_coords, tick_value in zip(lines, line_ticks):
                 # Intersection of line with map boundary
-                line_coords = self._crs_transform().transform(line_coords)
+                line_coords = crs_transform(line_coords)
                 infs = np.isnan(line_coords).any(axis=1)
                 line_coords = line_coords.compress(~infs, axis=0)
                 if line_coords.size == 0:
@@ -859,8 +860,7 @@ class Gridliner:
                         heads.append(inter.coords[-1:-n2 - 1:-n2 + 1])
                     if not tails:
                         continue
-                elif isinstance(intersection,
-                                sgeom.collection.GeometryCollection):
+                elif isinstance(intersection, sgeom.GeometryCollection):
                     # This is a collection of Point and LineString that
                     # represent the same gridline.  We only consider the first
                     # geometries, merge their coordinates and keep first two
@@ -899,7 +899,7 @@ class Gridliner:
                     # Initial text specs
                     x0, y0 = pt0
                     if x_inline or y_inline:
-                        kw = {'rotation': 0, 'transform': PlateCarree(),
+                        kw = {'rotation': 0, 'transform': pc_transform,
                               'ha': 'center', 'va': 'center'}
                         loc = 'inline'
                     else:
@@ -916,7 +916,7 @@ class Gridliner:
                     kw.update(label_style)
 
                     # Get x and y in data coords
-                    pt0 = self.axes.transData.inverted().transform_point(pt0)
+                    pt0 = inverse_data_transform(pt0)
                     if y_inline:
                         # 180 degrees isn't formatted with a suffix and adds
                         # confusion if it's inline.
@@ -976,14 +976,13 @@ class Gridliner:
                     else:
                         # Now loop on padding factors until it does not overlap
                         # the boundary.
-                        visible = True
+                        visible = False
                         padding_factor = 1
                         while padding_factor < max_padding_factor:
 
                             # Non-inline must not run through the outline.
                             if map_boundary_path.intersects_path(
                                     this_path, filled=padding > 0):
-                                visible = False
 
                                 # Apply new padding.
                                 transform = self._get_padding_transform(
@@ -996,9 +995,6 @@ class Gridliner:
                             else:
                                 visible = True
                                 break
-
-                        else:
-                            visible = False
 
                     # Updates
                     label = Label(artist, this_path, xylabel, loc)
@@ -1109,7 +1105,6 @@ class Gridliner:
                 kw.update(va='bottom')
             elif loc == 'bottom':
                 kw.update(va='top')
-            # kw.update(self._get_alignments_from_loc(loc))
 
         else:
 
@@ -1139,20 +1134,6 @@ class Gridliner:
 
         return kw
 
-    @staticmethod
-    def _get_alignments_from_loc(loc):
-        kw = dict(ha="center", va="center")
-        if loc == 'right':
-            kw.update(ha='left')
-        elif loc == 'left':
-            kw.update(ha='right')
-        elif loc == 'top':
-            kw.update(va='bottom')
-        elif loc == 'bottom':
-            kw.update(va='top')
-            kw.update(va='center')
-        return kw
-
     def _get_padding_transform(
             self, padding_angle, loc, xylabel, padding_factor=1):
         """Get transform from angle and padding for non-inline labels"""
@@ -1165,10 +1146,10 @@ class Gridliner:
         # Padding
         if xylabel == "x":
             padding = (self.xpadding if self.xpadding is not None
-                       else matplotlib.rc_params['xtick.major.pad'])
+                       else matplotlib.rcParams['xtick.major.pad'])
         else:
             padding = (self.ypadding if self.ypadding is not None
-                       else matplotlib.rc_params['ytick.major.pad'])
+                       else matplotlib.rcParams['ytick.major.pad'])
         dx = padding_factor * padding * np.cos(padding_angle * np.pi / 180)
         dy = padding_factor * padding * np.sin(padding_angle * np.pi / 180)
 
