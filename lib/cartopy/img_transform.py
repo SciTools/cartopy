@@ -14,7 +14,11 @@ try:
     import pykdtree.kdtree
     _is_pykdtree = True
 except ImportError:
-    import scipy.spatial
+    try:
+        import scipy.spatial
+    except ImportError as e:
+        raise ImportError("Using image transforms requires either "
+                          "pykdtree or scipy.") from e
     _is_pykdtree = False
 
 import cartopy.crs as ccrs

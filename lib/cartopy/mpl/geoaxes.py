@@ -34,13 +34,11 @@ import shapely.geometry as sgeom
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
-import cartopy.img_transform
 import cartopy.mpl.contour
 import cartopy.mpl.geocollection
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
-from cartopy.vector_transform import vector_scalar_to_grid
 
 
 assert mpl.__version__ >= '3.1', \
@@ -1371,7 +1369,9 @@ class GeoAxes(matplotlib.axes.Axes):
             regrid_shape = kwargs.pop('regrid_shape', 750)
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
-            warp_array = cartopy.img_transform.warp_array
+            # Lazy import because scipy/pykdtree in img_transform are only
+            # optional dependencies
+            from cartopy.img_transform import warp_array
             original_extent = extent
             img, extent = warp_array(img,
                                      source_proj=transform,
@@ -2073,6 +2073,9 @@ class GeoAxes(matplotlib.axes.Axes):
             # manually and plotting in native coordinates.
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
+            # Lazy load vector_scalar_to_grid due to the optional
+            # scipy dependency
+            from cartopy.vector_transform import vector_scalar_to_grid
             if args:
                 # Interpolate color array as well as vector components.
                 x, y, u, v, c = vector_scalar_to_grid(
@@ -2145,6 +2148,9 @@ class GeoAxes(matplotlib.axes.Axes):
             # manually and plotting in native coordinates.
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
+            # Lazy load vector_scalar_to_grid due to the optional
+            # scipy dependency
+            from cartopy.vector_transform import vector_scalar_to_grid
             if args:
                 # Interpolate color array as well as vector components.
                 x, y, u, v, c = vector_scalar_to_grid(
@@ -2218,6 +2224,9 @@ class GeoAxes(matplotlib.axes.Axes):
             scalars.append(lw)
         # Do the regridding including any scalar fields.
         target_extent = self.get_extent(self.projection)
+        # Lazy load vector_scalar_to_grid due to the optional
+        # scipy dependency
+        from cartopy.vector_transform import vector_scalar_to_grid
         gridded = vector_scalar_to_grid(t, self.projection, regrid_shape,
                                         x, y, u, v, *scalars,
                                         target_extent=target_extent)

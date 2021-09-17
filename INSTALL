@@ -79,6 +79,10 @@ Further information about the required dependencies can be found here:
 **Python** 3.7 or later (https://www.python.org/)
     Python 2 support was removed in v0.19.
 
+**Matplotlib** 3.1 or later (https://matplotlib.org/)
+    Python package for 2D plotting. Python package required for any
+    graphical capabilities.
+
 **GEOS** 3.7.2 or later (https://trac.osgeo.org/geos/)
     GEOS is an API of spatial predicates and functions for processing geometry
     written in C++.
@@ -101,10 +105,6 @@ Optional Dependencies
 
 To make the most of Cartopy by enabling additional functionality, you may want
 to install these optional dependencies.
-
-**Matplotlib** 3.1 or later (https://matplotlib.org/)
-    Python package for 2D plotting. Python package required for any
-    graphical capabilities.
 
 **GDAL** version 2.3.2 (https://gdal.org/)
     GDAL is a translator library for raster and vector geospatial data formats,

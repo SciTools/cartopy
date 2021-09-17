@@ -10,7 +10,10 @@ transforms.
 """
 
 import numpy as np
-from scipy.interpolate import griddata
+try:
+    from scipy.interpolate import griddata
+except ImportError as e:
+    raise ImportError("Regridding vectors requires scipy.") from e
 
 
 def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
