@@ -22,8 +22,11 @@ You will find cartopy especially useful for large area / small scale data, where
 assumptions of spherical data traditionally break down. If you've ever experienced a singularity
 at the pole or a cut-off at the dateline, it is likely you will appreciate cartopy's unique features!
 
-.. warning::
-  The 0.19 release, and later, no longer support Python 2.7.
+.. note::
+  The v0.20 release uses pyproj for transformations, which could be slower in some situations.
+  If you need to increase the speed of plots and don't need to worry about thread safety in
+  your application, you can set the environment variable
+  `PYPROJ_GLOBAL_CONTEXT=ON` to make the projection calculations faster.
 
 
 Getting involved
@@ -48,6 +51,3 @@ There are many ways to get involved in the development of cartopy:
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on GitHub <Type%3A%20bug>`).
  * Contribute enhancements and new features on the issue tracker.
  * Chat with users and developers in the `Gitter chat room <https://gitter.im/SciTools/cartopy>`_.
-
-
-

@@ -1,0 +1,73 @@
+Version 0.20 (September 17, 2021)
+=================================
+
+For a full list of included Pull Requests and closed Issues, please see the
+`0.20 milestone <https://github.com/SciTools/cartopy/milestone/29>`_.
+
+Features
+--------
+
+* We have updated the minimum versions of dependencies following the
+  guidelines of NEP29. This includes the required dependencies, which are now
+  Python>=3.7, GEOS>=3.7.2, shapely>=1.6.4, pyshp>=2.1, numpy>=1.18,
+  matplotlib>=3.1, PROJ>=8.0, and pyproj>=3.0
+
+* Stephane Raynaud added the ``cartopy_feature_download.py`` script to the
+  installation bundle, making it accessible to everyone and Ruth Comer updated
+  the NaturalEarth url to download from the new AWS cloud host.
+  (:pull:`1602`, :pull:`1833`)
+
+* Louis Moresi updated the Mapbox API to download from their new endpoints.
+  (:pull:`1763`)
+
+* Stephane Raynaud updated the visibility handling for labels (:pull:`1537`)
+
+* @muchjp added the ability for the gridliner to handle shorthand keyword
+  arguments (e.g., c for color). (:pull:`1818`)
+
+* Greg Lucas reorganized the documentation and updated the theme to use the
+  pydata-sphinx-theme. (:pull:`1652`)
+
+* John Krasting extended the InterruptedGoodeHomolosine projection to add
+  an ocean emphasis option. (:pull:`1561`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import cartopy.crs as ccrs
+
+        fig = plt.figure(figsize=(10, 5))
+        proj = ccrs.InterruptedGoodeHomolosine(central_longitude=-160,
+                                               emphasis='ocean')
+        ax = plt.axes(projection=proj)
+        ax.stock_img()
+
+        plt.show()
+
+* Max H. Balsmeier updated the GSHHS coastlines that are used by Cartopy.
+  (:pull:`1823`)
+
+* Yihe Xu added the ability to adjust the threshold of the projections.
+  (:pull:`1815`)
+
+* Rahul Mahajan added an environment variable to point to site-wide data
+  installation directories. (:pull:`1827`)
+
+* Alan D. Snow updated Cartopy to use pyproj for coordinate transformations,
+  which enables the use of newer PROJ versions. (:pull:`1808`)
+
+* Thomas Grainger and Elliott Sales de Andrade bumped the minimum Python
+  dependency to 3.7. (:pull:`1844`)
+
+* Greg Lucas updated the default zorder for features to be 1.5, which is
+  above patches and below lines. This is in preparation for a change in
+  artist orders with Matplotlib 3.5. (:pull:`1840`)
+
+* Ryan May updated the Geostationary projection boundary to properly
+  calculate the boundary ellipse. (:pull:`1829`)
+
+.. figure:: ../gallery/miscellanea/images/sphx_glr_eccentric_ellipse_001.png
+   :target: ../gallery/miscellanea/eccentric_ellipse.html
+   :align: center
