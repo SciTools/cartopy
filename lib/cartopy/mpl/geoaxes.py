@@ -1804,48 +1804,50 @@ class GeoAxes(matplotlib.axes.Axes):
         Handle the interpolation when a wrap could be involved with
         the data coordinates before passing on to Matplotlib.
         """
-        if (kwargs.get('shading', 'auto') in ('nearest', 'auto') and
-                len(args) == 3 and
+        # The shading keyword argument was added in MPL 3.3, so keep
+        # this default updating until we only support MPL>=3.3
+        default_shading = mpl.rcParams.get('pcolor.shading', 'auto')
+        if not (kwargs.get('shading', default_shading) in
+                ('nearest', 'auto') and len(args) == 3 and
                 getattr(kwargs.get('transform'), '_wrappable', False)):
-            X = np.asanyarray(args[0])
-            Y = np.asanyarray(args[1])
-            nrows, ncols = np.asanyarray(args[2]).shape
-            Nx = X.shape[-1]
-            Ny = Y.shape[0]
-            if X.ndim != 2 or X.shape[0] == 1:
-                x = X.reshape(1, Nx)
-                X = x.repeat(Ny, axis=0)
-            if Y.ndim != 2 or Y.shape[1] == 1:
-                y = Y.reshape(Ny, 1)
-                Y = y.repeat(Nx, axis=1)
+            return args
 
-            def _interp_grid(X, wrap=0):
-                # helper for below
-                if np.shape(X)[1] > 1:
-                    dX = np.diff(X, axis=1)
-                    # account for the wrap
-                    if wrap:
-                        dX = (dX + wrap/2) % wrap - wrap/2
-                    dX = dX/2
-                    X = np.hstack((X[:, [0]] - dX[:, [0]],
-                                   X[:, :-1] + dX,
-                                   X[:, [-1]] + dX[:, [-1]]))
-                else:
-                    # This is just degenerate, but we can't reliably guess
-                    # a dX if there is just one value.
-                    X = np.hstack((X, X))
-                return X
-            t = kwargs.get('transform')
-            xwrap = abs(t.x_limits[1] - t.x_limits[0])
-            if ncols == Nx:
-                X = _interp_grid(X, wrap=xwrap)
-                Y = _interp_grid(Y)
-            if nrows == Ny:
-                X = _interp_grid(X.T, wrap=xwrap).T
-                Y = _interp_grid(Y.T).T
+        X = np.asanyarray(args[0])
+        Y = np.asanyarray(args[1])
+        nrows, ncols = np.asanyarray(args[2]).shape
+        Nx = X.shape[-1]
+        Ny = Y.shape[0]
+        if X.ndim != 2 or X.shape[0] == 1:
+            X = X.reshape(1, Nx).repeat(Ny, axis=0)
+        if Y.ndim != 2 or Y.shape[1] == 1:
+            Y = Y.reshape(Ny, 1).repeat(Nx, axis=1)
 
-            args = (X, Y, args[2])
-        return args
+        def _interp_grid(X, wrap=0):
+            # helper for below
+            if np.shape(X)[1] > 1:
+                dX = np.diff(X, axis=1)
+                # account for the wrap
+                if wrap:
+                    dX = (dX + wrap/2) % wrap - wrap/2
+                dX = dX/2
+                X = np.hstack((X[:, [0]] - dX[:, [0]],
+                               X[:, :-1] + dX,
+                               X[:, [-1]] + dX[:, [-1]]))
+            else:
+                # This is just degenerate, but we can't reliably guess
+                # a dX if there is just one value.
+                X = np.hstack((X, X))
+            return X
+        t = kwargs.get('transform')
+        xwrap = abs(t.x_limits[1] - t.x_limits[0])
+        if ncols == Nx:
+            X = _interp_grid(X, wrap=xwrap)
+            Y = _interp_grid(Y)
+        if nrows == Ny:
+            X = _interp_grid(X.T, wrap=xwrap).T
+            Y = _interp_grid(Y.T).T
+
+        return (X, Y, args[2])
 
     def _wrap_quadmesh(self, collection, **kwargs):
         """
