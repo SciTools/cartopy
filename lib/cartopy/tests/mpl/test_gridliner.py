@@ -381,9 +381,9 @@ def test_gridliner_line_limits():
     "draw_labels, result",
     [
         (True,
-         {'left': ['70°E', '40°N'],
-          'right': ['130°E', '40°N', '50°N'],
-          'top': ['130°E', '50°N', '100°E', '70°E'],
+         {'left': ['40°N'],
+          'right': ['40°N', '50°N'],
+          'top': ['70°E', '100°E', '130°E'],
           'bottom': ['100°E']}),
         (False,
          {'left': [],
@@ -391,15 +391,14 @@ def test_gridliner_line_limits():
           'top': [],
           'bottom': []}),
         (['top', 'left'],
-         {'left': ['70°E', '40°N'],
+         {'left': ['40°N'],
           'right': [],
-
-          'top': ['130°E', '100°E', '50°N', '70°E'],
+          'top': ['70°E', '100°E', '130°E'],
           'bottom': []}),
         ({'top': 'x', 'right': 'y'},
          {'left': [],
           'right': ['40°N', '50°N'],
-          'top': ['100°E', '130°E', '70°E'],
+          'top': ['70°E', '100°E', '130°E'],
           'bottom': []}),
         ({'left': 'x'},
          {'left': ['70°E'],
@@ -413,7 +412,7 @@ def test_gridliner_line_limits():
           'bottom': []}),
     ])
 def test_gridliner_draw_labels_param(draw_labels, result):
-    plt.figure()
+    fig = plt.figure()
     lambert_crs = ccrs.LambertConformal(central_longitude=105)
     ax = plt.axes(projection=lambert_crs)
     ax.set_extent([75, 130, 18, 54], crs=ccrs.PlateCarree())
@@ -421,8 +420,20 @@ def test_gridliner_draw_labels_param(draw_labels, result):
                       x_inline=False, y_inline=False)
     gl.xlocator = mticker.FixedLocator([70, 100, 130])
     gl.ylocator = mticker.FixedLocator([40, 50])
-    plt.show()
+    fig.canvas.draw()
     res = {}
     for loc in 'left', 'right', 'top', 'bottom':
         artists = getattr(gl, loc+'_label_artists')
         res[loc] = [a.get_text() for a in artists if a.get_visible()]
+    assert res == result
+
+
+def test_gridliner_formatter_kwargs():
+    fig = plt.figure()
+    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_extent([-80, -40.0, 10.0, -30.0])
+    gl = ax.gridlines(draw_labels=True, dms=False,
+                      formatter_kwargs=dict(cardinal_labels={'west': 'O'}))
+    fig.canvas.draw()
+    labels = [a.get_text() for a in gl.bottom_label_artists if a.get_visible()]
+    assert labels == ['75°O', '70°O', '65°O', '60°O', '55°O', '50°O', '45°O']

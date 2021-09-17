@@ -113,7 +113,7 @@ class Gridliner:
                  xlim=None, ylim=None, rotate_labels=None,
                  xlabel_style=None, ylabel_style=None, labels_bbox_style=None,
                  xpadding=5, ypadding=5, offset_angle=25,
-                 auto_update=False):
+                 auto_update=False, formatter_kwargs=None):
         """
         Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -220,6 +220,10 @@ class Gridliner:
         auto_update: bool
             Whether to redraw the gridlines and labels when the figure is
             updated.
+        formatter_kwargs: dict, optional
+            Options passed to the default formatters.
+            See :class:`~cartopy.mpl.ticker.LongitudeFormatter` and
+            :class:`~cartopy.mpl.ticker.LatitudeFormatter`
 
         Notes
         -----
@@ -254,9 +258,14 @@ class Gridliner:
         else:
             self.ylocator = classic_locator
 
+        formatter_kwargs = {
+            **(formatter_kwargs or {}),
+            "dms": dms,
+        }
+
         if xformatter is None:
             if isinstance(crs, PlateCarree):
-                xformatter = LongitudeFormatter(dms=dms)
+                xformatter = LongitudeFormatter(**formatter_kwargs)
             else:
                 xformatter = classic_formatter()
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lon labels.
@@ -264,7 +273,7 @@ class Gridliner:
 
         if yformatter is None:
             if isinstance(crs, PlateCarree):
-                yformatter = LatitudeFormatter(dms=dms)
+                yformatter = LatitudeFormatter(**formatter_kwargs)
             else:
                 yformatter = classic_formatter()
         #: The :class:`~matplotlib.ticker.Formatter` to use for the lat labels.
