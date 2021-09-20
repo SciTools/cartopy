@@ -11,12 +11,8 @@ from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 from cartopy.tests.mpl import ImageTesting
 
 
-ticks_tolerance = 7
-
-
 @pytest.mark.natural_earth
-@ImageTesting(['xticks_no_transform'],
-              tolerance=ticks_tolerance)
+@ImageTesting(['xticks_no_transform'])
 def test_set_xticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
@@ -26,12 +22,9 @@ def test_set_xticks_no_transform():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['xticks_cylindrical'],
-              tolerance=ticks_tolerance)
+@ImageTesting(['xticks_cylindrical'])
 def test_set_xticks_cylindrical():
-    ax = plt.axes(projection=ccrs.Mercator(
-                  min_latitude=-85.,
-                  max_latitude=85.))
+    ax = plt.axes(projection=ccrs.Mercator(min_latitude=-85, max_latitude=85))
     ax.coastlines('110m')
     ax.xaxis.set_major_formatter(LongitudeFormatter(degree_symbol=''))
     ax.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.PlateCarree())
@@ -48,27 +41,24 @@ def test_set_xticks_non_cylindrical():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['yticks_no_transform'],
-              tolerance=ticks_tolerance)
+@ImageTesting(['yticks_no_transform'])
 def test_set_yticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
     ax.yaxis.set_major_formatter(LatitudeFormatter(degree_symbol=''))
     ax.set_yticks([-60, -30, 0, 30, 60])
-    ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
+    ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True)
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['yticks_cylindrical'],
-              tolerance=ticks_tolerance)
+@ImageTesting(['yticks_cylindrical'])
 def test_set_yticks_cylindrical():
-    ax = plt.axes(projection=ccrs.Mercator(
-                  min_latitude=-85.,
-                  max_latitude=85.))
+    ax = plt.axes(projection=ccrs.Mercator(min_latitude=-85, max_latitude=85))
     ax.coastlines('110m')
     ax.yaxis.set_major_formatter(LatitudeFormatter(degree_symbol=''))
     ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.PlateCarree())
-    ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.PlateCarree())
+    ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True,
+                  crs=ccrs.PlateCarree())
 
 
 def test_set_yticks_non_cylindrical():
@@ -76,12 +66,13 @@ def test_set_yticks_non_cylindrical():
     with pytest.raises(RuntimeError):
         ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.Geodetic())
     with pytest.raises(RuntimeError):
-        ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
+        ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True,
+                      crs=ccrs.Geodetic())
     plt.close()
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['xyticks'], tolerance=ticks_tolerance)
+@ImageTesting(['xyticks'])
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),
