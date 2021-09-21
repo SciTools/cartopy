@@ -6,6 +6,8 @@
 
 import copy
 from io import BytesIO
+import os
+from pathlib import Path
 import pickle
 
 import numpy as np
@@ -46,6 +48,20 @@ class TestCRS:
                              3)
 
     def _check_osgb(self, osgb):
+        precision = 1
+
+        if os.environ.get('PROJ_NETWORK') != 'ON':
+            grid_name = 'uk_os_OSTN15_NTv2_OSGBtoETRS.tif'
+            available = (
+                Path(pyproj.datadir.get_data_dir(), grid_name).exists() or
+                Path(pyproj.datadir.get_user_data_dir(), grid_name).exists()
+            )
+            if not available:
+                import warnings
+                warnings.warn(f'{grid_name} is unavailable; '
+                              'testing OSGB at reduced precision')
+                precision = -1
+
         ll = ccrs.Geodetic()
 
         # results obtained by streetmap.co.uk.
@@ -53,12 +69,10 @@ class TestCRS:
         east, north = np.array([295132.1,  63512.6], dtype=np.double)
 
         # note the handling of precision here...
-        assert_arr_almost_eq(np.array(osgb.transform_point(lon, lat, ll)),
-                             np.array([east, north]),
-                             1)
-        assert_arr_almost_eq(ll.transform_point(east, north, osgb),
-                             [lon, lat],
-                             2)
+        assert_almost_equal(osgb.transform_point(lon, lat, ll), [east, north],
+                            decimal=precision)
+        assert_almost_equal(ll.transform_point(east, north, osgb), [lon, lat],
+                            decimal=2)
 
         r_lon, r_lat = ll.transform_point(east, north, osgb)
         r_inverted = np.array(osgb.transform_point(r_lon, r_lat, ll))
