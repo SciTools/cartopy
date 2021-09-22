@@ -22,9 +22,9 @@ class _PlateCarreeFormatter(Formatter):
 
     _target_projection = ccrs.PlateCarree()
 
-    def __init__(self, direction_label=True, degree_symbol='\u00B0',
+    def __init__(self, direction_label=True, degree_symbol='°',
                  number_format='g', transform_precision=1e-8, dms=False,
-                 minute_symbol="'", second_symbol="''",
+                 minute_symbol='′', second_symbol='″',
                  seconds_number_format='g',
                  auto_hide=True, decimal_point=None, cardinal_labels=None):
         """
@@ -205,9 +205,9 @@ class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
 
     def __init__(self, direction_label=True,
-                 degree_symbol='\u00B0', number_format='g',
+                 degree_symbol='°', number_format='g',
                  transform_precision=1e-8, dms=False,
-                 minute_symbol="'", second_symbol="''",
+                 minute_symbol='′', second_symbol='″',
                  seconds_number_format='g', auto_hide=True,
                  decimal_point=None, cardinal_labels=None
                  ):
@@ -226,10 +226,9 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             labels will not be drawn. Defaults to *True* (draw direction
             labels).
         degree_symbol: optional
-            The character(s) used to represent the degree symbol in the
-            tick labels. Defaults to u'\u00B0' which is the unicode
-            degree symbol. Can be an empty string if no degree symbol is
-            desired.
+            The character(s) used to represent the degree symbol in the tick
+            labels. Defaults to '°'. Can be an empty string if no degree symbol
+            is desired.
         number_format: optional
             Format string to represent the longitude values when `dms`
             is set to False. Defaults to 'g'.
@@ -327,12 +326,12 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  direction_label=True,
                  zero_direction_label=False,
                  dateline_direction_label=False,
-                 degree_symbol='\u00B0',
+                 degree_symbol='°',
                  number_format='g',
                  transform_precision=1e-8,
                  dms=False,
-                 minute_symbol="'",
-                 second_symbol="''",
+                 minute_symbol='′',
+                 second_symbol='″',
                  seconds_number_format='g',
                  auto_hide=True,
                  decimal_point=None,
@@ -362,8 +361,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             labels will not be drawn. Defaults to *False* (no direction
             labels).
         degree_symbol: optional
-            The symbol used to represent degrees. Defaults to u'\u00B0'
-            which is the unicode degree symbol.
+            The symbol used to represent degrees. Defaults to '°'.
         number_format: optional
             Format string to represent the latitude values when `dms`
             is set to False. Defaults to 'g'.
