@@ -81,18 +81,19 @@ class CallCounter:
 def test_coastline_loading_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added coastline caching.
     # This test ensures it is working.
+    fig = plt.figure()
 
     # Create coastlines to ensure they are cached.
-    ax1 = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    ax1 = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
     ax1.coastlines()
-    plt.draw()
+    fig.canvas.draw()
     # Create another instance of the coastlines and count
     # the number of times shapereader.Reader is created.
     counter = CallCounter(cartopy.io.shapereader.Reader, '__init__')
     with counter:
-        ax2 = plt.subplot(2, 1, 1, projection=ccrs.Robinson())
+        ax2 = fig.add_subplot(2, 1, 1, projection=ccrs.Robinson())
         ax2.coastlines()
-        plt.draw()
+        fig.canvas.draw()
 
     assert counter.count == 0, (
         f'The shapereader Reader class was created {counter.count} times, '
@@ -112,6 +113,7 @@ def test_shapefile_transform_cache():
     geoms = tuple(geoms)[:10]
     n_geom = len(geoms)
 
+    fig = plt.figure()
     ax = plt.axes(projection=ccrs.Robinson())
 
     # Empty the cache.
@@ -125,7 +127,7 @@ def test_shapefile_transform_cache():
         ax.add_geometries(geoms, ccrs.PlateCarree())
         ax.add_geometries(geoms, ccrs.PlateCarree())
         ax.add_geometries(geoms[:], ccrs.PlateCarree())
-        ax.figure.canvas.draw()
+        fig.canvas.draw()
 
     # Without caching the count would have been
     # n_calls * n_geom, but should now be just n_geom.
@@ -139,7 +141,7 @@ def test_shapefile_transform_cache():
 
     # Check that the cache is empty again once we've dropped all references
     # to the source paths.
-    plt.clf()
+    fig.clf()
     del geoms
     gc.collect()
     assert len(FeatureArtist._geom_key_to_geometry_cache) == 0
@@ -158,10 +160,10 @@ def test_contourf_transform_path_counting():
     path_to_geos_counter = CallCounter(cartopy.mpl.patch, 'path_to_geos')
     with path_to_geos_counter:
         x, y, z = sample_data((30, 60))
-        cs = plt.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
+        cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
         n_geom = sum([len(c.get_paths()) for c in cs.collections])
         del cs
-        ax.figure.canvas.draw()
+        fig.canvas.draw()
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom.
@@ -175,7 +177,7 @@ def test_contourf_transform_path_counting():
 
     # Check that the cache is empty again once we've dropped all references
     # to the source paths.
-    plt.clf()
+    fig.clf()
     gc.collect()
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size
 

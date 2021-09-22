@@ -46,8 +46,8 @@ def test_savefig_tight():
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
 
-    plt.subplot(211, projection=ccrs.Robinson())
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax = plt.subplot(2, 1, 1, projection=ccrs.Robinson())
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight')
 
@@ -63,7 +63,7 @@ def test_pcolormesh_arg_interpolation():
     # Z with the same shape as X/Y to force the interpolation
     z = np.zeros(xs.shape)
 
-    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
     coll = ax.pcolormesh(xs, ys, z, shading='auto',
                          transform=ccrs.PlateCarree())
 

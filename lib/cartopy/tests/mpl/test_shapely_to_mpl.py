@@ -23,8 +23,9 @@ from cartopy.tests.mpl import ImageTesting
 @pytest.mark.natural_earth
 @ImageTesting(['poly_interiors'], tolerance=3.1)
 def test_polygon_interiors():
+    fig = plt.figure()
 
-    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
     ax.coastlines()
     ax.set_global()
 
@@ -54,8 +55,8 @@ def test_polygon_interiors():
     ax.add_collection(collection)
 
     # test multiple interior polygons
-    ax = plt.subplot(212, projection=ccrs.PlateCarree(),
-                     xlim=[-5, 15], ylim=[-5, 15])
+    ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree(),
+                         xlim=[-5, 15], ylim=[-5, 15])
     ax.coastlines(resolution="110m")
 
     exterior = np.array(sgeom.box(0, 0, 12, 12).exterior.coords)
@@ -81,16 +82,16 @@ def test_contour_interiors():
     lons, lats = np.meshgrid(np.linspace(-50, 50, nx),
                              np.linspace(-45, 45, ny))
     data = np.sin(np.sqrt(lons ** 2 + lats ** 2))
+    fig = plt.figure()
 
-    ax = plt.subplot(221, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 2, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
+    ax.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
 
-    plt.subplot(222, projection=ccrs.Robinson())
-    ax = plt.gca()
+    ax = fig.add_subplot(2, 2, 2, projection=ccrs.Robinson())
     ax.set_global()
-    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
+    ax.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
 
     # produces singular polygons (zero area polygons)
@@ -102,13 +103,12 @@ def test_contour_interiors():
     lats = np.arange(dim) + 30
     lons = np.arange(dim) - 20
 
-    ax = plt.subplot(223, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 2, 3, projection=ccrs.PlateCarree())
     ax.set_global()
-    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
+    ax.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
 
-    plt.subplot(224, projection=ccrs.Robinson())
-    ax = plt.gca()
+    ax = fig.add_subplot(2, 2, 4, projection=ccrs.Robinson())
     ax.set_global()
-    plt.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
+    ax.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()

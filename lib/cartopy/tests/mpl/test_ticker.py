@@ -252,7 +252,7 @@ def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
 def test_lonlatformatter_non_geoaxes(cls, letter):
     ticks = [2, 2.5]
     fig = plt.figure()
-    ax = plt.subplot(111)
+    ax = fig.add_subplot(1, 1, 1)
     ax.plot([0, 10], [0, 1])
     ax.set_xticks(ticks)
     ax.xaxis.set_major_formatter(cls(degree_symbol='', dms=False))

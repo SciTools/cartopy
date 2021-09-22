@@ -28,7 +28,7 @@ def test_global_contour_wrap_new_transform():
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
-    plt.contour(x, y, data, transform=ccrs.PlateCarree())
+    ax.contour(x, y, data, transform=ccrs.PlateCarree())
 
 
 @pytest.mark.natural_earth
@@ -39,7 +39,7 @@ def test_global_contour_wrap_no_transform():
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
-    plt.contour(x, y, data)
+    ax.contour(x, y, data)
 
 
 @pytest.mark.natural_earth
@@ -49,7 +49,7 @@ def test_global_contourf_wrap_new_transform():
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
-    plt.contourf(x, y, data, transform=ccrs.PlateCarree())
+    ax.contourf(x, y, data, transform=ccrs.PlateCarree())
 
 
 @pytest.mark.natural_earth
@@ -59,7 +59,7 @@ def test_global_contourf_wrap_no_transform():
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
-    plt.contourf(x, y, data)
+    ax.contourf(x, y, data)
 
 
 @pytest.mark.natural_earth
@@ -69,7 +69,7 @@ def test_global_pcolor_wrap_new_transform():
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))[:-1, :-1]
-    plt.pcolor(x, y, data, transform=ccrs.PlateCarree())
+    ax.pcolor(x, y, data, transform=ccrs.PlateCarree())
 
 
 @pytest.mark.natural_earth
@@ -79,7 +79,7 @@ def test_global_pcolor_wrap_no_transform():
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))[:-1, :-1]
-    plt.pcolor(x, y, data)
+    ax.pcolor(x, y, data)
 
 
 @pytest.mark.natural_earth
@@ -92,7 +92,7 @@ def test_global_scatter_wrap_new_transform():
     ax.coastlines(zorder=0)
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
-    plt.scatter(x, y, c=data, transform=ccrs.PlateCarree())
+    ax.scatter(x, y, c=data, transform=ccrs.PlateCarree())
 
 
 @pytest.mark.natural_earth
@@ -102,7 +102,7 @@ def test_global_scatter_wrap_no_transform():
     ax.coastlines(zorder=0)
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
-    plt.scatter(x, y, c=data)
+    ax.scatter(x, y, c=data)
 
 
 @pytest.mark.natural_earth
@@ -113,7 +113,7 @@ def test_global_hexbin_wrap():
     ax.coastlines(zorder=2)
     x, y = np.meshgrid(np.arange(-179, 181), np.arange(-90, 91))
     data = np.sin(np.sqrt(x**2 + y**2))
-    plt.hexbin(
+    ax.hexbin(
         x.flatten(),
         y.flatten(),
         C=data.flatten(),
@@ -132,7 +132,7 @@ def test_global_hexbin_wrap_transform():
     # wrap values so to match x values from test_global_hexbin_wrap
     x_wrap = np.where(x >= 180, x-360, x)
     data = np.sin(np.sqrt(x_wrap**2 + y**2))
-    plt.hexbin(
+    ax.hexbin(
         x.flatten(),
         y.flatten(),
         C=data.flatten(),
@@ -144,25 +144,25 @@ def test_global_hexbin_wrap_transform():
 @ImageTesting(['global_map'],
               tolerance=0.55)
 def test_global_map():
-    plt.axes(projection=ccrs.Robinson())
+    ax = plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
 #    ax.gridlines(5)
 
-    plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
+    ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
 
-    plt.plot([-0.08, 132], [51.53, 43.17], color='red',
-             transform=ccrs.PlateCarree())
+    ax.plot([-0.08, 132], [51.53, 43.17], color='red',
+            transform=ccrs.PlateCarree())
 
-    plt.plot([-0.08, 132], [51.53, 43.17], color='blue',
-             transform=ccrs.Geodetic())
+    ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
+            transform=ccrs.Geodetic())
 
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
 @ImageTesting(['simple_global'])
 def test_simple_global():
-    plt.axes(projection=ccrs.PlateCarree())
-    plt.gca().coastlines()
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
     # produces a global map, despite not having needed to set the limits
 
 
@@ -205,11 +205,11 @@ def test_multiple_projections():
 
         ax.coastlines(resolution="110m")
 
-        plt.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-        plt.plot([-0.08, 132], [51.53, 43.17], color='red',
-                 transform=ccrs.PlateCarree())
-        plt.plot([-0.08, 132], [51.53, 43.17], color='blue',
-                 transform=prj.as_geodetic())
+        ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
+        ax.plot([-0.08, 132], [51.53, 43.17], color='red',
+                transform=ccrs.PlateCarree())
+        ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
+                transform=prj.as_geodetic())
 
 
 @pytest.mark.natural_earth
@@ -286,16 +286,15 @@ def test_pcolormesh_global_with_wrap1():
     x, y = np.meshgrid(xbnds, ybnds)
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
+    fig = plt.figure()
 
-    ax = plt.subplot(211, projection=ccrs.PlateCarree())
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(212, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree(180))
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
@@ -309,9 +308,10 @@ def test_pcolormesh_get_array_with_mask():
     x, y = np.meshgrid(xbnds, ybnds)
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
+    fig = plt.figure()
 
-    ax = plt.subplot(211, projection=ccrs.PlateCarree())
-    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    c = ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
@@ -330,8 +330,8 @@ def test_pcolormesh_get_array_with_mask():
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data2 = data[:-1, :-1]
 
-    ax = plt.subplot(212, projection=ccrs.PlateCarree())
-    c = plt.pcolormesh(xbnds, ybnds, data2, transform=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree())
+    c = ax.pcolormesh(xbnds, ybnds, data2, transform=ccrs.PlateCarree())
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
@@ -357,16 +357,15 @@ def test_pcolormesh_global_with_wrap2():
     x, y = np.meshgrid(xbnds, ybnds)
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
+    fig = plt.figure()
 
-    ax = plt.subplot(211, projection=ccrs.PlateCarree())
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(212, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree(180))
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
@@ -389,25 +388,24 @@ def test_pcolormesh_global_with_wrap3():
 
     data = data[:-1, :-1]
     data = np.ma.masked_greater(data, 2.6)
+    fig = plt.figure()
 
-    ax = plt.subplot(311, projection=ccrs.PlateCarree(-45))
-    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                       snap=False)
+    ax = fig.add_subplot(3, 1, 1, projection=ccrs.PlateCarree(-45))
+    c = ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
+                      snap=False)
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(312, projection=ccrs.PlateCarree(-1.87499952))
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(3, 1, 2, projection=ccrs.PlateCarree(-1.87499952))
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(313, projection=ccrs.Robinson(-2))
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(3, 1, 3, projection=ccrs.Robinson(-2))
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
@@ -435,11 +433,11 @@ def test_pcolormesh_set_array_with_mask():
     bad_data = np.ones(data.shape)
     # Start with the opposite mask and then swap back in the set_array call
     bad_data_mask = np.ma.array(bad_data, mask=~data.mask)
+    fig = plt.figure()
 
-    ax = plt.subplot(311, projection=ccrs.PlateCarree(-45))
-    c = plt.pcolormesh(xbnds, ybnds, bad_data,
-                       norm=norm, transform=ccrs.PlateCarree(),
-                       snap=False)
+    ax = fig.add_subplot(3, 1, 1, projection=ccrs.PlateCarree(-45))
+    c = ax.pcolormesh(xbnds, ybnds, bad_data,
+                      norm=norm, transform=ccrs.PlateCarree(), snap=False)
     c.set_array(data.ravel())
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
@@ -447,17 +445,15 @@ def test_pcolormesh_set_array_with_mask():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(312, projection=ccrs.PlateCarree(-1.87499952))
-    c2 = plt.pcolormesh(xbnds, ybnds, bad_data_mask,
-                        norm=norm, transform=ccrs.PlateCarree(),
-                        snap=False)
+    ax = fig.add_subplot(3, 1, 2, projection=ccrs.PlateCarree(-1.87499952))
+    c2 = ax.pcolormesh(xbnds, ybnds, bad_data_mask,
+                       norm=norm, transform=ccrs.PlateCarree(), snap=False)
     c2.set_array(data.ravel())
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(313, projection=ccrs.Robinson(-2))
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(3, 1, 3, projection=ccrs.Robinson(-2))
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
@@ -483,25 +479,24 @@ def test_pcolormesh_set_clim_with_mask():
     data = np.ma.masked_greater(data, 2.6)
 
     bad_initial_norm = plt.Normalize(-100, 100)
+    fig = plt.figure()
 
-    ax = plt.subplot(311, projection=ccrs.PlateCarree(-45))
-    c = plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                       norm=bad_initial_norm, snap=False)
+    ax = fig.add_subplot(3, 1, 1, projection=ccrs.PlateCarree(-45))
+    c = ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
+                      norm=bad_initial_norm, snap=False)
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(312, projection=ccrs.PlateCarree(-1.87499952))
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(3, 1, 2, projection=ccrs.PlateCarree(-1.87499952))
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
-    ax = plt.subplot(313, projection=ccrs.Robinson(-2))
-    plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
-                   snap=False)
+    ax = fig.add_subplot(3, 1, 3, projection=ccrs.Robinson(-2))
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
@@ -523,31 +518,30 @@ def test_pcolormesh_limited_area_wrap():
 
     rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
 
-    plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(10, 6))
 
-    ax = plt.subplot(221, projection=ccrs.PlateCarree())
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
-                   snap=False)
+    ax = fig.add_subplot(2, 2, 1, projection=ccrs.PlateCarree())
+    ax.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
+                  snap=False)
     ax.coastlines()
 
-    ax = plt.subplot(222, projection=ccrs.PlateCarree(180))
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
-                   snap=False)
+    ax = fig.add_subplot(2, 2, 2, projection=ccrs.PlateCarree(180))
+    ax.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
+                  snap=False)
     ax.coastlines()
     ax.set_global()
 
     # draw the same plot, only more zoomed in, and using the 2d versions
     # of the coordinates (just to test that 1d and 2d are both suitably
     # being fixed)
-    ax = plt.subplot(223, projection=ccrs.PlateCarree())
-    plt.pcolormesh(x, y, data, transform=rp, cmap='Spectral',
-                   snap=False)
+    ax = fig.add_subplot(2, 2, 3, projection=ccrs.PlateCarree())
+    ax.pcolormesh(x, y, data, transform=rp, cmap='Spectral', snap=False)
     ax.coastlines()
     ax.set_extent([-70, 0, 0, 80])
 
-    ax = plt.subplot(224, projection=rp)
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
-                   snap=False)
+    ax = fig.add_subplot(2, 2, 4, projection=rp)
+    ax.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
+                  snap=False)
     ax.coastlines()
 
 
@@ -566,12 +560,12 @@ def test_pcolormesh_single_column_wrap():
 
     rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
 
-    plt.figure(figsize=(10, 6))
+    fig = plt.figure(figsize=(10, 6))
 
-    ax = plt.subplot(111, projection=ccrs.PlateCarree(180))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree(180))
     # TODO: Remove snap when updating this image
-    plt.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
-                   snap=False)
+    ax.pcolormesh(xbnds, ybnds, data, transform=rp, cmap='Spectral',
+                  snap=False)
     ax.coastlines()
     ax.set_global()
 
@@ -660,14 +654,14 @@ def test_quiver_plate_carree():
     v = np.cos(2. * np.deg2rad(x2d))
     mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
-    plt.figure(figsize=(6, 6))
+    fig = plt.figure(figsize=(6, 6))
     # plot on native projection
-    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines(resolution="110m")
     ax.quiver(x, y, u, v, mag)
     # plot on a different projection
-    ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
+    ax = fig.add_subplot(2, 1, 2, projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree())
@@ -686,13 +680,13 @@ def test_quiver_rotated_pole():
     rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
     plot_extent = [x[0], x[-1], y[0], y[-1]]
     # plot on native projection
-    plt.figure(figsize=(6, 6))
-    ax = plt.subplot(211, projection=rp)
+    fig = plt.figure(figsize=(6, 6))
+    ax = fig.add_subplot(2, 1, 1, projection=rp)
     ax.set_extent(plot_extent, crs=rp)
     ax.coastlines()
     ax.quiver(x, y, u, v, mag)
     # plot on different projection
-    ax = plt.subplot(212, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=rp)
     ax.coastlines()
     ax.quiver(x, y, u, v, mag, transform=rp)
@@ -744,14 +738,14 @@ def test_barbs():
     u = 40 * np.cos(np.deg2rad(y2d))
     v = 40 * np.cos(2. * np.deg2rad(x2d))
     plot_extent = [-60, 40, 30, 70]
-    plt.figure(figsize=(6, 6))
+    fig = plt.figure(figsize=(6, 6))
     # plot on native projection
-    ax = plt.subplot(211, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, length=4, linewidth=.25)
     # plot on a different projection
-    ax = plt.subplot(212, projection=ccrs.NorthPolarStereo())
+    ax = fig.add_subplot(2, 1, 2, projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)

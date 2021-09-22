@@ -104,13 +104,13 @@ def test_limits_contour():
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.contourf(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.contourf(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
 
     plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.contour(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.contour(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
 
 
@@ -122,13 +122,13 @@ def test_limits_pcolor():
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.pcolor(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.pcolor(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
 
     plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.pcolormesh(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.pcolormesh(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
 
 
@@ -137,7 +137,7 @@ def test_view_lim_autoscaling():
     y = np.linspace(0.03739792, 0.33029076)
     x, y = np.meshgrid(x, y)
     ax = plt.axes(projection=ccrs.RotatedPole(37.5, 357.5))
-    plt.scatter(x, y, x * y, transform=ccrs.PlateCarree())
+    ax.scatter(x, y, x * y, transform=ccrs.PlateCarree())
 
     expected = np.array([[86.12433701, 52.51570463],
                          [86.69696603, 52.86372057]])

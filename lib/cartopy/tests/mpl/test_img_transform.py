@@ -106,20 +106,20 @@ def test_regrid_image():
                                 target_proj, target_x, target_y)
 
     # Plot
-    plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(10, 10))
     gs = mpl.gridspec.GridSpec(nrows=4, ncols=1,
                                hspace=1.5, wspace=0.5)
     # Set up axes and title
-    ax = plt.subplot(gs[0], projection=target_proj)
-    plt.imshow(new_array, origin='lower', extent=target_extent)
+    ax = fig.add_subplot(gs[0], projection=target_proj)
+    ax.imshow(new_array, origin='lower', extent=target_extent)
     ax.coastlines()
     # Plot each color slice (tests masking)
     cmaps = {'red': 'Reds', 'green': 'Greens', 'blue': 'Blues'}
     for i, color in enumerate(['red', 'green', 'blue']):
-        ax = plt.subplot(gs[i + 1], projection=target_proj)
-        plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
-                   cmap=cmaps[color])
+        ax = fig.add_subplot(gs[i + 1], projection=target_proj)
+        ax.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
+                  cmap=cmaps[color])
         ax.coastlines()
 
     # Tighten up layout
-    gs.tight_layout(plt.gcf())
+    gs.tight_layout(fig)
