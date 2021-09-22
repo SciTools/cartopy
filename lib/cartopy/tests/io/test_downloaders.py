@@ -6,7 +6,6 @@
 
 import contextlib
 import os
-import warnings
 
 import pytest
 
@@ -110,12 +109,8 @@ def test_downloading_simple_ascii(download_to_temp):
 
     assert dnld_item.target_path(format_dict) == tmp_fname
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(cio.DownloadWarning):
         assert dnld_item.path(format_dict) == tmp_fname
-
-        assert len(w) == 1, \
-            f'Expected a single download warning to be raised. Got {len(w)}.'
-        assert issubclass(w[0].category, cio.DownloadWarning)
 
     with open(tmp_fname) as fh:
         fh.readline()

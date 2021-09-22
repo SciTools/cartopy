@@ -322,6 +322,7 @@ def test_cache(cache_dir, tmp_path):
 
     # Fetch tiles and save them in the cache
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
         gt = cimgt.GoogleTiles(cache=tmpdir_str)
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
 
