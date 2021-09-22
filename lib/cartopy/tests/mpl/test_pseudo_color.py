@@ -23,7 +23,6 @@ def test_pcolormesh_partially_masked():
         ax.pcolormesh(np.linspace(0, 360, 30), np.linspace(-90, 90, 40), data)
         assert pcolor.call_count == 1, ("pcolor should have been called "
                                         "exactly once.")
-        plt.close()
 
 
 def test_pcolormesh_invisible():
@@ -36,7 +35,6 @@ def test_pcolormesh_invisible():
                       transform=ccrs.PlateCarree())
         assert pcolor.call_count == 0, ("pcolor shouldn't have been called, "
                                         "but was.")
-        plt.close()
 
 
 def test_savefig_tight():
@@ -52,7 +50,6 @@ def test_savefig_tight():
     plt.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree())
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight')
-    plt.close()
 
 
 def test_pcolormesh_arg_interpolation():

@@ -346,7 +346,6 @@ def test_gridliner_default_fmtloc(
     plt.figure()
     ax = plt.subplot(111, projection=proj)
     gl = ax.gridlines(crs=gcrs, draw_labels=False, xlocs=xloc, xformatter=xfmt)
-    plt.close()
     assert isinstance(gl.xlocator, xloc_expected)
     assert isinstance(gl.xformatter, xfmt_expected)
 

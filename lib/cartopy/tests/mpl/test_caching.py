@@ -98,8 +98,6 @@ def test_coastline_loading_cache():
         f'The shapereader Reader class was created {counter.count} times, '
         f'indicating that the caching is not working.')
 
-    plt.close()
-
 
 @pytest.mark.natural_earth
 def test_shapefile_transform_cache():
@@ -147,8 +145,6 @@ def test_shapefile_transform_cache():
     assert len(FeatureArtist._geom_key_to_geometry_cache) == 0
     assert len(FeatureArtist._geom_key_to_path_cache) == 0
 
-    plt.close()
-
 
 def test_contourf_transform_path_counting():
     fig = plt.figure()
@@ -182,8 +178,6 @@ def test_contourf_transform_path_counting():
     plt.clf()
     gc.collect()
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size
-
-    plt.close()
 
 
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")

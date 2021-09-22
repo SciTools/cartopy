@@ -23,10 +23,6 @@ class TestNoSpherical:
         self.ax = plt.axes(projection=ccrs.PlateCarree())
         self.data = np.arange(12).reshape((3, 4))
 
-    def teardown_method(self):
-        plt.clf()
-        plt.close()
-
     def test_contour(self):
         with pytest.raises(ValueError):
             self.ax.contour(self.data, transform=ccrs.Geodetic())
@@ -98,8 +94,6 @@ class Test_InterProjectionTransform:
 
 
 class Test_Axes_add_geometries:
-    def teardown_method(self):
-        plt.close()
 
     @mock.patch('cartopy.mpl.geoaxes.GeoAxes.add_feature')
     @mock.patch('cartopy.feature.ShapelyFeature')

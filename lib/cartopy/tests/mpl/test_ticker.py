@@ -259,7 +259,6 @@ def test_lonlatformatter_non_geoaxes(cls, letter):
     fig.canvas.draw()
     ticklabels = [t.get_text() for t in ax.get_xticklabels()]
     assert ticklabels == [f'{v:g}{letter}' for v in ticks]
-    plt.close()
 
 
 @pytest.mark.parametrize("cls,vmin,vmax,expected",

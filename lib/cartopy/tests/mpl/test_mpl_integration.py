@@ -253,8 +253,6 @@ def test_cursor_values():
                      b'\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)',
                      r.encode('ascii', 'ignore'))
 
-    plt.close()
-
 
 @pytest.mark.natural_earth
 @ImageTesting(['natural_earth_interface'], tolerance=0.21)

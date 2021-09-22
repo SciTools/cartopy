@@ -94,7 +94,6 @@ def test_update_lim():
     ax.update_datalim([(-10, -10), (-5, -5)])
     assert_array_almost_equal(ax.dataLim.get_points(),
                               np.array([[-10., -10.], [-5., -5.]]))
-    plt.close()
 
 
 def test_limits_contour():
@@ -107,13 +106,12 @@ def test_limits_contour():
     ax.coastlines()
     plt.contourf(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     plt.contour(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
 
 def test_limits_pcolor():
@@ -126,13 +124,12 @@ def test_limits_pcolor():
     ax.coastlines()
     plt.pcolor(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     plt.pcolormesh(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
 
 def test_view_lim_autoscaling():
@@ -154,7 +151,6 @@ def test_view_lim_autoscaling():
     expected_non_tight = np.array([[86, 52.45], [86.8, 52.9]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected_non_tight, decimal=1)
-    plt.close()
 
 
 def test_view_lim_default_global(tmp_path):
@@ -166,4 +162,3 @@ def test_view_lim_default_global(tmp_path):
     expected = np.array([[-180, -90], [180, 90]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected)
-    plt.close()
