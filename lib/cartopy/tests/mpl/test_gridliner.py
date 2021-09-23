@@ -17,8 +17,6 @@ from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
     classic_locator, classic_formatter)
 
-from cartopy.tests.mpl import ImageTesting
-
 TEST_PROJS = [
     ccrs.PlateCarree,
     ccrs.AlbersEqualArea,
@@ -52,9 +50,8 @@ TEST_PROJS = [
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner1'],
-              # Robinson projection is slightly better in Proj 6+.
-              tolerance=0.7)
+# Robinson projection is slightly better in Proj 6+.
+@pytest.mark.mpl_image_compare(filename='gridliner1.png', tolerance=0.7)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -110,6 +107,7 @@ def test_gridliner():
     delta = 1.5e-2
     fig.subplots_adjust(left=0 + delta, right=1 - delta,
                         top=1 - delta, bottom=0 + delta)
+    return fig
 
 
 def test_gridliner_specified_lines():
@@ -126,17 +124,14 @@ def test_gridliner_specified_lines():
 
 # The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-grid_label_tol = grid_label_inline_tol = grid_label_inline_usa_tol = 3.1
-grid_label_tol += 0.8
-grid_label_inline_tol += 1.6
-grid_label_image = 'gridliner_labels'
-grid_label_inline_image = 'gridliner_labels_inline'
-grid_label_inline_usa_image = 'gridliner_labels_inline_usa'
+grid_label_tol = 3.9
+grid_label_inline_tol = grid_label_inline_usa_tol = 10.5
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@ImageTesting([grid_label_image], tolerance=grid_label_tol)
+@pytest.mark.mpl_image_compare(filename='gridliner_labels.png',
+                               tolerance=grid_label_tol)
 def test_grid_labels():
     fig = plt.figure(figsize=(10, 10))
 
@@ -207,10 +202,13 @@ def test_grid_labels():
     # Increase margins between plots to stop them bumping into one another.
     fig.subplots_adjust(wspace=0.25, hspace=0.25)
 
+    return fig
+
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@ImageTesting(['gridliner_labels_tight'], tolerance=4)
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
+                               tolerance=4)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -248,10 +246,13 @@ def test_grid_labels_tight():
         for gl in ax._gridliners:
             assert hasattr(gl, '_drawn') and gl._drawn
 
+    return fig
+
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@ImageTesting([grid_label_inline_image], tolerance=grid_label_inline_tol)
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_inline.png',
+                               tolerance=grid_label_inline_tol)
 def test_grid_labels_inline():
     fig = plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
@@ -264,12 +265,13 @@ def test_grid_labels_inline():
         ax.coastlines(resolution="110m")
         ax.set_title(proj, y=1.075)
     fig.subplots_adjust(wspace=0.35, hspace=0.35)
+    return fig
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@ImageTesting([grid_label_inline_usa_image],
-              tolerance=grid_label_inline_usa_tol)
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_inline_usa.png',
+                               tolerance=grid_label_inline_usa_tol)
 def test_grid_labels_inline_usa():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -292,10 +294,12 @@ def test_grid_labels_inline_usa():
         ax.coastlines(resolution="110m")
 
     fig.subplots_adjust(wspace=0.35, hspace=0.35)
+    return fig
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
-@ImageTesting(["gridliner_labels_bbox_style"], tolerance=grid_label_tol)
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_bbox_style.png',
+                               tolerance=grid_label_tol)
 def test_gridliner_labels_bbox_style():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -316,6 +320,8 @@ def test_gridliner_labels_bbox_style():
         "edgecolor": "black",
         "boxstyle": "round, pad=0.2",
     }
+
+    return fig
 
 
 @pytest.mark.parametrize(

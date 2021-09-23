@@ -9,11 +9,11 @@ from packaging.version import parse as parse_version
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import MPL_VERSION
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_map'])
+@pytest.mark.mpl_image_compare(filename='global_map.png')
 def test_global_map():
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
@@ -29,10 +29,14 @@ def test_global_map():
     ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.PlateCarree())
     ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.Geodetic())
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['contour_label'],
-              tolerance=(9.9 if MPL_VERSION < parse_version('3.2') else 0.5))
+@pytest.mark.mpl_image_compare(filename='contour_label.png',
+                               tolerance=(9.9
+                                          if MPL_VERSION < parse_version('3.2')
+                                          else 0.5))
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
     fig = plt.figure()
@@ -69,3 +73,5 @@ def test_contour_label():
         inline=True,  # Cut the line where the label will be placed.
         fmt=' {:.0f} '.format,  # Labes as integers, with some extra space.
     )
+
+    return fig

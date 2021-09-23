@@ -15,13 +15,11 @@ import shapely.geometry as sgeom
 import cartopy.crs as ccrs
 import cartopy.mpl.patch as cpatch
 
-from cartopy.tests.mpl import ImageTesting
-
 
 # Note: Matplotlib is broken here
 # https://github.com/matplotlib/matplotlib/issues/15946
 @pytest.mark.natural_earth
-@ImageTesting(['poly_interiors'], tolerance=3.1)
+@pytest.mark.mpl_image_compare(filename='poly_interiors.png', tolerance=3.1)
 def test_polygon_interiors():
     fig = plt.figure()
 
@@ -72,9 +70,11 @@ def test_polygon_interiors():
                                  transform=ccrs.Geodetic(), zorder=10)
     ax.add_collection(collection)
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['contour_with_interiors'])
+@pytest.mark.mpl_image_compare(filename='contour_with_interiors.png')
 def test_contour_interiors():
     # produces a polygon with multiple holes:
     nx, ny = 10, 10
@@ -112,3 +112,5 @@ def test_contour_interiors():
     ax.set_global()
     ax.contourf(lons, lats, data, numlev, transform=ccrs.PlateCarree())
     ax.coastlines()
+
+    return fig

@@ -15,7 +15,7 @@ install:
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
   - set ENV_NAME=test-environment
-  - set PACKAGES=%PACKAGES% flufl.lock owslib pep8 pillow pyshp pytest
+  - set PACKAGES=%PACKAGES% owslib pep8 pillow pyshp pytest pytest-mpl
   - set PACKAGES=%PACKAGES% requests setuptools_scm setuptools_scm_git_archive
   - set PACKAGES=%PACKAGES% shapely
   - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%
@@ -38,7 +38,8 @@ build_script:
 test_script:
   - set MPLBACKEND=Agg
   - set PYPROJ_GLOBAL_CONTEXT=ON
-  - pytest --pyargs cartopy
+  - pytest -ra --pyargs cartopy
+      --mpl --mpl-generate-summary=html --mpl-results-path=cartopy_test_output
 
 artifacts:
   - path: cartopy_test_output

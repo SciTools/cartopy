@@ -9,20 +9,20 @@ from matplotlib.testing.decorators import cleanup
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import ImageTesting
 
 
 @pytest.mark.natural_earth
-@ImageTesting(["igh_land"])
+@pytest.mark.mpl_image_compare(filename="igh_land.png")
 def test_igh_land():
     crs = ccrs.InterruptedGoodeHomolosine(emphasis="land")
     ax = plt.axes(projection=crs)
     ax.coastlines()
     ax.gridlines()
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(["igh_ocean"])
+@pytest.mark.mpl_image_compare(filename="igh_ocean.png")
 def test_igh_ocean():
     crs = ccrs.InterruptedGoodeHomolosine(
         central_longitude=-160, emphasis="ocean"
@@ -30,10 +30,11 @@ def test_igh_ocean():
     ax = plt.axes(projection=crs)
     ax.coastlines()
     ax.gridlines()
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['lambert_conformal_south'])
+@pytest.mark.mpl_image_compare(filename='lambert_conformal_south.png')
 def test_lambert_south():
     # Reference image: https://www.icsm.gov.au/mapping/map_projections.html
     crs = ccrs.LambertConformal(central_longitude=140, cutoff=65,
@@ -41,6 +42,7 @@ def test_lambert_south():
     ax = plt.axes(projection=crs)
     ax.coastlines()
     ax.gridlines()
+    return ax.figure
 
 
 @pytest.mark.natural_earth

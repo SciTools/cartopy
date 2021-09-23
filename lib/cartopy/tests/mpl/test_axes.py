@@ -14,7 +14,6 @@ import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
-from cartopy.tests.mpl import ImageTesting
 
 
 class TestNoSpherical:
@@ -116,7 +115,7 @@ def test_geoaxes_subplot():
     assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"
 
 
-@ImageTesting(['geoaxes_subslice'])
+@pytest.mark.mpl_image_compare(filename='geoaxes_subslice.png')
 def test_geoaxes_no_subslice():
     """Test that we do not trigger matplotlib's line subslice optimization."""
     # This behavior caused lines with > 1000 points and
@@ -128,8 +127,10 @@ def test_geoaxes_no_subslice():
         lons = np.linspace(-117, -115, num_points)
         ax.plot(lons, lats, transform=ccrs.PlateCarree())
 
+    return fig
 
-@ImageTesting(['geoaxes_set_boundary_clipping'])
+
+@pytest.mark.mpl_image_compare(filename='geoaxes_set_boundary_clipping.png')
 def test_geoaxes_set_boundary_clipping():
     """Test that setting the boundary works properly for clipping #1620."""
     lon, lat = np.meshgrid(np.linspace(-180., 180., 361),
@@ -145,3 +146,5 @@ def test_geoaxes_set_boundary_clipping():
 
     ax1.set_boundary(mpath.Path.circle(center=(0.5, 0.5), radius=0.5),
                      transform=ax1.transAxes)
+
+    return fig

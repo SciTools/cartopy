@@ -19,7 +19,6 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
-from cartopy.tests.mpl import ImageTesting
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 
@@ -35,7 +34,7 @@ REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
 # care that it is putting images onto the map which are roughly correct.
 @pytest.mark.natural_earth
 @pytest.mark.network
-@ImageTesting(['web_tiles'], tolerance=5.91)
+@pytest.mark.mpl_image_compare(filename='web_tiles.png', tolerance=5.91)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = sgeom.Polygon([[extent[0], extent[1]],
@@ -69,10 +68,12 @@ def test_web_tiles():
               interpolation='bilinear', origin=origin)
     ax.coastlines()
 
+    return fig
+
 
 @pytest.mark.natural_earth
 @pytest.mark.network
-@ImageTesting(['image_merge'], tolerance=0.01)
+@pytest.mark.mpl_image_compare(filename='image_merge.png', tolerance=0.01)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -97,8 +98,11 @@ def test_image_merge():
     ax.coastlines()
     ax.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
+    return ax.figure
 
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
+
+@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png',
+                               tolerance=0.7)
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
@@ -108,10 +112,12 @@ def test_imshow():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.imshow(img, transform=source_proj,
               extent=[-180, 180, -90, 90])
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['imshow_regional_projected'], tolerance=0.8)
+@pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png',
+                               tolerance=0.8)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
@@ -121,6 +127,7 @@ def test_imshow_projected():
     ax.set_extent(img_extent, crs=source_proj)
     ax.coastlines(resolution='50m')
     ax.imshow(img, extent=img_extent, transform=source_proj)
+    return ax.figure
 
 
 def test_imshow_wrapping():
@@ -160,25 +167,30 @@ def test_imshow_rgb():
     assert sum(img.get_array().data[:, 0, 3]) == 0
 
 
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png',
+                               tolerance=0.7)
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()
+    return ax.figure
 
 
-@ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png',
+                               tolerance=0.7)
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.imshow(img, transform=source_proj,
               extent=[-180, 180, -90, 90])
+    return ax.figure
 
 
-@ImageTesting(['imshow_natural_earth_ortho'])
+@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resolution='low')
+    return ax.figure
 
 
 def test_alpha_2d_warp():

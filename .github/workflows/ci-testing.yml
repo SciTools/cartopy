@@ -48,7 +48,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyshp pytest"
+          PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl"
           PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
           PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
           conda install $PACKAGES
@@ -70,7 +70,10 @@ jobs:
           # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
           python tools/cartopy_feature_download.py gshhs physical --dry-run
           CARTOPY_GIT_DIR=$PWD
-          PYPROJ_GLOBAL_CONTEXT=ON pytest -ra -n 4 --doctest-modules --pyargs cartopy ${EXTRA_TEST_ARGS}
+          PYPROJ_GLOBAL_CONTEXT=ON pytest -ra -n 4 --doctest-modules \
+              --mpl --mpl-generate-summary=html \
+              --mpl-results-path="cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}" \
+              --pyargs cartopy ${EXTRA_TEST_ARGS}
 
       - name: Coveralls
         if: steps.coverage.conclusion == 'success'
@@ -79,16 +82,9 @@ jobs:
         run:
           coveralls --service=github
 
-      - name: Create image output
-        if: failure() && steps.install.conclusion == 'success'
-        id: image-output
-        run:
-          python -c "import cartopy.tests.mpl; print(cartopy.tests.mpl.failed_images_html())" >> image-failures-${{ matrix.os }}-${{ matrix.python-version }}.html
-
-      # Can't create image output and upload in the same step
       - name: Upload image results
         uses: actions/upload-artifact@v2
-        if: failure() && steps.image-output.conclusion == 'success'
+        if: failure()
         with:
-          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}.html
-          path: image-failures-${{ matrix.os }}-${{ matrix.python-version }}.html
+          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}
+          path: cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}
