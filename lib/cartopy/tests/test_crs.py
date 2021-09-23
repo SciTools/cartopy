@@ -346,6 +346,9 @@ def test_crs__from_pyproj_crs():
         # Meteosat Second Generation (MSG) - SEVIRI - Flipped Geostationary
         ({'proj': 'geos', 'lon_0': 0.0, 'a': 6378169.00, 'b': 6356583.80, 'h': 35785831.00, 'units': 'm'},
          [5500000, -5500000, -5500000, 5500000], False, (5500000, -5500000, -5500000, 5500000), 110000.0),
+        ({'proj': 'geos', 'lon_0': 0.0, 'a': 6378169.00, 'b': 6356583.80, 'h': 35785831.00, 'units': 'm'},
+         [-10.0, 10.0, -10.0, 10.0], True,
+         (-1084697.7494802547, 1084697.7494802547, -1093480.6233566382, 1093480.6233566382), 21693.954989605096),
     ]
 )
 def test_projection_with_bounds(crs_input, bounds, transform_bounds, exp_bounds, exp_threshold):
