@@ -41,8 +41,7 @@ def test_LatitudeFormatter():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['90\u00B0S', '60\u00B0S', '30\u00B0S', '0\u00B0',
-                '30\u00B0N', '60\u00B0N', '90\u00B0N']
+    expected = ['90°S', '60°S', '30°S', '0°', '30°N', '60°N', '90°N']
     assert result == expected
 
 
@@ -52,8 +51,7 @@ def test_LatitudeFormatter_direction_label():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['-90\u00B0', '-60\u00B0', '-30\u00B0', '0\u00B0',
-                '30\u00B0', '60\u00B0', '90\u00B0']
+    expected = ['-90°', '-60°', '-30°', '0°', '30°', '60°', '90°']
     assert result == expected
 
 
@@ -63,8 +61,7 @@ def test_LatitudeFormatter_degree_symbol():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['90S', '60S', '30S', '0',
-                '30N', '60N', '90N']
+    expected = ['90S', '60S', '30S', '0', '30N', '60N', '90N']
     assert result == expected
 
 
@@ -74,9 +71,8 @@ def test_LatitudeFormatter_number_format():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-90, -60, -30, 0, 30, 60, 90]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['90.00\u00B0S', '60.00\u00B0S', '30.00\u00B0S',
-                '0.00\u00B0', '30.00\u00B0N', '60.00\u00B0N',
-                '90.00\u00B0N']
+    expected = ['90.00°S', '60.00°S', '30.00°S', '0.00°',
+                '30.00°N', '60.00°N', '90.00°N']
     assert result == expected
 
 
@@ -88,8 +84,7 @@ def test_LatitudeFormatter_mercator():
                   -3482189.085407435, 0.0, 3482189.085407435,
                   8362698.548496634, 15496570.739707898]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['80\u00B0S', '60\u00B0S', '30\u00B0S', '0\u00B0',
-                '30\u00B0N', '60\u00B0N', '80\u00B0N']
+    expected = ['80°S', '60°S', '30°S', '0°', '30°N', '60°N', '80°N']
     assert result == expected
 
 
@@ -99,8 +94,7 @@ def test_LatitudeFormatter_small_numbers():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [40.1275150, 40.1275152, 40.1275154]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['40.1275150\u00B0N', '40.1275152\u00B0N',
-                '40.1275154\u00B0N']
+    expected = ['40.1275150°N', '40.1275152°N', '40.1275154°N']
     assert result == expected
 
 
@@ -112,8 +106,7 @@ def test_LongitudeFormatter_direction_label():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['-180\u00B0', '-120\u00B0', '-60\u00B0', '0\u00B0',
-                '60\u00B0', '120\u00B0', '180\u00B0']
+    expected = ['-180°', '-120°', '-60°', '0°', '60°', '120°', '180°']
     assert result == expected
 
 
@@ -123,8 +116,7 @@ def test_LongitudeFormatter_central_longitude_0():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['180\u00B0W', '120\u00B0W', '60\u00B0W', '0\u00B0',
-                '60\u00B0E', '120\u00B0E', '180\u00B0E']
+    expected = ['180°W', '120°W', '60°W', '0°', '60°E', '120°E', '180°E']
     assert result == expected
 
 
@@ -134,8 +126,7 @@ def test_LongitudeFormatter_central_longitude_180():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['0\u00B0E', '60\u00B0E', '120\u00B0E', '180\u00B0',
-                '120\u00B0W', '60\u00B0W', '0\u00B0W']
+    expected = ['0°E', '60°E', '120°E', '180°', '120°W', '60°W', '0°W']
     assert result == expected
 
 
@@ -145,8 +136,7 @@ def test_LongitudeFormatter_central_longitude_120():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['60\u00B0W', '0\u00B0', '60\u00B0E', '120\u00B0E',
-                '180\u00B0', '120\u00B0W', '60\u00B0W']
+    expected = ['60°W', '0°', '60°E', '120°E', '180°', '120°W', '60°W']
     assert result == expected
 
 
@@ -168,9 +158,8 @@ def test_LongitudeFormatter_number_format():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-180, -120, -60, 0, 60, 120, 180]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['180.00\u00B0W', '120.00\u00B0W', '60.00\u00B0W',
-                '0.00\u00B0', '60.00\u00B0E', '120.00\u00B0E',
-                '180.00\u00B0E']
+    expected = ['180.00°W', '120.00°W', '60.00°W', '0.00°',
+                '60.00°E', '120.00°E', '180.00°E']
     assert result == expected
 
 
@@ -182,8 +171,7 @@ def test_LongitudeFormatter_mercator():
                   -6679169.447594353, 0.0, 6679169.447594353,
                   13358338.895188706, 20037508.342783064]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['180\u00B0W', '120\u00B0W', '60\u00B0W', '0\u00B0',
-                '60\u00B0E', '120\u00B0E', '180\u00B0E']
+    expected = ['180°W', '120°W', '60°W', '0°', '60°E', '120°E', '180°E']
     assert result == expected
 
 
@@ -193,8 +181,7 @@ def test_LongitudeFormatter_small_numbers_0():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-17.1142343, -17.1142340, -17.1142337]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['17.1142343\u00B0W', '17.1142340\u00B0W',
-                '17.1142337\u00B0W']
+    expected = ['17.1142343°W', '17.1142340°W', '17.1142337°W']
     assert result == expected
 
 
@@ -205,20 +192,19 @@ def test_LongitudeFormatter_small_numbers_180():
     formatter.axis = Mock(axes=Mock(GeoAxes, projection=p))
     test_ticks = [-17.1142343, -17.1142340, -17.1142337]
     result = [formatter(tick) for tick in test_ticks]
-    expected = ['162.8857657\u00B0E', '162.8857660\u00B0E',
-                '162.8857663\u00B0E']
+    expected = ['162.8857657°E', '162.8857660°E', '162.8857663°E']
     assert result == expected
 
 
 @pytest.mark.parametrize("test_ticks,expected",
                          [pytest.param([-3.75, -3.5],
-                                       ["3\u00B045'W", "3\u00B030'W"],
+                                       ['3°45′W', '3°30′W'],
                                        id='minutes_no_hide'),
                           pytest.param([-3.5, -3.],
-                                       ["30'", "3\u00B0W"],
+                                       ['30′', '3°W'],
                                        id='minutes_hide'),
                           pytest.param([-3. - 2 * ONE_MIN - 30 * ONE_SEC],
-                                       ["3\u00B02'30''W"],
+                                       ['3°2′30″W'],
                                        id='seconds'),
                           ])
 def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
@@ -230,13 +216,13 @@ def test_LongitudeFormatter_minutes_seconds(test_ticks, expected):
 
 @pytest.mark.parametrize("test_ticks,expected",
                          [pytest.param([-3.75, -3.5],
-                                       ["-3\u00B045'", "-3\u00B030'"],
+                                       ['-3°45′', '-3°30′'],
                                        id='minutes_no_hide'),
                           pytest.param([-3.5, -3.],
-                                       ["30'", "-3\u00B0"],
+                                       ['30′', '-3°'],
                                        id='minutes_hide'),
                           pytest.param([-3. - 2 * ONE_MIN - 30 * ONE_SEC],
-                                       ["-3\u00B02'30''"],
+                                       ['-3°2′30″'],
                                        id='seconds'),
                           ])
 def test_LongitudeFormatter_minutes_seconds_direction_label(test_ticks,
@@ -250,7 +236,7 @@ def test_LongitudeFormatter_minutes_seconds_direction_label(test_ticks,
 
 @pytest.mark.parametrize("test_ticks,expected",
                          [pytest.param([-3.75, -3.5],
-                                       ["3\u00B045'S", "3\u00B030'S"],
+                                       ['3°45′S', '3°30′S'],
                                        id='minutes_no_hide'),
                           ])
 def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):

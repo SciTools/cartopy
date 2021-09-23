@@ -631,7 +631,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return (
             f'{x:.4g}, {y:.4g} '
-            f'({abs(lat):f}\u00b0{ns}, {abs(lon):f}\u00b0{ew})'
+            f'({abs(lat):f}°{ns}, {abs(lon):f}°{ew})'
         )
 
     def coastlines(self, resolution='auto', color='black', **kwargs):
