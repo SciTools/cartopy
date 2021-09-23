@@ -644,27 +644,52 @@ class Projection(CRS, metaclass=ABCMeta):
     # Whether or not this projection can handle wrapped coordinates
     _wrappable = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, bounds=None, transform_bounds=False, **kwargs):
+        """
+        Parameters
+        ----------
+        bounds: list or tuple, optional
+            Four element projection bounds (xmin, xmax, ymin, ymax).
+            If not provided defaults to "area_of_use" of the Coordinate
+            Reference System if it exists. This can be used to define an area
+            of use when one doesn't exist or to define a subset of the full
+            projection space.
+        transform_bounds: bool, optional
+            Transform bounds provided as lon(x)/lat(y) degrees to projection
+            space. This is a convenience when bounds are only known in degrees
+            for a non-geographic CRS. Defaults to False.
+
+        Additional arguments are passed directly to :class:`cartopy.crs.CRS`.
+
+        """
         super().__init__(*args, **kwargs)
-        self.bounds = None
-        if self.area_of_use:
+        if bounds is None and self.area_of_use is not None:
+            bounds = (
+                self.area_of_use.west,
+                self.area_of_use.east,
+                self.area_of_use.south,
+                self.area_of_use.north,
+            )
+            transform_bounds = True
+
+        if bounds is not None and transform_bounds:
             # Convert lat/lon bounds to projected bounds.
             # Geographic area of the entire dataset referenced to WGS 84
             # NB. We can't use a polygon transform at this stage because
             # that relies on the existence of the map boundary... the very
             # thing we're trying to work out! ;-)
-            x0 = self.area_of_use.west
-            x1 = self.area_of_use.east
-            y0 = self.area_of_use.south
-            y1 = self.area_of_use.north
+            x0, x1, y0, y1 = bounds
             lons = np.array([x0, x0, x1, x1])
             lats = np.array([y0, y1, y1, y0])
             points = self.transform_points(self.as_geodetic(), lons, lats)
             x = points[:, 0]
             y = points[:, 1]
-            self.bounds = (x.min(), x.max(), y.min(), y.max())
-            x0, x1, y0, y1 = self.bounds
-            self.threshold = min(x1 - x0, y1 - y0) / 100.
+            bounds = (x.min(), x.max(), y.min(), y.max())
+
+        self.bounds = None
+        if bounds is not None:
+            x0, x1, y0, y1 = self.bounds = tuple(bounds)
+            self.threshold = min(abs(x1 - x0), abs(y1 - y0)) / 100.
 
     @property
     def boundary(self):

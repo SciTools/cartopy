@@ -332,3 +332,24 @@ def test_projection__from_string():
 
 def test_crs__from_pyproj_crs():
     assert ccrs.CRS(pyproj.CRS("EPSG:4326")) == "EPSG:4326"
+
+
+@pytest.mark.parametrize(
+    ("crs_input", "bounds", "transform_bounds", "exp_bounds", "exp_threshold"),
+    [
+        ("EPSG:4326", None, False, (-180.0, 180.0, -90.0, 90.0), 1.8),
+        ("EPSG:4326", [-100.0, -90.0, 35.0, 45.0], False, (-100.0, -90.0, 35.0, 45.0), 0.1),
+        ("EPSG:4326", [-100.0, -90.0, 35.0, 45.0], True, (-100.0, -90.0, 35.0, 45.0), 0.1),
+        ("EPSG:6932", [-40000., 40000., -40000., 40000.], False, (-40000., 40000., -40000., 40000.), 800.0),
+        ("EPSG:6932", [20.0, 25.0, -85.0, -78.0], True,
+         (190942.4609561831, 565329.6096711607, 505972.06807129766, 1257011.612161974), 3743.871487149776),
+        # Meteosat Second Generation (MSG) - SEVIRI - Flipped Geostationary
+        ({'proj': 'geos', 'lon_0': 0.0, 'a': 6378169.00, 'b': 6356583.80, 'h': 35785831.00, 'units': 'm'},
+         [5500000, -5500000, -5500000, 5500000], False, (5500000, -5500000, -5500000, 5500000), 110000.0),
+    ]
+)
+def test_projection_with_bounds(crs_input, bounds, transform_bounds, exp_bounds, exp_threshold):
+    pcrs = pyproj.CRS.from_user_input(crs_input)
+    crs = ccrs.Projection(pcrs, bounds=bounds, transform_bounds=transform_bounds)
+    assert crs.bounds == exp_bounds
+    assert crs.threshold == exp_threshold
