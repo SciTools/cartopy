@@ -1789,7 +1789,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
-        args = self._wrap_args(*args, **kwargs)
+        args, kwargs = self._wrap_args(*args, **kwargs)
         result = super().pcolormesh(*args, **kwargs)
         # Wrap the quadrilaterals if necessary
         result = self._wrap_quadmesh(result, **kwargs)
@@ -1811,8 +1811,11 @@ class GeoAxes(matplotlib.axes.Axes):
         if not (kwargs.get('shading', default_shading) in
                 ('nearest', 'auto') and len(args) == 3 and
                 getattr(kwargs.get('transform'), '_wrappable', False)):
-            return args
+            return args, kwargs
 
+        # We have changed the shading from nearest/auto to flat
+        # due to the addition of an extra coordinate
+        kwargs['shading'] = 'flat'
         X = np.asanyarray(args[0])
         Y = np.asanyarray(args[1])
         nrows, ncols = np.asanyarray(args[2]).shape
@@ -1848,7 +1851,7 @@ class GeoAxes(matplotlib.axes.Axes):
             X = _interp_grid(X.T, wrap=xwrap).T
             Y = _interp_grid(Y.T).T
 
-        return (X, Y, args[2])
+        return (X, Y, args[2]), kwargs
 
     def _wrap_quadmesh(self, collection, **kwargs):
         """
@@ -1974,7 +1977,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
-        args = self._wrap_args(*args, **kwargs)
+        args, kwargs = self._wrap_args(*args, **kwargs)
         result = super().pcolor(*args, **kwargs)
 
         # Update the datalim for this pcolor.
