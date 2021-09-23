@@ -363,6 +363,7 @@ def test_crs__from_pyproj_crs():
 def test_projection_with_bounds(crs_input, bounds, transform_bounds,
                                 exp_bounds, exp_threshold):
     pcrs = pyproj.CRS.from_user_input(crs_input)
-    crs = ccrs.Projection(pcrs, bounds=bounds, transform_bounds=transform_bounds)
+    crs = ccrs.Projection(pcrs, bounds=bounds,
+                          transform_bounds=transform_bounds)
     assert crs.bounds == exp_bounds
     assert crs.threshold == exp_threshold
