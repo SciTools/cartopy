@@ -101,8 +101,7 @@ def test_image_merge():
     return ax.figure
 
 
-@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png',
-                               tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
@@ -167,16 +166,14 @@ def test_imshow_rgb():
     assert sum(img.get_array().data[:, 0, 3]) == 0
 
 
-@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png',
-                               tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()
     return ax.figure
 
 
-@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png',
-                               tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()

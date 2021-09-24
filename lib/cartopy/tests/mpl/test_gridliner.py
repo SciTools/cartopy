@@ -208,7 +208,7 @@ def test_grid_labels():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
-                               tolerance=4)
+                               tolerance=2.9)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -273,6 +273,7 @@ def test_grid_labels_inline():
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_inline_usa.png',
                                tolerance=grid_label_inline_usa_tol)
 def test_grid_labels_inline_usa():
+    print(plt.get_backend())
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
     right = -66.9513812  # east long

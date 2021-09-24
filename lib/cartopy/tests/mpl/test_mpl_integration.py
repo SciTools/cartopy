@@ -17,14 +17,9 @@ import cartopy.crs as ccrs
 from cartopy.tests.mpl import MPL_VERSION
 
 
-# This is due to a change in MPL 3.5 contour line paths changing
-# ever so slightly.
-contour_tol = 2.24
-
-
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
-                               style='mpl20', tolerance=contour_tol)
+                               style='mpl20')
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -36,7 +31,7 @@ def test_global_contour_wrap_new_transform():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
-                               style='mpl20', tolerance=contour_tol)
+                               style='mpl20')
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -230,8 +225,7 @@ def test_multiple_projections():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='multiple_projections520.png',
-                               tolerance=0.65)
+@pytest.mark.mpl_image_compare(filename='multiple_projections520.png')
 def test_multiple_projections_520():
     # Test projections added in Proj 5.2.0.
 
@@ -401,7 +395,7 @@ def test_pcolormesh_global_with_wrap2():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.42)
+                               tolerance=1.39)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -444,7 +438,7 @@ def test_pcolormesh_global_with_wrap3():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.42)
+                               tolerance=1.39)
 def test_pcolormesh_set_array_with_mask():
     """Testing that set_array works with masked arrays properly."""
     nx, ny = 33, 17
@@ -495,7 +489,7 @@ def test_pcolormesh_set_array_with_mask():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.42)
+                               tolerance=1.39)
 def test_pcolormesh_set_clim_with_mask():
     """Testing that set_clim works with masked arrays properly."""
     nx, ny = 33, 17
@@ -587,8 +581,7 @@ def test_pcolormesh_limited_area_wrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_single_column_wrap.png',
-                               tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_single_column_wrap.png')
 def test_pcolormesh_single_column_wrap():
     # Check a wrapped mesh like test_pcolormesh_limited_area_wrap, but only use
     # a single column, which could break depending on how wrapping is
@@ -659,8 +652,7 @@ def test_pcolormesh_goode_wrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png',
-                               tolerance=0.93)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png')
 def test_pcolormesh_mercator_wrap():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
@@ -674,8 +666,7 @@ def test_pcolormesh_mercator_wrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png',
-                               tolerance=0.93)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png')
 def test_pcolormesh_wrap_set_array():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
@@ -744,7 +735,7 @@ def test_quiver_rotated_pole():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='quiver_regrid.png', tolerance=1.3)
+@pytest.mark.mpl_image_compare(filename='quiver_regrid.png')
 def test_quiver_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
