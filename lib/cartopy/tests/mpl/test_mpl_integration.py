@@ -684,19 +684,29 @@ def test_pcolormesh_wrap_set_array():
     return ax.figure
 
 
-@pytest.mark.parametrize('shading', ['auto', 'nearest'])
-def test_pcolormesh_shading(shading):
-    # Smoke test that auto/nearest shading get
-    # properly set to flat shading in the call to pcolormesh
-    # GH issue 1889
+@pytest.mark.parametrize('shading, input_size, expected', [
+    pytest.param('auto', 3, 4, id='auto same size'),
+    pytest.param('auto', 4, 4, id='auto input larger'),
+    pytest.param('nearest', 3, 4, id='nearest same size'),
+    pytest.param('nearest', 4, 4, id='nearest input larger'),
+    pytest.param('flat', 4, 4, id='flat input larger'),
+    pytest.param('gouraud', 3, 3, id='gouraud same size')
+])
+def test_pcolormesh_shading(shading, input_size, expected):
+    # Testing that the coordinates are all broadcast as expected with
+    # the various shading options
+    # The data shape is (3, 3) and we are changing the input shape
+    # based upon that
     ax = plt.axes(projection=ccrs.PlateCarree())
 
-    n = 3
-    x = np.arange(n)+1
-    y = np.arange(n)+1
-    d = np.random.rand(n, n)
+    x = np.arange(input_size)
+    y = np.arange(input_size)
+    d = np.zeros((3, 3))
 
-    ax.pcolormesh(x, y, d, shading=shading)
+    coll = ax.pcolormesh(x, y, d, shading=shading)
+    # We can use coll.get_coordinates() once MPL >= 3.5 is required
+    # For now, we use the private variable for testing
+    assert coll._coordinates.shape == (expected, expected, 2)
 
 
 @pytest.mark.natural_earth

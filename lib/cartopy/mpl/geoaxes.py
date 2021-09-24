@@ -1867,8 +1867,13 @@ class GeoAxes(matplotlib.axes.Axes):
         # Get the quadmesh data coordinates
         coords = collection._coordinates
         Ny, Nx, _ = coords.shape
+        if kwargs.get('shading') == 'gouraud':
+            # Gouraud shading has the same shape for coords and data
+            data_shape = Ny, Nx
+        else:
+            data_shape = Ny - 1, Nx - 1
         # data array
-        C = collection.get_array().reshape((Ny - 1, Nx - 1))
+        C = collection.get_array().reshape(data_shape)
 
         transformed_pts = self.projection.transform_points(
             t, coords[..., 0], coords[..., 1])
@@ -1896,6 +1901,23 @@ class GeoAxes(matplotlib.axes.Axes):
         if not np.any(mask):
             # No wrapping needed
             return collection
+
+        # Wrapping with gouraud shading is error-prone. We will do our best,
+        # but pcolor does not handle gouraud shading, so there needs to be
+        # another way to handle the wrapped cells.
+        if kwargs.get('shading') == 'gouraud':
+            warnings.warn("Handling wrapped coordinates with gouraud "
+                          "shading is likely to introduce artifacts. "
+                          "It is recommended to remove the wrap manually "
+                          "before calling pcolormesh.")
+            # With gouraud shading, we actually want an (Ny, Nx) shaped mask
+            gmask = np.zeros(data_shape, dtype=bool)
+            # If any of the cells were wrapped, apply it to all 4 corners
+            gmask[:-1, :-1] |= mask
+            gmask[1:, :-1] |= mask
+            gmask[1:, 1:] |= mask
+            gmask[:-1, 1:] |= mask
+            mask = gmask
 
         # We have quadrilaterals that cross the wrap boundary
         # Now, we need to update the original collection with
