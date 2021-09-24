@@ -44,8 +44,9 @@ def test_web_tiles():
                                    [extent[0], extent[3]],
                                    [extent[0], extent[1]]])
     map_prj = cimgt.GoogleTiles().crs
+    fig = plt.figure()
 
-    ax = plt.subplot(2, 2, 1, projection=map_prj)
+    ax = fig.add_subplot(2, 2, 1, projection=map_prj)
     gt = cimgt.GoogleTiles()
     gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT,
                                      gt)
@@ -54,14 +55,14 @@ def test_web_tiles():
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(2, 2, 2, projection=map_prj)
+    ax = fig.add_subplot(2, 2, 2, projection=map_prj)
     qt = cimgt.QuadtreeTiles()
     img, extent, origin = qt.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=qt.crs,
               interpolation='bilinear', origin=origin)
     ax.coastlines(color='white')
 
-    ax = plt.subplot(2, 2, 3, projection=map_prj)
+    ax = fig.add_subplot(2, 2, 3, projection=map_prj)
     osm = cimgt.OSM()
     img, extent, origin = osm.image_for_domain(target_domain, 1)
     ax.imshow(np.array(img), extent=extent, transform=osm.crs,
@@ -94,7 +95,7 @@ def test_image_merge():
     ax = plt.axes(projection=gt.crs)
     ax.set_global()
     ax.coastlines()
-    plt.imshow(img, origin=origin, extent=extent, alpha=0.5)
+    ax.imshow(img, origin=origin, extent=extent, alpha=0.5)
 
 
 @ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
@@ -145,7 +146,6 @@ def test_imshow_rgba():
     ax.set_extent([-30, -20, 60, 70], crs=latlon_crs)
     img = ax.imshow(z1, extent=[-26, -24, 64, 66], transform=latlon_crs)
     assert sum(img.get_array().data[:, 0, 3]) == 0
-    plt.close()
 
 
 def test_imshow_rgb():
@@ -158,7 +158,6 @@ def test_imshow_rgb():
     ax.set_extent([-30, -20, 60, 70], crs=latlon_crs)
     img = ax.imshow(z, extent=[-26, -24, 64, 66], transform=latlon_crs)
     assert sum(img.get_array().data[:, 0, 3]) == 0
-    plt.close()
 
 
 @ImageTesting(['imshow_natural_earth_ortho'], tolerance=0.7)
@@ -194,9 +193,7 @@ def test_alpha_2d_warp():
     fake_alphas = np.zeros(fake_data.shape)
     image = ax.imshow(fake_data, extent=coords, transform=latlon_crs,
                       alpha=fake_alphas)
-    plt.close()
     image_data = image.get_array()
     image_alpha = image.get_alpha()
 
     assert image_data.shape == image_alpha.shape
-    plt.close()

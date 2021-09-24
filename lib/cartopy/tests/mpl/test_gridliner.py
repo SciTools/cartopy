@@ -58,57 +58,57 @@ TEST_PROJS = [
 def test_gridliner():
     ny, nx = 2, 4
 
-    plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(10, 10))
 
-    ax = plt.subplot(nx, ny, 1, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(nx, ny, 1, projection=ccrs.PlateCarree())
     ax.set_global()
     ax.coastlines(resolution="110m")
     ax.gridlines(linestyle=':')
 
-    ax = plt.subplot(nx, ny, 2, projection=ccrs.OSGB(approx=False))
+    ax = fig.add_subplot(nx, ny, 2, projection=ccrs.OSGB(approx=False))
     ax.set_global()
     ax.coastlines(resolution="110m")
     ax.gridlines(linestyle=':')
 
-    ax = plt.subplot(nx, ny, 3, projection=ccrs.OSGB(approx=False))
+    ax = fig.add_subplot(nx, ny, 3, projection=ccrs.OSGB(approx=False))
     ax.set_global()
     ax.coastlines(resolution="110m")
     ax.gridlines(ccrs.PlateCarree(), color='blue', linestyle='-')
     ax.gridlines(ccrs.OSGB(approx=False), linestyle=':')
 
-    ax = plt.subplot(nx, ny, 4, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(nx, ny, 4, projection=ccrs.PlateCarree())
     ax.set_global()
     ax.coastlines(resolution="110m")
     ax.gridlines(ccrs.NorthPolarStereo(), alpha=0.5,
                  linewidth=1.5, linestyle='-')
 
-    ax = plt.subplot(nx, ny, 5, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(nx, ny, 5, projection=ccrs.PlateCarree())
     ax.set_global()
     ax.coastlines(resolution="110m")
     osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
 
-    ax = plt.subplot(nx, ny, 6, projection=ccrs.NorthPolarStereo())
+    ax = fig.add_subplot(nx, ny, 6, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     ax.coastlines(resolution="110m")
     ax.gridlines(alpha=0.5, linewidth=1.5, linestyle='-')
 
-    ax = plt.subplot(nx, ny, 7, projection=ccrs.NorthPolarStereo())
+    ax = fig.add_subplot(nx, ny, 7, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     ax.coastlines(resolution="110m")
     osgb = ccrs.OSGB(approx=False)
     ax.set_extent(tuple(osgb.x_limits) + tuple(osgb.y_limits), crs=osgb)
     ax.gridlines(osgb, linestyle=':')
 
-    ax = plt.subplot(nx, ny, 8,
-                     projection=ccrs.Robinson(central_longitude=135))
+    ax = fig.add_subplot(nx, ny, 8,
+                         projection=ccrs.Robinson(central_longitude=135))
     ax.set_global()
     ax.coastlines(resolution="110m")
     ax.gridlines(ccrs.PlateCarree(), alpha=0.5, linewidth=1.5, linestyle='-')
 
     delta = 1.5e-2
-    plt.subplots_adjust(left=0 + delta, right=1 - delta,
+    fig.subplots_adjust(left=0 + delta, right=1 - delta,
                         top=1 - delta, bottom=0 + delta)
 
 
@@ -164,7 +164,7 @@ def test_grid_labels():
     gl = ax.gridlines(draw_labels=True)
     gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
-    ax = plt.subplot(3, 2, 4, projection=crs_pc)
+    ax = fig.add_subplot(3, 2, 4, projection=crs_pc)
     ax.coastlines(resolution="110m")
     gl = ax.gridlines(
         crs=crs_pc, linewidth=2, color='gray', alpha=0.5, linestyle=':')
@@ -205,7 +205,7 @@ def test_grid_labels():
     gl.xlabel_style = gl.ylabel_style = {'size': 9}
 
     # Increase margins between plots to stop them bumping into one another.
-    plt.subplots_adjust(wspace=0.25, hspace=0.25)
+    fig.subplots_adjust(wspace=0.25, hspace=0.25)
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
@@ -253,17 +253,17 @@ def test_grid_labels_tight():
 @pytest.mark.natural_earth
 @ImageTesting([grid_label_inline_image], tolerance=grid_label_inline_tol)
 def test_grid_labels_inline():
-    plt.figure(figsize=(35, 35))
+    fig = plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
         if isinstance(proj, tuple):
             proj, kwargs = proj
         else:
             kwargs = {}
-        ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
+        ax = fig.add_subplot(7, 4, i, projection=proj(**kwargs))
         ax.gridlines(draw_labels=True, auto_inline=True)
         ax.coastlines(resolution="110m")
         ax.set_title(proj, y=1.075)
-    plt.subplots_adjust(wspace=0.35, hspace=0.35)
+    fig.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
@@ -275,13 +275,13 @@ def test_grid_labels_inline_usa():
     left = -124.7844079  # west long
     right = -66.9513812  # east long
     bottom = 24.7433195  # south lat
-    plt.figure(figsize=(35, 35))
+    fig = plt.figure(figsize=(35, 35))
     for i, proj in enumerate(TEST_PROJS, 1):
         if isinstance(proj, tuple):
             proj, kwargs = proj
         else:
             kwargs = {}
-        ax = plt.subplot(7, 4, i, projection=proj(**kwargs))
+        ax = fig.add_subplot(7, 4, i, projection=proj(**kwargs))
         try:
             ax.set_extent([left, right, bottom, top],
                           crs=ccrs.PlateCarree())
@@ -291,7 +291,7 @@ def test_grid_labels_inline_usa():
         ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
         ax.coastlines(resolution="110m")
 
-    plt.subplots_adjust(wspace=0.35, hspace=0.35)
+    fig.subplots_adjust(wspace=0.35, hspace=0.35)
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
@@ -302,22 +302,20 @@ def test_gridliner_labels_bbox_style():
     right = -66.9513812  # east long
     bottom = 24.7433195  # south lat
 
-    plt.figure(figsize=(6, 3))
-    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    fig = plt.figure(figsize=(6, 3))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.coastlines(resolution="110m")
     ax.set_extent([left, right, bottom, top],
                   crs=ccrs.PlateCarree())
     gl = ax.gridlines(draw_labels=True)
 
-    bbox_style = {
+    gl.labels_bbox_style = {
         "pad": 0,
         "visible": True,
         "facecolor": "white",
         "edgecolor": "black",
         "boxstyle": "round, pad=0.2",
     }
-
-    gl.labels_bbox_style = bbox_style
 
 
 @pytest.mark.parametrize(
@@ -343,17 +341,16 @@ def test_gridliner_labels_bbox_style():
     ])
 def test_gridliner_default_fmtloc(
         proj, gcrs, xloc, xfmt, xloc_expected, xfmt_expected):
-    plt.figure()
-    ax = plt.subplot(111, projection=proj)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=proj)
     gl = ax.gridlines(crs=gcrs, draw_labels=False, xlocs=xloc, xformatter=xfmt)
-    plt.close()
     assert isinstance(gl.xlocator, xloc_expected)
     assert isinstance(gl.xformatter, xfmt_expected)
 
 
 def test_gridliner_line_limits():
     fig = plt.figure()
-    ax = plt.subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.NorthPolarStereo())
     ax.set_global()
     # Test a single value passed in which represents (-lim, lim)
     xlim, ylim = 125, 75
@@ -414,7 +411,7 @@ def test_gridliner_line_limits():
 def test_gridliner_draw_labels_param(draw_labels, result):
     fig = plt.figure()
     lambert_crs = ccrs.LambertConformal(central_longitude=105)
-    ax = plt.axes(projection=lambert_crs)
+    ax = fig.add_subplot(projection=lambert_crs)
     ax.set_extent([75, 130, 18, 54], crs=ccrs.PlateCarree())
     gl = ax.gridlines(draw_labels=draw_labels, rotate_labels=False, dms=True,
                       x_inline=False, y_inline=False)
@@ -430,7 +427,7 @@ def test_gridliner_draw_labels_param(draw_labels, result):
 
 def test_gridliner_formatter_kwargs():
     fig = plt.figure()
-    ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_extent([-80, -40.0, 10.0, -30.0])
     gl = ax.gridlines(draw_labels=True, dms=False,
                       formatter_kwargs=dict(cardinal_labels={'west': 'O'}))

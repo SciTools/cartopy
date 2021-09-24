@@ -15,17 +15,12 @@ import pytest
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
 from cartopy.tests.mpl import ImageTesting
-from cartopy.tests.mpl.test_caching import CallCounter
 
 
 class TestNoSpherical:
     def setup_method(self):
         self.ax = plt.axes(projection=ccrs.PlateCarree())
         self.data = np.arange(12).reshape((3, 4))
-
-    def teardown_method(self):
-        plt.clf()
-        plt.close()
 
     def test_contour(self):
         with pytest.raises(ValueError):
@@ -55,20 +50,21 @@ def test_transform_PlateCarree_shortcut():
 
     trans = InterProjectionTransform(src, target)
 
-    counter = CallCounter(target, 'project_geometry')
-
-    with counter:
+    with mock.patch.object(target, 'project_geometry',
+                           wraps=target.project_geometry) as counter:
         trans.transform_path(pth1)
         # pth1 should allow a short-cut.
-        assert counter.count == 0
+        counter.assert_not_called()
 
-    with counter:
+    with mock.patch.object(target, 'project_geometry',
+                           wraps=target.project_geometry) as counter:
         trans.transform_path(pth2)
-        assert counter.count == 1
+        counter.assert_called_once()
 
-    with counter:
+    with mock.patch.object(target, 'project_geometry',
+                           wraps=target.project_geometry) as counter:
         trans.transform_path(pth3)
-        assert counter.count == 2
+        counter.assert_called_once()
 
 
 class Test_InterProjectionTransform:
@@ -98,8 +94,6 @@ class Test_InterProjectionTransform:
 
 
 class Test_Axes_add_geometries:
-    def teardown_method(self):
-        plt.close()
 
     @mock.patch('cartopy.mpl.geoaxes.GeoAxes.add_feature')
     @mock.patch('cartopy.feature.ShapelyFeature')

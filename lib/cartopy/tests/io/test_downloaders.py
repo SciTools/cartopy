@@ -6,14 +6,13 @@
 
 import contextlib
 import os
-import warnings
+from unittest import mock
 
 import pytest
 
 import cartopy
 import cartopy.io as cio
 from cartopy.io.shapereader import NEShpDownloader
-from cartopy.tests.mpl.test_caching import CallCounter
 
 
 def test_Downloader_data():
@@ -110,21 +109,18 @@ def test_downloading_simple_ascii(download_to_temp):
 
     assert dnld_item.target_path(format_dict) == tmp_fname
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(cio.DownloadWarning):
         assert dnld_item.path(format_dict) == tmp_fname
-
-        assert len(w) == 1, \
-            f'Expected a single download warning to be raised. Got {len(w)}.'
-        assert issubclass(w[0].category, cio.DownloadWarning)
 
     with open(tmp_fname) as fh:
         fh.readline()
         assert fh.readline() == " * jQuery JavaScript Library v1.8.2\n"
 
     # check that calling path again doesn't try re-downloading
-    with CallCounter(dnld_item, 'acquire_resource') as counter:
+    with mock.patch.object(dnld_item, 'acquire_resource',
+                           wraps=dnld_item.acquire_resource) as counter:
         assert dnld_item.path(format_dict) == tmp_fname
-    assert counter.count == 0, 'Item was re-downloaded.'
+    counter.assert_not_called()
 
 
 @pytest.mark.network
@@ -147,17 +143,19 @@ def test_natural_earth_downloader(tmp_path):
     dnld_item = NEShpDownloader(target_path_template=shp_path_template)
 
     # check that the file gets downloaded the first time path is called
-    with CallCounter(dnld_item, 'acquire_resource') as counter:
+    with mock.patch.object(dnld_item, 'acquire_resource',
+                           wraps=dnld_item.acquire_resource) as counter:
         with pytest.warns(cartopy.io.DownloadWarning, match="Downloading:"):
             shp_path = dnld_item.path(format_dict)
-    assert counter.count == 1, 'Item not downloaded.'
+    counter.assert_called_once()
 
     assert shp_path_template.format(**format_dict) == shp_path
 
     # check that calling path again doesn't try re-downloading
-    with CallCounter(dnld_item, 'acquire_resource') as counter:
+    with mock.patch.object(dnld_item, 'acquire_resource',
+                           wraps=dnld_item.acquire_resource) as counter:
         assert dnld_item.path(format_dict) == shp_path
-    assert counter.count == 0, 'Item was re-downloaded.'
+    counter.assert_not_called()
 
     # check that we have the shp and the shx
     exts = ['.shp', '.shx']
@@ -168,11 +166,11 @@ def test_natural_earth_downloader(tmp_path):
 
     # check that providing a pre downloaded path actually works
     pre_dnld = NEShpDownloader(target_path_template='/not/a/real/file.txt',
-                               pre_downloaded_path_template=shp_path
-                               )
+                               pre_downloaded_path_template=shp_path)
+
     # check that the pre_dnld downloader doesn't re-download, but instead
     # uses the path of the previously downloaded item
-
-    with CallCounter(pre_dnld, 'acquire_resource') as counter:
+    with mock.patch.object(pre_dnld, 'acquire_resource',
+                           wraps=pre_dnld.acquire_resource) as counter:
         assert pre_dnld.path(format_dict) == shp_path
-    assert counter.count == 0, 'Aquire resource called more than once.'
+    counter.assert_not_called()
