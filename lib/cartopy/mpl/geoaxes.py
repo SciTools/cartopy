@@ -2000,6 +2000,10 @@ class GeoAxes(matplotlib.axes.Axes):
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
         args, kwargs = self._wrap_args(*args, **kwargs)
+        if matplotlib.__version__ < "3.3":
+            # MPL 3.3 introduced the shading option, and it isn't
+            # handled before that for pcolor calls.
+            kwargs.pop('shading', None)
         result = super().pcolor(*args, **kwargs)
 
         # Update the datalim for this pcolor.
