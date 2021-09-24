@@ -612,7 +612,7 @@ def test_pcolormesh_diagonal_wrap():
     # and the bottom edge on the other gets wrapped properly
     xs = [[160, 170], [190, 200]]
     ys = [[-10, -10], [10, 10]]
-    zs = [[0, 1], [0, 1]]
+    zs = [[0]]
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     mesh = ax.pcolormesh(xs, ys, zs)
