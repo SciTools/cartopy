@@ -19,3 +19,20 @@ def mpl_test_cleanup(request):
     finally:
         # Closes all open figures and switches backend back to original
         plt.switch_backend(orig_backend)
+
+
+def pytest_itemcollected(item):
+    mpl_marker = item.get_closest_marker('mpl_image_compare')
+    if mpl_marker is None:
+        return
+
+    # Matches old ImageTesting class default tolerance.
+    mpl_marker.kwargs.setdefault('tolerance', 0.5)
+
+    for path in item.fspath.parts(reverse=True):
+        if path.basename == 'cartopy':
+            return
+        elif path.basename == 'tests':
+            subdir = item.fspath.relto(path)[:-len(item.fspath.ext)]
+            mpl_marker.kwargs['baseline_dir'] = f'baseline_images/{subdir}'
+            break

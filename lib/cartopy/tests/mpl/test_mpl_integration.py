@@ -14,76 +14,79 @@ import pytest
 
 import cartopy.crs as ccrs
 
-from cartopy.tests.mpl import MPL_VERSION, ImageTesting
+from cartopy.tests.mpl import MPL_VERSION
 
 
-# This is due to a change in MPL 3.5 contour line paths changing
-# ever so slightly.
-contour_tol = 2.24
 @pytest.mark.natural_earth
-@ImageTesting(['global_contour_wrap'], style='mpl20',
-              tolerance=contour_tol)
+@pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
+                               style='mpl20')
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     ax.contour(x, y, data, transform=ccrs.PlateCarree())
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_contour_wrap'], style='mpl20',
-              tolerance=contour_tol)
+@pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
+                               style='mpl20')
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     ax.contour(x, y, data)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_contourf_wrap'])
+@pytest.mark.mpl_image_compare(filename='global_contourf_wrap.png')
 def test_global_contourf_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     ax.contourf(x, y, data, transform=ccrs.PlateCarree())
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_contourf_wrap'])
+@pytest.mark.mpl_image_compare(filename='global_contourf_wrap.png')
 def test_global_contourf_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     ax.contourf(x, y, data)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_pcolor_wrap'])
+@pytest.mark.mpl_image_compare(filename='global_pcolor_wrap.png')
 def test_global_pcolor_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))[:-1, :-1]
     ax.pcolor(x, y, data, transform=ccrs.PlateCarree())
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_pcolor_wrap'])
+@pytest.mark.mpl_image_compare(filename='global_pcolor_wrap.png')
 def test_global_pcolor_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))[:-1, :-1]
     ax.pcolor(x, y, data)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'])
+@pytest.mark.mpl_image_compare(filename='global_scatter_wrap.png')
 def test_global_scatter_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     # By default the coastline feature will be drawn after patches.
@@ -93,21 +96,24 @@ def test_global_scatter_wrap_new_transform():
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     ax.scatter(x, y, c=data, transform=ccrs.PlateCarree())
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_scatter_wrap'])
+@pytest.mark.mpl_image_compare(filename='global_scatter_wrap.png')
 def test_global_scatter_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=0)
     x, y = np.meshgrid(np.linspace(0, 360), np.linspace(-90, 90))
     data = np.sin(np.sqrt(x ** 2 + y ** 2))
     ax.scatter(x, y, c=data)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+@pytest.mark.mpl_image_compare(
+    filename='global_hexbin_wrap.png',
+    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -120,11 +126,13 @@ def test_global_hexbin_wrap():
         gridsize=20,
         zorder=1,
     )
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['global_hexbin_wrap'],
-              tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+@pytest.mark.mpl_image_compare(
+    filename='global_hexbin_wrap.png',
+    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -139,10 +147,10 @@ def test_global_hexbin_wrap_transform():
         gridsize=20,
         zorder=1,
     )
+    return ax.figure
 
 
-@ImageTesting(['global_map'],
-              tolerance=0.55)
+@pytest.mark.mpl_image_compare(filename='global_map.png', tolerance=0.55)
 def test_global_map():
     ax = plt.axes(projection=ccrs.Robinson())
 #    ax.coastlines()
@@ -155,21 +163,23 @@ def test_global_map():
 
     ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
             transform=ccrs.Geodetic())
+    return ax.figure
 
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@ImageTesting(['simple_global'])
+@pytest.mark.mpl_image_compare(filename='simple_global.png')
 def test_simple_global():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
     # produces a global map, despite not having needed to set the limits
+    return ax.figure
 
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections5'],
-              tolerance=2.05)
+@pytest.mark.mpl_image_compare(filename='multiple_projections5.png',
+                               tolerance=2.05)
 def test_multiple_projections():
 
     projections = [ccrs.PlateCarree(),
@@ -211,9 +221,11 @@ def test_multiple_projections():
         ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
                 transform=prj.as_geodetic())
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['multiple_projections520'], tolerance=0.65)
+@pytest.mark.mpl_image_compare(filename='multiple_projections520.png')
 def test_multiple_projections_520():
     # Test projections added in Proj 5.2.0.
 
@@ -231,6 +243,8 @@ def test_multiple_projections_520():
 
     ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
             transform=ccrs.Geodetic())
+
+    return fig
 
 
 def test_cursor_values():
@@ -255,7 +269,8 @@ def test_cursor_values():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['natural_earth_interface'], tolerance=0.21)
+@pytest.mark.mpl_image_compare(filename='natural_earth_interface.png',
+                               tolerance=0.21)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 
@@ -274,9 +289,12 @@ def test_axes_natural_earth_interface():
         assert 'deprecated' in msg
         assert 'add_feature' in msg
 
+    return ax.figure
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap1'], tolerance=1.27)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap1.png',
+                               tolerance=1.27)
 def test_pcolormesh_global_with_wrap1():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -297,6 +315,8 @@ def test_pcolormesh_global_with_wrap1():
     ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
+
+    return fig
 
 
 def test_pcolormesh_get_array_with_mask():
@@ -343,7 +363,8 @@ def test_pcolormesh_get_array_with_mask():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap2'], tolerance=1.87)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap2.png',
+                               tolerance=1.87)
 def test_pcolormesh_global_with_wrap2():
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -369,9 +390,12 @@ def test_pcolormesh_global_with_wrap2():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap3'], tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
+                               tolerance=1.39)
 def test_pcolormesh_global_with_wrap3():
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -409,9 +433,12 @@ def test_pcolormesh_global_with_wrap3():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap3'], tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
+                               tolerance=1.39)
 def test_pcolormesh_set_array_with_mask():
     """Testing that set_array works with masked arrays properly."""
     nx, ny = 33, 17
@@ -457,9 +484,12 @@ def test_pcolormesh_set_array_with_mask():
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_global_wrap3'], tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
+                               tolerance=1.39)
 def test_pcolormesh_set_clim_with_mask():
     """Testing that set_clim works with masked arrays properly."""
     nx, ny = 33, 17
@@ -503,9 +533,12 @@ def test_pcolormesh_set_clim_with_mask():
     # Fix clims on c so that test passes
     c.set_clim(data.min(), data.max())
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_limited_area_wrap'], tolerance=1.82)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_limited_area_wrap.png',
+                               tolerance=1.82)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
@@ -544,9 +577,11 @@ def test_pcolormesh_limited_area_wrap():
                   snap=False)
     ax.coastlines()
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_single_column_wrap'], tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_single_column_wrap.png')
 def test_pcolormesh_single_column_wrap():
     # Check a wrapped mesh like test_pcolormesh_limited_area_wrap, but only use
     # a single column, which could break depending on how wrapping is
@@ -568,6 +603,8 @@ def test_pcolormesh_single_column_wrap():
                   snap=False)
     ax.coastlines()
     ax.set_global()
+
+    return fig
 
 
 def test_pcolormesh_diagonal_wrap():
@@ -598,7 +635,7 @@ def test_pcolormesh_nan_wrap():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_goode_wrap'])
+@pytest.mark.mpl_image_compare(filename='pcolormesh_goode_wrap.png')
 def test_pcolormesh_goode_wrap():
     # global data on an Interrupted Goode Homolosine projection
     # shouldn't spill outside projection boundary
@@ -611,10 +648,11 @@ def test_pcolormesh_goode_wrap():
     ax.coastlines()
     # TODO: Remove snap when updating this image
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree(), snap=False)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png')
 def test_pcolormesh_mercator_wrap():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
@@ -624,10 +662,11 @@ def test_pcolormesh_mercator_wrap():
     ax = plt.axes(projection=ccrs.Mercator())
     ax.coastlines()
     ax.pcolormesh(x, y, Z, transform=ccrs.PlateCarree(), snap=False)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['pcolormesh_mercator_wrap'], tolerance=0.93)
+@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png')
 def test_pcolormesh_wrap_set_array():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
@@ -642,10 +681,11 @@ def test_pcolormesh_wrap_set_array():
                          transform=ccrs.PlateCarree(), snap=False)
     # Now update the plot with the set_array method
     coll.set_array(Z.ravel())
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_plate_carree'])
+@pytest.mark.mpl_image_compare(filename='quiver_plate_carree.png')
 def test_quiver_plate_carree():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -665,10 +705,11 @@ def test_quiver_plate_carree():
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree())
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_rotated_pole'])
+@pytest.mark.mpl_image_compare(filename='quiver_rotated_pole.png')
 def test_quiver_rotated_pole():
     nx, ny = 22, 36
     x = np.linspace(311.91998291, 391.11999512, nx, endpoint=True)
@@ -690,10 +731,11 @@ def test_quiver_rotated_pole():
     ax.set_extent(plot_extent, crs=rp)
     ax.coastlines()
     ax.quiver(x, y, u, v, mag, transform=rp)
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_regrid'], tolerance=1.3)
+@pytest.mark.mpl_image_compare(filename='quiver_regrid.png')
 def test_quiver_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -702,16 +744,18 @@ def test_quiver_regrid():
     v = np.cos(2. * np.deg2rad(x2d))
     mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
-    plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    fig = plt.figure(figsize=(6, 3))
+    ax = fig.add_subplot(projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree(),
               regrid_shape=30)
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['quiver_regrid_with_extent'], tolerance=0.54)
+@pytest.mark.mpl_image_compare(filename='quiver_regrid_with_extent.png',
+                               tolerance=0.54)
 def test_quiver_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -721,16 +765,17 @@ def test_quiver_regrid_with_extent():
     mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
     target_extent = [-3e6, 2e6, -6e6, -2.5e6]
-    plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    fig = plt.figure(figsize=(6, 3))
+    ax = fig.add_subplot(projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.quiver(x, y, u, v, mag, transform=ccrs.PlateCarree(),
               regrid_shape=10, target_extent=target_extent)
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_plate_carree'])
+@pytest.mark.mpl_image_compare(filename='barbs_plate_carree.png')
 def test_barbs():
     x = np.arange(-60, 45, 5)
     y = np.arange(30, 75, 5)
@@ -749,10 +794,11 @@ def test_barbs():
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(), length=4, linewidth=.25)
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_regrid'])
+@pytest.mark.mpl_image_compare(filename='barbs_regrid.png')
 def test_barbs_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -761,16 +807,18 @@ def test_barbs_regrid():
     v = 40 * np.cos(2. * np.deg2rad(x2d))
     mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
-    plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    fig = plt.figure(figsize=(6, 3))
+    ax = fig.add_subplot(projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.barbs(x, y, u, v, mag, transform=ccrs.PlateCarree(),
              length=4, linewidth=.4, regrid_shape=20)
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_regrid_with_extent'], tolerance=0.54)
+@pytest.mark.mpl_image_compare(filename='barbs_regrid_with_extent.png',
+                               tolerance=0.54)
 def test_barbs_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -780,50 +828,54 @@ def test_barbs_regrid_with_extent():
     mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
     target_extent = [-3e6, 2e6, -6e6, -2.5e6]
-    plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    fig = plt.figure(figsize=(6, 3))
+    ax = fig.add_subplot(projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.barbs(x, y, u, v, mag, transform=ccrs.PlateCarree(),
              length=4, linewidth=.25, regrid_shape=10,
              target_extent=target_extent)
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_1d'])
+@pytest.mark.mpl_image_compare(filename='barbs_1d.png')
 def test_barbs_1d():
     x = np.array([20., 30., -17., 15.])
     y = np.array([-1., 35., 11., 40.])
     u = np.array([23., -18., 2., -11.])
     v = np.array([5., -4., 19., 11.])
     plot_extent = [-21, 40, -5, 45]
-    plt.figure(figsize=(6, 5))
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    fig = plt.figure(figsize=(6, 5))
+    ax = fig.add_subplot(projection=ccrs.PlateCarree())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines(resolution="110m")
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
              length=8, linewidth=1, color='#7f7f7f')
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['barbs_1d_transformed'])
+@pytest.mark.mpl_image_compare(filename='barbs_1d_transformed.png')
 def test_barbs_1d_transformed():
     x = np.array([20., 30., -17., 15.])
     y = np.array([-1., 35., 11., 40.])
     u = np.array([23., -18., 2., -11.])
     v = np.array([5., -4., 19., 11.])
     plot_extent = [-20, 31, -5, 45]
-    plt.figure(figsize=(6, 5))
-    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    fig = plt.figure(figsize=(6, 5))
+    ax = fig.add_subplot(projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.barbs(x, y, u, v, transform=ccrs.PlateCarree(),
              length=8, linewidth=1, color='#7f7f7f')
+    return fig
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['streamplot'], style='mpl20',
-              tolerance=42 if MPL_VERSION < parse_version('3.2') else 0.54)
+@pytest.mark.mpl_image_compare(
+    filename='streamplot.png', style='mpl20',
+    tolerance=42 if MPL_VERSION < parse_version('3.2') else 0.54)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -832,9 +884,10 @@ def test_streamplot():
     v = np.cos(2. * np.deg2rad(x2d))
     mag = (u**2 + v**2)**.5
     plot_extent = [-60, 40, 30, 70]
-    plt.figure(figsize=(6, 3))
-    ax = plt.axes(projection=ccrs.NorthPolarStereo())
+    fig = plt.figure(figsize=(6, 3))
+    ax = fig.add_subplot(projection=ccrs.NorthPolarStereo())
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
                   density=(1.5, 2), color=mag, linewidth=2*mag)
+    return fig

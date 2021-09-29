@@ -13,7 +13,6 @@ import numpy as np
 import pytest
 
 from cartopy import config
-from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
 from functools import reduce
@@ -80,7 +79,7 @@ class TestRegrid:
 
 # Bug in latest Matplotlib that we don't consider correct.
 @pytest.mark.natural_earth
-@ImageTesting(['regrid_image'], tolerance=5.55)
+@pytest.mark.mpl_image_compare(filename='regrid_image.png', tolerance=5.55)
 def test_regrid_image():
     # Source data
     fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
@@ -123,3 +122,4 @@ def test_regrid_image():
 
     # Tighten up layout
     gs.tight_layout(fig)
+    return fig
