@@ -64,8 +64,7 @@ FEATURE_DEFN_GROUPS = {
         ('cultural', 'admin_0_pacific_groupings', '110m'),
         ('cultural', 'admin_1_states_provinces', '110m'),
         ('cultural', 'admin_1_states_provinces_lines', '110m'),
-        ('cultural', 'admin_1_states_provinces_lakes', '110m'),
-        ('cultural', 'admin_1_states_provinces_lakes', '50m'),
+        ('cultural', 'admin_1_states_provinces_lakes', ALL_SCALES),
     ),
 }
 
