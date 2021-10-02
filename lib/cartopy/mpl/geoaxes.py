@@ -527,8 +527,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Shared processing steps
         self._draw_preprocess(renderer)
 
-        return matplotlib.axes.Axes.get_tightbbox(
-            self, renderer, *args, **kwargs)
+        return super().get_tightbbox(renderer, *args, **kwargs)
 
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None, **kwargs):
@@ -555,10 +554,10 @@ class GeoAxes(matplotlib.axes.Axes):
                             **factory_kwargs)
         self._done_img_factory = True
 
-        return matplotlib.axes.Axes.draw(self, renderer=renderer, **kwargs)
+        return super().draw(renderer=renderer, **kwargs)
 
     def _update_title_position(self, renderer):
-        matplotlib.axes.Axes._update_title_position(self, renderer)
+        super()._update_title_position(renderer)
         if not self._gridliners:
             return
 
@@ -597,7 +596,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def cla(self):
         """Clear the current axes and adds boundary lines."""
-        result = matplotlib.axes.Axes.cla(self)
+        result = super().cla()
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
         # Enable tight autoscaling.
@@ -940,8 +939,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         See :meth:`~matplotlib.axes.Axes.imshow()` for more details.
         """
-        matplotlib.axes.Axes.autoscale_view(self, tight=tight,
-                                            scalex=scalex, scaley=scaley)
+        super().autoscale_view(tight=tight, scalex=scalex, scaley=scaley)
         # Limit the resulting bounds to valid area.
         if scalex and self._autoscaleXon:
             bounds = self.get_xbound()
@@ -1350,7 +1348,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         if (transform is None or transform == self.transData or
                 same_projection and inside_bounds):
-            result = matplotlib.axes.Axes.imshow(self, img, *args, **kwargs)
+            result = super().imshow(img, *args, **kwargs)
         else:
             extent = kwargs.pop('extent', None)
             img = np.asanyarray(img)
@@ -1412,8 +1410,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 if img.dtype.kind == 'u':
                     img[:, :, 3] *= 255
 
-            result = matplotlib.axes.Axes.imshow(self, img, *args,
-                                                 extent=extent, **kwargs)
+            result = super().imshow(img, *args, extent=extent, **kwargs)
 
         return result
 
@@ -1578,10 +1575,9 @@ class GeoAxes(matplotlib.axes.Axes):
     def _gen_axes_spines(self, locations=None, offset=0.0, units='inches'):
         # generate some axes spines, as some Axes super class machinery
         # requires them. Just make them invisible
-        spines = matplotlib.axes.Axes._gen_axes_spines(self,
-                                                       locations=locations,
-                                                       offset=offset,
-                                                       units=units)
+        spines = super()._gen_axes_spines(locations=locations,
+                                          offset=offset,
+                                          units=units)
         for spine in spines.values():
             spine.set_visible(False)
 
@@ -1663,7 +1659,7 @@ class GeoAxes(matplotlib.axes.Axes):
             The default is False, to compute the contours in data-space.
 
         """
-        result = matplotlib.axes.Axes.contour(self, *args, **kwargs)
+        result = super().contour(*args, **kwargs)
 
         # We need to compute the dataLim correctly for contours.
         bboxes = [col.get_datalim(self.transData)
@@ -1711,7 +1707,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     if not hasattr(sub_trans, 'force_path_ccw'):
                         sub_trans.force_path_ccw = True
 
-        result = matplotlib.axes.Axes.contourf(self, *args, **kwargs)
+        result = super().contourf(*args, **kwargs)
 
         # We need to compute the dataLim correctly for contours.
         bboxes = [col.get_datalim(self.transData)
@@ -1749,7 +1745,7 @@ class GeoAxes(matplotlib.axes.Axes):
                              'geodetic, consider using the cyllindrical form '
                              '(PlateCarree or RotatedPole).')
 
-        result = matplotlib.axes.Axes.scatter(self, *args, **kwargs)
+        result = super().scatter(*args, **kwargs)
         self.autoscale_view()
         return result
 
@@ -1776,7 +1772,7 @@ class GeoAxes(matplotlib.axes.Axes):
         x = pairs[:, 0]
         y = pairs[:, 1]
 
-        result = matplotlib.axes.Axes.hexbin(self, x, y, *args, **kwargs)
+        result = super().hexbin(x, y, *args, **kwargs)
         self.autoscale_view()
         return result
 
@@ -1794,7 +1790,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
         args = self._wrap_args(*args, **kwargs)
-        result = matplotlib.axes.Axes.pcolormesh(self, *args, **kwargs)
+        result = super().pcolormesh(*args, **kwargs)
         # Wrap the quadrilaterals if necessary
         result = self._wrap_quadmesh(result, **kwargs)
         # Re-cast the QuadMesh as a GeoQuadMesh to enable future wrapping
@@ -1979,7 +1975,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
         args = self._wrap_args(*args, **kwargs)
-        result = matplotlib.axes.Axes.pcolor(self, *args, **kwargs)
+        result = super().pcolor(*args, **kwargs)
 
         # Update the datalim for this pcolor.
         limits = result.get_datalim(self.transData)
@@ -2061,7 +2057,7 @@ class GeoAxes(matplotlib.axes.Axes):
             if (x.ndim == 1 and y.ndim == 1) and (x.shape != u.shape):
                 x, y = np.meshgrid(x, y)
             u, v = self.projection.transform_vectors(t, x, y, u, v)
-        return matplotlib.axes.Axes.quiver(self, x, y, u, v, *args, **kwargs)
+        return super().quiver(x, y, u, v, *args, **kwargs)
 
     @_add_transform
     def barbs(self, x, y, u, v, *args, **kwargs):
@@ -2136,7 +2132,7 @@ class GeoAxes(matplotlib.axes.Axes):
             if (x.ndim == 1 and y.ndim == 1) and (x.shape != u.shape):
                 x, y = np.meshgrid(x, y)
             u, v = self.projection.transform_vectors(t, x, y, u, v)
-        return matplotlib.axes.Axes.barbs(self, x, y, u, v, *args, **kwargs)
+        return super().barbs(x, y, u, v, *args, **kwargs)
 
     @_add_transform
     def streamplot(self, x, y, u, v, **kwargs):
@@ -2213,7 +2209,7 @@ class GeoAxes(matplotlib.axes.Axes):
             message = 'Warning: converting a masked element to nan.'
             warnings.filterwarnings('ignore', message=message,
                                     category=UserWarning)
-            sp = matplotlib.axes.Axes.streamplot(self, x, y, u, v, **kwargs)
+            sp = super().streamplot(x, y, u, v, **kwargs)
         return sp
 
     def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
