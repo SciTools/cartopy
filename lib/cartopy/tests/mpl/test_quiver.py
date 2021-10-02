@@ -34,9 +34,9 @@ class TestQuiverShapes:
             self.ax.quiver(self.x2d.ravel(), self.y2d.ravel(),
                            self.u.ravel(), self.v.ravel(), transform=self.rp)
         args, kwargs = patch.call_args
-        assert len(args) == 5
+        assert len(args) == 4
         assert sorted(kwargs.keys()) == ['transform']
-        shapes = [arg.shape for arg in args[1:]]
+        shapes = [arg.shape for arg in args]
         # Assert that all the shapes have been broadcast.
         assert shapes == [(70, )] * 4
 
@@ -45,9 +45,9 @@ class TestQuiverShapes:
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
             self.ax.quiver(self.x, self.y, self.u, self.v, transform=self.rp)
         args, kwargs = patch.call_args
-        assert len(args) == 5
+        assert len(args) == 4
         assert sorted(kwargs.keys()) == ['transform']
-        shapes = [arg.shape for arg in args[1:]]
+        shapes = [arg.shape for arg in args]
         # Assert that all the shapes have been broadcast.
         assert shapes == [(7, 10)] * 4
 
