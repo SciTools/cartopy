@@ -58,7 +58,6 @@ automatically load the proper tile and resolution depending on the desired domai
     img_tiles.OrdnanceSurvey
     img_tiles.QuadtreeTiles
     img_tiles.Stamen
-    img_tiles.StamenTerrain
 
 
 Open Geospatial Consortium (OGC)

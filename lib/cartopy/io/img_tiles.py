@@ -346,6 +346,14 @@ class Stamen(GoogleWTS):
     Please see the attribution notice at http://maps.stamen.com on how to
     attribute this imagery.
 
+    References
+    ----------
+
+     * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+     * http://maps.stamen.com/
+     * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
+     * https://github.com/migurski/DEM-Tools
+
     """
     def __init__(self, style='toner',
                  desired_tile_form='RGB', cache=False):
@@ -356,45 +364,6 @@ class Stamen(GoogleWTS):
     def _image_url(self, tile):
         x, y, z = tile
         return f'http://tile.stamen.com/{self.style}/{z}/{x}/{y}.png'
-
-
-class StamenTerrain(Stamen):
-    """
-    **DEPRECATED:** This class is deprecated. Please use
-    ``Stamen('terrain-background')`` instead.
-
-    Terrain tiles defined for the continental United States, and include land
-    color and shaded hills. The land colors are a custom palette developed by
-    Gem Spear for the National Atlas 1km land cover data set, which defines
-    twenty-four land classifications including five kinds of forest,
-    combinations of shrubs, grasses and crops, and a few tundras and wetlands.
-    The colors are at their highest contrast when fully zoomed-out to the
-    whole U.S., and they slowly fade out to pale off-white as you zoom in to
-    leave room for foreground data and break up the weirdness of large areas
-    of flat, dark green.
-
-    References
-    ----------
-
-     * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
-     * http://maps.stamen.com/
-     * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
-     * https://github.com/migurski/DEM-Tools
-
-
-    """
-    def __init__(self, cache=False):
-        warnings.warn(
-            "The StamenTerrain class was deprecated in v0.17. "
-            "Please use Stamen('terrain-background') instead.",
-            DeprecationWarning,
-            stacklevel=2)
-
-        # NOTE: This subclass of Stamen exists for legacy reasons.
-        # No further Stamen subclasses will be accepted as
-        # they can easily be created in user code with Stamen(style_name).
-        return super().__init__(style='terrain-background',
-                                cache=cache)
 
 
 class MapboxTiles(GoogleWTS):
