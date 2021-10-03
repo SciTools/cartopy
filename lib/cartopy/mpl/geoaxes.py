@@ -686,40 +686,6 @@ class GeoAxes(matplotlib.axes.Axes):
                                                  **kwargs)
         return self.add_feature(feature)
 
-    def natural_earth_shp(self, name='land', resolution='110m',
-                          category='physical', **kwargs):
-        """
-        Add the geometries from the specified Natural Earth shapefile to the
-        Axes as a :class:`~matplotlib.collections.PathCollection`.
-
-        Parameters
-        ----------
-        name: optional
-            Name of the shapefile geometry to add.  Defaults to 'land'.
-        resolution: optional
-            Resolution of shapefile geometry to add.  Defaults to '110m'.
-        category: optional
-            Category of shapefile geometry to add.  Defaults to 'physical'.
-
-
-        ``**kwargs`` are passed through to the
-        :class:`~matplotlib.collections.PathCollection` constructor.
-
-        Returns
-        -------
-        The created :class:`~matplotlib.collections.PathCollection`.
-
-        """
-        warnings.warn('This method has been deprecated.'
-                      ' Please use `add_feature` instead.',
-                      DeprecationWarning,
-                      stacklevel=2)
-        kwargs.setdefault('edgecolor', 'face')
-        kwargs.setdefault('facecolor', cartopy.feature.COLORS['land'])
-        feature = cartopy.feature.NaturalEarthFeature(category, name,
-                                                      resolution, **kwargs)
-        return self.add_feature(feature)
-
     def add_feature(self, feature, **kwargs):
         """
         Add the given :class:`~cartopy.feature.Feature` instance to the axes.
