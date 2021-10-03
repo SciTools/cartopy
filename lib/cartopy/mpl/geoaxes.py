@@ -415,32 +415,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
-    @property
-    def outline_patch(self):
-        """
-        DEPRECATED. The patch that provides the line bordering the projection.
-
-        Use GeoAxes.spines['geo'] or default Axes properties instead.
-        """
-        warnings.warn("The outline_patch property is deprecated. Use "
-                      "GeoAxes.spines['geo'] or the default Axes properties "
-                      "instead.",
-                      DeprecationWarning,
-                      stacklevel=2)
-        return self.spines['geo']
-
-    @property
-    def background_patch(self):
-        """
-        DEPRECATED. The patch that provides the filled background of the
-        projection.
-        """
-        warnings.warn('The background_patch property is deprecated. '
-                      'Use GeoAxes.patch instead.',
-                      DeprecationWarning,
-                      stacklevel=2)
-        return self.patch
-
     def add_image(self, factory, *args, **kwargs):
         """
         Add an image "factory" to the Axes.
@@ -1605,7 +1579,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.callbacks.connect('xlim_changed', _trigger_patch_reclip)
         self.callbacks.connect('ylim_changed', _trigger_patch_reclip)
 
-    def set_boundary(self, path, transform=None, use_as_clip_path=None):
+    def set_boundary(self, path, transform=None):
         """
         Given a path, update :data:`.spines['geo']` and :data:`.patch`.
 
@@ -1620,12 +1594,6 @@ class GeoAxes(matplotlib.axes.Axes):
             axes' projection.
 
         """
-        if use_as_clip_path is not None:
-            warnings.warn(
-                'Passing use_as_clip_path to set_boundary is deprecated.',
-                DeprecationWarning,
-                stacklevel=2)
-
         if transform is None:
             transform = self.transData
 
