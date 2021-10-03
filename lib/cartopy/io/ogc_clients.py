@@ -71,7 +71,7 @@ METERS_PER_UNIT = {
 _URN_TO_CRS = collections.OrderedDict(
     [('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
      ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
-     ('urn:ogc:def:crs:EPSG::900913', ccrs.GOOGLE_MERCATOR),
+     ('urn:ogc:def:crs:EPSG::900913', ccrs.Mercator.GOOGLE),
      ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB(approx=True)),
      ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
          central_latitude=-90,
@@ -80,8 +80,8 @@ _URN_TO_CRS = collections.OrderedDict(
          central_longitude=-45,
          central_latitude=90,
          true_scale_latitude=70)),
-     ('urn:ogc:def:crs:EPSG::3857', ccrs.GOOGLE_MERCATOR),
-     ('urn:ogc:def:crs:EPSG:6.18.3:3857', ccrs.GOOGLE_MERCATOR)
+     ('urn:ogc:def:crs:EPSG::3857', ccrs.Mercator.GOOGLE),
+     ('urn:ogc:def:crs:EPSG:6.18.3:3857', ccrs.Mercator.GOOGLE)
      ])
 
 # XML namespace definitions
