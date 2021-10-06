@@ -832,9 +832,8 @@ def test_barbs_1d_transformed():
 @pytest.mark.natural_earth
 @ImageTesting(
     ['streamplot'], style='mpl20',
-    tolerance=(42 if (MPL_VERSION.major, MPL_VERSION.minor) < (3, 2) else
-               9.77 if (MPL_VERSION.major, MPL_VERSION.minor) < (3, 5) else
-               0.5))
+    tolerance=(42 if MPL_VERSION.release[:2] < (3, 2) else
+               9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5))
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
