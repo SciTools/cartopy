@@ -875,7 +875,8 @@ def test_barbs_1d_transformed():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     filename='streamplot.png', style='mpl20',
-    tolerance=42 if MPL_VERSION < parse_version('3.2') else 0.54)
+    tolerance=(42 if MPL_VERSION.release[:2] < (3, 2) else
+               9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5))
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
