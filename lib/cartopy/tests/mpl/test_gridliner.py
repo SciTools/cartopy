@@ -17,6 +17,7 @@ from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
     classic_locator, classic_formatter)
 
+
 TEST_PROJS = [
     ccrs.PlateCarree,
     ccrs.AlbersEqualArea,
@@ -30,21 +31,21 @@ TEST_PROJS = [
     ccrs.Robinson,
     ccrs.Sinusoidal,
     ccrs.Stereographic,
-    (ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
-    (ccrs.RotatedPole,
-     dict(pole_longitude=180.0,
-          pole_latitude=36.0,
-          central_rotated_longitude=-106.0,
-          globe=ccrs.Globe(semimajor_axis=6370000,
-                           semiminor_axis=6370000))),
-    (ccrs.OSGB, dict(approx=False)),
+    pytest.param((ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
+                 id='InterruptedGoodeHomolosine'),
+    pytest.param(
+        (ccrs.RotatedPole,
+         dict(pole_longitude=180.0, pole_latitude=36.0,
+              central_rotated_longitude=-106.0)),
+        id='RotatedPole'),
+    pytest.param((ccrs.OSGB, dict(approx=False)), id='OSGB'),
     ccrs.EuroPP,
     ccrs.Geostationary,
     ccrs.NearsidePerspective,
     ccrs.Gnomonic,
     ccrs.LambertAzimuthalEqualArea,
     ccrs.NorthPolarStereo,
-    (ccrs.OSNI, dict(approx=False)),
+    pytest.param((ccrs.OSNI, dict(approx=False)), id='OSNI'),
     ccrs.SouthPolarStereo,
 ]
 
@@ -125,7 +126,6 @@ def test_gridliner_specified_lines():
 # The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
 grid_label_tol = 3.9
-grid_label_inline_tol = grid_label_inline_usa_tol = 10.5
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
@@ -208,7 +208,7 @@ def test_grid_labels():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
-                               tolerance=2.9)
+                               tolerance=2.92)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -251,50 +251,42 @@ def test_grid_labels_tight():
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_inline.png',
-                               tolerance=grid_label_inline_tol)
-def test_grid_labels_inline():
-    fig = plt.figure(figsize=(35, 35))
-    for i, proj in enumerate(TEST_PROJS, 1):
-        if isinstance(proj, tuple):
-            proj, kwargs = proj
-        else:
-            kwargs = {}
-        ax = fig.add_subplot(7, 4, i, projection=proj(**kwargs))
-        ax.gridlines(draw_labels=True, auto_inline=True)
-        ax.coastlines(resolution="110m")
-        ax.set_title(proj, y=1.075)
-    fig.subplots_adjust(wspace=0.35, hspace=0.35)
+@pytest.mark.parametrize('proj', TEST_PROJS)
+@pytest.mark.mpl_image_compare(style='mpl20')
+def test_grid_labels_inline(proj):
+    fig = plt.figure()
+    if isinstance(proj, tuple):
+        proj, kwargs = proj
+    else:
+        kwargs = {}
+    ax = fig.add_subplot(projection=proj(**kwargs))
+    ax.gridlines(draw_labels=True, auto_inline=True)
+    ax.coastlines(resolution="110m")
     return fig
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_inline_usa.png',
-                               tolerance=grid_label_inline_usa_tol)
-def test_grid_labels_inline_usa():
-    print(plt.get_backend())
+@pytest.mark.parametrize('proj', TEST_PROJS)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=0.79)
+def test_grid_labels_inline_usa(proj):
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
     right = -66.9513812  # east long
     bottom = 24.7433195  # south lat
-    fig = plt.figure(figsize=(35, 35))
-    for i, proj in enumerate(TEST_PROJS, 1):
-        if isinstance(proj, tuple):
-            proj, kwargs = proj
-        else:
-            kwargs = {}
-        ax = fig.add_subplot(7, 4, i, projection=proj(**kwargs))
-        try:
-            ax.set_extent([left, right, bottom, top],
-                          crs=ccrs.PlateCarree())
-        except Exception:
-            pass
-        ax.set_title(proj, y=1.075)
-        ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
-        ax.coastlines(resolution="110m")
-
-    fig.subplots_adjust(wspace=0.35, hspace=0.35)
+    fig = plt.figure()
+    if isinstance(proj, tuple):
+        proj, kwargs = proj
+    else:
+        kwargs = {}
+    ax = fig.add_subplot(projection=proj(**kwargs))
+    try:
+        ax.set_extent([left, right, bottom, top],
+                      crs=ccrs.PlateCarree())
+    except Exception:
+        pytest.skip('Projection does not support changing extent')
+    ax.gridlines(draw_labels=True, auto_inline=True, clip_on=True)
+    ax.coastlines(resolution="110m")
     return fig
 
 
