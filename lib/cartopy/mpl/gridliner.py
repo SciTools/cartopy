@@ -796,8 +796,6 @@ class Gridliner:
         # Cache a few things so they aren't re-calculated in the loops.
         crs_transform = self._crs_transform().transform
         inverse_data_transform = self.axes.transData.inverted().transform_point
-        if self.x_inline or self.y_inline:
-            pc_transform = PlateCarree()
 
         for xylabel, lines, line_ticks, formatter, label_style in (
                 ('x', lon_lines, lon_ticks,
@@ -899,7 +897,7 @@ class Gridliner:
                     # Initial text specs
                     x0, y0 = pt0
                     if x_inline or y_inline:
-                        kw = {'rotation': 0, 'transform': pc_transform,
+                        kw = {'rotation': 0, 'transform': self.crs,
                               'ha': 'center', 'va': 'center'}
                         loc = 'inline'
                     else:
