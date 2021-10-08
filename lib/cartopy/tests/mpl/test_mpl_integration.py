@@ -5,7 +5,6 @@
 # licensing details.
 
 import re
-import warnings
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -266,30 +265,6 @@ def test_cursor_values():
     assert re.search(b'1.606e\\+07, 2.363e\\+06 '
                      b'\\(22.09[0-9]{4}N, 173.70[0-9]{4}E\\)',
                      r.encode('ascii', 'ignore'))
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='natural_earth_interface.png',
-                               tolerance=0.21)
-def test_axes_natural_earth_interface():
-    rob = ccrs.Robinson()
-
-    ax = plt.axes(projection=rob)
-
-    with warnings.catch_warnings(record=True) as all_warnings:
-        warnings.simplefilter('always')
-
-        ax.natural_earth_shp('rivers_lake_centerlines', edgecolor='black',
-                             facecolor='none')
-        ax.natural_earth_shp('lakes', facecolor='blue')
-
-    assert len(all_warnings) == 2
-    for warning in all_warnings:
-        msg = str(warning.message)
-        assert 'deprecated' in msg
-        assert 'add_feature' in msg
-
-    return ax.figure
 
 
 @pytest.mark.natural_earth

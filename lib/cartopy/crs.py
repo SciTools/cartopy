@@ -1707,7 +1707,7 @@ class LambertConformal(Projection):
 
     def __init__(self, central_longitude=-96.0, central_latitude=39.0,
                  false_easting=0.0, false_northing=0.0,
-                 secant_latitudes=None, standard_parallels=None,
+                 standard_parallels=(33, 45),
                  globe=None, cutoff=-30):
         """
         Parameters
@@ -1720,9 +1720,6 @@ class LambertConformal(Projection):
             X offset from planar origin in metres. Defaults to 0.
         false_northing: optional
             Y offset from planar origin in metres. Defaults to 0.
-        secant_latitudes: optional
-            Secant latitudes. This keyword is deprecated in v0.12 and directly
-            replaced by ``standard parallels``. Defaults to None.
         standard_parallels: optional
             Standard parallel latitude(s). Defaults to (33, 45).
         globe: optional
@@ -1740,19 +1737,6 @@ class LambertConformal(Projection):
                         ('lat_0', central_latitude),
                         ('x_0', false_easting),
                         ('y_0', false_northing)]
-        if secant_latitudes and standard_parallels:
-            raise TypeError('standard_parallels replaces secant_latitudes.')
-        elif secant_latitudes is not None:
-            warnings.warn('secant_latitudes has been deprecated in v0.12. '
-                          'The standard_parallels keyword can be used as a '
-                          'direct replacement.',
-                          DeprecationWarning,
-                          stacklevel=2)
-            standard_parallels = secant_latitudes
-        elif standard_parallels is None:
-            # The default. Put this as a keyword arg default once
-            # secant_latitudes is removed completely.
-            standard_parallels = (33, 45)
 
         n_parallels = len(standard_parallels)
 

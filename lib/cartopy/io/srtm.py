@@ -220,18 +220,6 @@ class SRTM1Source(_SRTMSource):
                          max_nx=max_nx, max_ny=max_ny)
 
 
-def srtm(lon, lat):
-    """
-    Return (elevation, crs, extent) for the given longitude latitude.
-    Elevation is in meters.
-    """
-    warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    return SRTM3Source().single_tile(lon, lat)
-
-
 def add_shading(elevation, azimuth, altitude):
     """Add shading to SRTM elevation data, using azimuth and altitude
     of the sun.
@@ -257,55 +245,6 @@ def add_shading(elevation, azimuth, altitude):
         + np.cos(altitude) * np.cos(slope)\
         * np.cos((azimuth - np.pi/2.) - aspect)
     return shaded
-
-
-def fill_gaps(elevation, max_distance=10):
-    """Fill gaps in SRTM elevation data for which the distance from
-    missing pixel to nearest existing one is smaller than `max_distance`.
-
-    This function requires osgeo/gdal to work.
-
-    Parameters
-    ----------
-    elevation
-        SRTM elevation data (in meters)
-    max_distance
-        Maximal distance (in pixels) between a missing point
-        and the nearest valid one.
-
-    Returns
-    -------
-    elevation
-        SRTM elevation data with filled gaps.
-
-    """
-    warnings.warn("The fill_gaps function has been deprecated. "
-                  "See the \"What's new\" section for v0.14.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    # Lazily import osgeo - it is only an optional dependency for cartopy.
-    from osgeo import gdal
-    from osgeo import gdal_array
-
-    src_ds = gdal_array.OpenArray(elevation)
-    srcband = src_ds.GetRasterBand(1)
-    dstband = srcband
-    maskband = srcband
-    smoothing_iterations = 0
-    options = []
-    gdal.FillNodata(dstband, maskband,
-                    max_distance, smoothing_iterations, options,
-                    callback=None)
-    elevation = dstband.ReadAsArray()
-    return elevation
-
-
-def srtm_composite(lon_min, lat_min, nx, ny):
-    warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    return SRTM3Source().combined(lon_min, lat_min, nx, ny)
 
 
 def read_SRTM(fh):
@@ -361,21 +300,6 @@ def read_SRTM(fh):
 
 read_SRTM3 = read_SRTM
 read_SRTM1 = read_SRTM
-
-
-def SRTM3_retrieve(lon, lat):
-    """
-    Return the path of a .hgt file for the given SRTM location.
-
-    If no such .hgt file exists (because it is over the ocean)
-    None will be returned.
-
-    """
-    warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    return SRTM3Source().srtm_fname(lon, lat)
 
 
 class SRTMDownloader(Downloader):

@@ -142,11 +142,11 @@ Features
 
 Deprecations
 ------------
-* :func:`cartopy.mpl.clip_path.clip_path` has been deprecated. It is a simple
+* ``cartopy.mpl.clip_path.clip_path`` has been deprecated. It is a simple
   wrapper for Matplotlib's path clipping, so use that instead. You can replace
   ``clip_path(subject, clip_bbox)`` by ``subject.clip_to_bbox(clip_bbox)``.
 
-* :class:`cartopy.io.img_tiles.StamenTerrain` has been deprecated. Use
+* ``cartopy.io.img_tiles.StamenTerrain`` has been deprecated. Use
   ``Stamen('terrain-background')`` instead.
 
 * In CartoPy 0.18, the default value for the ``origin`` argument to
