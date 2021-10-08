@@ -14,7 +14,7 @@ import cartopy.crs as ccrs
 
 
 def test_pcolormesh_partially_masked():
-    data = np.ma.masked_all((40, 30))
+    data = np.ma.masked_all((39, 29))
     data[0:100] = 10
 
     # Check that a partially masked data array does trigger a pcolor call.
@@ -27,7 +27,7 @@ def test_pcolormesh_partially_masked():
 
 
 def test_pcolormesh_invisible():
-    data = np.zeros((3, 3))
+    data = np.zeros((2, 2))
 
     # Check that a fully invisible mesh doesn't fail.
     with mock.patch('cartopy.mpl.geoaxes.GeoAxes.pcolor') as pcolor:
