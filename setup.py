@@ -26,11 +26,11 @@ Make sure you have pip >= 9.0.1.
 
 import fnmatch
 import os
+import shutil
 import subprocess
 import warnings
 from collections import defaultdict
-from distutils.spawn import find_executable
-from distutils.sysconfig import get_config_var
+from sysconfig import get_config_var
 
 from setuptools import Command, Extension, convert_path, setup
 
@@ -142,7 +142,7 @@ else:
 
 # Proj
 def find_proj_version_by_program(conda=None):
-    proj = find_executable('proj')
+    proj = shutil.which('proj')
     if proj is None:
         print(
             'Proj {} must be installed.'.format(
