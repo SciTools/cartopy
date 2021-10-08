@@ -1723,7 +1723,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
-        args = self._wrap_args(*args, **kwargs)
+        args, kwargs = self._wrap_args(*args, **kwargs)
         result = super().pcolormesh(*args, **kwargs)
         # Wrap the quadrilaterals if necessary
         result = self._wrap_quadmesh(result, **kwargs)
@@ -1745,8 +1745,11 @@ class GeoAxes(matplotlib.axes.Axes):
         if not (kwargs.get('shading', default_shading) in
                 ('nearest', 'auto') and len(args) == 3 and
                 getattr(kwargs.get('transform'), '_wrappable', False)):
-            return args
+            return args, kwargs
 
+        # We have changed the shading from nearest/auto to flat
+        # due to the addition of an extra coordinate
+        kwargs['shading'] = 'flat'
         X = np.asanyarray(args[0])
         Y = np.asanyarray(args[1])
         nrows, ncols = np.asanyarray(args[2]).shape
@@ -1782,7 +1785,7 @@ class GeoAxes(matplotlib.axes.Axes):
             X = _interp_grid(X.T, wrap=xwrap).T
             Y = _interp_grid(Y.T).T
 
-        return (X, Y, args[2])
+        return (X, Y, args[2]), kwargs
 
     def _wrap_quadmesh(self, collection, **kwargs):
         """
@@ -1798,8 +1801,13 @@ class GeoAxes(matplotlib.axes.Axes):
         # Get the quadmesh data coordinates
         coords = collection._coordinates
         Ny, Nx, _ = coords.shape
+        if kwargs.get('shading') == 'gouraud':
+            # Gouraud shading has the same shape for coords and data
+            data_shape = Ny, Nx
+        else:
+            data_shape = Ny - 1, Nx - 1
         # data array
-        C = collection.get_array().reshape((Ny - 1, Nx - 1))
+        C = collection.get_array().reshape(data_shape)
 
         transformed_pts = self.projection.transform_points(
             t, coords[..., 0], coords[..., 1])
@@ -1827,6 +1835,23 @@ class GeoAxes(matplotlib.axes.Axes):
         if not np.any(mask):
             # No wrapping needed
             return collection
+
+        # Wrapping with gouraud shading is error-prone. We will do our best,
+        # but pcolor does not handle gouraud shading, so there needs to be
+        # another way to handle the wrapped cells.
+        if kwargs.get('shading') == 'gouraud':
+            warnings.warn("Handling wrapped coordinates with gouraud "
+                          "shading is likely to introduce artifacts. "
+                          "It is recommended to remove the wrap manually "
+                          "before calling pcolormesh.")
+            # With gouraud shading, we actually want an (Ny, Nx) shaped mask
+            gmask = np.zeros(data_shape, dtype=bool)
+            # If any of the cells were wrapped, apply it to all 4 corners
+            gmask[:-1, :-1] |= mask
+            gmask[1:, :-1] |= mask
+            gmask[1:, 1:] |= mask
+            gmask[:-1, 1:] |= mask
+            mask = gmask
 
         # We have quadrilaterals that cross the wrap boundary
         # Now, we need to update the original collection with
@@ -1908,7 +1933,11 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
-        args = self._wrap_args(*args, **kwargs)
+        args, kwargs = self._wrap_args(*args, **kwargs)
+        if matplotlib.__version__ < "3.3":
+            # MPL 3.3 introduced the shading option, and it isn't
+            # handled before that for pcolor calls.
+            kwargs.pop('shading', None)
         result = super().pcolor(*args, **kwargs)
 
         # Update the datalim for this pcolor.
