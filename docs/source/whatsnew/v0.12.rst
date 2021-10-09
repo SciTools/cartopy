@@ -121,8 +121,8 @@ Deprecations
   methods have therefore been deprecated and will be removed in future
   releases. The function :func:`cartopy.io.srtm.srtm` has been replaced with
   the :meth:`cartopy.io.srtm.SRTM3Source.single_tile` method. Similarly,
-  :func:`cartopy.io.srtm.srtm_composite` and
-  :func:`cartopy.io.srtm.SRTM3_retrieve` have been replaced with the
+  ``cartopy.io.srtm.srtm_composite`` and
+  ``cartopy.io.srtm.SRTM3_retrieve`` have been replaced with the
   :meth:`cartopy.io.srtm.SRTM3Source.combined` and
   :meth:`cartopy.io.srtm.SRTM3Source.srtm_fname` methods respectively.
 

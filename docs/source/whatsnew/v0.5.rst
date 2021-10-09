@@ -27,6 +27,6 @@ A summary of the main features added with version 0.5:
 
 Deprecations
 ------------
-* The method :meth:`Axes.natural_earth_shp()` has been replaced by the
+* The method ``Axes.natural_earth_shp()`` has been replaced by the
   method :meth:`Axes.add_feature()` and the :mod:`cartopy.feature`
   module.

@@ -415,32 +415,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.img_factories = []
         self._done_img_factory = False
 
-    @property
-    def outline_patch(self):
-        """
-        DEPRECATED. The patch that provides the line bordering the projection.
-
-        Use GeoAxes.spines['geo'] or default Axes properties instead.
-        """
-        warnings.warn("The outline_patch property is deprecated. Use "
-                      "GeoAxes.spines['geo'] or the default Axes properties "
-                      "instead.",
-                      DeprecationWarning,
-                      stacklevel=2)
-        return self.spines['geo']
-
-    @property
-    def background_patch(self):
-        """
-        DEPRECATED. The patch that provides the filled background of the
-        projection.
-        """
-        warnings.warn('The background_patch property is deprecated. '
-                      'Use GeoAxes.patch instead.',
-                      DeprecationWarning,
-                      stacklevel=2)
-        return self.patch
-
     def add_image(self, factory, *args, **kwargs):
         """
         Add an image "factory" to the Axes.
@@ -710,40 +684,6 @@ class GeoAxes(matplotlib.axes.Axes):
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
                                                  **kwargs)
-        return self.add_feature(feature)
-
-    def natural_earth_shp(self, name='land', resolution='110m',
-                          category='physical', **kwargs):
-        """
-        Add the geometries from the specified Natural Earth shapefile to the
-        Axes as a :class:`~matplotlib.collections.PathCollection`.
-
-        Parameters
-        ----------
-        name: optional
-            Name of the shapefile geometry to add.  Defaults to 'land'.
-        resolution: optional
-            Resolution of shapefile geometry to add.  Defaults to '110m'.
-        category: optional
-            Category of shapefile geometry to add.  Defaults to 'physical'.
-
-
-        ``**kwargs`` are passed through to the
-        :class:`~matplotlib.collections.PathCollection` constructor.
-
-        Returns
-        -------
-        The created :class:`~matplotlib.collections.PathCollection`.
-
-        """
-        warnings.warn('This method has been deprecated.'
-                      ' Please use `add_feature` instead.',
-                      DeprecationWarning,
-                      stacklevel=2)
-        kwargs.setdefault('edgecolor', 'face')
-        kwargs.setdefault('facecolor', cartopy.feature.COLORS['land'])
-        feature = cartopy.feature.NaturalEarthFeature(category, name,
-                                                      resolution, **kwargs)
         return self.add_feature(feature)
 
     def add_feature(self, feature, **kwargs):
@@ -1612,7 +1552,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.callbacks.connect('xlim_changed', _trigger_patch_reclip)
         self.callbacks.connect('ylim_changed', _trigger_patch_reclip)
 
-    def set_boundary(self, path, transform=None, use_as_clip_path=None):
+    def set_boundary(self, path, transform=None):
         """
         Given a path, update :data:`.spines['geo']` and :data:`.patch`.
 
@@ -1627,12 +1567,6 @@ class GeoAxes(matplotlib.axes.Axes):
             axes' projection.
 
         """
-        if use_as_clip_path is not None:
-            warnings.warn(
-                'Passing use_as_clip_path to set_boundary is deprecated.',
-                DeprecationWarning,
-                stacklevel=2)
-
         if transform is None:
             transform = self.transData
 
@@ -1796,7 +1730,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
-        args = self._wrap_args(*args, **kwargs)
+        args, kwargs = self._wrap_args(*args, **kwargs)
         result = super().pcolormesh(*args, **kwargs)
         # Wrap the quadrilaterals if necessary
         result = self._wrap_quadmesh(result, **kwargs)
@@ -1818,8 +1752,11 @@ class GeoAxes(matplotlib.axes.Axes):
         if not (kwargs.get('shading', default_shading) in
                 ('nearest', 'auto') and len(args) == 3 and
                 getattr(kwargs.get('transform'), '_wrappable', False)):
-            return args
+            return args, kwargs
 
+        # We have changed the shading from nearest/auto to flat
+        # due to the addition of an extra coordinate
+        kwargs['shading'] = 'flat'
         X = np.asanyarray(args[0])
         Y = np.asanyarray(args[1])
         nrows, ncols = np.asanyarray(args[2]).shape
@@ -1855,7 +1792,7 @@ class GeoAxes(matplotlib.axes.Axes):
             X = _interp_grid(X.T, wrap=xwrap).T
             Y = _interp_grid(Y.T).T
 
-        return (X, Y, args[2])
+        return (X, Y, args[2]), kwargs
 
     def _wrap_quadmesh(self, collection, **kwargs):
         """
@@ -1871,8 +1808,13 @@ class GeoAxes(matplotlib.axes.Axes):
         # Get the quadmesh data coordinates
         coords = collection._coordinates
         Ny, Nx, _ = coords.shape
+        if kwargs.get('shading') == 'gouraud':
+            # Gouraud shading has the same shape for coords and data
+            data_shape = Ny, Nx
+        else:
+            data_shape = Ny - 1, Nx - 1
         # data array
-        C = collection.get_array().reshape((Ny - 1, Nx - 1))
+        C = collection.get_array().reshape(data_shape)
 
         transformed_pts = self.projection.transform_points(
             t, coords[..., 0], coords[..., 1])
@@ -1900,6 +1842,23 @@ class GeoAxes(matplotlib.axes.Axes):
         if not np.any(mask):
             # No wrapping needed
             return collection
+
+        # Wrapping with gouraud shading is error-prone. We will do our best,
+        # but pcolor does not handle gouraud shading, so there needs to be
+        # another way to handle the wrapped cells.
+        if kwargs.get('shading') == 'gouraud':
+            warnings.warn("Handling wrapped coordinates with gouraud "
+                          "shading is likely to introduce artifacts. "
+                          "It is recommended to remove the wrap manually "
+                          "before calling pcolormesh.")
+            # With gouraud shading, we actually want an (Ny, Nx) shaped mask
+            gmask = np.zeros(data_shape, dtype=bool)
+            # If any of the cells were wrapped, apply it to all 4 corners
+            gmask[:-1, :-1] |= mask
+            gmask[1:, :-1] |= mask
+            gmask[1:, 1:] |= mask
+            gmask[:-1, 1:] |= mask
+            mask = gmask
 
         # We have quadrilaterals that cross the wrap boundary
         # Now, we need to update the original collection with
@@ -1981,7 +1940,11 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
-        args = self._wrap_args(*args, **kwargs)
+        args, kwargs = self._wrap_args(*args, **kwargs)
+        if matplotlib.__version__ < "3.3":
+            # MPL 3.3 introduced the shading option, and it isn't
+            # handled before that for pcolor calls.
+            kwargs.pop('shading', None)
         result = super().pcolor(*args, **kwargs)
 
         # Update the datalim for this pcolor.

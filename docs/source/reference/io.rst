@@ -58,7 +58,6 @@ automatically load the proper tile and resolution depending on the desired domai
     img_tiles.OrdnanceSurvey
     img_tiles.QuadtreeTiles
     img_tiles.Stamen
-    img_tiles.StamenTerrain
 
 
 Open Geospatial Consortium (OGC)
@@ -82,18 +81,15 @@ using classes and functions defined below.
 
 .. autosummary::
     :toctree: generated/
+    :recursive:
 
     srtm.SRTM1Source
     srtm.SRTM3Source
     srtm.SRTMDownloader
-    srtm.SRTM3_retrieve
     srtm.read_SRTM
     srtm.read_SRTM1
     srtm.read_SRTM3
-    srtm.srtm
-    srtm.srtm_composite
     srtm.add_shading
-    srtm.fill_gaps
 
 
 Base classes and functions
