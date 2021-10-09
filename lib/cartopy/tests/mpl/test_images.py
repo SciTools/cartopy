@@ -154,6 +154,24 @@ def test_imshow_rgba():
     assert sum(img.get_array().data[:, 0, 3]) == 0
 
 
+def test_imshow_rgba_alpha():
+    # test that alpha channel from RGBA is not skipped
+    np.random.seed(0)
+    dy, dx = (3,4)
+
+    ax = plt.axes(projection=ccrs.Orthographic(-120, 45))
+
+    # Create RGBA Image with random data and linspace alpha
+    RGBA = np.zeros((dy, dx, 4), dtype=np.uint8)
+    RGBA[:,:,:3] = np.random.randint(0, 255, size=(dy, dx, 3), dtype=np.uint8)
+    
+    alpha = np.array([0,85,170,255])
+    RGBA[:,:,3]  = alpha
+
+    img = ax.imshow(RGBA, transform=ccrs.PlateCarree())
+    assert np.all(np.unique(img.get_array().data[:, :, 3]) == alpha)
+    
+
 def test_imshow_rgb():
     # tests that the alpha of a RGB array passed to imshow is set to 0
     # instead of masked
