@@ -164,7 +164,7 @@ def test_imshow_rgba_alpha():
     # Create RGBA Image with random data and linspace alpha
     RGBA = np.zeros((dy, dx, 4), dtype=np.uint8)
     RGBA[:, :, :3] = np.random.randint(0, 255, size=(dy, dx, 3),
-        dtype=np.uint8)
+                                       dtype=np.uint8)
 
     alpha = np.array([0, 85, 170, 255])
     RGBA[:, :, 3] = alpha

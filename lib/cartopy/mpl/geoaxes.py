@@ -1340,7 +1340,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 # transform RGB(A) into RGBA
                 old_img = img
                 img = np.ma.zeros(old_img.shape[:2] + (4, ),
-                    dtype=old_img.dtype)
+                                  dtype=old_img.dtype)
                 img[:, :, :3] = old_img[:, :, :3]
 
                 # if img is RGBA, save alpha channel
