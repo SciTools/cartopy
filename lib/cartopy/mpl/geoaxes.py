@@ -1335,7 +1335,6 @@ class GeoAxes(matplotlib.axes.Axes):
             # which are masked array RGB(A) into RGBA images
 
             if np.ma.is_masked(img) and len(img.shape) > 2:
-                print(img.shape, img.dtype, type(img))
 
                 # transform RGB(A) into RGBA
                 old_img = img
@@ -1355,7 +1354,6 @@ class GeoAxes(matplotlib.axes.Axes):
                 # apply mask to the A channel
                 img[:, :, 3] = np.ma.filled(img_alpha, fill_value=0) * \
                     (~np.any(img[:, :, :3].mask, axis=2))
-                pass
 
             result = super().imshow(img, *args, extent=extent, **kwargs)
 
