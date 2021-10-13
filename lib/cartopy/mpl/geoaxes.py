@@ -1338,22 +1338,18 @@ class GeoAxes(matplotlib.axes.Axes):
 
                 # transform RGB(A) into RGBA
                 old_img = img
-                img = np.ma.zeros(old_img.shape[:2] + (4, ),
-                                  dtype=old_img.dtype)
+                img = np.ones(old_img.shape[:2] + (4, ),
+                              dtype=old_img.dtype)
                 img[:, :, :3] = old_img[:, :, :3]
 
                 # if img is RGBA, save alpha channel
                 if old_img.shape[-1] == 4:
-                    img_alpha = old_img[:, :, 3]
-                else:
-                    if img.dtype.kind == 'u':
-                        img_alpha = 255
-                    else:
-                        img_alpha = 1.
+                    img[:, :, 3] = old_img[:, :, 3]
+                elif img.dtype.kind == 'u':
+                    img[:, :, 3] *= 255
 
-                # apply mask to the A channel
-                img[:, :, 3] = np.ma.filled(img_alpha, fill_value=0) * \
-                    (~np.any(img[:, :, :3].mask, axis=2))
+                # apply the mask to the A channel
+                img[np.any(old_img[:, :, :3].mask, axis=2), 3] = 0
 
             result = super().imshow(img, *args, extent=extent, **kwargs)
 
