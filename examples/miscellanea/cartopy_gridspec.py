@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import matplotlib.gridspec as gs
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-from cartopy.mpl.geoaxes import GeoAxes
 import numpy as np
 
 
