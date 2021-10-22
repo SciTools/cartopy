@@ -80,7 +80,9 @@ def main():
         ax.xaxis.set_major_formatter(lon_formatter)
         ax.yaxis.set_major_formatter(lat_formatter)
 
-        p = ax.contourf(lons, lats, data[i, ...], transform=projection, cmap="RdBu")
+        p = ax.contourf(
+            lons, lats, data[i, ...], transform=projection, cmap="RdBu"
+        )
         ax.coastlines()
 
     plt.colorbar(p, ax=axlist[:], orientation="vertical", shrink=1.0)
