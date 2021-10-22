@@ -48,7 +48,9 @@ def sample_data_3d(shape):
     return lons, lats, times, data
 
 
-def make_grid(rows: int = 0, cols: int = 0, proj=ccrs.PlateCarree()) -> list:
+def make_grid(
+    rows: int = 0, cols: int = 0, proj=ccrs.PlateCarree()
+) -> list:
 
     axlist = []
     fig2 = plt.figure(figsize=(20, 10))
@@ -58,7 +60,9 @@ def make_grid(rows: int = 0, cols: int = 0, proj=ccrs.PlateCarree()) -> list:
 
     for x in range(rows):
         for y in range(cols):
-            axlist.append(fig2.add_subplot(spec2[x, y], projection=proj))
+            axlist.append(
+                fig2.add_subplot(spec2[x, y], projection=proj)
+            )
 
     return axlist
 
@@ -80,7 +84,11 @@ def main():
         ax.yaxis.set_major_formatter(lat_formatter)
 
         p = ax.contourf(
-            lons, lats, data[i, ...], transform=projection, cmap="RdBu"
+            lons,
+            lats,
+            data[i, ...],
+            transform=projection,
+            cmap="RdBu",
         )
         ax.coastlines()
 
