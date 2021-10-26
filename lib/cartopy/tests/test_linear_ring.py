@@ -20,7 +20,7 @@ class TestBoundary:
         rings, multi_line_string = projection.project_geometry(linear_ring)
 
         # The original ring should have been split into multiple pieces.
-        assert len(multi_line_string) > 1
+        assert len(multi_line_string.geoms) > 1
         assert not rings
 
         def assert_intersection_with_boundary(segment_coords):
@@ -37,7 +37,7 @@ class TestBoundary:
         # segment that crosses the boundary when extended to double length.
         # (This is important when considering polygon rings which need to be
         # attached to the boundary.)
-        for line_string in multi_line_string:
+        for line_string in multi_line_string.geoms:
             coords = list(line_string.coords)
             assert len(coords) >= 2
             assert_intersection_with_boundary(coords[1::-1])
@@ -68,7 +68,7 @@ class TestBoundary:
                 assert rings
                 assert not mlinestr
             else:
-                assert len(mlinestr) == expected_n_lines
+                assert len(mlinestr.geoms) == expected_n_lines
                 if expected_n_lines == 0:
                     assert mlinestr.is_empty
 
@@ -86,7 +86,7 @@ class TestMisc:
         rings, multi_line_string = projection.project_geometry(linear_ring)
         # There should be one, and only one, returned ring.
         assert isinstance(multi_line_string, sgeom.MultiLineString)
-        assert len(multi_line_string) == 0
+        assert len(multi_line_string.geoms) == 0
         assert len(rings) == 1
 
         # from cartopy.tests.mpl import show
@@ -135,13 +135,13 @@ class TestMisc:
 
         linear_ring = sgeom.LinearRing(coords)
         rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
-        assert len(mlinestr) == 1
+        assert len(mlinestr.geoms) == 1
         assert len(rings) == 0
 
         # Check the stitch works in either direction.
         linear_ring = sgeom.LinearRing(coords[::-1])
         rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
-        assert len(mlinestr) == 1
+        assert len(mlinestr.geoms) == 1
         assert len(rings) == 0
 
     def test_at_boundary(self):
@@ -170,7 +170,7 @@ class TestMisc:
         rings, mlinestr = tcrs._project_linear_ring(tring, scrs)
 
         # Number of linearstrings
-        assert len(mlinestr) == 4
+        assert len(mlinestr.geoms) == 4
         assert not rings
 
         # Test area of smallest Polygon that contains all the points in the

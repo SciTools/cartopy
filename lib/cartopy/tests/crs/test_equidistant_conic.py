@@ -61,8 +61,11 @@ class TestEquidistantConic:
                       'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj_params('eqdc', eqdc_offset, other_args)
 
-        assert_array_almost_equal(eqdc_offset.boundary, eqdc.boundary,
-                                  decimal=0)
+        assert_array_almost_equal(
+            eqdc_offset.boundary.coords,
+            eqdc.boundary.coords,
+            decimal=0,
+        )
 
     def test_standard_parallels(self):
         eqdc = ccrs.EquidistantConic(standard_parallels=(13, 37))

@@ -839,15 +839,20 @@ class Gridliner:
                                                sgeom.MultiLineString)):
                     if isinstance(intersection, sgeom.LineString):
                         intersection = [intersection]
-                    elif len(intersection) > 4:
+                    elif len(intersection.geoms) > 4:
                         # Gridline and map boundary are parallel and they
                         # intersect themselves too much it results in a
                         # multiline string that must be converted to a single
                         # linestring. This is an empirical workaround for a
                         # problem that can probably be solved in a cleaner way.
-                        xy = np.append(intersection[0], intersection[-1],
-                                       axis=0)
+                        xy = np.append(
+                            intersection.geoms[0].coords,
+                            intersection.geoms[-1].coords,
+                            axis=0,
+                        )
                         intersection = [sgeom.LineString(xy)]
+                    else:
+                        intersection = intersection.geoms
                     tails = []
                     heads = []
                     for inter in intersection:
