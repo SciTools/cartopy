@@ -822,7 +822,7 @@ class Projection(CRS, metaclass=ABCMeta):
         threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
 
         # 2) Simplify the segments where appropriate.
-        if len(multi_line_string) > 1:
+        if len(multi_line_string.geoms) > 1:
             # Stitch together segments which are close to continuous.
             # This is important when:
             # 1) The first source point projects into the map and the
@@ -833,7 +833,7 @@ class Projection(CRS, metaclass=ABCMeta):
             # 2) The cut ends of segments are too close to reliably
             # place into an order along the boundary.
 
-            line_strings = list(multi_line_string)
+            line_strings = list(multi_line_string.geoms)
             any_modified = False
             i = 0
             if debug:
@@ -874,7 +874,7 @@ class Projection(CRS, metaclass=ABCMeta):
         # 3) Check for rings that have been created by the projection stage.
         rings = []
         line_strings = []
-        for line in multi_line_string:
+        for line in multi_line_string.geoms:
             if len(line.coords) > 3 and np.allclose(line.coords[0],
                                                     line.coords[-1],
                                                     atol=threshold):
@@ -941,7 +941,7 @@ class Projection(CRS, metaclass=ABCMeta):
             p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
             if p_rings:
                 rings.extend(p_rings)
-            if len(p_mline) > 0:
+            if len(p_mline.geoms) > 0:
                 multi_lines.append(p_mline)
 
         # Convert any lines to rings by attaching them to the boundary.
@@ -979,7 +979,7 @@ class Projection(CRS, metaclass=ABCMeta):
         # Squash all the LineStrings into a single list.
         line_strings = []
         for multi_line_string in multi_line_strings:
-            line_strings.extend(multi_line_string)
+            line_strings.extend(multi_line_string.geoms)
 
         # Record the positions of all the segment ends
         for i, line_string in enumerate(line_strings):
