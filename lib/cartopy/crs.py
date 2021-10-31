@@ -479,14 +479,34 @@ class CRS(_CRS):
             raise ValueError('x, y, u and v arrays must be the same shape')
         if x.ndim not in (1, 2):
             raise ValueError('x, y, u and v must be 1 or 2 dimensional')
-        # Transform the coordinates to the target projection.
-        proj_xyz = self.transform_points(src_proj, x, y)
-        target_x, target_y = proj_xyz[..., 0], proj_xyz[..., 1]
-        # Rotate the input vectors to the projection.
-        #
-        # 1: Find the magnitude and direction of the input vectors.
-        vector_magnitudes = (u**2 + v**2)**0.5
+
+        # 1a: Find the magnitude of the input vectors
+        vector_magnitudes = np.sqrt(u**2 + v**2)
+
+        # Handle special case of PlateCarree projection
+        # This assumes we were given lon/lat coordinates and
+        # east/north vector components (NOT PlateCarree vector components)
+        # When projecting the components we need to scale the vector
+        # component for the transformation to maintain the proper angles
+        if isinstance(src_proj, PlateCarree):
+            # First handle points close to the pole by cutting off the
+            # latitude a small distance away
+            pole_cutoff = 90 - 1e-2
+            pole_points = np.abs(y) >= pole_cutoff
+            if np.any(pole_points):
+                # Warn for points close to the poles, as these are
+                # unreliable for vector directions under transformation
+                warnings.warn('Vector transforms near the pole '
+                              'may not have been transformed correctly')
+                # Move the pole points away from the pole ever so slightly
+                y[pole_points] = np.sign(y[pole_points]) * pole_cutoff
+
+            scale_factor = np.cos(y / 180 * np.pi)
+            v = v * scale_factor
+
+        # 1b: Find the direction of the input vectors
         vector_angles = np.arctan2(v, u)
+
         # 2: Find a point in the direction of the original vector that is
         #    a small distance away from the base point of the vector (near
         #    the poles the point may have to be in the opposite direction
@@ -495,6 +515,7 @@ class CRS(_CRS):
         delta = (src_proj.x_limits[1] - src_proj.x_limits[0]) / factor
         x_perturbations = delta * np.cos(vector_angles)
         y_perturbations = delta * np.sin(vector_angles)
+
         # 3: Handle points that are invalid. These come from picking a new
         #    point that is outside the domain of the CRS. The first step is
         #    to apply the native transform to the input coordinates to make
@@ -535,21 +556,45 @@ class CRS(_CRS):
             source_x + x_perturbations < src_proj.x_limits[0] - eps,
             source_x + x_perturbations > src_proj.x_limits[1] + eps)
         if problem_points.any():
-            warnings.warn('Some vectors at source domain corners '
+            warnings.warn('Some vectors at the source domain corners '
                           'may not have been transformed correctly')
+
         # 4: Transform this set of points to the projection coordinates and
         #    find the angle between the base point and the perturbed point
         #    in the projection coordinates (reversing the direction at any
         #    points where the original was reversed in step 3).
+        proj_xyz = self.transform_points(src_proj, x, y)
+        target_x, target_y = proj_xyz[..., 0], proj_xyz[..., 1]
+
         proj_xyz = self.transform_points(src_proj,
                                          source_x + x_perturbations,
                                          source_y + y_perturbations)
         target_x_perturbed = proj_xyz[..., 0]
         target_y_perturbed = proj_xyz[..., 1]
+
+        x_delta = target_x_perturbed - target_x
+        if isinstance(self, PlateCarree):
+            # Warn for points close to the poles, as these are
+            # unreliable for vector directions under transformation
+            pole_cutoff = 90 - 1e-2
+            pole_points = np.abs(target_y) >= pole_cutoff
+            if np.any(pole_points):
+                warnings.warn('Vector transforms near the pole '
+                              'may not have been transformed correctly')
+                # Move the pole points away from the pole ever so slightly
+                target_y[pole_points] = (np.sign(target_y[pole_points]) *
+                                         pole_cutoff)
+            # Account for scaling to the North/South components in the
+            # opposite manner as the source coordinate handling
+            # (i.e. inverse scale factor), with target_y being
+            # the latitudes we are going to
+            scale_factor = np.cos(target_y / 180 * np.pi)
+            x_delta = x_delta * scale_factor
         projected_angles = np.arctan2(target_y_perturbed - target_y,
-                                      target_x_perturbed - target_x)
+                                      x_delta)
         if reversed_vectors.any():
             projected_angles[reversed_vectors] += np.pi
+
         # 5: Form the projected vector components, preserving the magnitude
         #    of the original vectors.
         projected_u = vector_magnitudes * np.cos(projected_angles)
