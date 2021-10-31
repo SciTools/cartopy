@@ -144,11 +144,11 @@ class Test_vector_scalar_to_grid:
                                     [7.5, 7.5, 7.5, 7.5, 7.5],
                                     [10., 10., 10., 10., 10]])
         expected_u_grid = np.array([[np.nan, np.nan, np.nan, np.nan, np.nan],
-                                    [np.nan, 2.3838, 3.5025, 2.6152, np.nan],
-                                    [2, 3.0043, 4, 2.9022, 2]])
+                                    [np.nan, 2.3893, 3.5097, 2.6194, np.nan],
+                                    [2, 3.0005, 4, 2.8977, 2]])
         expected_v_grid = np.array([[np.nan, np.nan, np.nan, np.nan, np.nan],
-                                    [np.nan, 2.6527, 2.1904, 2.4192, np.nan],
-                                    [5.5, 4.6483, 4, 4.47, 5.5]])
+                                    [np.nan, 2.6486, 2.1878, 2.4138, np.nan],
+                                    [5.5, 4.6497, 4, 4.4702, 5.5]])
 
         x_grid, y_grid, u_grid, v_grid = vec_trans.vector_scalar_to_grid(
             src_crs, target_crs, (5, 3), x_nps, y_nps, u_nps, v_nps)
