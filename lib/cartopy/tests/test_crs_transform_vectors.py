@@ -79,76 +79,24 @@ class TestTransformVectors:
         assert_array_almost_equal(ut, np.array([0]), decimal=2)
         assert_array_almost_equal(vt, np.array([-1]), decimal=2)
 
-    def test_invalid_x_domain(self):
-        # If the point we need to calculate the vector angle falls outside the
-        # source projection x-domain it should be handled correctly as long as
-        # it is not a corner point.
-        rlon = np.array([180.])
-        rlat = np.array([0.])
-        u = np.array([1.])
-        v = np.array([0.])
+    @pytest.mark.parametrize('x, y, u, v, expected', [
+        pytest.param(180, 0, 1, 0, [-1, 0], id='x non-corner'),
+        pytest.param(0, 90, 0, 1, [0, 1], id='y non-corner'),
+        pytest.param(180, 90, 1, 1, [0, -np.sqrt(2)], id='xy corner'),
+        pytest.param(180, 90, 1, -1, [0, np.sqrt(2)], id='x corner'),
+        pytest.param(180, 90, -1, 1, [0, -np.sqrt(2)], id='y corner')])
+    def test_transform_on_border(self, x, y, u, v, expected):
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(central_latitude=90,
                                          central_longitude=0)
-        ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
-        assert_array_almost_equal(ut, np.array([-1]), decimal=2)
-        assert_array_almost_equal(vt, np.array([0.]), decimal=2)
 
-    def test_invalid_y_domain(self):
-        # If the point we need to calculate the vector angle falls outside the
-        # source projection y-domain it should be handled correctly as long as
-        # it is not a corner point.
-        rlon = np.array([0.])
-        rlat = np.array([90.])
-        u = np.array([0.])
-        v = np.array([1.])
-        src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
-        ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
-        assert_array_almost_equal(ut, np.array([0.]), decimal=2)
-        assert_array_almost_equal(vt, np.array([1.]), decimal=2)
+        x, y = np.array([x]), np.array([y])
+        u, v = np.array([u]), np.array([v])
+        # We expect to warn the user only when y is on the pole
+        if y[0] == 90:
+            with pytest.warns(UserWarning):
+                ut, vt = target_proj.transform_vectors(src_proj, x, y, u, v)
+        else:
+            ut, vt = target_proj.transform_vectors(src_proj, x, y, u, v)
 
-    def test_invalid_xy_domain_corner(self):
-        # If the point we need to calculate the vector angle falls outside the
-        # source projection x and y-domain it should be handled correctly.
-        rlon = np.array([180.])
-        rlat = np.array([90.])
-        u = np.array([1.])
-        v = np.array([1.])
-        src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
-        ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
-        assert_array_almost_equal(ut, np.array([0.]), decimal=2)
-        assert_array_almost_equal(vt, np.array([-2**.5]), decimal=2)
-
-    def test_invalid_x_domain_corner(self):
-        # If the point we need to calculate the vector angle falls outside the
-        # source projection x-domain and is a corner point, it may be handled
-        # incorrectly and a warning should be raised.
-        rlon = np.array([180.])
-        rlat = np.array([90.])
-        u = np.array([1.])
-        v = np.array([-1.])
-        src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
-        with pytest.warns(UserWarning):
-            warnings.simplefilter('always')
-            ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
-
-    def test_invalid_y_domain_corner(self):
-        # If the point we need to calculate the vector angle falls outside the
-        # source projection y-domain and is a corner point, it may be handled
-        # incorrectly and a warning should be raised.
-        rlon = np.array([180.])
-        rlat = np.array([90.])
-        u = np.array([-1.])
-        v = np.array([1.])
-        src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
-        with pytest.warns(UserWarning):
-            warnings.simplefilter('always')
-            ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
+        assert_array_almost_equal([ut[0], vt[0]], expected, decimal=2)
