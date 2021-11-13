@@ -17,11 +17,16 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 @pytest.mark.mpl_image_compare(filename='natural_earth.png')
 def test_natural_earth():
     ax = plt.axes(projection=ccrs.PlateCarree())
-    ax.add_feature(cfeature.LAND)
-    ax.add_feature(cfeature.OCEAN)
+    # NOTE: edgecolor is set to face for backwards compatibility with the
+    #       the original image. If updating this test remove edgecolors for
+    #       the filled features below (LAND, OCEAN, LAKES).
+    ec = 'face'
+    ax.add_feature(cfeature.LAND, edgecolor=ec)
+    # To match with the old default style and not update an image
+    ax.add_feature(cfeature.OCEAN, edgecolor=ec)
     ax.coastlines()
     ax.add_feature(cfeature.BORDERS, linestyle=':')
-    ax.add_feature(cfeature.LAKES, alpha=0.5)
+    ax.add_feature(cfeature.LAKES, alpha=0.5, edgecolor=ec)
     ax.add_feature(cfeature.RIVERS)
     ax.set_xlim((-20, 60))
     ax.set_ylim((-40, 40))
