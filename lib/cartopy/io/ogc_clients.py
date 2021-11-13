@@ -162,7 +162,7 @@ def _target_extents(extent, requested_projection, available_projection):
 
     # Return the polygons' rectangular bounds as extent tuples.
     target_extents = []
-    for poly in polys:
+    for poly in polys.geoms:
         min_x, min_y, max_x, max_y = poly.bounds
         if fudge_mode:
             # If we shrunk the request area before, then here we

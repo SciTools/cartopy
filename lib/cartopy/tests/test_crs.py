@@ -207,9 +207,9 @@ class TestCRS:
 
         result = pc_rotated.project_geometry(multi_point, pc)
         assert isinstance(result, sgeom.MultiPoint)
-        assert len(result) == 2
-        assert_arr_almost_eq(result[0].xy, [[-180.], [45.]])
-        assert_arr_almost_eq(result[1].xy, [[0], [45.]])
+        assert len(result.geoms) == 2
+        assert_arr_almost_eq(result.geoms[0].xy, [[-180.], [45.]])
+        assert_arr_almost_eq(result.geoms[1].xy, [[0], [45.]])
 
     def test_utm(self):
         utm30n = ccrs.UTM(30)

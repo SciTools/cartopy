@@ -61,8 +61,11 @@ class TestAlbersEqualArea:
                       'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj_params('aea', aea_offset, other_args)
 
-        assert_array_almost_equal(aea_offset.boundary, aea.boundary,
-                                  decimal=0)
+        assert_array_almost_equal(
+            aea_offset.boundary.coords,
+            aea.boundary.coords,
+            decimal=0,
+        )
 
     def test_standard_parallels(self):
         aea = ccrs.AlbersEqualArea(standard_parallels=(13, 37))
