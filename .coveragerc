@@ -4,7 +4,7 @@
 
 [run]
 branch = True
-omit = 
+omit =
     lib/cartopy/examples/*
     lib/cartopy/sphinxext/*
     lib/cartopy/tests/*

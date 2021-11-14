@@ -2,4 +2,3 @@
 
 Lines and polygons
 ==================
-

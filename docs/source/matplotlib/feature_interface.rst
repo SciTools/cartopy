@@ -32,7 +32,7 @@ Name                     Description
                          United States at this scale).
                          Natural Earth have first-order admin boundaries for most
                          countries at the 1:10,000,000 scale; these may be
-                         accessed with ``cartopy.feature.STATES.with_scale('10m')`` 
+                         accessed with ``cartopy.feature.STATES.with_scale('10m')``
 =======================  ================================================================
 
 .. note::

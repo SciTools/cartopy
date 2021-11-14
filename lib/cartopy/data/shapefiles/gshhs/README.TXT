@@ -29,9 +29,9 @@ data as shapefiles.
 --------------------------------------------------------------------
 Global Self-consistent Hierarchical High-resolution Shorelines
 		version 2.0 July 15, 2009
-		
+
 	Distributed under the Gnu Public License
-		
+
 This is the README file for the GSHHS Data distribution.  To read
 the data you should get the gshhs supplement to GMT, the Generic
 Mapping Tools (gmt.soest.hawaii.edu).  GSHHS appear in GMT in a

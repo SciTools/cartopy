@@ -47,29 +47,20 @@ from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 assert mpl.__version__ >= '3.1', \
     'Cartopy is only supported with Matplotlib 3.1 or greater.'
 
+# A nested mapping from path, source CRS, and target projection to the
+# resulting transformed paths:
+#     {path: {(source_crs, target_projection): list_of_paths}}
+# Provides a significant performance boost for contours which, at
+# matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
 _PATH_TRANSFORM_CACHE = weakref.WeakKeyDictionary()
-"""
-A nested mapping from path, source CRS, and target projection to the
-resulting transformed paths::
 
-    {path: {(source_crs, target_projection): list_of_paths}}
-
-Provides a significant performance boost for contours which, at
-matplotlib 1.2.0 called transform_path_non_affine twice unnecessarily.
-
-"""
-
+# A dictionary of pre-loaded images for large background images, kept as a
+# dictionary so that large images are loaded only once.
 _BACKG_IMG_CACHE = {}
-"""
-A dictionary of pre-loaded images for large background images, kept as a
-dictionary so that large images are loaded only once.
-"""
 
+# A dictionary of background images in the directory specified by the
+# CARTOPY_USER_BACKGROUNDS environment variable.
 _USER_BG_IMGS = {}
-"""
-A dictionary of background images in the directory specified by the
-CARTOPY_USER_BACKGROUNDS environment variable.
-"""
 
 
 # XXX call this InterCRSTransform

@@ -38,7 +38,7 @@ location information to the plots.
 .. autosummary::
     :toctree: generated/
     :template: autosummary/class_without_inherited.rst
-    
+
     gridliner.Gridliner
     ticker.LongitudeFormatter
     ticker.LatitudeFormatter

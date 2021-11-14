@@ -625,7 +625,7 @@ class _Testing:
         cdef GEOSGeometry *g_domain = geos_from_shapely(domain)
         cdef const GEOSPreparedGeometry *gp_domain
         gp_domain = GEOSPrepare_r(handle, g_domain)
-        
+
         state = get_state(interpolator.project(l_start), gp_domain, handle)
         cdef bool p_start_inside_domain = state == POINT_IN
 

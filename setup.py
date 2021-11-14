@@ -33,10 +33,6 @@ from sysconfig import get_config_var
 
 from setuptools import Extension, find_packages, setup
 
-"""
-Distribution definition for Cartopy.
-
-"""
 
 # The existence of a PKG-INFO directory is enough to tell us whether this is a
 # source installation or not (sdist).
