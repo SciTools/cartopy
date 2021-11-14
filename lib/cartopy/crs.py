@@ -12,6 +12,7 @@ between them.
 
 from abc import ABCMeta
 from collections import OrderedDict
+from functools import lru_cache
 import io
 import json
 import math
@@ -39,8 +40,14 @@ WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 
+# Cache the transformer creation method
+@lru_cache()
+def _get_transformer_from_crs(src_crs, tgt_crs):
+    return Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
+
+
 def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
-    transformer = Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
+    transformer = _get_transformer_from_crs(src_crs, tgt_crs)
     transformed_coords = transformer.transform(x, y, z, errcheck=trap)
     if z is None:
         xx, yy = transformed_coords
@@ -1639,6 +1646,9 @@ class Mercator(Projection):
 
         super().__init__(proj4_params, globe=globe)
 
+        # Need to have x/y limits defined for the initial hash which
+        # gets used within transform_points for caching
+        self._x_limits = self._y_limits = None
         # Calculate limits.
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
         limits = self.transform_points(self.as_geodetic(),
