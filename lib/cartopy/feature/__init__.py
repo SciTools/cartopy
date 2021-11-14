@@ -493,19 +493,19 @@ COASTLINE = NaturalEarthFeature(
 
 LAKES = NaturalEarthFeature(
     'physical', 'lakes', auto_scaler,
-    edgecolor='face', facecolor=COLORS['water'])
+    edgecolor='none', facecolor=COLORS['water'])
 """Automatically scaled natural and artificial lakes."""
 
 
 LAND = NaturalEarthFeature(
     'physical', 'land', auto_scaler,
-    edgecolor='face', facecolor=COLORS['land'], zorder=-1)
+    edgecolor='none', facecolor=COLORS['land'], zorder=-1)
 """Automatically scaled land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature(
     'physical', 'ocean', auto_scaler,
-    edgecolor='face', facecolor=COLORS['water'], zorder=-1)
+    edgecolor='none', facecolor=COLORS['water'], zorder=-1)
 """Automatically scaled ocean polygons."""
 
 
