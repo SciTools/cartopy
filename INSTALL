@@ -65,6 +65,20 @@ To use it::
 
 You can also use your system's package manager to install the dependencies.
 
+Ubuntu / Debian
+_______________
+
+On debian, installing the dependencies should be as easy as::
+
+    sudo apt -y install libproj-dev libgeos-dev
+
+Then you can proveed to install cartopy using::
+
+    pip3 install cartopy
+
+MacOS
+_____
+
 For macOS, the required dependencies can be installed in the following way::
 
     brew install proj geos
@@ -82,6 +96,9 @@ Still on macOS, make sure you have installed pkg-config and set the
 Then you can install cartopy using::
 
     pip3 install cartopy
+
+Other
+_____
 
 If you are installing dependencies with a package manager on Linux, you may
 need to install the development packages (look for a "-dev" or "-devel" suffix) in addition
