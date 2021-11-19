@@ -68,11 +68,11 @@ You can also use your system's package manager to install the dependencies.
 Ubuntu / Debian
 _______________
 
-On debian, installing the dependencies should be as easy as::
+On debian, you can install the required system libraries using the system package manager::
 
     sudo apt -y install libproj-dev libgeos-dev
 
-Then you can proveed to install cartopy using::
+Then you can proceed to install cartopy using a python package manager::
 
     pip3 install cartopy
 
