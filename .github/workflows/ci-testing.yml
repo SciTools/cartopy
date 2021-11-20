@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    if: github.repository == 'scitools/cartopy'
 
     runs-on: ${{ matrix.os }}
     strategy:
