@@ -18,7 +18,7 @@ from cartopy.tests.mpl import MPL_VERSION
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
-                               style='mpl20')
+                               style='mpl20', tolerance=2.25)
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -30,7 +30,7 @@ def test_global_contour_wrap_new_transform():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
-                               style='mpl20')
+                               style='mpl20', tolerance=2.25)
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
