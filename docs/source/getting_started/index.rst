@@ -28,6 +28,7 @@ attributions for data, and becoming a contributor on the project.
 
 .. toctree::
 
+    ../contribute
     ../citation
     ../copyright
     ../contributors
