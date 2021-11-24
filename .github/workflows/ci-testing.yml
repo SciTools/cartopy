@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
+    if: github.repository == 'scitools/cartopy'
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -35,7 +36,7 @@ jobs:
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped'
         run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy shapely" >> $GITHUB_ENV
+          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj 'proj>=8' pykdtree scipy shapely" >> $GITHUB_ENV
 
       - name: Coverage packages
         id: coverage
@@ -71,6 +72,7 @@ jobs:
           python tools/cartopy_feature_download.py gshhs physical --dry-run
           CARTOPY_GIT_DIR=$PWD
           PYPROJ_GLOBAL_CONTEXT=ON pytest -ra -n 4 --doctest-modules \
+              --color=yes \
               --mpl --mpl-generate-summary=html \
               --mpl-results-path="cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}" \
               --pyargs cartopy ${EXTRA_TEST_ARGS}
