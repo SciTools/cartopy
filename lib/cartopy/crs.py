@@ -2071,7 +2071,7 @@ class Orthographic(Projection):
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
-        self.threshold = np.diff(self._x_limits)[0] * 0.02
+        self.threshold = np.diff(self._x_limits)[0] * 0.001
 
     @property
     def boundary(self):
