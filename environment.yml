@@ -38,6 +38,5 @@ dependencies:
   # Extras
   - flake8
   - pykdtree
-  - requests
   - setuptools_scm
   - setuptools_scm_git_archive
