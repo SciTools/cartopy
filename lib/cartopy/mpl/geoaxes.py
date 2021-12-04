@@ -21,6 +21,7 @@ import weakref
 import matplotlib as mpl
 import matplotlib.artist
 import matplotlib.axes
+import matplotlib.axis
 import matplotlib.contour
 from matplotlib.image import imread
 import matplotlib.transforms as mtransforms
@@ -489,6 +490,23 @@ class GeoAxes(matplotlib.axes.Axes):
         self.apply_aspect()
         for gl in self._gridliners:
             gl._draw_gridliner(renderer=renderer)
+
+    def get_default_bbox_extra_artists(self):
+        """
+        Return a default list of artists that are used for the bounding box
+        calculation. Artists are excluded by not being visible, by being clipped
+        by the axes patch path, or by ``artist.set_in_layout(False)``.
+        """
+        artists_keep = (
+            matplotlib.axes.Axes, matplotlib.axis.Axis, matplotlib.spines.Spine
+        )
+        artists = [
+            artist for artist in super().get_default_bbox_extra_artists()
+            if isinstance(artist, artists_keep)
+            or not isinstance(artist.get_clip_path(), mtransforms.TransformedPatchPath)
+            or artist.get_clip_path()._patch is not self.patch
+        ]
+        return artists
 
     def get_tightbbox(self, renderer, *args, **kwargs):
         """
