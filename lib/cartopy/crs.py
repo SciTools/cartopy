@@ -1402,7 +1402,7 @@ class TransverseMercator(Projection):
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
-                 scale_factor=1.0, globe=None, approx=None):
+                 scale_factor=1.0, globe=None, approx=False):
         """
         Parameters
         ----------
@@ -1428,12 +1428,6 @@ class TransverseMercator(Projection):
             will change to False in the next release.
 
         """
-        if approx is None:
-            warnings.warn('The default value for the *approx* keyword '
-                          'argument to TransverseMercator will change '
-                          'from True to False after 0.18.',
-                          stacklevel=2)
-            approx = True
         proj4_params = [('proj', 'tmerc'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
@@ -1462,13 +1456,7 @@ class TransverseMercator(Projection):
 
 
 class OSGB(TransverseMercator):
-    def __init__(self, approx=None):
-        if approx is None:
-            warnings.warn('The default value for the *approx* keyword '
-                          'argument to OSGB will change from True to '
-                          'False after 0.18.',
-                          stacklevel=2)
-            approx = True
+    def __init__(self, approx=False):
         super().__init__(central_longitude=-2, central_latitude=49,
                          scale_factor=0.9996012717,
                          false_easting=400000, false_northing=-100000,
@@ -1491,13 +1479,7 @@ class OSGB(TransverseMercator):
 
 
 class OSNI(TransverseMercator):
-    def __init__(self, approx=None):
-        if approx is None:
-            warnings.warn('The default value for the *approx* keyword '
-                          'argument to OSNI will change from True to '
-                          'False after 0.18.',
-                          stacklevel=2)
-            approx = True
+    def __init__(self, approx=False):
         globe = Globe(semimajor_axis=6377340.189,
                       semiminor_axis=6356034.447938534)
         super().__init__(central_longitude=-8, central_latitude=53.5,
