@@ -84,3 +84,46 @@ def test_pcolormesh_arg_interpolation():
                           [2, 20],
                           [4, 20]]])
     np.testing.assert_array_almost_equal(expected, coll._coordinates)
+
+
+def test_pcolormesh_datalim():
+    # Test that wrapping the coordinates still produces proper data limits
+    x = [359, 1, 3]
+    y = [-10, 10]
+
+    xs, ys = np.meshgrid(x, y)
+    # Z with the same shape as X/Y to force the interpolation
+    z = np.zeros(xs.shape)
+
+    ax = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto',
+                         transform=ccrs.PlateCarree())
+
+    coll_bbox = coll.get_datalim(ax.transData)
+    np.testing.assert_array_equal(coll_bbox, [[-2, -20], [4, 20]])
+
+    # Non-wrapped coordinates
+    x = [-80, 0, 80]
+    y = [-10, 10]
+
+    xs, ys = np.meshgrid(x, y)
+    ax = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto',
+                         transform=ccrs.PlateCarree())
+
+    coll_bbox = coll.get_datalim(ax.transData)
+    np.testing.assert_array_equal(coll_bbox, [[-120, -20], [120, 20]])
+
+    # A projection that doesn't support wrapping
+    x = [-10, 0, 10]
+    y = [-10, 10]
+
+    xs, ys = np.meshgrid(x, y)
+    ax = plt.subplot(2, 1, 1, projection=ccrs.Orthographic())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto',
+                         transform=ccrs.PlateCarree())
+
+    coll_bbox = coll.get_datalim(ax.transData)
+    expected = [[-1650783.327873, -2181451.330891],
+                [1650783.327873, 2181451.330891]]
+    np.testing.assert_array_almost_equal(coll_bbox, expected)

@@ -52,3 +52,8 @@ class GeoQuadMesh(QuadMesh):
 
         # Update color limits for the rest of the cells.
         super().set_clim(vmin, vmax)
+
+    def get_datalim(self, transData):
+        # Return the corners that were calculated in
+        # the pcolormesh routine.
+        return self._corners
