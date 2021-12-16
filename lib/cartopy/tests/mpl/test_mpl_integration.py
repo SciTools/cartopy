@@ -257,7 +257,7 @@ def test_cursor_values():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['natural_earth_interface'], tolerance=0.21)
+@ImageTesting(['natural_earth_interface'], tolerance=1.21)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 

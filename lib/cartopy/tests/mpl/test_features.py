@@ -16,7 +16,7 @@ from cartopy.tests.mpl import ImageTesting
 
 @pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
-@ImageTesting(['natural_earth'])
+@ImageTesting(['natural_earth'], tolerance=0.97)
 def test_natural_earth():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.add_feature(cfeature.LAND)
