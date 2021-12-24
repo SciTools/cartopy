@@ -28,7 +28,7 @@ installed using the pip installer::
 
     pip install cartopy
 
-To instead install the most recent version found on the GitHub master branch,
+To instead install the most recent version found on the GitHub main branch,
 use::
 
     pip install git+https://github.com/SciTools/cartopy.git
