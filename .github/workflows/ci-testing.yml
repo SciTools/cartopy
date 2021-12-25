@@ -24,18 +24,17 @@ jobs:
           channels: conda-forge/label/testing,conda-forge
 
       - name: Minimum packages
-        # Only run on macos for now
+        # Only run on Linux for now
         # Conda's linux packages don't grab the testing label of matplotlib causing failures due to freetype differences
-        if: matrix.python-version == '3.7' && matrix.os == 'macos-latest'
+        if: matrix.python-version == '3.7' && matrix.os == 'ubuntu-latest'
         id: minimum-packages
         run: |
           echo "PACKAGES=cython=0.28.5 matplotlib=3.1 numpy=1.18 owslib=0.17 pyproj=3.0 proj=8.0 scipy=1.2.0 shapely=1.6.4" >> $GITHUB_ENV
-          echo "CFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped'
         run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy shapely" >> $GITHUB_ENV
+          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj 'proj>=8' pykdtree scipy shapely" >> $GITHUB_ENV
 
       - name: Coverage packages
         id: coverage
@@ -51,6 +50,10 @@ jobs:
           PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyshp pytest"
           PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
           PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+          # openssl 3.0 updated the legacy renegotiation default, which causes
+          # failures in NASA's WMTS server. They will need to update their
+          # server before we can use a newer openssl.
+          PACKAGES="$PACKAGES openssl<3"
           conda install $PACKAGES
           conda info -a
           conda list

@@ -1863,10 +1863,6 @@ class GeoAxes(matplotlib.axes.Axes):
         cross the boundary of the projection.
         """
         t = kwargs.get('transform', None)
-        if not (getattr(t, '_wrappable', False) and
-                getattr(self.projection, '_wrappable', False)):
-            # Nothing to do
-            return collection
 
         # Get the quadmesh data coordinates
         coords = collection._coordinates
@@ -1902,8 +1898,25 @@ class GeoAxes(matplotlib.axes.Axes):
                     np.isnan(diagonal1_lengths) |
                     (diagonal1_lengths > size_limit))
 
-        if not np.any(mask):
-            # No wrapping needed
+        # Update the data limits based on the corners of the mesh
+        # in transformed coordinates, ignoring nan values
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', 'All-NaN slice encountered')
+            # If we have all nans, that is OK and will be handled by the
+            # Bbox calculations later, so suppress that warning from the user
+            corners = ((np.nanmin(xs), np.nanmin(ys)),
+                       (np.nanmax(xs), np.nanmax(ys)))
+        collection._corners = mtransforms.Bbox(corners)
+        self.update_datalim(collection._corners)
+
+        # We need to keep the transform/projection check after
+        # update_datalim to make sure we are getting the proper
+        # datalims on the returned collection
+        if (not (getattr(t, '_wrappable', False) and
+                 getattr(self.projection, '_wrappable', False)) or
+                not np.any(mask)):
+            # If both projections are unwrappable
+            # or if there aren't any points to wrap
             return collection
 
         # Wrapping with gouraud shading is error-prone. We will do our best,

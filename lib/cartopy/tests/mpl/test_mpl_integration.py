@@ -19,7 +19,7 @@ from cartopy.tests.mpl import MPL_VERSION, ImageTesting
 
 # This is due to a change in MPL 3.5 contour line paths changing
 # ever so slightly.
-contour_tol = 2.24
+contour_tol = 2.25
 @pytest.mark.natural_earth
 @ImageTesting(['global_contour_wrap'], style='mpl20',
               tolerance=contour_tol)
@@ -257,7 +257,7 @@ def test_cursor_values():
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['natural_earth_interface'], tolerance=0.21)
+@ImageTesting(['natural_earth_interface'], tolerance=1.21)
 def test_axes_natural_earth_interface():
     rob = ccrs.Robinson()
 
