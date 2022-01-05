@@ -41,7 +41,7 @@ def sample_data_3d(shape):
 def main():
     projection = ccrs.PlateCarree()
     axes_class = (GeoAxes,
-                  dict(map_projection=projection))
+                  dict(projection=projection))
 
     lons, lats, times, data = sample_data_3d((6, 73, 145))
 
