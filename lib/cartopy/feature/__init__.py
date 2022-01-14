@@ -214,7 +214,7 @@ class ShapelyFeature(Feature):
 
         """
         super().__init__(crs, **kwargs)
-        self._geoms = tuple(geometries)
+        self._geoms = tuple(geometries.geoms)
 
     def geometries(self):
         return iter(self._geoms)
