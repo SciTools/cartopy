@@ -6,6 +6,11 @@
 
 .. _cartopy_projections:
 
+
+Cartopy projection list
+=======================
+
+
 PlateCarree
 -----------
 
@@ -55,7 +60,7 @@ AzimuthalEquidistant
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(3.0101, 3))
     ax = plt.axes(projection=ccrs.AzimuthalEquidistant(
                             central_latitude=90))
     ax.coastlines(resolution='110m')
@@ -347,7 +352,7 @@ Geostationary
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(3.0118, 3))
     ax = plt.axes(projection=ccrs.Geostationary())
     ax.coastlines(resolution='110m')
     ax.gridlines()

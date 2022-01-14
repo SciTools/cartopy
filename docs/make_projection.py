@@ -143,7 +143,16 @@ if __name__ == '__main__':
         .. _cartopy_projections:
 
         """
+
+    title = """
+        Cartopy projection list
+        =======================
+
+
+        """
+
     table.write(textwrap.dedent(notes))
+    table.write(textwrap.dedent(title))
 
     def prj_class_sorter(cls):
         return (PRJ_SORT_ORDER.get(cls.__name__, 100),
