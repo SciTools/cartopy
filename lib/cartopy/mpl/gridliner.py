@@ -570,7 +570,7 @@ class Gridliner:
 
     @staticmethod
     def _round(x, base=5):
-        if np.isnan(base):
+        if np.isnan(base) or base == 0:
             base = 5
         return int(base * round(x / base))
 
