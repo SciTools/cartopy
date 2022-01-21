@@ -77,8 +77,12 @@ class Nightshade(ShapelyFeature):
 
         # Solve the generalized equation for omega0, which is the
         # angle of sunrise/sunset from solar noon
-        omega0 = np.rad2deg(np.arccos(np.sin(np.deg2rad(refraction)) /
-                                      np.cos(np.deg2rad(y))))
+        # We need to clip the input to arccos to [-1, 1] due to floating
+        # point precision and arccos creating nans for values outside
+        # of the domain
+        arccos_tmp = np.clip(np.sin(np.deg2rad(refraction)) /
+                             np.cos(np.deg2rad(y)), -1, 1)
+        omega0 = np.rad2deg(np.arccos(arccos_tmp))
 
         # Fill the longitude values from the offset for midnight.
         # This needs to be a closed loop to fill the polygon.
