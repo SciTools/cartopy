@@ -28,7 +28,7 @@ def test_default(south):
     assert_almost_equal(np.array(utm.x_limits),
                         [-250000, 1250000])
     assert_almost_equal(np.array(utm.y_limits),
-                        [-10000000,  25000000])
+                        [-10000000, 25000000])
 
 
 def test_ellipsoid_transform():
@@ -43,7 +43,7 @@ def test_ellipsoid_transform():
     assert_almost_equal(np.array(utm.x_limits),
                         [-250000, 1250000])
     assert_almost_equal(np.array(utm.y_limits),
-                        [-10000000,  25000000])
+                        [-10000000, 25000000])
 
     result = utm.transform_point(-73.5, 40.5, geodetic)
     assert_almost_equal(result, np.array([127106.5 + 500000, 4484124.4]),
