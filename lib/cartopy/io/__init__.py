@@ -323,6 +323,7 @@ class RasterSource:
     .. _raster-source-interface:
 
     """
+
     def validate_projection(self, projection):
         """
         Raise an error if this raster source cannot provide images in the
@@ -370,6 +371,7 @@ class RasterSourceContainer(RasterSource):
     contained :class:`RasterSource`.
 
     """
+
     def __init__(self, contained_source):
         """
         Parameters
@@ -394,6 +396,7 @@ class PostprocessedRasterSource(RasterSourceContainer):
     post-processing step on the raster fetched from the contained source.
 
     """
+
     def __init__(self, contained_source, img_post_process):
         """
         Parameters

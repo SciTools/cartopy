@@ -62,6 +62,7 @@ class Globe(object):
     Define an ellipsoid and, optionally, how to relate it to the real world.
 
     """
+
     def __init__(self, datum=None, ellipse='WGS84',
                  semimajor_axis=None, semiminor_axis=None,
                  flattening=None, inverse_flattening=None,
@@ -501,8 +502,8 @@ class CRS(_CRS):
         #    perturbation to fix this.
         eps = 1e-9
         invalid_x = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0]-eps,
-            source_x + x_perturbations > src_proj.x_limits[1]+eps)
+            source_x + x_perturbations < src_proj.x_limits[0] - eps,
+            source_x + x_perturbations > src_proj.x_limits[1] + eps)
         if invalid_x.any():
             x_perturbations[invalid_x] *= -1
             y_perturbations[invalid_x] *= -1
@@ -511,8 +512,8 @@ class CRS(_CRS):
         #    that will be outside the x-domain when the perturbation is
         #    applied.
         invalid_y = np.logical_or(
-            source_y + y_perturbations < src_proj.y_limits[0]-eps,
-            source_y + y_perturbations > src_proj.y_limits[1]+eps)
+            source_y + y_perturbations < src_proj.y_limits[0] - eps,
+            source_y + y_perturbations > src_proj.y_limits[1] + eps)
         if invalid_y.any():
             x_perturbations[invalid_y] *= -1
             y_perturbations[invalid_y] *= -1
@@ -523,8 +524,8 @@ class CRS(_CRS):
         #    of the perturbation to get the perturbed point within the valid
         #    domain of the projection, and issue a warning if there are.
         problem_points = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0]-eps,
-            source_x + x_perturbations > src_proj.x_limits[1]+eps)
+            source_x + x_perturbations < src_proj.x_limits[0] - eps,
+            source_x + x_perturbations > src_proj.x_limits[1] + eps)
         if problem_points.any():
             warnings.warn('Some vectors at source domain corners '
                           'may not have been transformed correctly')
@@ -554,6 +555,7 @@ class Geodetic(CRS):
     geographical distance and coordinates are measured in degrees.
 
     """
+
     def __init__(self, globe=None):
         """
         Parameters
@@ -577,6 +579,7 @@ class Geocentric(CRS):
     coordinates from the center of the Earth.
 
     """
+
     def __init__(self, globe=None):
         """
         Parameters
@@ -606,6 +609,7 @@ class RotatedGeodetic(CRS):
     central_rotated_longitude value.
 
     """
+
     def __init__(self, pole_longitude, pole_latitude,
                  central_rotated_longitude=0.0, globe=None):
         """
@@ -1507,6 +1511,7 @@ class UTM(Projection):
     Universal Transverse Mercator projection.
 
     """
+
     def __init__(self, zone, southern_hemisphere=False, globe=None):
         """
         Parameters
@@ -1541,13 +1546,13 @@ class UTM(Projection):
     def x_limits(self):
         easting = 5e5
         # allow 50% overflow
-        return (0 - easting/2, 2 * easting + easting/2)
+        return (0 - easting / 2, 2 * easting + easting / 2)
 
     @property
     def y_limits(self):
         northing = 1e7
         # allow 50% overflow
-        return (0 - northing, 2 * northing + northing/2)
+        return (0 - northing, 2 * northing + northing / 2)
 
 
 class EuroPP(UTM):
@@ -1557,6 +1562,7 @@ class EuroPP(UTM):
     Ellipsoid is International 1924, Datum is ED50.
 
     """
+
     def __init__(self):
         globe = Globe(ellipse='intl')
         super().__init__(32, globe=globe)
@@ -2563,6 +2569,7 @@ class Geostationary(_Satellite):
     the satellite.
 
     """
+
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None,
                  sweep_axis='y'):

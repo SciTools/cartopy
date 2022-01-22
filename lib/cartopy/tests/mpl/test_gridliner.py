@@ -419,7 +419,7 @@ def test_gridliner_draw_labels_param(draw_labels, result):
     fig.canvas.draw()
     res = {}
     for loc in 'left', 'right', 'top', 'bottom':
-        artists = getattr(gl, loc+'_label_artists')
+        artists = getattr(gl, f'{loc}_label_artists')
         res[loc] = [a.get_text() for a in artists if a.get_visible()]
     assert res == result
 

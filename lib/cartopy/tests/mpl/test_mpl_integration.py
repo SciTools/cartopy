@@ -137,7 +137,7 @@ def test_global_hexbin_wrap_transform():
     ax.coastlines(zorder=2)
     x, y = np.meshgrid(np.arange(0, 360), np.arange(-90, 91))
     # wrap values so to match x values from test_global_hexbin_wrap
-    x_wrap = np.where(x >= 180, x-360, x)
+    x_wrap = np.where(x >= 180, x - 360, x)
     data = np.sin(np.sqrt(x_wrap**2 + y**2))
     ax.hexbin(
         x.flatten(),
@@ -859,5 +859,5 @@ def test_streamplot():
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
-                  density=(1.5, 2), color=mag, linewidth=2*mag)
+                  density=(1.5, 2), color=mag, linewidth=2 * mag)
     return fig
