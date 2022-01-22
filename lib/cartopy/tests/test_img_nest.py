@@ -149,8 +149,8 @@ def test_intersect(tmp_path):
     for zoom, image_names in expected:
         key = [k for k in nic._ancestry.keys() if k[0] == zoom][0]
         ancestry = nic._ancestry[key]
-        fnames = sorted([os.path.basename(item[1].filename)
-                         for item in ancestry])
+        fnames = sorted(os.path.basename(item[1].filename)
+                        for item in ancestry)
         assert image_names == fnames
 
     # Check image retrieval for specific domain.
@@ -234,14 +234,14 @@ def test_nest(nest_from_config):
         key = ('aerial z0 test', z0.images[0])
         assert ('aerial z1 test', img) in nest_z0_z1._ancestry[key]
 
-    x1_y0_z1, = [img for img in z1.images
-                 if img.filename.endswith('z_1/x_1_y_0.png')]
+    x1_y0_z1, = (img for img in z1.images
+                 if img.filename.endswith('z_1/x_1_y_0.png'))
 
     assert (1, 0, 1) == _tile_from_img(x1_y0_z1)
 
     assert ([(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)] ==
-            sorted([_tile_from_img(img) for z, img in
-                    nest.subtiles(('aerial z1 test', x1_y0_z1))]))
+            sorted(_tile_from_img(img) for z, img in
+                   nest.subtiles(('aerial z1 test', x1_y0_z1))))
 
     # check that the the images in the nest from configuration are the
     # same as those created by hand.

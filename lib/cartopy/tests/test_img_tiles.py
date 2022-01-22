@@ -377,9 +377,9 @@ def test_cache(cache_dir, tmp_path):
     assert sorted(files) == [f for x, y, z, f, h in x_y_z_f_h]
     assert set(files) == gt.cache
 
-    assert sorted(hashes.values()) == sorted([
+    assert sorted(hashes.values()) == sorted(
         h for x, y, z, f, h in x_y_z_f_h
-    ])
+    )
 
     # Update images in cache (all white)
     for f in files:

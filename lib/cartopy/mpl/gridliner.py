@@ -1259,7 +1259,7 @@ class Gridliner:
         return lon_range, lat_range
 
 
-class Label(object):
+class Label:
     """Helper class to manage the attributes for a single label"""
 
     def __init__(self, artist, path, xy, loc):

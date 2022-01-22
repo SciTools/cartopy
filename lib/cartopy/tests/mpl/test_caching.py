@@ -119,7 +119,7 @@ def test_contourf_transform_path_counting():
     with mock.patch('cartopy.mpl.patch.path_to_geos') as path_to_geos_counter:
         x, y, z = sample_data((30, 60))
         cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
-        n_geom = sum([len(c.get_paths()) for c in cs.collections])
+        n_geom = sum(len(c.get_paths()) for c in cs.collections)
         del cs
         fig.canvas.draw()
 

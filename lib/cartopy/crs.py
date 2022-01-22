@@ -41,7 +41,7 @@ WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 
 # Cache the transformer creation method
-@lru_cache()
+@lru_cache
 def _get_transformer_from_crs(src_crs, tgt_crs):
     return Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
 
@@ -57,7 +57,7 @@ def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
     return xx, yy, zz
 
 
-class Globe(object):
+class Globe:
     """
     Define an ellipsoid and, optionally, how to relate it to the real world.
 
@@ -564,7 +564,7 @@ class Geodetic(CRS):
         """
         proj4_params = [('proj', 'lonlat')]
         globe = globe or Globe(datum='WGS84')
-        super(Geodetic, self).__init__(proj4_params, globe)
+        super().__init__(proj4_params, globe)
 
     # XXX Implement fwd such as Basemap's Geod.
     # Would be used in the tissot example.
@@ -587,7 +587,7 @@ class Geocentric(CRS):
         """
         proj4_params = [('proj', 'geocent')]
         globe = globe or Globe(datum='WGS84')
-        super(Geocentric, self).__init__(proj4_params, globe)
+        super().__init__(proj4_params, globe)
 
 
 class RotatedGeodetic(CRS):
