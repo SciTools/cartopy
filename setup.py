@@ -165,7 +165,8 @@ def find_proj_version_by_program(conda=None):
     except (OSError, IndexError, ValueError, subprocess.CalledProcessError):
         warnings.warn(
             f'Unable to determine Proj version. Ensure you have '
-            f'{PROJ_MIN_VERSION_STRING} or later installed, or installation may fail.'
+            f'{PROJ_MIN_VERSION_STRING} or later installed, or installation '
+            f'may fail.'
         )
         proj_version = (0, 0, 0)
 
@@ -181,8 +182,8 @@ if conda is not None and conda in sys.prefix:
     if proj_version < PROJ_MIN_VERSION:
         proj_version_string = '.'.join(str(v) for v in proj_version)
         print(
-            f'Proj version {proj_version_string} is installed, but cartopy requires '
-            f'at least version {PROJ_MIN_VERSION_STRING}',
+            f'Proj version {proj_version_string} is installed, but cartopy'
+            f' requires at least version {PROJ_MIN_VERSION_STRING}',
             file=sys.stderr)
         exit(1)
 
