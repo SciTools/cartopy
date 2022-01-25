@@ -26,8 +26,8 @@ import cartopy.mpl.patch
 def sample_data(shape=(73, 145)):
     """Return ``lons``, ``lats`` and ``data`` of some fake data."""
     nlats, nlons = shape
-    lats = np.linspace(-np.pi / 2, np.pi / 2, nlats)
-    lons = np.linspace(0, 2 * np.pi, nlons)
+    lats = np.linspace(-np.pi / 2, np.pi / 2, nlats, dtype=np.longdouble)
+    lons = np.linspace(0, 2 * np.pi, nlons, dtype=np.longdouble)
     lons, lats = np.meshgrid(lons, lats)
     wave = 0.75 * (np.sin(2 * lats) ** 8) * np.cos(4 * lons)
     mean = 0.5 * np.cos(2 * lats) * ((np.sin(2 * lats)) ** 2 + 2)
