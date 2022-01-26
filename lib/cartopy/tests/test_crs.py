@@ -173,6 +173,17 @@ class TestCRS:
         assert_arr_almost_eq(glon, soly)
         assert_arr_almost_eq(galt, solz)
 
+    def test_transform_points_180(self):
+        # Test that values less than -180 and more than 180
+        # get mapped to the -180, 180 interval
+        x = np.array([-190, 190])
+        y = np.array([0, 0])
+
+        proj = ccrs.PlateCarree()
+
+        res = proj.transform_points(x=x, y=y, src_crs=proj)
+        assert_array_equal(res[..., :2], [[170, 0], [-170, 0]])
+
     def test_globe(self):
         # Ensure the globe affects output.
         rugby_globe = ccrs.Globe(semimajor_axis=9000000,
