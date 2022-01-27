@@ -13,6 +13,7 @@ import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
 
 
@@ -107,6 +108,14 @@ class Test_Axes_add_geometries:
 
         add_feature_method.assert_called_once_with(
             ShapelyFeature(), styler=mock.sentinel.styler)
+
+    @pytest.mark.natural_earth
+    def test_single_geometry(self):
+        # A single geometry is acceptable
+        proj = ccrs.PlateCarree()
+        ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
+                     map_projection=proj)
+        ax.add_geometries(next(cfeature.COASTLINE.geometries()), crs=proj)
 
 
 @cleanup
