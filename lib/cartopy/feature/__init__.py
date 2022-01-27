@@ -214,6 +214,8 @@ class ShapelyFeature(Feature):
 
         """
         super().__init__(crs, **kwargs)
+        if isinstance(geometries, sgeom.base.BaseGeometry):
+            geometries = [geometries]
         self._geoms = tuple(geometries)
 
     def geometries(self):
