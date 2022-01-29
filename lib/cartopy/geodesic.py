@@ -22,7 +22,7 @@ class Geodesic:
 
     """
 
-    def __init__(self, radius=6378137.0, flattening=1/298.257223563):
+    def __init__(self, radius=6378137.0, flattening=1 / 298.257223563):
         """
         Parameters
         ----------

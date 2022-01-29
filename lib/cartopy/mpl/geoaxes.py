@@ -679,7 +679,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for lon, lat in zip(lons, lats):
-            circle = geod.circle(lon, lat, rad_km*1e3, n_samples=n_samples)
+            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
             geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
@@ -1767,8 +1767,8 @@ class GeoAxes(matplotlib.axes.Axes):
                 dX = np.diff(X, axis=1)
                 # account for the wrap
                 if wrap:
-                    dX = (dX + wrap/2) % wrap - wrap/2
-                dX = dX/2
+                    dX = (dX + wrap / 2) % wrap - wrap / 2
+                dX = dX / 2
                 X = np.hstack((X[:, [0]] - dX[:, [0]],
                                X[:, :-1] + dX,
                                X[:, [-1]] + dX[:, [-1]]))

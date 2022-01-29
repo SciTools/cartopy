@@ -32,6 +32,7 @@ class _GeomKey:
     A workaround for Shapely polygons no longer being hashable as of 1.5.13.
 
     """
+
     def __init__(self, geom):
         self._id = id(geom)
 

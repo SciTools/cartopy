@@ -113,6 +113,7 @@ class Scaler:
     """
     General object for handling the scale of the geometries used in a Feature.
     """
+
     def __init__(self, scale):
         self._scale = scale
 
@@ -140,6 +141,7 @@ class AdaptiveScaler(Scaler):
     """
     Automatically select scale of geometries based on extent of plotted axes.
     """
+
     def __init__(self, default_scale, limits):
         """
         Parameters
@@ -198,6 +200,7 @@ class ShapelyFeature(Feature):
     shapely geometries.
 
     """
+
     def __init__(self, geometries, crs, **kwargs):
         """
         Parameters
@@ -229,6 +232,7 @@ class NaturalEarthFeature(Feature):
     See https://www.naturalearthdata.com/
 
     """
+
     def __init__(self, category, name, scale, **kwargs):
         """
         Parameters
@@ -347,6 +351,7 @@ class GSHHSFeature(Feature):
     instantiating multiple GSHHS artists, by reducing repeated file IO.
 
     """
+
     def __init__(self, scale='auto', levels=None, **kwargs):
         super().__init__(cartopy.crs.PlateCarree(), **kwargs)
 
@@ -426,6 +431,7 @@ class WFSFeature(Feature):
     This feature requires additional dependencies. If installed via pip,
     try ``pip install cartopy[ows]``.
     """
+
     def __init__(self, wfs, features, **kwargs):
         """
         Parameters

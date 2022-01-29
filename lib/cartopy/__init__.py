@@ -12,6 +12,7 @@ __document_these__ = ['config']
 # Configuration
 import os.path
 
+
 # for the writable data directory (i.e. the one where new data goes), follow
 # the XDG guidelines found at
 # https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -101,8 +102,7 @@ try:
 except ImportError:
     pass
 
-
 # Commonly used sub-modules. Imported here to provide end-user
 # convenience.
-import cartopy.crs
-import cartopy.feature  # noqa: F401  (flake8 = unused import)
+import cartopy.crs  # noqa: E402  module-level imports
+import cartopy.feature  # noqa: E402,F401  (unused import)
