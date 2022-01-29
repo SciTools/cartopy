@@ -8,7 +8,6 @@ import re
 
 import numpy as np
 import matplotlib.pyplot as plt
-from packaging.version import parse as parse_version
 import pytest
 
 import cartopy.crs as ccrs
@@ -110,9 +109,7 @@ def test_global_scatter_wrap_no_transform():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(
-    filename='global_hexbin_wrap.png',
-    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+@pytest.mark.mpl_image_compare(filename='global_hexbin_wrap.png')
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -131,7 +128,7 @@ def test_global_hexbin_wrap():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     filename='global_hexbin_wrap.png',
-    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+    tolerance=0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -191,8 +188,7 @@ def test_simple_global():
                  id='TransverseMercator'),
 ])
 @pytest.mark.mpl_image_compare(
-    tolerance=(2.61 if MPL_VERSION.release[:2] == (3, 1) else
-               0.97 if MPL_VERSION.release[:2] < (3, 5) else 0.5),
+    tolerance=0.97 if MPL_VERSION.release[:2] < (3, 5) else 0.5,
     style='mpl20')
 def test_global_map(proj):
     if isinstance(proj, tuple):
@@ -844,8 +840,7 @@ def test_barbs_1d_transformed():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     filename='streamplot.png', style='mpl20',
-    tolerance=(42 if MPL_VERSION.release[:2] < (3, 2) else
-               9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5))
+    tolerance=9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)

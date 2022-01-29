@@ -5,7 +5,6 @@
 # licensing details.
 
 import matplotlib.pyplot as plt
-from packaging.version import parse as parse_version
 import pytest
 
 import cartopy.crs as ccrs
@@ -35,7 +34,7 @@ def test_global_map():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='contour_label.png',
                                tolerance=(9.9
-                                          if MPL_VERSION < parse_version('3.2')
+                                          if MPL_VERSION.release[:2] < (3, 3)
                                           else 0.5))
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
