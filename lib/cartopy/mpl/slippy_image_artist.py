@@ -24,6 +24,7 @@ class SlippyImageArtist(AxesImage):
     Kwargs are passed to the AxesImage constructor.
 
     """
+
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
         # This artist fills the Axes, so should not influence layout.

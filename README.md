@@ -17,14 +17,14 @@
 <a href="https://github.com/SciTools/cartopy/releases">
 <img src="https://img.shields.io/github/tag/SciTools/cartopy.svg"
  alt="Latest version" /></a>
-<a href="https://github.com/SciTools/cartopy/commits/master">
+<a href="https://github.com/SciTools/cartopy/commits/main">
 <img src="https://img.shields.io/github/commits-since/SciTools/cartopy/latest.svg"
  alt="Commits since last release" /></a>
 <a href="https://github.com/SciTools/cartopy/graphs/contributors">
 <img src="https://img.shields.io/github/contributors/SciTools/cartopy.svg"
  alt="# contributors" /></a>
 <a href="https://travis-ci.org/SciTools/cartopy/branches">
-<img src="https://api.travis-ci.org/repositories/SciTools/cartopy.svg?branch=master"
+<img src="https://api.travis-ci.org/repositories/SciTools/cartopy.svg?branch=main"
  alt="Travis-CI" /></a>
 <a href="https://zenodo.org/badge/latestdoi/5282596">
 <img src="https://zenodo.org/badge/5282596.svg"

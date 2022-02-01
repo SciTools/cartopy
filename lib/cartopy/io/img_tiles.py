@@ -355,6 +355,7 @@ class Stamen(GoogleWTS):
      * https://github.com/migurski/DEM-Tools
 
     """
+
     def __init__(self, style='toner',
                  desired_tile_form='RGB', cache=False):
         super().__init__(desired_tile_form=desired_tile_form,
@@ -373,6 +374,7 @@ class MapboxTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
+
     def __init__(self, access_token, map_id, cache=False):
         """
         Set up a new Mapbox tiles instance.
@@ -416,6 +418,7 @@ class MapboxStyleTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
+
     def __init__(self, access_token, username, map_id, cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
@@ -457,6 +460,7 @@ class QuadtreeTiles(GoogleWTS):
     where the length of the quatree is the zoom level in Google Tile terms.
 
     """
+
     def _image_url(self, tile):
         return ('http://ecn.dynamic.t1.tiles.virtualearth.net/comp/'
                 f'CompositionHandler/{tile}?mkt=en-'
@@ -548,6 +552,7 @@ class OrdnanceSurvey(GoogleWTS):
     https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
     """
     # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
+
     def __init__(self,
                  apikey,
                  layer='Road',

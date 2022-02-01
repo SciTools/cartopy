@@ -78,7 +78,7 @@ class Test_LambertConformal_standard_parallels:
     def test_single_npole(self):
         n_pole_crs = ccrs.LambertConformal(standard_parallels=[1.])
         assert_array_almost_equal(n_pole_crs.x_limits,
-                                  (-20130569,  20130569),
+                                  (-20130569, 20130569),
                                   decimal=0)
         assert_array_almost_equal(n_pole_crs.y_limits,
                                   (-8170229, 726200683),

@@ -8,7 +8,6 @@ import re
 
 import numpy as np
 import matplotlib.pyplot as plt
-from packaging.version import parse as parse_version
 import pytest
 
 import cartopy.crs as ccrs
@@ -110,9 +109,7 @@ def test_global_scatter_wrap_no_transform():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(
-    filename='global_hexbin_wrap.png',
-    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+@pytest.mark.mpl_image_compare(filename='global_hexbin_wrap.png')
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -131,13 +128,13 @@ def test_global_hexbin_wrap():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     filename='global_hexbin_wrap.png',
-    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+    tolerance=0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
     x, y = np.meshgrid(np.arange(0, 360), np.arange(-90, 91))
     # wrap values so to match x values from test_global_hexbin_wrap
-    x_wrap = np.where(x >= 180, x-360, x)
+    x_wrap = np.where(x >= 180, x - 360, x)
     data = np.sin(np.sqrt(x_wrap**2 + y**2))
     ax.hexbin(
         x.flatten(),
@@ -146,22 +143,6 @@ def test_global_hexbin_wrap_transform():
         gridsize=20,
         zorder=1,
     )
-    return ax.figure
-
-
-@pytest.mark.mpl_image_compare(filename='global_map.png', tolerance=0.55)
-def test_global_map():
-    ax = plt.axes(projection=ccrs.Robinson())
-#    ax.coastlines()
-#    ax.gridlines(5)
-
-    ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-
-    ax.plot([-0.08, 132], [51.53, 43.17], color='red',
-            transform=ccrs.PlateCarree())
-
-    ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
-            transform=ccrs.Geodetic())
     return ax.figure
 
 
@@ -177,70 +158,53 @@ def test_simple_global():
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='multiple_projections5.png',
-                               tolerance=2.05)
-def test_multiple_projections():
-
-    projections = [ccrs.PlateCarree(),
-                   ccrs.Robinson(),
-                   ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
-                   ccrs.OSGB(approx=True),
-                   ccrs.TransverseMercator(approx=True),
-                   ccrs.Mercator(min_latitude=-85., max_latitude=85.),
-                   ccrs.LambertCylindrical(),
-                   ccrs.Miller(),
-                   ccrs.Gnomonic(),
-                   ccrs.Stereographic(),
-                   ccrs.NorthPolarStereo(),
-                   ccrs.SouthPolarStereo(),
-                   ccrs.Orthographic(),
-                   ccrs.Mollweide(),
-                   ccrs.InterruptedGoodeHomolosine(emphasis='land'),
-                   ccrs.EckertI(),
-                   ccrs.EckertII(),
-                   ccrs.EckertIII(),
-                   ccrs.EckertIV(),
-                   ccrs.EckertV(),
-                   ccrs.EckertVI(),
-                   ]
-
-    rows = np.ceil(len(projections) / 5).astype(int)
-
-    fig = plt.figure(figsize=(10, 2 * rows))
-    for i, prj in enumerate(projections, 1):
-        ax = fig.add_subplot(rows, 5, i, projection=prj)
-
-        ax.set_global()
-
-        ax.coastlines(resolution="110m")
-
-        ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-        ax.plot([-0.08, 132], [51.53, 43.17], color='red',
-                transform=ccrs.PlateCarree())
-        ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
-                transform=prj.as_geodetic())
-
-    return fig
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='multiple_projections520.png',
-                               tolerance=0.641)
-def test_multiple_projections_520():
-    # Test projections added in Proj 5.2.0.
+@pytest.mark.parametrize('proj', [
+    ccrs.EckertI,
+    ccrs.EckertII,
+    ccrs.EckertIII,
+    ccrs.EckertIV,
+    ccrs.EckertV,
+    ccrs.EckertVI,
+    ccrs.EqualEarth,
+    ccrs.Gnomonic,
+    pytest.param((ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
+                 id='InterruptedGoodeHomolosine'),
+    ccrs.LambertCylindrical,
+    pytest.param((ccrs.Mercator, dict(min_latitude=-85, max_latitude=85)),
+                 id='Mercator'),
+    ccrs.Miller,
+    ccrs.Mollweide,
+    ccrs.NorthPolarStereo,
+    ccrs.Orthographic,
+    pytest.param((ccrs.OSGB, dict(approx=True)), id='OSGB'),
+    ccrs.PlateCarree,
+    ccrs.Robinson,
+    pytest.param((ccrs.RotatedPole,
+                  dict(pole_latitude=45, pole_longitude=180)),
+                 id='RotatedPole'),
+    ccrs.Stereographic,
+    ccrs.SouthPolarStereo,
+    pytest.param((ccrs.TransverseMercator, dict(approx=True)),
+                 id='TransverseMercator'),
+])
+@pytest.mark.mpl_image_compare(
+    tolerance=0.97 if MPL_VERSION.release[:2] < (3, 5) else 0.5,
+    style='mpl20')
+def test_global_map(proj):
+    if isinstance(proj, tuple):
+        proj, kwargs = proj
+    else:
+        kwargs = {}
+    proj = proj(**kwargs)
 
     fig = plt.figure(figsize=(2, 2))
-    ax = fig.add_subplot(1, 1, 1, projection=ccrs.EqualEarth())
-
+    ax = fig.add_subplot(projection=proj)
     ax.set_global()
-
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
 
     ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-
     ax.plot([-0.08, 132], [51.53, 43.17], color='red',
             transform=ccrs.PlateCarree())
-
     ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
             transform=ccrs.Geodetic())
 
@@ -876,8 +840,7 @@ def test_barbs_1d_transformed():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     filename='streamplot.png', style='mpl20',
-    tolerance=(42 if MPL_VERSION.release[:2] < (3, 2) else
-               9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5))
+    tolerance=9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -891,5 +854,5 @@ def test_streamplot():
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
-                  density=(1.5, 2), color=mag, linewidth=2*mag)
+                  density=(1.5, 2), color=mag, linewidth=2 * mag)
     return fig

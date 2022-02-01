@@ -41,7 +41,7 @@ WGS84_SEMIMINOR_AXIS = 6356752.3142
 
 
 # Cache the transformer creation method
-@lru_cache()
+@lru_cache
 def _get_transformer_from_crs(src_crs, tgt_crs):
     return Transformer.from_crs(src_crs, tgt_crs, always_xy=True)
 
@@ -57,11 +57,12 @@ def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
     return xx, yy, zz
 
 
-class Globe(object):
+class Globe:
     """
     Define an ellipsoid and, optionally, how to relate it to the real world.
 
     """
+
     def __init__(self, datum=None, ellipse='WGS84',
                  semimajor_axis=None, semiminor_axis=None,
                  flattening=None, inverse_flattening=None,
@@ -501,8 +502,8 @@ class CRS(_CRS):
         #    perturbation to fix this.
         eps = 1e-9
         invalid_x = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0]-eps,
-            source_x + x_perturbations > src_proj.x_limits[1]+eps)
+            source_x + x_perturbations < src_proj.x_limits[0] - eps,
+            source_x + x_perturbations > src_proj.x_limits[1] + eps)
         if invalid_x.any():
             x_perturbations[invalid_x] *= -1
             y_perturbations[invalid_x] *= -1
@@ -511,8 +512,8 @@ class CRS(_CRS):
         #    that will be outside the x-domain when the perturbation is
         #    applied.
         invalid_y = np.logical_or(
-            source_y + y_perturbations < src_proj.y_limits[0]-eps,
-            source_y + y_perturbations > src_proj.y_limits[1]+eps)
+            source_y + y_perturbations < src_proj.y_limits[0] - eps,
+            source_y + y_perturbations > src_proj.y_limits[1] + eps)
         if invalid_y.any():
             x_perturbations[invalid_y] *= -1
             y_perturbations[invalid_y] *= -1
@@ -523,8 +524,8 @@ class CRS(_CRS):
         #    of the perturbation to get the perturbed point within the valid
         #    domain of the projection, and issue a warning if there are.
         problem_points = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0]-eps,
-            source_x + x_perturbations > src_proj.x_limits[1]+eps)
+            source_x + x_perturbations < src_proj.x_limits[0] - eps,
+            source_x + x_perturbations > src_proj.x_limits[1] + eps)
         if problem_points.any():
             warnings.warn('Some vectors at source domain corners '
                           'may not have been transformed correctly')
@@ -554,6 +555,7 @@ class Geodetic(CRS):
     geographical distance and coordinates are measured in degrees.
 
     """
+
     def __init__(self, globe=None):
         """
         Parameters
@@ -564,7 +566,7 @@ class Geodetic(CRS):
         """
         proj4_params = [('proj', 'lonlat')]
         globe = globe or Globe(datum='WGS84')
-        super(Geodetic, self).__init__(proj4_params, globe)
+        super().__init__(proj4_params, globe)
 
     # XXX Implement fwd such as Basemap's Geod.
     # Would be used in the tissot example.
@@ -577,6 +579,7 @@ class Geocentric(CRS):
     coordinates from the center of the Earth.
 
     """
+
     def __init__(self, globe=None):
         """
         Parameters
@@ -587,7 +590,7 @@ class Geocentric(CRS):
         """
         proj4_params = [('proj', 'geocent')]
         globe = globe or Globe(datum='WGS84')
-        super(Geocentric, self).__init__(proj4_params, globe)
+        super().__init__(proj4_params, globe)
 
 
 class RotatedGeodetic(CRS):
@@ -606,6 +609,7 @@ class RotatedGeodetic(CRS):
     central_rotated_longitude value.
 
     """
+
     def __init__(self, pole_longitude, pole_latitude,
                  central_rotated_longitude=0.0, globe=None):
         """
@@ -1402,7 +1406,7 @@ class TransverseMercator(Projection):
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
-                 scale_factor=1.0, globe=None, approx=None):
+                 scale_factor=1.0, globe=None, approx=False):
         """
         Parameters
         ----------
@@ -1428,12 +1432,6 @@ class TransverseMercator(Projection):
             will change to False in the next release.
 
         """
-        if approx is None:
-            warnings.warn('The default value for the *approx* keyword '
-                          'argument to TransverseMercator will change '
-                          'from True to False after 0.18.',
-                          stacklevel=2)
-            approx = True
         proj4_params = [('proj', 'tmerc'), ('lon_0', central_longitude),
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
@@ -1462,13 +1460,7 @@ class TransverseMercator(Projection):
 
 
 class OSGB(TransverseMercator):
-    def __init__(self, approx=None):
-        if approx is None:
-            warnings.warn('The default value for the *approx* keyword '
-                          'argument to OSGB will change from True to '
-                          'False after 0.18.',
-                          stacklevel=2)
-            approx = True
+    def __init__(self, approx=False):
         super().__init__(central_longitude=-2, central_latitude=49,
                          scale_factor=0.9996012717,
                          false_easting=400000, false_northing=-100000,
@@ -1491,13 +1483,7 @@ class OSGB(TransverseMercator):
 
 
 class OSNI(TransverseMercator):
-    def __init__(self, approx=None):
-        if approx is None:
-            warnings.warn('The default value for the *approx* keyword '
-                          'argument to OSNI will change from True to '
-                          'False after 0.18.',
-                          stacklevel=2)
-            approx = True
+    def __init__(self, approx=False):
         globe = Globe(semimajor_axis=6377340.189,
                       semiminor_axis=6356034.447938534)
         super().__init__(central_longitude=-8, central_latitude=53.5,
@@ -1525,6 +1511,7 @@ class UTM(Projection):
     Universal Transverse Mercator projection.
 
     """
+
     def __init__(self, zone, southern_hemisphere=False, globe=None):
         """
         Parameters
@@ -1559,13 +1546,13 @@ class UTM(Projection):
     def x_limits(self):
         easting = 5e5
         # allow 50% overflow
-        return (0 - easting/2, 2 * easting + easting/2)
+        return (0 - easting / 2, 2 * easting + easting / 2)
 
     @property
     def y_limits(self):
         northing = 1e7
         # allow 50% overflow
-        return (0 - northing, 2 * northing + northing/2)
+        return (0 - northing, 2 * northing + northing / 2)
 
 
 class EuroPP(UTM):
@@ -1575,6 +1562,7 @@ class EuroPP(UTM):
     Ellipsoid is International 1924, Datum is ED50.
 
     """
+
     def __init__(self):
         globe = Globe(ellipse='intl')
         super().__init__(32, globe=globe)
@@ -2581,6 +2569,7 @@ class Geostationary(_Satellite):
     the satellite.
 
     """
+
     def __init__(self, central_longitude=0.0, satellite_height=35785831,
                  false_easting=0, false_northing=0, globe=None,
                  sweep_axis='y'):

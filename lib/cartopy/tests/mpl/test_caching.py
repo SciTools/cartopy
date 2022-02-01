@@ -26,8 +26,8 @@ import cartopy.mpl.patch
 def sample_data(shape=(73, 145)):
     """Return ``lons``, ``lats`` and ``data`` of some fake data."""
     nlats, nlons = shape
-    lats = np.linspace(-np.pi / 2, np.pi / 2, nlats)
-    lons = np.linspace(0, 2 * np.pi, nlons)
+    lats = np.linspace(-np.pi / 2, np.pi / 2, nlats, dtype=np.longdouble)
+    lons = np.linspace(0, 2 * np.pi, nlons, dtype=np.longdouble)
     lons, lats = np.meshgrid(lons, lats)
     wave = 0.75 * (np.sin(2 * lats) ** 8) * np.cos(4 * lons)
     mean = 0.5 * np.cos(2 * lats) * ((np.sin(2 * lats)) ** 2 + 2)
@@ -119,7 +119,7 @@ def test_contourf_transform_path_counting():
     with mock.patch('cartopy.mpl.patch.path_to_geos') as path_to_geos_counter:
         x, y, z = sample_data((30, 60))
         cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
-        n_geom = sum([len(c.get_paths()) for c in cs.collections])
+        n_geom = sum(len(c.get_paths()) for c in cs.collections)
         del cs
         fig.canvas.draw()
 

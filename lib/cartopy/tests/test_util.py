@@ -29,7 +29,7 @@ class Test_add_cyclic_point:
     def test_data_and_coord(self):
         c_data, c_lons = add_cyclic_point(self.data2d, coord=self.lons)
         r_data = np.concatenate((self.data2d, self.data2d[:, :1]), axis=1)
-        r_lons = np.concatenate((self.lons, np.array([360.])))
+        r_lons = np.concatenate((self.lons, np.array([360])))
         assert_array_equal(c_data, r_data)
         assert_array_equal(c_lons, r_lons)
 
@@ -41,7 +41,7 @@ class Test_add_cyclic_point:
     def test_data_and_coord_with_axis(self):
         c_data, c_lons = add_cyclic_point(self.data4d, coord=self.lons, axis=1)
         r_data = np.concatenate((self.data4d, self.data4d[:, :1]), axis=1)
-        r_lons = np.concatenate((self.lons, np.array([360.])))
+        r_lons = np.concatenate((self.lons, np.array([360])))
         assert_array_equal(c_data, r_data)
         assert_array_equal(c_lons, r_lons)
 
@@ -86,7 +86,7 @@ class TestAddCyclic:
         # len(lat) != data.shape[0]
         # len(lon) == data.shape[1]
         cls.lons = np.arange(0, 360, 60)
-        cls.lats = np.arange(-90, 90, 180/5)
+        cls.lats = np.arange(-90, 90, 180 / 5)
         # 2d lat and lon
         cls.lon2d, cls.lat2d = np.meshgrid(cls.lons, cls.lats)
         # 3d lat and lon but with different 3rd dimension (4) as 4d data (2)
@@ -95,13 +95,13 @@ class TestAddCyclic:
         # cyclic data, lon, lat
         cls.c_data2d = np.concatenate((cls.data2d, cls.data2d[:, :1]), axis=1)
         cls.c_data4d = np.concatenate((cls.data4d, cls.data4d[:, :1]), axis=1)
-        cls.c_lons = np.concatenate((cls.lons, np.array([360.])))
+        cls.c_lons = np.concatenate((cls.lons, np.array([360])))
         cls.c_lon2d = np.concatenate(
-            (cls.lon2d, np.full((cls.lon2d.shape[0], 1), 360.)),
+            (cls.lon2d, np.full((cls.lon2d.shape[0], 1), 360)),
             axis=1)
         cls.c_lon3d = np.concatenate(
             (cls.lon3d,
-             np.full((cls.lon3d.shape[0], 1, cls.lon3d.shape[2]), 360.)),
+             np.full((cls.lon3d.shape[0], 1, cls.lon3d.shape[2]), 360)),
             axis=1)
         cls.c_lats = cls.lats
         cls.c_lat2d = np.concatenate((cls.lat2d, cls.lat2d[:, -1:]), axis=1)
@@ -246,7 +246,7 @@ class TestAddCyclic:
                                             y=self.lat2d)
         r_data = ma.concatenate((self.data2d, self.data2d[:, :1]), axis=1)
         r_lons = np.concatenate((self.lon2d,
-                                 np.full((self.lon2d.shape[0], 1), 360.)),
+                                 np.full((self.lon2d.shape[0], 1), 360)),
                                 axis=1)
         assert_array_equal(c_data, r_data)
         assert_array_equal(c_lons, r_lons)
@@ -261,11 +261,11 @@ class TestAddCyclic:
         new_lats = np.deg2rad(self.lat2d)
         c_data, c_lons, c_lats = add_cyclic(self.data4d, x=new_lons,
                                             y=new_lats, axis=1,
-                                            cyclic=np.deg2rad(360.))
+                                            cyclic=np.deg2rad(360))
         r_lons = np.concatenate(
             (new_lons,
              np.full((new_lons.shape[0], 1, new_lons.shape[2]),
-                     np.deg2rad(360.))),
+                     np.deg2rad(360))),
             axis=1)
         r_lats = np.concatenate((new_lats, new_lats[:, -1:]), axis=1)
         assert_array_equal(c_data, self.c_data4d)
@@ -279,13 +279,13 @@ class TestAddCyclic:
         r_data = np.concatenate((self.data2d, self.data2d[:, :1]), axis=1)
         r_lons = np.concatenate(
             (new_lons,
-             np.full((new_lons.shape[0], 1), np.deg2rad(360.))),
+             np.full((new_lons.shape[0], 1), np.deg2rad(360))),
             axis=1)
         r_lats = np.concatenate((new_lats, new_lats[:, -1:]), axis=1)
         c_data, c_lons, c_lats = add_cyclic(r_data, x=r_lons,
                                             y=r_lats,
 
-                                            cyclic=np.deg2rad(360.))
+                                            cyclic=np.deg2rad(360))
         assert_array_equal(c_data, self.c_data2d)
         assert_array_equal(c_lons, r_lons)
         assert_array_equal(c_lats, r_lats)
@@ -293,7 +293,7 @@ class TestAddCyclic:
     def test_precision_has_cyclic(self):
         '''Test precision keyword detecting cyclic point'''
         r_data = np.concatenate((self.data2d, self.data2d[:, :1]), axis=1)
-        r_lons = np.concatenate((self.lons, np.array([360.+1e-3])))
+        r_lons = np.concatenate((self.lons, np.array([360 + 1e-3])))
         c_data, c_lons = add_cyclic(r_data, x=r_lons, precision=1e-2)
         assert_array_equal(c_data, r_data)
         assert_array_equal(c_lons, r_lons)
@@ -301,10 +301,10 @@ class TestAddCyclic:
     def test_precision_has_cyclic_no(self):
         '''Test precision keyword detecting no cyclic point'''
         new_data = np.concatenate((self.data2d, self.data2d[:, :1]), axis=1)
-        new_lons = np.concatenate((self.lons, np.array([360.+1e-3])))
+        new_lons = np.concatenate((self.lons, np.array([360. + 1e-3])))
         c_data, c_lons = add_cyclic(new_data, x=new_lons, precision=2e-4)
         r_data = np.concatenate((new_data, new_data[:, :1]), axis=1)
-        r_lons = np.concatenate((new_lons, np.array([360.])))
+        r_lons = np.concatenate((new_lons, np.array([360])))
         assert_array_equal(c_data, r_data)
         assert_array_equal(c_lons, r_lons)
 
@@ -360,20 +360,20 @@ class TestHasCyclic:
 
     # 1d lon (6), lat (5)
     lons = np.arange(0, 360, 60)
-    lats = np.arange(-90, 90, 180/5)
+    lats = np.arange(-90, 90, 180 / 5)
     # 2d lon, lat
     lon2d, lat2d = np.meshgrid(lons, lats)
     # 3d lon
     lon3d = np.repeat(lon2d, 4).reshape((*lon2d.shape, 4))
     # cyclic lon 1d, 2d, 3d
-    c_lons = np.concatenate((lons, np.array([360.])))
+    c_lons = np.concatenate((lons, np.array([360])))
     c_lon2d = np.concatenate(
         (lon2d,
-         np.full((lon2d.shape[0], 1), 360.)),
+         np.full((lon2d.shape[0], 1), 360)),
         axis=1)
     c_lon3d = np.concatenate(
         (lon3d,
-         np.full((lon3d.shape[0], 1, lon3d.shape[2]), 360.)),
+         np.full((lon3d.shape[0], 1, lon3d.shape[2]), 360)),
         axis=1)
 
     @pytest.mark.parametrize(
@@ -406,11 +406,11 @@ class TestHasCyclic:
         '''Test 3d with axis and cyclic keywords'''
         new_clons = np.deg2rad(self.c_lon3d)
         new_lons = np.deg2rad(self.lon3d)
-        assert has_cyclic(new_clons, axis=1, cyclic=np.deg2rad(360.))
-        assert not has_cyclic(new_lons, axis=1, cyclic=np.deg2rad(360.))
+        assert has_cyclic(new_clons, axis=1, cyclic=np.deg2rad(360))
+        assert not has_cyclic(new_lons, axis=1, cyclic=np.deg2rad(360))
 
     def test_1d_precision(self):
         '''Test 1d with precision keyword'''
-        new_clons = np.concatenate((self.lons, np.array([360.+1e-3])))
+        new_clons = np.concatenate((self.lons, np.array([360 + 1e-3])))
         assert has_cyclic(new_clons, precision=1e-2)
         assert not has_cyclic(new_clons, precision=2e-4)

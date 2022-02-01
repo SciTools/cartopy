@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9, '3.10']
     defaults:
       run:
         shell: bash -l {0}
@@ -25,13 +25,12 @@ jobs:
           channels: conda-forge/label/testing,conda-forge
 
       - name: Minimum packages
-        # Only run on macos for now
+        # Only run on Linux for now
         # Conda's linux packages don't grab the testing label of matplotlib causing failures due to freetype differences
-        if: matrix.python-version == '3.7' && matrix.os == 'macos-latest'
+        if: matrix.python-version == '3.8' && matrix.os == 'ubuntu-latest'
         id: minimum-packages
         run: |
-          echo "PACKAGES=cython=0.28.5 matplotlib=3.1 numpy=1.18 owslib=0.17 pyproj=3.0 proj=8.0 scipy=1.2.0 shapely=1.6.4" >> $GITHUB_ENV
-          echo "CFLAGS=-stdlib=libc++" >> $GITHUB_ENV
+          echo "PACKAGES=cython=0.29.15 matplotlib-base=3.2.1 numpy=1.19 owslib=0.19.1 pyproj=3.0 proj=8.0 scipy=1.4.0 shapely=1.6.4" >> $GITHUB_ENV
 
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped'
@@ -41,7 +40,7 @@ jobs:
       - name: Coverage packages
         id: coverage
         # only want the coverage to be run on the latest ubuntu
-        if: matrix.python-version == '3.9' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
         run: |
           echo "PACKAGES=$PACKAGES pytest-cov coveralls" >> $GITHUB_ENV
           echo "CYTHON_COVERAGE=1" >> $GITHUB_ENV
@@ -52,6 +51,10 @@ jobs:
           PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl"
           PACKAGES="$PACKAGES pytest-xdist setuptools_scm"
           PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+          # openssl 3.0 updated the legacy renegotiation default, which causes
+          # failures in NASA's WMTS server. They will need to update their
+          # server before we can use a newer openssl.
+          PACKAGES="$PACKAGES openssl<3"
           conda install $PACKAGES
           conda info -a
           conda list

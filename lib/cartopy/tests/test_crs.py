@@ -66,7 +66,7 @@ class TestCRS:
 
         # results obtained by streetmap.co.uk.
         lat, lon = np.array([50.462023, -3.478831], dtype=np.double)
-        east, north = np.array([295132.1,  63512.6], dtype=np.double)
+        east, north = np.array([295132.1, 63512.6], dtype=np.double)
 
         # note the handling of precision here...
         assert_almost_equal(osgb.transform_point(lon, lat, ll), [east, north],
@@ -89,7 +89,7 @@ class TestCRS:
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        assert_almost_equal(uk.x_limits, (-104009.357,  688806.007), decimal=3)
+        assert_almost_equal(uk.x_limits, (-104009.357, 688806.007), decimal=3)
         assert_almost_equal(uk.y_limits, (-8908.37, 1256558.45), decimal=2)
         assert_almost_equal(uk.threshold, 7928.15, decimal=2)
         self._check_osgb(uk)
