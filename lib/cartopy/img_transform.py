@@ -325,7 +325,7 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
                                                       desired_nx)
 
         bounds = _determine_bounds(source_x_coords, source_y_coords,
-                                    source_proj)
+                                   source_proj)
 
         outside_source_domain = ((target_in_source_y >= bounds['y'][1]) |
                                  (target_in_source_y <= bounds['y'][0]))
