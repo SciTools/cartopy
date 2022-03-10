@@ -220,7 +220,7 @@ def _determine_bounds(x_coords, y_coords, source_cs):
 
 
 def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
-           target_x_points, target_y_points, mask_extrapolated=False, source_cs=None):
+           target_x_points, target_y_points, mask_extrapolated=False):
     """
     Regrid the data array from the source projection to the target projection.
 
@@ -249,9 +249,6 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
         Assume that the source coordinate is rectilinear and so mask the
         resulting target grid values which lie outside the source grid domain.
         Defaults to False.
-    source_cs: optional
-        .. deprecated:: 0.20.3
-           Please use `source_proj` argument instead.
 
     Returns
     -------
@@ -259,9 +256,6 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
         The data array regridded in the target projection.
 
     """
-    if source_cs is not None:
-        warnings.warn("The source_cs argument is deprecated. Please use source_proj instead.")
-        source_proj = source_cs
 
     # Stack our original xyz array, this will also wrap coords when necessary
     xyz = source_proj.transform_points(source_proj,
