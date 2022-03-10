@@ -249,8 +249,9 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
         Assume that the source coordinate is rectilinear and so mask the
         resulting target grid values which lie outside the source grid domain.
         Defaults to False.
-    source_cs
-        Deprecated, please use source_proj instead.
+    source_cs: optional
+        .. deprecated:: 0.20.3
+           Please use `source_proj` argument instead.
 
     Returns
     -------
@@ -259,7 +260,7 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
 
     """
     if source_cs is not None:
-        warnings.warn("The source_cs keyword argument is deprecated. Please use source_proj instead.")
+        warnings.warn("The source_cs argument is deprecated. Please use source_proj instead.")
         source_proj = source_cs
 
     # Stack our original xyz array, this will also wrap coords when necessary
