@@ -272,11 +272,21 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     # get hold of the Downloader (typically a NEShpDownloader instance)
     # which we can then simply call its path method to get the appropriate
     # shapefile (it will download if necessary)
-    ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
-                                            resolution, category, name))
-    format_dict = {'config': config, 'category': category,
-                   'name': name, 'resolution': resolution}
-    return ne_downloader.path(format_dict)
+    # use default shapefiles from repo_data_dir if available - this is useful
+    # when runing cartopy on a non-internet facing system where manual
+    # copy of natural earth shapefiles are required otherwise.
+    repo_data = os.path.join(
+        config['repo_data_dir'],
+        f'shapefiles/natural_earth/{category}/ne_{resolution}_{name}.shp')
+
+    if os.path.exists(repo_data):
+        return repo_data
+    else:
+        ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
+                                                resolution, category, name))
+        format_dict = {'config': config, 'category': category,
+                       'name': name, 'resolution': resolution}
+        return ne_downloader.path(format_dict)
 
 
 class NEShpDownloader(Downloader):
