@@ -30,10 +30,9 @@ import shutil
 import subprocess
 import warnings
 from collections import defaultdict
-from sysconfig import get_config_var
 from distutils.util import convert_path
-
-from setuptools import Command, Extension, setup
+from sysconfig import get_config_var
+from setuptools import Extension, setup
 
 """
 Distribution definition for Cartopy.
