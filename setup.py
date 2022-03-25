@@ -24,7 +24,6 @@ Make sure you have pip >= 9.0.1.
     sys.exit(error)
 
 
-import fnmatch
 import os
 import shutil
 import subprocess
@@ -32,7 +31,7 @@ import warnings
 from collections import defaultdict
 from sysconfig import get_config_var
 
-from setuptools import Command, Extension, convert_path, setup
+from setuptools import Extension, find_packages, setup
 
 """
 Distribution definition for Cartopy.
@@ -76,31 +75,6 @@ def file_walk_relative(top, remove=''):
     for root, dirs, files in os.walk(top):
         for file in files:
             yield os.path.join(root, file).replace(remove, '')
-
-
-def find_package_tree(root_path, root_package):
-    """
-    Return the package and all its sub-packages.
-
-    Automated package discovery - extracted/modified from Distutils Cookbook:
-    https://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery
-
-    """
-    packages = [root_package]
-    # Accept a root_path with Linux path separators.
-    root_path = root_path.replace('/', os.path.sep)
-    root_count = len(root_path.split(os.path.sep))
-    for (dir_path, dir_names, _) in os.walk(convert_path(root_path)):
-        # Prune dir_names *in-place* to prevent unwanted directory recursion
-        for dir_name in list(dir_names):
-            if not os.path.isfile(os.path.join(dir_path, dir_name,
-                                               '__init__.py')):
-                dir_names.remove(dir_name)
-        if dir_names:
-            prefix = dir_path.split(os.path.sep)[root_count:]
-            packages.extend(['.'.join([root_package] + prefix + [dir_name])
-                             for dir_name in dir_names])
-    return packages
 
 
 # Dependency checks
@@ -344,7 +318,7 @@ setup(
         'write_to': 'lib/cartopy/_version.py',
     },
 
-    packages=find_package_tree('lib/cartopy', 'cartopy'),
+    packages=find_packages("lib"),
     package_dir={'': 'lib'},
     package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/'
                                                      'mpl/baseline_images/',
