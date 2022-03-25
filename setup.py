@@ -24,15 +24,15 @@ Make sure you have pip >= 9.0.1.
     sys.exit(error)
 
 
-import fnmatch
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import warnings
 from collections import defaultdict
 from sysconfig import get_config_var
 
-from setuptools import Command, Extension, convert_path, setup
+from setuptools import Extension, setup
 
 """
 Distribution definition for Cartopy.
@@ -90,7 +90,7 @@ def find_package_tree(root_path, root_package):
     # Accept a root_path with Linux path separators.
     root_path = root_path.replace('/', os.path.sep)
     root_count = len(root_path.split(os.path.sep))
-    for (dir_path, dir_names, _) in os.walk(convert_path(root_path)):
+    for (dir_path, dir_names, _) in os.walk(Path(root_path)):
         # Prune dir_names *in-place* to prevent unwanted directory recursion
         for dir_name in list(dir_names):
             if not os.path.isfile(os.path.join(dir_path, dir_name,
