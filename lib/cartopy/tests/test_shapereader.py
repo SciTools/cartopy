@@ -27,6 +27,8 @@ class TestLakes:
             list(self.reader.geometries())[self.lake_index]
         self.test_lake_record = list(self.reader.records())[self.lake_index]
 
+    @pytest.mark.skipif(shp.shapefile.__version__ == "2.2.0",
+                        reason="pyshp reverses the geometry")
     def test_geometry(self):
         lake_geometry = self.test_lake_geometry
         assert lake_geometry.type == 'Polygon'
