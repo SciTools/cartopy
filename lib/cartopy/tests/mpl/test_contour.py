@@ -5,7 +5,6 @@
 # licensing details.
 
 import matplotlib.pyplot as plt
-from matplotlib.testing.decorators import cleanup
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pytest
@@ -15,7 +14,6 @@ from scipy.signal import convolve2d
 import cartopy.crs as ccrs
 
 
-@cleanup
 def test_contour_plot_bounds():
     x = np.linspace(-2763217.0, 2681906.0, 200)
     y = np.linspace(-263790.62, 3230840.5, 130)
@@ -56,7 +54,6 @@ def test_contour_doesnt_shrink():
     assert_array_almost_equal(ax.get_extent(), expected)
 
 
-@cleanup
 def test_contour_linear_ring():
     """Test contourf with a section that only has 3 points."""
     ax = plt.axes([0.01, 0.05, 0.898, 0.85], projection=ccrs.Mercator(),
@@ -98,7 +95,6 @@ def test_contour_update_bounds():
 
 
 @pytest.mark.parametrize('func', ['contour', 'contourf'])
-@cleanup
 def test_contourf_transform_first(func):
     """Test the fast-path option for filled contours."""
     # Gridded data that needs to be wrapped

@@ -6,7 +6,6 @@
 
 from unittest import mock
 
-from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
@@ -118,7 +117,6 @@ class Test_Axes_add_geometries:
         ax.add_geometries(next(cfeature.COASTLINE.geometries()), crs=proj)
 
 
-@cleanup
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"

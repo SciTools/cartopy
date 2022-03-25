@@ -5,7 +5,6 @@
 # licensing details.
 
 import matplotlib.pyplot as plt
-from matplotlib.testing.decorators import cleanup
 import pytest
 
 import cartopy.crs as ccrs
@@ -46,7 +45,6 @@ def test_lambert_south():
 
 
 @pytest.mark.natural_earth
-@cleanup
 def test_repr_html():
     pc = ccrs.PlateCarree()
     html = pc._repr_html_()

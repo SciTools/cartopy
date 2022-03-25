@@ -5,7 +5,6 @@
 # licensing details.
 
 import matplotlib.pyplot as plt
-from matplotlib.testing.decorators import cleanup
 import pytest
 
 import cartopy.crs as ccrs
@@ -27,7 +26,6 @@ def test_wmts():
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@cleanup
 def test_wms_tight_layout():
     ax = plt.axes(projection=ccrs.PlateCarree())
     url = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
