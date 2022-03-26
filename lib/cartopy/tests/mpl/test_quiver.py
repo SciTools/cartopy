@@ -8,7 +8,6 @@ from unittest import mock
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.testing.decorators import cleanup
 import pytest
 
 import cartopy.crs as ccrs
@@ -28,7 +27,6 @@ class TestQuiverShapes:
         self.fig = plt.figure()
         self.ax = plt.axes(projection=self.pc)
 
-    @cleanup
     def test_quiver_transform_xyuv_1d(self):
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
             self.ax.quiver(self.x2d.ravel(), self.y2d.ravel(),
@@ -40,7 +38,6 @@ class TestQuiverShapes:
         # Assert that all the shapes have been broadcast.
         assert shapes == [(70, )] * 4
 
-    @cleanup
     def test_quiver_transform_xy_1d_uv_2d(self):
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
             self.ax.quiver(self.x, self.y, self.u, self.v, transform=self.rp)
