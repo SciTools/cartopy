@@ -51,10 +51,6 @@ jobs:
           PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl"
           PACKAGES="$PACKAGES pytest-xdist setuptools_scm"
           PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
-          # openssl 3.0 updated the legacy renegotiation default, which causes
-          # failures in NASA's WMTS server. They will need to update their
-          # server before we can use a newer openssl.
-          PACKAGES="$PACKAGES openssl<3"
           conda install $PACKAGES
           conda info -a
           conda list
