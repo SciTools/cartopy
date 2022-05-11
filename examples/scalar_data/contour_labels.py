@@ -8,7 +8,23 @@ An example of adding contour labels to matplotlib contours.
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
-from waves import sample_data
+
+def sample_data(shape=(73, 145)):
+    """Return ``lons``, ``lats`` and ``data`` of some fake data."""
+    import numpy as np
+
+    nlats, nlons = shape
+    lats = np.linspace(-np.pi / 2, np.pi / 2, nlats)
+    lons = np.linspace(0, 2 * np.pi, nlons)
+    lons, lats = np.meshgrid(lons, lats)
+    wave = 0.75 * (np.sin(2 * lats) ** 8) * np.cos(4 * lons)
+    mean = 0.5 * np.cos(2 * lats) * ((np.sin(2 * lats)) ** 2 + 2)
+
+    lats = np.rad2deg(lats)
+    lons = np.rad2deg(lons)
+    data = wave + mean
+
+    return lons, lats, data
 
 
 def main():
@@ -19,7 +35,7 @@ def main():
     ax.set_global()
     ax.coastlines('110m', alpha=0.1)
 
-    # Use the waves example to provide some sample data, but make it
+    # Use the same sample data as the waves example, but make it
     # more dependent on y for more interesting contours.
     x, y, z = sample_data((20, 40))
     z = z * -1.5 * y
