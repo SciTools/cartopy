@@ -699,4 +699,4 @@ class LINZMapsTiles(GoogleWTS):
         return (
             f'https://tiles-a.koordinates.com/services;'
             f'key={self.subscription_key}/tiles/{self.api_version}/'
-            f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png') 
+            f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png')
