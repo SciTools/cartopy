@@ -683,9 +683,11 @@ class AzureMapsTiles(GoogleWTS):
             f'api-version={self.api_version}&tilesetId={self.tileset_id}&'
             f'x={x}&y={y}&zoom={z}&subscription-key={self.subscription_key}')
 
+
 class LINZMapsTiles(GoogleWTS):
     
-    def __init__(self, subscription_key, layer_id, api_version="v4", desired_tile_form='RGB', cache=False):
+    def __init__(self, subscription_key, layer_id, api_version="v4",
+                 desired_tile_form='RGB', cache=False):
         
         super().__init__(desired_tile_form=desired_tile_form, cache=cache)
         self.subscription_key = subscription_key
