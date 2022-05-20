@@ -682,3 +682,19 @@ class AzureMapsTiles(GoogleWTS):
             f'https://atlas.microsoft.com/map/tile?'
             f'api-version={self.api_version}&tilesetId={self.tileset_id}&'
             f'x={x}&y={y}&zoom={z}&subscription-key={self.subscription_key}')
+
+class LINZMapsTiles(GoogleWTS):
+    
+    def __init__(self, subscription_key, layer_id, api_version="v4", desired_tile_form='RGB', cache=False):
+        
+        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
+        self.subscription_key = subscription_key
+        self.layer_id = layer_id
+        self.api_version = api_version
+        
+    def _image_url(self, tile):
+        x, y, z = tile
+        return (
+            f'https://tiles-a.koordinates.com/services;'
+            f'key={self.subscription_key}/tiles/{self.api_version}/'
+            f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png') 
