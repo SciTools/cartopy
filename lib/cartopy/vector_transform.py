@@ -109,6 +109,11 @@ def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
         scalar fields is the same as the number that were passed in.
 
     """
+    x = np.asanyarray(x)
+    y = np.asanyarray(y)
+    u = np.asanyarray(u)
+    v = np.asanyarray(v)
+
     if u.shape != v.shape:
         raise ValueError('u and v must be the same shape')
     if x.shape != u.shape:
@@ -117,10 +122,14 @@ def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
             raise ValueError('x and y coordinates are not compatible '
                              'with the shape of the vector components')
     if scalars:
+        np_like_scalars = ()
         for s in scalars:
+            s = np.asanyarray(s)
+            np_like_scalars = np_like_scalars + (s,)
             if s.shape != u.shape:
                 raise ValueError('scalar fields must have the same '
                                  'shape as the vector components')
+        scalars = np_like_scalars
     try:
         nx, ny = regrid_shape
     except TypeError:
