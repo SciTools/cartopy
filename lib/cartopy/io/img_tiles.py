@@ -685,18 +685,36 @@ class AzureMapsTiles(GoogleWTS):
 
 
 class LINZMapsTiles(GoogleWTS):
-    
-    def __init__(self, subscription_key, layer_id, api_version="v4",
+
+    def __init__(self, API_key, layer_id, api_version="v4",
                  desired_tile_form='RGB', cache=False):
+        """
+        Set up a new instance to retrieve tiles from The LINZ
+        aka. Land Information New Zealand
         
+        Access to LINZ WMTS GetCapabilities requires an API key.
+        Register yourself free in https://id.koordinates.com/signup/
+        to gain access into the LINZ database.
+        
+        Parameters
+        ----------
+        API_key
+            A valid LINZ API key specific for every users.
+        layer_id
+            A layer ID for a map. See the "Technical Details" lower down the
+            "About" tab for each layer displayed in the LINZ data service.
+        api_version
+            API version to use. Defaults to v4 for now.
+
+        """
         super().__init__(desired_tile_form=desired_tile_form, cache=cache)
-        self.subscription_key = subscription_key
+        self.API_key = API_key
         self.layer_id = layer_id
         self.api_version = api_version
-        
+
     def _image_url(self, tile):
         x, y, z = tile
         return (
             f'https://tiles-a.koordinates.com/services;'
-            f'key={self.subscription_key}/tiles/{self.api_version}/'
+            f'key={self.API_key}/tiles/{self.api_version}/'
             f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png')
