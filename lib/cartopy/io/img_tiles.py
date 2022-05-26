@@ -691,11 +691,11 @@ class LINZMapsTiles(GoogleWTS):
         """
         Set up a new instance to retrieve tiles from The LINZ
         aka. Land Information New Zealand
-        
+
         Access to LINZ WMTS GetCapabilities requires an API key.
         Register yourself free in https://id.koordinates.com/signup/
         to gain access into the LINZ database.
-        
+
         Parameters
         ----------
         API_key
