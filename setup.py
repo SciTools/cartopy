@@ -62,6 +62,7 @@ except ImportError:
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 7, 2)
 PROJ_MIN_VERSION = (8, 0, 0)
+PROJ_MIN_VERSION_STRING = '.'.join(str(v) for v in PROJ_MIN_VERSION)
 
 
 def file_walk_relative(top, remove=''):
@@ -119,15 +120,14 @@ def find_proj_version_by_program(conda=None):
     proj = shutil.which('proj')
     if proj is None:
         print(
-            'Proj {} must be installed.'.format(
-                '.'.join(str(v) for v in PROJ_MIN_VERSION)),
+            f'Proj {PROJ_MIN_VERSION_STRING} or later must be installed.',
             file=sys.stderr)
         exit(1)
 
     if conda is not None and conda not in proj:
         print(
-            'Proj {} must be installed in Conda environment "{}".'.format(
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
+            f'Proj {PROJ_MIN_VERSION_STRING} or later must be installed in'
+            f' Conda environment "{conda}".',
             file=sys.stderr)
         exit(1)
 
@@ -138,9 +138,10 @@ def find_proj_version_by_program(conda=None):
         proj_version = tuple(int(v.strip(b',')) for v in proj_version)
     except (OSError, IndexError, ValueError, subprocess.CalledProcessError):
         warnings.warn(
-            'Unable to determine Proj version. Ensure you have %s or later '
-            'installed, or installation may fail.' % (
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
+            f'Unable to determine Proj version. Ensure you have '
+            f'{PROJ_MIN_VERSION_STRING} or later installed, or installation '
+            f'may fail.'
+        )
         proj_version = (0, 0, 0)
 
     return proj_version
@@ -153,10 +154,10 @@ if conda is not None and conda in sys.prefix:
     # the version, though.
     proj_version = find_proj_version_by_program(conda)
     if proj_version < PROJ_MIN_VERSION:
+        proj_version_string = '.'.join(str(v) for v in proj_version)
         print(
-            'Proj version %s is installed, but cartopy requires at least '
-            'version %s.' % ('.'.join(str(v) for v in proj_version),
-                             '.'.join(str(v) for v in PROJ_MIN_VERSION)),
+            f'Proj version {proj_version_string} is installed, but cartopy'
+            f' requires at least version {PROJ_MIN_VERSION_STRING}',
             file=sys.stderr)
         exit(1)
 
