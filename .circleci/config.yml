@@ -45,7 +45,6 @@ deps-run: &deps-install
         pyshp \
         scipy \
         setuptools_scm \
-        setuptools_scm_git_archive \
         shapely \
         $EXTRA_PACKAGES \
         --file docs/doc-requirements.txt

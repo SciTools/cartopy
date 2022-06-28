@@ -4,7 +4,6 @@ requires = [
     "setuptools >= 40.6.0",
     "Cython >= 0.29.13",
     "oldest-supported-numpy",
-    "setuptools_scm",
-    "setuptools_scm_git_archive",
+    "setuptools_scm >= 7.0.0",
 ]
 build-backend = "setuptools.build_meta"
