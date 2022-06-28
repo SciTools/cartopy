@@ -48,7 +48,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl"
+          PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl!=0.16.0"
           PACKAGES="$PACKAGES pytest-xdist setuptools_scm shapely"
           conda install $PACKAGES
           conda info -a
