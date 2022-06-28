@@ -462,15 +462,16 @@ class GeoAxes(matplotlib.axes.Axes):
         data_lim = self.dataLim.frozen().get_points()
         view_lim = self.viewLim.frozen().get_points()
         other = (self.ignore_existing_data_limits,
-                 self._autoscaleXon, self._autoscaleYon)
+                 self.get_autoscalex_on(), self.get_autoscaley_on())
         try:
             yield
         finally:
             if hold:
                 self.dataLim.set_points(data_lim)
                 self.viewLim.set_points(view_lim)
-                (self.ignore_existing_data_limits,
-                    self._autoscaleXon, self._autoscaleYon) = other
+                self.ignore_existing_data_limits = other[0]
+                self.set_autoscalex_on(other[1])
+                self.set_autoscaley_on(other[2])
 
     def _draw_preprocess(self, renderer):
         """
@@ -881,11 +882,11 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         super().autoscale_view(tight=tight, scalex=scalex, scaley=scaley)
         # Limit the resulting bounds to valid area.
-        if scalex and self._autoscaleXon:
+        if scalex and self.get_autoscalex_on():
             bounds = self.get_xbound()
             self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
                             min(bounds[1], self.projection.x_limits[1]))
-        if scaley and self._autoscaleYon:
+        if scaley and self.get_autoscaley_on():
             bounds = self.get_ybound()
             self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
                             min(bounds[1], self.projection.y_limits[1]))
