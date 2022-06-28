@@ -16,8 +16,7 @@ install:
   - conda config --add channels conda-forge/label/testing
   - set ENV_NAME=test-environment
   - set PACKAGES=%PACKAGES% flufl.lock owslib pep8 pillow pyshp pytest
-  - set PACKAGES=%PACKAGES% requests setuptools_scm setuptools_scm_git_archive
-  - set PACKAGES=%PACKAGES% shapely
+  - set PACKAGES=%PACKAGES% requests setuptools_scm shapely
   - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%
   - activate %ENV_NAME%
   - set INCLUDE=%CONDA_PREFIX%\Library\include;%INCLUDE%
