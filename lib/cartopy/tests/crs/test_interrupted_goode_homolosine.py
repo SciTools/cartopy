@@ -9,7 +9,7 @@ Tests for the InterruptedGoodeHomolosine coordinate system.
 """
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose
 import pytest
 
 import cartopy.crs as ccrs
@@ -24,10 +24,10 @@ def test_default(emphasis):
         check_proj_params("igh", igh, other_args)
     elif emphasis == "ocean":
         check_proj_params("igh_o", igh, other_args)
-    assert_almost_equal(
+    assert_allclose(
         np.array(igh.x_limits), [-20037508.3427892, 20037508.3427892]
     )
-    assert_almost_equal(
+    assert_allclose(
         np.array(igh.y_limits), [-8683259.7164347, 8683259.7164347]
     )
 
@@ -42,8 +42,8 @@ def test_eccentric_globe(emphasis):
     elif emphasis == "ocean":
         check_proj_params("igh_o", igh, other_args)
 
-    assert_almost_equal(np.array(igh.x_limits), [-3141.5926536, 3141.5926536])
-    assert_almost_equal(np.array(igh.y_limits), [-1361.410035, 1361.410035])
+    assert_allclose(np.array(igh.x_limits), [-3141.5926536, 3141.5926536])
+    assert_allclose(np.array(igh.y_limits), [-1361.410035, 1361.410035])
 
 
 @pytest.mark.parametrize(
@@ -60,11 +60,10 @@ def test_central_longitude(emphasis, lon):
     elif emphasis == "ocean":
         check_proj_params("igh_o", igh, other_args)
 
-    assert_almost_equal(
+    assert_allclose(
         np.array(igh.x_limits),
         [-20037508.3427892, 20037508.3427892],
-        decimal=5,
     )
-    assert_almost_equal(
+    assert_allclose(
         np.array(igh.y_limits), [-8683259.7164347, 8683259.7164347]
     )
