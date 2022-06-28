@@ -15,7 +15,7 @@ install:
   - conda config --add channels conda-forge
   - conda config --add channels conda-forge/label/testing
   - set ENV_NAME=test-environment
-  - set PACKAGES=%PACKAGES% owslib pep8 pillow pyshp pytest pytest-mpl
+  - set PACKAGES=%PACKAGES% owslib pep8 pillow pyshp pytest pytest-mpl!=0.16.0
   - set PACKAGES=%PACKAGES% setuptools_scm shapely
   - conda create -n %ENV_NAME% python=%PYTHON_VERSION% %PACKAGES%
   - activate %ENV_NAME%
