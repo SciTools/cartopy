@@ -14,9 +14,8 @@ from cartopy.tests.mpl import ImageTesting, MPL_VERSION
 
 @pytest.mark.natural_earth
 @ImageTesting(["igh_land"],
-              tolerance=(3.6
-                         if MPL_VERSION.release[:2] < (3, 5)
-                         else 0.5))
+              tolerance=(3.6 if MPL_VERSION.release[:2] < (3, 5)
+                         or ccrs.PROJ_VERSION < (9, 0, 1) else 0.5))
 def test_igh_land():
     crs = ccrs.InterruptedGoodeHomolosine(emphasis="land")
     ax = plt.axes(projection=crs)
@@ -26,9 +25,8 @@ def test_igh_land():
 
 @pytest.mark.natural_earth
 @ImageTesting(["igh_ocean"],
-              tolerance=(4.5
-                         if MPL_VERSION.release[:2] < (3, 5)
-                         else 0.5))
+              tolerance=(4.5 if MPL_VERSION.release[:2] < (3, 5)
+                         or ccrs.PROJ_VERSION < (9, 0, 1) else 0.5))
 def test_igh_ocean():
     crs = ccrs.InterruptedGoodeHomolosine(
         central_longitude=-160, emphasis="ocean"
