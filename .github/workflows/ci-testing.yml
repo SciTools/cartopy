@@ -48,8 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           PACKAGES="$PACKAGES flufl.lock owslib pep8 pillow pyshp pytest"
-          PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
-          PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+          PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm shapely"
           # openssl 3.0 updated the legacy renegotiation default, which causes
           # failures in NASA's WMTS server. They will need to update their
           # server before we can use a newer openssl.

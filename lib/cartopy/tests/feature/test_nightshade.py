@@ -8,7 +8,7 @@ from datetime import datetime
 
 import pytest
 
-from cartopy.feature.nightshade import _julian_day, _solar_position
+from cartopy.feature.nightshade import _julian_day, _solar_position, Nightshade
 
 
 def test_julian_day():
@@ -44,3 +44,12 @@ def test_solar_position(dt, true_lat, true_lon):
     lat, lon = _solar_position(dt)
     assert pytest.approx(true_lat, 0.1) == lat
     assert pytest.approx(true_lon, 0.1) == lon
+
+
+def test_nightshade_floating_point():
+    # Smoke test for clipping nightshade floating point values
+    date = datetime(1999, 12, 31, 12)
+
+    # This can cause an error with floating point precision if it is
+    # set to exactly -6 and arccos input is not clipped to [-1, 1]
+    Nightshade(date, refraction=-6.0, color='none')
