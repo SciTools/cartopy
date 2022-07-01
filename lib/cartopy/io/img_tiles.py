@@ -686,7 +686,7 @@ class AzureMapsTiles(GoogleWTS):
 
 class LINZMapsTiles(GoogleWTS):
 
-    def __init__(self, API_key, layer_id, api_version="v4",
+    def __init__(self, apikey, layer_id, api_version="v4",
                  desired_tile_form='RGB', cache=False):
         """
         Set up a new instance to retrieve tiles from The LINZ
@@ -698,7 +698,7 @@ class LINZMapsTiles(GoogleWTS):
 
         Parameters
         ----------
-        API_key
+        apikey
             A valid LINZ API key specific for every users.
         layer_id
             A layer ID for a map. See the "Technical Details" lower down the
@@ -708,7 +708,7 @@ class LINZMapsTiles(GoogleWTS):
 
         """
         super().__init__(desired_tile_form=desired_tile_form, cache=cache)
-        self.API_key = API_key
+        self.apikey = apikey
         self.layer_id = layer_id
         self.api_version = api_version
 
@@ -716,5 +716,5 @@ class LINZMapsTiles(GoogleWTS):
         x, y, z = tile
         return (
             f'https://tiles-a.koordinates.com/services;'
-            f'key={self.API_key}/tiles/{self.api_version}/'
+            f'key={self.apikey}/tiles/{self.api_version}/'
             f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png')
