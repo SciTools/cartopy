@@ -31,6 +31,6 @@ def time_second_figure():
     # Successive figures with Axes of the same projection
     # could have various caching mechanisms in place.
     # At the time of writing, there is no
-    # noticable performance speedup during the second figure :(
+    # noticeable performance speedup during the second figure :(
     create_pc_png()
     create_pc_png()
