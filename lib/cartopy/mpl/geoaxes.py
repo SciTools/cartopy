@@ -1685,6 +1685,43 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
+
+    @_add_transform
+    def annotate(self, text, xy, xytext=None, xycoords='data', textcoords=None,
+                     *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.annotate`.
+
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
+
+        """
+        transform = kwargs.pop('transform', None)
+        is_transform_crs = isinstance(transform, ccrs.CRS)
+
+        if (is_transform_crs and xycoords=='data'):
+            xycoords = transform._as_mpl_transform(self)
+
+        if (is_transform_crs and xytext is not None and (textcoords is None or textcoords=='data')):
+            textcoords = transform._as_mpl_transform(self)
+
+        if (isinstance(xycoords, ccrs.CRS)):
+            xycoords = xycoords._as_mpl_transform(self)
+
+        if (isinstance(textcoords, ccrs.CRS)):
+            textcoords = textcoords._as_mpl_transform(self)
+
+        if textcoords is None and xytext is not None:
+            textcoords = xycoords
+
+        result = super().annotate(text, xy, xytext, xycoords=xycoords, textcoords=textcoords,
+                                  *args, **kwargs)
+        self.autoscale_view()
+        return result
+
+
     @_add_transform
     def hexbin(self, x, y, *args, **kwargs):
         """
