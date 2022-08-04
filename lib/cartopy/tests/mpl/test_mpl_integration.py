@@ -916,6 +916,8 @@ def test_annotate_mercator():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='annotate_robinson.png')
 def test_global_annotate():
+    """ test a variety of annotate options on robinson projection
+    """
 
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
