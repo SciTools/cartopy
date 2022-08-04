@@ -1701,20 +1701,25 @@ class GeoAxes(matplotlib.axes.Axes):
         transform = kwargs.pop('transform', None)
         is_transform_crs = isinstance(transform, ccrs.CRS)
 
-        if (is_transform_crs and xycoords=='data'):
+        # convert CRS to mpl transform for default 'data' setup
+        if is_transform_crs and xycoords=='data':
             xycoords = transform._as_mpl_transform(self)
 
-        if (is_transform_crs and xytext is not None and (textcoords is None or textcoords=='data')):
-            textcoords = transform._as_mpl_transform(self)
-
-        if (isinstance(xycoords, ccrs.CRS)):
-            xycoords = xycoords._as_mpl_transform(self)
-
-        if (isinstance(textcoords, ccrs.CRS)):
-            textcoords = textcoords._as_mpl_transform(self)
-
+        # textcoords = xycoords be default but complains if xytext is empty
         if textcoords is None and xytext is not None:
             textcoords = xycoords
+
+        # use transform if textcoords is data and xytext is provided
+        if is_transform_crs and xytext is not None and textcoords=='data':
+            textcoords = transform._as_mpl_transform(self)
+
+        # convert to mpl_transform if CRS passed to xycoords
+        if isinstance(xycoords, ccrs.CRS):
+            xycoords = xycoords._as_mpl_transform(self)
+
+        # convert to mpl_transform if CRS passed to textcoords
+        if isinstance(textcoords, ccrs.CRS):
+            textcoords = textcoords._as_mpl_transform(self)
 
         result = super().annotate(text, xy, xytext, xycoords=xycoords, textcoords=textcoords,
                                   *args, **kwargs)

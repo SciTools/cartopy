@@ -859,7 +859,7 @@ def test_streamplot():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_mercator.png')
+@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20',)
 def test_annotate_backwardscompat():
     """ Work around for annotate to work from 
     https://stackoverflow.com/questions/25416600/why-the-annotate-worked-unexpected-here-in-cartopy/25421922#25421922
@@ -887,7 +887,7 @@ def test_annotate_backwardscompat():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_mercator.png')
+@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20',)
 def test_annotate_mercator():
     """ Update `test_annotate_backwardscompat` to use ccrs.PlateCarree 
         as xycoords argument
@@ -914,7 +914,7 @@ def test_annotate_mercator():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_robinson.png')
+@pytest.mark.mpl_image_compare(filename='annotate_robinson.png',style='mpl20',)
 def test_global_annotate():
     """ test a variety of annotate options on robinson projection
     """
@@ -950,7 +950,7 @@ def test_global_annotate():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_homolosine.png')
+@pytest.mark.mpl_image_compare(filename='annotate_homolosine.png', style='mpl20',)
 def test_homolosine_annotate():
     """ test a variety of annotate options on robinson projection
     """
