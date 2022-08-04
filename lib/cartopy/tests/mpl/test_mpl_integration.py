@@ -859,15 +859,15 @@ def test_streamplot():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20',)
+@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20')
 def test_annotate_backwardscompat():
-    """ Work around for annotate to work from 
+    """ Work around for annotate to work from
     https://stackoverflow.com/questions/25416600/why-the-annotate-worked-unexpected-here-in-cartopy/25421922#25421922
-    - check that an mpl_transform is passed through without issue. 
+    - check that an mpl_transform is passed through without issue.
     """
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
-    
+
     ax.set_extent([65, 125, 5, 40])
     ax.coastlines()
     ax.plot(116.4, 39.95, 'ob', transform=ccrs.PlateCarree())
@@ -887,14 +887,14 @@ def test_annotate_backwardscompat():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20',)
+@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20')
 def test_annotate_mercator():
-    """ Update `test_annotate_backwardscompat` to use ccrs.PlateCarree 
+    """ Update `test_annotate_backwardscompat` to use ccrs.PlateCarree
         as xycoords argument
     """
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
-    
+
     ax.set_extent([65, 125, 5, 40])
     ax.coastlines()
     ax.plot(116.4, 39.95, 'ob', transform=ccrs.PlateCarree())
@@ -914,7 +914,7 @@ def test_annotate_mercator():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_robinson.png',style='mpl20',)
+@pytest.mark.mpl_image_compare(filename='annotate_robinson.png', style='mpl20')
 def test_global_annotate():
     """ test a variety of annotate options on robinson projection
     """
@@ -928,15 +928,15 @@ def test_global_annotate():
     """Add annotation with xycoords as projection"""
     ax.plot(-75, 10, 'o', transform=platecarree)
     ax.annotate('point 1', (-75, 10), xycoords=platecarree)
-    
+
     """Add annotation with point and text via transform"""
     ax.plot(-75, -20, 'o', transform=platecarree)
     ax.annotate('point 2', (-75, -20), xytext=(75, -35),
                 transform=platecarree,
                 arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                  connectionstyle="arc3,rad=-0.2",),
-                                  )
-    
+                                connectionstyle="arc3,rad=-0.2",),
+                )
+
     """Add annotation with point via transform and text non transformed"""
     ax.scatter(75, -20, transform=platecarree)
     ax.annotate('offset text', (75, -20), xycoords=platecarree,
@@ -944,13 +944,14 @@ def test_global_annotate():
                 size=5, va="center", ha="center",
                 bbox=dict(boxstyle="round4", fc="w"),
                 arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                  connectionstyle="arc3,rad=-0.2",),
-                                  )
+                                connectionstyle="arc3,rad=-0.2",),
+                )
     return fig
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_homolosine.png', style='mpl20',)
+@pytest.mark.mpl_image_compare(filename='annotate_homolosine.png',
+                               style='mpl20')
 def test_homolosine_annotate():
     """ test a variety of annotate options on robinson projection
     """
@@ -964,15 +965,15 @@ def test_homolosine_annotate():
     """Add annotation with xycoords as projection"""
     ax.plot(-75, 10, 'o', transform=platecarree)
     ax.annotate('point 1', (-75, 10), xycoords=platecarree)
-    
+
     """Add annotation with point and text via transform"""
     ax.plot(-75, -20, 'o', transform=platecarree)
     ax.annotate('point 2', (-75, -20), xytext=(25, -35),
                 transform=platecarree,
                 arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                  connectionstyle="arc3,rad=-0.2",),
-                                  )
-    
+                                connectionstyle="arc3,rad=-0.2",),
+                )
+
     """Add annotation with point via transform and text non transformed"""
     ax.scatter(75, -20, transform=platecarree)
     ax.annotate('offset text', (75, -20), xycoords=platecarree,
@@ -980,6 +981,6 @@ def test_homolosine_annotate():
                 size=5, va="center", ha="center",
                 bbox=dict(boxstyle="round4", fc="w"),
                 arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                  connectionstyle="arc3,rad=-0.2",),
-                                  )
+                                connectionstyle="arc3,rad=-0.2",),
+                )
     return fig

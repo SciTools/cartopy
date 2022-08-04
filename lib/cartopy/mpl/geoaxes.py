@@ -1685,10 +1685,9 @@ class GeoAxes(matplotlib.axes.Axes):
         self.autoscale_view()
         return result
 
-
     @_add_transform
     def annotate(self, text, xy, xytext=None, xycoords='data', textcoords=None,
-                     *args, **kwargs):
+                 *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.annotate`.
 
@@ -1702,7 +1701,7 @@ class GeoAxes(matplotlib.axes.Axes):
         is_transform_crs = isinstance(transform, ccrs.CRS)
 
         # convert CRS to mpl transform for default 'data' setup
-        if is_transform_crs and xycoords=='data':
+        if is_transform_crs and xycoords == 'data':
             xycoords = transform._as_mpl_transform(self)
 
         # textcoords = xycoords be default but complains if xytext is empty
@@ -1710,7 +1709,7 @@ class GeoAxes(matplotlib.axes.Axes):
             textcoords = xycoords
 
         # use transform if textcoords is data and xytext is provided
-        if is_transform_crs and xytext is not None and textcoords=='data':
+        if is_transform_crs and xytext is not None and textcoords == 'data':
             textcoords = transform._as_mpl_transform(self)
 
         # convert to mpl_transform if CRS passed to xycoords
@@ -1721,11 +1720,10 @@ class GeoAxes(matplotlib.axes.Axes):
         if isinstance(textcoords, ccrs.CRS):
             textcoords = textcoords._as_mpl_transform(self)
 
-        result = super().annotate(text, xy, xytext, xycoords=xycoords, textcoords=textcoords,
-                                  *args, **kwargs)
+        result = super().annotate(text, xy, xytext, xycoords=xycoords,
+                                  textcoords=textcoords, *args, **kwargs)
         self.autoscale_view()
         return result
-
 
     @_add_transform
     def hexbin(self, x, y, *args, **kwargs):
