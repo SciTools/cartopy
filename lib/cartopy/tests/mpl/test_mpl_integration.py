@@ -856,3 +856,92 @@ def test_streamplot():
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
                   density=(1.5, 2), color=mag, linewidth=2 * mag)
     return fig
+
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='annotate_mercator.png')
+def test_annotate_backwardscompat():
+    """ Work around for annotate to work from 
+    https://stackoverflow.com/questions/25416600/why-the-annotate-worked-unexpected-here-in-cartopy/25421922#25421922
+    - check that an mpl_transform is passed through without issue. 
+    """
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
+    
+    ax.set_extent([65, 125, 5, 40])
+    ax.coastlines()
+    ax.plot(116.4, 39.95, 'ob', transform=ccrs.PlateCarree())
+
+    transform = ccrs.PlateCarree()._as_mpl_transform(ax)
+    ax.annotate('Beijing', xy=(116.4, 39.9), xycoords=transform,
+                ha='right', va='top')
+    ax.annotate('Delhi', xy=(113, 40.5), xytext=(77.23, 28.61),
+                arrowprops=dict(facecolor='gray',
+                                arrowstyle="simple",
+                                connectionstyle="arc3,rad=-0.2",
+                                alpha=0.5),
+                xycoords=transform,
+                ha='right', va='top')
+
+    return fig
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='annotate_mercator.png')
+def test_annotate_mercator():
+    """ Update `test_annotate_backwardscompat` to use ccrs.PlateCarree 
+        as xycoords argument
+    """
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
+    
+    ax.set_extent([65, 125, 5, 40])
+    ax.coastlines()
+    ax.plot(116.4, 39.95, 'ob', transform=ccrs.PlateCarree())
+
+    transform = ccrs.PlateCarree()
+    ax.annotate('Beijing', xy=(116.4, 39.9), xycoords=transform,
+                ha='right', va='top')
+    ax.annotate('Delhi', xy=(113, 40.5), xytext=(77.23, 28.61),
+                arrowprops=dict(facecolor='gray',
+                                arrowstyle="simple",
+                                connectionstyle="arc3,rad=-0.2",
+                                alpha=0.5),
+                xycoords=transform,
+                ha='right', va='top')
+
+    return fig
+
+    
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='annotate_robinson.png')
+def test_global_annotate():
+
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
+    ax.set_global()
+    ax.coastlines()
+    platecarree = ccrs.PlateCarree()
+
+    """Add annotation with xycoords as projection"""
+    ax.plot(-75, 10, 'o', transform=platecarree)
+    ax.annotate('point 1', (-75, 10), xycoords=platecarree)
+    
+    """Add annotation with point and text via transform"""
+    ax.plot(-75, -20, 'o', transform=platecarree)
+    ax.annotate('point 2', (-75, -20), xytext=(75, -35),
+                transform=platecarree,
+                arrowprops=dict(facecolor='red', arrowstyle="-|>",
+                                  connectionstyle="arc3,rad=-0.2",),
+                                  )
+    
+    """Add annotation with point via transform and text non transformed"""
+    ax.scatter(75, -20, transform=platecarree)
+    ax.annotate('offset text', (75, -20), xycoords=platecarree,
+                xytext=(5, 15), textcoords='offset points',
+                size=5, va="center", ha="center",
+                bbox=dict(boxstyle="round4", fc="w"),
+                arrowprops=dict(facecolor='red', arrowstyle="-|>",
+                                  connectionstyle="arc3,rad=-0.2",),
+                                  )
+    return fig
