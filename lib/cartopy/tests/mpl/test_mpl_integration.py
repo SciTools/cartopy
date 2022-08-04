@@ -885,6 +885,7 @@ def test_annotate_backwardscompat():
 
     return fig
 
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='annotate_mercator.png')
 def test_annotate_mercator():
@@ -911,7 +912,6 @@ def test_annotate_mercator():
 
     return fig
 
-    
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='annotate_robinson.png')
