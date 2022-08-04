@@ -947,3 +947,39 @@ def test_global_annotate():
                                   connectionstyle="arc3,rad=-0.2",),
                                   )
     return fig
+
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='annotate_homolosine.png')
+def test_homolosine_annotate():
+    """ test a variety of annotate options on robinson projection
+    """
+
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.InterruptedGoodeHomolosine())
+    ax.set_global()
+    ax.coastlines()
+    platecarree = ccrs.PlateCarree()
+
+    """Add annotation with xycoords as projection"""
+    ax.plot(-75, 10, 'o', transform=platecarree)
+    ax.annotate('point 1', (-75, 10), xycoords=platecarree)
+    
+    """Add annotation with point and text via transform"""
+    ax.plot(-75, -20, 'o', transform=platecarree)
+    ax.annotate('point 2', (-75, -20), xytext=(25, -35),
+                transform=platecarree,
+                arrowprops=dict(facecolor='red', arrowstyle="-|>",
+                                  connectionstyle="arc3,rad=-0.2",),
+                                  )
+    
+    """Add annotation with point via transform and text non transformed"""
+    ax.scatter(75, -20, transform=platecarree)
+    ax.annotate('offset text', (75, -20), xycoords=platecarree,
+                xytext=(15, -15), textcoords='offset points',
+                size=5, va="center", ha="center",
+                bbox=dict(boxstyle="round4", fc="w"),
+                arrowprops=dict(facecolor='red', arrowstyle="-|>",
+                                  connectionstyle="arc3,rad=-0.2",),
+                                  )
+    return fig
