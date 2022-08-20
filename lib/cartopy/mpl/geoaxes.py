@@ -459,19 +459,19 @@ class GeoAxes(matplotlib.axes.Axes):
             context manager exits.  Defaults to True.
 
         """
-        data_lim = self.dataLim.frozen().get_points()
-        view_lim = self.viewLim.frozen().get_points()
-        other = (self.ignore_existing_data_limits,
-                 self.get_autoscalex_on(), self.get_autoscaley_on())
-        try:
-            yield
-        finally:
+        with contextlib.ExitStack() as stack:
             if hold:
-                self.dataLim.set_points(data_lim)
-                self.viewLim.set_points(view_lim)
-                self.ignore_existing_data_limits = other[0]
-                self.set_autoscalex_on(other[1])
-                self.set_autoscaley_on(other[2])
+                stack.callback(self.dataLim.set_points,
+                               self.dataLim.frozen().get_points())
+                stack.callback(self.viewLim.set_points,
+                               self.viewLim.frozen().get_points())
+                stack.callback(setattr, self, 'ignore_existing_data_limits',
+                               self.ignore_existing_data_limits)
+                stack.callback(self.set_autoscalex_on,
+                               self.get_autoscalex_on())
+                stack.callback(self.set_autoscaley_on,
+                               self.get_autoscaley_on())
+            yield
 
     def _draw_preprocess(self, renderer):
         """
