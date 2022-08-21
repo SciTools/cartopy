@@ -895,11 +895,13 @@ def test_annotate(map_projection):
     ax.annotate('crs xycoords', (-75, 13), xycoords=platecarree,
                 size=5)
 
+    # set up coordinates in map projection space
     map_coords = map_projection.transform_point(-175, -35, platecarree)
     # Dont specifiy any args, default xycoords='data', transform=map projection
     ax.annotate('default crs', map_coords, size=5)
 
-    # Dont specifiy any args, default xycoords='data', transform=map projection
+    # data in map projection using default transform, with
+    # text positioned in platecaree transform
     ax.annotate('mixed crs transforms', map_coords, xycoords='data',
                 xytext=(-175, -55),
                 textcoords=platecarree,
