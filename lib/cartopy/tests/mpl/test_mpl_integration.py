@@ -859,128 +859,65 @@ def test_streamplot():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20')
-def test_annotate_backwardscompat():
-    """ Test that annotate can handle an mpl_transform
-    https://stackoverflow.com/questions/25416600/why-the-annotate-worked-unexpected-here-in-cartopy/25421922#25421922
-    - check that an mpl_transform is passed through without issue.
-    """
-    fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
+@pytest.mark.parametrize(
+    'map_projection',
+    [ccrs.Mercator(), ccrs.InterruptedGoodeHomolosine(), ccrs.Robinson()]
+    )
+@pytest.mark.mpl_image_compare()
+def test_annotate(map_projection):
+    """ test a variety of annotate options on mulitple projections
 
-    ax.set_extent([65, 125, 5, 40])
-    ax.coastlines()
-    ax.plot(116.4, 39.95, 'ob', transform=ccrs.PlateCarree())
+    Annotate defaults to coords passed as if in map projection space.
+    `transform`, `xycoords` or `textcoords` controls location and text offset
+        location. `transform` is a cartopy kwarg so expects a CRS,
+        `xycoords` and `textcoords` accept CRS or matplotlib args.
 
-    transform = ccrs.PlateCarree()._as_mpl_transform(ax)
-    ax.annotate('Beijing', xy=(116.4, 39.9), xycoords=transform,
-                ha='right', va='top')
-    ax.annotate('Delhi', xy=(113, 40.5), xytext=(77.23, 28.61),
-                arrowprops=dict(facecolor='gray',
-                                arrowstyle="simple",
-                                connectionstyle="arc3,rad=-0.2",
-                                alpha=0.5),
-                xycoords=transform,
-                ha='right', va='top')
-
-    return fig
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_mercator.png', style='mpl20')
-def test_annotate_mercator():
-    """ Update `test_annotate_backwardscompat` to use ccrs.PlateCarree
-        as xycoords argument
-    """
-    fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
-
-    ax.set_extent([65, 125, 5, 40])
-    ax.coastlines()
-    ax.plot(116.4, 39.95, 'ob', transform=ccrs.PlateCarree())
-
-    transform = ccrs.PlateCarree()
-    ax.annotate('Beijing', xy=(116.4, 39.9), xycoords=transform,
-                ha='right', va='top')
-    ax.annotate('Delhi', xy=(113, 40.5), xytext=(77.23, 28.61),
-                arrowprops=dict(facecolor='gray',
-                                arrowstyle="simple",
-                                connectionstyle="arc3,rad=-0.2",
-                                alpha=0.5),
-                xycoords=transform,
-                ha='right', va='top')
-
-    return fig
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_robinson.png', style='mpl20')
-def test_global_annotate():
-    """ test a variety of annotate options on robinson projection
+    The various annotations below test a variety of different combinations.
     """
 
     fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
+    ax = fig.add_subplot(1, 1, 1, projection=map_projection)
     ax.set_global()
     ax.coastlines()
+    arrowprops = {'facecolor': 'red',
+                  'arrowstyle': "-|>",
+                  'connectionstyle': "arc3,rad=-0.2",
+                  }
     platecarree = ccrs.PlateCarree()
+    mpltransform = platecarree._as_mpl_transform(ax)
 
-    """Add annotation with xycoords as projection"""
-    ax.plot(-75, 10, 'o', transform=platecarree)
-    ax.annotate('point 1', (-75, 10), xycoords=platecarree)
+    # Add annotation with xycoords as mpltransform as suggested here
+    # https://stackoverflow.com/questions/25416600/why-the-annotate-worked-unexpected-here-in-cartopy/25421922#25421922
+    ax.annotate('mpl xycoords', (-45, 43), xycoords=mpltransform,
+                size=5)
 
-    """Add annotation with point and text via transform"""
-    ax.plot(-75, -20, 'o', transform=platecarree)
-    ax.annotate('point 2', (-75, -20), xytext=(75, -35),
+    # Add annotation with xycoords as projection
+    ax.annotate('crs xycoords', (-75, 13), xycoords=platecarree,
+                size=5)
+
+    map_coords = map_projection.transform_point(-175, -35, platecarree)
+    # Dont specifiy any args, default xycoords='data', transform=map projection
+    ax.annotate('default crs', map_coords, size=5)
+
+    # Dont specifiy any args, default xycoords='data', transform=map projection
+    ax.annotate('mixed crs transforms', map_coords, xycoords='data',
+                xytext=(-175, -55),
+                textcoords=platecarree,
+                size=5,
+                arrowprops=arrowprops,
+                )
+
+    # Add annotation with point and text via transform
+    ax.annotate('crs transform', (-75, -20), xytext=(0, -55),
                 transform=platecarree,
-                arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                connectionstyle="arc3,rad=-0.2",),
+                arrowprops=arrowprops,
                 )
 
-    """Add annotation with point via transform and text non transformed"""
-    ax.scatter(75, -20, transform=platecarree)
-    ax.annotate('offset text', (75, -20), xycoords=platecarree,
-                xytext=(5, 15), textcoords='offset points',
-                size=5, va="center", ha="center",
-                bbox=dict(boxstyle="round4", fc="w"),
-                arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                connectionstyle="arc3,rad=-0.2",),
-                )
-    return fig
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='annotate_homolosine.png',
-                               style='mpl20')
-def test_homolosine_annotate():
-    """ test a variety of annotate options on robinson projection
-    """
-
-    fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(1, 1, 1, projection=ccrs.InterruptedGoodeHomolosine())
-    ax.set_global()
-    ax.coastlines()
-    platecarree = ccrs.PlateCarree()
-
-    """Add annotation with xycoords as projection"""
-    ax.plot(-75, 10, 'o', transform=platecarree)
-    ax.annotate('point 1', (-75, 10), xycoords=platecarree)
-
-    """Add annotation with point and text via transform"""
-    ax.plot(-75, -20, 'o', transform=platecarree)
-    ax.annotate('point 2', (-75, -20), xytext=(25, -35),
-                transform=platecarree,
-                arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                connectionstyle="arc3,rad=-0.2",),
+    # Add annotation with point via transform and text non transformed
+    ax.annotate('offset textcoords', (77.23, 28.61), transform=platecarree,
+                xytext=(-15, -45), textcoords='offset points',
+                size=5,
+                arrowprops=arrowprops,
                 )
 
-    """Add annotation with point via transform and text non transformed"""
-    ax.scatter(75, -20, transform=platecarree)
-    ax.annotate('offset text', (75, -20), xycoords=platecarree,
-                xytext=(15, -15), textcoords='offset points',
-                size=5, va="center", ha="center",
-                bbox=dict(boxstyle="round4", fc="w"),
-                arrowprops=dict(facecolor='red', arrowstyle="-|>",
-                                connectionstyle="arc3,rad=-0.2",),
-                )
     return fig
