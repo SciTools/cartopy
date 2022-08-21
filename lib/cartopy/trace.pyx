@@ -54,19 +54,8 @@ import warnings
 
 import shapely.geometry as sgeom
 from shapely.geos import lgeos
-from pyproj import Geod, Transformer, proj_version_str
+from pyproj import Geod, Transformer
 from pyproj.exceptions import ProjError
-
-
-_match = re.search(r"\d+\.\d+.\d+", proj_version_str)
-if _match is not None:
-    PROJ_VERSION = tuple(int(v) for v in _match.group().split('.'))
-    if PROJ_VERSION < (8, 0, 0):
-        warnings.warn(
-            "PROJ 8+ is required. Current version: {}".format(proj_version_str)
-        )
-else:
-    PROJ_VERSION = ()
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():

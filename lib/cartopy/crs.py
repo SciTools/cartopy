@@ -35,7 +35,6 @@ except ImportError:
 
 __document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
 
-PROJ_VERSION = cartopy.trace.PROJ_VERSION
 WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
 
