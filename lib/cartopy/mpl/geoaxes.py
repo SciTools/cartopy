@@ -575,9 +575,8 @@ class GeoAxes(matplotlib.axes.Axes):
     def __str__(self):
         return '< GeoAxes: %s >' % self.projection
 
-    def cla(self):
-        """Clear the current axes and adds boundary lines."""
-        result = super().cla()
+    def __clear(self):
+        """Clear the current axes and add boundary lines."""
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
         # Enable tight autoscaling.
@@ -593,7 +592,18 @@ class GeoAxes(matplotlib.axes.Axes):
         self.dataLim.intervalx = self.projection.x_limits
         self.dataLim.intervaly = self.projection.y_limits
 
-        return result
+    if mpl.__version__ >= '3.6':
+        def clear(self):
+            """Clear the current Axes and add boundary lines."""
+            result = super().clear()
+            self.__clear()
+            return result
+    else:
+        def cla(self):
+            """Clear the current Axes and add boundary lines."""
+            result = super().cla()
+            self.__clear()
+            return result
 
     def format_coord(self, x, y):
         """
