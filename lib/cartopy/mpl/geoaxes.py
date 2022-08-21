@@ -1704,7 +1704,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if is_transform_crs and xycoords == 'data':
             xycoords = transform._as_mpl_transform(self)
 
-        # textcoords = xycoords be default but complains if xytext is empty
+        # textcoords = xycoords by default but complains if xytext is empty
         if textcoords is None and xytext is not None:
             textcoords = xycoords
 
