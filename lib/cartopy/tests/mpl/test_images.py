@@ -9,7 +9,6 @@ import types
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 import matplotlib.colors as colors
 from PIL import Image
 import pytest
@@ -143,7 +142,7 @@ def test_imshow_rgba():
     # tests that the alpha of a RGBA array passed to imshow is set to 0
     # instead of masked
     z = np.full((100, 100), 0.5)
-    cmap = cm.get_cmap()
+    cmap = plt.get_cmap()
     norm = colors.Normalize(vmin=0, vmax=1)
     z1 = cmap(norm(z))
     plt_crs = ccrs.LambertAzimuthalEqualArea()
