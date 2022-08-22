@@ -41,10 +41,12 @@ def config_replace(replacement_dict):
     dict with the given dictionary. Great for testing purposes!
 
     """
-    downloads_orig = cartopy.config['downloaders']
-    cartopy.config['downloaders'] = replacement_dict
-    yield
-    cartopy.config['downloaders'] = downloads_orig
+    with contextlib.ExitStack() as stack:
+        stack.callback(cartopy.config.__setitem__, 'downloaders',
+                       cartopy.config['downloaders'])
+        cartopy.config['downloaders'] = replacement_dict
+
+        yield
 
 
 @pytest.fixture
@@ -54,16 +56,16 @@ def download_to_temp(tmp_path_factory):
     which is automatically cleaned up on exit.
 
     """
-    old_downloads_dict = cartopy.config['downloaders'].copy()
-    old_dir = cartopy.config['data_dir']
+    with contextlib.ExitStack() as stack:
+        stack.callback(cartopy.config.__setitem__, 'downloaders',
+                       cartopy.config['downloaders'].copy())
+        stack.callback(cartopy.config.__setitem__, 'data_dir',
+                       cartopy.config['data_dir'])
 
-    tmp_dir = tmp_path_factory.mktemp('cartopy_data')
-    cartopy.config['data_dir'] = str(tmp_dir)
-    try:
+        tmp_dir = tmp_path_factory.mktemp('cartopy_data')
+        cartopy.config['data_dir'] = str(tmp_dir)
+
         yield tmp_dir
-    finally:
-        cartopy.config['downloaders'] = old_downloads_dict
-        cartopy.config['data_dir'] = old_dir
 
 
 def test_from_config():
