@@ -775,7 +775,7 @@ class Projection(CRS, metaclass=ABCMeta):
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
-        return geoaxes.GeoAxes, {'map_projection': self}
+        return geoaxes.GeoAxes, {'projection': self}
 
     def project_geometry(self, geometry, src_crs=None):
         """
