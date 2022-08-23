@@ -70,7 +70,7 @@ _______________
 
 On Debian, you can install the required system libraries using the system package manager::
 
-    sudo apt -y install libproj-dev libgeos-dev
+    sudo apt -y install libgeos-dev
 
 Then you can proceed to install cartopy using a python package manager::
 
@@ -81,7 +81,7 @@ _____
 
 For macOS, the required dependencies can be installed in the following way::
 
-    brew install proj geos
+    brew install geos
     pip3 install --upgrade pyshp
     # shapely needs to be built from source to link to geos. If it is already
     # installed, uninstall it by: pip3 uninstall shapely
@@ -123,9 +123,6 @@ Further information about the required dependencies can be found here:
 
 **pyshp** 2.1 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
-
-**PROJ** 8.0.0 or later (https://proj.org/)
-    Coordinate transformation library.
 
 **pyproj** 3.0.0 or later (https://github.com/pyproj4/pyproj/)
     Python interface to PROJ (cartographic projections and coordinate transformations library).

@@ -61,8 +61,6 @@ except ImportError:
 
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 7, 2)
-PROJ_MIN_VERSION = (8, 0, 0)
-PROJ_MIN_VERSION_STRING = '.'.join(str(v) for v in PROJ_MIN_VERSION)
 
 
 def file_walk_relative(top, remove=''):
@@ -115,99 +113,6 @@ else:
             geos_libraries.append(entry[2:])
 
 
-# Proj
-def find_proj_version_by_program(conda=None):
-    proj = shutil.which('proj')
-    if proj is None:
-        print(
-            f'Proj {PROJ_MIN_VERSION_STRING} or later must be installed.',
-            file=sys.stderr)
-        exit(1)
-
-    if conda is not None and conda not in proj:
-        print(
-            f'Proj {PROJ_MIN_VERSION_STRING} or later must be installed in'
-            f' Conda environment "{conda}".',
-            file=sys.stderr)
-        exit(1)
-
-    try:
-        proj_version = subprocess.check_output([proj],
-                                               stderr=subprocess.STDOUT)
-        proj_version = proj_version.split()[1].split(b'.')
-        proj_version = tuple(int(v.strip(b',')) for v in proj_version)
-    except (OSError, IndexError, ValueError, subprocess.CalledProcessError):
-        warnings.warn(
-            f'Unable to determine Proj version. Ensure you have '
-            f'{PROJ_MIN_VERSION_STRING} or later installed, or installation '
-            f'may fail.'
-        )
-        proj_version = (0, 0, 0)
-
-    return proj_version
-
-
-conda = os.getenv('CONDA_DEFAULT_ENV')
-if conda is not None and conda in sys.prefix:
-    # Conda does not provide pkg-config compatibility, but the search paths
-    # should be set up so that nothing extra is required. We'll still check
-    # the version, though.
-    proj_version = find_proj_version_by_program(conda)
-    if proj_version < PROJ_MIN_VERSION:
-        proj_version_string = '.'.join(str(v) for v in proj_version)
-        print(
-            f'Proj version {proj_version_string} is installed, but cartopy'
-            f' requires at least version {PROJ_MIN_VERSION_STRING}',
-            file=sys.stderr)
-        exit(1)
-
-    proj_includes = []
-    proj_libraries = ["proj"]
-    proj_library_dirs = []
-
-else:
-    try:
-        proj_version = subprocess.check_output(['pkg-config', '--modversion',
-                                                'proj'],
-                                               stderr=subprocess.STDOUT)
-        proj_version = tuple(int(v) for v in proj_version.split(b'.'))
-        proj_includes = subprocess.check_output(['pkg-config', '--cflags',
-                                                 'proj'])
-        proj_clibs = subprocess.check_output(['pkg-config', '--libs', 'proj'])
-    except (OSError, ValueError, subprocess.CalledProcessError):
-        proj_version = find_proj_version_by_program()
-        if proj_version < PROJ_MIN_VERSION:
-            print(
-                'Proj version %s is installed, but cartopy requires at least '
-                'version %s.' % ('.'.join(str(v) for v in proj_version),
-                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)),
-                file=sys.stderr)
-            exit(1)
-
-        proj_includes = []
-        proj_libraries = ["proj"]
-        proj_library_dirs = []
-    else:
-        if proj_version < PROJ_MIN_VERSION:
-            print(
-                'Proj version %s is installed, but cartopy requires at least '
-                'version %s.' % ('.'.join(str(v) for v in proj_version),
-                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)),
-                file=sys.stderr)
-            exit(1)
-
-        proj_includes = [
-            proj_include[2:] if proj_include.startswith('-I') else
-            proj_include for proj_include in proj_includes.decode().split()]
-
-        proj_libraries = []
-        proj_library_dirs = []
-        for entry in proj_clibs.decode().split():
-            if entry.startswith('-L'):
-                proj_library_dirs.append(entry[2:])
-            elif entry.startswith('-l'):
-                proj_libraries.append(entry[2:])
-
 # Python dependencies
 extras_require = {}
 for name in os.listdir(os.path.join(HERE, 'requirements')):
@@ -253,9 +158,9 @@ extensions = [
         'cartopy.trace',
         ['lib/cartopy/trace.pyx'],
         include_dirs=([include_dir, './lib/cartopy', np.get_include()] +
-                      proj_includes + geos_includes),
-        libraries=proj_libraries + geos_libraries,
-        library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
+                      geos_includes),
+        libraries=geos_libraries,
+        library_dirs=[library_dir] + geos_library_dirs,
         language='c++',
         **extra_extension_args),
 ]
@@ -336,8 +241,6 @@ setup(
                   ['io/srtm.npz']},
 
     scripts=['tools/cartopy_feature_download.py'],
-
-    # requires proj headers
     ext_modules=extensions,
     cmdclass=cmdclass,
     python_requires='>=' + '.'.join(str(n) for n in PYTHON_MIN_VERSION),
