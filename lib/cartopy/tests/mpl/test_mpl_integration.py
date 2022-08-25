@@ -861,7 +861,7 @@ def test_streamplot():
 @pytest.mark.natural_earth
 @pytest.mark.parametrize(
     'map_projection',
-    [ccrs.Mercator(), ccrs.InterruptedGoodeHomolosine(), ccrs.Robinson()]
+    [ccrs.InterruptedGoodeHomolosine(), ]
     )
 @pytest.mark.mpl_image_compare()
 def test_annotate(map_projection):
@@ -917,9 +917,10 @@ def test_annotate(map_projection):
                 )
 
     # Add annotation with point via transform and text non transformed
-    ax.annotate('offset textcoords', (77.23, 28.61), transform=platecarree,
-                xytext=(-15, -45), textcoords='offset points',
+    ax.annotate('offset textcoords', (-149.8, 61.22), transform=platecarree,
+                xytext=(-35, 10), textcoords='offset points',
                 size=5,
+                ha='right',
                 arrowprops=arrowprops,
                 )
 
