@@ -867,12 +867,13 @@ def test_streamplot():
 def test_annotate(map_projection):
     """ test a variety of annotate options on mulitple projections
 
-    Annotate defaults to coords passed as if in map projection space.
-    `transform`, `xycoords` or `textcoords` controls location and text offset
-        location. `transform` is a cartopy kwarg so expects a CRS,
-        `xycoords` and `textcoords` accept CRS or matplotlib args.
+    Annotate defaults to coords passed as if they're in map projection space.
+    `transform` or `xycoords` & `textcoords` control the marker and text offset
+    through shared or independent projections or coordinates.
+    `transform` is a cartopy kwarg so expects a CRS,
+    `xycoords` and `textcoords` accept CRS or matplotlib args.
 
-    The various annotations below test a variety of different combinations.
+    The various annotations below test a variety of the different combinations.
     """
 
     fig = plt.figure(figsize=(10, 5))
