@@ -113,7 +113,7 @@ class Test_Axes_add_geometries:
         # A single geometry is acceptable
         proj = ccrs.PlateCarree()
         ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
-                     map_projection=proj)
+                     projection=proj)
         ax.add_geometries(next(cfeature.COASTLINE.geometries()), crs=proj)
 
 
