@@ -92,7 +92,7 @@ def test_pcolormesh_datalim():
     # Z with the same shape as X/Y to force the interpolation
     z = np.zeros(xs.shape)
 
-    ax = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    ax = plt.subplot(3, 1, 1, projection=ccrs.PlateCarree())
     coll = ax.pcolormesh(xs, ys, z, shading='auto',
                          transform=ccrs.PlateCarree())
 
@@ -104,7 +104,7 @@ def test_pcolormesh_datalim():
     y = [-10, 10]
 
     xs, ys = np.meshgrid(x, y)
-    ax = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
+    ax = plt.subplot(3, 1, 2, projection=ccrs.PlateCarree())
     coll = ax.pcolormesh(xs, ys, z, shading='auto',
                          transform=ccrs.PlateCarree())
 
@@ -116,7 +116,7 @@ def test_pcolormesh_datalim():
     y = [-10, 10]
 
     xs, ys = np.meshgrid(x, y)
-    ax = plt.subplot(2, 1, 1, projection=ccrs.Orthographic())
+    ax = plt.subplot(3, 1, 3, projection=ccrs.Orthographic())
     coll = ax.pcolormesh(xs, ys, z, shading='auto',
                          transform=ccrs.PlateCarree())
 
