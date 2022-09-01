@@ -859,12 +859,8 @@ def test_streamplot():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.parametrize(
-    'map_projection',
-    [ccrs.InterruptedGoodeHomolosine(), ]
-    )
 @pytest.mark.mpl_image_compare()
-def test_annotate(map_projection):
+def test_annotate():
     """ test a variety of annotate options on mulitple projections
 
     Annotate defaults to coords passed as if they're in map projection space.
@@ -875,6 +871,8 @@ def test_annotate(map_projection):
 
     The various annotations below test a variety of the different combinations.
     """
+    # use IGH to test annotations cross projection splits and map boundaries
+    map_projection = ccrs.InterruptedGoodeHomolosine()
 
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=map_projection)
