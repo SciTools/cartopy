@@ -856,3 +856,70 @@ def test_streamplot():
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
                   density=(1.5, 2), color=mag, linewidth=2 * mag)
     return fig
+
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare()
+def test_annotate():
+    """ test a variety of annotate options on mulitple projections
+
+    Annotate defaults to coords passed as if they're in map projection space.
+    `transform` or `xycoords` & `textcoords` control the marker and text offset
+    through shared or independent projections or coordinates.
+    `transform` is a cartopy kwarg so expects a CRS,
+    `xycoords` and `textcoords` accept CRS or matplotlib args.
+
+    The various annotations below test a variety of the different combinations.
+    """
+    # use IGH to test annotations cross projection splits and map boundaries
+    map_projection = ccrs.InterruptedGoodeHomolosine()
+
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=map_projection)
+    ax.set_global()
+    ax.coastlines()
+    arrowprops = {'facecolor': 'red',
+                  'arrowstyle': "-|>",
+                  'connectionstyle': "arc3,rad=-0.2",
+                  }
+    platecarree = ccrs.PlateCarree()
+    mpltransform = platecarree._as_mpl_transform(ax)
+
+    # Add annotation with xycoords as mpltransform as suggested here
+    # https://stackoverflow.com/questions/25416600/why-the-annotate-worked-unexpected-here-in-cartopy/25421922#25421922
+    ax.annotate('mpl xycoords', (-45, 43), xycoords=mpltransform,
+                size=5)
+
+    # Add annotation with xycoords as projection
+    ax.annotate('crs xycoords', (-75, 13), xycoords=platecarree,
+                size=5)
+
+    # set up coordinates in map projection space
+    map_coords = map_projection.transform_point(-175, -35, platecarree)
+    # Dont specifiy any args, default xycoords='data', transform=map projection
+    ax.annotate('default crs', map_coords, size=5)
+
+    # data in map projection using default transform, with
+    # text positioned in platecaree transform
+    ax.annotate('mixed crs transforms', map_coords, xycoords='data',
+                xytext=(-175, -55),
+                textcoords=platecarree,
+                size=5,
+                arrowprops=arrowprops,
+                )
+
+    # Add annotation with point and text via transform
+    ax.annotate('crs transform', (-75, -20), xytext=(0, -55),
+                transform=platecarree,
+                arrowprops=arrowprops,
+                )
+
+    # Add annotation with point via transform and text non transformed
+    ax.annotate('offset textcoords', (-149.8, 61.22), transform=platecarree,
+                xytext=(-35, 10), textcoords='offset points',
+                size=5,
+                ha='right',
+                arrowprops=arrowprops,
+                )
+
+    return fig

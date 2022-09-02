@@ -1702,6 +1702,46 @@ class GeoAxes(matplotlib.axes.Axes):
         return result
 
     @_add_transform
+    def annotate(self, text, xy, xytext=None, xycoords='data', textcoords=None,
+                 *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.annotate`.
+
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
+
+        """
+        transform = kwargs.pop('transform', None)
+        is_transform_crs = isinstance(transform, ccrs.CRS)
+
+        # convert CRS to mpl transform for default 'data' setup
+        if is_transform_crs and xycoords == 'data':
+            xycoords = transform._as_mpl_transform(self)
+
+        # textcoords = xycoords by default but complains if xytext is empty
+        if textcoords is None and xytext is not None:
+            textcoords = xycoords
+
+        # use transform if textcoords is data and xytext is provided
+        if is_transform_crs and xytext is not None and textcoords == 'data':
+            textcoords = transform._as_mpl_transform(self)
+
+        # convert to mpl_transform if CRS passed to xycoords
+        if isinstance(xycoords, ccrs.CRS):
+            xycoords = xycoords._as_mpl_transform(self)
+
+        # convert to mpl_transform if CRS passed to textcoords
+        if isinstance(textcoords, ccrs.CRS):
+            textcoords = textcoords._as_mpl_transform(self)
+
+        result = super().annotate(text, xy, xytext, xycoords=xycoords,
+                                  textcoords=textcoords, *args, **kwargs)
+        self.autoscale_view()
+        return result
+
+    @_add_transform
     def hexbin(self, x, y, *args, **kwargs):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.hexbin`.
