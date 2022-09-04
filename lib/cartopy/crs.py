@@ -47,13 +47,12 @@ def _get_transformer_from_crs(src_crs, tgt_crs):
 
 def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
     transformer = _get_transformer_from_crs(src_crs, tgt_crs)
-    transformed_coords = transformer.transform(x, y, z, errcheck=trap)
+
+    # if a projection is essentially 2d there should be no harm in setting its z to 0
     if z is None:
-        xx, yy = transformed_coords
-        zz = 0
-    else:
-        xx, yy, zz = transformed_coords
-    return xx, yy, zz
+        z = np.zeros_like(x)
+
+    return transformer.transform(x, y, z, errcheck=trap)
 
 
 class Globe:
