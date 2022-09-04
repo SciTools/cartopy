@@ -303,8 +303,7 @@ def test_transform_points_outside_domain():
     crs = ccrs.Orthographic()
     result = crs.transform_points(ccrs.PlateCarree(),
                                   np.array([-120]), np.array([80]))
-    assert np.all(np.isnan(result[..., :2]))
-    assert result[..., -1] == 0
+    assert np.all(np.isnan(result))
     result = crs.transform_points(ccrs.PlateCarree(),
                                   np.array([-120]), np.array([80]),
                                   trap=True)
