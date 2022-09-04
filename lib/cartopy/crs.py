@@ -48,7 +48,8 @@ def _get_transformer_from_crs(src_crs, tgt_crs):
 def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
     transformer = _get_transformer_from_crs(src_crs, tgt_crs)
 
-    # if a projection is essentially 2d there should be no harm in setting its z to 0
+    # if a projection is essentially 2d there
+    # should be no harm in setting its z to 0
     if z is None:
         z = np.zeros_like(x)
 
