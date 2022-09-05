@@ -14,8 +14,6 @@ dependencies:
   - geos>=3.7.2
   - pyshp>=2.1
   - pyproj>=3.0.0
-  # PROJ is still required for now
-  - proj>=8
   # The testing label has the proper version of freetype included
   - conda-forge/label/testing::matplotlib-base>=3.1
 
@@ -39,4 +37,3 @@ dependencies:
   - flake8
   - pykdtree
   - setuptools_scm
-  - setuptools_scm_git_archive

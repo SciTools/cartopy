@@ -24,7 +24,6 @@ Make sure you have pip >= 9.0.1.
     sys.exit(error)
 
 
-import fnmatch
 import os
 import shutil
 import subprocess
@@ -32,7 +31,7 @@ import warnings
 from collections import defaultdict
 from sysconfig import get_config_var
 
-from setuptools import Command, Extension, convert_path, setup
+from setuptools import Extension, find_packages, setup
 
 """
 Distribution definition for Cartopy.
@@ -62,7 +61,6 @@ except ImportError:
 
 # Please keep in sync with INSTALL file.
 GEOS_MIN_VERSION = (3, 7, 2)
-PROJ_MIN_VERSION = (8, 0, 0)
 
 
 def file_walk_relative(top, remove=''):
@@ -76,31 +74,6 @@ def file_walk_relative(top, remove=''):
     for root, dirs, files in os.walk(top):
         for file in files:
             yield os.path.join(root, file).replace(remove, '')
-
-
-def find_package_tree(root_path, root_package):
-    """
-    Return the package and all its sub-packages.
-
-    Automated package discovery - extracted/modified from Distutils Cookbook:
-    https://wiki.python.org/moin/Distutils/Cookbook/AutoPackageDiscovery
-
-    """
-    packages = [root_package]
-    # Accept a root_path with Linux path separators.
-    root_path = root_path.replace('/', os.path.sep)
-    root_count = len(root_path.split(os.path.sep))
-    for (dir_path, dir_names, _) in os.walk(convert_path(root_path)):
-        # Prune dir_names *in-place* to prevent unwanted directory recursion
-        for dir_name in list(dir_names):
-            if not os.path.isfile(os.path.join(dir_path, dir_name,
-                                               '__init__.py')):
-                dir_names.remove(dir_name)
-        if dir_names:
-            prefix = dir_path.split(os.path.sep)[root_count:]
-            packages.extend(['.'.join([root_package] + prefix + [dir_name])
-                             for dir_name in dir_names])
-    return packages
 
 
 # Dependency checks
@@ -139,99 +112,6 @@ else:
         elif entry.startswith('-l'):
             geos_libraries.append(entry[2:])
 
-
-# Proj
-def find_proj_version_by_program(conda=None):
-    proj = shutil.which('proj')
-    if proj is None:
-        print(
-            'Proj {} must be installed.'.format(
-                '.'.join(str(v) for v in PROJ_MIN_VERSION)),
-            file=sys.stderr)
-        exit(1)
-
-    if conda is not None and conda not in proj:
-        print(
-            'Proj {} must be installed in Conda environment "{}".'.format(
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), conda),
-            file=sys.stderr)
-        exit(1)
-
-    try:
-        proj_version = subprocess.check_output([proj],
-                                               stderr=subprocess.STDOUT)
-        proj_version = proj_version.split()[1].split(b'.')
-        proj_version = tuple(int(v.strip(b',')) for v in proj_version)
-    except (OSError, IndexError, ValueError, subprocess.CalledProcessError):
-        warnings.warn(
-            'Unable to determine Proj version. Ensure you have %s or later '
-            'installed, or installation may fail.' % (
-                '.'.join(str(v) for v in PROJ_MIN_VERSION), ))
-        proj_version = (0, 0, 0)
-
-    return proj_version
-
-
-conda = os.getenv('CONDA_DEFAULT_ENV')
-if conda is not None and conda in sys.prefix:
-    # Conda does not provide pkg-config compatibility, but the search paths
-    # should be set up so that nothing extra is required. We'll still check
-    # the version, though.
-    proj_version = find_proj_version_by_program(conda)
-    if proj_version < PROJ_MIN_VERSION:
-        print(
-            'Proj version %s is installed, but cartopy requires at least '
-            'version %s.' % ('.'.join(str(v) for v in proj_version),
-                             '.'.join(str(v) for v in PROJ_MIN_VERSION)),
-            file=sys.stderr)
-        exit(1)
-
-    proj_includes = []
-    proj_libraries = ["proj"]
-    proj_library_dirs = []
-
-else:
-    try:
-        proj_version = subprocess.check_output(['pkg-config', '--modversion',
-                                                'proj'],
-                                               stderr=subprocess.STDOUT)
-        proj_version = tuple(int(v) for v in proj_version.split(b'.'))
-        proj_includes = subprocess.check_output(['pkg-config', '--cflags',
-                                                 'proj'])
-        proj_clibs = subprocess.check_output(['pkg-config', '--libs', 'proj'])
-    except (OSError, ValueError, subprocess.CalledProcessError):
-        proj_version = find_proj_version_by_program()
-        if proj_version < PROJ_MIN_VERSION:
-            print(
-                'Proj version %s is installed, but cartopy requires at least '
-                'version %s.' % ('.'.join(str(v) for v in proj_version),
-                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)),
-                file=sys.stderr)
-            exit(1)
-
-        proj_includes = []
-        proj_libraries = ["proj"]
-        proj_library_dirs = []
-    else:
-        if proj_version < PROJ_MIN_VERSION:
-            print(
-                'Proj version %s is installed, but cartopy requires at least '
-                'version %s.' % ('.'.join(str(v) for v in proj_version),
-                                 '.'.join(str(v) for v in PROJ_MIN_VERSION)),
-                file=sys.stderr)
-            exit(1)
-
-        proj_includes = [
-            proj_include[2:] if proj_include.startswith('-I') else
-            proj_include for proj_include in proj_includes.decode().split()]
-
-        proj_libraries = []
-        proj_library_dirs = []
-        for entry in proj_clibs.decode().split():
-            if entry.startswith('-L'):
-                proj_library_dirs.append(entry[2:])
-            elif entry.startswith('-l'):
-                proj_libraries.append(entry[2:])
 
 # Python dependencies
 extras_require = {}
@@ -278,9 +158,9 @@ extensions = [
         'cartopy.trace',
         ['lib/cartopy/trace.pyx'],
         include_dirs=([include_dir, './lib/cartopy', np.get_include()] +
-                      proj_includes + geos_includes),
-        libraries=proj_libraries + geos_libraries,
-        library_dirs=[library_dir] + proj_library_dirs + geos_library_dirs,
+                      geos_includes),
+        libraries=geos_libraries,
+        library_dirs=[library_dir] + geos_library_dirs,
         language='c++',
         **extra_extension_args),
 ]
@@ -344,7 +224,7 @@ setup(
         'write_to': 'lib/cartopy/_version.py',
     },
 
-    packages=find_package_tree('lib/cartopy', 'cartopy'),
+    packages=find_packages("lib"),
     package_dir={'': 'lib'},
     package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/'
                                                      'mpl/baseline_images/',
@@ -361,8 +241,6 @@ setup(
                   ['io/srtm.npz']},
 
     scripts=['tools/cartopy_feature_download.py'],
-
-    # requires proj headers
     ext_modules=extensions,
     cmdclass=cmdclass,
     python_requires='>=' + '.'.join(str(n) for n in PYTHON_MIN_VERSION),

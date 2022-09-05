@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
@@ -12,7 +11,6 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 import cartopy.crs as ccrs
 
 
-@cleanup
 def test_extents():
     # tests that one can set the extents of a map in a variety of coordinate
     # systems, for a variety of projection
@@ -48,7 +46,6 @@ def test_extents():
                               )
 
 
-@cleanup
 def test_get_extent():
     # tests that getting the extents of a map produces something reasonable.
     uk = [-12.5, 4, 49, 60]
@@ -68,7 +65,6 @@ def test_get_extent():
     assert_array_almost_equal(ax.get_extent(uk_crs), uk, decimal=1)
 
 
-@cleanup
 def test_domain_extents():
     # Setting the extent to global or the domain limits.
     ax = plt.axes(projection=ccrs.PlateCarree())

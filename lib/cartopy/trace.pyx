@@ -49,45 +49,13 @@ cdef extern from "geos_c.h":
     void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
     cdef int GEOS_MULTILINESTRING
 
-cdef extern from "geodesic.h":
-    # External imports of Proj4.9 functions
-    cdef struct geod_geodesic:
-        pass
-    cdef struct geod_geodesicline:
-        pass
-
-    void geod_init(geod_geodesic*, double, double) nogil
-    double geod_geninverse(geod_geodesic*, double, double, double, double,
-                           double*, double*, double*, double*, double*,
-                           double*, double*) nogil
-    void geod_lineinit(geod_geodesicline*, geod_geodesic*, double, double,
-                       double, int) nogil
-    void geod_genposition(geod_geodesicline*, int, double, double*,
-                          double*, double*, double*, double*, double*,
-                          double*, double*) nogil
-
-    cdef int GEOD_ARCMODE
-    cdef int GEOD_LATITUDE
-    cdef int GEOD_LONGITUDE
-
 import re
 import warnings
 
 import shapely.geometry as sgeom
 from shapely.geos import lgeos
-from pyproj import Transformer, proj_version_str
+from pyproj import Geod, Transformer
 from pyproj.exceptions import ProjError
-
-
-_match = re.search(r"\d+\.\d+.\d+", proj_version_str)
-if _match is not None:
-    PROJ_VERSION = tuple(int(v) for v in _match.group().split('.'))
-    if PROJ_VERSION < (8, 0, 0):
-        warnings.warn(
-            "PROJ 8+ is required. Current version: {}".format(proj_version_str)
-        )
-else:
-    PROJ_VERSION = ()
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -251,9 +219,9 @@ cdef class CartesianInterpolator(Interpolator):
 
 
 cdef class SphericalInterpolator(Interpolator):
-    cdef geod_geodesic geod
-    cdef geod_geodesicline geod_line
-    cdef double a13
+    cdef object geod
+    cdef double azim
+    cdef double s12
 
     cdef void init(self, src_crs, dest_crs) except *:
         self.transformer = Transformer.from_crs(src_crs, dest_crs, always_xy=True)
@@ -262,23 +230,16 @@ cdef class SphericalInterpolator(Interpolator):
         cdef double flattening = 0
         if src_crs.ellipsoid.inverse_flattening > 0:
             flattening = 1 / src_crs.ellipsoid.inverse_flattening
-        geod_init(&self.geod, major_axis, flattening)
+        self.geod = Geod(a=major_axis, f=flattening)
 
     cdef void set_line(self, const Point &start, const Point &end):
-        cdef double azi1
-        self.a13 = geod_geninverse(&self.geod,
-                                   start.y, start.x, end.y, end.x,
-                                   NULL, &azi1, NULL, NULL, NULL, NULL, NULL)
-        geod_lineinit(&self.geod_line, &self.geod, start.y, start.x, azi1,
-                      GEOD_LATITUDE | GEOD_LONGITUDE);
+        Interpolator.set_line(self, start, end)
+        self.azim, _, self.s12 = self.geod.inv(start.x, start.y, end.x, end.y)
 
     cdef Point interpolate(self, double t) except *:
         cdef Point lonlat
 
-        geod_genposition(&self.geod_line, GEOD_ARCMODE, self.a13 * t,
-                         &lonlat.y, &lonlat.x, NULL, NULL, NULL, NULL, NULL,
-                         NULL)
-
+        lonlat.x, lonlat.y, _ = self.geod.fwd(self.start.x, self.start.y, self.azim, self.s12 * t)
         return self.project(lonlat)
 
 

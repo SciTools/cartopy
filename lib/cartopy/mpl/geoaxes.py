@@ -399,16 +399,22 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Parameters
         ----------
-        map_projection: optional
-            The target :class:`~cartopy.crs.Projection` of this Axes object.
-
-
-        All other args and keywords are passed through to
-        :class:`matplotlib.axes.Axes`.
-
+        projection : cartopy.crs.Projection
+            The target projection of this Axes.
         """
-        self.projection = kwargs.pop('map_projection')
-        """The :class:`cartopy.crs.Projection` of this GeoAxes."""
+        if "map_projection" in kwargs:
+            warnings.warn("The `map_projection` keyword argument is "
+                          "deprecated, use `projection` to instantiate a "
+                          "GeoAxes instead.")
+            projection = kwargs.pop("map_projection")
+        else:
+            projection = kwargs.pop("projection")
+
+        # The :class:`cartopy.crs.Projection` of this GeoAxes.
+        if not isinstance(projection, ccrs.Projection):
+            raise ValueError("A GeoAxes can only be created with a "
+                             "projection of type cartopy.crs.Projection")
+        self.projection = projection
 
         super().__init__(*args, **kwargs)
         self._gridliners = []
@@ -459,18 +465,19 @@ class GeoAxes(matplotlib.axes.Axes):
             context manager exits.  Defaults to True.
 
         """
-        data_lim = self.dataLim.frozen().get_points()
-        view_lim = self.viewLim.frozen().get_points()
-        other = (self.ignore_existing_data_limits,
-                 self._autoscaleXon, self._autoscaleYon)
-        try:
-            yield
-        finally:
+        with contextlib.ExitStack() as stack:
             if hold:
-                self.dataLim.set_points(data_lim)
-                self.viewLim.set_points(view_lim)
-                (self.ignore_existing_data_limits,
-                    self._autoscaleXon, self._autoscaleYon) = other
+                stack.callback(self.dataLim.set_points,
+                               self.dataLim.frozen().get_points())
+                stack.callback(self.viewLim.set_points,
+                               self.viewLim.frozen().get_points())
+                stack.callback(setattr, self, 'ignore_existing_data_limits',
+                               self.ignore_existing_data_limits)
+                stack.callback(self.set_autoscalex_on,
+                               self.get_autoscalex_on())
+                stack.callback(self.set_autoscaley_on,
+                               self.get_autoscaley_on())
+            yield
 
     def _draw_preprocess(self, renderer):
         """
@@ -568,9 +575,8 @@ class GeoAxes(matplotlib.axes.Axes):
     def __str__(self):
         return '< GeoAxes: %s >' % self.projection
 
-    def cla(self):
-        """Clear the current axes and adds boundary lines."""
-        result = super().cla()
+    def __clear(self):
+        """Clear the current axes and add boundary lines."""
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
         # Enable tight autoscaling.
@@ -586,7 +592,18 @@ class GeoAxes(matplotlib.axes.Axes):
         self.dataLim.intervalx = self.projection.x_limits
         self.dataLim.intervaly = self.projection.y_limits
 
-        return result
+    if mpl.__version__ >= '3.6':
+        def clear(self):
+            """Clear the current Axes and add boundary lines."""
+            result = super().clear()
+            self.__clear()
+            return result
+    else:
+        def cla(self):
+            """Clear the current Axes and add boundary lines."""
+            result = super().cla()
+            self.__clear()
+            return result
 
     def format_coord(self, x, y):
         """
@@ -881,11 +898,11 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         super().autoscale_view(tight=tight, scalex=scalex, scaley=scaley)
         # Limit the resulting bounds to valid area.
-        if scalex and self._autoscaleXon:
+        if scalex and self.get_autoscalex_on():
             bounds = self.get_xbound()
             self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
                             min(bounds[1], self.projection.x_limits[1]))
-        if scaley and self._autoscaleYon:
+        if scaley and self.get_autoscaley_on():
             bounds = self.get_ybound()
             self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
                             min(bounds[1], self.projection.y_limits[1]))
@@ -1681,6 +1698,46 @@ class GeoAxes(matplotlib.axes.Axes):
                              '(PlateCarree or RotatedPole).')
 
         result = super().scatter(*args, **kwargs)
+        self.autoscale_view()
+        return result
+
+    @_add_transform
+    def annotate(self, text, xy, xytext=None, xycoords='data', textcoords=None,
+                 *args, **kwargs):
+        """
+        Add the "transform" keyword to :func:`~matplotlib.pyplot.annotate`.
+
+        Other Parameters
+        ----------------
+        transform
+            A :class:`~cartopy.crs.Projection`.
+
+        """
+        transform = kwargs.pop('transform', None)
+        is_transform_crs = isinstance(transform, ccrs.CRS)
+
+        # convert CRS to mpl transform for default 'data' setup
+        if is_transform_crs and xycoords == 'data':
+            xycoords = transform._as_mpl_transform(self)
+
+        # textcoords = xycoords by default but complains if xytext is empty
+        if textcoords is None and xytext is not None:
+            textcoords = xycoords
+
+        # use transform if textcoords is data and xytext is provided
+        if is_transform_crs and xytext is not None and textcoords == 'data':
+            textcoords = transform._as_mpl_transform(self)
+
+        # convert to mpl_transform if CRS passed to xycoords
+        if isinstance(xycoords, ccrs.CRS):
+            xycoords = xycoords._as_mpl_transform(self)
+
+        # convert to mpl_transform if CRS passed to textcoords
+        if isinstance(textcoords, ccrs.CRS):
+            textcoords = textcoords._as_mpl_transform(self)
+
+        result = super().annotate(text, xy, xytext, xycoords=xycoords,
+                                  textcoords=textcoords, *args, **kwargs)
         self.autoscale_view()
         return result
 

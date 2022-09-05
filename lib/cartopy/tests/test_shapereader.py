@@ -9,6 +9,7 @@ import os.path
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pytest
+import shapely.geometry as sgeom
 
 import cartopy.io.shapereader as shp
 
@@ -20,7 +21,6 @@ class TestLakes:
         self.reader = shp.Reader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small lake
-        print([name for name in names if 'Nicaragua' in name])
         self.lake_name = 'Lago de\rNicaragua'
         self.lake_index = names.index(self.lake_name)
         self.test_lake_geometry = \
@@ -31,7 +31,9 @@ class TestLakes:
         lake_geometry = self.test_lake_geometry
         assert lake_geometry.type == 'Polygon'
 
-        polygon = lake_geometry
+        # force an orientation due to potential reader differences
+        # with pyshp 2.2.0 forcing a specific orientation.
+        polygon = sgeom.polygon.orient(lake_geometry, -1)
 
         expected = np.array([(-84.85548682324658, 11.147898667846633),
                              (-85.29013729525353, 11.176165676310276),

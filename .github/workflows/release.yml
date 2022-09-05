@@ -26,8 +26,7 @@ jobs:
         run: |
           PACKAGES="cython fiona matplotlib-base numpy pyproj pykdtree scipy"
           PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest"
-          PACKAGES="$PACKAGES pytest-xdist setuptools_scm"
-          PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
+          PACKAGES="$PACKAGES pytest-xdist setuptools_scm shapely"
           conda install $PACKAGES
 
       - name: Create sdist

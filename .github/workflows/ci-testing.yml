@@ -30,12 +30,12 @@ jobs:
         if: matrix.python-version == '3.8' && matrix.os == 'ubuntu-latest'
         id: minimum-packages
         run: |
-          echo "PACKAGES=cython=0.29.15 matplotlib-base=3.2.1 numpy=1.19 owslib=0.19.1 pyproj=3.0 proj=8.0 scipy=1.4.0 shapely=1.6.4" >> $GITHUB_ENV
+          echo "PACKAGES=cython=0.29.15 matplotlib-base=3.2.1 numpy=1.19 owslib=0.19.1 pyproj=3.0 scipy=1.4.0 shapely=1.6.4" >> $GITHUB_ENV
 
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped'
         run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj 'proj>=8' pykdtree scipy shapely" >> $GITHUB_ENV
+          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy shapely" >> $GITHUB_ENV
 
       - name: Coverage packages
         id: coverage
@@ -48,13 +48,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl"
-          PACKAGES="$PACKAGES pytest-xdist setuptools_scm"
-          PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
-          # openssl 3.0 updated the legacy renegotiation default, which causes
-          # failures in NASA's WMTS server. They will need to update their
-          # server before we can use a newer openssl.
-          PACKAGES="$PACKAGES openssl<3"
+          PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl!=0.16.0"
+          PACKAGES="$PACKAGES pytest-xdist setuptools_scm shapely"
           conda install $PACKAGES
           conda info -a
           conda list

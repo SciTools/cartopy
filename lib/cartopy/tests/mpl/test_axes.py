@@ -6,7 +6,6 @@
 
 from unittest import mock
 
-from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
@@ -99,7 +98,7 @@ class Test_Axes_add_geometries:
     @mock.patch('cartopy.feature.ShapelyFeature')
     def test_styler_kwarg(self, ShapelyFeature, add_feature_method):
         ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
-                     map_projection=ccrs.Robinson())
+                     projection=ccrs.Robinson())
         ax.add_geometries(mock.sentinel.geometries, mock.sentinel.crs,
                           styler=mock.sentinel.styler, wibble='wobble')
 
@@ -114,11 +113,10 @@ class Test_Axes_add_geometries:
         # A single geometry is acceptable
         proj = ccrs.PlateCarree()
         ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
-                     map_projection=proj)
+                     projection=proj)
         ax.add_geometries(next(cfeature.COASTLINE.geometries()), crs=proj)
 
 
-@cleanup
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
     assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"

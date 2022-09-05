@@ -35,7 +35,6 @@ except ImportError:
 
 __document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
 
-PROJ_VERSION = cartopy.trace.PROJ_VERSION
 WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
 
@@ -775,7 +774,7 @@ class Projection(CRS, metaclass=ABCMeta):
 
     def _as_mpl_axes(self):
         import cartopy.mpl.geoaxes as geoaxes
-        return geoaxes.GeoAxes, {'map_projection': self}
+        return geoaxes.GeoAxes, {'projection': self}
 
     def project_geometry(self, geometry, src_crs=None):
         """
