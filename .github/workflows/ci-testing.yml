@@ -35,7 +35,7 @@ jobs:
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped'
         run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy shapely" >> $GITHUB_ENV
+          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy shapely<2" >> $GITHUB_ENV
 
       - name: Coverage packages
         id: coverage
@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         run: |
           PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl!=0.16.0"
-          PACKAGES="$PACKAGES pytest-xdist setuptools_scm shapely"
+          PACKAGES="$PACKAGES pytest-xdist setuptools_scm shapely<2"
           conda install $PACKAGES
           conda info -a
           conda list

@@ -45,7 +45,7 @@ deps-run: &deps-install
         pyshp \
         scipy \
         setuptools_scm \
-        shapely \
+        'shapely<2' \
         $EXTRA_PACKAGES \
         --file docs/doc-requirements.txt
     conda list -n test-environment
