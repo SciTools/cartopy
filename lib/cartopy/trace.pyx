@@ -199,7 +199,7 @@ cdef class Interpolator:
             else:
                 raise
 
-        if self.to_180 and xx > 180 and xx != HUGE_VAL:
+        if self.to_180 and (xx > 180 or xx < -180) and xx != HUGE_VAL:
             xx = (((xx + 180) % 360) - 180)
 
         dest_xy.x = xx * self.dest_scale

@@ -401,7 +401,7 @@ class CRS(_CRS):
                     self.is_geodetic()):
                 # convert from [0,360] to [-180,180]
                 x = np.array(x, copy=True)
-                to_180 = x > 180
+                to_180 = (x > 180) | (x < -180)
                 x[to_180] = (((x[to_180] + 180) % 360) - 180)
             try:
                 result[:, 0], result[:, 1], result[:, 2] = \
