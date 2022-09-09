@@ -371,10 +371,10 @@ intersphinx_mapping = {
 
 ############ extlinks extension ############
 extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
-                      'issues labeled with '),
+                       'issues labeled with %s'),
             'issue': ('https://github.com/SciTools/cartopy/issues/%s',
-                      'Issue #'),
-            'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #'),
+                      'Issue #%s'),
+            'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #%s'),
             }
 
 

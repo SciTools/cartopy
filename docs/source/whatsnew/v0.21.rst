@@ -1,0 +1,136 @@
+Version 0.21 (September 9, 2022)
+================================
+
+Cartopy v0.21 is not compatible with Shapely 2.0, so this release
+has an upper pin on Shapely to avoid installing newer versions.
+
+For a full list of included Pull Requests and closed Issues, please see the
+`0.21 milestone <https://github.com/SciTools/cartopy/milestone/30>`_.
+
+Features
+--------
+
+* The requirement to install with a local PROJ installation has been removed.
+  The previous C PROJ library calls have been replaced by pyproj.
+  (:pull:`2069`)
+
+* Many test improvements, including moving to pytest-mpl for image comparisons
+  and parametrizing many tests where possible.
+  (:pull:`1887`, :pull:`1891`, :pull:`1900`)
+
+* The UTF8 degree symbol is now used for latitude and longitude labels.
+  (:pull:`1885`)
+
+* Clément fixed an issue that would ignore the alpha channel when
+  reprojecting RGBA images. (:pull:`1906`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import cartopy.crs as ccrs
+
+        dy, dx = (4, 10)
+        rgba = np.linspace(0, 255*31, dx*dy*4, dtype=np.uint8).reshape((dy, dx, 4))
+        rgba[:, :, 3]  = np.linspace(0, 255, dx, dtype=np.uint8).reshape(1, dx)
+
+        fig = plt.figure(figsize=(10, 5))
+        ax = plt.axes(projection=ccrs.Orthographic(central_latitude=45))
+        ax.imshow(rgba, transform=ccrs.PlateCarree())
+
+        plt.show()
+
+* Filled features no longer set the edgecolor by default. The edgecolor can
+  still be explicitly set when adding the feature
+  ``ax.add_feature(LAND, edgecolor='k')``. (:pull:`1933`)
+
+* The **approx** keyword to TransverseMercator, OSGB, and OSNI projections
+  now defaults to False. (:pull:`1957`)
+
+* ``geoaxes.add_geometries()`` now accepts both a list of geometries and a
+  single geometry. (:pull:`1999`)
+
+* Better handling of non-ndarray inputs like ``xarray.DataArray``.
+  (:pull:`2050`)
+
+* Alan Brammer added the ability to pass CRS's for the text and xy coordinates
+  used in ``ax.annotate()``. (:pull:`2065`)
+
+    .. plot::
+       :width: 400pt
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import cartopy.crs as ccrs
+
+        map_projection = ccrs.InterruptedGoodeHomolosine()
+
+        fig = plt.figure(figsize=(10, 5))
+        ax = fig.add_subplot(1, 1, 1, projection=map_projection)
+        ax.set_global()
+        ax.coastlines()
+        arrowprops = {'facecolor': 'red',
+                      'arrowstyle': "-|>",
+                      'connectionstyle': "arc3,rad=-0.2",
+                      }
+        platecarree = ccrs.PlateCarree()
+        mpltransform = platecarree._as_mpl_transform(ax)
+
+        ax.annotate('mpl xycoords', (-45, 43), xycoords=mpltransform,
+                    size=5)
+
+        # Add annotation with xycoords as projection
+        ax.annotate('crs xycoords', (-75, 13), xycoords=platecarree,
+                    size=5)
+
+        # set up coordinates in map projection space
+        map_coords = map_projection.transform_point(-175, -35, platecarree)
+        # Dont specifiy any args, default xycoords='data', transform=map projection
+        ax.annotate('default crs', map_coords, size=5)
+
+        # data in map projection using default transform, with
+        # text positioned in platecaree transform
+        ax.annotate('mixed crs transforms', map_coords, xycoords='data',
+                    xytext=(-175, -55),
+                    textcoords=platecarree,
+                    size=5,
+                    arrowprops=arrowprops,
+                    )
+
+        # Add annotation with point and text via transform
+        ax.annotate('crs transform', (-75, -20), xytext=(0, -55),
+                    transform=platecarree,
+                    arrowprops=arrowprops,
+                    )
+
+        # Add annotation with point via transform and text non transformed
+        ax.annotate('offset textcoords', (-149.8, 61.22), transform=platecarree,
+                    xytext=(-35, 10), textcoords='offset points',
+                    size=5,
+                    ha='right',
+                    arrowprops=arrowprops,
+                    )
+
+        plt.show()
+
+Deprecations
+------------
+
+* Passing **map_projection** as a keyword when manually creating a GeoAxes
+  object is deprecated, use **projection** instead.
+
+Removals
+--------
+
+The following functions and classes have been removed after being deprecated
+multiple versions prior. See the previous What's New notes for replacements.
+  
+* ``geoaxes.outline_patch()``
+* ``geoaxes.background_patch()``
+* ``geoaxes.natural_earth_shp()``
+* The argument ``secant_latitudes`` to the LambertConformal projection.
+* ``img_tiles.StamenTerrain``
+* ``srtm.SRTM3_retrieve``, ``srtm.srtm``, ``srtm.srtm_composite``, and
+  ``srtm.fill_gaps``
+* ``clip_path.clip_path``
