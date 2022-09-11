@@ -31,6 +31,7 @@ cdef extern from "geos_c.h":
         pass
     ctypedef struct GEOSCoordSequence
     ctypedef struct GEOSPreparedGeometry
+    GEOSContextHandle_t GEOS_init_r() nogil
     GEOSCoordSequence *GEOSCoordSeq_create_r(GEOSContextHandle_t, unsigned int, unsigned int) nogil
     GEOSGeometry *GEOSGeom_createPoint_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
     GEOSGeometry *GEOSGeom_createLineString_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
@@ -53,14 +54,13 @@ import re
 import warnings
 
 import shapely.geometry as sgeom
-from shapely.geos import lgeos
 from pyproj import Geod, Transformer
 from pyproj.exceptions import ProjError
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
-    cdef ptr handle = lgeos.geos_handle
-    return <GEOSContextHandle_t>handle
+    cdef GEOSContextHandle_t handle = GEOS_init_r()
+    return handle
 
 
 cdef GEOSGeometry *geos_from_shapely(shapely_geom) except *:
