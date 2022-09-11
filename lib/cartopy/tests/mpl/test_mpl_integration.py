@@ -159,6 +159,7 @@ def test_simple_global():
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
 @pytest.mark.parametrize('proj', [
+    ccrs.Aitoff,
     ccrs.EckertI,
     ccrs.EckertII,
     ccrs.EckertIII,
@@ -167,6 +168,7 @@ def test_simple_global():
     ccrs.EckertVI,
     ccrs.EqualEarth,
     ccrs.Gnomonic,
+    ccrs.Hammer,
     pytest.param((ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
                  id='InterruptedGoodeHomolosine'),
     ccrs.LambertCylindrical,
