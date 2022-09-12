@@ -25,7 +25,6 @@ Make sure you have pip >= 9.0.1.
 
 
 import os
-import shutil
 import subprocess
 import warnings
 from collections import defaultdict
