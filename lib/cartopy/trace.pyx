@@ -27,6 +27,7 @@ cdef bool DEBUG = False
 import re
 import warnings
 
+import numpy as np
 import shapely.geometry as sgeom
 import shapely.prepared as sprep
 from pyproj import Geod, Transformer, proj_version_str
@@ -386,7 +387,7 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
         p_current = interpolator.interpolate(t_current)
 
 
-cdef void _project_segment(tuple src_from, tuple src_to,
+cdef void _project_segment(double[:] src_from, double[:] src_to,
                            Interpolator interpolator,
                            object gp_domain,
                            double threshold, LineAccumulator lines) except *:
@@ -507,7 +508,7 @@ def project_linear(geometry not None, src_crs not None,
         double threshold = dest_projection.threshold
         Interpolator interpolator
         object g_domain
-        object src_coords
+        double[:, :] src_coords
         unsigned int src_size, src_idx
         object gp_domain
         LineAccumulator lines
@@ -516,14 +517,14 @@ def project_linear(geometry not None, src_crs not None,
 
     interpolator = _interpolator(src_crs, dest_projection)
 
-    src_coords = geometry.coords
+    src_coords = np.asarray(geometry.coords)
     gp_domain = sprep.prep(g_domain)
 
     src_size = len(src_coords)  # check exceptions
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
-        _project_segment(src_coords[src_idx - 1], src_coords[src_idx],
+        _project_segment(src_coords[src_idx - 1, :], src_coords[src_idx, :],
                          interpolator, gp_domain, threshold, lines);
 
     del gp_domain
