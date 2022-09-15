@@ -156,6 +156,47 @@ cdef class Interpolator:
         dest_xy.y = yy * self.dest_scale
         return dest_xy
 
+    cdef double[:, :] project_points(self, double[:, :] src_xy) except *:
+        # Used for fallback to single point updates
+        cdef Point xy
+        # Make a temporary copy so we don't update the incoming memory view
+        new_src_xy = np.asarray(src_xy)*self.src_scale
+        try:
+            xx, yy = self.transformer.transform(
+                new_src_xy[:, 0],
+                new_src_xy[:, 1],
+                errcheck=True
+            )
+        except ProjError as err:
+            msg = str(err).lower()
+            if (
+                "latitude" in msg or
+                "longitude" in msg or
+                "outside of projection domain" in msg or
+                "tolerance condition error" in msg
+            ):
+                # Go back to trying to project a single point at a time
+                xx = np.empty(shape=len(src_xy))
+                yy = np.empty(shape=len(src_xy))
+                for i in range(len(src_xy)):
+                    # Update the point object's x/y coords
+                    xy.x = src_xy[i, 0]
+                    xy.y = src_xy[i, 1]
+                    xy = self.project(xy)
+                    xx[i] = xy.x
+                    yy[i] = xy.y
+            else:
+                raise
+
+        if self.to_180:
+            # Get the places where we should wrap
+            wrap_locs = (xx > 180) | (xx < -180) & (xx != HUGE_VAL)
+            # Do the wrap at those locations
+            xx[wrap_locs] = (((xx[wrap_locs] + 180) % 360) - 180)
+
+        # Destination xy [ncoords, 2]
+        return np.stack([xx, yy], axis=-1) * self.dest_scale
+
     cdef Point interpolate(self, double t) except *:
         raise NotImplementedError
 
@@ -388,6 +429,7 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
 
 
 cdef void _project_segment(double[:] src_from, double[:] src_to,
+                           double[:] dest_from, double[:] dest_to,
                            Interpolator interpolator,
                            object gp_domain,
                            double threshold, LineAccumulator lines) except *:
@@ -403,8 +445,9 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
         print("   ", p_end.x, ", ", p_end.y)
 
     interpolator.set_line(p_current, p_end)
-    p_current = interpolator.project(p_current)
-    p_end = interpolator.project(p_end)
+    # Now update the current/end with the destination (projected) coords
+    p_current.x, p_current.y = dest_from
+    p_end.x, p_end.y = dest_to
     if DEBUG:
         print("Projected as:")
         print("   ", p_current.x, ", ", p_current.y)
@@ -508,7 +551,7 @@ def project_linear(geometry not None, src_crs not None,
         double threshold = dest_projection.threshold
         Interpolator interpolator
         object g_domain
-        double[:, :] src_coords
+        double[:, :] src_coords, dest_coords
         unsigned int src_size, src_idx
         object gp_domain
         LineAccumulator lines
@@ -518,13 +561,15 @@ def project_linear(geometry not None, src_crs not None,
     interpolator = _interpolator(src_crs, dest_projection)
 
     src_coords = np.asarray(geometry.coords)
+    dest_coords = interpolator.project_points(src_coords)
     gp_domain = sprep.prep(g_domain)
 
     src_size = len(src_coords)  # check exceptions
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
-        _project_segment(src_coords[src_idx - 1, :], src_coords[src_idx, :],
+        _project_segment(src_coords[src_idx - 1, :2], src_coords[src_idx, :2],
+                         dest_coords[src_idx - 1, :2], dest_coords[src_idx, :2],
                          interpolator, gp_domain, threshold, lines);
 
     del gp_domain
