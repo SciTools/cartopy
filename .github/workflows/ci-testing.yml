@@ -40,7 +40,7 @@ jobs:
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped' && !matrix.shapely-dev
         run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy shapely<2" >> $GITHUB_ENV
+          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy shapely" >> $GITHUB_ENV
 
       - name: Latest packages with Shapely dev
         if: steps.minimum-packages.conclusion == 'skipped' && matrix.shapely-dev
