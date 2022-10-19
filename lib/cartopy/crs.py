@@ -3128,6 +3128,10 @@ class ObliqueMercator(Projection):
 
         """
 
+        if np.isclose(azimuth, 90):
+            # Exactly 90 causes coastline 'folding'.
+            azimuth -= 1e-3
+
         proj4_params = [('proj', 'omerc'), ('lonc', central_longitude),
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
