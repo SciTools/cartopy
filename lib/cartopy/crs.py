@@ -3132,6 +3132,8 @@ class ObliqueMercator(Projection):
             # Exactly 90 causes coastline 'folding'.
             azimuth -= 1e-3
 
+        self._x_offset = math.sin(math.radians(azimuth))
+
         proj4_params = [('proj', 'omerc'), ('lonc', central_longitude),
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
@@ -3151,11 +3153,14 @@ class ObliqueMercator(Projection):
 
     @property
     def x_limits(self):
-        return (-2e7, 2e7)
+        x_lims = np.array([-2., 2.])
+        x_lims += self._x_offset
+        x_lims *= 1e7
+        return tuple(x_lims)
 
     @property
     def y_limits(self):
-        return (-1e7, 1e7)
+        return (-2e7, 2e7)
 
 
 class _BoundaryPoint:
