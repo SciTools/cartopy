@@ -188,6 +188,10 @@ def test_simple_global():
     ccrs.SouthPolarStereo,
     pytest.param((ccrs.TransverseMercator, dict(approx=True)),
                  id='TransverseMercator'),
+    pytest.param((ccrs.ObliqueMercator, dict(azimuth=0.)),
+                 id='ObliqueMercator_default'),
+    pytest.param((ccrs.ObliqueMercator, dict(azimuth=90., central_latitude=-22)),
+                 id='ObliqueMercator_rotated'),
 ])
 @pytest.mark.mpl_image_compare(
     tolerance=0.97 if MPL_VERSION.release[:2] < (3, 5) else 0.5,
