@@ -42,7 +42,8 @@ FEATURE_DEFN_GROUPS = {
         ('physical', 'geography_regions_polys', ALL_SCALES),
         ('physical', 'geography_regions_points', ALL_SCALES),
         ('physical', 'geography_marine_polys', ALL_SCALES),
-        ('physical', 'glaciated_areas', ALL_SCALES)
+        ('physical', 'glaciated_areas', ALL_SCALES),
+        ('physical', 'antarctic_ice_shelves_polys', ('50m', '10m'))
     ),
     'cultural': (
         ('cultural', 'admin_0_countries', ALL_SCALES),
