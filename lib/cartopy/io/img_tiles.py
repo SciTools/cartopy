@@ -577,8 +577,10 @@ class OrdnanceSurvey(GoogleWTS):
                          cache=cache)
         self.apikey = apikey
 
-        if layer not in ["Road_3857", "Outdoor_3857", "Light_3857"]:
+        if layer not in ("Road_3857", "Outdoor_3857", "Light_3857", "Road", "Outdoor", "Light"):
             raise ValueError(f'Invalid layer {layer}')
+        elif layer in ("Road", "Outdoor", "Light"):
+            layer += "_3857"
 
         self.layer = layer
 

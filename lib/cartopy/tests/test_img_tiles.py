@@ -231,10 +231,10 @@ def test_ordnance_survey_tile_styles():
     assert url == ref_url.format(layer="Road_3857",
                                  z=tile[2], y=tile[1], x=tile[0])
 
-    for layer in ["Road_3857", "Light_3857"]:
+    for layer in ["Road_3857", "Light_3857", "Outdoor_3857", "Road", "Light"]:
         os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
         url = os._image_url(tile)
-        assert url == ref_url.format(layer=layer,
+        assert url == ref_url.format(layer=layer if layer.endswith("_3857") else layer+"_3857",
                                      z=tile[2], y=tile[1], x=tile[0])
 
     # Exception is raised if unknown style is passed.
@@ -251,8 +251,8 @@ def test_ordnance_survey_get_image():
     except KeyError:
         pytest.skip('ORDNANCE_SURVEY_API_KEY environment variable is unset.')
 
-    os1 = cimgt.OrdnanceSurvey(api_key, layer="Outdoor")
-    os2 = cimgt.OrdnanceSurvey(api_key, layer="Night")
+    os1 = cimgt.OrdnanceSurvey(api_key, layer="Outdoor_3857")
+    os2 = cimgt.OrdnanceSurvey(api_key, layer="Light_3857")
 
     tile = (500, 300, 10)
 
