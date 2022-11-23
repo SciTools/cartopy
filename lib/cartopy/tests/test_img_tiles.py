@@ -222,21 +222,16 @@ def test_ordnance_survey_tile_styles():
     """
     dummy_apikey = "None"
 
-    ref_url = ('https://api2.ordnancesurvey.co.uk/'
-               'mapping_api/v1/service/wmts?'
-               'key=None&height=256&width=256&version=1.0.0&'
-               'tilematrixSet=EPSG%3A3857&style=true&layer={layer}%203857&'
-               'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
-               'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
+    ref_url = "https://api.os.uk/maps/raster/v1/zxy/{layer}/{z}/{x}/{y}.png?key=None"
     tile = ["1", "2", "3"]
 
-    # Default is Road.
+    # Default is Road_3857.
     os = cimgt.OrdnanceSurvey(dummy_apikey)
     url = os._image_url(tile)
-    assert url == ref_url.format(layer="Road",
+    assert url == ref_url.format(layer="Road_3857",
                                  z=tile[2], y=tile[1], x=tile[0])
 
-    for layer in ['Outdoor', 'Light', 'Night', 'Leisure']:
+    for layer in ["Road_3857", "Light_3857"]:
         os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
         url = os._image_url(tile)
         assert url == ref_url.format(layer=layer,
