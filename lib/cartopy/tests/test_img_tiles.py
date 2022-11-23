@@ -232,7 +232,7 @@ def test_ordnance_survey_tile_styles():
     assert url == ref_url.format(layer="Road_3857",
                                  z=tile[2], y=tile[1], x=tile[0])
 
-    for layer in ["Road_3857", "Light_3857", "Outdoor_3857", "Road", "Light"]:
+    for layer in ["Road_3857", "Light_3857", "Outdoor_3857", "Road", "Light", "Outdoor"]:
         os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
         url = os._image_url(tile)
         layer = layer if layer.endswith("_3857") else layer + "_3857"
