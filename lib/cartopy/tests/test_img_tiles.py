@@ -92,9 +92,9 @@ def test_google_wts():
     with pytest.raises(AssertionError):
         list(gt.find_images(target_domain, -1))
     assert (tuple(gt.find_images(target_domain, 0)) ==
-                 ((0, 0, 0),))
+            ((0, 0, 0),))
     assert (tuple(gt.find_images(target_domain, 2)) ==
-                 ((1, 1, 2), (2, 1, 2)))
+            ((1, 1, 2), (2, 1, 2)))
 
     assert (list(gt.subtiles((0, 0, 0))) ==
             [(0, 0, 1), (0, 1, 1), (1, 0, 1), (1, 1, 1)])
@@ -235,8 +235,8 @@ def test_ordnance_survey_tile_styles():
     for layer in ["Road_3857", "Light_3857", "Outdoor_3857", "Road", "Light"]:
         os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
         url = os._image_url(tile)
-        assert url == ref_url.format(layer=layer if layer.endswith("_3857") \
-            else layer+"_3857", z=tile[2], y=tile[1], x=tile[0])
+        assert url == ref_url.format(layer=layer if layer.endswith("_3857")
+        else layer + "_3857", z=tile[2], y=tile[1], x=tile[0])
 
     # Exception is raised if unknown style is passed.
     with pytest.raises(ValueError):
@@ -364,9 +364,9 @@ def test_cache(cache_dir, tmp_path):
     files = [i for i in os.listdir(cache_dir_res)]
     hashes = {
         f:
-        hashlib.md5(
-            np.load(os.path.join(cache_dir_res, f), allow_pickle=True).data
-        ).hexdigest()
+            hashlib.md5(
+                np.load(os.path.join(cache_dir_res, f), allow_pickle=True).data
+            ).hexdigest()
         for f in files
     }
 
