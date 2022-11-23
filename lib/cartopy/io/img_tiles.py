@@ -577,7 +577,8 @@ class OrdnanceSurvey(GoogleWTS):
                          cache=cache)
         self.apikey = apikey
 
-        if layer not in ("Road_3857", "Outdoor_3857", "Light_3857", "Road", "Outdoor", "Light"):
+        if layer not in ("Road_3857", "Outdoor_3857", "Light_3857",
+                         "Road", "Outdoor", "Light"):
             raise ValueError(f'Invalid layer {layer}')
         elif layer in ("Road", "Outdoor", "Light"):
             layer += "_3857"
@@ -586,7 +587,8 @@ class OrdnanceSurvey(GoogleWTS):
 
     def _image_url(self, tile):
         x, y, z = tile
-        return f"https://api.os.uk/maps/raster/v1/zxy/{self.layer}/{z}/{x}/{y}.png?key={self.apikey}"
+        return f"https://api.os.uk/maps/raster/v1/zxy/" \
+               f"{self.layer}/{z}/{x}/{y}.png?key={self.apikey}"
 
 
 def _merge_tiles(tiles):

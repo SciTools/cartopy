@@ -222,7 +222,8 @@ def test_ordnance_survey_tile_styles():
     """
     dummy_apikey = "None"
 
-    ref_url = "https://api.os.uk/maps/raster/v1/zxy/{layer}/{z}/{x}/{y}.png?key=None"
+    ref_url = "https://api.os.uk/maps/raster/v1/zxy/" \
+              "{layer}/{z}/{x}/{y}.png?key=None"
     tile = ["1", "2", "3"]
 
     # Default is Road_3857.
@@ -234,8 +235,8 @@ def test_ordnance_survey_tile_styles():
     for layer in ["Road_3857", "Light_3857", "Outdoor_3857", "Road", "Light"]:
         os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
         url = os._image_url(tile)
-        assert url == ref_url.format(layer=layer if layer.endswith("_3857") else layer+"_3857",
-                                     z=tile[2], y=tile[1], x=tile[0])
+        assert url == ref_url.format(layer=layer if layer.endswith("_3857") \
+            else layer+"_3857", z=tile[2], y=tile[1], x=tile[0])
 
     # Exception is raised if unknown style is passed.
     with pytest.raises(ValueError):
