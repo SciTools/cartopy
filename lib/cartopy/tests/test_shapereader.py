@@ -29,7 +29,7 @@ class TestLakes:
 
     def test_geometry(self):
         lake_geometry = self.test_lake_geometry
-        assert lake_geometry.type == 'Polygon'
+        assert lake_geometry.geom_type == 'Polygon'
 
         # force an orientation due to potential reader differences
         # with pyshp 2.2.0 forcing a specific orientation.
@@ -89,7 +89,7 @@ class TestRivers:
 
     def test_geometry(self):
         geometry = self.test_river_geometry
-        assert geometry.type == 'LineString'
+        assert geometry.geom_type == 'LineString'
 
         linestring = geometry
         coords = linestring.coords
