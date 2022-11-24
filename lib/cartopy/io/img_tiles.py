@@ -543,15 +543,15 @@ class OrdnanceSurvey(GoogleWTS):
     """
     Implement web tile retrieval from Ordnance Survey map data.
     To use this tile image source you will need to obtain an
-    API key from Ordnance Survey.
+    API key from Ordnance Survey. You can get a free API key from https://osdatahub.os.uk
 
     For more details on Ordnance Survey layer styles, see
-    https://apidocs.os.uk/docs/map-styles.
+    https://osdatahub.os.uk/docs/wmts/technicalSpecification.
 
     For the API framework agreement, see
-    https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
+    https://osdatahub.os.uk/legal/apiTermsConditions.
     """
-    # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
+    # API Documentation: https://osdatahub.os.uk/docs/wmts/overview
 
     def __init__(self,
                  apikey,
