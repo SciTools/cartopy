@@ -543,19 +543,20 @@ class OrdnanceSurvey(GoogleWTS):
     """
     Implement web tile retrieval from Ordnance Survey map data.
     To use this tile image source you will need to obtain an
-    API key from Ordnance Survey.
+    API key from Ordnance Survey. You can get a free API key from
+    https://osdatahub.os.uk
 
     For more details on Ordnance Survey layer styles, see
-    https://apidocs.os.uk/docs/map-styles.
+    https://osdatahub.os.uk/docs/wmts/technicalSpecification.
 
     For the API framework agreement, see
-    https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
+    https://osdatahub.os.uk/legal/apiTermsConditions.
     """
-    # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
+    # API Documentation: https://osdatahub.os.uk/docs/wmts/overview
 
     def __init__(self,
                  apikey,
-                 layer='Road',
+                 layer='Road_3857',
                  desired_tile_form='RGB',
                  cache=False):
         """
@@ -577,19 +578,18 @@ class OrdnanceSurvey(GoogleWTS):
                          cache=cache)
         self.apikey = apikey
 
-        if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:
+        if layer not in ("Road_3857", "Outdoor_3857", "Light_3857",
+                         "Road", "Outdoor", "Light"):
             raise ValueError(f'Invalid layer {layer}')
+        elif layer in ("Road", "Outdoor", "Light"):
+            layer += "_3857"
 
         self.layer = layer
 
     def _image_url(self, tile):
         x, y, z = tile
-        return (
-            f'https://api2.ordnancesurvey.co.uk/mapping_api/v1/service/wmts?'
-            f'key={self.apikey}&height=256&width=256&version=1.0.0&'
-            f'tilematrixSet=EPSG%3A3857&style=true&layer={self.layer}%203857&'
-            f'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
-            f'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
+        return f"https://api.os.uk/maps/raster/v1/zxy/" \
+               f"{self.layer}/{z}/{x}/{y}.png?key={self.apikey}"
 
 
 def _merge_tiles(tiles):
