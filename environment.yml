@@ -4,13 +4,13 @@
 #   conda activate cartopy-dev
 #   pip install -e .
 #
-name: cartopy-dev2
+name: cartopy-dev
 channels:
   - conda-forge
 dependencies:
   - cython>=0.28.5
   - numpy>=1.18
-  - shapely>=1.6.4,<2
+  - shapely>=1.6.4
   - geos>=3.7.2
   - pyshp>=2.1
   - pyproj>=3.0.0

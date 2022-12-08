@@ -208,7 +208,7 @@ def path_to_geos(path, force_ccw=False):
 
     # Remove any zero area Polygons
     def not_zero_poly(geom):
-        return ((isinstance(geom, sgeom.Polygon) and not geom._is_empty and
+        return ((isinstance(geom, sgeom.Polygon) and not geom.is_empty and
                  geom.area != 0) or
                 not isinstance(geom, sgeom.Polygon))
 

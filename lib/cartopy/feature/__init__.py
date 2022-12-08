@@ -100,7 +100,9 @@ class Feature(metaclass=ABCMeta):
         geometries for this dataset.
 
         """
-        if extent is not None:
+        # shapely 2.0 returns tuple of NaNs instead of None for empty geometry
+        # -> check for both
+        if extent is not None and not np.isnan(extent[0]):
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
             return (geom for geom in self.geometries() if
