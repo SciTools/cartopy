@@ -28,6 +28,7 @@ import re
 import warnings
 
 import numpy as np
+import shapely
 import shapely.geometry as sgeom
 import shapely.prepared as sprep
 from pyproj import Geod, Transformer, proj_version_str
@@ -244,10 +245,13 @@ cdef State get_state(const Point &point, object gp_domain):
     cdef State state
 
     if isfinite(point.x) and isfinite(point.y):
-        # TODO: Avoid create-destroy
-        g_point = sgeom.Point((point.x, point.y))
-        state = POINT_IN if gp_domain.covers(g_point) else POINT_OUT
-        del g_point
+        if shapely.__version__ >= "2":
+            # Shapely 2.0 doesn't need to create/destroy a point
+            state = POINT_IN if shapely.intersects_xy(gp_domain.context, point.x, point.y) else POINT_OUT
+        else:
+            g_point = sgeom.Point((point.x, point.y))
+            state = POINT_IN if gp_domain.covers(g_point) else POINT_OUT
+            del g_point
     else:
         state = POINT_NAN
     return state
