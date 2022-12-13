@@ -234,7 +234,7 @@ def test_nest(nest_from_config):
         assert ('aerial z1 test', img) in nest_z0_z1._ancestry[key]
 
     x1_y0_z1, = (img for img in z1.images
-                 if img.filename.endswith('z_1/x_1_y_0.png'))
+                 if img.filename.endswith('x_1_y_0.png'))
 
     assert (1, 0, 1) == _tile_from_img(x1_y0_z1)
 
