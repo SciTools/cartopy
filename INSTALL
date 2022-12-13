@@ -85,7 +85,7 @@ For macOS, the required dependencies can be installed in the following way::
     pip3 install --upgrade pyshp
     # shapely needs to be built from source to link to geos. If it is already
     # installed, uninstall it by: pip3 uninstall shapely
-    pip3 install "shapely<2" --no-binary shapely
+    pip3 install shapely --no-binary shapely
 
 Still on macOS, make sure you have installed pkg-config and set the
 `PKG_CONFIG_PATH` environment variable as follows::
