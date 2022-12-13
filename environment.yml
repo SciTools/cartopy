@@ -18,7 +18,7 @@ dependencies:
   - conda-forge/label/testing::matplotlib-base>=3.1
 
   # OWS
-  - owslib>=0.18.0
+  - owslib>=0.20.0
   - pillow>=6.1.0
   # Plotting
   - gdal>=2.3.2

@@ -127,7 +127,6 @@ class TestWMSRasterSource:
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 class TestWMTSRasterSource:
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
