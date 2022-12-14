@@ -11,7 +11,7 @@ various data formats.
 """
 
 import collections
-import os
+from pathlib import Path
 import string
 from urllib.request import urlopen
 import warnings
@@ -150,8 +150,8 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return self._formatter.format(self.target_path_template,
-                                      **format_dict)
+        return Path(self._formatter.format(self.target_path_template,
+                                           **format_dict))
 
     def pre_downloaded_path(self, format_dict):
         """
@@ -167,8 +167,9 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return self._formatter.format(self.pre_downloaded_path_template,
-                                      **format_dict)
+        p = self._formatter.format(self.pre_downloaded_path_template,
+                                   **format_dict)
+        return None if p == '' else Path(p)
 
     def path(self, format_dict):
         """
@@ -193,10 +194,9 @@ class Downloader:
         """
         pre_downloaded_path = self.pre_downloaded_path(format_dict)
         target_path = self.target_path(format_dict)
-        if (pre_downloaded_path is not None and
-                os.path.exists(pre_downloaded_path)):
+        if pre_downloaded_path is not None and pre_downloaded_path.exists():
             result_path = pre_downloaded_path
-        elif os.path.exists(target_path):
+        elif target_path.exists():
             result_path = target_path
         else:
             # we need to download the file
@@ -217,9 +217,9 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        target_dir = os.path.dirname(target_path)
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
+        target_path = Path(target_path)
+        target_dir = target_path.parent
+        target_dir.mkdir(parents=True, exist_ok=True)
 
         url = self.url(format_dict)
 

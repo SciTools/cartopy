@@ -20,7 +20,7 @@ using tiles in this way can be found at the
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 import io
-import os
+from pathlib import Path
 import warnings
 
 from PIL import Image
@@ -60,11 +60,11 @@ class GoogleWTS(metaclass=ABCMeta):
         self._default_cache = False
         if cache is True:
             self._default_cache = True
-            self.cache_path = cartopy.config["cache_dir"]
+            self.cache_path = Path(cartopy.config["cache_dir"])
         elif cache is False:
             self.cache_path = None
         else:
-            self.cache_path = cache
+            self.cache_path = Path(cache)
         self.cache = set({})
         self._load_cache()
 
@@ -101,22 +101,19 @@ class GoogleWTS(metaclass=ABCMeta):
     @property
     def _cache_dir(self):
         """Return the name of the cache directory"""
-        return os.path.join(
-            self.cache_path,
-            self.__class__.__name__
-        )
+        return self.cache_path / self.__class__.__name__
 
     def _load_cache(self):
         """Load the cache"""
         if self.cache_path is not None:
             cache_dir = self._cache_dir
-            if not os.path.exists(cache_dir):
-                os.makedirs(cache_dir)
+            if not cache_dir.exists():
+                cache_dir.mkdir(parents=True)
                 if self._default_cache:
                     warnings.warn(
                         'Cartopy created the following directory to cache '
                         f'GoogleWTS tiles: {cache_dir}')
-            self.cache = self.cache.union(set(os.listdir(cache_dir)))
+            self.cache = self.cache.union(set(cache_dir.iterdir()))
 
     def _find_images(self, target_domain, target_z, start_tile=(0, 0, 0)):
         """Target domain is a shapely polygon in native coordinates."""
@@ -209,15 +206,11 @@ class GoogleWTS(metaclass=ABCMeta):
 
         if self.cache_path is not None:
             filename = "_".join([str(i) for i in tile]) + ".npy"
-            cached_file = os.path.join(
-                self._cache_dir,
-                filename
-            )
+            cached_file = self._cache_dir / filename
         else:
-            filename = None
             cached_file = None
 
-        if filename in self.cache:
+        if cached_file in self.cache:
             img = np.load(cached_file, allow_pickle=False)
         else:
             url = self._image_url(tile)
@@ -236,7 +229,7 @@ class GoogleWTS(metaclass=ABCMeta):
             img = img.convert(self.desired_tile_form)
             if self.cache_path is not None:
                 np.save(cached_file, img, allow_pickle=False)
-                self.cache.add(filename)
+                self.cache.add(cached_file)
 
         return img, self.tileextent(tile), 'lower'
 
