@@ -191,7 +191,6 @@ class RoundedImg(cimg_nest.Img):
         return extent, pix_size
 
 
-@pytest.mark.xfail(reason='MapQuest is unavailable')
 @pytest.mark.network
 def test_nest(nest_from_config):
     crs = cimgt.GoogleTiles().crs
@@ -235,7 +234,7 @@ def test_nest(nest_from_config):
         assert ('aerial z1 test', img) in nest_z0_z1._ancestry[key]
 
     x1_y0_z1, = (img for img in z1.images
-                 if img.filename.endswith('z_1/x_1_y_0.png'))
+                 if img.filename.endswith('x_1_y_0.png'))
 
     assert (1, 0, 1) == _tile_from_img(x1_y0_z1)
 
@@ -338,7 +337,6 @@ def wmts_data():
             img.save(fname)
 
 
-@pytest.mark.xfail(reason='MapQuest is unavailable')
 @pytest.mark.network
 def test_find_images(wmts_data):
     z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')

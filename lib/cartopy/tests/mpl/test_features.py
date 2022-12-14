@@ -3,6 +3,7 @@
 # This file is part of Cartopy and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+from xml.etree.ElementTree import ParseError
 
 import matplotlib.pyplot as plt
 import pytest
@@ -58,6 +59,8 @@ def test_gshhs():
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=ParseError,
+                   reason="Bad XML returned from the URL")
 @pytest.mark.mpl_image_compare(filename='wfs.png')
 def test_wfs():
     ax = plt.axes(projection=ccrs.OSGB(approx=True))

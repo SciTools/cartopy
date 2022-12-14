@@ -22,8 +22,6 @@ import sys
 
 import cartopy
 import matplotlib
-import owslib
-from packaging.version import parse as parse_version
 from sphinx_gallery.sorting import ExampleTitleSortKey, ExplicitOrder
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -83,17 +81,6 @@ version = cartopy.__version__
 release = cartopy.__version__
 
 
-if (hasattr(owslib, '__version__') and
-        parse_version(owslib.__version__) >= parse_version('0.19.2')):
-    expected_failing_examples = []
-else:
-    # OWSLib WMTS support is broken.
-    expected_failing_examples = [
-        '../../examples/web_services/reprojected_wmts.py',
-        '../../examples/web_services/wmts.py',
-        '../../examples/web_services/wmts_time.py',
-    ]
-
 subsection_order = ExplicitOrder(['../../examples/lines_and_polygons',
                                   '../../examples/scalar_data',
                                   '../../examples/vector_data',
@@ -111,7 +98,6 @@ sphinx_gallery_conf = {
     'doc_module': ('cartopy',),
     'reference_url': {'cartopy': None},
     'backreferences_dir': '../build/backrefs',
-    'expected_failing_examples': expected_failing_examples,
     'subsection_order': subsection_order,
     'matplotlib_animations': True,
 }
