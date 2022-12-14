@@ -133,10 +133,6 @@ Optional Dependencies
 To make the most of Cartopy by enabling additional functionality, you may want
 to install these optional dependencies.
 
-**GDAL** version 2.3.2 (https://gdal.org/)
-    GDAL is a translator library for raster and vector geospatial data formats,
-    which has powerful data transformation and processing capabilities.
-
 **Pillow** 6.1.0 or later (https://python-pillow.org)
     A popular fork of PythonImagingLibrary.
 
