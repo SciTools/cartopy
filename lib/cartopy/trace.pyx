@@ -35,6 +35,8 @@ from pyproj import Geod, Transformer, proj_version_str
 from pyproj.exceptions import ProjError
 import shapely.geometry as sgeom
 
+import cartopy.crs as ccrs
+
 
 ctypedef struct Point:
     double x
@@ -241,9 +243,11 @@ cdef enum State:
     POINT_NAN
 
 
-cdef State get_state(const Point &point, object gp_domain):
+cdef State get_state(const Point &point, object gp_domain, bool geom_fully_inside=False):
     cdef State state
-
+    if geom_fully_inside:
+        # Fast-path return because the geometry is fully inside
+        return POINT_IN
     if isfinite(point.x) and isfinite(point.y):
         if shapely.__version__ >= "2":
             # Shapely 2.0 doesn't need to create/destroy a point
@@ -262,7 +266,8 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
                             double t_end, const Point &p_end,
                             Interpolator interpolator, double threshold,
                             object gp_domain,
-                            bool inside) except *:
+                            bool inside,
+                            bool geom_fully_inside=False) except *:
     """
     Return whether the given line segment is suitable as an
     approximation of the projection of the source line.
@@ -275,6 +280,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
     threshold: Lateral tolerance in target projection coordinates.
     gp_domain: Prepared polygon of target map domain.
     inside: Whether the start point is within the map domain.
+    geom_fully_inside: Whether all points are within the map domain.
 
     """
     # Straight and in-domain (de9im[7] == 'F')
@@ -361,7 +367,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
                     hypot = mid_dx*mid_dx + mid_dy*mid_dy
                     valid = ((separation * separation) / hypot) < 0.04
 
-        if valid:
+        if valid and not geom_fully_inside:
             # TODO: Re-use geometries, instead of create-destroy!
 
             # Create a LineString for the current end-point.
@@ -382,7 +388,8 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
 cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
                  object gp_domain, const State &state,
                  Interpolator interpolator, double threshold,
-                 double &t_min, Point &p_min, double &t_max, Point &p_max) except *:
+                 double &t_min, Point &p_min, double &t_max, Point &p_max,
+                 bool geom_fully_inside=False) except *:
     cdef double t_current
     cdef Point p_current
     cdef bool valid
@@ -408,13 +415,13 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
             # Straight and entirely-inside-domain
             valid = straightAndDomain(t_start, p_start, t_current, p_current,
                                       interpolator, threshold,
-                                      gp_domain, True)
+                                      gp_domain, True, geom_fully_inside=geom_fully_inside)
 
         elif state == POINT_OUT:
             # Straight and entirely-outside-domain
             valid = straightAndDomain(t_start, p_start, t_current, p_current,
                                       interpolator, threshold,
-                                      gp_domain, False)
+                                      gp_domain, False, geom_fully_inside=geom_fully_inside)
         else:
             valid = not isfinite(p_current.x) or not isfinite(p_current.y)
 
@@ -436,7 +443,8 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
                            double[:] dest_from, double[:] dest_to,
                            Interpolator interpolator,
                            object gp_domain,
-                           double threshold, LineAccumulator lines) except *:
+                           double threshold, LineAccumulator lines,
+                           bool geom_fully_inside=False) except *:
     cdef Point p_current, p_min, p_max, p_end
     cdef double t_current, t_min, t_max
     cdef State state
@@ -458,7 +466,7 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
         print("   ", p_end.x, ", ", p_end.y)
 
     t_current = 0.0
-    state = get_state(p_current, gp_domain)
+    state = get_state(p_current, gp_domain, geom_fully_inside)
 
     cdef size_t old_lines_size = lines.size()
     while t_current < 1.0 and (lines.size() - old_lines_size) < 100:
@@ -476,7 +484,7 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
 
         bisect(t_current, p_current, p_end, gp_domain, state,
                interpolator, threshold,
-               t_min, p_min, t_max, p_max)
+               t_min, p_min, t_max, p_max, geom_fully_inside=geom_fully_inside)
         if DEBUG:
             print("   => ", t_min, "to", t_max)
             print("   => (", p_min.x, ", ", p_min.y, ") to (",
@@ -491,7 +499,7 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
             else:
                 t_current = t_max
                 p_current = p_max
-                state = get_state(p_current, gp_domain)
+                state = get_state(p_current, gp_domain, geom_fully_inside)
                 if state == POINT_IN:
                     lines.new_line()
 
@@ -502,14 +510,14 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
             else:
                 t_current = t_max
                 p_current = p_max
-                state = get_state(p_current, gp_domain)
+                state = get_state(p_current, gp_domain, geom_fully_inside)
                 if state == POINT_IN:
                     lines.new_line()
 
         else:
             t_current = t_max
             p_current = p_max
-            state = get_state(p_current, gp_domain)
+            state = get_state(p_current, gp_domain, geom_fully_inside)
             if state == POINT_IN:
                 lines.new_line()
 
@@ -570,11 +578,20 @@ def project_linear(geometry not None, src_crs not None,
 
     src_size = len(src_coords)  # check exceptions
 
+    # Test the entire geometry to see if there are any domain crossings
+    # If there are none, then we can skip expensive domain checks later
+    # TODO: Handle projections other than rectangular
+    cdef bool geom_fully_inside = False
+    if isinstance(dest_projection, (ccrs._RectangularProjection, ccrs._WarpedRectangularProjection)):
+        dest_line = sgeom.LineString([(x[0], x[1]) for x in dest_coords])
+        geom_fully_inside = gp_domain.covers(dest_line)
+
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
         _project_segment(src_coords[src_idx - 1, :2], src_coords[src_idx, :2],
                          dest_coords[src_idx - 1, :2], dest_coords[src_idx, :2],
-                         interpolator, gp_domain, threshold, lines);
+                         interpolator, gp_domain, threshold, lines,
+                         geom_fully_inside=geom_fully_inside);
 
     del gp_domain
 
