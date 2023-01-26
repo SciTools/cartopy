@@ -13,7 +13,8 @@ import pytest
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
+from cartopy.mpl.geoaxes import (
+    InterProjectionTransform, GeoAxes, GeoAxesSubplot)
 
 
 class TestNoSpherical:
@@ -119,7 +120,7 @@ class Test_Axes_add_geometries:
 
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"
+    assert isinstance(ax, GeoAxesSubplot)
 
 
 @pytest.mark.mpl_image_compare(filename='geoaxes_subslice.png')
