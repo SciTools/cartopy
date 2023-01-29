@@ -1619,7 +1619,7 @@ class GeoAxes(matplotlib.axes.Axes):
                   if col.get_paths()]
         if bboxes:
             extent = mtransforms.Bbox.union(bboxes)
-            self.dataLim.update_from_data_xy(extent.get_points(), ignore=False)
+            self.update_datalim(extent.get_points())
 
         self.autoscale_view()
 
@@ -1667,7 +1667,7 @@ class GeoAxes(matplotlib.axes.Axes):
                   if col.get_paths()]
         if bboxes:
             extent = mtransforms.Bbox.union(bboxes)
-            self.dataLim.update_from_data_xy(extent.get_points(), ignore=False)
+            self.update_datalim(extent.get_points())
 
         self.autoscale_view()
 
