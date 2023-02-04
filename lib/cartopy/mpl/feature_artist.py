@@ -18,7 +18,10 @@ import numpy as np
 import matplotlib.artist
 import matplotlib.collections
 
+from shapely.geometry import Polygon, LineString, LinearRing
+
 import cartopy.mpl.patch as cpatch
+import cartopy.crs as ccrs
 from .style import merge as style_merge, finalize as style_finalize
 
 
@@ -140,16 +143,29 @@ class FeatureArtist(matplotlib.artist.Artist):
             return
 
         ax = self.axes
-        feature_crs = self._feature.crs
 
-        # Get geometries that we need to draw.
-        extent = None
-        try:
-            extent = ax.get_extent(feature_crs)
-        except ValueError:
-            warnings.warn('Unable to determine extent. Defaulting to global.')
-        geoms = self._feature.intersecting_geometries(extent)
+        geoms, feature_crs, transform = self.get_geometry()
+        projection = ax.projection
+        stylised_paths = self.get_stylised_paths(
+            geoms, feature_crs, projection, **kwargs)
 
+        # Draw one PathCollection per style. We could instead pass an array
+        # of style items through to a single PathCollection, but that
+        # complexity does not yet justify the effort.
+        for style, paths in stylised_paths.items():
+            style = style_finalize(dict(style))
+            # Build path collection and draw it.
+            c = matplotlib.collections.PathCollection(paths,
+                                                      transform=transform,
+                                                      **style)
+            c.set_clip_path(ax.patch)
+            c.set_figure(ax.figure)
+            c.draw(renderer)
+
+        # n.b. matplotlib.collection.Collection.draw returns None
+        return None
+
+    def get_stylised_paths(self, geoms, feature_crs, projection, **kwargs):
         # Combine all the keyword args in priority order.
         prepared_kwargs = style_merge(self._feature.kwargs,
                                       self._kwargs,
@@ -161,7 +177,6 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         # Project (if necessary) and convert geometries to matplotlib paths.
         stylised_paths = OrderedDict()
-        key = ax.projection
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
             # hashable, we have to use a WeakValueDictionary to manage
@@ -179,15 +194,15 @@ class FeatureArtist(matplotlib.artist.Artist):
                 geom_key, geom)
             mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
                 geom_key, {})
-            geom_paths = mapping.get(key)
+            geom_paths = mapping.get(projection)
             if geom_paths is None:
-                if ax.projection != feature_crs:
-                    projected_geom = ax.projection.project_geometry(
+                if projection != feature_crs:
+                    projected_geom = projection.project_geometry(
                         geom, feature_crs)
                 else:
                     projected_geom = geom
                 geom_paths = cpatch.geos_to_path(projected_geom)
-                mapping[key] = geom_paths
+                mapping[projection] = geom_paths
 
             if not self._styler:
                 style = prepared_kwargs
@@ -198,20 +213,67 @@ class FeatureArtist(matplotlib.artist.Artist):
 
             stylised_paths.setdefault(style, []).extend(geom_paths)
 
-        transform = ax.projection._as_mpl_transform(ax)
+        return stylised_paths
 
-        # Draw one PathCollection per style. We could instead pass an array
-        # of style items through to a single PathCollection, but that
-        # complexity does not yet justify the effort.
-        for style, paths in stylised_paths.items():
-            style = style_finalize(dict(style))
-            # Build path collection and draw it.
-            c = matplotlib.collections.PathCollection(paths,
-                                                      transform=transform,
-                                                      **style)
-            c.set_clip_path(ax.patch)
-            c.set_figure(ax.figure)
-            c.draw(renderer)
+    def get_geometry(self):
+        ax = self.axes
+        extent = None
+        if ax is not None:
+            transform = ax.projection._as_mpl_transform(ax)
+            feature_crs = self._feature.crs
+            # Get geometries that we need to draw.
+            try:
+                extent = ax.get_extent(feature_crs)
+            except ValueError:
+                warnings.warn('''Unable to determine extent.
+                              Defaulting to global.''')
+        else:
+            transform = None
+            feature_crs = ccrs.PlateCarree()
 
-        # n.b. matplotlib.collection.Collection.draw returns None
-        return None
+        geoms = self._feature.intersecting_geometries(extent)
+
+        return geoms, feature_crs, transform
+
+
+class HandlerFeature(matplotlib.legend_handler.HandlerPathCollection):
+    def create_artists(self, legend, orig_handle,
+                       xdescent, ydescent, width, height, fontsize, trans):
+        # Use first geometry object to determine shapely geometry type
+        geom = next(orig_handle._feature.geometries())
+
+        # Get paths and associated styles
+        geoms, feature_crs, _ = orig_handle.get_geometry()
+        projection = ccrs.PlateCarree()
+        stylised_paths = orig_handle.get_stylised_paths(geoms, feature_crs,
+                                                        projection)
+
+        artists = []
+        for style in stylised_paths.keys():
+            style = dict(style)
+            facecolor = style.get('facecolor', 'none')
+            if facecolor not in ('none', 'never') or type(geom) is Polygon:
+                p = matplotlib.patches.Rectangle(
+                    xy=(-xdescent, -ydescent),
+                    width=width, height=height,
+                    **style
+                )
+            elif type(geom) in (LineString, LinearRing):
+                # color handling
+                style.pop('facecolor')
+                val = style.pop('edgecolor', 'none')
+                if val != 'none' and style.get('color', 'none') == 'none':
+                    style['color'] = val
+
+                xdata, _ = self.get_xdata(legend, xdescent, ydescent,
+                                          width, height, fontsize)
+                ydata = np.full_like(xdata, (height - ydescent) / 2)
+                p = matplotlib.lines.Line2D(xdata, ydata, **style)
+
+            artists.append(p)
+
+        return artists
+
+
+matplotlib.legend.Legend.update_default_handler_map({
+    FeatureArtist: HandlerFeature()})
