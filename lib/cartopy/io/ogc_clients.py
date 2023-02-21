@@ -247,7 +247,25 @@ class WMSRasterSource(RasterSource):
     def _native_srs(self, projection):
         # Return the SRS which corresponds to the given projection when
         # known, otherwise return None.
-        return _CRS_TO_OGC_SRS.get(projection)
+        native_srs = _CRS_TO_OGC_SRS.get(projection)
+
+        # If the native_srs could not be identified, return None
+        if native_srs is None:
+            return None
+        else:
+            # If the native_srs was identified, check if it is provided
+            # by the service. If not return None to continue checking
+            # for available fallback srs
+            contents = self.service.contents
+            native_OK = all(
+                native_srs in contents[layer].crsOptions
+                for layer in self.layers
+            )
+
+            if native_OK:
+                return native_srs
+            else:
+                return None
 
     def _fallback_proj_and_srs(self):
         """
