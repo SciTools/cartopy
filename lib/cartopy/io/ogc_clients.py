@@ -254,7 +254,7 @@ class WMSRasterSource(RasterSource):
             return None
         else:
             # If the native_srs was identified, check if it is provided
-            # by the service. If not return None to continue checking 
+            # by the service. If not return None to continue checking
             # for available fallback srs
             contents = self.service.contents
             native_OK = all(
