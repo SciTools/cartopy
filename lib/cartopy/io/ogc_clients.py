@@ -245,8 +245,8 @@ class WMSRasterSource(RasterSource):
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
     def _native_srs(self, projection):
-        # Return a list of all SRS identifiers that correspond to the given projection
-        # when known, otherwise return None.
+        # Return a list of all SRS identifiers that correspond to the given
+        # projection when known, otherwise return None.
         native_srs_list = _CRS_TO_OGC_SRS.get(projection, None)
 
         # If the native_srs could not be identified, return None
@@ -260,7 +260,8 @@ class WMSRasterSource(RasterSource):
 
             for native_srs in native_srs_list:
                 native_OK = all(
-                    native_srs.lower() in map(str.lower, contents[layer].crsOptions)
+                    native_srs.lower() in map(
+                        str.lower, contents[layer].crsOptions)
                     for layer in self.layers
                 )
                 if native_OK:
