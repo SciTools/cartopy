@@ -48,9 +48,9 @@ _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 # Hardcode some known EPSG codes for now.
 # The order given here determines the preferred SRS for WMS retrievals.
 _CRS_TO_OGC_SRS = collections.OrderedDict(
-    [(ccrs.PlateCarree(), 'EPSG:4326'),
-     (ccrs.Mercator.GOOGLE, 'EPSG:900913'),
-     (ccrs.OSGB(approx=True), 'EPSG:27700')
+    [(ccrs.PlateCarree(), ['EPSG:4326']),
+     (ccrs.Mercator.GOOGLE, ['EPSG:3857', 'EPSG:900913']),
+     (ccrs.OSGB(approx=True), ['EPSG:27700'])
      ])
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
@@ -245,27 +245,29 @@ class WMSRasterSource(RasterSource):
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
     def _native_srs(self, projection):
-        # Return the SRS which corresponds to the given projection when
-        # known, otherwise return None.
-        native_srs = _CRS_TO_OGC_SRS.get(projection)
+        # Return a list of all SRS identifiers that correspond to the given
+        # projection when known, otherwise return None.
+        native_srs_list = _CRS_TO_OGC_SRS.get(projection, None)
 
         # If the native_srs could not be identified, return None
-        if native_srs is None:
+        if native_srs_list is None:
             return None
         else:
             # If the native_srs was identified, check if it is provided
             # by the service. If not return None to continue checking
             # for available fallback srs
             contents = self.service.contents
-            native_OK = all(
-                native_srs in contents[layer].crsOptions
-                for layer in self.layers
-            )
 
-            if native_OK:
-                return native_srs
-            else:
-                return None
+            for native_srs in native_srs_list:
+                native_OK = all(
+                    native_srs.lower() in map(
+                        str.lower, contents[layer].crsOptions)
+                    for layer in self.layers
+                )
+                if native_OK:
+                    return native_srs
+
+            return None
 
     def _fallback_proj_and_srs(self):
         """
@@ -275,15 +277,16 @@ class WMSRasterSource(RasterSource):
 
         """
         contents = self.service.contents
-        for proj, srs in _CRS_TO_OGC_SRS.items():
-            missing = any(srs not in contents[layer].crsOptions for
-                          layer in self.layers)
-            if not missing:
-                break
-        if missing:
-            raise ValueError('The requested layers are not available in a '
-                             'known SRS.')
-        return proj, srs
+        for proj, srs_list in _CRS_TO_OGC_SRS.items():
+            for srs in srs_list:
+                srs_OK = all(
+                    srs.lower() in map(str.lower, contents[layer].crsOptions)
+                    for layer in self.layers)
+                if srs_OK:
+                    return proj, srs
+
+        raise ValueError('The requested layers are not available in a '
+                         'known SRS.')
 
     def validate_projection(self, projection):
         if self._native_srs(projection) is None:
