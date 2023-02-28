@@ -27,7 +27,8 @@ env-run: &env-setup
     conda config \
         --set always_yes yes \
         --set changeps1 no \
-        --set show_channel_urls yes
+        --set show_channel_urls yes \
+        --set auto_activate_base false
     conda config --add channels conda-forge
     conda create -n test-environment python=$PYTHON_VERSION
 
@@ -79,7 +80,7 @@ jobs:
       - run:
           <<: *env-setup
           environment:
-            PYTHON_VERSION: 3
+            PYTHON_VERSION: 3.11
       - run: *deps-install
       - run: *cp-install
 
