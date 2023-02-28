@@ -27,10 +27,9 @@ geometry representation of shapely:
 
 """
 
-import glob
 import io
 import itertools
-import os
+from pathlib import Path
 from urllib.error import HTTPError
 
 import shapely.geometry as sgeom
@@ -328,9 +327,8 @@ class NEShpDownloader(Downloader):
         """
         from zipfile import ZipFile
 
-        target_dir = os.path.dirname(target_path)
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
+        target_dir = Path(target_path).parent
+        target_dir.mkdir(parents=True, exist_ok=True)
 
         url = self.url(format_dict)
 
@@ -339,10 +337,9 @@ class NEShpDownloader(Downloader):
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
-            ext = os.path.splitext(member_path)[1]
-            target = os.path.splitext(target_path)[0] + ext
-            member = zfh.getinfo(member_path.replace(os.sep, '/'))
-            with open(target, 'wb') as fh:
+            member = zfh.getinfo(member_path.replace('\\', '/'))
+            with open(target_path.with_suffix(
+                    Path(member_path).suffix), 'wb') as fh:
                 fh.write(zfh.open(member).read())
 
         shapefile_online.close()
@@ -367,9 +364,10 @@ ne_{resolution}_{name}.shp
         """
         default_spec = ('shapefiles', 'natural_earth', '{category}',
                         'ne_{resolution}_{name}.shp')
-        ne_path_template = os.path.join('{config[data_dir]}', *default_spec)
-        pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
-                                         *default_spec)
+        ne_path_template = str(
+            Path('{config[data_dir]}').joinpath(*default_spec))
+        pre_path_template = str(
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
         return NEShpDownloader(target_path_template=ne_path_template,
                                pre_downloaded_path_template=pre_path_template)
 
@@ -429,9 +427,9 @@ class GSHHSShpDownloader(Downloader):
 
         """
         for ext in ['.shp', '.dbf', '.shx']:
-            yield (os.path.join('GSHHS_shp', '{scale}',
-                                'GSHHS_{scale}_L{level}{extension}'
-                                ).format(extension=ext, **format_dict))
+            p = Path('GSHHS_shp', '{scale}',
+                     'GSHHS_{scale}_L{level}{extension}')
+            yield str(p).format(extension=ext, **format_dict)
 
     def acquire_all_resources(self, format_dict):
         from zipfile import ZipFile
@@ -477,15 +475,13 @@ class GSHHSShpDownloader(Downloader):
                 continue
             modified_format_dict.update({'scale': scale, 'level': level})
             target_path = self.target_path(modified_format_dict)
-            target_dir = os.path.dirname(target_path)
-            if not os.path.isdir(target_dir):
-                os.makedirs(target_dir)
+            target_dir = target_path.parent
+            target_dir.mkdir(parents=True, exist_ok=True)
 
             for member_path in self.zip_file_contents(modified_format_dict):
-                ext = os.path.splitext(member_path)[1]
-                target = os.path.splitext(target_path)[0] + ext
-                member = zfh.getinfo(member_path.replace(os.sep, '/'))
-                with open(target, 'wb') as fh:
+                member = zfh.getinfo(member_path.replace('\\', '/'))
+                with open(target_path.with_suffix(
+                        Path(member_path).suffix), 'wb') as fh:
                     fh.write(zfh.open(member).read())
 
         zfh.close()
@@ -502,16 +498,15 @@ class GSHHSShpDownloader(Downloader):
             exist in the ``cartopy.config['repo_data_dir']`` directory.
 
         """
-        repo_fname_pattern = os.path.join(config['repo_data_dir'],
-                                          'shapefiles', 'gshhs', '{scale}',
-                                          'GSHHS_{scale}_L?.shp')
+        repo_fname_pattern = str(Path('shapefiles') / 'gshhs'
+                                 / '{scale}' / 'GSHHS_{scale}_L?.shp')
         repo_fname_pattern = repo_fname_pattern.format(**format_dict)
-        repo_fnames = glob.glob(repo_fname_pattern)
+        repo_fnames = list(config['repo_data_dir'].glob(repo_fname_pattern))
         if repo_fnames:
             assert len(repo_fnames) == 1, '>1 repo files found for GSHHS'
             return repo_fnames[0]
         self.acquire_all_resources(format_dict)
-        if not os.path.exists(target_path):
+        if not target_path.exists():
             raise RuntimeError('Failed to download and extract GSHHS '
                                f'shapefile to {target_path!r}.')
         return target_path
@@ -535,10 +530,10 @@ GSHHS_{scale}_L{level}.shp
         """
         default_spec = ('shapefiles', 'gshhs', '{scale}',
                         'GSHHS_{scale}_L{level}.shp')
-        gshhs_path_template = os.path.join('{config[data_dir]}',
-                                           *default_spec)
-        pre_path_tmplt = os.path.join('{config[pre_existing_data_dir]}',
-                                      *default_spec)
+        gshhs_path_template = str(
+            Path('{config[data_dir]}').joinpath(*default_spec))
+        pre_path_tmplt = str(
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
         return GSHHSShpDownloader(target_path_template=gshhs_path_template,
                                   pre_downloaded_path_template=pre_path_tmplt)
 

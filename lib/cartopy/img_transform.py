@@ -259,12 +259,12 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
 
     # Stack our original xyz array, this will also wrap coords when necessary
     xyz = source_proj.transform_points(source_proj,
-                                     source_x_coords.flatten(),
-                                     source_y_coords.flatten())
+                                       source_x_coords.flatten(),
+                                       source_y_coords.flatten())
     # Transform the target points into the source projection
     target_xyz = source_proj.transform_points(target_proj,
-                                            target_x_points.flatten(),
-                                            target_y_points.flatten())
+                                              target_x_points.flatten(),
+                                              target_y_points.flatten())
 
     if _is_pykdtree:
         kdtree = pykdtree.kdtree.KDTree(xyz)

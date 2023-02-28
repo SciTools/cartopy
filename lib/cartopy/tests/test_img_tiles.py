@@ -227,15 +227,15 @@ def test_ordnance_survey_tile_styles():
     tile = ["1", "2", "3"]
 
     # Default is Road_3857.
-    os = cimgt.OrdnanceSurvey(dummy_apikey)
-    url = os._image_url(tile)
+    ordsurvey = cimgt.OrdnanceSurvey(dummy_apikey)
+    url = ordsurvey._image_url(tile)
     assert url == ref_url.format(layer="Road_3857",
                                  z=tile[2], y=tile[1], x=tile[0])
 
     for layer in ("Road_3857", "Light_3857", "Outdoor_3857",
                   "Road", "Light", "Outdoor"):
-        os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
-        url = os._image_url(tile)
+        ordsurvey = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
+        url = ordsurvey._image_url(tile)
         layer = layer if layer.endswith("_3857") else layer + "_3857"
         assert url == ref_url.format(layer=layer,
                                      z=tile[2], y=tile[1], x=tile[0])
@@ -362,17 +362,16 @@ def test_cache(cache_dir, tmp_path):
     ]
 
     # Check the results
-    cache_dir_res = os.path.join(gt.cache_path, "GoogleTiles")
-    files = [i for i in os.listdir(cache_dir_res)]
+    cache_dir_res = gt.cache_path / "GoogleTiles"
+    files = list(cache_dir_res.iterdir())
     hashes = {
         f:
             hashlib.md5(
-                np.load(os.path.join(cache_dir_res, f), allow_pickle=True).data
+                np.load(cache_dir_res / f, allow_pickle=True).data
             ).hexdigest()
         for f in files
     }
-
-    assert sorted(files) == [f for x, y, z, f, h in x_y_z_f_h]
+    assert sorted(files) == [cache_dir_res / f for x, y, z, f, h in x_y_z_f_h]
     assert set(files) == gt.cache
 
     assert sorted(hashes.values()) == sorted(
@@ -381,7 +380,7 @@ def test_cache(cache_dir, tmp_path):
 
     # Update images in cache (all white)
     for f in files:
-        filename = os.path.join(cache_dir_res, f)
+        filename = cache_dir_res / f
         img = np.load(filename, allow_pickle=True)
         img.fill(255)
         np.save(filename, img, allow_pickle=True)

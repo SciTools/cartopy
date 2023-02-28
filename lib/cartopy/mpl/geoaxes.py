@@ -15,6 +15,9 @@ plot results from source coordinates to the GeoAxes' target projection.
 import collections
 import contextlib
 import functools
+import json
+import os
+from pathlib import Path
 import warnings
 import weakref
 
@@ -1010,11 +1013,9 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         if name == 'ne_shaded':
-            import os
             source_proj = ccrs.PlateCarree()
-            fname = os.path.join(config["repo_data_dir"],
-                                 'raster', 'natural_earth',
-                                 '50-natural-earth-1-downsampled.png')
+            fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
+                     / '50-natural-earth-1-downsampled.png')
 
             return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
@@ -1064,11 +1065,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # read in the user's background image directory:
         if len(_USER_BG_IMGS) == 0:
             self.read_user_background_images()
-        import os
-        bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
-        if bgdir is None:
-            bgdir = os.path.join(config["repo_data_dir"],
-                                 'raster', 'natural_earth')
+        bgdir = Path(os.getenv(
+            'CARTOPY_USER_BACKGROUNDS',
+            config["repo_data_dir"] / 'raster' / 'natural_earth'))
         # now get the filename we want to use:
         try:
             fname = _USER_BG_IMGS[name][resolution]
@@ -1078,7 +1077,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 f'present in the user background image metadata in directory '
                 f'{bgdir!r}')
         # Now obtain the image data from file or cache:
-        fpath = os.path.join(bgdir, fname)
+        fpath = bgdir / fname
         if cache:
             if fname in _BACKG_IMG_CACHE:
                 img = _BACKG_IMG_CACHE[fname]
@@ -1164,14 +1163,10 @@ class GeoAxes(matplotlib.axes.Axes):
         lib/cartopy/data/raster/natural_earth/images.json
 
         """
-        import os
-        import json
-
-        bgdir = os.getenv('CARTOPY_USER_BACKGROUNDS')
-        if bgdir is None:
-            bgdir = os.path.join(config["repo_data_dir"],
-                                 'raster', 'natural_earth')
-        json_file = os.path.join(bgdir, 'images.json')
+        bgdir = Path(os.getenv(
+            'CARTOPY_USER_BACKGROUNDS',
+            config["repo_data_dir"] / 'raster' / 'natural_earth'))
+        json_file = bgdir / 'images.json'
 
         with open(json_file) as js_obj:
             dict_in = json.load(js_obj)
@@ -1196,8 +1191,8 @@ class GeoAxes(matplotlib.axes.Axes):
                         # the required_info items are not resolutions:
                         if resln not in required_info:
                             img_it_r = _USER_BG_IMGS[img_type][resln]
-                            test_file = os.path.join(bgdir, img_it_r)
-                            if not os.path.isfile(test_file):
+                            test_file = bgdir / img_it_r
+                            if not test_file.is_file():
                                 raise ValueError(
                                     f'File "{test_file}" not found')
 

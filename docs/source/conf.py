@@ -17,7 +17,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 from datetime import datetime
-import os
+from pathlib import Path
 import sys
 
 import cartopy
@@ -25,9 +25,8 @@ import matplotlib
 from sphinx_gallery.sorting import ExampleTitleSortKey, ExplicitOrder
 
 # If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# add these directories to sys.path here.
+sys.path.insert(0, str(Path(__file__).parent.resolve()))
 
 # -- General configuration -----------------------------------------------------
 

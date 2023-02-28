@@ -5,7 +5,7 @@
 # licensing details.
 
 import io
-import os
+from pathlib import Path
 import pickle
 import shutil
 import sys
@@ -25,8 +25,7 @@ import cartopy.io.img_nest as cimg_nest
 #: An integer version which should be increased if the test data needs
 #: to change in some way.
 _TEST_DATA_VERSION = 1
-_TEST_DATA_DIR = os.path.join(config["data_dir"],
-                              'wmts', 'aerial')
+_TEST_DATA_DIR = config["data_dir"] / 'wmts' / 'aerial'
 
 
 @pytest.mark.parametrize('fname, expected', [
@@ -124,9 +123,9 @@ def test_intersect(tmp_path):
     im.save(z_2_dir / 'p2-5.tif')
 
     # Provided in reverse order in order to test the area sorting.
-    items = [('dummy-z-2', str(z_2_dir)),
-             ('dummy-z-1', str(z_1_dir)),
-             ('dummy-z-0', str(z_0_dir))]
+    items = [('dummy-z-2', z_2_dir),
+             ('dummy-z-1', z_1_dir),
+             ('dummy-z-0', z_0_dir)]
     nic = cimg_nest.NestedImageCollection.from_configuration('dummy',
                                                              None,
                                                              items)
@@ -149,8 +148,7 @@ def test_intersect(tmp_path):
     for zoom, image_names in expected:
         key = [k for k in nic._ancestry.keys() if k[0] == zoom][0]
         ancestry = nic._ancestry[key]
-        fnames = sorted(os.path.basename(item[1].filename)
-                        for item in ancestry)
+        fnames = sorted(item[1].filename.name for item in ancestry)
         assert image_names == fnames
 
     # Check image retrieval for specific domain.
@@ -170,9 +168,8 @@ def _tile_from_img(img):
     like "lib/cartopy/data/wmts/aerial/z_0/x_0_y0.png"
 
     """
-    _, z = os.path.basename(os.path.dirname(img.filename)).split('_')
-    xy, _ = os.path.splitext(os.path.basename(img.filename))
-    _, x, _, y = xy.split('_')
+    _, z = img.filename.parent.name.split('_')
+    _, x, _, y = img.filename.stem.split('_')
     return int(x), int(y), int(z)
 
 
@@ -195,15 +192,15 @@ class RoundedImg(cimg_nest.Img):
 def test_nest(nest_from_config):
     crs = cimgt.GoogleTiles().crs
     z0 = cimg_nest.ImageCollection('aerial z0 test', crs)
-    z0.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_0'),
+    z0.scan_dir_for_imgs(_TEST_DATA_DIR / 'z_0',
                          glob_pattern='*.png', img_class=RoundedImg)
 
     z1 = cimg_nest.ImageCollection('aerial z1 test', crs)
-    z1.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_1'),
+    z1.scan_dir_for_imgs(_TEST_DATA_DIR / 'z_1',
                          glob_pattern='*.png', img_class=RoundedImg)
 
     z2 = cimg_nest.ImageCollection('aerial z2 test', crs)
-    z2.scan_dir_for_imgs(os.path.join(_TEST_DATA_DIR, 'z_2'),
+    z2.scan_dir_for_imgs(_TEST_DATA_DIR / 'z_2',
                          glob_pattern='*.png', img_class=RoundedImg)
 
     # make sure all the images from z1 are contained by the z0 image. The
@@ -234,7 +231,7 @@ def test_nest(nest_from_config):
         assert ('aerial z1 test', img) in nest_z0_z1._ancestry[key]
 
     x1_y0_z1, = (img for img in z1.images
-                 if img.filename.endswith('x_1_y_0.png'))
+                 if img.filename.name.endswith('x_1_y_0.png'))
 
     assert (1, 0, 1) == _tile_from_img(x1_y0_z1)
 
@@ -284,12 +281,11 @@ def wmts_data():
         for sub_tile in aerial.subtiles(tile):
             tiles.append(sub_tile)
 
-    fname_template = os.path.join(_TEST_DATA_DIR, 'z_{}', 'x_{}_y_{}.png')
+    fname_template = str(_TEST_DATA_DIR / 'z_{}' / 'x_{}_y_{}.png')
 
-    if not os.path.isdir(_TEST_DATA_DIR):
-        os.makedirs(_TEST_DATA_DIR)
+    _TEST_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    data_version_fname = os.path.join(_TEST_DATA_DIR, 'version.txt')
+    data_version_fname = _TEST_DATA_DIR / 'version.txt'
 
     test_data_version = None
     try:
@@ -302,17 +298,16 @@ def wmts_data():
             warnings.warn('WMTS test data is out of date, regenerating at '
                           f'{_TEST_DATA_DIR}.')
             shutil.rmtree(_TEST_DATA_DIR)
-            os.makedirs(_TEST_DATA_DIR)
+            _TEST_DATA_DIR.mkdir(parents=True)
             with open(data_version_fname, 'w') as fh:
                 fh.write(str(_TEST_DATA_VERSION))
 
     # Download the tiles.
     for tile in tiles:
         x, y, z = tile
-        fname = fname_template.format(z, x, y)
-        if not os.path.exists(fname):
-            if not os.path.isdir(os.path.dirname(fname)):
-                os.makedirs(os.path.dirname(fname))
+        fname = Path(fname_template.format(z, x, y))
+        if not fname.exists():
+            fname.parent.mkdir(parents=True, exist_ok=True)
 
             img, extent, _ = aerial.get_image(tile)
             nx, ny = 256, 256
@@ -325,7 +320,7 @@ def wmts_data():
             upper_left_center = (extent[0] + pix_size_x / 2,
                                  extent[2] + pix_size_y / 2)
 
-            pgw_fname = fname[:-4] + '.pgw'
+            pgw_fname = fname.with_suffix('.pgw')
             pgw_keys = {'x_pix_size': np.float64(pix_size_x),
                         'y_rotation': 0,
                         'x_rotation': 0,
@@ -339,9 +334,9 @@ def wmts_data():
 
 @pytest.mark.network
 def test_find_images(wmts_data):
-    z2_dir = os.path.join(_TEST_DATA_DIR, 'z_2')
-    img_fname = os.path.join(z2_dir, 'x_2_y_0.png')
-    world_file_fname = os.path.join(z2_dir, 'x_2_y_0.pgw')
+    z2_dir = _TEST_DATA_DIR / 'z_2'
+    img_fname = z2_dir / 'x_2_y_0.png'
+    world_file_fname = z2_dir / 'x_2_y_0.pgw'
     img = RoundedImg.from_world_file(img_fname, world_file_fname)
 
     assert img.filename == img_fname
@@ -358,8 +353,8 @@ def test_find_images(wmts_data):
 def nest_from_config(wmts_data):
     from_config = cimg_nest.NestedImageCollection.from_configuration
 
-    files = [['aerial z0 test', os.path.join(_TEST_DATA_DIR, 'z_0')],
-             ['aerial z1 test', os.path.join(_TEST_DATA_DIR, 'z_1')],
+    files = [['aerial z0 test', _TEST_DATA_DIR / 'z_0'],
+             ['aerial z1 test', _TEST_DATA_DIR / 'z_1'],
              ]
 
     crs = cimgt.GoogleTiles().crs

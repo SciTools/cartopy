@@ -3,8 +3,7 @@
 # This file is part of Cartopy and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-
-import os.path
+from pathlib import Path
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
@@ -16,8 +15,8 @@ import cartopy.io.shapereader as shp
 
 class TestLakes:
     def setup_class(self):
-        LAKES_PATH = os.path.join(os.path.dirname(__file__),
-                                  'lakes_shapefile', 'ne_110m_lakes.shp')
+        LAKES_PATH = (Path(__file__).parent / 'lakes_shapefile'
+                      / 'ne_110m_lakes.shp')
         self.reader = shp.Reader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small lake
