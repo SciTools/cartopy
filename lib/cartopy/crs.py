@@ -3139,7 +3139,18 @@ class ObliqueMercator(Projection):
 
         super().__init__(proj4_params, globe=globe)
 
-        self.threshold = 1e4
+        # Couple limits to those of Mercator - delivers acceptable plots, and
+        #  Mercator has been through much more scrutiny.
+        mercator = Mercator(
+            central_longitude=central_longitude,
+            globe=globe,
+            false_easting=false_easting,
+            false_northing=false_northing,
+            scale_factor=scale_factor,
+        )
+        self._x_limits = mercator.x_limits
+        self._y_limits = mercator.y_limits
+        self.threshold = mercator.threshold
 
     @property
     def boundary(self):
@@ -3151,11 +3162,11 @@ class ObliqueMercator(Projection):
 
     @property
     def x_limits(self):
-        return (-2e7, 2e7)
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return (-2e7, 2e7)
+        return self._y_limits
 
 
 class _BoundaryPoint:
