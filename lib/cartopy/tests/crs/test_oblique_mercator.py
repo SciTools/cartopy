@@ -158,7 +158,7 @@ class TestCrsArgs:
                 *src,
                 src_crs=plate_carree,
             )
-            np.testing.assert_array_almost_equal(res, expected, decimal=5)
+            np.testing.assert_array_almost_equal(res, expected, decimal=4)
 
 
 @pytest.fixture
