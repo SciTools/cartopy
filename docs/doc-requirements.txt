@@ -1,4 +1,4 @@
-sphinx
+sphinx<6
 sphinx-gallery
 beautifulsoup4
 pydata-sphinx-theme

@@ -24,6 +24,7 @@ Make sure you have pip >= 9.0.1.
     sys.exit(error)
 
 
+from pathlib import Path
 import os
 import subprocess
 import warnings
@@ -39,8 +40,8 @@ Distribution definition for Cartopy.
 
 # The existence of a PKG-INFO directory is enough to tell us whether this is a
 # source installation or not (sdist).
-HERE = os.path.dirname(__file__)
-IS_SDIST = os.path.exists(os.path.join(HERE, 'PKG-INFO'))
+HERE = Path(__file__).parent
+IS_SDIST = (HERE / 'PKG-INFO').exists()
 FORCE_CYTHON = os.environ.get('FORCE_CYTHON', False)
 
 if not IS_SDIST or FORCE_CYTHON:
@@ -62,17 +63,14 @@ except ImportError:
 GEOS_MIN_VERSION = (3, 7, 2)
 
 
-def file_walk_relative(top, remove=''):
+def file_walk_relative(root):
     """
-    Return a generator of files from the top of the tree, removing
-    the given prefix from the root/file result.
+    Return a list of files from the top of the tree, removing
+    the lib/cartopy prefix from the resulting paths.
 
     """
-    top = top.replace('/', os.path.sep)
-    remove = remove.replace('/', os.path.sep)
-    for root, dirs, files in os.walk(top):
-        for file in files:
-            yield os.path.join(root, file).replace(remove, '')
+    return [str(p.relative_to(Path('lib') / 'cartopy'))
+            for p in root.glob("**/*")]
 
 
 # Dependency checks
@@ -114,9 +112,9 @@ else:
 
 # Python dependencies
 extras_require = {}
-for name in os.listdir(os.path.join(HERE, 'requirements')):
-    with open(os.path.join(HERE, 'requirements', name)) as fh:
-        section, ext = os.path.splitext(name)
+for name in (HERE / 'requirements').iterdir():
+    with open(name) as fh:
+        section, ext = name.stem, name.suffix
         extras_require[section] = []
         for line in fh:
             if line.startswith('#'):
@@ -142,7 +140,7 @@ if not sys.platform.startswith('win'):
 
 # Description
 # ===========
-with open(os.path.join(HERE, 'README.md')) as fh:
+with open(HERE / 'README.md') as fh:
     description = ''.join(fh.readlines())
 
 
@@ -181,13 +179,14 @@ def decythonize(extensions, **_ignore):
     for extension in extensions:
         sources = []
         for sfile in extension.sources:
-            path, ext = os.path.splitext(sfile)
+            spath = Path(sfile)
+            ext = spath.suffix
             if ext in ('.pyx',):
                 if extension.language == 'c++':
                     ext = '.cpp'
                 else:
                     ext = '.c'
-                sfile = path + ext
+                sfile = str(spath.with_suffix(ext))
             sources.append(sfile)
         extension.sources[:] = sources
     return extensions
@@ -199,6 +198,12 @@ if IS_SDIST and not FORCE_CYTHON:
 else:
     cmdclass = {'build_ext': cy_build_ext}
 
+base_path = Path('lib') / 'cartopy'
+package_data = (
+    file_walk_relative(base_path / 'tests' / 'mpl' / 'baseline_images')
+    + file_walk_relative(base_path / 'data')
+    + file_walk_relative(base_path / 'tests' / 'lakes_shapefile')
+    + ['io/srtm.npz'])
 
 # Main setup
 # ==========
@@ -225,19 +230,7 @@ setup(
 
     packages=find_packages("lib"),
     package_dir={'': 'lib'},
-    package_data={'cartopy': list(file_walk_relative('lib/cartopy/tests/'
-                                                     'mpl/baseline_images/',
-                                                     remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/raster',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/netcdf',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/data/'
-                                          'shapefiles/gshhs',
-                                          remove='lib/cartopy/')) +
-                  list(file_walk_relative('lib/cartopy/tests/lakes_shapefile',
-                                          remove='lib/cartopy/')) +
-                  ['io/srtm.npz']},
+    package_data={'cartopy': package_data},
 
     scripts=['tools/cartopy_feature_download.py'],
     ext_modules=extensions,

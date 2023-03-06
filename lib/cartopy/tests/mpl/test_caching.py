@@ -144,7 +144,6 @@ def test_contourf_transform_path_counting():
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()

@@ -5,7 +5,6 @@
 # licensing details.
 
 import operator
-import os
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -82,8 +81,8 @@ class TestRegrid:
 @pytest.mark.mpl_image_compare(filename='regrid_image.png', tolerance=5.55)
 def test_regrid_image():
     # Source data
-    fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
-                         '50-natural-earth-1-downsampled.png')
+    fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
+             / '50-natural-earth-1-downsampled.png')
     nx = 720
     ny = 360
     source_proj = ccrs.PlateCarree()

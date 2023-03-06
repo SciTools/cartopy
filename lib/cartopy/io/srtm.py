@@ -15,7 +15,7 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
 """
 
 import io
-import os
+from pathlib import Path
 import warnings
 
 import numpy as np
@@ -278,7 +278,7 @@ def read_SRTM(fh):
     if fname.endswith('.zip'):
         from zipfile import ZipFile
         zfh = ZipFile(fh, 'rb')
-        fh = zfh.open(os.path.basename(fname[:-4]), 'r')
+        fh = zfh.open(Path(fname).stem, 'r')
 
     elev = np.fromfile(fh, dtype=np.dtype('>i2'))
     if elev.size == 12967201:
@@ -289,7 +289,7 @@ def read_SRTM(fh):
         raise ValueError(
             f'Shape of SRTM data ({elev.size}) is unexpected.')
 
-    fname = os.path.basename(fname)
+    fname = Path(fname).name
     y_dir, y, x_dir, x = fname[0], int(fname[1:3]), fname[3], int(fname[4:7])
 
     if y_dir == 'S':
@@ -314,8 +314,7 @@ class SRTMDownloader(Downloader):
 
     _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/MEASURES/'
                       'SRTMGL{resolution}.003/2000.02.11/')
-    _SRTM_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
-                                      'srtm.npz')
+    _SRTM_LOOKUP_CACHE = Path(__file__).parent / 'srtm.npz'
     _SRTM_LOOKUP_MASK = np.load(_SRTM_LOOKUP_CACHE)['mask']
     """
     The SRTM lookup mask determines whether keys such as 'N43E043' are
@@ -362,9 +361,8 @@ class SRTMDownloader(Downloader):
     def acquire_resource(self, target_path, format_dict):
         from zipfile import ZipFile
 
-        target_dir = os.path.dirname(target_path)
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
+        target_dir = Path(target_path).parent
+        target_dir.mkdir(parents=True, exist_ok=True)
 
         url = self.url(format_dict)
 
@@ -441,10 +439,10 @@ class SRTMDownloader(Downloader):
 
         """
         default_spec = ('SRTM', 'SRTMGL{resolution}', '{y}{x}.hgt')
-        target_path_template = os.path.join('{config[data_dir]}',
-                                            *default_spec)
-        pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
-                                         *default_spec)
+        target_path_template = str(
+            Path('{config[data_dir]}').joinpath(*default_spec))
+        pre_path_template = str(
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
         return cls(target_path_template=target_path_template,
                    pre_downloaded_path_template=pre_path_template)
 

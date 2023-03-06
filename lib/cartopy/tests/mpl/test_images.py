@@ -4,7 +4,6 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import os
 import types
 
 import numpy as np
@@ -21,11 +20,10 @@ import cartopy.io.img_tiles as cimgt
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 
-NATURAL_EARTH_IMG = os.path.join(config["repo_data_dir"],
-                                 'raster', 'natural_earth',
-                                 '50-natural-earth-1-downsampled.png')
-REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
-                            'Miriam.A2012270.2050.2km.jpg')
+NATURAL_EARTH_IMG = (config["repo_data_dir"] / 'raster' / 'natural_earth'
+                     / '50-natural-earth-1-downsampled.png')
+REGIONAL_IMG = (config['repo_data_dir'] / 'raster' / 'sample'
+                / 'Miriam.A2012270.2050.2km.jpg')
 
 
 # We have an exceptionally large tolerance for the web_tiles test.

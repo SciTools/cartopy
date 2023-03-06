@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import os
 import inspect
+from pathlib import Path
 import textwrap
 import numpy as np
 import cartopy.crs as ccrs
@@ -131,8 +131,7 @@ def create_instance(prj_cls, instance_args):
 
 
 if __name__ == '__main__':
-    fname = os.path.join(os.path.dirname(__file__), 'source',
-                         'reference', 'projections.rst')
+    fname = Path(__file__).parent / 'source' / 'reference' / 'projections.rst'
     table = open(fname, 'w')
 
     header = """

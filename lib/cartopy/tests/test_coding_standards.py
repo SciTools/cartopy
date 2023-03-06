@@ -5,6 +5,7 @@
 # licensing details.
 
 from fnmatch import fnmatch
+from pathlib import Path
 import os
 import re
 import subprocess
@@ -31,9 +32,9 @@ LICENSE_RE = re.compile(SHEBANG_PATTERN + LICENSE_RE_PATTERN, re.MULTILINE)
 
 # Guess cartopy repo directory of cartopy - realpath is used to mitigate
 # against Python finding the cartopy package via a symlink.
-CARTOPY_DIR = os.path.realpath(os.path.dirname(cartopy.__file__))
-REPO_DIR = os.getenv('CARTOPY_GIT_DIR',
-                     os.path.dirname(os.path.dirname(CARTOPY_DIR)))
+CARTOPY_DIR = Path(cartopy.__file__).parent.resolve()
+REPO_DIR = Path(os.getenv('CARTOPY_GIT_DIR',
+                          CARTOPY_DIR.parent.parent))
 
 
 class TestLicenseHeaders:
@@ -50,7 +51,7 @@ class TestLicenseHeaders:
 
         """
         # Check the ".git" folder exists at the repo dir.
-        if not os.path.isdir(os.path.join(REPO_DIR, '.git')):
+        if not (REPO_DIR / '.git').is_dir():
             raise ValueError(f'{REPO_DIR} is not a git repository.')
 
         output = subprocess.check_output(['git', 'ls-tree', '-z', '-r',
@@ -79,13 +80,13 @@ class TestLicenseHeaders:
 
         failed = []
         for fname in sorted(tracked_files):
-            full_fname = os.path.join(REPO_DIR, fname)
-            root, ext = os.path.splitext(full_fname)
+            full_fname = REPO_DIR / fname
+            ext = full_fname.suffix
             if ext in ('.py', '.pyx', '.c', '.cpp', '.h') and \
-                    os.path.isfile(full_fname) and \
+                    full_fname.is_file() and \
                     not any(fnmatch(fname, pat) for pat in exclude_patterns):
 
-                if os.path.getsize(full_fname) == 0:
+                if full_fname.stat().st_size == 0:
                     # Allow completely empty files (e.g. ``__init__.py``)
                     continue
 
