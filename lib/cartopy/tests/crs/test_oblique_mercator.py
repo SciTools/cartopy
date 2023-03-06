@@ -11,7 +11,6 @@ Tests for the Oblique Mercator projection.
 from copy import deepcopy
 from typing import Dict, List, NamedTuple, Tuple
 
-from matplotlib import pyplot as plt
 import numpy as np
 import pytest
 
@@ -138,7 +137,9 @@ class TestCrsArgs:
             units="m",
         )
         proj_kwargs_expected.update(inputs.proj_kwargs)
-        self.proj_params = {f"{k}={v}" for k, v in proj_kwargs_expected.items()}
+        self.proj_params = {
+            f"{k}={v}" for k, v in proj_kwargs_expected.items()
+        }
 
         self.expected_a = inputs.expected_a
         self.expected_b = inputs.expected_b
@@ -181,7 +182,9 @@ def test_equality(oblique_variants):
     assert hash(alt_1) == hash(alt_2)
 
 
-@pytest.mark.parametrize("reverse_coord", [False, True], ids=["xy_order", "yx_order"])
+@pytest.mark.parametrize(
+    "reverse_coord", [False, True], ids=["xy_order", "yx_order"]
+)
 def test_nan(oblique_mercator, plate_carree, reverse_coord):
     coord = (0.0, np.NaN)
     if reverse_coord:
