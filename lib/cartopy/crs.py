@@ -3116,7 +3116,6 @@ class ObliqueMercator(Projection):
         azimuth: optional
             Azimuth of centerline clockwise from north at the center point of
             the centre line. Defaults to 0.
-
         globe: optional
             An instance of :class:`cartopy.crs.Globe`. If omitted, a default
             globe is created.

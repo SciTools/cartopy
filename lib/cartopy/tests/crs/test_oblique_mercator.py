@@ -36,6 +36,16 @@ def plate_carree() -> ccrs.PlateCarree:
 class TestCrsArgs:
     point_a_plate_carree = (-3.474083, 50.727301)
     point_b_plate_carree = (0.5, 50.5)
+    proj_kwargs_default = dict(
+        ellps="WGS84",
+        lonc="0.0",
+        lat_0="0.0",
+        k="1.0",
+        x_0="0.0",
+        y_0="0.0",
+        alpha="0.0",
+        units="m",
+    )
 
     class ParamTuple(NamedTuple):
         id: str
@@ -127,16 +137,8 @@ class TestCrsArgs:
 
         self.oblique_mercator = ccrs.ObliqueMercator(**inputs.crs_kwargs)
         proj_kwargs_expected = dict(
-            ellps="WGS84",
-            lonc="0.0",
-            lat_0="0.0",
-            k="1.0",
-            x_0="0.0",
-            y_0="0.0",
-            alpha="0.0",
-            units="m",
+            self.proj_kwargs_default, **inputs.proj_kwargs
         )
-        proj_kwargs_expected.update(inputs.proj_kwargs)
         self.proj_params = {
             f"{k}={v}" for k, v in proj_kwargs_expected.items()
         }
