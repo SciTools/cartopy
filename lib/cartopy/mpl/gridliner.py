@@ -45,6 +45,7 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
     cartopy.crs.LambertConformal,
     cartopy.crs.TransverseMercator,
     cartopy.crs.Gnomonic,
+    cartopy.crs.ObliqueMercator,
 )
 
 
