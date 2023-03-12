@@ -51,7 +51,7 @@ def mocked_axes(extent, projection=ccrs.PlateCarree()):
         figure=mock.sentinel.figure)
 
 
-# Need to initialize private renderer properties on the sentinal
+# Need to initialize private renderer properties on the sentinel
 mock.sentinel.renderer._raster_depth = 0
 mock.sentinel.renderer._rasterizing = False
 

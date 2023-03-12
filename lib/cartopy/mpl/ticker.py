@@ -238,7 +238,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
         dms: bool, optional
-            Wether or not formatting as degrees-minutes-seconds and not
+            Whether or not formatting as degrees-minutes-seconds and not
             as decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.
@@ -371,7 +371,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
         dms: bool, optional
-            Wether or not formatting as degrees-minutes-seconds and not
+            Whether or not formatting as degrees-minutes-seconds and not
             as decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.

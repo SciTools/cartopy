@@ -193,7 +193,7 @@ class Test_vector_scalar_to_grid:
 
     def test_with_scalar_field_non_ndarray_data(self):
         # Transform and regrid vector (with no projection transform) with an
-        # additional scalar field wich is not a ndarray.
+        # additional scalar field which is not a ndarray.
         expected_x_grid = np.array([[-10., -5., 0., 5., 10.],
                                     [-10., -5., 0., 5., 10.],
                                     [-10., -5., 0., 5., 10.]])
