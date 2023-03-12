@@ -44,7 +44,7 @@ try:
 except ImportError:
     pass
 
-__all__ = ['Reader', 'Record']
+__all__ = ["Reader", "Record"]
 
 
 class Record:
