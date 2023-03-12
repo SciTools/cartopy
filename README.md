@@ -31,6 +31,9 @@
  alt="zenodo" /></a>
 <a href="https://gitter.im/SciTools/cartopy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge">
 <img src="https://badges.gitter.im/SciTools/cartopy.svg" alt="Gitter Chat" /></a>
+<a href="https://results.pre-commit.ci/latest/github/SciTools/cartopy/main">
+<img src="https://results.pre-commit.ci/badge/github/SciTools/cartopy/main.svg"
+ alt="pre-commit.ci" /></a>
 </p>
 <br>
 
