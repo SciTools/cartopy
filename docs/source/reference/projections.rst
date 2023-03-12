@@ -615,5 +615,3 @@ SouthPolarStereo
     ax = plt.axes(projection=ccrs.SouthPolarStereo())
     ax.coastlines(resolution='110m')
     ax.gridlines()
-
-
