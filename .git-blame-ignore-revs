@@ -1,2 +1,5 @@
 # style: start of pre-commit and whitespace fixes
 16aba40dd09fb95c85fac1a0bee0f795b9f8b5fe
+
+# format: spell checking (#2153)
+eb1dd508e087396948de5a3d20c5791500743ddf
