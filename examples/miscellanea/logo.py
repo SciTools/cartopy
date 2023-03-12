@@ -5,12 +5,13 @@ Cartopy Logo
 The actual code to produce cartopy's logo.
 
 """
-import cartopy.crs as ccrs
+from matplotlib.font_manager import FontProperties
+import matplotlib.patches
 import matplotlib.pyplot as plt
 import matplotlib.textpath
-import matplotlib.patches
 import matplotlib.transforms
-from matplotlib.font_manager import FontProperties
+
+import cartopy.crs as ccrs
 
 
 def main():

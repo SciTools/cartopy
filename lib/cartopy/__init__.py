@@ -5,9 +5,10 @@
 # licensing details.
 import os
 from pathlib import Path
+import tempfile
 
 from ._version import version as __version__  # noqa: F401
-import tempfile
+
 
 __document_these__ = ['config']
 

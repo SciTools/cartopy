@@ -14,8 +14,9 @@ cyclic keyword (defaults to 360) to the end of the longitude array so that the
 data values at the ending longitudes will be closed to the wrap point.
 
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import cartopy.crs as ccrs
 import cartopy.util as cutil
 

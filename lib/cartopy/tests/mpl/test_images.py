@@ -6,17 +6,16 @@
 
 import types
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 from PIL import Image
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 import shapely.geometry as sgeom
 
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
-
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 

@@ -11,15 +11,15 @@ import shutil
 import sys
 import warnings
 
-import numpy as np
-from numpy.testing import assert_array_equal, assert_array_almost_equal
 from PIL import Image
+import numpy as np
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 import pytest
 import shapely.geometry as sgeom
 
 from cartopy import config
-import cartopy.io.img_tiles as cimgt
 import cartopy.io.img_nest as cimg_nest
+import cartopy.io.img_tiles as cimgt
 
 
 #: An integer version which should be increased if the test data needs

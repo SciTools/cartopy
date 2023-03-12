@@ -6,7 +6,9 @@ Draws a polygon where there is no sunlight for the given datetime.
 
 """
 import datetime
+
 import matplotlib.pyplot as plt
+
 import cartopy.crs as ccrs
 from cartopy.feature.nightshade import Nightshade
 

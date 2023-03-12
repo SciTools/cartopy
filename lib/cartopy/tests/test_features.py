@@ -4,8 +4,10 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import cartopy.feature as cfeature
 import pytest
+
+import cartopy.feature as cfeature
+
 
 small_extent = (-6, -8, 56, 59)
 medium_extent = (-20, 20, 20, 60)

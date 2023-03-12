@@ -14,8 +14,8 @@ and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
 
 """
 
-import numpy as np
 from matplotlib.path import Path
+import numpy as np
 import shapely.geometry as sgeom
 
 

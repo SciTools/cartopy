@@ -11,8 +11,9 @@ to transform points than it is to transform patches). This does
 have a negative impact on the wrapped coordinates as one can see in the
 second axes that the data does not extend to the full global extent.
 """
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
 
 
 def sample_data(shape=(73, 145)):

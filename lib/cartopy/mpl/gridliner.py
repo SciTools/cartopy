@@ -10,17 +10,17 @@ import warnings
 
 import matplotlib
 import matplotlib.collections as mcollections
+import matplotlib.path as mpath
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
-import matplotlib.path as mpath
 import numpy as np
 import shapely.geometry as sgeom
 
 import cartopy
-from cartopy.crs import Projection, _RectangularProjection, PlateCarree
-from cartopy.mpl.ticker import (
-    LongitudeLocator, LatitudeLocator,
-    LongitudeFormatter, LatitudeFormatter)
+from cartopy.crs import PlateCarree, Projection, _RectangularProjection
+from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
+                                LongitudeFormatter, LongitudeLocator)
+
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)

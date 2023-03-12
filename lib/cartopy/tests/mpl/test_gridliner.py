@@ -12,10 +12,9 @@ from shapely.geos import geos_version
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import LongitudeLocator, LongitudeFormatter
-from cartopy.mpl.gridliner import (
-    LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
-    classic_locator, classic_formatter)
+from cartopy.mpl.gridliner import (LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
+                                   classic_formatter, classic_locator)
+from cartopy.mpl.ticker import LongitudeFormatter, LongitudeLocator
 
 
 TEST_PROJS = [

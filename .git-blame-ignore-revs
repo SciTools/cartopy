@@ -6,3 +6,7 @@ eb1dd508e087396948de5a3d20c5791500743ddf
 
 # style: sort __all__ statements (#2151)
 c00e0adae1b1e8695e173f4482369face82206ee
+
+# style: adopt isort to enforce import ordering (#2150)
+ed53ab547ce632c12619281b95909e84208a4ec0
+65df40964dca387d2dea7e086acb748ecb9f99cc

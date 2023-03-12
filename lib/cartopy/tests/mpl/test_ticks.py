@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 
 @pytest.mark.natural_earth

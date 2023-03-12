@@ -19,9 +19,9 @@ import math
 import warnings
 
 import numpy as np
-import shapely.geometry as sgeom
 from pyproj import Transformer
 from pyproj.exceptions import ProjError
+import shapely.geometry as sgeom
 from shapely.prepared import prep
 
 import cartopy.trace

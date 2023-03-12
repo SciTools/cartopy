@@ -4,6 +4,7 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+from functools import reduce
 import operator
 
 import matplotlib as mpl
@@ -14,7 +15,6 @@ import pytest
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
-from functools import reduce
 
 
 class TestRegrid:

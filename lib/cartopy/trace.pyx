@@ -13,15 +13,17 @@ In general, this should never be called manually, instead leaving the
 processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
 from __future__ import print_function
+
 from functools import lru_cache
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
-from numpy.math cimport isfinite, isnan
 from libc.stdint cimport uintptr_t as ptr
 from libcpp cimport bool
 from libcpp.list cimport list
 from libcpp.vector cimport vector
+from numpy.math cimport isfinite, isnan
+
 
 cdef bool DEBUG = False
 
@@ -53,9 +55,9 @@ cdef extern from "geos_c.h":
 import re
 import warnings
 
-import shapely.geometry as sgeom
 from pyproj import Geod, Transformer
 from pyproj.exceptions import ProjError
+import shapely.geometry as sgeom
 
 
 cdef GEOSContextHandle_t get_geos_context_handle():
@@ -109,6 +111,7 @@ cdef class LineAccumulator:
 
     cdef GEOSGeometry *as_geom(self, GEOSContextHandle_t handle):
         from cython.operator cimport dereference, preincrement
+
         # self.lines.remove_if(degenerate_line) is not available in Cython.
         cdef list[Line].iterator it = self.lines.begin()
         while it != self.lines.end():

@@ -16,11 +16,12 @@ from datetime import datetime
 from io import StringIO
 from urllib.request import urlopen
 
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.pyplot as plt
 import numpy as np
+
 import cartopy.crs as ccrs
 from cartopy.feature.nightshade import Nightshade
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 
 
 def aurora_forecast():

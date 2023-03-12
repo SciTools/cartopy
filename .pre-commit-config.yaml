@@ -24,3 +24,9 @@ repos:
     hooks:
       - id: sort-all
         types: [file, python]
+  - repo: https://github.com/PyCQA/isort
+    rev: "5.12.0"
+    hooks:
+      - id: isort
+        types: [file, python]
+        args: [--filter-files]

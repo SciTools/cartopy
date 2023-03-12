@@ -4,9 +4,11 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 import io
+
+import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
 
 
 # No need for anything other than the agg backend, and we don't want

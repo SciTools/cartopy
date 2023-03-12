@@ -6,16 +6,16 @@
 
 from unittest import mock
 
+from matplotlib.transforms import IdentityTransform
 import numpy as np
 import pytest
 import shapely.geometry as sgeom
-from matplotlib.transforms import IdentityTransform
 
 import cartopy.crs as ccrs
-import cartopy.mpl.geoaxes as geoaxes
 from cartopy.feature import ShapelyFeature
-from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
 from cartopy.mpl import style
+from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
+import cartopy.mpl.geoaxes as geoaxes
 
 
 @pytest.mark.parametrize("source, expected", [

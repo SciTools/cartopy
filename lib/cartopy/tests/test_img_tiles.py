@@ -18,6 +18,7 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
+
 #: Maps Google tile coordinates to native mercator coordinates as defined
 #: by https://goo.gl/pgJi.
 KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,

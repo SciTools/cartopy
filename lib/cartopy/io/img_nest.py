@@ -8,8 +8,8 @@
 import collections
 from pathlib import Path
 
-import numpy as np
 from PIL import Image
+import numpy as np
 import shapely.geometry as sgeom
 
 

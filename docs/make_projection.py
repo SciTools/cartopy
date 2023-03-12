@@ -7,8 +7,12 @@
 import inspect
 from pathlib import Path
 import textwrap
+
+import matplotlib.pyplot as plt
 import numpy as np
+
 import cartopy.crs as ccrs
+
 
 #: A dictionary to allow examples to use non-default parameters to the CRS
 #: constructor.
@@ -25,9 +29,6 @@ SPECIFIC_PROJECTION_KWARGS = {
 
 
 def plate_carree_plot():
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
     nplots = 2
 
     fig = plt.figure(figsize=(6, 6))
@@ -42,9 +43,6 @@ def plate_carree_plot():
 
 
 def igh_plot():
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
     fig = plt.figure(figsize=(6.9228, 6))
 
     ax1 = fig.add_subplot(2, 1, 1,
@@ -61,9 +59,6 @@ def igh_plot():
 
 
 def utm_plot():
-    import matplotlib.pyplot as plt
-    import cartopy.crs as ccrs
-
     nplots = 60
 
     fig = plt.figure(figsize=(10, 3))
@@ -200,6 +195,9 @@ if __name__ == '__main__':
 
             code = textwrap.dedent("""
             .. plot::
+
+                import matplotlib.pyplot as plt
+                import cartopy.crs as ccrs
 
             {func_code}
 

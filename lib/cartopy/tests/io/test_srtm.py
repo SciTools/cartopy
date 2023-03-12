@@ -10,7 +10,6 @@ import pytest
 
 import cartopy.crs as ccrs
 import cartopy.io.srtm
-
 from .test_downloaders import download_to_temp  # noqa: F401 (used as fixture)
 
 
@@ -31,11 +30,9 @@ def srtm_login_or_skip(monkeypatch):
     except KeyError:
         pytest.skip('SRTM_PASSWORD environment variable is unset.')
 
-    from urllib.request import (HTTPBasicAuthHandler,
-                                HTTPCookieProcessor,
-                                HTTPPasswordMgrWithDefaultRealm,
-                                build_opener)
     from http.cookiejar import CookieJar
+    from urllib.request import (HTTPBasicAuthHandler, HTTPCookieProcessor,
+                                HTTPPasswordMgrWithDefaultRealm, build_opener)
 
     password_manager = HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(

@@ -7,6 +7,7 @@
 import gc
 from unittest import mock
 
+
 try:
     from owslib.wmts import WebMapTileService
 except ImportError:
@@ -16,9 +17,9 @@ import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.mpl.feature_artist import FeatureArtist
-from cartopy.io.ogc_clients import WMTSRasterSource, _OWSLIB_AVAILABLE
+from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE, WMTSRasterSource
 import cartopy.io.shapereader
+from cartopy.mpl.feature_artist import FeatureArtist
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
 
