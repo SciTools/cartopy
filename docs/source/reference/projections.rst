@@ -6,7 +6,6 @@
 
 .. _cartopy_projections:
 
-
 Cartopy projection list
 =======================
 
@@ -60,7 +59,7 @@ AzimuthalEquidistant
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(3.0101, 3))
     ax = plt.axes(projection=ccrs.AzimuthalEquidistant(
                             central_latitude=90))
     ax.coastlines(resolution='110m')
@@ -159,6 +158,22 @@ Mollweide
 
     plt.figure(figsize=(6, 3))
     ax = plt.axes(projection=ccrs.Mollweide())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+ObliqueMercator
+---------------
+
+.. autoclass:: cartopy.crs.ObliqueMercator
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(3.5091, 3))
+    ax = plt.axes(projection=ccrs.ObliqueMercator())
     ax.coastlines(resolution='110m')
     ax.gridlines()
 
@@ -352,7 +367,7 @@ Geostationary
     import matplotlib.pyplot as plt
     import cartopy.crs as ccrs
 
-    plt.figure(figsize=(3, 3))
+    plt.figure(figsize=(3.0118, 3))
     ax = plt.axes(projection=ccrs.Geostationary())
     ax.coastlines(resolution='110m')
     ax.gridlines()
@@ -600,3 +615,5 @@ SouthPolarStereo
     ax = plt.axes(projection=ccrs.SouthPolarStereo())
     ax.coastlines(resolution='110m')
     ax.gridlines()
+
+
