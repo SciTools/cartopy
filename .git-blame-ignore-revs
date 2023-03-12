@@ -3,3 +3,6 @@
 
 # format: spell checking (#2153)
 eb1dd508e087396948de5a3d20c5791500743ddf
+
+# style: sort __all__ statements (#2151)
+c00e0adae1b1e8695e173f4482369face82206ee
