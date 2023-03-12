@@ -75,7 +75,7 @@
     var select = build_select(version, release);
 
     var index_li = $('li.right:contains("index")');
-    index_li.append('|&nbsp;'); 
+    index_li.append('|&nbsp;');
     index_li.before('<li class="version_switcher right">' + select + '</li>');
     $('.version_switcher select').bind('change', on_switch);
   });

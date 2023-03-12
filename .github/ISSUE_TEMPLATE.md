@@ -17,7 +17,7 @@ questions on StackOverflow can be found at https://stackoverflow.com/questions/t
 
 ```
 
-#### Traceback 
+#### Traceback
 
 ```
 

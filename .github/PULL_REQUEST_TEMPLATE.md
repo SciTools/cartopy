@@ -29,6 +29,6 @@ request could be broken into smaller parts before submitting.
  * If this is a new feature, please provide an example of its use in the description. We may want to make a
    follow-on pull request to put the example in the gallery!
 
- * Ensure there is a suitable item in the cartopy test suite for the change you are proposing. 
+ * Ensure there is a suitable item in the cartopy test suite for the change you are proposing.
 
 -->

@@ -8,4 +8,3 @@ Version 0.7 (March 21, 2013)
 
 This is a quick release which targets two very specific requirements. The goals outlined in the development plan at
 ``v0.6`` still remain the primary target for ``v0.8`` and beyond.
-

@@ -3,7 +3,7 @@
 Using the cartopy shapereader
 =============================
 
-Cartopy provides an object oriented shapefile reader based on top of the 
+Cartopy provides an object oriented shapefile reader based on top of the
 `pyshp`_ module to provide easy, programmatic, access to standard vector datasets.
 
 Cartopy's wrapping of pyshp has the benefit of being pure python, and is therefore
@@ -120,7 +120,7 @@ Which we can print with
 
         Democratic Republic of the Congo, Egypt, Ethiopia, Nigeria
 
- * **SHP.2**: Using the countries shapefile, find the most populated country grouped 
+ * **SHP.2**: Using the countries shapefile, find the most populated country grouped
    by the first letter of the "name_long".
 
    Hint: :func:`itertools.groupby` can help with the grouping.
@@ -174,4 +174,3 @@ Which we can print with
             W Western Sahara
             Y Yemen
             Z Zimbabwe
-

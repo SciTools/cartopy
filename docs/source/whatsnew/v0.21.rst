@@ -125,7 +125,7 @@ Removals
 
 The following functions and classes have been removed after being deprecated
 multiple versions prior. See the previous What's New notes for replacements.
-  
+
 * ``geoaxes.outline_patch()``
 * ``geoaxes.background_patch()``
 * ``geoaxes.natural_earth_shp()``

@@ -15,7 +15,7 @@ Latest release DOI through Zenodo
 
 
 ************
-BibTeX entry 
+BibTeX entry
 ************
 
 For example::
@@ -26,7 +26,7 @@ For example::
  year = {2010 - 2015},
  address = {Exeter, Devon },
  url = {https://scitools.org.uk/cartopy}
- } 
+ }
 
 
 *******************
