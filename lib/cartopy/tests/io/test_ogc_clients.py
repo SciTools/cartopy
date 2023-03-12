@@ -29,19 +29,19 @@ RESOLUTION = (30, 30)
 
 
 @pytest.mark.network
-@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason="OWSLib is unavailable.")
 class TestWMSRasterSource:
-    URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
-    layer = 'basic'
-    layers = ['basic', 'ocean']
+    URI = "http://vmap0.tiles.osgeo.org/wms/vmap0"
+    layer = "basic"
+    layers = ["basic", "ocean"]
     projection = ccrs.PlateCarree()
 
     def test_string_service(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
         from owslib.map.wms111 import WebMapService_1_1_1
         from owslib.map.wms130 import WebMapService_1_3_0
-        assert isinstance(source.service,
-                          (WebMapService_1_1_1, WebMapService_1_3_0))
+
+        assert isinstance(source.service, (WebMapService_1_1_1, WebMapService_1_3_0))
         assert isinstance(source.layers, list)
         assert source.layers == [self.layer]
 
@@ -55,24 +55,21 @@ class TestWMSRasterSource:
         assert source.layers == self.layers
 
     def test_no_layers(self):
-        match = r'One or more layers must be defined\.'
+        match = r"One or more layers must be defined\."
         with pytest.raises(ValueError, match=match):
             ogc.WMSRasterSource(self.URI, [])
 
     def test_extra_kwargs_empty(self):
-        source = ogc.WMSRasterSource(self.URI, self.layer,
-                                     getmap_extra_kwargs={})
+        source = ogc.WMSRasterSource(self.URI, self.layer, getmap_extra_kwargs={})
         assert source.getmap_extra_kwargs == {}
 
     def test_extra_kwargs_None(self):
-        source = ogc.WMSRasterSource(self.URI, self.layer,
-                                     getmap_extra_kwargs=None)
-        assert source.getmap_extra_kwargs == {'transparent': True}
+        source = ogc.WMSRasterSource(self.URI, self.layer, getmap_extra_kwargs=None)
+        assert source.getmap_extra_kwargs == {"transparent": True}
 
     def test_extra_kwargs_non_empty(self):
-        kwargs = {'another': 'kwarg'}
-        source = ogc.WMSRasterSource(self.URI, self.layer,
-                                     getmap_extra_kwargs=kwargs)
+        kwargs = {"another": "kwarg"}
+        source = ogc.WMSRasterSource(self.URI, self.layer, getmap_extra_kwargs=kwargs)
         assert source.getmap_extra_kwargs == kwargs
 
     def test_supported_projection(self):
@@ -83,18 +80,19 @@ class TestWMSRasterSource:
         source = ogc.WMSRasterSource(self.URI, self.layer)
         # Patch dict of known Proj->SRS mappings so that it does
         # not include any of the available SRSs from the WMS.
-        with mock.patch.dict('cartopy.io.ogc_clients._CRS_TO_OGC_SRS',
-                             {ccrs.OSNI(approx=True): 'EPSG:29901'},
-                             clear=True):
-            msg = 'not available'
+        with mock.patch.dict(
+            "cartopy.io.ogc_clients._CRS_TO_OGC_SRS",
+            {ccrs.OSNI(approx=True): "EPSG:29901"},
+            clear=True,
+        ):
+            msg = "not available"
             with pytest.raises(ValueError, match=msg):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
         extent = [-10, 10, 40, 60]
-        located_image, = source.fetch_raster(self.projection, extent,
-                                             RESOLUTION)
+        (located_image,) = source.fetch_raster(self.projection, extent, RESOLUTION)
         img = np.array(located_image.image)
         assert img.shape == RESOLUTION + (4,)
         # No transparency in this image.
@@ -104,8 +102,7 @@ class TestWMSRasterSource:
     def test_fetch_img_different_projection(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
         extent = [-570000, 5100000, 870000, 3500000]
-        located_image, = source.fetch_raster(ccrs.Orthographic(), extent,
-                                             RESOLUTION)
+        (located_image,) = source.fetch_raster(ccrs.Orthographic(), extent, RESOLUTION)
         img = np.array(located_image.image)
         assert img.shape == RESOLUTION + (4,)
 
@@ -120,18 +117,17 @@ class TestWMSRasterSource:
         # The resolution (in pixels) should be cast to ints.
         source = ogc.WMSRasterSource(self.URI, self.layer)
         extent = [-570000, 5100000, 870000, 3500000]
-        located_image, = source.fetch_raster(self.projection, extent,
-                                             [19.5, 39.1])
+        (located_image,) = source.fetch_raster(self.projection, extent, [19.5, 39.1])
         img = np.array(located_image.image)
         assert img.shape == (40, 20, 4)
 
 
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
-@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason="OWSLib is unavailable.")
 class TestWMTSRasterSource:
-    URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
-    layer_name = 'VIIRS_CityLights_2012'
+    URI = "https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi"
+    layer_name = "VIIRS_CityLights_2012"
     projection = ccrs.PlateCarree()
 
     def test_string_service(self):
@@ -155,29 +151,33 @@ class TestWMTSRasterSource:
 
     def test_unsupported_projection(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
-        with mock.patch('cartopy.io.ogc_clients._URN_TO_CRS', {}):
-            match = r'Unable to find tile matrix for projection\.'
+        with mock.patch("cartopy.io.ogc_clients._URN_TO_CRS", {}):
+            match = r"Unable to find tile matrix for projection\."
             with pytest.raises(ValueError, match=match):
                 source.validate_projection(ccrs.Miller())
 
     def test_fetch_img(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         extent = [-10, 10, 40, 60]
-        located_image, = source.fetch_raster(self.projection, extent,
-                                             RESOLUTION)
+        (located_image,) = source.fetch_raster(self.projection, extent, RESOLUTION)
         img = np.array(located_image.image)
         assert img.shape == (512, 512, 4)
         # No transparency in this image.
         assert img[:, :, 3].min() == 255
-        assert located_image.extent == (-180.0, 107.99999999999994,
-                                        -197.99999999999994, 90.0)
+        assert located_image.extent == (
+            -180.0,
+            107.99999999999994,
+            -197.99999999999994,
+            90.0,
+        )
 
     def test_fetch_img_reprojected(self):
         source = ogc.WMTSRasterSource(self.URI, self.layer_name)
         extent = [-20, -1, 48, 50]
         # NB single result in this case.
-        located_image, = source.fetch_raster(ccrs.NorthPolarStereo(), extent,
-                                             (30, 30))
+        (located_image,) = source.fetch_raster(
+            ccrs.NorthPolarStereo(), extent, (30, 30)
+        )
 
         # Check image array is as expected (more or less).
         img = np.array(located_image.image)
@@ -202,12 +202,13 @@ class TestWMTSRasterSource:
 
 
 @pytest.mark.network
-@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason="OWSLib is unavailable.")
 class TestWFSGeometrySource:
-    URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
-    typename = 'land_excluding_antarctica'
-    native_projection = ccrs.Stereographic(central_latitude=-90,
-                                           true_scale_latitude=-71)
+    URI = "https://nsidc.org/cgi-bin/atlas_south?service=WFS"
+    typename = "land_excluding_antarctica"
+    native_projection = ccrs.Stereographic(
+        central_latitude=-90, true_scale_latitude=-71
+    )
 
     def test_string_service(self):
         service = WebFeatureService(self.URI)
@@ -227,12 +228,11 @@ class TestWFSGeometrySource:
 
     def test_unsupported_projection(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
-        msg = 'Geometries are only available in projection'
+        msg = "Geometries are only available in projection"
         with pytest.raises(ValueError, match=msg):
             source.fetch_geometries(ccrs.PlateCarree(), [-180, 180, -90, 90])
 
-    @pytest.mark.xfail(raises=ParseError,
-                       reason="Bad XML returned from the URL")
+    @pytest.mark.xfail(raises=ParseError, reason="Bad XML returned from the URL")
     def test_fetch_geometries(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
         # Extent covering New Zealand.

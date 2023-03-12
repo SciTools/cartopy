@@ -21,10 +21,10 @@ import warnings
 # Duplication intended to simplify readability, given the small number of
 # aliases.
 _ALIASES = {
-    'lw': 'linewidth',
-    'ls': 'linestyle',
-    'fc': 'facecolor',
-    'ec': 'edgecolor',
+    "lw": "linewidth",
+    "ls": "linestyle",
+    "fc": "facecolor",
+    "ec": "edgecolor",
 }
 
 
@@ -61,22 +61,23 @@ def merge(*style_dicts):
                 # (e.g. 'lw' doesn't trump 'linewidth').
                 this_style.setdefault(alias_to, alias)
 
-        color = this_style.pop('color', None)
-        if 'color' in orig_style:
-            this_style['edgecolor'] = color
-            this_style['facecolor'] = color
+        color = this_style.pop("color", None)
+        if "color" in orig_style:
+            this_style["edgecolor"] = color
+            this_style["facecolor"] = color
 
-        if isinstance(facecolor, str) and facecolor == 'never':
-            requested_color = this_style.pop('facecolor', None)
+        if isinstance(facecolor, str) and facecolor == "never":
+            requested_color = this_style.pop("facecolor", None)
             setting_color = not (
-                isinstance(requested_color, str) and
-                requested_color.lower() == 'none')
-            if (('fc' in orig_style or 'facecolor' in orig_style) and
-                    setting_color):
-                warnings.warn('facecolor will have no effect as it has been '
-                              'defined as "never".')
+                isinstance(requested_color, str) and requested_color.lower() == "none"
+            )
+            if ("fc" in orig_style or "facecolor" in orig_style) and setting_color:
+                warnings.warn(
+                    "facecolor will have no effect as it has been "
+                    'defined as "never".'
+                )
         else:
-            facecolor = this_style.get('facecolor', facecolor)
+            facecolor = this_style.get("facecolor", facecolor)
 
         # Push the remainder of the style into the merged style.
         style.update(this_style)
@@ -94,7 +95,7 @@ def finalize(style):
 
     """
     # Expand 'never' to 'none' if we have it.
-    facecolor = style.get('facecolor', None)
-    if facecolor == 'never':
-        style['facecolor'] = 'none'
+    facecolor = style.get("facecolor", None)
+    if facecolor == "never":
+        style["facecolor"] = "none"
     return style

@@ -24,12 +24,8 @@ def test_default(emphasis):
         check_proj_params("igh", igh, other_args)
     elif emphasis == "ocean":
         check_proj_params("igh_o", igh, other_args)
-    assert_allclose(
-        np.array(igh.x_limits), [-20037508.3427892, 20037508.3427892]
-    )
-    assert_allclose(
-        np.array(igh.y_limits), [-8683259.7164347, 8683259.7164347]
-    )
+    assert_allclose(np.array(igh.x_limits), [-20037508.3427892, 20037508.3427892])
+    assert_allclose(np.array(igh.y_limits), [-8683259.7164347, 8683259.7164347])
 
 
 @pytest.mark.parametrize("emphasis", ["land", "ocean"])
@@ -51,9 +47,7 @@ def test_eccentric_globe(emphasis):
     [("land", -10.0), ("land", 10.0), ("ocean", -10.0), ("ocean", 10.0)],
 )
 def test_central_longitude(emphasis, lon):
-    igh = ccrs.InterruptedGoodeHomolosine(
-        central_longitude=lon, emphasis=emphasis
-    )
+    igh = ccrs.InterruptedGoodeHomolosine(central_longitude=lon, emphasis=emphasis)
     other_args = {"ellps=WGS84", f"lon_0={lon}"}
     if emphasis == "land":
         check_proj_params("igh", igh, other_args)
@@ -64,6 +58,4 @@ def test_central_longitude(emphasis, lon):
         np.array(igh.x_limits),
         [-20037508.3427892, 20037508.3427892],
     )
-    assert_allclose(
-        np.array(igh.y_limits), [-8683259.7164347, 8683259.7164347]
-    )
+    assert_allclose(np.array(igh.y_limits), [-8683259.7164347, 8683259.7164347])

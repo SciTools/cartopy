@@ -35,7 +35,6 @@ def sample_data(shape=(73, 145)):
 
 
 def main():
-
     # Use the same sample data as the waves example, but make it
     # more dependent on y for more interesting contours.
     x, y, z = sample_data((20, 40))
@@ -50,20 +49,26 @@ def main():
 
     for ax, transform_first in zip([ax1, ax2], [False, True]):
         ax.set_global()
-        ax.coastlines('110m', alpha=0.1)
+        ax.coastlines("110m", alpha=0.1)
 
         # Add colourful filled contours.
-        filled_c = ax.contourf(x, y, z, transform=ccrs.PlateCarree(),
-                               transform_first=transform_first)
+        filled_c = ax.contourf(
+            x, y, z, transform=ccrs.PlateCarree(), transform_first=transform_first
+        )
 
         # And black line contours.
-        ax.contour(x, y, z, levels=filled_c.levels,
-                   colors=['black'],
-                   transform=ccrs.PlateCarree(),
-                   transform_first=transform_first)
+        ax.contour(
+            x,
+            y,
+            z,
+            levels=filled_c.levels,
+            colors=["black"],
+            transform=ccrs.PlateCarree(),
+            transform_first=transform_first,
+        )
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

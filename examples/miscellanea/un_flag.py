@@ -29,6 +29,7 @@ def olive_path():
     https://commons.wikimedia.org/wiki/File:Flag_of_the_United_Nations.svg.
 
     """
+    # fmt: off
     olives_verts = np.array(
         [[0,   2,   6,   9,  30,  55,  79,  94, 104, 117, 134, 157, 177,
           188, 199, 207, 191, 167, 149, 129, 109,  87,  53,  22,   0, 663,
@@ -81,19 +82,23 @@ def olive_path():
                              4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
                              4, 4, 4, 4, 79, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
                              4, 4, 79], dtype=np.uint8)
+    # fmt: on
 
     return matplotlib.path.Path(olives_verts, olives_codes)
 
 
 def main():
-    blue = '#4b92db'
+    blue = "#4b92db"
 
     # We're drawing a flag with a 3:5 aspect ratio.
     fig = plt.figure(figsize=[7.5, 4.5], facecolor=blue)
     # Put a blue background on the figure.
-    blue_background = PathPatch(matplotlib.path.Path.unit_rectangle(),
-                                transform=fig.transFigure, color=blue,
-                                zorder=-1)
+    blue_background = PathPatch(
+        matplotlib.path.Path.unit_rectangle(),
+        transform=fig.transFigure,
+        color=blue,
+        zorder=-1,
+    )
     fig.patches.append(blue_background)
 
     # Set up the Azimuthal Equidistant and Plate Carree projections
@@ -106,10 +111,10 @@ def main():
     ax = fig.add_axes([0.25, 0.24, 0.5, 0.54], projection=az_eq)
 
     # The background patch is not needed in this example.
-    ax.patch.set_facecolor('none')
+    ax.patch.set_facecolor("none")
     # The Axes frame produces the outer meridian line.
     for spine in ax.spines.values():
-        spine.update({'edgecolor': 'white', 'linewidth': 2})
+        spine.update({"edgecolor": "white", "linewidth": 2})
 
     # We want the map to go down to -60 degrees latitude.
     ax.set_extent([-180, 180, -60, 90], ccrs.PlateCarree())
@@ -122,12 +127,11 @@ def main():
     ax.set_boundary(circular_path)
 
     if filled_land:
-        ax.add_feature(
-            cfeature.LAND, facecolor='white', edgecolor='none')
+        ax.add_feature(cfeature.LAND, facecolor="white", edgecolor="none")
     else:
         ax.stock_img()
 
-    gl = ax.gridlines(crs=pc, linewidth=2, color='white', linestyle='-')
+    gl = ax.gridlines(crs=pc, linewidth=2, color="white", linestyle="-")
     # Meridians every 45 degrees, and 4 parallels.
     gl.xlocator = matplotlib.ticker.FixedLocator(np.arange(-180, 181, 45))
     parallels = np.arange(-30, 70, 30)
@@ -148,10 +152,18 @@ def main():
     olive2_axes_bbox = Bbox([[0.55, 0.15], [0.275, 0.75]])
     olive2_trans = BboxTransform(olives_bbox, olive2_axes_bbox)
 
-    olive1 = PathPatch(olive_leaf, facecolor='white', edgecolor='none',
-                       transform=olive1_trans + fig.transFigure)
-    olive2 = PathPatch(olive_leaf, facecolor='white', edgecolor='none',
-                       transform=olive2_trans + fig.transFigure)
+    olive1 = PathPatch(
+        olive_leaf,
+        facecolor="white",
+        edgecolor="none",
+        transform=olive1_trans + fig.transFigure,
+    )
+    olive2 = PathPatch(
+        olive_leaf,
+        facecolor="white",
+        edgecolor="none",
+        transform=olive2_trans + fig.transFigure,
+    )
 
     fig.patches.append(olive1)
     fig.patches.append(olive2)
@@ -159,5 +171,5 @@ def main():
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

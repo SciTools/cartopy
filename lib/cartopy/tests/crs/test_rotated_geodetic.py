@@ -12,12 +12,15 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-common_other_args = {'o_proj=latlon', 'to_meter=111319.4907932736',
-                     'a=6378137.0'}
+common_other_args = {"o_proj=latlon", "to_meter=111319.4907932736", "a=6378137.0"}
 
 
 def test_default():
     geos = ccrs.RotatedPole(60, 50, 80)
-    other_args = common_other_args | {'ellps=WGS84', 'lon_0=240', 'o_lat_p=50',
-                                      'o_lon_p=80'}
-    check_proj_params('ob_tran', geos, other_args)
+    other_args = common_other_args | {
+        "ellps=WGS84",
+        "lon_0=240",
+        "o_lat_p=50",
+        "o_lon_p=80",
+    }
+    check_proj_params("ob_tran", geos, other_args)

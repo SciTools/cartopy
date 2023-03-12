@@ -19,13 +19,12 @@ def test_contour_plot_bounds():
     y = np.linspace(-263790.62, 3230840.5, 130)
     data = np.hypot(*np.meshgrid(x, y)) / 2e5
 
-    proj_lcc = ccrs.LambertConformal(central_longitude=-95,
-                                     central_latitude=25,
-                                     standard_parallels=[25])
+    proj_lcc = ccrs.LambertConformal(
+        central_longitude=-95, central_latitude=25, standard_parallels=[25]
+    )
     ax = plt.axes(projection=proj_lcc)
     ax.contourf(x, y, data, levels=np.arange(0, 40, 1))
-    assert_array_almost_equal(ax.get_extent(),
-                              np.array([x[0], x[-1], y[0], y[-1]]))
+    assert_array_almost_equal(ax.get_extent(), np.array([x[0], x[-1], y[0], y[-1]]))
 
     # Levels that don't include data should not fail.
     plt.figure()
@@ -54,7 +53,7 @@ def test_contour_doesnt_shrink():
     assert_array_almost_equal(ax.get_extent(), expected)
 
 
-@pytest.mark.parametrize('func', ['contour', 'contourf'])
+@pytest.mark.parametrize("func", ["contour", "contourf"])
 def test_plot_after_contour_doesnt_shrink(func):
     xglobal = np.linspace(-180, 180)
     yglobal = np.linspace(-90, 90.00001)
@@ -74,8 +73,7 @@ def test_plot_after_contour_doesnt_shrink(func):
 
 def test_contour_linear_ring():
     """Test contourf with a section that only has 3 points."""
-    ax = plt.axes([0.01, 0.05, 0.898, 0.85], projection=ccrs.Mercator(),
-                  aspect='equal')
+    ax = plt.axes([0.01, 0.05, 0.898, 0.85], projection=ccrs.Mercator(), aspect="equal")
     ax.set_extent([-99.6, -89.0, 39.8, 45.5])
 
     xbnds = ax.get_xlim()
@@ -87,14 +85,12 @@ def test_contour_linear_ring():
     xi = np.linspace(min(ll[0], ul[0]), max(lr[0], ur[0]), 100)
     yi = np.linspace(min(ll[1], ul[1]), max(ul[1], ur[1]), 100)
     xi, yi = np.meshgrid(xi, yi)
-    nn = NearestNDInterpolator((np.arange(-94, -85), np.arange(36, 45)),
-                               np.arange(9))
+    nn = NearestNDInterpolator((np.arange(-94, -85), np.arange(36, 45)), np.arange(9))
     vals = nn(xi, yi)
     lons = xi
     lats = yi
     window = np.ones((6, 6))
-    vals = convolve2d(vals, window / window.sum(), mode='same',
-                      boundary='symm')
+    vals = convolve2d(vals, window / window.sum(), mode="same", boundary="symm")
     ax.contourf(lons, lats, vals, np.arange(9), transform=ccrs.PlateCarree())
 
     plt.draw()
@@ -112,7 +108,7 @@ def test_contour_update_bounds():
     plt.draw()
 
 
-@pytest.mark.parametrize('func', ['contour', 'contourf'])
+@pytest.mark.parametrize("func", ["contour", "contourf"])
 def test_contourf_transform_first(func):
     """Test the fast-path option for filled contours."""
     # Gridded data that needs to be wrapped
@@ -124,23 +120,17 @@ def test_contourf_transform_first(func):
     ax = plt.axes(projection=ccrs.PlateCarree())
     test_func = getattr(ax, func)
     # Can't handle just Z input with the transform_first
-    with pytest.raises(ValueError,
-                       match="The X and Y arguments must be provided"):
-        test_func(z, transform=ccrs.PlateCarree(),
-                  transform_first=True)
+    with pytest.raises(ValueError, match="The X and Y arguments must be provided"):
+        test_func(z, transform=ccrs.PlateCarree(), transform_first=True)
     # X and Y must also be 2-dimensional
-    with pytest.raises(ValueError,
-                       match="The X and Y arguments must be gridded"):
-        test_func(x, y, z, transform=ccrs.PlateCarree(),
-                  transform_first=True)
+    with pytest.raises(ValueError, match="The X and Y arguments must be gridded"):
+        test_func(x, y, z, transform=ccrs.PlateCarree(), transform_first=True)
 
     # When calculating the contour in projection-space the extent
     # will now be the extent of the transformed points (-179, 180, -25, 25)
-    test_func(xx, yy, z, transform=ccrs.PlateCarree(),
-              transform_first=True)
+    test_func(xx, yy, z, transform=ccrs.PlateCarree(), transform_first=True)
     assert_array_almost_equal(ax.get_extent(), (-179, 180, -25, 25))
 
     # The extent without the transform_first should be all the way out to -180
-    test_func(xx, yy, z, transform=ccrs.PlateCarree(),
-              transform_first=False)
+    test_func(xx, yy, z, transform=ccrs.PlateCarree(), transform_first=False)
     assert_array_almost_equal(ax.get_extent(), (-180, 180, -25, 25))

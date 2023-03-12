@@ -23,6 +23,7 @@ def sample_data():
     https://www.aoml.noaa.gov/hrd/hurdat/newhurdat-all.html on 14th Dec 2012.
 
     """
+    # fmt: off
     lons = [-75.1, -75.7, -76.2, -76.5, -76.9, -77.7, -78.4, -79.0,
             -79.6, -80.1, -80.3, -81.3, -82.0, -82.6, -83.3, -84.0,
             -84.7, -85.3, -85.9, -86.7, -87.7, -88.6, -89.2, -89.6,
@@ -33,6 +34,7 @@ def sample_data():
             25.9, 25.4, 25.1, 24.9, 24.6, 24.4, 24.4, 24.5, 24.8, 25.2,
             25.7, 26.3, 27.2, 28.2, 29.3, 29.5, 30.2, 31.1, 32.6, 34.1,
             35.6, 37.0, 38.6, 40.1]
+    # fmt: on
 
     return lons, lats
 
@@ -41,20 +43,19 @@ def main():
     fig = plt.figure()
     # to get the effect of having just the states without a map "background"
     # turn off the background patch and axes frame
-    ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.LambertConformal(),
-                      frameon=False)
+    ax = fig.add_axes([0, 0, 1, 1], projection=ccrs.LambertConformal(), frameon=False)
     ax.patch.set_visible(False)
 
     ax.set_extent([-125, -66.5, 20, 50], ccrs.Geodetic())
 
-    shapename = 'admin_1_states_provinces_lakes'
-    states_shp = shpreader.natural_earth(resolution='110m',
-                                         category='cultural', name=shapename)
+    shapename = "admin_1_states_provinces_lakes"
+    states_shp = shpreader.natural_earth(
+        resolution="110m", category="cultural", name=shapename
+    )
 
     lons, lats = sample_data()
 
-    ax.set_title('US States which intersect the track of '
-                 'Hurricane Katrina (2005)')
+    ax.set_title("US States which intersect the track of " "Hurricane Katrina (2005)")
 
     # turn the lons and lats into a shapely LineString
     track = sgeom.LineString(zip(lons, lats))
@@ -66,31 +67,39 @@ def main():
     def colorize_state(geometry):
         facecolor = (0.9375, 0.9375, 0.859375)
         if geometry.intersects(track):
-            facecolor = 'red'
+            facecolor = "red"
         elif geometry.intersects(track_buffer):
-            facecolor = '#FF7E00'
-        return {'facecolor': facecolor, 'edgecolor': 'black'}
+            facecolor = "#FF7E00"
+        return {"facecolor": facecolor, "edgecolor": "black"}
 
     ax.add_geometries(
         shpreader.Reader(states_shp).geometries(),
         ccrs.PlateCarree(),
-        styler=colorize_state)
+        styler=colorize_state,
+    )
 
-    ax.add_geometries([track_buffer], ccrs.PlateCarree(),
-                      facecolor='#C8A2C8', alpha=0.5)
-    ax.add_geometries([track], ccrs.PlateCarree(),
-                      facecolor='none', edgecolor='k')
+    ax.add_geometries(
+        [track_buffer], ccrs.PlateCarree(), facecolor="#C8A2C8", alpha=0.5
+    )
+    ax.add_geometries([track], ccrs.PlateCarree(), facecolor="none", edgecolor="k")
 
     # make two proxy artists to add to a legend
     direct_hit = mpatches.Rectangle((0, 0), 1, 1, facecolor="red")
     within_2_deg = mpatches.Rectangle((0, 0), 1, 1, facecolor="#FF7E00")
-    labels = ['State directly intersects\nwith track',
-              'State is within \n2 degrees of track']
-    ax.legend([direct_hit, within_2_deg], labels,
-              loc='lower left', bbox_to_anchor=(0.025, -0.1), fancybox=True)
+    labels = [
+        "State directly intersects\nwith track",
+        "State is within \n2 degrees of track",
+    ]
+    ax.legend(
+        [direct_hit, within_2_deg],
+        labels,
+        loc="lower left",
+        bbox_to_anchor=(0.025, -0.1),
+        fancybox=True,
+    )
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

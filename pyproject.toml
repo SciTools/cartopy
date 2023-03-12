@@ -22,6 +22,13 @@ ignore = [
 force_sort_within_sections = true
 known_first_party = "cartopy"
 lines_after_imports = 2
+line_length = 88
 no_lines_before = "LOCALFOLDER"
+profile = "black"
 skip_gitignore = true
 verbose = false
+
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310", "py311"]
+include = '\.pyi?$'

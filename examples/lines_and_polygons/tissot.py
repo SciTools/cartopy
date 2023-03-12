@@ -21,10 +21,10 @@ def main():
     ax.stock_img()
     ax.coastlines()
 
-    ax.tissot(facecolor='orange', alpha=0.4)
+    ax.tissot(facecolor="orange", alpha=0.4)
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

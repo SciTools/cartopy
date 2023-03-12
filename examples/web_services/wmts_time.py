@@ -21,14 +21,16 @@ import cartopy.crs as ccrs
 
 def main():
     # URL of NASA GIBS
-    url = 'https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi'
+    url = "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi"
     wmts = WebMapTileService(url)
 
     # Layers for MODIS true color and snow RGB
-    layers = ['MODIS_Terra_SurfaceReflectance_Bands143',
-              'MODIS_Terra_CorrectedReflectance_Bands367']
+    layers = [
+        "MODIS_Terra_SurfaceReflectance_Bands143",
+        "MODIS_Terra_CorrectedReflectance_Bands367",
+    ]
 
-    date_str = '2016-02-05'
+    date_str = "2016-02-05"
 
     # Plot setup
     plot_crs = ccrs.Mercator()
@@ -43,13 +45,18 @@ def main():
         ax = fig.add_axes([offset, 0, 0.5, 1], projection=plot_crs)
         ax.set_xlim((x0, x1))
         ax.set_ylim((y0, y1))
-        ax.add_wmts(wmts, layer, wmts_kwargs={'time': date_str})
-        txt = ax.text(4.7, 43.2, wmts[layer].title, fontsize=18, color='wheat',
-                      transform=geodetic_crs)
-        txt.set_path_effects([patheffects.withStroke(linewidth=5,
-                                                     foreground='black')])
+        ax.add_wmts(wmts, layer, wmts_kwargs={"time": date_str})
+        txt = ax.text(
+            4.7,
+            43.2,
+            wmts[layer].title,
+            fontsize=18,
+            color="wheat",
+            transform=geodetic_crs,
+        )
+        txt.set_path_effects([patheffects.withStroke(linewidth=5, foreground="black")])
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

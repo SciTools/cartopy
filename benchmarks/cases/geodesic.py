@@ -11,29 +11,29 @@ from cartopy.geodesic import Geodesic
 
 class DirectSuite:
     params = [
-        ('scalar', 'array'),
-        ('scalar', 'array'),
-        ('zero', 'scalar', 'array'),
+        ("scalar", "array"),
+        ("scalar", "array"),
+        ("zero", "scalar", "array"),
     ]
-    param_names = ['points', 'azimuths', 'distances']
+    param_names = ["points", "azimuths", "distances"]
 
     def setup(self, points, azimuths, distances):
         self.geod = Geodesic()
 
         self.points = {
-            'scalar': (0, 0),
-            'array': np.arange(200).reshape(-1, 2),
+            "scalar": (0, 0),
+            "array": np.arange(200).reshape(-1, 2),
         }[points]
 
         self.azimuths = {
-            'scalar': 0,
-            'array': np.arange(100) * 2,
+            "scalar": 0,
+            "array": np.arange(100) * 2,
         }[azimuths]
 
         self.distances = {
-            'zero': 0,
-            'scalar': 100,
-            'array': np.logspace(2, 5, 100),
+            "zero": 0,
+            "scalar": 100,
+            "array": np.logspace(2, 5, 100),
         }[distances]
 
     def time_direct(self, points, azimuths, distances):
@@ -42,17 +42,17 @@ class DirectSuite:
 
 class InverseSuite:
     params = [
-        ('scalar', 'array'),
-        ('scalar', 'array'),
+        ("scalar", "array"),
+        ("scalar", "array"),
     ]
-    param_names = ['points', 'endpoints']
+    param_names = ["points", "endpoints"]
 
     def setup(self, points, endpoints):
         self.geod = Geodesic()
 
         possible_points = {
-            'scalar': (0, 0),
-            'array': np.arange(200).reshape(-1, 2),
+            "scalar": (0, 0),
+            "array": np.arange(200).reshape(-1, 2),
         }
 
         self.points = possible_points[points]
@@ -64,7 +64,7 @@ class InverseSuite:
 
 class CircleSuite:
     params = [100, 1000, 10000, 100e3, 1000e3, 10000e3]  # in metres
-    param_names = ['radius']
+    param_names = ["radius"]
 
     def time_circle(self, radius):
         geod = Geodesic()

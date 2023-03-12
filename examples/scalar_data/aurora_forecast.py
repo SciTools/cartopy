@@ -45,43 +45,44 @@ def aurora_forecast():
     """
 
     # GitHub gist to download the example data from
-    url = ('https://gist.githubusercontent.com/belteshassar/'
-           'c7ea9e02a3e3934a9ddc/raw/aurora-nowcast-map.txt')
+    url = (
+        "https://gist.githubusercontent.com/belteshassar/"
+        "c7ea9e02a3e3934a9ddc/raw/aurora-nowcast-map.txt"
+    )
     # To plot the current forecast instead, uncomment the following line
     # url = 'https://services.swpc.noaa.gov/text/aurora-nowcast-map.txt'
 
-    response_text = StringIO(urlopen(url).read().decode('utf-8'))
+    response_text = StringIO(urlopen(url).read().decode("utf-8"))
     img = np.loadtxt(response_text)
     # Read forecast date and time
     response_text.seek(0)
     for line in response_text:
-        if line.startswith('Product Valid At:', 2):
-            dt = datetime.strptime(line[-17:-1], '%Y-%m-%d %H:%M')
+        if line.startswith("Product Valid At:", 2):
+            dt = datetime.strptime(line[-17:-1], "%Y-%m-%d %H:%M")
 
     img_proj = ccrs.PlateCarree()
     img_extent = (-180, 180, -90, 90)
-    return img, img_proj, img_extent, 'lower', dt
+    return img, img_proj, img_extent, "lower", dt
 
 
 def aurora_cmap():
     """Return a colormap with aurora like colors"""
-    stops = {'red': [(0.00, 0.1725, 0.1725),
-                     (0.50, 0.1725, 0.1725),
-                     (1.00, 0.8353, 0.8353)],
+    stops = {
+        "red": [(0.00, 0.1725, 0.1725), (0.50, 0.1725, 0.1725), (1.00, 0.8353, 0.8353)],
+        "green": [
+            (0.00, 0.9294, 0.9294),
+            (0.50, 0.9294, 0.9294),
+            (1.00, 0.8235, 0.8235),
+        ],
+        "blue": [
+            (0.00, 0.3843, 0.3843),
+            (0.50, 0.3843, 0.3843),
+            (1.00, 0.6549, 0.6549),
+        ],
+        "alpha": [(0.00, 0.0, 0.0), (0.50, 1.0, 1.0), (1.00, 1.0, 1.0)],
+    }
 
-             'green': [(0.00, 0.9294, 0.9294),
-                       (0.50, 0.9294, 0.9294),
-                       (1.00, 0.8235, 0.8235)],
-
-             'blue': [(0.00, 0.3843, 0.3843),
-                      (0.50, 0.3843, 0.3843),
-                      (1.00, 0.6549, 0.6549)],
-
-             'alpha': [(0.00, 0.0, 0.0),
-                       (0.50, 1.0, 1.0),
-                       (1.00, 1.0, 1.0)]}
-
-    return LinearSegmentedColormap('aurora', stops)
+    return LinearSegmentedColormap("aurora", stops)
 
 
 def main():
@@ -104,12 +105,19 @@ def main():
         ax.stock_img()
         ax.gridlines()
         ax.add_feature(Nightshade(dt))
-        ax.imshow(img, vmin=0, vmax=100, transform=crs,
-                  extent=extent, origin=origin, zorder=2,
-                  cmap=aurora_cmap())
+        ax.imshow(
+            img,
+            vmin=0,
+            vmax=100,
+            transform=crs,
+            extent=extent,
+            origin=origin,
+            zorder=2,
+            cmap=aurora_cmap(),
+        )
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

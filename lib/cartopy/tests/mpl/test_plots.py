@@ -29,4 +29,4 @@ def test_triplot_bbox_tight():
     fig = plt.figure()
     ax = plt.axes(projection=ccrs.OSGB(approx=False))
     ax.triplot(x, y, triangles, transform=ccrs.Geodetic())
-    fig.savefig(BytesIO(), bbox_inches='tight')
+    fig.savefig(BytesIO(), bbox_inches="tight")

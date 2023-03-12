@@ -55,30 +55,43 @@ def geos_to_path(shape):
     elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
         return [Path(np.column_stack(shape.xy))]
     elif isinstance(shape, sgeom.Polygon):
+
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
             codes[-1] = Path.CLOSEPOLY
             return codes
+
         if shape.is_empty:
             return []
-        vertices = np.concatenate([np.array(shape.exterior.xy)] +
-                                  [np.array(ring.xy) for ring in
-                                   shape.interiors], 1).T
-        codes = np.concatenate([poly_codes(shape.exterior)] +
-                               [poly_codes(ring) for ring in shape.interiors])
+        vertices = np.concatenate(
+            [np.array(shape.exterior.xy)]
+            + [np.array(ring.xy) for ring in shape.interiors],
+            1,
+        ).T
+        codes = np.concatenate(
+            [poly_codes(shape.exterior)]
+            + [poly_codes(ring) for ring in shape.interiors]
+        )
         return [Path(vertices, codes)]
-    elif isinstance(shape, (sgeom.MultiPolygon, sgeom.GeometryCollection,
-                            sgeom.MultiLineString, sgeom.MultiPoint)):
+    elif isinstance(
+        shape,
+        (
+            sgeom.MultiPolygon,
+            sgeom.GeometryCollection,
+            sgeom.MultiLineString,
+            sgeom.MultiPoint,
+        ),
+    ):
         paths = []
         for geom in shape.geoms:
             paths.extend(geos_to_path(geom))
         return paths
-    elif hasattr(shape, '_as_mpl_path'):
+    elif hasattr(shape, "_as_mpl_path"):
         vertices, codes = shape._as_mpl_path()
         return [Path(vertices, codes)]
     else:
-        raise ValueError(f'Unsupported shape type {type(shape)}.')
+        raise ValueError(f"Unsupported shape type {type(shape)}.")
 
 
 def path_segments(path, **kwargs):
@@ -155,10 +168,10 @@ def path_to_geos(path, force_ccw=False):
         if path_codes[-1] == Path.CLOSEPOLY:
             path_verts[-1, :] = path_verts[0, :]
 
-        verts_same_as_first = np.isclose(path_verts[0, :], path_verts[1:, :],
-                                         rtol=1e-10, atol=1e-13)
-        verts_same_as_first = np.logical_and.reduce(verts_same_as_first,
-                                                    axis=1)
+        verts_same_as_first = np.isclose(
+            path_verts[0, :], path_verts[1:, :], rtol=1e-10, atol=1e-13
+        )
+        verts_same_as_first = np.logical_and.reduce(verts_same_as_first, axis=1)
 
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
@@ -172,10 +185,12 @@ def path_to_geos(path, force_ccw=False):
         # simply append it as a new external geom.
         if geom.is_empty:
             pass
-        elif (len(collection) > 0 and
-                isinstance(collection[-1][0], sgeom.Polygon) and
-                isinstance(geom, sgeom.Polygon) and
-                collection[-1][0].contains(geom.exterior)):
+        elif (
+            len(collection) > 0
+            and isinstance(collection[-1][0], sgeom.Polygon)
+            and isinstance(geom, sgeom.Polygon)
+            and collection[-1][0].contains(geom.exterior)
+        ):
             collection[-1][1].append(geom.exterior)
         elif isinstance(geom, sgeom.Point):
             other_result_geoms.append(geom)
@@ -202,15 +217,16 @@ def path_to_geos(path, force_ccw=False):
 
     # If the geom_collection only contains LineStrings combine them
     # into a single MultiLinestring.
-    if geom_collection and all(isinstance(geom, sgeom.LineString) for
-                               geom in geom_collection):
+    if geom_collection and all(
+        isinstance(geom, sgeom.LineString) for geom in geom_collection
+    ):
         geom_collection = [sgeom.MultiLineString(geom_collection)]
 
     # Remove any zero area Polygons
     def not_zero_poly(geom):
-        return ((isinstance(geom, sgeom.Polygon) and not geom.is_empty and
-                 geom.area != 0) or
-                not isinstance(geom, sgeom.Polygon))
+        return (
+            isinstance(geom, sgeom.Polygon) and not geom.is_empty and geom.area != 0
+        ) or not isinstance(geom, sgeom.Polygon)
 
     result = list(filter(not_zero_poly, geom_collection))
 

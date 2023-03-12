@@ -13,7 +13,7 @@ from cartopy.io.img_tiles import Stamen
 
 
 def main():
-    tiler = Stamen('terrain-background')
+    tiler = Stamen("terrain-background")
     mercator = tiler.crs
 
     fig = plt.figure()
@@ -22,9 +22,9 @@ def main():
 
     ax.add_image(tiler, 6)
 
-    ax.coastlines('10m')
+    ax.coastlines("10m")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

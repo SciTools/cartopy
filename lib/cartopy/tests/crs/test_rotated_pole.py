@@ -12,11 +12,16 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-common_other_args = {'o_proj=latlon', 'to_meter=111319.4907932736'}
+common_other_args = {"o_proj=latlon", "to_meter=111319.4907932736"}
 
 
 def test_default():
     geos = ccrs.RotatedGeodetic(30, 15, 27)
-    other_args = {'datum=WGS84', 'ellps=WGS84', 'lon_0=210', 'o_lat_p=15',
-                  'o_lon_p=27'} | common_other_args
-    check_proj_params('ob_tran', geos, other_args)
+    other_args = {
+        "datum=WGS84",
+        "ellps=WGS84",
+        "lon_0=210",
+        "o_lat_p=15",
+        "o_lon_p=27",
+    } | common_other_args
+    check_proj_params("ob_tran", geos, other_args)

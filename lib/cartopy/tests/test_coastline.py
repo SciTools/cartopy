@@ -18,8 +18,7 @@ class TestCoastline:
 
         # Make sure all the coastlines can be projected without raising any
         # exceptions.
-        projection = cartopy.crs.TransverseMercator(central_longitude=-90,
-                                                    approx=False)
+        projection = cartopy.crs.TransverseMercator(central_longitude=-90, approx=False)
         reader = shp.Reader(COASTLINE_PATH)
         all_geometries = list(reader.geometries())
         geometries = []

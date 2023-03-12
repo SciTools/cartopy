@@ -13,10 +13,10 @@ import numpy as np
 import shapely.geometry as sgeom
 
 
-_img_class_attrs = ['filename', 'extent', 'origin', 'pixel_size']
+_img_class_attrs = ["filename", "extent", "origin", "pixel_size"]
 
 
-class Img(collections.namedtuple('Img', _img_class_attrs)):
+class Img(collections.namedtuple("Img", _img_class_attrs)):
     def __new__(cls, *args, **kwargs):
         # ensure any lists given as args or kwargs are turned into tuples.
         new_args = []
@@ -116,9 +116,9 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         fext = path.suffix[1::].lower()
         # If there was no extension to the filename.
         if len(fext) < 3:
-            result = [path.with_suffix('.w'), path.with_suffix('.W')]
+            result = [path.with_suffix(".w"), path.with_suffix(".W")]
         else:
-            fext_types = [f'.{fext}w', f'.{fext[0]}{fext[-1]}w']
+            fext_types = [f".{fext}w", f".{fext[0]}{fext[-1]}w"]
             fext_types.extend([ext.upper() for ext in fext_types])
             result = [path.with_suffix(ext) for ext in fext_types]
 
@@ -139,9 +139,9 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         im = Image.open(img_fname)
         with open(world_fname) as world_fh:
             extent, pix_size = cls.world_file_extent(world_fh, im.size)
-        if hasattr(im, 'close'):
+        if hasattr(im, "close"):
             im.close()
-        return cls(img_fname, extent, 'lower', pix_size)
+        return cls(img_fname, extent, "lower", pix_size)
 
     @staticmethod
     def world_file_extent(worldfile_handle, im_shape):
@@ -153,21 +153,24 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         """
         lines = worldfile_handle.readlines()
         if len(lines) != 6:
-            raise ValueError('Only world files with 6 lines are supported.')
+            raise ValueError("Only world files with 6 lines are supported.")
 
         pix_size = (float(lines[0]), float(lines[3]))
         pix_rotation = (float(lines[1]), float(lines[2]))
-        if pix_rotation != (0., 0.):
-            raise ValueError('Rotated pixels in world files is not currently '
-                             'supported.')
+        if pix_rotation != (0.0, 0.0):
+            raise ValueError(
+                "Rotated pixels in world files is not currently " "supported."
+            )
         ul_corner = (float(lines[4]), float(lines[5]))
 
-        min_x, max_x = (ul_corner[0] - pix_size[0] / 2.,
-                        ul_corner[0] + pix_size[0] * im_shape[0] -
-                        pix_size[0] / 2.)
-        min_y, max_y = (ul_corner[1] - pix_size[1] / 2.,
-                        ul_corner[1] + pix_size[1] * im_shape[1] -
-                        pix_size[1] / 2.)
+        min_x, max_x = (
+            ul_corner[0] - pix_size[0] / 2.0,
+            ul_corner[0] + pix_size[0] * im_shape[0] - pix_size[0] / 2.0,
+        )
+        min_y, max_y = (
+            ul_corner[1] - pix_size[1] / 2.0,
+            ul_corner[1] + pix_size[1] * im_shape[1] - pix_size[1] / 2.0,
+        )
         return (min_x, max_x, min_y, max_y), pix_size
 
 
@@ -193,8 +196,7 @@ class ImageCollection:
         self.crs = crs
         self.images = images or []
 
-    def scan_dir_for_imgs(self, directory, glob_pattern='*.tif',
-                          img_class=Img):
+    def scan_dir_for_imgs(self, directory, glob_pattern="*.tif", img_class=Img):
         """
         Search the given directory for the associated world files
         of the image files.
@@ -224,8 +226,7 @@ class ImageCollection:
                 if fworld.exists():
                     break
             else:
-                raise ValueError(
-                    f'Image file {img!r} has no associated world file')
+                raise ValueError(f"Image file {img!r} has no associated world file")
 
             self.images.append(img_class.from_world_file(img, fworld))
 
@@ -258,13 +259,15 @@ class NestedImageCollection:
         """
         # NOTE: all collections must have the same crs.
         _names = {collection.name for collection in collections}
-        assert len(_names) == len(collections), \
-            'The collections must have unique names.'
+        assert len(_names) == len(
+            collections
+        ), "The collections must have unique names."
 
         self.name = name
         self.crs = crs
-        self._collections_by_name = {collection.name: collection
-                                     for collection in collections}
+        self._collections_by_name = {
+            collection.name: collection for collection in collections
+        }
 
         def sort_func(c):
             return np.max([image.bbox().area for image in c.images])
@@ -278,8 +281,7 @@ class NestedImageCollection:
         if _ancestry is not None:
             self._ancestry = _ancestry
         else:
-            parent_wth_children = zip(self._collections,
-                                      self._collections[1:])
+            parent_wth_children = zip(self._collections, self._collections[1:])
             for parent_collection, collection in parent_wth_children:
                 for parent_image in parent_collection.images:
                     for image in collection.images:
@@ -287,7 +289,8 @@ class NestedImageCollection:
                             # append the child image to the parent's ancestry
                             key = (parent_collection.name, parent_image)
                             self._ancestry.setdefault(key, []).append(
-                                (collection.name, image))
+                                (collection.name, image)
+                            )
 
             # TODO check that the ancestry is in a good state (i.e. that each
             # collection has child images)
@@ -338,8 +341,7 @@ class NestedImageCollection:
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
-            raise ValueError(
-                f'{target_z!r} is not one of the possible collections.')
+            raise ValueError(f"{target_z!r} is not one of the possible collections.")
 
         tiles = []
         for tile in self.find_images(target_domain, target_z):
@@ -350,13 +352,12 @@ class NestedImageCollection:
 
             img = np.array(img)
 
-            x = np.linspace(extent[0], extent[1], img.shape[1],
-                            endpoint=False)
-            y = np.linspace(extent[2], extent[3], img.shape[0],
-                            endpoint=False)
+            x = np.linspace(extent[0], extent[1], img.shape[1], endpoint=False)
+            y = np.linspace(extent[2], extent[3], img.shape[0], endpoint=False)
             tiles.append([np.array(img), x, y, origin])
 
         from cartopy.io.img_tiles import _merge_tiles
+
         img, extent, origin = _merge_tiles(tiles)
         return img, extent, origin
 
@@ -392,25 +393,24 @@ class NestedImageCollection:
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
-            raise ValueError(
-                f'{target_z!r} is not one of the possible collections.')
+            raise ValueError(f"{target_z!r} is not one of the possible collections.")
 
         if start_tiles is None:
-            start_tiles = ((self._collections[0].name, img)
-                           for img in self._collections[0].images)
+            start_tiles = (
+                (self._collections[0].name, img) for img in self._collections[0].images
+            )
 
         for start_tile in start_tiles:
             # recursively drill down to the images at the target zoom
             domain = start_tile[1].bbox()
-            if target_domain.intersects(domain) and \
-                    not target_domain.touches(domain):
+            if target_domain.intersects(domain) and not target_domain.touches(domain):
                 if start_tile[0] == target_z:
                     yield start_tile
                 else:
                     for tile in self.subtiles(start_tile):
-                        yield from self.find_images(target_domain,
-                                                    target_z,
-                                                    start_tiles=[tile])
+                        yield from self.find_images(
+                            target_domain, target_z, start_tiles=[tile]
+                        )
 
     def subtiles(self, collection_image):
         """
@@ -434,7 +434,7 @@ class NestedImageCollection:
         """
         return iter(self._ancestry.get(collection_image, []))
 
-    desired_tile_form = 'RGB'
+    desired_tile_form = "RGB"
 
     def get_image(self, collection_image):
         """
@@ -467,9 +467,9 @@ class NestedImageCollection:
         return img_data, img.extent, img.origin
 
     @classmethod
-    def from_configuration(cls, name, crs, name_dir_pairs,
-                           glob_pattern='*.tif',
-                           img_class=Img):
+    def from_configuration(
+        cls, name, crs, name_dir_pairs, glob_pattern="*.tif", img_class=Img
+    ):
         """
         Create a :class:`~cartopy.io.img_nest.NestedImageCollection` instance
         given the list of image collection name and directory path pairs.
@@ -515,8 +515,8 @@ class NestedImageCollection:
         collections = []
         for collection_name, collection_dir in name_dir_pairs:
             collection = ImageCollection(collection_name, crs)
-            collection.scan_dir_for_imgs(collection_dir,
-                                         glob_pattern=glob_pattern,
-                                         img_class=img_class)
+            collection.scan_dir_for_imgs(
+                collection_dir, glob_pattern=glob_pattern, img_class=img_class
+            )
             collections.append(collection)
         return cls(name, crs, collections)

@@ -105,14 +105,14 @@ class FeatureArtist(matplotlib.artist.Artist):
 
         if kwargs is None:
             kwargs = {}
-        self._styler = kwargs.pop('styler', None)
+        self._styler = kwargs.pop("styler", None)
         self._kwargs = dict(kwargs)
 
-        if 'color' in self._kwargs:
+        if "color" in self._kwargs:
             # We want the user to be able to override both face and edge
             # colours if the original feature already supplied it.
-            color = self._kwargs.pop('color')
-            self._kwargs['facecolor'] = self._kwargs['edgecolor'] = color
+            color = self._kwargs.pop("color")
+            self._kwargs["facecolor"] = self._kwargs["edgecolor"] = color
 
         # Set default zorder so that features are drawn under
         # lines e.g. contours but over images and filled patches.
@@ -120,10 +120,10 @@ class FeatureArtist(matplotlib.artist.Artist):
         # are all 1 by default. Assuming default zorder, drawing takes place in
         # the following order: collections, patches, FeatureArtist, lines,
         # text.
-        if self._kwargs.get('zorder') is not None:
-            self.set_zorder(self._kwargs['zorder'])
-        elif feature.kwargs.get('zorder') is not None:
-            self.set_zorder(feature.kwargs['zorder'])
+        if self._kwargs.get("zorder") is not None:
+            self.set_zorder(self._kwargs["zorder"])
+        elif feature.kwargs.get("zorder") is not None:
+            self.set_zorder(feature.kwargs["zorder"])
         else:
             self.set_zorder(1.5)
 
@@ -148,13 +148,11 @@ class FeatureArtist(matplotlib.artist.Artist):
         try:
             extent = ax.get_extent(feature_crs)
         except ValueError:
-            warnings.warn('Unable to determine extent. Defaulting to global.')
+            warnings.warn("Unable to determine extent. Defaulting to global.")
         geoms = self._feature.intersecting_geometries(extent)
 
         # Combine all the keyword args in priority order.
-        prepared_kwargs = style_merge(self._feature.kwargs,
-                                      self._kwargs,
-                                      kwargs)
+        prepared_kwargs = style_merge(self._feature.kwargs, self._kwargs, kwargs)
 
         # Freeze the kwargs so that we can use them as a dict key. We will
         # need to unfreeze this with dict(frozen) before passing to mpl.
@@ -176,15 +174,12 @@ class FeatureArtist(matplotlib.artist.Artist):
             # cache of transformed geometries. So when the geom-key is
             # garbage collected so are the transformed geometries.
             geom_key = _GeomKey(geom)
-            FeatureArtist._geom_key_to_geometry_cache.setdefault(
-                geom_key, geom)
-            mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
-                geom_key, {})
+            FeatureArtist._geom_key_to_geometry_cache.setdefault(geom_key, geom)
+            mapping = FeatureArtist._geom_key_to_path_cache.setdefault(geom_key, {})
             geom_paths = mapping.get(key)
             if geom_paths is None:
                 if ax.projection != feature_crs:
-                    projected_geom = ax.projection.project_geometry(
-                        geom, feature_crs)
+                    projected_geom = ax.projection.project_geometry(geom, feature_crs)
                 else:
                     projected_geom = geom
                 geom_paths = cpatch.geos_to_path(projected_geom)
@@ -207,9 +202,9 @@ class FeatureArtist(matplotlib.artist.Artist):
         for style, paths in stylised_paths.items():
             style = style_finalize(dict(style))
             # Build path collection and draw it.
-            c = matplotlib.collections.PathCollection(paths,
-                                                      transform=transform,
-                                                      **style)
+            c = matplotlib.collections.PathCollection(
+                paths, transform=transform, **style
+            )
             c.set_clip_path(ax.patch)
             c.set_figure(ax.figure)
             c.draw(renderer)

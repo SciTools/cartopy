@@ -24,26 +24,25 @@ import cartopy.feature as cfeature
 
 
 def main():
-
     rotated_crs = ccrs.RotatedPole(pole_longitude=120.0, pole_latitude=70.0)
     ax0 = plt.axes(projection=rotated_crs)
     ax0.set_extent([-6, 1, 47.5, 51.5], crs=ccrs.PlateCarree())
-    ax0.add_feature(cfeature.LAND.with_scale('110m'))
+    ax0.add_feature(cfeature.LAND.with_scale("110m"))
     ax0.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
 
     plt.figure(figsize=(6.9228, 3))
     ax1 = plt.axes(projection=ccrs.InterruptedGoodeHomolosine())
-    ax1.coastlines(resolution='110m')
+    ax1.coastlines(resolution="110m")
     ax1.gridlines(draw_labels=True)
 
     plt.figure(figsize=(7, 3))
     ax2 = plt.axes(projection=ccrs.PlateCarree())
-    ax2.coastlines(resolution='110m')
+    ax2.coastlines(resolution="110m")
     gl = ax2.gridlines(draw_labels=True)
     gl.top_labels = False
     gl.right_labels = False
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

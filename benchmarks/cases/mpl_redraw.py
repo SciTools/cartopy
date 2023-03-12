@@ -13,7 +13,7 @@ import cartopy.crs as ccrs
 
 # No need for anything other than the agg backend, and we don't want
 # windows popping up as we are running these tests.
-plt.switch_backend('agg')
+plt.switch_backend("agg")
 
 
 def create_pc_png():
@@ -21,7 +21,7 @@ def create_pc_png():
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.coastlines()
     ax.stock_img()
-    plt.savefig(io.BytesIO(), format='png')
+    plt.savefig(io.BytesIO(), format="png")
     plt.close(fig)
 
 

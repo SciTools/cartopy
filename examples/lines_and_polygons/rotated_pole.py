@@ -25,19 +25,19 @@ def main():
     ax = fig.add_subplot(2, 1, 1, projection=rotated_pole)
     ax.stock_img()
     ax.coastlines()
-    ax.plot(x, y, marker='o', transform=rotated_pole)
-    ax.fill(x, y, color='coral', transform=rotated_pole, alpha=0.4)
+    ax.plot(x, y, marker="o", transform=rotated_pole)
+    ax.fill(x, y, color="coral", transform=rotated_pole, alpha=0.4)
     ax.gridlines()
 
     ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree())
     ax.stock_img()
     ax.coastlines()
-    ax.plot(x, y, marker='o', transform=rotated_pole)
-    ax.fill(x, y, transform=rotated_pole, color='coral', alpha=0.4)
+    ax.plot(x, y, marker="o", transform=rotated_pole)
+    ax.fill(x, y, transform=rotated_pole, color="coral", alpha=0.4)
     ax.gridlines()
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

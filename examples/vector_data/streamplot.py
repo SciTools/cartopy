@@ -39,11 +39,12 @@ def main():
     ax.coastlines()
 
     x, y, u, v, vector_crs = sample_data(shape=(80, 100))
-    magnitude = (u ** 2 + v ** 2) ** 0.5
-    ax.streamplot(x, y, u, v, transform=vector_crs,
-                  linewidth=2, density=2, color=magnitude)
+    magnitude = (u**2 + v**2) ** 0.5
+    ax.streamplot(
+        x, y, u, v, transform=vector_crs, linewidth=2, density=2, color=magnitude
+    )
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

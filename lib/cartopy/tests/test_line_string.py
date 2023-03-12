@@ -33,8 +33,9 @@ class TestLineString:
                 expected = 0
             else:
                 expected = 1
-            assert len(multi_line_string.geoms) == expected, \
-                f'Unexpected line when working from {start} to {end}'
+            assert (
+                len(multi_line_string.geoms) == expected
+            ), f"Unexpected line when working from {start} to {end}"
 
     def test_simple_fragment_count(self):
         projection = ccrs.PlateCarree()
@@ -72,7 +73,7 @@ class TestLineString:
         src_proj = ccrs.PlateCarree()
         cutoff_time = time.time() + 1
         tgt_proj.project_geometry(line_string, src_proj)
-        assert time.time() < cutoff_time, 'Projection took too long'
+        assert time.time() < cutoff_time, "Projection took too long"
 
 
 class FakeProjection(ccrs.PlateCarree):
@@ -88,11 +89,15 @@ class FakeProjection(ccrs.PlateCarree):
     def boundary(self):
         # XXX Should this be a LinearRing?
         w, h = self._half_width, self._half_height
-        return sgeom.LineString([(-w + self.left_offset, -h),
-                                 (-w + self.left_offset, h),
-                                 (w - self.right_offset, h),
-                                 (w - self.right_offset, -h),
-                                 (-w + self.left_offset, -h)])
+        return sgeom.LineString(
+            [
+                (-w + self.left_offset, -h),
+                (-w + self.left_offset, h),
+                (w - self.right_offset, h),
+                (w - self.right_offset, -h),
+                (-w + self.left_offset, -h),
+            ]
+        )
 
 
 class TestBisect:
@@ -171,19 +176,16 @@ class TestBisect:
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_nan_start(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90,
-                                             approx=False)
+        projection = ccrs.TransverseMercator(central_longitude=-90, approx=False)
         line_string = sgeom.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         for line_string in multi_line_string.geoms:
             for coord in line_string.coords:
-                assert not any(np.isnan(coord)), \
-                    'Unexpected NaN in projected coords.'
+                assert not any(np.isnan(coord)), "Unexpected NaN in projected coords."
 
     def test_nan_end(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90,
-                                             approx=False)
+        projection = ccrs.TransverseMercator(central_longitude=-90, approx=False)
         line_string = sgeom.LineString([(-10, 30), (10, 50)])
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
@@ -191,34 +193,31 @@ class TestBisect:
         assert len(multi_line_string.geoms) == 1
         for line_string in multi_line_string.geoms:
             for coord in line_string.coords:
-                assert not any(np.isnan(coord)), \
-                    'Unexpected NaN in projected coords.'
+                assert not any(np.isnan(coord)), "Unexpected NaN in projected coords."
 
 
 class TestMisc:
     def test_misc(self):
-        projection = ccrs.TransverseMercator(central_longitude=-90,
-                                             approx=False)
+        projection = ccrs.TransverseMercator(central_longitude=-90, approx=False)
         line_string = sgeom.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
         for line_string in multi_line_string.geoms:
             for coord in line_string.coords:
-                assert not any(np.isnan(coord)), \
-                    'Unexpected NaN in projected coords.'
+                assert not any(np.isnan(coord)), "Unexpected NaN in projected coords."
 
     def test_something(self):
-        projection = ccrs.RotatedPole(pole_longitude=177.5,
-                                      pole_latitude=37.5)
+        projection = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
         line_string = sgeom.LineString([(0, 0), (1e-14, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_global_boundary(self):
-        linear_ring = sgeom.LineString([(-180, -180), (-180, 180),
-                                        (180, 180), (180, -180)])
+        linear_ring = sgeom.LineString(
+            [(-180, -180), (-180, 180), (180, 180), (180, -180)]
+        )
         pc = ccrs.PlateCarree()
         merc = ccrs.Mercator()
         multi_line_string = pc.project_geometry(linear_ring, merc)
@@ -248,5 +247,6 @@ class TestSymmetry:
         assert len(multi_line_string2.geoms) == 1
         coords = multi_line_string.geoms[0].coords
         coords2 = multi_line_string2.geoms[0].coords
-        np.testing.assert_allclose(coords, coords2[::-1],
-                                   err_msg='Asymmetric curve generation')
+        np.testing.assert_allclose(
+            coords, coords2[::-1], err_msg="Asymmetric curve generation"
+        )

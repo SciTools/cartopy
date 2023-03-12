@@ -68,22 +68,25 @@ def add_cyclic_point(data, coord=None, axis=-1):
     """
     if coord is not None:
         if coord.ndim != 1:
-            raise ValueError('The coordinate must be 1-dimensional.')
+            raise ValueError("The coordinate must be 1-dimensional.")
         if len(coord) != data.shape[axis]:
-            raise ValueError(f'The length of the coordinate does not match '
-                             f'the size of the corresponding dimension of '
-                             f'the data array: len(coord) = {len(coord)}, '
-                             f'data.shape[{axis}] = {data.shape[axis]}.')
+            raise ValueError(
+                f"The length of the coordinate does not match "
+                f"the size of the corresponding dimension of "
+                f"the data array: len(coord) = {len(coord)}, "
+                f"data.shape[{axis}] = {data.shape[axis]}."
+            )
         delta_coord = np.diff(coord)
         if not np.allclose(delta_coord, delta_coord[0]):
-            raise ValueError('The coordinate must be equally spaced.')
+            raise ValueError("The coordinate must be equally spaced.")
         new_coord = ma.concatenate((coord, coord[-1:] + delta_coord[0]))
     slicer = [slice(None)] * data.ndim
     try:
         slicer[axis] = slice(0, 1)
     except IndexError:
-        raise ValueError('The specified axis does not correspond to an '
-                         'array dimension.')
+        raise ValueError(
+            "The specified axis does not correspond to an " "array dimension."
+        )
     new_data = ma.concatenate((data, data[tuple(slicer)]), axis=axis)
     if coord is None:
         return_value = new_data
@@ -114,7 +117,8 @@ def _add_cyclic_data(data, axis=-1):
         slicer[axis] = slice(0, 1)
     except IndexError:
         raise ValueError(
-            'The specified axis does not correspond to an array dimension.')
+            "The specified axis does not correspond to an array dimension."
+        )
     npc = np.ma if np.ma.is_masked(data) else np
     return npc.concatenate((data, data[tuple(slicer)]), axis=axis)
 
@@ -143,9 +147,9 @@ def _add_cyclic_x(x, axis=-1, cyclic=360):
     # get cyclic x-coordinates
     # cx is the code from basemap (addcyclic)
     # https://github.com/matplotlib/basemap/blob/master/lib/mpl_toolkits/basemap/__init__.py
-    cx = (np.take(x, [0], axis=axis) +
-          cyclic * np.sign(np.diff(np.take(x, [0, -1], axis=axis),
-                                   axis=axis)))
+    cx = np.take(x, [0], axis=axis) + cyclic * np.sign(
+        np.diff(np.take(x, [0, -1], axis=axis), axis=axis)
+    )
     # basemap ensures that the values do not exceed cyclic
     # (next code line). We do not do this to deal with rotated grids that
     # might have values not exactly 0.
@@ -209,8 +213,7 @@ def has_cyclic(x, axis=-1, cyclic=360, precision=1e-4):
         return False
 
 
-def add_cyclic(data, x=None, y=None, axis=-1,
-               cyclic=360, precision=1e-4):
+def add_cyclic(data, x=None, y=None, axis=-1, cyclic=360, precision=1e-4):
     """
     Add a cyclic point to an array and optionally corresponding
     x/longitude and y/latitude coordinates.
@@ -370,10 +373,12 @@ def add_cyclic(data, x=None, y=None, axis=-1,
     else:
         xaxis = -1
     if x.shape[xaxis] != data.shape[axis]:
-        estr = (f'x.shape[{xaxis}] does not match the size of the'
-                f' corresponding dimension of the data array:'
-                f' x.shape[{xaxis}] = {x.shape[xaxis]},'
-                f' data.shape[{axis}] = {data.shape[axis]}.')
+        estr = (
+            f"x.shape[{xaxis}] does not match the size of the"
+            f" corresponding dimension of the data array:"
+            f" x.shape[{xaxis}] = {x.shape[xaxis]},"
+            f" data.shape[{axis}] = {data.shape[axis]}."
+        )
         raise ValueError(estr)
     if has_cyclic(x, axis=xaxis, cyclic=cyclic, precision=precision):
         if y is None:
@@ -393,10 +398,12 @@ def add_cyclic(data, x=None, y=None, axis=-1,
     else:
         yaxis = -1
     if y.shape[yaxis] != data.shape[axis]:
-        estr = (f'y.shape[{yaxis}] does not match the size of the'
-                f' corresponding dimension of the data array:'
-                f' y.shape[{yaxis}] = {y.shape[yaxis]},'
-                f' data.shape[{axis}] = {data.shape[axis]}.')
+        estr = (
+            f"y.shape[{yaxis}] does not match the size of the"
+            f" corresponding dimension of the data array:"
+            f" y.shape[{yaxis}] = {y.shape[yaxis]},"
+            f" data.shape[{axis}] = {data.shape[axis]}."
+        )
         raise ValueError(estr)
     out_y = _add_cyclic_data(y, axis=yaxis)
     return out_data, out_x, out_y

@@ -31,7 +31,7 @@ class TestBoundary:
             extended_segment = sgeom.LineString([start, end])
             # And see if it crosses the boundary.
             intersection = extended_segment.intersection(projection.boundary)
-            assert not intersection.is_empty, 'Bad topology near boundary'
+            assert not intersection.is_empty, "Bad topology near boundary"
 
         # Each line resulting from the split should start and end with a
         # segment that crosses the boundary when extended to double length.
@@ -78,11 +78,13 @@ class TestMisc:
         # What happens when a small (i.e. < threshold) feature crosses the
         # boundary?
         projection = ccrs.Mercator()
-        linear_ring = sgeom.LinearRing([
-            (-179.9173693847652942, -16.5017831356493616),
-            (-180.0000000000000000, -16.0671326636424396),
-            (-179.7933201090486079, -16.0208822567412312),
-        ])
+        linear_ring = sgeom.LinearRing(
+            [
+                (-179.9173693847652942, -16.5017831356493616),
+                (-180.0000000000000000, -16.0671326636424396),
+                (-179.7933201090486079, -16.0208822567412312),
+            ]
+        )
         rings, multi_line_string = projection.project_geometry(linear_ring)
         # There should be one, and only one, returned ring.
         assert isinstance(multi_line_string, sgeom.MultiLineString)
@@ -98,11 +100,13 @@ class TestMisc:
         # If an attempt is made to form a LinearRing from the three points
         # by combining the first and last an exception will be raised.
         # Check that this object can be projected without error.
-        coords = [(0.0, -45.0),
-                  (0.0, -44.99974961593933),
-                  (0.000727869825138, -45.0),
-                  (0.0, -45.000105851567454),
-                  (0.0, -45.0)]
+        coords = [
+            (0.0, -45.0),
+            (0.0, -44.99974961593933),
+            (0.000727869825138, -45.0),
+            (0.0, -45.000105851567454),
+            (0.0, -45.0),
+        ]
         linear_ring = sgeom.LinearRing(coords)
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.PlateCarree(180.0)
@@ -120,16 +124,18 @@ class TestMisc:
         # Check that these ends are stitched together to avoid the
         # boundary ordering ambiguity.
         # NB. This kind of polygon often occurs with MPL's contouring.
-        coords = [(0.0, -70.70499926182919),
-                  (0.0, -71.25),
-                  (0.0, -72.5),
-                  (0.0, -73.49076371657017),
-                  (360.0, -73.49076371657017),
-                  (360.0, -72.5),
-                  (360.0, -71.25),
-                  (360.0, -70.70499926182919),
-                  (350, -73),
-                  (10, -73)]
+        coords = [
+            (0.0, -70.70499926182919),
+            (0.0, -71.25),
+            (0.0, -72.5),
+            (0.0, -73.49076371657017),
+            (360.0, -73.49076371657017),
+            (360.0, -72.5),
+            (360.0, -71.25),
+            (360.0, -70.70499926182919),
+            (350, -73),
+            (10, -73),
+        ]
         src_proj = ccrs.PlateCarree()
         target_proj = ccrs.Stereographic(80)
 
@@ -149,19 +155,22 @@ class TestMisc:
         # as a result of being on the boundary, determined by tolerance.
 
         exterior = np.array(
-            [[177.5, -79.912],
-             [178.333, -79.946],
-             [181.666, -83.494],
-             [180.833, -83.570],
-             [180., -83.620],
-             [178.438, -83.333],
-             [178.333, -83.312],
-             [177.956, -83.888],
-             [180., -84.086],
-             [180.833, -84.318],
-             [183., -86.],
-             [183., -78.],
-             [177.5, -79.912]])
+            [
+                [177.5, -79.912],
+                [178.333, -79.946],
+                [181.666, -83.494],
+                [180.833, -83.570],
+                [180.0, -83.620],
+                [178.438, -83.333],
+                [178.333, -83.312],
+                [177.956, -83.888],
+                [180.0, -84.086],
+                [180.833, -84.318],
+                [183.0, -86.0],
+                [183.0, -78.0],
+                [177.5, -79.912],
+            ]
+        )
         tring = sgeom.LinearRing(exterior)
 
         tcrs = ccrs.PlateCarree()

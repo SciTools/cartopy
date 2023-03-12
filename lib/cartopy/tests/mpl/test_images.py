@@ -19,10 +19,15 @@ import cartopy.io.img_tiles as cimgt
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 
-NATURAL_EARTH_IMG = (config["repo_data_dir"] / 'raster' / 'natural_earth'
-                     / '50-natural-earth-1-downsampled.png')
-REGIONAL_IMG = (config['repo_data_dir'] / 'raster' / 'sample'
-                / 'Miriam.A2012270.2050.2km.jpg')
+NATURAL_EARTH_IMG = (
+    config["repo_data_dir"]
+    / "raster"
+    / "natural_earth"
+    / "50-natural-earth-1-downsampled.png"
+)
+REGIONAL_IMG = (
+    config["repo_data_dir"] / "raster" / "sample" / "Miriam.A2012270.2050.2km.jpg"
+)
 
 
 # We have an exceptionally large tolerance for the web_tiles test.
@@ -30,38 +35,56 @@ REGIONAL_IMG = (config['repo_data_dir'] / 'raster' / 'sample'
 # care that it is putting images onto the map which are roughly correct.
 @pytest.mark.natural_earth
 @pytest.mark.network
-@pytest.mark.mpl_image_compare(filename='web_tiles.png', tolerance=5.91)
+@pytest.mark.mpl_image_compare(filename="web_tiles.png", tolerance=5.91)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
-    target_domain = sgeom.Polygon([[extent[0], extent[1]],
-                                   [extent[2], extent[1]],
-                                   [extent[2], extent[3]],
-                                   [extent[0], extent[3]],
-                                   [extent[0], extent[1]]])
+    target_domain = sgeom.Polygon(
+        [
+            [extent[0], extent[1]],
+            [extent[2], extent[1]],
+            [extent[2], extent[3]],
+            [extent[0], extent[3]],
+            [extent[0], extent[1]],
+        ]
+    )
     map_prj = cimgt.GoogleTiles().crs
     fig = plt.figure()
 
     ax = fig.add_subplot(2, 2, 1, projection=map_prj)
     gt = cimgt.GoogleTiles()
-    gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT,
-                                     gt)
+    gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT, gt)
     img, extent, origin = gt.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=gt.crs,
-              interpolation='bilinear', origin=origin)
-    ax.coastlines(color='white')
+    ax.imshow(
+        np.array(img),
+        extent=extent,
+        transform=gt.crs,
+        interpolation="bilinear",
+        origin=origin,
+    )
+    ax.coastlines(color="white")
 
     ax = fig.add_subplot(2, 2, 2, projection=map_prj)
     qt = cimgt.QuadtreeTiles()
     img, extent, origin = qt.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=qt.crs,
-              interpolation='bilinear', origin=origin)
-    ax.coastlines(color='white')
+    ax.imshow(
+        np.array(img),
+        extent=extent,
+        transform=qt.crs,
+        interpolation="bilinear",
+        origin=origin,
+    )
+    ax.coastlines(color="white")
 
     ax = fig.add_subplot(2, 2, 3, projection=map_prj)
     osm = cimgt.OSM()
     img, extent, origin = osm.image_for_domain(target_domain, 1)
-    ax.imshow(np.array(img), extent=extent, transform=osm.crs,
-              interpolation='bilinear', origin=origin)
+    ax.imshow(
+        np.array(img),
+        extent=extent,
+        transform=osm.crs,
+        interpolation="bilinear",
+        origin=origin,
+    )
     ax.coastlines()
 
     return fig
@@ -69,7 +92,7 @@ def test_web_tiles():
 
 @pytest.mark.natural_earth
 @pytest.mark.network
-@pytest.mark.mpl_image_compare(filename='image_merge.png', tolerance=0.01)
+@pytest.mark.mpl_image_compare(filename="image_merge.png", tolerance=0.01)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -78,8 +101,7 @@ def test_image_merge():
             tiles.append((i, j, 2))
 
     gt = cimgt.GoogleTiles()
-    gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT,
-                                     gt)
+    gt._image_url = types.MethodType(ctest_tiles.GOOGLE_IMAGE_URL_REPLACEMENT, gt)
     images_to_merge = []
     for tile in tiles:
         img, extent, origin = gt.get_image(tile)
@@ -97,30 +119,32 @@ def test_image_merge():
     return ax.figure
 
 
-@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
+@pytest.mark.mpl_image_compare(filename="imshow_natural_earth_ortho.png")
 def test_imshow():
     source_proj = ccrs.PlateCarree()
     img = plt.imread(NATURAL_EARTH_IMG)
     # Convert the image to a byte array, rather than float, which is the
     # form that JPG images would be loaded with imread.
-    img = (img * 255).astype('uint8')
+    img = (img * 255).astype("uint8")
     ax = plt.axes(projection=ccrs.Orthographic())
-    ax.imshow(img, transform=source_proj,
-              extent=[-180, 180, -90, 90])
+    ax.imshow(img, transform=source_proj, extent=[-180, 180, -90, 90])
     return ax.figure
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png',
-                               tolerance=0.8)
+@pytest.mark.mpl_image_compare(filename="imshow_regional_projected.png", tolerance=0.8)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
-    img_extent = (-120.67660000000001, -106.32104523100001,
-                  13.2301484511245, 30.766899999999502)
+    img_extent = (
+        -120.67660000000001,
+        -106.32104523100001,
+        13.2301484511245,
+        30.766899999999502,
+    )
     img = plt.imread(REGIONAL_IMG)
     ax = plt.axes(projection=ccrs.LambertConformal())
     ax.set_extent(img_extent, crs=source_proj)
-    ax.coastlines(resolution='50m')
+    ax.coastlines(resolution="50m")
     ax.imshow(img, extent=img_extent, transform=source_proj)
     return ax.figure
 
@@ -129,8 +153,11 @@ def test_imshow_wrapping():
     ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=0.0))
     # Set the extent outside of the current projection domain to ensure
     # it is wrapped back to the (-180, 180) extent of the projection
-    ax.imshow(np.random.random((10, 10)), transform=ccrs.PlateCarree(),
-              extent=(0, 360, -90, 90))
+    ax.imshow(
+        np.random.random((10, 10)),
+        transform=ccrs.PlateCarree(),
+        extent=(0, 360, -90, 90),
+    )
 
     assert ax.get_xlim() == (-180, 180)
 
@@ -157,8 +184,7 @@ def test_imshow_rgba_alpha():
     ax = plt.axes(projection=ccrs.Orthographic(-120, 45))
 
     # Create RGBA Image with random data and linspace alpha
-    RGBA = np.linspace(0, 255 * 31, dx * dy * 4,
-                       dtype=np.uint8).reshape((dy, dx, 4))
+    RGBA = np.linspace(0, 255 * 31, dx * dy * 4, dtype=np.uint8).reshape((dy, dx, 4))
 
     alpha = np.array([0, 85, 170, 255])
     RGBA[:, :, 3] = alpha
@@ -179,42 +205,40 @@ def test_imshow_rgb():
     assert sum(img.get_array().data[:, 0, 3]) == 0
 
 
-@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
+@pytest.mark.mpl_image_compare(filename="imshow_natural_earth_ortho.png")
 def test_stock_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.stock_img()
     return ax.figure
 
 
-@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
+@pytest.mark.mpl_image_compare(filename="imshow_natural_earth_ortho.png")
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
     source_proj = ccrs.PlateCarree()
     ax = plt.axes(projection=ccrs.Orthographic())
-    ax.imshow(img, transform=source_proj,
-              extent=[-180, 180, -90, 90])
+    ax.imshow(img, transform=source_proj, extent=[-180, 180, -90, 90])
     return ax.figure
 
 
-@pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
+@pytest.mark.mpl_image_compare(filename="imshow_natural_earth_ortho.png")
 def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
-    ax.background_img(name='ne_shaded', resolution='low')
+    ax.background_img(name="ne_shaded", resolution="low")
     return ax.figure
 
 
 def test_alpha_2d_warp():
     # tests that both image and alpha arrays (if alpha is 2D) are warped
-    plt_crs = ccrs.Geostationary(central_longitude=-155.)
+    plt_crs = ccrs.Geostationary(central_longitude=-155.0)
     fig = plt.figure(figsize=(5, 5))
     ax = fig.add_subplot(1, 1, 1, projection=plt_crs)
     latlon_crs = ccrs.PlateCarree()
-    coords = [-162., -148., 17.5, 23.]
+    coords = [-162.0, -148.0, 17.5, 23.0]
     ax.set_extent(coords, crs=latlon_crs)
     fake_data = np.zeros([100, 100])
     fake_alphas = np.zeros(fake_data.shape)
-    image = ax.imshow(fake_data, extent=coords, transform=latlon_crs,
-                      alpha=fake_alphas)
+    image = ax.imshow(fake_data, extent=coords, transform=latlon_crs, alpha=fake_alphas)
     image_data = image.get_array()
     image_alpha = image.get_alpha()
 

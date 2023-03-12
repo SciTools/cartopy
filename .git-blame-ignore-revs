@@ -9,3 +9,6 @@ c00e0adae1b1e8695e173f4482369face82206ee
 
 # style: adopt isort to enforce import ordering (#2150)
 030a78b0f5cd6a88b04dd2fbe78f12b4b3e5e60d
+
+# style: black code formatting (#2152)
+b2d084785225dd948d2e02fe4cac4c48ebb469f0

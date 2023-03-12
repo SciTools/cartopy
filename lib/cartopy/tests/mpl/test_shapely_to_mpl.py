@@ -19,7 +19,7 @@ import cartopy.mpl.patch as cpatch
 # Note: Matplotlib is broken here
 # https://github.com/matplotlib/matplotlib/issues/15946
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='poly_interiors.png', tolerance=3.1)
+@pytest.mark.mpl_image_compare(filename="poly_interiors.png", tolerance=3.1)
 def test_polygon_interiors():
     fig = plt.figure()
 
@@ -27,9 +27,21 @@ def test_polygon_interiors():
     ax.coastlines()
     ax.set_global()
 
-    pth = Path([[0, -45], [60, -45], [60, 45], [0, 45], [0, 45],
-                [10, -20], [10, 20], [40, 20], [40, -20], [10, 20]],
-               [1, 2, 2, 2, 79, 1, 2, 2, 2, 79])
+    pth = Path(
+        [
+            [0, -45],
+            [60, -45],
+            [60, 45],
+            [0, 45],
+            [0, 45],
+            [10, -20],
+            [10, 20],
+            [40, 20],
+            [40, -20],
+            [10, 20],
+        ],
+        [1, 2, 2, 2, 79, 1, 2, 2, 2, 79],
+    )
 
     patches_native = []
     patches = []
@@ -43,45 +55,50 @@ def test_polygon_interiors():
             patches_native.append(mpatches.PathPatch(pth))
 
     # Set high zorder to ensure the polygons are drawn on top of coastlines.
-    collection = PatchCollection(patches_native, facecolor='red', alpha=0.4,
-                                 transform=ax.projection, zorder=10)
+    collection = PatchCollection(
+        patches_native, facecolor="red", alpha=0.4, transform=ax.projection, zorder=10
+    )
     ax.add_collection(collection)
 
-    collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
-                                 transform=ccrs.Geodetic(), zorder=10)
+    collection = PatchCollection(
+        patches, facecolor="yellow", alpha=0.4, transform=ccrs.Geodetic(), zorder=10
+    )
 
     ax.add_collection(collection)
 
     # test multiple interior polygons
-    ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree(),
-                         xlim=[-5, 15], ylim=[-5, 15])
+    ax = fig.add_subplot(
+        2, 1, 2, projection=ccrs.PlateCarree(), xlim=[-5, 15], ylim=[-5, 15]
+    )
     ax.coastlines(resolution="110m")
 
     exterior = np.array(sgeom.box(0, 0, 12, 12).exterior.coords)
-    interiors = [np.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
-                 np.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords)]
+    interiors = [
+        np.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
+        np.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords),
+    ]
     poly = sgeom.Polygon(exterior, interiors)
 
     patches = []
     for pth in cpatch.geos_to_path(poly):
         patches.append(mpatches.PathPatch(pth))
 
-    collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
-                                 transform=ccrs.Geodetic(), zorder=10)
+    collection = PatchCollection(
+        patches, facecolor="yellow", alpha=0.4, transform=ccrs.Geodetic(), zorder=10
+    )
     ax.add_collection(collection)
 
     return fig
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='contour_with_interiors.png')
+@pytest.mark.mpl_image_compare(filename="contour_with_interiors.png")
 def test_contour_interiors():
     # produces a polygon with multiple holes:
     nx, ny = 10, 10
     numlev = 2
-    lons, lats = np.meshgrid(np.linspace(-50, 50, nx),
-                             np.linspace(-45, 45, ny))
-    data = np.sin(np.sqrt(lons ** 2 + lats ** 2))
+    lons, lats = np.meshgrid(np.linspace(-50, 50, nx), np.linspace(-45, 45, ny))
+    data = np.sin(np.sqrt(lons**2 + lats**2))
     fig = plt.figure()
 
     ax = fig.add_subplot(2, 2, 1, projection=ccrs.PlateCarree())
@@ -99,7 +116,7 @@ def test_contour_interiors():
     numlev = 2
     x, y = np.meshgrid(np.arange(-5.5, 5.5, 0.25), np.arange(-5.5, 5.5, 0.25))
     dim = x.shape[0]
-    data = np.sin(np.sqrt(x ** 2 + y ** 2))
+    data = np.sin(np.sqrt(x**2 + y**2))
     lats = np.arange(dim) + 30
     lons = np.arange(dim) - 20
 

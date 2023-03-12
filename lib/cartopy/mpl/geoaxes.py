@@ -44,8 +44,9 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 
 
-assert mpl.__version__ >= '3.1', \
-    'Cartopy is only supported with Matplotlib 3.1 or greater.'
+assert (
+    mpl.__version__ >= "3.1"
+), "Cartopy is only supported with Matplotlib 3.1 or greater."
 
 # A nested mapping from path, source CRS, and target projection to the
 # resulting transformed paths:
@@ -70,6 +71,7 @@ class InterProjectionTransform(mtransforms.Transform):
     the ``target_projection``.
 
     """
+
     input_dims = 2
     output_dims = 2
     is_separable = False
@@ -94,15 +96,19 @@ class InterProjectionTransform(mtransforms.Transform):
         mtransforms.Transform.__init__(self)
 
     def __repr__(self):
-        return (f'< {self.__class__.__name__!s} {self.source_projection!s} '
-                f'-> {self.target_projection!s} >')
+        return (
+            f"< {self.__class__.__name__!s} {self.source_projection!s} "
+            f"-> {self.target_projection!s} >"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             result = NotImplemented
         else:
-            result = (self.source_projection == other.source_projection and
-                      self.target_projection == other.target_projection)
+            result = (
+                self.source_projection == other.source_projection
+                and self.target_projection == other.target_projection
+            )
         return result
 
     def __ne__(self, other):
@@ -125,8 +131,9 @@ class InterProjectionTransform(mtransforms.Transform):
         """
         prj = self.target_projection
         if isinstance(xy, np.ndarray):
-            return prj.transform_points(self.source_projection,
-                                        xy[:, 0], xy[:, 1])[:, 0:2]
+            return prj.transform_points(self.source_projection, xy[:, 0], xy[:, 1])[
+                :, 0:2
+            ]
         else:
             x, y = xy
             x, y = prj.transform_point(x, y, self.source_projection)
@@ -162,7 +169,8 @@ class InterProjectionTransform(mtransforms.Transform):
         # Allow the vertices to be quickly transformed, if
         # quick_vertices_transform allows it.
         new_vertices = self.target_projection.quick_vertices_transform(
-            src_path.vertices, self.source_projection)
+            src_path.vertices, self.source_projection
+        )
         if new_vertices is not None:
             if new_vertices is src_path.vertices:
                 return src_path
@@ -177,12 +185,12 @@ class InterProjectionTransform(mtransforms.Transform):
         # This is a cartopy extension to the Transform API to allow finer
         # control of Path orientation handling (Path ordering is not important
         # in matplotlib, but is in Cartopy).
-        geoms = cpatch.path_to_geos(src_path,
-                                    getattr(self, 'force_path_ccw', False))
+        geoms = cpatch.path_to_geos(src_path, getattr(self, "force_path_ccw", False))
 
         for geom in geoms:
             proj_geom = self.target_projection.project_geometry(
-                geom, self.source_projection)
+                geom, self.source_projection
+            )
             transformed_geoms.append(proj_geom)
 
         if not transformed_geoms:
@@ -191,12 +199,15 @@ class InterProjectionTransform(mtransforms.Transform):
             paths = cpatch.geos_to_path(transformed_geoms)
             if not paths:
                 return mpath.Path(np.empty([0, 2]))
-            points, codes = list(zip(*[cpatch.path_segments(path,
-                                                            curves=False,
-                                                            simplify=False)
-                                       for path in paths]))
-            result = mpath.Path(np.concatenate(points, 0),
-                                np.concatenate(codes))
+            points, codes = list(
+                zip(
+                    *[
+                        cpatch.path_segments(path, curves=False, simplify=False)
+                        for path in paths
+                    ]
+                )
+            )
+            result = mpath.Path(np.concatenate(points, 0), np.concatenate(codes))
 
         # store the result in the cache for future performance boosts
         key = (self.source_projection, self.target_projection)
@@ -216,8 +227,7 @@ class InterProjectionTransform(mtransforms.Transform):
             from target to source coordinates.
 
         """
-        return InterProjectionTransform(self.target_projection,
-                                        self.source_projection)
+        return InterProjectionTransform(self.target_projection, self.source_projection)
 
 
 class _ViewClippedPathPatch(mpatches.PathPatch):
@@ -259,9 +269,9 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
 class GeoSpine(mspines.Spine):
     def __init__(self, axes, **kwargs):
         self._original_path = mpath.Path(np.empty((0, 2)))
-        kwargs.setdefault('clip_on', False)
-        super().__init__(axes, 'geo', self._original_path, **kwargs)
-        self.set_capstyle('butt')
+        kwargs.setdefault("clip_on", False)
+        super().__init__(axes, "geo", self._original_path, **kwargs)
+        self.set_capstyle("butt")
 
     def set_boundary(self, path, transform):
         self._original_path = path
@@ -286,30 +296,42 @@ class GeoSpine(mspines.Spine):
         return ret
 
     def set_position(self, position):
-        raise NotImplementedError(
-            'GeoSpine does not support changing its position.')
+        raise NotImplementedError("GeoSpine does not support changing its position.")
 
 
 def _add_transform(func):
     """A decorator that adds and validates the transform keyword argument."""
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        transform = kwargs.get('transform', None)
+        transform = kwargs.get("transform", None)
         if transform is None:
             transform = self.projection
         # Raise an error if any of these functions try to use
         # a spherical source CRS.
-        non_spherical_funcs = ['contour', 'contourf', 'pcolormesh', 'pcolor',
-                               'quiver', 'barbs', 'streamplot']
-        if (func.__name__ in non_spherical_funcs and
-                isinstance(transform, ccrs.CRS) and
-                not isinstance(transform, ccrs.Projection)):
-            raise ValueError(f'Invalid transform: Spherical {func.__name__} '
-                             'is not supported - consider using '
-                             'PlateCarree/RotatedPole.')
+        non_spherical_funcs = [
+            "contour",
+            "contourf",
+            "pcolormesh",
+            "pcolor",
+            "quiver",
+            "barbs",
+            "streamplot",
+        ]
+        if (
+            func.__name__ in non_spherical_funcs
+            and isinstance(transform, ccrs.CRS)
+            and not isinstance(transform, ccrs.Projection)
+        ):
+            raise ValueError(
+                f"Invalid transform: Spherical {func.__name__} "
+                "is not supported - consider using "
+                "PlateCarree/RotatedPole."
+            )
 
-        kwargs['transform'] = transform
+        kwargs["transform"] = transform
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -326,20 +348,24 @@ def _add_transform_first(func):
     This should be added after the _add_transform wrapper so that a transform
     is guaranteed to be present.
     """
+
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        if kwargs.pop('transform_first', False):
+        if kwargs.pop("transform_first", False):
             if len(args) < 3:
                 # For the fast-path we need X and Y input points
-                raise ValueError("The X and Y arguments must be provided to "
-                                 "use the transform_first=True fast-path.")
+                raise ValueError(
+                    "The X and Y arguments must be provided to "
+                    "use the transform_first=True fast-path."
+                )
             x, y, z = (np.array(i) for i in args[:3])
             if not (x.ndim == y.ndim == 2):
-                raise ValueError("The X and Y arguments must be gridded "
-                                 "2-dimensional arrays")
+                raise ValueError(
+                    "The X and Y arguments must be gridded " "2-dimensional arrays"
+                )
 
             # Remove the transform from the keyword arguments
-            t = kwargs.pop('transform')
+            t = kwargs.pop("transform")
             # Transform all of the x and y points
             pts = self.projection.transform_points(t, x, y)
             x = pts[..., 0].reshape(x.shape)
@@ -354,6 +380,7 @@ def _add_transform_first(func):
             # Use the new points as the input arguments
             args = (x, y, z) + args[3:]
         return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -384,7 +411,8 @@ class GeoAxes(matplotlib.axes.Axes):
         plt.contourf(x, y, data, transform=cartopy.crs.PlateCarree())
 
     """
-    name = 'cartopy.geoaxes'
+
+    name = "cartopy.geoaxes"
 
     def __init__(self, *args, **kwargs):
         """
@@ -397,17 +425,21 @@ class GeoAxes(matplotlib.axes.Axes):
             The target projection of this Axes.
         """
         if "map_projection" in kwargs:
-            warnings.warn("The `map_projection` keyword argument is "
-                          "deprecated, use `projection` to instantiate a "
-                          "GeoAxes instead.")
+            warnings.warn(
+                "The `map_projection` keyword argument is "
+                "deprecated, use `projection` to instantiate a "
+                "GeoAxes instead."
+            )
             projection = kwargs.pop("map_projection")
         else:
             projection = kwargs.pop("projection")
 
         # The :class:`cartopy.crs.Projection` of this GeoAxes.
         if not isinstance(projection, ccrs.Projection):
-            raise ValueError("A GeoAxes can only be created with a "
-                             "projection of type cartopy.crs.Projection")
+            raise ValueError(
+                "A GeoAxes can only be created with a "
+                "projection of type cartopy.crs.Projection"
+            )
         self.projection = projection
 
         super().__init__(*args, **kwargs)
@@ -435,7 +467,7 @@ class GeoAxes(matplotlib.axes.Axes):
             :class:`cartopy.io.image_tiles.GoogleTiles`.
 
         """
-        if hasattr(factory, 'image_for_domain'):
+        if hasattr(factory, "image_for_domain"):
             # XXX TODO: Needs deprecating.
             self.img_factories.append([factory, args, kwargs])
         else:
@@ -461,16 +493,20 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         with contextlib.ExitStack() as stack:
             if hold:
-                stack.callback(self.dataLim.set_points,
-                               self.dataLim.frozen().get_points())
-                stack.callback(self.viewLim.set_points,
-                               self.viewLim.frozen().get_points())
-                stack.callback(setattr, self, 'ignore_existing_data_limits',
-                               self.ignore_existing_data_limits)
-                stack.callback(self.set_autoscalex_on,
-                               self.get_autoscalex_on())
-                stack.callback(self.set_autoscaley_on,
-                               self.get_autoscaley_on())
+                stack.callback(
+                    self.dataLim.set_points, self.dataLim.frozen().get_points()
+                )
+                stack.callback(
+                    self.viewLim.set_points, self.viewLim.frozen().get_points()
+                )
+                stack.callback(
+                    setattr,
+                    self,
+                    "ignore_existing_data_limits",
+                    self.ignore_existing_data_limits,
+                )
+                stack.callback(self.set_autoscalex_on, self.get_autoscalex_on())
+                stack.callback(self.set_autoscaley_on, self.get_autoscaley_on())
             yield
 
     def _draw_preprocess(self, renderer):
@@ -523,10 +559,16 @@ class GeoAxes(matplotlib.axes.Axes):
         if not self._done_img_factory:
             for factory, factory_args, factory_kwargs in self.img_factories:
                 img, extent, origin = factory.image_for_domain(
-                    self._get_extent_geom(factory.crs), factory_args[0])
-                self.imshow(img, extent=extent, origin=origin,
-                            transform=factory.crs, *factory_args[1:],
-                            **factory_kwargs)
+                    self._get_extent_geom(factory.crs), factory_args[0]
+                )
+                self.imshow(
+                    img,
+                    extent=extent,
+                    origin=origin,
+                    transform=factory.crs,
+                    *factory_args[1:],
+                    **factory_kwargs,
+                )
         self._done_img_factory = True
 
         return super().draw(renderer=renderer, **kwargs)
@@ -543,9 +585,11 @@ class GeoAxes(matplotlib.axes.Axes):
         top = -1
         for gl in self._gridliners:
             if gl.has_labels():
-                for label in (gl.top_label_artists +
-                              gl.left_label_artists +
-                              gl.right_label_artists):
+                for label in (
+                    gl.top_label_artists
+                    + gl.left_label_artists
+                    + gl.right_label_artists
+                ):
                     # we skip bottom labels because they are usually
                     # not at the top
                     bb = label.get_tightbbox(renderer)
@@ -553,7 +597,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if top < 0:
             # nothing to do if no label found
             return
-        yn = self.transAxes.inverted().transform((0., top))[1]
+        yn = self.transAxes.inverted().transform((0.0, top))[1]
         if yn <= 1:
             # nothing to do if the upper bounds of labels is below
             # the top of the axes
@@ -567,7 +611,7 @@ class GeoAxes(matplotlib.axes.Axes):
             title.set_position((x, y))
 
     def __str__(self):
-        return '< GeoAxes: %s >' % self.projection
+        return "< GeoAxes: %s >" % self.projection
 
     def __clear(self):
         """Clear the current axes and add boundary lines."""
@@ -575,7 +619,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.yaxis.set_visible(False)
         # Enable tight autoscaling.
         self._tight = True
-        self.set_aspect('equal')
+        self.set_aspect("equal")
 
         self._boundary()
 
@@ -586,13 +630,16 @@ class GeoAxes(matplotlib.axes.Axes):
         self.dataLim.intervalx = self.projection.x_limits
         self.dataLim.intervaly = self.projection.y_limits
 
-    if mpl.__version__ >= '3.6':
+    if mpl.__version__ >= "3.6":
+
         def clear(self):
             """Clear the current Axes and add boundary lines."""
             result = super().clear()
             self.__clear()
             return result
+
     else:
+
         def cla(self):
             """Clear the current Axes and add boundary lines."""
             result = super().cla()
@@ -607,18 +654,17 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         lon, lat = self.projection.as_geodetic().transform_point(
-            x, y, self.projection,
+            x,
+            y,
+            self.projection,
         )
 
-        ns = 'N' if lat >= 0.0 else 'S'
-        ew = 'E' if lon >= 0.0 else 'W'
+        ns = "N" if lat >= 0.0 else "S"
+        ew = "E" if lon >= 0.0 else "W"
 
-        return (
-            f'{x:.4g}, {y:.4g} '
-            f'({abs(lat):f}°{ns}, {abs(lon):f}°{ew})'
-        )
+        return f"{x:.4g}, {y:.4g} " f"({abs(lat):f}°{ns}, {abs(lon):f}°{ew})"
 
-    def coastlines(self, resolution='auto', color='black', **kwargs):
+    def coastlines(self, resolution="auto", color="black", **kwargs):
         """
         Add coastal **outlines** to the current axes from the Natural Earth
         "coastline" shapefile collection.
@@ -631,14 +677,14 @@ class GeoAxes(matplotlib.axes.Axes):
             and "10m", or a Scaler object.
 
         """
-        kwargs['edgecolor'] = color
-        kwargs['facecolor'] = 'none'
+        kwargs["edgecolor"] = color
+        kwargs["facecolor"] = "none"
         feature = cartopy.feature.COASTLINE
 
         # The coastline feature is automatically scaled by default, but for
         # anything else, including custom scaler instances, create a new
         # feature which derives from the default one.
-        if resolution != 'auto':
+        if resolution != "auto":
             feature = feature.with_scale(resolution)
 
         return self.add_feature(feature, **kwargs)
@@ -687,14 +733,13 @@ class GeoAxes(matplotlib.axes.Axes):
         lons, lats = lons.flatten(), lats.flatten()
 
         if lons.shape != lats.shape:
-            raise ValueError('lons and lats must have the same shape.')
+            raise ValueError("lons and lats must have the same shape.")
 
         for lon, lat in zip(lons, lats):
             circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
             geoms.append(sgeom.Polygon(circle))
 
-        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
-                                                 **kwargs)
+        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(), **kwargs)
         return self.add_feature(feature)
 
     def add_feature(self, feature, **kwargs):
@@ -748,7 +793,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
 
         """
-        styler = kwargs.pop('styler', None)
+        styler = kwargs.pop("styler", None)
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
         return self.add_feature(feature, styler=styler)
 
@@ -773,9 +818,9 @@ class GeoAxes(matplotlib.axes.Axes):
                 self.autoscale_view()
             [x1, y1], [x2, y2] = self.viewLim.get_points()
 
-        domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
-                                            [x2, y2], [x1, y2],
-                                            [x1, y1]])
+        domain_in_src_proj = sgeom.Polygon(
+            [[x1, y1], [x2, y1], [x2, y2], [x1, y2], [x1, y1]]
+        )
 
         # Determine target projection based on requested CRS.
         if crs is None:
@@ -786,17 +831,23 @@ class GeoAxes(matplotlib.axes.Axes):
             # Attempt to select suitable projection for
             # non-projection CRS.
             if isinstance(crs, ccrs.RotatedGeodetic):
-                proj = ccrs.RotatedPole(crs.proj4_params['lon_0'] - 180,
-                                        crs.proj4_params['o_lat_p'])
-                warnings.warn(f'Approximating coordinate system {crs!r} with '
-                              'a RotatedPole projection.')
-            elif hasattr(crs, 'is_geodetic') and crs.is_geodetic():
+                proj = ccrs.RotatedPole(
+                    crs.proj4_params["lon_0"] - 180, crs.proj4_params["o_lat_p"]
+                )
+                warnings.warn(
+                    f"Approximating coordinate system {crs!r} with "
+                    "a RotatedPole projection."
+                )
+            elif hasattr(crs, "is_geodetic") and crs.is_geodetic():
                 proj = ccrs.PlateCarree(globe=crs.globe)
-                warnings.warn(f'Approximating coordinate system {crs!r} with '
-                              'the PlateCarree projection.')
+                warnings.warn(
+                    f"Approximating coordinate system {crs!r} with "
+                    "the PlateCarree projection."
+                )
             else:
-                raise ValueError('Cannot determine extent in'
-                                 f' coordinate system {crs!r}')
+                raise ValueError(
+                    "Cannot determine extent in" f" coordinate system {crs!r}"
+                )
 
         # Calculate intersection with boundary and project if necessary.
         boundary_poly = sgeom.Polygon(self.projection.boundary)
@@ -804,10 +855,8 @@ class GeoAxes(matplotlib.axes.Axes):
             # Erode boundary by threshold to avoid transform issues.
             # This is a workaround for numerical issues at the boundary.
             eroded_boundary = boundary_poly.buffer(-self.projection.threshold)
-            geom_in_src_proj = eroded_boundary.intersection(
-                domain_in_src_proj)
-            geom_in_crs = proj.project_geometry(geom_in_src_proj,
-                                                self.projection)
+            geom_in_src_proj = eroded_boundary.intersection(domain_in_src_proj)
+            geom_in_crs = proj.project_geometry(geom_in_src_proj, self.projection)
         else:
             geom_in_crs = boundary_poly.intersection(domain_in_src_proj)
 
@@ -830,9 +879,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = sgeom.polygon.LineString([[x1, y1], [x2, y1],
-                                                  [x2, y2], [x1, y2],
-                                                  [x1, y1]])
+        domain_in_crs = sgeom.polygon.LineString(
+            [[x1, y1], [x2, y1], [x2, y2], [x1, y2], [x1, y1]]
+        )
 
         projected = None
 
@@ -842,9 +891,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # tuple, which causes an unpack error.
         # This workaround avoids using the projection when the requested
         # extents are obviously the same as the projection domain.
-        try_workaround = ((crs is None and
-                           isinstance(self.projection, ccrs.PlateCarree)) or
-                          crs == self.projection)
+        try_workaround = (
+            crs is None and isinstance(self.projection, ccrs.PlateCarree)
+        ) or crs == self.projection
         if try_workaround:
             boundary = self.projection.boundary
             if boundary.equals(domain_in_crs):
@@ -859,10 +908,11 @@ class GeoAxes(matplotlib.axes.Axes):
             x1, y1, x2, y2 = projected.bounds
         except ValueError:
             raise ValueError(
-                'Failed to determine the required bounds in projection '
-                'coordinates. Check that the values provided are within the '
-                f'valid range (x_limits={self.projection.x_limits}, '
-                f'y_limits={self.projection.y_limits}).')
+                "Failed to determine the required bounds in projection "
+                "coordinates. Check that the values provided are within the "
+                f"valid range (x_limits={self.projection.x_limits}, "
+                f"y_limits={self.projection.y_limits})."
+            )
 
         self.set_xlim([x1, x2])
         self.set_ylim([y1, y2])
@@ -894,12 +944,16 @@ class GeoAxes(matplotlib.axes.Axes):
         # Limit the resulting bounds to valid area.
         if scalex and self.get_autoscalex_on():
             bounds = self.get_xbound()
-            self.set_xbound(max(bounds[0], self.projection.x_limits[0]),
-                            min(bounds[1], self.projection.x_limits[1]))
+            self.set_xbound(
+                max(bounds[0], self.projection.x_limits[0]),
+                min(bounds[1], self.projection.x_limits[1]),
+            )
         if scaley and self.get_autoscaley_on():
             bounds = self.get_ybound()
-            self.set_ybound(max(bounds[0], self.projection.y_limits[0]),
-                            min(bounds[1], self.projection.y_limits[1]))
+            self.set_ybound(
+                max(bounds[0], self.projection.y_limits[0]),
+                min(bounds[1], self.projection.y_limits[1]),
+            )
 
     def set_xticks(self, ticks, minor=False, crs=None):
         """
@@ -929,16 +983,17 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Project ticks if crs differs from axes' projection
         if crs is not None and crs != self.projection:
-            if not isinstance(crs, (ccrs._RectangularProjection,
-                                    ccrs.Mercator)) or \
-                    not isinstance(self.projection,
-                                   (ccrs._RectangularProjection,
-                                    ccrs.Mercator)):
-                raise RuntimeError('Cannot handle non-rectangular coordinate '
-                                   'systems.')
-            proj_xyz = self.projection.transform_points(crs,
-                                                        np.asarray(ticks),
-                                                        np.zeros(len(ticks)))
+            if not isinstance(
+                crs, (ccrs._RectangularProjection, ccrs.Mercator)
+            ) or not isinstance(
+                self.projection, (ccrs._RectangularProjection, ccrs.Mercator)
+            ):
+                raise RuntimeError(
+                    "Cannot handle non-rectangular coordinate " "systems."
+                )
+            proj_xyz = self.projection.transform_points(
+                crs, np.asarray(ticks), np.zeros(len(ticks))
+            )
             xticks = proj_xyz[..., 0]
         else:
             xticks = ticks
@@ -976,16 +1031,17 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Project ticks if crs differs from axes' projection
         if crs is not None and crs != self.projection:
-            if not isinstance(crs, (ccrs._RectangularProjection,
-                                    ccrs.Mercator)) or \
-                    not isinstance(self.projection,
-                                   (ccrs._RectangularProjection,
-                                    ccrs.Mercator)):
-                raise RuntimeError('Cannot handle non-rectangular coordinate '
-                                   'systems.')
-            proj_xyz = self.projection.transform_points(crs,
-                                                        np.zeros(len(ticks)),
-                                                        np.asarray(ticks))
+            if not isinstance(
+                crs, (ccrs._RectangularProjection, ccrs.Mercator)
+            ) or not isinstance(
+                self.projection, (ccrs._RectangularProjection, ccrs.Mercator)
+            ):
+                raise RuntimeError(
+                    "Cannot handle non-rectangular coordinate " "systems."
+                )
+            proj_xyz = self.projection.transform_points(
+                crs, np.zeros(len(ticks)), np.asarray(ticks)
+            )
             yticks = proj_xyz[..., 1]
         else:
             yticks = ticks
@@ -995,7 +1051,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return super().set_yticks(yticks, minor=minor)
 
-    def stock_img(self, name='ne_shaded'):
+    def stock_img(self, name="ne_shaded"):
         """
         Add a standard image to the map.
 
@@ -1003,19 +1059,27 @@ class GeoAxes(matplotlib.axes.Axes):
         the Natural Earth shaded relief raster.
 
         """
-        if name == 'ne_shaded':
+        if name == "ne_shaded":
             source_proj = ccrs.PlateCarree()
-            fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
-                     / '50-natural-earth-1-downsampled.png')
+            fname = (
+                config["repo_data_dir"]
+                / "raster"
+                / "natural_earth"
+                / "50-natural-earth-1-downsampled.png"
+            )
 
-            return self.imshow(imread(fname), origin='upper',
-                               transform=source_proj,
-                               extent=[-180, 180, -90, 90])
+            return self.imshow(
+                imread(fname),
+                origin="upper",
+                transform=source_proj,
+                extent=[-180, 180, -90, 90],
+            )
         else:
-            raise ValueError('Unknown stock image %r.' % name)
+            raise ValueError("Unknown stock image %r." % name)
 
-    def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False):
+    def background_img(
+        self, name="ne_shaded", resolution="low", extent=None, cache=False
+    ):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
@@ -1056,17 +1120,21 @@ class GeoAxes(matplotlib.axes.Axes):
         # read in the user's background image directory:
         if len(_USER_BG_IMGS) == 0:
             self.read_user_background_images()
-        bgdir = Path(os.getenv(
-            'CARTOPY_USER_BACKGROUNDS',
-            config["repo_data_dir"] / 'raster' / 'natural_earth'))
+        bgdir = Path(
+            os.getenv(
+                "CARTOPY_USER_BACKGROUNDS",
+                config["repo_data_dir"] / "raster" / "natural_earth",
+            )
+        )
         # now get the filename we want to use:
         try:
             fname = _USER_BG_IMGS[name][resolution]
         except KeyError:
             raise ValueError(
-                f'Image {name!r} and resolution {resolution!r} are not '
-                f'present in the user background image metadata in directory '
-                f'{bgdir!r}')
+                f"Image {name!r} and resolution {resolution!r} are not "
+                f"present in the user background image metadata in directory "
+                f"{bgdir!r}"
+            )
         # Now obtain the image data from file or cache:
         fpath = bgdir / fname
         if cache:
@@ -1082,17 +1150,17 @@ class GeoAxes(matplotlib.axes.Axes):
             # to 3 colour channels:
             img = np.repeat(img[:, :, np.newaxis], 3, axis=2)
         # now get the projection from the metadata:
-        if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
+        if _USER_BG_IMGS[name]["__projection__"] == "PlateCarree":
             # currently only PlateCarree is defined:
             source_proj = ccrs.PlateCarree()
         else:
-            raise NotImplementedError('Background image projection undefined')
+            raise NotImplementedError("Background image projection undefined")
 
         if extent is None:
             # not specifying an extent, so return all of it:
-            return self.imshow(img, origin='upper',
-                               transform=source_proj,
-                               extent=[-180, 180, -90, 90])
+            return self.imshow(
+                img, origin="upper", transform=source_proj, extent=[-180, 180, -90, 90]
+            )
         else:
             # return only a subset of the image:
             # set up coordinate arrays:
@@ -1103,38 +1171,41 @@ class GeoAxes(matplotlib.axes.Axes):
             lon_pts = (np.arange(img.shape[1]) * d_lon + (d_lon / 2)) - 180
 
             # which points are in range:
-            lat_in_range = np.logical_and(lat_pts >= extent[2],
-                                          lat_pts <= extent[3])
+            lat_in_range = np.logical_and(lat_pts >= extent[2], lat_pts <= extent[3])
             if extent[0] < 180 and extent[1] > 180:
                 # we have a region crossing the dateline
                 # this is the westerly side of the input image:
-                lon_in_range1 = np.logical_and(lon_pts >= extent[0],
-                                               lon_pts <= 180.0)
+                lon_in_range1 = np.logical_and(lon_pts >= extent[0], lon_pts <= 180.0)
                 img_subset1 = img[lat_in_range, :, :][:, lon_in_range1, :]
                 # and the eastward half:
-                lon_in_range2 = lon_pts + 360. <= extent[1]
+                lon_in_range2 = lon_pts + 360.0 <= extent[1]
                 img_subset2 = img[lat_in_range, :, :][:, lon_in_range2, :]
                 # now join them up:
                 img_subset = np.concatenate((img_subset1, img_subset2), axis=1)
                 # now define the extent for output that matches those points:
-                ret_extent = [lon_pts[lon_in_range1][0] - d_lon / 2,
-                              lon_pts[lon_in_range2][-1] + d_lon / 2 + 360,
-                              lat_pts[lat_in_range][-1] - d_lat / 2,
-                              lat_pts[lat_in_range][0] + d_lat / 2]
+                ret_extent = [
+                    lon_pts[lon_in_range1][0] - d_lon / 2,
+                    lon_pts[lon_in_range2][-1] + d_lon / 2 + 360,
+                    lat_pts[lat_in_range][-1] - d_lat / 2,
+                    lat_pts[lat_in_range][0] + d_lat / 2,
+                ]
             else:
                 # not crossing the dateline, so just find the region:
-                lon_in_range = np.logical_and(lon_pts >= extent[0],
-                                              lon_pts <= extent[1])
+                lon_in_range = np.logical_and(
+                    lon_pts >= extent[0], lon_pts <= extent[1]
+                )
                 img_subset = img[lat_in_range, :, :][:, lon_in_range, :]
                 # now define the extent for output that matches those points:
-                ret_extent = [lon_pts[lon_in_range][0] - d_lon / 2.0,
-                              lon_pts[lon_in_range][-1] + d_lon / 2.0,
-                              lat_pts[lat_in_range][-1] - d_lat / 2.0,
-                              lat_pts[lat_in_range][0] + d_lat / 2.0]
+                ret_extent = [
+                    lon_pts[lon_in_range][0] - d_lon / 2.0,
+                    lon_pts[lon_in_range][-1] + d_lon / 2.0,
+                    lat_pts[lat_in_range][-1] - d_lat / 2.0,
+                    lat_pts[lat_in_range][0] + d_lat / 2.0,
+                ]
 
-            return self.imshow(img_subset, origin='upper',
-                               transform=source_proj,
-                               extent=ret_extent)
+            return self.imshow(
+                img_subset, origin="upper", transform=source_proj, extent=ret_extent
+            )
 
     def read_user_background_images(self, verify=True):
         """
@@ -1154,10 +1225,13 @@ class GeoAxes(matplotlib.axes.Axes):
         lib/cartopy/data/raster/natural_earth/images.json
 
         """
-        bgdir = Path(os.getenv(
-            'CARTOPY_USER_BACKGROUNDS',
-            config["repo_data_dir"] / 'raster' / 'natural_earth'))
-        json_file = bgdir / 'images.json'
+        bgdir = Path(
+            os.getenv(
+                "CARTOPY_USER_BACKGROUNDS",
+                config["repo_data_dir"] / "raster" / "natural_earth",
+            )
+        )
+        json_file = bgdir / "images.json"
 
         with open(json_file) as js_obj:
             dict_in = json.load(js_obj)
@@ -1165,9 +1239,9 @@ class GeoAxes(matplotlib.axes.Axes):
             _USER_BG_IMGS[img_type] = dict_in[img_type]
 
         if verify:
-            required_info = ['__comment__', '__source__', '__projection__']
+            required_info = ["__comment__", "__source__", "__projection__"]
             for img_type in _USER_BG_IMGS:
-                if img_type == '__comment__':
+                if img_type == "__comment__":
                     # the top level comment doesn't need verifying:
                     pass
                 else:
@@ -1175,17 +1249,17 @@ class GeoAxes(matplotlib.axes.Axes):
                     for required in required_info:
                         if required not in _USER_BG_IMGS[img_type]:
                             raise ValueError(
-                                f'User background metadata file {json_file!r},'
-                                f' image type {img_type!r}, does not specify'
-                                f' metadata item {required!r}')
+                                f"User background metadata file {json_file!r},"
+                                f" image type {img_type!r}, does not specify"
+                                f" metadata item {required!r}"
+                            )
                     for resln in _USER_BG_IMGS[img_type]:
                         # the required_info items are not resolutions:
                         if resln not in required_info:
                             img_it_r = _USER_BG_IMGS[img_type][resln]
                             test_file = bgdir / img_it_r
                             if not test_file.is_file():
-                                raise ValueError(
-                                    f'File "{test_file}" not found')
+                                raise ValueError(f'File "{test_file}" not found')
 
     def add_raster(self, raster_source, **slippy_image_kwargs):
         """
@@ -1266,89 +1340,99 @@ class GeoAxes(matplotlib.axes.Axes):
             Default is ``'upper'``. Prior to 0.18, it was ``'lower'``.
 
         """
-        if 'update_datalim' in kwargs:
-            raise ValueError('The update_datalim keyword has been removed in '
-                             'imshow. To hold the data and view limits see '
-                             'GeoAxes.hold_limits.')
+        if "update_datalim" in kwargs:
+            raise ValueError(
+                "The update_datalim keyword has been removed in "
+                "imshow. To hold the data and view limits see "
+                "GeoAxes.hold_limits."
+            )
 
-        transform = kwargs.pop('transform')
-        extent = kwargs.get('extent', None)
-        kwargs.setdefault('origin', 'upper')
+        transform = kwargs.pop("transform")
+        extent = kwargs.get("extent", None)
+        kwargs.setdefault("origin", "upper")
 
-        same_projection = (isinstance(transform, ccrs.Projection) and
-                           self.projection == transform)
+        same_projection = (
+            isinstance(transform, ccrs.Projection) and self.projection == transform
+        )
 
         # Only take the shortcut path if the image is within the current
         # bounds (+/- threshold) of the projection
         x0, x1 = self.projection.x_limits
         y0, y1 = self.projection.y_limits
         eps = self.projection.threshold
-        inside_bounds = (extent is None or
-                         (x0 - eps <= extent[0] <= x1 + eps and
-                          x0 - eps <= extent[1] <= x1 + eps and
-                          y0 - eps <= extent[2] <= y1 + eps and
-                          y0 - eps <= extent[3] <= y1 + eps))
+        inside_bounds = extent is None or (
+            x0 - eps <= extent[0] <= x1 + eps
+            and x0 - eps <= extent[1] <= x1 + eps
+            and y0 - eps <= extent[2] <= y1 + eps
+            and y0 - eps <= extent[3] <= y1 + eps
+        )
 
-        if (transform is None or transform == self.transData or
-                same_projection and inside_bounds):
+        if (
+            transform is None
+            or transform == self.transData
+            or same_projection
+            and inside_bounds
+        ):
             result = super().imshow(img, *args, **kwargs)
         else:
-            extent = kwargs.pop('extent', None)
+            extent = kwargs.pop("extent", None)
             img = np.asanyarray(img)
-            if kwargs['origin'] == 'upper':
+            if kwargs["origin"] == "upper":
                 # It is implicitly assumed by the regridding operation that the
                 # origin of the image is 'lower', so simply adjust for that
                 # here.
                 img = img[::-1]
-                kwargs['origin'] = 'lower'
+                kwargs["origin"] = "lower"
 
             if not isinstance(transform, ccrs.Projection):
-                raise ValueError('Expected a projection subclass. Cannot '
-                                 'handle a %s in imshow.' % type(transform))
+                raise ValueError(
+                    "Expected a projection subclass. Cannot "
+                    "handle a %s in imshow." % type(transform)
+                )
 
             target_extent = self.get_extent(self.projection)
-            regrid_shape = kwargs.pop('regrid_shape', 750)
-            regrid_shape = self._regrid_shape_aspect(regrid_shape,
-                                                     target_extent)
+            regrid_shape = kwargs.pop("regrid_shape", 750)
+            regrid_shape = self._regrid_shape_aspect(regrid_shape, target_extent)
             # Lazy import because scipy/pykdtree in img_transform are only
             # optional dependencies
             from cartopy.img_transform import warp_array
+
             original_extent = extent
-            img, extent = warp_array(img,
-                                     source_proj=transform,
-                                     source_extent=original_extent,
-                                     target_proj=self.projection,
-                                     target_res=regrid_shape,
-                                     target_extent=target_extent,
-                                     mask_extrapolated=True,
-                                     )
-            alpha = kwargs.pop('alpha', None)
+            img, extent = warp_array(
+                img,
+                source_proj=transform,
+                source_extent=original_extent,
+                target_proj=self.projection,
+                target_res=regrid_shape,
+                target_extent=target_extent,
+                mask_extrapolated=True,
+            )
+            alpha = kwargs.pop("alpha", None)
             if np.array(alpha).ndim == 2:
-                alpha, _ = warp_array(alpha,
-                                      source_proj=transform,
-                                      source_extent=original_extent,
-                                      target_proj=self.projection,
-                                      target_res=regrid_shape,
-                                      target_extent=target_extent,
-                                      mask_extrapolated=True,
-                                      )
-            kwargs['alpha'] = alpha
+                alpha, _ = warp_array(
+                    alpha,
+                    source_proj=transform,
+                    source_extent=original_extent,
+                    target_proj=self.projection,
+                    target_res=regrid_shape,
+                    target_extent=target_extent,
+                    mask_extrapolated=True,
+                )
+            kwargs["alpha"] = alpha
 
             # As a workaround to a matplotlib limitation, turn any images
             # which are masked array RGB(A) into RGBA images
 
             if np.ma.is_masked(img) and len(img.shape) > 2:
-
                 # transform RGB(A) into RGBA
                 old_img = img
-                img = np.ones(old_img.shape[:2] + (4, ),
-                              dtype=old_img.dtype)
+                img = np.ones(old_img.shape[:2] + (4,), dtype=old_img.dtype)
                 img[:, :, :3] = old_img[:, :, :3]
 
                 # if img is RGBA, save alpha channel
                 if old_img.shape[-1] == 4:
                     img[:, :, 3] = old_img[:, :, 3]
-                elif img.dtype.kind == 'u':
+                elif img.dtype.kind == "u":
                     img[:, :, 3] *= 255
 
                 # apply the mask to the A channel
@@ -1358,14 +1442,31 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return result
 
-    def gridlines(self, crs=None, draw_labels=False,
-                  xlocs=None, ylocs=None, dms=False,
-                  x_inline=None, y_inline=None, auto_inline=True,
-                  xformatter=None, yformatter=None, xlim=None, ylim=None,
-                  rotate_labels=None, xlabel_style=None, ylabel_style=None,
-                  labels_bbox_style=None, xpadding=5, ypadding=5,
-                  offset_angle=25, auto_update=False, formatter_kwargs=None,
-                  **kwargs):
+    def gridlines(
+        self,
+        crs=None,
+        draw_labels=False,
+        xlocs=None,
+        ylocs=None,
+        dms=False,
+        x_inline=None,
+        y_inline=None,
+        auto_inline=True,
+        xformatter=None,
+        yformatter=None,
+        xlim=None,
+        ylim=None,
+        rotate_labels=None,
+        xlabel_style=None,
+        ylabel_style=None,
+        labels_bbox_style=None,
+        xpadding=5,
+        ypadding=5,
+        offset_angle=25,
+        auto_update=False,
+        formatter_kwargs=None,
+        **kwargs,
+    ):
         """
         Automatically add gridlines to the axes, in the given coordinate
         system, at draw time.
@@ -1500,32 +1601,48 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is None:
             crs = ccrs.PlateCarree()
         from cartopy.mpl.gridliner import Gridliner
+
         gl = Gridliner(
-            self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,
-            ylocator=ylocs, collection_kwargs=kwargs, dms=dms,
-            x_inline=x_inline, y_inline=y_inline, auto_inline=auto_inline,
-            xformatter=xformatter, yformatter=yformatter,
-            xlim=xlim, ylim=ylim, rotate_labels=rotate_labels,
-            xlabel_style=xlabel_style, ylabel_style=ylabel_style,
+            self,
+            crs=crs,
+            draw_labels=draw_labels,
+            xlocator=xlocs,
+            ylocator=ylocs,
+            collection_kwargs=kwargs,
+            dms=dms,
+            x_inline=x_inline,
+            y_inline=y_inline,
+            auto_inline=auto_inline,
+            xformatter=xformatter,
+            yformatter=yformatter,
+            xlim=xlim,
+            ylim=ylim,
+            rotate_labels=rotate_labels,
+            xlabel_style=xlabel_style,
+            ylabel_style=ylabel_style,
             labels_bbox_style=labels_bbox_style,
-            xpadding=xpadding, ypadding=ypadding, offset_angle=offset_angle,
-            auto_update=auto_update, formatter_kwargs=formatter_kwargs)
+            xpadding=xpadding,
+            ypadding=ypadding,
+            offset_angle=offset_angle,
+            auto_update=auto_update,
+            formatter_kwargs=formatter_kwargs,
+        )
         self._gridliners.append(gl)
         return gl
 
     def _gen_axes_patch(self):
         return _ViewClippedPathPatch(self)
 
-    def _gen_axes_spines(self, locations=None, offset=0.0, units='inches'):
+    def _gen_axes_spines(self, locations=None, offset=0.0, units="inches"):
         # generate some axes spines, as some Axes super class machinery
         # requires them. Just make them invisible
-        spines = super()._gen_axes_spines(locations=locations,
-                                          offset=offset,
-                                          units=units)
+        spines = super()._gen_axes_spines(
+            locations=locations, offset=offset, units=units
+        )
         for spine in spines.values():
             spine.set_visible(False)
 
-        spines['geo'] = GeoSpine(self)
+        spines["geo"] = GeoSpine(self)
         return spines
 
     def _boundary(self):
@@ -1535,7 +1652,7 @@ class GeoAxes(matplotlib.axes.Axes):
         The :data:`.patch` and :data:`.spines['geo']` are updated to match.
 
         """
-        path, = cpatch.geos_to_path(self.projection.boundary)
+        (path,) = cpatch.geos_to_path(self.projection.boundary)
 
         # Get the outline path in terms of self.transData
         proj_to_data = self.projection._as_mpl_transform(self) - self.transData
@@ -1546,8 +1663,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # Attach callback events for when the xlim or ylim are changed. This
         # is what triggers the patches to be re-clipped at draw time.
-        self.callbacks.connect('xlim_changed', _trigger_patch_reclip)
-        self.callbacks.connect('ylim_changed', _trigger_patch_reclip)
+        self.callbacks.connect("xlim_changed", _trigger_patch_reclip)
+        self.callbacks.connect("ylim_changed", _trigger_patch_reclip)
 
     def set_boundary(self, path, transform=None):
         """
@@ -1573,7 +1690,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # Attach the original path to the patches. This will be used each time
         # a new clipped path is calculated.
         self.patch.set_boundary(path, transform)
-        self.spines['geo'].set_boundary(path, transform)
+        self.spines["geo"].set_boundary(path, transform)
 
     @_add_transform
     @_add_transform_first
@@ -1600,9 +1717,11 @@ class GeoAxes(matplotlib.axes.Axes):
         result = super().contour(*args, **kwargs)
 
         # We need to compute the dataLim correctly for contours.
-        bboxes = [col.get_datalim(self.transData)
-                  for col in result.collections
-                  if col.get_paths()]
+        bboxes = [
+            col.get_datalim(self.transData)
+            for col in result.collections
+            if col.get_paths()
+        ]
         if bboxes:
             extent = mtransforms.Bbox.union(bboxes)
             self.update_datalim(extent.get_points())
@@ -1635,22 +1754,24 @@ class GeoAxes(matplotlib.axes.Axes):
             arguments X and Y must be provided and be 2-dimensional.
             The default is False, to compute the contours in data-space.
         """
-        t = kwargs.get('transform')
+        t = kwargs.get("transform")
         if isinstance(t, ccrs.Projection):
-            kwargs['transform'] = t = t._as_mpl_transform(self)
+            kwargs["transform"] = t = t._as_mpl_transform(self)
         # Set flag to indicate correcting orientation of paths if not ccw
         if isinstance(t, mtransforms.Transform):
             for sub_trans, _ in t._iter_break_from_left_to_right():
                 if isinstance(sub_trans, InterProjectionTransform):
-                    if not hasattr(sub_trans, 'force_path_ccw'):
+                    if not hasattr(sub_trans, "force_path_ccw"):
                         sub_trans.force_path_ccw = True
 
         result = super().contourf(*args, **kwargs)
 
         # We need to compute the dataLim correctly for contours.
-        bboxes = [col.get_datalim(self.transData)
-                  for col in result.collections
-                  if col.get_paths()]
+        bboxes = [
+            col.get_datalim(self.transData)
+            for col in result.collections
+            if col.get_paths()
+        ]
         if bboxes:
             extent = mtransforms.Bbox.union(bboxes)
             self.update_datalim(extent.get_points())
@@ -1675,21 +1796,25 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         # exclude Geodetic as a valid source CS
-        if (isinstance(kwargs['transform'],
-                       InterProjectionTransform) and
-                kwargs['transform'].source_projection.is_geodetic()):
-            raise ValueError('Cartopy cannot currently do spherical '
-                             'scatter. The source CRS cannot be a '
-                             'geodetic, consider using the cyllindrical form '
-                             '(PlateCarree or RotatedPole).')
+        if (
+            isinstance(kwargs["transform"], InterProjectionTransform)
+            and kwargs["transform"].source_projection.is_geodetic()
+        ):
+            raise ValueError(
+                "Cartopy cannot currently do spherical "
+                "scatter. The source CRS cannot be a "
+                "geodetic, consider using the cyllindrical form "
+                "(PlateCarree or RotatedPole)."
+            )
 
         result = super().scatter(*args, **kwargs)
         self.autoscale_view()
         return result
 
     @_add_transform
-    def annotate(self, text, xy, xytext=None, xycoords='data', textcoords=None,
-                 *args, **kwargs):
+    def annotate(
+        self, text, xy, xytext=None, xycoords="data", textcoords=None, *args, **kwargs
+    ):
         """
         Add the "transform" keyword to :func:`~matplotlib.pyplot.annotate`.
 
@@ -1699,11 +1824,11 @@ class GeoAxes(matplotlib.axes.Axes):
             A :class:`~cartopy.crs.Projection`.
 
         """
-        transform = kwargs.pop('transform', None)
+        transform = kwargs.pop("transform", None)
         is_transform_crs = isinstance(transform, ccrs.CRS)
 
         # convert CRS to mpl transform for default 'data' setup
-        if is_transform_crs and xycoords == 'data':
+        if is_transform_crs and xycoords == "data":
             xycoords = transform._as_mpl_transform(self)
 
         # textcoords = xycoords by default but complains if xytext is empty
@@ -1711,7 +1836,7 @@ class GeoAxes(matplotlib.axes.Axes):
             textcoords = xycoords
 
         # use transform if textcoords is data and xytext is provided
-        if is_transform_crs and xytext is not None and textcoords == 'data':
+        if is_transform_crs and xytext is not None and textcoords == "data":
             textcoords = transform._as_mpl_transform(self)
 
         # convert to mpl_transform if CRS passed to xycoords
@@ -1722,8 +1847,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if isinstance(textcoords, ccrs.CRS):
             textcoords = textcoords._as_mpl_transform(self)
 
-        result = super().annotate(text, xy, xytext, xycoords=xycoords,
-                                  textcoords=textcoords, *args, **kwargs)
+        result = super().annotate(
+            text, xy, xytext, xycoords=xycoords, textcoords=textcoords, *args, **kwargs
+        )
         self.autoscale_view()
         return result
 
@@ -1741,7 +1867,7 @@ class GeoAxes(matplotlib.axes.Axes):
         transform
             A :class:`~cartopy.crs.Projection`.
         """
-        t = kwargs.pop('transform')
+        t = kwargs.pop("transform")
         pairs = self.projection.transform_points(
             t,
             np.asarray(x),
@@ -1785,15 +1911,17 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # The shading keyword argument was added in MPL 3.3, so keep
         # this default updating until we only support MPL>=3.3
-        default_shading = mpl.rcParams.get('pcolor.shading', 'auto')
-        if not (kwargs.get('shading', default_shading) in
-                ('nearest', 'auto') and len(args) == 3 and
-                getattr(kwargs.get('transform'), '_wrappable', False)):
+        default_shading = mpl.rcParams.get("pcolor.shading", "auto")
+        if not (
+            kwargs.get("shading", default_shading) in ("nearest", "auto")
+            and len(args) == 3
+            and getattr(kwargs.get("transform"), "_wrappable", False)
+        ):
             return args, kwargs
 
         # We have changed the shading from nearest/auto to flat
         # due to the addition of an extra coordinate
-        kwargs['shading'] = 'flat'
+        kwargs["shading"] = "flat"
         X = np.asanyarray(args[0])
         Y = np.asanyarray(args[1])
         nrows, ncols = np.asanyarray(args[2]).shape
@@ -1812,15 +1940,16 @@ class GeoAxes(matplotlib.axes.Axes):
                 if wrap:
                     dX = (dX + wrap / 2) % wrap - wrap / 2
                 dX = dX / 2
-                X = np.hstack((X[:, [0]] - dX[:, [0]],
-                               X[:, :-1] + dX,
-                               X[:, [-1]] + dX[:, [-1]]))
+                X = np.hstack(
+                    (X[:, [0]] - dX[:, [0]], X[:, :-1] + dX, X[:, [-1]] + dX[:, [-1]])
+                )
             else:
                 # This is just degenerate, but we can't reliably guess
                 # a dX if there is just one value.
                 X = np.hstack((X, X))
             return X
-        t = kwargs.get('transform')
+
+        t = kwargs.get("transform")
         xwrap = abs(t.x_limits[1] - t.x_limits[0])
         if ncols == Nx:
             X = _interp_grid(X, wrap=xwrap)
@@ -1836,12 +1965,12 @@ class GeoAxes(matplotlib.axes.Axes):
         Handles the Quadmesh collection when any of the quadrilaterals
         cross the boundary of the projection.
         """
-        t = kwargs.get('transform', None)
+        t = kwargs.get("transform", None)
 
         # Get the quadmesh data coordinates
         coords = collection._coordinates
         Ny, Nx, _ = coords.shape
-        if kwargs.get('shading') == 'gouraud':
+        if kwargs.get("shading") == "gouraud":
             # Gouraud shading has the same shape for coords and data
             data_shape = Ny, Nx
         else:
@@ -1850,45 +1979,50 @@ class GeoAxes(matplotlib.axes.Axes):
         C = collection.get_array().reshape(data_shape)
 
         transformed_pts = self.projection.transform_points(
-            t, coords[..., 0], coords[..., 1])
+            t, coords[..., 0], coords[..., 1]
+        )
 
         # Compute the length of diagonals in transformed coordinates
         # and create a mask where the wrapped cells are of shape (Ny-1, Nx-1)
-        with np.errstate(invalid='ignore'):
+        with np.errstate(invalid="ignore"):
             xs, ys = transformed_pts[..., 0], transformed_pts[..., 1]
-            diagonal0_lengths = np.hypot(xs[1:, 1:] - xs[:-1, :-1],
-                                         ys[1:, 1:] - ys[:-1, :-1])
-            diagonal1_lengths = np.hypot(xs[1:, :-1] - xs[:-1, 1:],
-                                         ys[1:, :-1] - ys[:-1, 1:])
+            diagonal0_lengths = np.hypot(
+                xs[1:, 1:] - xs[:-1, :-1], ys[1:, 1:] - ys[:-1, :-1]
+            )
+            diagonal1_lengths = np.hypot(
+                xs[1:, :-1] - xs[:-1, 1:], ys[1:, :-1] - ys[:-1, 1:]
+            )
             # The maximum size of the diagonal of any cell, defined to
             # be the projection width divided by 2*sqrt(2)
             # TODO: Make this dependent on the boundary of the
             #       projection which will help with curved boundaries
-            size_limit = (abs(self.projection.x_limits[1] -
-                              self.projection.x_limits[0]) /
-                          (2 * np.sqrt(2)))
-            mask = (np.isnan(diagonal0_lengths) |
-                    (diagonal0_lengths > size_limit) |
-                    np.isnan(diagonal1_lengths) |
-                    (diagonal1_lengths > size_limit))
+            size_limit = abs(
+                self.projection.x_limits[1] - self.projection.x_limits[0]
+            ) / (2 * np.sqrt(2))
+            mask = (
+                np.isnan(diagonal0_lengths)
+                | (diagonal0_lengths > size_limit)
+                | np.isnan(diagonal1_lengths)
+                | (diagonal1_lengths > size_limit)
+            )
 
         # Update the data limits based on the corners of the mesh
         # in transformed coordinates, ignoring nan values
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore', 'All-NaN slice encountered')
+            warnings.filterwarnings("ignore", "All-NaN slice encountered")
             # If we have all nans, that is OK and will be handled by the
             # Bbox calculations later, so suppress that warning from the user
-            corners = ((np.nanmin(xs), np.nanmin(ys)),
-                       (np.nanmax(xs), np.nanmax(ys)))
+            corners = ((np.nanmin(xs), np.nanmin(ys)), (np.nanmax(xs), np.nanmax(ys)))
         collection._corners = mtransforms.Bbox(corners)
         self.update_datalim(collection._corners)
 
         # We need to keep the transform/projection check after
         # update_datalim to make sure we are getting the proper
         # datalims on the returned collection
-        if (not (getattr(t, '_wrappable', False) and
-                 getattr(self.projection, '_wrappable', False)) or
-                not np.any(mask)):
+        if not (
+            getattr(t, "_wrappable", False)
+            and getattr(self.projection, "_wrappable", False)
+        ) or not np.any(mask):
             # If both projections are unwrappable
             # or if there aren't any points to wrap
             return collection
@@ -1896,11 +2030,13 @@ class GeoAxes(matplotlib.axes.Axes):
         # Wrapping with gouraud shading is error-prone. We will do our best,
         # but pcolor does not handle gouraud shading, so there needs to be
         # another way to handle the wrapped cells.
-        if kwargs.get('shading') == 'gouraud':
-            warnings.warn("Handling wrapped coordinates with gouraud "
-                          "shading is likely to introduce artifacts. "
-                          "It is recommended to remove the wrap manually "
-                          "before calling pcolormesh.")
+        if kwargs.get("shading") == "gouraud":
+            warnings.warn(
+                "Handling wrapped coordinates with gouraud "
+                "shading is likely to introduce artifacts. "
+                "It is recommended to remove the wrap manually "
+                "before calling pcolormesh."
+            )
             # With gouraud shading, we actually want an (Ny, Nx) shaped mask
             gmask = np.zeros(data_shape, dtype=bool)
             # If any of the cells were wrapped, apply it to all 4 corners
@@ -1916,13 +2052,15 @@ class GeoAxes(matplotlib.axes.Axes):
         # cells instead, which will properly handle the wrap.
 
         if collection.get_cmap()._rgba_bad[3] != 0.0:
-            warnings.warn("The colormap's 'bad' has been set, but "
-                          "in order to wrap pcolormesh across the "
-                          "map it must be fully transparent.",
-                          stacklevel=3)
+            warnings.warn(
+                "The colormap's 'bad' has been set, but "
+                "in order to wrap pcolormesh across the "
+                "map it must be fully transparent.",
+                stacklevel=3,
+            )
 
         # The original data mask (regardless of wrapped cells)
-        C_mask = getattr(C, 'mask', None)
+        C_mask = getattr(C, "mask", None)
 
         # create the masked array to be used with this pcolormesh
         full_mask = mask if C_mask is None else mask | C_mask
@@ -1931,14 +2069,14 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # plot with slightly lower zorder to avoid odd issue
         # where the main plot is obscured
-        zorder = collection.zorder - .1
-        kwargs.pop('zorder', None)
-        kwargs.pop('shading', None)
-        kwargs.setdefault('snap', False)
-        vmin = kwargs.pop('vmin', None)
-        vmax = kwargs.pop('vmax', None)
-        norm = kwargs.pop('norm', None)
-        cmap = kwargs.pop('cmap', None)
+        zorder = collection.zorder - 0.1
+        kwargs.pop("zorder", None)
+        kwargs.pop("shading", None)
+        kwargs.setdefault("snap", False)
+        vmin = kwargs.pop("vmin", None)
+        vmax = kwargs.pop("vmax", None)
+        norm = kwargs.pop("norm", None)
+        cmap = kwargs.pop("cmap", None)
         # Plot all of the wrapped cells.
         # `pcolor` only draws polygons where the data is not
         # masked, so this will only draw a limited subset of
@@ -1951,11 +2089,10 @@ class GeoAxes(matplotlib.axes.Axes):
         #       pcolor routines, which we don't want. We will
         #       fill in the proper data later with set_array()
         #       calls.
-        pcolor_data = np.ma.array(np.zeros(C.shape),
-                                  mask=~mask)
-        pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
-                                 pcolor_data, zorder=zorder,
-                                 **kwargs)
+        pcolor_data = np.ma.array(np.zeros(C.shape), mask=~mask)
+        pcolor_col = self.pcolor(
+            coords[..., 0], coords[..., 1], pcolor_data, zorder=zorder, **kwargs
+        )
         # Now add back in the masked data if there was any
         full_mask = ~mask if C_mask is None else ~mask | C_mask
         pcolor_data = np.ma.array(C, mask=full_mask)
@@ -1994,7 +2131,7 @@ class GeoAxes(matplotlib.axes.Axes):
         if matplotlib.__version__ < "3.3":
             # MPL 3.3 introduced the shading option, and it isn't
             # handled before that for pcolor calls.
-            kwargs.pop('shading', None)
+            kwargs.pop("shading", None)
         result = super().pcolor(*args, **kwargs)
 
         # Update the datalim for this pcolor.
@@ -2048,29 +2185,43 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs['transform']
-        regrid_shape = kwargs.pop('regrid_shape', None)
-        target_extent = kwargs.pop('target_extent',
-                                   self.get_extent(self.projection))
+        t = kwargs["transform"]
+        regrid_shape = kwargs.pop("regrid_shape", None)
+        target_extent = kwargs.pop("target_extent", self.get_extent(self.projection))
         if regrid_shape is not None:
             # If regridding is required then we'll be handling transforms
             # manually and plotting in native coordinates.
-            regrid_shape = self._regrid_shape_aspect(regrid_shape,
-                                                     target_extent)
+            regrid_shape = self._regrid_shape_aspect(regrid_shape, target_extent)
             # Lazy load vector_scalar_to_grid due to the optional
             # scipy dependency
             from cartopy.vector_transform import vector_scalar_to_grid
+
             if args:
                 # Interpolate color array as well as vector components.
                 x, y, u, v, c = vector_scalar_to_grid(
-                    t, self.projection, regrid_shape, x, y, u, v, args[0],
-                    target_extent=target_extent)
+                    t,
+                    self.projection,
+                    regrid_shape,
+                    x,
+                    y,
+                    u,
+                    v,
+                    args[0],
+                    target_extent=target_extent,
+                )
                 args = (c,) + args[1:]
             else:
                 x, y, u, v = vector_scalar_to_grid(
-                    t, self.projection, regrid_shape, x, y, u, v,
-                    target_extent=target_extent)
-            kwargs.pop('transform', None)
+                    t,
+                    self.projection,
+                    regrid_shape,
+                    x,
+                    y,
+                    u,
+                    v,
+                    target_extent=target_extent,
+                )
+            kwargs.pop("transform", None)
         elif t != self.projection:
             # Transform the vectors if the projection is not the same as the
             # data transform.
@@ -2123,29 +2274,43 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs['transform']
-        regrid_shape = kwargs.pop('regrid_shape', None)
-        target_extent = kwargs.pop('target_extent',
-                                   self.get_extent(self.projection))
+        t = kwargs["transform"]
+        regrid_shape = kwargs.pop("regrid_shape", None)
+        target_extent = kwargs.pop("target_extent", self.get_extent(self.projection))
         if regrid_shape is not None:
             # If regridding is required then we'll be handling transforms
             # manually and plotting in native coordinates.
-            regrid_shape = self._regrid_shape_aspect(regrid_shape,
-                                                     target_extent)
+            regrid_shape = self._regrid_shape_aspect(regrid_shape, target_extent)
             # Lazy load vector_scalar_to_grid due to the optional
             # scipy dependency
             from cartopy.vector_transform import vector_scalar_to_grid
+
             if args:
                 # Interpolate color array as well as vector components.
                 x, y, u, v, c = vector_scalar_to_grid(
-                    t, self.projection, regrid_shape, x, y, u, v, args[0],
-                    target_extent=target_extent)
+                    t,
+                    self.projection,
+                    regrid_shape,
+                    x,
+                    y,
+                    u,
+                    v,
+                    args[0],
+                    target_extent=target_extent,
+                )
                 args = (c,) + args[1:]
             else:
                 x, y, u, v = vector_scalar_to_grid(
-                    t, self.projection, regrid_shape, x, y, u, v,
-                    target_extent=target_extent)
-            kwargs.pop('transform', None)
+                    t,
+                    self.projection,
+                    regrid_shape,
+                    x,
+                    y,
+                    u,
+                    v,
+                    target_extent=target_extent,
+                )
+            kwargs.pop("transform", None)
         elif t != self.projection:
             # Transform the vectors if the projection is not the same as the
             # data transform.
@@ -2185,20 +2350,20 @@ class GeoAxes(matplotlib.axes.Axes):
             grid northward.
 
         """
-        t = kwargs.pop('transform')
+        t = kwargs.pop("transform")
         # Regridding is required for streamplot, it must have an evenly spaced
         # grid to work correctly. Choose our destination grid based on the
         # density keyword. The grid need not be bigger than the grid used by
         # the streamplot integrator.
-        density = kwargs.get('density', 1)
+        density = kwargs.get("density", 1)
         if np.isscalar(density):
             regrid_shape = [int(30 * density)] * 2
         else:
             regrid_shape = [int(25 * d) for d in density]
         # The color and linewidth keyword arguments can be arrays so they will
         # need to be gridded also.
-        col = kwargs.get('color', None)
-        lw = kwargs.get('linewidth', None)
+        col = kwargs.get("color", None)
+        lw = kwargs.get("linewidth", None)
         scalars = []
         color_array = isinstance(col, np.ndarray)
         linewidth_array = isinstance(lw, np.ndarray)
@@ -2211,24 +2376,32 @@ class GeoAxes(matplotlib.axes.Axes):
         # Lazy load vector_scalar_to_grid due to the optional
         # scipy dependency
         from cartopy.vector_transform import vector_scalar_to_grid
-        gridded = vector_scalar_to_grid(t, self.projection, regrid_shape,
-                                        x, y, u, v, *scalars,
-                                        target_extent=target_extent)
+
+        gridded = vector_scalar_to_grid(
+            t,
+            self.projection,
+            regrid_shape,
+            x,
+            y,
+            u,
+            v,
+            *scalars,
+            target_extent=target_extent,
+        )
         x, y, u, v = gridded[:4]
         # If scalar fields were regridded then replace the appropriate keyword
         # arguments with the gridded arrays.
         scalars = list(gridded[4:])
         if linewidth_array:
-            kwargs['linewidth'] = scalars.pop()
+            kwargs["linewidth"] = scalars.pop()
         if color_array:
-            kwargs['color'] = ma.masked_invalid(scalars.pop())
+            kwargs["color"] = ma.masked_invalid(scalars.pop())
         with warnings.catch_warnings():
             # The workaround for nan values in streamplot colors gives rise to
             # a warning which is not at all important so it is hidden from the
             # user to avoid confusion.
-            message = 'Warning: converting a masked element to nan.'
-            warnings.filterwarnings('ignore', message=message,
-                                    category=UserWarning)
+            message = "Warning: converting a masked element to nan."
+            warnings.filterwarnings("ignore", message=message, category=UserWarning)
             sp = super().streamplot(x, y, u, v, **kwargs)
         return sp
 
@@ -2256,8 +2429,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         from cartopy.io.ogc_clients import WMTSRasterSource
-        wmts = WMTSRasterSource(wmts, layer_name,
-                                gettile_extra_kwargs=wmts_kwargs)
+
+        wmts = WMTSRasterSource(wmts, layer_name, gettile_extra_kwargs=wmts_kwargs)
         return self.add_raster(wmts, **kwargs)
 
     def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):
@@ -2285,6 +2458,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         from cartopy.io.ogc_clients import WMSRasterSource
+
         wms = WMSRasterSource(wms, layers, getmap_extra_kwargs=wms_kwargs)
         return self.add_raster(wms, **kwargs)
 
@@ -2303,5 +2477,5 @@ def _trigger_patch_reclip(event):
     """
     axes = event.axes
     # trigger the outline and background patches to be re-clipped
-    axes.spines['geo'].stale = True
+    axes.spines["geo"].stale = True
     axes.patch.stale = True

@@ -17,33 +17,38 @@ def test_extents():
     uk = [-12.5, 4, 49, 60]
     uk_crs = ccrs.Geodetic()
 
-    ax = plt.axes(projection=ccrs.PlateCarree(), label='pc')
+    ax = plt.axes(projection=ccrs.PlateCarree(), label="pc")
     ax.set_extent(uk, crs=uk_crs)
     # enable to see what is going on (and to make sure it is a plot of the uk)
     # ax.coastlines()
-    assert_array_almost_equal(ax.viewLim.get_points(),
-                              np.array([[-12.5, 49.], [4., 60.]]))
+    assert_array_almost_equal(
+        ax.viewLim.get_points(), np.array([[-12.5, 49.0], [4.0, 60.0]])
+    )
 
-    ax = plt.axes(projection=ccrs.NorthPolarStereo(), label='npstere')
+    ax = plt.axes(projection=ccrs.NorthPolarStereo(), label="npstere")
     ax.set_extent(uk, crs=uk_crs)
     # enable to see what is going on (and to make sure it is a plot of the uk)
     # ax.coastlines()
-    assert_array_almost_equal(ax.viewLim.get_points(),
-                              np.array([[-1034046.22566261, -4765889.76601514],
-                                        [333263.47741164, -3345219.0594531]])
-                              )
+    assert_array_almost_equal(
+        ax.viewLim.get_points(),
+        np.array(
+            [
+                [-1034046.22566261, -4765889.76601514],
+                [333263.47741164, -3345219.0594531],
+            ]
+        ),
+    )
 
     # given that we know the PolarStereo coordinates of the UK, try using
     # those in a PlateCarree plot
-    ax = plt.axes(projection=ccrs.PlateCarree(), label='pc')
-    ax.set_extent([-1034046, 333263, -4765889, -3345219],
-                  crs=ccrs.NorthPolarStereo())
+    ax = plt.axes(projection=ccrs.PlateCarree(), label="pc")
+    ax.set_extent([-1034046, 333263, -4765889, -3345219], crs=ccrs.NorthPolarStereo())
     # enable to see what is going on (and to make sure it is a plot of the uk)
     # ax.coastlines()
-    assert_array_almost_equal(ax.viewLim.get_points(),
-                              np.array([[-17.17698577, 48.21879707],
-                                        [5.68924381, 60.54218893]])
-                              )
+    assert_array_almost_equal(
+        ax.viewLim.get_points(),
+        np.array([[-17.17698577, 48.21879707], [5.68924381, 60.54218893]]),
+    )
 
 
 def test_get_extent():
@@ -59,8 +64,7 @@ def test_get_extent():
     ax.set_extent(uk, crs=uk_crs)
     assert_array_almost_equal(ax.get_extent(uk_crs), uk)
 
-    ax = plt.axes(projection=ccrs.Mercator(min_latitude=uk[2],
-                                           max_latitude=uk[3]))
+    ax = plt.axes(projection=ccrs.Mercator(min_latitude=uk[2], max_latitude=uk[3]))
     ax.set_extent(uk, crs=uk_crs)
     assert_array_almost_equal(ax.get_extent(uk_crs), uk, decimal=1)
 
@@ -88,15 +92,16 @@ def test_update_lim():
     # check that the standard data lim setting works
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.update_datalim([(-10, -10), (-5, -5)])
-    assert_array_almost_equal(ax.dataLim.get_points(),
-                              np.array([[-10., -10.], [-5., -5.]]))
+    assert_array_almost_equal(
+        ax.dataLim.get_points(), np.array([[-10.0, -10.0], [-5.0, -5.0]])
+    )
 
 
 def test_limits_contour():
     xs, ys = np.meshgrid(np.linspace(250, 350, 15), np.linspace(-45, 45, 20))
-    data = np.sin((xs * ys) * 1.e7)
+    data = np.sin((xs * ys) * 1.0e7)
 
-    resulting_extent = np.array([[250 - 180, -45.], [-10. + 180, 45.]])
+    resulting_extent = np.array([[250 - 180, -45.0], [-10.0 + 180, 45.0]])
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -112,9 +117,9 @@ def test_limits_contour():
 
 def test_limits_pcolor():
     xs, ys = np.meshgrid(np.linspace(250, 350, 15), np.linspace(-45, 45, 20))
-    data = (np.sin((xs * ys) * 1.e7))[:-1, :-1]
+    data = (np.sin((xs * ys) * 1.0e7))[:-1, :-1]
 
-    resulting_extent = np.array([[250 - 180, -45.], [-10. + 180, 45.]])
+    resulting_extent = np.array([[250 - 180, -45.0], [-10.0 + 180, 45.0]])
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -135,26 +140,22 @@ def test_view_lim_autoscaling():
     ax = plt.axes(projection=ccrs.RotatedPole(37.5, 357.5))
     ax.scatter(x, y, x * y, transform=ccrs.PlateCarree())
 
-    expected = np.array([[86.12433701, 52.51570463],
-                         [86.69696603, 52.86372057]])
+    expected = np.array([[86.12433701, 52.51570463], [86.69696603, 52.86372057]])
 
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected,
-                              decimal=2)
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected, decimal=2)
     plt.draw()
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected,
-                              decimal=2)
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected, decimal=2)
     ax.autoscale_view(tight=False)
     expected_non_tight = np.array([[86, 52.45], [86.8, 52.9]])
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
-                              expected_non_tight, decimal=1)
+    assert_array_almost_equal(
+        ax.viewLim.frozen().get_points(), expected_non_tight, decimal=1
+    )
 
 
 def test_view_lim_default_global(tmp_path):
     ax = plt.axes(projection=ccrs.PlateCarree())
     # The view lim should be the default unit bbox until it is drawn.
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
-                              [[0, 0], [1, 1]])
-    plt.savefig(tmp_path / 'view_lim_default_global.png')
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), [[0, 0], [1, 1]])
+    plt.savefig(tmp_path / "view_lim_default_global.png")
     expected = np.array([[-180, -90], [180, 90]])
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
-                              expected)
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(), expected)

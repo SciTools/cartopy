@@ -18,16 +18,29 @@ from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
 import cartopy.mpl.geoaxes as geoaxes
 
 
-@pytest.mark.parametrize("source, expected", [
-    [{1: 0}, frozenset({(1, 0)})],
-    [[1, 2], (1, 2)],
-    [[1, {}], (1, frozenset())],
-    [[1, {'a': [1, 2, 3]}], (1, frozenset([('a', (1, 2, 3))]))],
-    [{'edgecolor': 'face', 'zorder': -1,
-      'facecolor': np.array([0.9375, 0.9375, 0.859375])},
-     frozenset([('edgecolor', 'face'), ('zorder', -1),
-                ('facecolor', (0.9375, 0.9375, 0.859375))])],
-])
+@pytest.mark.parametrize(
+    "source, expected",
+    [
+        [{1: 0}, frozenset({(1, 0)})],
+        [[1, 2], (1, 2)],
+        [[1, {}], (1, frozenset())],
+        [[1, {"a": [1, 2, 3]}], (1, frozenset([("a", (1, 2, 3))]))],
+        [
+            {
+                "edgecolor": "face",
+                "zorder": -1,
+                "facecolor": np.array([0.9375, 0.9375, 0.859375]),
+            },
+            frozenset(
+                [
+                    ("edgecolor", "face"),
+                    ("zorder", -1),
+                    ("facecolor", (0.9375, 0.9375, 0.859375)),
+                ]
+            ),
+        ],
+    ],
+)
 def test_freeze(source, expected):
     assert _freeze(source) == expected
 
@@ -48,7 +61,8 @@ def mocked_axes(extent, projection=ccrs.PlateCarree()):
         spec=geoaxes.GeoAxes,
         transData=IdentityTransform(),
         patch=mock.sentinel.patch,
-        figure=mock.sentinel.figure)
+        figure=mock.sentinel.figure,
+    )
 
 
 # Need to initialize private renderer properties on the sentinel
@@ -59,7 +73,7 @@ mock.sentinel.renderer._rasterizing = False
 def style_from_call(call):
     args, kwargs = call
     # Drop the transform keyword.
-    kwargs.pop('transform')
+    kwargs.pop("transform")
     return kwargs
 
 
@@ -70,22 +84,23 @@ def cached_paths(geom, target_projection):
     return geom_cache.get(target_projection, None)
 
 
-@mock.patch('matplotlib.collections.PathCollection')
+@mock.patch("matplotlib.collections.PathCollection")
 def test_feature_artist_draw(path_collection_cls, feature):
     geoms = list(feature.geometries())
 
-    fa = FeatureArtist(feature, facecolor='red')
+    fa = FeatureArtist(feature, facecolor="red")
     prj_crs = ccrs.Robinson()
     fa.axes = mocked_axes(extent=[-10, 10, -10, 10], projection=prj_crs)
     fa.draw(mock.sentinel.renderer)
 
     transform = prj_crs._as_mpl_transform(fa.axes)
-    expected_paths = (cached_paths(geoms[0], prj_crs) +
-                      cached_paths(geoms[1], prj_crs), )
-    expected_style = {'facecolor': 'red'}
+    expected_paths = (
+        cached_paths(geoms[0], prj_crs) + cached_paths(geoms[1], prj_crs),
+    )
+    expected_style = {"facecolor": "red"}
 
     args, kwargs = path_collection_cls.call_args_list[0]
-    assert transform == kwargs.pop('transform', None)
+    assert transform == kwargs.pop("transform", None)
     assert kwargs == expected_style
     assert args == expected_paths
 
@@ -94,11 +109,11 @@ def test_feature_artist_draw(path_collection_cls, feature):
     path_collection_cls().draw(mock.sentinel.renderer)
 
 
-@mock.patch('matplotlib.collections.PathCollection')
+@mock.patch("matplotlib.collections.PathCollection")
 def test_feature_artist_draw_styler(path_collection_cls, feature):
     geoms = list(feature.geometries())
-    style1 = {'facecolor': 'blue', 'edgecolor': 'white'}
-    style2 = {'color': 'black', 'linewidth': 1}
+    style1 = {"facecolor": "blue", "edgecolor": "white"}
+    style2 = {"color": "black", "linewidth": 1}
     style2_finalized = style.finalize(style.merge(style2))
 
     def styler(geom):
@@ -115,14 +130,18 @@ def test_feature_artist_draw_styler(path_collection_cls, feature):
 
     transform = prj_crs._as_mpl_transform(fa.axes)
 
-    calls = [{'paths': (cached_paths(geoms[0], prj_crs), ),
-              'style': dict(linewidth=2, **style1)},
-             {'paths': (cached_paths(geoms[1], prj_crs), ),
-              'style': style2_finalized}]
+    calls = [
+        {
+            "paths": (cached_paths(geoms[0], prj_crs),),
+            "style": dict(linewidth=2, **style1),
+        },
+        {"paths": (cached_paths(geoms[1], prj_crs),), "style": style2_finalized},
+    ]
 
     assert path_collection_cls.call_count == 2
-    for expected_call, (actual_args, actual_kwargs) in \
-            zip(calls, path_collection_cls.call_args_list):
-        assert expected_call['paths'] == actual_args
-        assert transform == actual_kwargs.pop('transform')
-        assert expected_call['style'] == actual_kwargs
+    for expected_call, (actual_args, actual_kwargs) in zip(
+        calls, path_collection_cls.call_args_list
+    ):
+        assert expected_call["paths"] == actual_args
+        assert transform == actual_kwargs.pop("transform")
+        assert expected_call["style"] == actual_kwargs

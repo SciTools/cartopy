@@ -23,8 +23,7 @@ def main():
 
     # Construct a star in longitudes and latitudes.
     star_path = mpath.Path.unit_regular_star(5, 0.5)
-    star_path = mpath.Path(star_path.vertices.copy() * 80,
-                           star_path.codes.copy())
+    star_path = mpath.Path(star_path.vertices.copy() * 80, star_path.codes.copy())
 
     # Use the star as the boundary.
     ax.set_boundary(star_path, transform=ccrs.PlateCarree())
@@ -32,5 +31,5 @@ def main():
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

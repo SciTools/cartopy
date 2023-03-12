@@ -22,6 +22,7 @@ def tube_locations():
     Source: https://www.doogal.co.uk/london_stations.php
 
     """
+    # fmt: off
     return np.array([[531738., 180890.], [532379., 179734.],
                      [531096., 181642.], [530234., 180492.],
                      [531688., 181150.], [530242., 180982.],
@@ -34,6 +35,7 @@ def tube_locations():
                      [530995., 180810.], [529774., 181354.],
                      [528941., 179131.], [531050., 179933.],
                      [530240., 179718.]])
+    # fmt: on
 
 
 def main():
@@ -47,8 +49,9 @@ def main():
     # suitable for a London Underground logo.
     theta = np.linspace(0, 2 * np.pi, 100)
     circle_verts = np.vstack([np.sin(theta), np.cos(theta)]).T
-    concentric_circle = Path.make_compound_path(Path(circle_verts[::-1]),
-                                                Path(circle_verts * 0.6))
+    concentric_circle = Path.make_compound_path(
+        Path(circle_verts[::-1]), Path(circle_verts * 0.6)
+    )
 
     rectangle = Path([[-1.1, -0.2], [1, -0.2], [1, 0.3], [-1.1, 0.3]])
 
@@ -58,14 +61,28 @@ def main():
     # Plot the locations twice, first with the red concentric circles,
     # then with the blue rectangle.
     xs, ys = tube_locations().T
-    ax.plot(xs, ys, transform=ccrs.OSGB(approx=False),
-            marker=concentric_circle, color='red', markersize=9, linestyle='')
-    ax.plot(xs, ys, transform=ccrs.OSGB(approx=False),
-            marker=rectangle, color='blue', markersize=11, linestyle='')
+    ax.plot(
+        xs,
+        ys,
+        transform=ccrs.OSGB(approx=False),
+        marker=concentric_circle,
+        color="red",
+        markersize=9,
+        linestyle="",
+    )
+    ax.plot(
+        xs,
+        ys,
+        transform=ccrs.OSGB(approx=False),
+        marker=rectangle,
+        color="blue",
+        markersize=11,
+        linestyle="",
+    )
 
-    ax.set_title('London underground locations')
+    ax.set_title("London underground locations")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

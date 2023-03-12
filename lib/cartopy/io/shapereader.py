@@ -42,6 +42,7 @@ from cartopy.io import Downloader
 _HAS_FIONA = False
 try:
     import fiona
+
     _HAS_FIONA = True
 except ImportError:
     pass
@@ -62,7 +63,7 @@ class Record:
         self._bounds = None
         # if the record defines a bbox, then use that for the shape's bounds,
         # rather than using the full geometry in the bounds property
-        if hasattr(shape, 'bbox'):
+        if hasattr(shape, "bbox"):
             self._bounds = tuple(shape.bbox)
 
         self._geometry = None
@@ -74,10 +75,10 @@ class Record:
         self._fields = fields
 
     def __repr__(self):
-        return f'<Record: {self.geometry!r}, {self.attributes!r}, <fields>>'
+        return f"<Record: {self.geometry!r}, {self.attributes!r}, <fields>>"
 
     def __str__(self):
-        return f'Record({self.geometry}, {self.attributes}, <fields>)'
+        return f"Record({self.geometry}, {self.attributes}, <fields>)"
 
     @property
     def bounds(self):
@@ -130,8 +131,7 @@ class BasicReader:
         # Validate the filename/shapefile
         self._reader = reader = shapefile.Reader(filename)
         if reader.shp is None or reader.shx is None or reader.dbf is None:
-            raise ValueError("Incomplete shapefile definition "
-                             "in '%s'." % filename)
+            raise ValueError("Incomplete shapefile definition " "in '%s'." % filename)
 
         self._fields = self._reader.fields
 
@@ -196,8 +196,8 @@ class FionaReader:
             else:
                 fs = features
 
-            if isinstance(fs, dict) and fs.get('type') == 'FeatureCollection':
-                features_lst = fs['features']
+            if isinstance(fs, dict) and fs.get("type") == "FeatureCollection":
+                features_lst = fs["features"]
             else:
                 features_lst = features
 
@@ -207,9 +207,12 @@ class FionaReader:
                 else:
                     feature = feature
 
-                d = {'geometry': sgeom.shape(feature['geometry'])
-                     if feature['geometry'] else None}
-                d.update(feature['properties'])
+                d = {
+                    "geometry": sgeom.shape(feature["geometry"])
+                    if feature["geometry"]
+                    else None
+                }
+                d.update(feature["properties"])
                 self._data.append(d)
 
     def close(self):
@@ -234,7 +237,7 @@ class FionaReader:
 
         """
         for item in self._data:
-            yield item['geometry']
+            yield item["geometry"]
 
     def records(self):
         """
@@ -242,9 +245,10 @@ class FionaReader:
 
         """
         for item in self._data:
-            yield FionaRecord(item['geometry'],
-                              {key: value for key, value in
-                               item.items() if key != 'geometry'})
+            yield FionaRecord(
+                item["geometry"],
+                {key: value for key, value in item.items() if key != "geometry"},
+            )
 
 
 if _HAS_FIONA:
@@ -253,7 +257,7 @@ else:
     Reader = BasicReader
 
 
-def natural_earth(resolution='110m', category='physical', name='coastline'):
+def natural_earth(resolution="110m", category="physical", name="coastline"):
     """
     Return the path to the requested natural earth shapefile,
     downloading and unzipping if necessary.
@@ -277,10 +281,15 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     # get hold of the Downloader (typically a NEShpDownloader instance)
     # which we can then simply call its path method to get the appropriate
     # shapefile (it will download if necessary)
-    ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
-                                            resolution, category, name))
-    format_dict = {'config': config, 'category': category,
-                   'name': name, 'resolution': resolution}
+    ne_downloader = Downloader.from_config(
+        ("shapefiles", "natural_earth", resolution, category, name)
+    )
+    format_dict = {
+        "config": config,
+        "category": category,
+        "name": name,
+        "resolution": resolution,
+    }
     return ne_downloader.path(format_dict)
 
 
@@ -294,22 +303,26 @@ class NEShpDownloader(Downloader):
     are typically ``category``, ``resolution`` and ``name``.
 
     """
-    FORMAT_KEYS = ('config', 'resolution', 'category', 'name')
+
+    FORMAT_KEYS = ("config", "resolution", "category", "name")
 
     # Define the NaturalEarth URL template. Shapefiles are hosted on AWS since
     # 2021: https://github.com/nvkelso/natural-earth-vector/issues/445
-    _NE_URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/'
-                        '{resolution}_{category}/ne_{resolution}_{name}.zip')
+    _NE_URL_TEMPLATE = (
+        "https://naturalearth.s3.amazonaws.com/"
+        "{resolution}_{category}/ne_{resolution}_{name}.zip"
+    )
 
-    def __init__(self,
-                 url_template=_NE_URL_TEMPLATE,
-                 target_path_template=None,
-                 pre_downloaded_path_template='',
-                 ):
+    def __init__(
+        self,
+        url_template=_NE_URL_TEMPLATE,
+        target_path_template=None,
+        pre_downloaded_path_template="",
+    ):
         # adds some NE defaults to the __init__ of a Downloader
-        Downloader.__init__(self, url_template,
-                            target_path_template,
-                            pre_downloaded_path_template)
+        Downloader.__init__(
+            self, url_template, target_path_template, pre_downloaded_path_template
+        )
 
     def zip_file_contents(self, format_dict):
         """
@@ -317,9 +330,11 @@ class NEShpDownloader(Downloader):
         natural earth zip file.
 
         """
-        for ext in ['.shp', '.dbf', '.shx', '.prj', '.cpg']:
-            yield ('ne_{resolution}_{name}'
-                   '{extension}'.format(extension=ext, **format_dict))
+        for ext in [".shp", ".dbf", ".shx", ".prj", ".cpg"]:
+            yield (
+                "ne_{resolution}_{name}"
+                "{extension}".format(extension=ext, **format_dict)
+            )
 
     def acquire_resource(self, target_path, format_dict):
         """
@@ -336,12 +351,11 @@ class NEShpDownloader(Downloader):
 
         shapefile_online = self._urlopen(url)
 
-        zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(io.BytesIO(shapefile_online.read()), "r")
 
         for member_path in self.zip_file_contents(format_dict):
-            member = zfh.getinfo(member_path.replace('\\', '/'))
-            with open(target_path.with_suffix(
-                    Path(member_path).suffix), 'wb') as fh:
+            member = zfh.getinfo(member_path.replace("\\", "/"))
+            with open(target_path.with_suffix(Path(member_path).suffix), "wb") as fh:
                 fh.write(zfh.open(member).read())
 
         shapefile_online.close()
@@ -364,24 +378,29 @@ class NEShpDownloader(Downloader):
 ne_{resolution}_{name}.shp
 
         """
-        default_spec = ('shapefiles', 'natural_earth', '{category}',
-                        'ne_{resolution}_{name}.shp')
-        ne_path_template = str(
-            Path('{config[data_dir]}').joinpath(*default_spec))
+        default_spec = (
+            "shapefiles",
+            "natural_earth",
+            "{category}",
+            "ne_{resolution}_{name}.shp",
+        )
+        ne_path_template = str(Path("{config[data_dir]}").joinpath(*default_spec))
         pre_path_template = str(
-            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
-        return NEShpDownloader(target_path_template=ne_path_template,
-                               pre_downloaded_path_template=pre_path_template)
+            Path("{config[pre_existing_data_dir]}").joinpath(*default_spec)
+        )
+        return NEShpDownloader(
+            target_path_template=ne_path_template,
+            pre_downloaded_path_template=pre_path_template,
+        )
 
 
 # add a generic Natural Earth shapefile downloader to the config dictionary's
 # 'downloaders' section.
-_ne_key = ('shapefiles', 'natural_earth')
-config['downloaders'].setdefault(_ne_key,
-                                 NEShpDownloader.default_downloader())
+_ne_key = ("shapefiles", "natural_earth")
+config["downloaders"].setdefault(_ne_key, NEShpDownloader.default_downloader())
 
 
-def gshhs(scale='c', level=1):
+def gshhs(scale="c", level=1):
     """
     Return the path to the requested GSHHS shapefile,
     downloading and unzipping if necessary.
@@ -390,9 +409,8 @@ def gshhs(scale='c', level=1):
     # Get hold of the Downloader (typically a GSHHSShpDownloader instance)
     # and call its path method to get the appropriate shapefile (it will
     # download it if necessary).
-    gshhs_downloader = Downloader.from_config(('shapefiles', 'gshhs',
-                                               scale, level))
-    format_dict = {'config': config, 'scale': scale, 'level': level}
+    gshhs_downloader = Downloader.from_config(("shapefiles", "gshhs", scale, level))
+    format_dict = {"config": config, "scale": scale, "level": level}
     return gshhs_downloader.path(format_dict)
 
 
@@ -406,21 +424,25 @@ class GSHHSShpDownloader(Downloader):
     (a number indicating the type of feature).
 
     """
-    FORMAT_KEYS = ('config', 'scale', 'level')
 
-    gshhs_version = '2.3.7'
+    FORMAT_KEYS = ("config", "scale", "level")
+
+    gshhs_version = "2.3.7"
 
     _GSHHS_URL_TEMPLATE = (
-        'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-        f'gshhs/latest/gshhg-shp-{gshhs_version}.zip'
+        "https://www.ngdc.noaa.gov/mgg/shorelines/data/"
+        f"gshhs/latest/gshhg-shp-{gshhs_version}.zip"
     )
 
-    def __init__(self,
-                 url_template=_GSHHS_URL_TEMPLATE,
-                 target_path_template=None,
-                 pre_downloaded_path_template=''):
-        super().__init__(url_template, target_path_template,
-                         pre_downloaded_path_template)
+    def __init__(
+        self,
+        url_template=_GSHHS_URL_TEMPLATE,
+        target_path_template=None,
+        pre_downloaded_path_template="",
+    ):
+        super().__init__(
+            url_template, target_path_template, pre_downloaded_path_template
+        )
 
     def zip_file_contents(self, format_dict):
         """
@@ -428,9 +450,8 @@ class GSHHSShpDownloader(Downloader):
         GSHHS zip file for the specified resource.
 
         """
-        for ext in ['.shp', '.dbf', '.shx']:
-            p = Path('GSHHS_shp', '{scale}',
-                     'GSHHS_{scale}_L{level}{extension}')
+        for ext in [".shp", ".dbf", ".shx"]:
+            p = Path("GSHHS_shp", "{scale}", "GSHHS_{scale}_L{level}{extension}")
             yield str(p).format(extension=ext, **format_dict)
 
     def acquire_all_resources(self, format_dict):
@@ -448,9 +469,9 @@ class GSHHSShpDownloader(Downloader):
                 without changing the naming convention
                 """
                 url = (
-                    f'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-                    f'gshhs/oldversions/version{self.gshhs_version}/'
-                    f'gshhg-shp-{self.gshhs_version}.zip'
+                    f"https://www.ngdc.noaa.gov/mgg/shorelines/data/"
+                    f"gshhs/oldversions/version{self.gshhs_version}/"
+                    f"gshhg-shp-{self.gshhs_version}.zip"
                 )
                 shapefile_online = self._urlopen(url)
             except HTTPError:
@@ -459,31 +480,32 @@ class GSHHSShpDownloader(Downloader):
                 with changing the naming convention
                 """
                 url = (
-                    'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-                    'gshhs/oldversions/version2.3.6/'
-                    'gshhg-shp-2.3.6.zip'
+                    "https://www.ngdc.noaa.gov/mgg/shorelines/data/"
+                    "gshhs/oldversions/version2.3.6/"
+                    "gshhg-shp-2.3.6.zip"
                 )
                 shapefile_online = self._urlopen(url)
-        zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
+        zfh = ZipFile(io.BytesIO(shapefile_online.read()), "r")
         shapefile_online.close()
 
         # Iterate through all scales and levels and extract relevant files.
         modified_format_dict = dict(format_dict)
-        scales = ('c', 'l', 'i', 'h', 'f')
+        scales = ("c", "l", "i", "h", "f")
         levels = (1, 2, 3, 4, 5, 6)
         for scale, level in itertools.product(scales, levels):
             # the combination c4 does not occur for some reason
             if scale == "c" and level == 4:
                 continue
-            modified_format_dict.update({'scale': scale, 'level': level})
+            modified_format_dict.update({"scale": scale, "level": level})
             target_path = self.target_path(modified_format_dict)
             target_dir = target_path.parent
             target_dir.mkdir(parents=True, exist_ok=True)
 
             for member_path in self.zip_file_contents(modified_format_dict):
-                member = zfh.getinfo(member_path.replace('\\', '/'))
-                with open(target_path.with_suffix(
-                        Path(member_path).suffix), 'wb') as fh:
+                member = zfh.getinfo(member_path.replace("\\", "/"))
+                with open(
+                    target_path.with_suffix(Path(member_path).suffix), "wb"
+                ) as fh:
                     fh.write(zfh.open(member).read())
 
         zfh.close()
@@ -500,17 +522,19 @@ class GSHHSShpDownloader(Downloader):
             exist in the ``cartopy.config['repo_data_dir']`` directory.
 
         """
-        repo_fname_pattern = str(Path('shapefiles') / 'gshhs'
-                                 / '{scale}' / 'GSHHS_{scale}_L?.shp')
+        repo_fname_pattern = str(
+            Path("shapefiles") / "gshhs" / "{scale}" / "GSHHS_{scale}_L?.shp"
+        )
         repo_fname_pattern = repo_fname_pattern.format(**format_dict)
-        repo_fnames = list(config['repo_data_dir'].glob(repo_fname_pattern))
+        repo_fnames = list(config["repo_data_dir"].glob(repo_fname_pattern))
         if repo_fnames:
-            assert len(repo_fnames) == 1, '>1 repo files found for GSHHS'
+            assert len(repo_fnames) == 1, ">1 repo files found for GSHHS"
             return repo_fnames[0]
         self.acquire_all_resources(format_dict)
         if not target_path.exists():
-            raise RuntimeError('Failed to download and extract GSHHS '
-                               f'shapefile to {target_path!r}.')
+            raise RuntimeError(
+                "Failed to download and extract GSHHS " f"shapefile to {target_path!r}."
+            )
         return target_path
 
     @staticmethod
@@ -530,18 +554,18 @@ class GSHHSShpDownloader(Downloader):
 GSHHS_{scale}_L{level}.shp
 
         """
-        default_spec = ('shapefiles', 'gshhs', '{scale}',
-                        'GSHHS_{scale}_L{level}.shp')
-        gshhs_path_template = str(
-            Path('{config[data_dir]}').joinpath(*default_spec))
+        default_spec = ("shapefiles", "gshhs", "{scale}", "GSHHS_{scale}_L{level}.shp")
+        gshhs_path_template = str(Path("{config[data_dir]}").joinpath(*default_spec))
         pre_path_tmplt = str(
-            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
-        return GSHHSShpDownloader(target_path_template=gshhs_path_template,
-                                  pre_downloaded_path_template=pre_path_tmplt)
+            Path("{config[pre_existing_data_dir]}").joinpath(*default_spec)
+        )
+        return GSHHSShpDownloader(
+            target_path_template=gshhs_path_template,
+            pre_downloaded_path_template=pre_path_tmplt,
+        )
 
 
 # Add a GSHHS shapefile downloader to the config dictionary's
 # 'downloaders' section.
-_gshhs_key = ('shapefiles', 'gshhs')
-config['downloaders'].setdefault(_gshhs_key,
-                                 GSHHSShpDownloader.default_downloader())
+_gshhs_key = ("shapefiles", "gshhs")
+config["downloaders"].setdefault(_gshhs_key, GSHHSShpDownloader.default_downloader())

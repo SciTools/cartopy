@@ -37,7 +37,7 @@ def main():
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Orthographic(-10, 45))
 
     ax.add_feature(cfeature.OCEAN, zorder=0)
-    ax.add_feature(cfeature.LAND, zorder=0, edgecolor='black')
+    ax.add_feature(cfeature.LAND, zorder=0, edgecolor="black")
 
     ax.set_global()
     ax.gridlines()
@@ -48,5 +48,5 @@ def main():
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

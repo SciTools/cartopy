@@ -16,8 +16,7 @@ def main():
     fig = plt.figure(figsize=(8, 10))
 
     # Label axes of a Plate Carree projection with a central longitude of 180:
-    ax1 = fig.add_subplot(2, 1, 1,
-                          projection=ccrs.PlateCarree(central_longitude=180))
+    ax1 = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree(central_longitude=180))
     ax1.set_global()
     ax1.coastlines()
     ax1.set_xticks([0, 60, 120, 180, 240, 300, 360], crs=ccrs.PlateCarree())
@@ -34,16 +33,15 @@ def main():
     ax2.coastlines()
     ax2.set_xticks([-180, -120, -60, 0, 60, 120, 180], crs=ccrs.PlateCarree())
     ax2.set_yticks([-78.5, -60, -25.5, 25.5, 60, 80], crs=ccrs.PlateCarree())
-    lon_formatter = LongitudeFormatter(number_format='.1f',
-                                       degree_symbol='',
-                                       dateline_direction_label=True)
-    lat_formatter = LatitudeFormatter(number_format='.1f',
-                                      degree_symbol='')
+    lon_formatter = LongitudeFormatter(
+        number_format=".1f", degree_symbol="", dateline_direction_label=True
+    )
+    lat_formatter = LatitudeFormatter(number_format=".1f", degree_symbol="")
     ax2.xaxis.set_major_formatter(lon_formatter)
     ax2.yaxis.set_major_formatter(lat_formatter)
 
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

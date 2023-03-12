@@ -7,8 +7,9 @@
 
 def pytest_configure(config):
     # Register additional markers.
-    config.addinivalue_line('markers',
-                            'natural_earth: mark tests that use Natural Earth '
-                            'data, and the network, if not cached.')
-    config.addinivalue_line('markers',
-                            'network: mark tests that use the network.')
+    config.addinivalue_line(
+        "markers",
+        "natural_earth: mark tests that use Natural Earth "
+        "data, and the network, if not cached.",
+    )
+    config.addinivalue_line("markers", "network: mark tests that use the network.")

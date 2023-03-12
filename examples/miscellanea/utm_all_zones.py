@@ -24,14 +24,16 @@ def main():
 
     # Loop through each zone in the list
     for zone in zones:
-
         # Add GeoAxes object with specific UTM zone projection to the figure
-        ax = fig.add_subplot(1, len(zones), zone,
-                             projection=ccrs.UTM(zone=zone,
-                                                 southern_hemisphere=True))
+        ax = fig.add_subplot(
+            1,
+            len(zones),
+            zone,
+            projection=ccrs.UTM(zone=zone, southern_hemisphere=True),
+        )
 
         # Add coastlines, gridlines and zone number for the subplot
-        ax.coastlines(resolution='110m')
+        ax.coastlines(resolution="110m")
         ax.gridlines()
         ax.set_title(zone)
 
@@ -42,5 +44,5 @@ def main():
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

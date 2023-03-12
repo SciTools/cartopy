@@ -28,12 +28,12 @@ class SlippyImageArtist(AxesImage):
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
         # This artist fills the Axes, so should not influence layout.
-        kwargs.setdefault('in_layout', False)
+        kwargs.setdefault("in_layout", False)
         super().__init__(ax, **kwargs)
         self.cache = []
 
-        ax.figure.canvas.mpl_connect('button_press_event', self.on_press)
-        ax.figure.canvas.mpl_connect('button_release_event', self.on_release)
+        ax.figure.canvas.mpl_connect("button_press_event", self.on_press)
+        ax.figure.canvas.mpl_connect("button_release_event", self.on_release)
 
         self.on_release()
 
@@ -57,8 +57,10 @@ class SlippyImageArtist(AxesImage):
         [x1, y1], [x2, y2] = ax.viewLim.get_points()
         if not self.user_is_interacting:
             located_images = self.raster_source.fetch_raster(
-                ax.projection, extent=[x1, x2, y1, y2],
-                target_resolution=(window_extent.width, window_extent.height))
+                ax.projection,
+                extent=[x1, x2, y1, y2],
+                target_resolution=(window_extent.width, window_extent.height),
+            )
             self.cache = located_images
 
         for img, extent in self.cache:

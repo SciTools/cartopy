@@ -15,6 +15,7 @@ class GeoContourSet(QuadContourSet):
     A contourset designed to handle things like contour labels.
 
     """
+
     # nb. No __init__ method here - most of the time a GeoContourSet will
     # come from GeoAxes.contour[f]. These methods morph a ContourSet by
     # fiddling with instance.__class__.
@@ -70,8 +71,7 @@ class GeoContourSet(QuadContourSet):
                     continue
 
                 # Split the path if it has multiple MOVETO statements.
-                codes = np.array(
-                    path.codes if path.codes is not None else [0])
+                codes = np.array(path.codes if path.codes is not None else [0])
                 moveto = codes == mpath.Path.MOVETO
                 if moveto.sum() <= 1:
                     # This is only one path, so add it to the collection.

@@ -21,8 +21,15 @@ x = np.linspace(-80, 80)
 xs, ys = np.meshgrid(2 * x + 180, x)
 zs = xs + ys
 vmin, vmax = np.min(zs), np.max(zs)
-mesh = ax.pcolormesh(xs, ys, np.zeros_like(zs), transform=ccrs.PlateCarree(),
-                     shading='auto', vmin=vmin, vmax=vmax)
+mesh = ax.pcolormesh(
+    xs,
+    ys,
+    np.zeros_like(zs),
+    transform=ccrs.PlateCarree(),
+    shading="auto",
+    vmin=vmin,
+    vmax=vmax,
+)
 
 n = 10
 
@@ -34,7 +41,6 @@ def update_mesh(t):
 ts = [i / n for i in range(n)]
 # Go back to the start to make it a smooth repeat
 ts += ts[::-1]
-ani = FuncAnimation(fig, update_mesh, frames=ts,
-                    interval=100)
+ani = FuncAnimation(fig, update_mesh, frames=ts, interval=100)
 
 plt.show()

@@ -36,13 +36,12 @@ def geos_image():
         The origin of the image to be passed through to matplotlib's imshow.
 
     """
-    url = ('https://gist.github.com/pelson/5871263/raw/'
-           'EIDA50_201211061300_clip2.png')
+    url = "https://gist.github.com/pelson/5871263/raw/" "EIDA50_201211061300_clip2.png"
     img_handle = BytesIO(urlopen(url).read())
     img = plt.imread(img_handle)
     img_proj = ccrs.Geostationary(satellite_height=35786000)
     img_extent = [-5500000, 5500000, -5500000, 5500000]
-    return img, img_proj, img_extent, 'upper'
+    return img, img_proj, img_extent, "upper"
 
 
 def main():
@@ -50,12 +49,12 @@ def main():
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Miller())
     ax.coastlines()
     ax.set_global()
-    print('Retrieving image...')
+    print("Retrieving image...")
     img, crs, extent, origin = geos_image()
-    print('Projecting and plotting image (this may take a while)...')
-    ax.imshow(img, transform=crs, extent=extent, origin=origin, cmap='gray')
+    print("Projecting and plotting image (this may take a while)...")
+    ax.imshow(img, transform=crs, extent=extent, origin=origin, cmap="gray")
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

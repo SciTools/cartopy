@@ -11,4 +11,4 @@ Tests for specific Cartopy CRS subclasses.
 import pytest
 
 
-pytest.register_assert_rewrite('cartopy.tests.crs.helpers')
+pytest.register_assert_rewrite("cartopy.tests.crs.helpers")
