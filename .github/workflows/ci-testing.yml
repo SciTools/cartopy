@@ -98,7 +98,7 @@ jobs:
           coveralls --service=github
 
       - name: Upload image results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}
