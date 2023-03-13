@@ -870,7 +870,7 @@ def test_streamplot():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare()
 def test_annotate():
-    """ test a variety of annotate options on mulitple projections
+    """ test a variety of annotate options on multiple projections
 
     Annotate defaults to coords passed as if they're in map projection space.
     `transform` or `xycoords` & `textcoords` control the marker and text offset
@@ -905,7 +905,7 @@ def test_annotate():
 
     # set up coordinates in map projection space
     map_coords = map_projection.transform_point(-175, -35, platecarree)
-    # Dont specifiy any args, default xycoords='data', transform=map projection
+    # Don't specify any args, default xycoords='data', transform=map projection
     ax.annotate('default crs', map_coords, size=5)
 
     # data in map projection using default transform, with

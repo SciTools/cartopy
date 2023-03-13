@@ -246,7 +246,7 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
     def _adjust_location(self):
         if self.stale:
             self.set_path(self._original_path.clip_to_bbox(self.axes.viewLim))
-            # Some places in matplotlib's tranform stack cache the actual
+            # Some places in matplotlib's transform stack cache the actual
             # path so we trigger an update by invalidating the transform.
             self._trans_wrap.invalidate()
 

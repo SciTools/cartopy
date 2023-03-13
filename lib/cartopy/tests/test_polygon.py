@@ -341,7 +341,7 @@ class PolygonTests:
 
 class TestWrap(PolygonTests):
     # Test that Plate Carree projection "does the right thing"(tm) with
-    # source data tha extends outside the [-180, 180] range.
+    # source data that extends outside the [-180, 180] range.
     def test_plate_carree_no_wrap(self):
         proj = ccrs.PlateCarree()
         poly = sgeom.box(0, 0, 10, 10)
