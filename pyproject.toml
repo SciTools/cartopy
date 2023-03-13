@@ -11,3 +11,9 @@ build-backend = "setuptools.build_meta"
 [tool.codespell]
 ignore-words-list = "damon,koordinates,linz,slippy,subtiles,tring"
 skip = "./.git,./docs/build,./docs/source/gallery,./docs/source/reference,*.cpp,*.css,*.examples,*.js,*.html,*.ipynb,*.pdf,*.rst.txt"
+
+[tool.check-manifest]
+ignore = [
+    "lib/cartopy/_version.py",
+    "lib/cartopy/trace.cpp",
+]
