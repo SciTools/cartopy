@@ -19,3 +19,8 @@ repos:
     - id: codespell
       types_or: [python, markdown, rst]
       additional_dependencies: [tomli]
+  - repo: https://github.com/aio-libs/sort-all
+    rev: "v1.2.0"
+    hooks:
+      - id: sort-all
+        types: [file, python]
