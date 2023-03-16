@@ -5,8 +5,9 @@ Contour labels
 An example of adding contour labels to matplotlib contours.
 
 """
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
 
 
 def sample_data(shape=(73, 145)):

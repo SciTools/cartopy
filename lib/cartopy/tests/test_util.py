@@ -9,7 +9,7 @@ import numpy.ma as ma
 from numpy.testing import assert_array_equal
 import pytest
 
-from cartopy.util import add_cyclic_point, add_cyclic, has_cyclic
+from cartopy.util import add_cyclic, add_cyclic_point, has_cyclic
 
 
 class Test_add_cyclic_point:

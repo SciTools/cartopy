@@ -22,7 +22,7 @@ import numpy as np
 
 from cartopy import config
 import cartopy.crs as ccrs
-from cartopy.io import fh_getter, Downloader, RasterSource, LocatedImage
+from cartopy.io import Downloader, LocatedImage, RasterSource, fh_getter
 
 
 class _SRTMSource(RasterSource):

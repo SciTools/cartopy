@@ -5,8 +5,8 @@
 # licensing details.
 
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import packaging.version
 
 

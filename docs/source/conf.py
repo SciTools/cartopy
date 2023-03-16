@@ -20,9 +20,11 @@ from datetime import datetime
 from pathlib import Path
 import sys
 
-import cartopy
 import matplotlib
 from sphinx_gallery.sorting import ExampleTitleSortKey, ExplicitOrder
+
+import cartopy
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here.

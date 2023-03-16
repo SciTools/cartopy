@@ -27,10 +27,11 @@ from PIL import Image
 import numpy as np
 import shapely.geometry as sgeom
 
+
 try:
-    from owslib.wms import WebMapService
-    from owslib.wfs import WebFeatureService
     import owslib.util
+    from owslib.wfs import WebFeatureService
+    from owslib.wms import WebMapService
     import owslib.wmts
 
     _OWSLIB_AVAILABLE = True
@@ -40,8 +41,9 @@ except ImportError:
     _OWSLIB_AVAILABLE = False
 
 import cartopy.crs as ccrs
-from cartopy.io import LocatedImage, RasterSource
 from cartopy.img_transform import warp_array
+from cartopy.io import LocatedImage, RasterSource
+
 
 _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 

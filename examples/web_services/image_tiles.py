@@ -7,8 +7,8 @@ providing web service can be accessed.
 
 """
 import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
 
+import cartopy.crs as ccrs
 from cartopy.io.img_tiles import Stamen
 
 

@@ -5,9 +5,9 @@
 # licensing details.
 """This module contains tools for handling tick marks in cartopy."""
 
-import numpy as np
 import matplotlib as mpl
 from matplotlib.ticker import Formatter, MaxNLocator
+import numpy as np
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes

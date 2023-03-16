@@ -6,14 +6,15 @@
 
 from unittest import mock
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
 
 
 # Note, other tests for quiver exist in test_mpl_integration.
+
 
 class TestQuiverShapes:
     def setup_method(self):

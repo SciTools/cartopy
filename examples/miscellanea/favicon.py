@@ -5,11 +5,12 @@ Cartopy Favicon
 The actual code to generate cartopy's favicon.
 
 """
-import cartopy.crs as ccrs
+from matplotlib.font_manager import FontProperties
+import matplotlib.patches
 import matplotlib.pyplot as plt
 import matplotlib.textpath
-import matplotlib.patches
-from matplotlib.font_manager import FontProperties
+
+import cartopy.crs as ccrs
 
 
 def main():

@@ -9,6 +9,7 @@
 # and/or pip.
 import sys
 
+
 PYTHON_MIN_VERSION = (3, 8)
 
 if sys.version_info < PYTHON_MIN_VERSION:
@@ -24,12 +25,12 @@ Make sure you have pip >= 9.0.1.
     sys.exit(error)
 
 
-from pathlib import Path
-import os
-import subprocess
-import warnings
 from collections import defaultdict
+import os
+from pathlib import Path
+import subprocess
 from sysconfig import get_config_var
+import warnings
 
 from setuptools import Extension, find_packages, setup
 

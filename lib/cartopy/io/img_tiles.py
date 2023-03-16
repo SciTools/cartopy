@@ -24,8 +24,8 @@ from pathlib import Path
 import warnings
 
 from PIL import Image
-import shapely.geometry as sgeom
 import numpy as np
+import shapely.geometry as sgeom
 
 import cartopy
 import cartopy.crs as ccrs
@@ -202,7 +202,7 @@ class GoogleWTS(metaclass=ABCMeta):
         pass
 
     def get_image(self, tile):
-        from urllib.request import urlopen, Request, HTTPError, URLError
+        from urllib.request import HTTPError, Request, URLError, urlopen
 
         if self.cache_path is not None:
             filename = "_".join([str(i) for i in tile]) + ".npy"

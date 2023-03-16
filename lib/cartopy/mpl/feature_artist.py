@@ -14,12 +14,13 @@ from collections import OrderedDict
 import warnings
 import weakref
 
-import numpy as np
 import matplotlib.artist
 import matplotlib.collections
+import numpy as np
 
 import cartopy.mpl.patch as cpatch
-from .style import merge as style_merge, finalize as style_finalize
+from .style import finalize as style_finalize
+from .style import merge as style_merge
 
 
 class _GeomKey:

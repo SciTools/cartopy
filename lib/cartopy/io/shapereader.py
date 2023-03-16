@@ -32,11 +32,13 @@ import itertools
 from pathlib import Path
 from urllib.error import HTTPError
 
-import shapely.geometry as sgeom
 import shapefile
+import shapely.geometry as sgeom
 
-from cartopy.io import Downloader
 from cartopy import config
+from cartopy.io import Downloader
+
+
 _HAS_FIONA = False
 try:
     import fiona

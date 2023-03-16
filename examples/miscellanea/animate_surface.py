@@ -5,10 +5,12 @@ Animating a gridded surface
 This example demonstrates how to animate
 gridded data using `pcolormesh()`.
 """
-import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+import matplotlib.pyplot as plt
 import numpy as np
+
 import cartopy.crs as ccrs
+
 
 fig = plt.figure(figsize=(10, 5))
 ax = plt.axes(projection=ccrs.Robinson())

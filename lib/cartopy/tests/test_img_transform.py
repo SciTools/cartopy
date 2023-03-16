@@ -8,8 +8,8 @@ import numpy as np
 from numpy.testing import assert_array_equal
 import pytest
 
-import cartopy.img_transform as img_trans
 import cartopy.crs as ccrs
+import cartopy.img_transform as img_trans
 
 
 @pytest.mark.parametrize('xmin, xmax', [

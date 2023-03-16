@@ -9,12 +9,13 @@ and passes it to the `AxesGrid` instance. The `AxesGrid` built-in
 labelling is switched off, and instead a standard procedure
 of creating grid lines is used. Then some fake data is plotted.
 """
-import cartopy.crs as ccrs
-from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
 import numpy as np
+
+import cartopy.crs as ccrs
+from cartopy.mpl.geoaxes import GeoAxes
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 
 def sample_data_3d(shape):

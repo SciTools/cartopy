@@ -8,7 +8,7 @@ from datetime import datetime
 
 import pytest
 
-from cartopy.feature.nightshade import _julian_day, _solar_position, Nightshade
+from cartopy.feature.nightshade import Nightshade, _julian_day, _solar_position
 
 
 def test_julian_day():

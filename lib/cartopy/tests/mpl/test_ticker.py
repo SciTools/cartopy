@@ -7,13 +7,14 @@
 from unittest.mock import Mock
 
 import matplotlib.pyplot as plt
-import pytest
 import numpy as np
+import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import (LatitudeFormatter, LongitudeFormatter,
-                                LatitudeLocator, LongitudeLocator)
+from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
+                                LongitudeFormatter, LongitudeLocator)
+
 
 ONE_MIN = 1 / 60.
 ONE_SEC = 1 / 3600.
