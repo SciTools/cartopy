@@ -90,9 +90,17 @@ class TestCRS:
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        assert_almost_equal(uk.x_limits, (-104009.357, 688806.007), decimal=3)
-        assert_almost_equal(uk.y_limits, (-8908.37, 1256558.45), decimal=2)
-        assert_almost_equal(uk.threshold, 7928.15, decimal=2)
+        expected_x = (-104009.357, 688806.007)
+        expected_y = (-8908.37, 1256558.45)
+        expected_threshold = 7928.15
+        if pyproj.__proj_version__ >= '9.2.0':
+            expected_x = (-104728.764, 688806.007)
+            expected_y = (-8908.36, 1256616.32)
+            expected_threshold = 7935.34
+        assert_almost_equal(uk.x_limits,
+                            expected_x, decimal=3)
+        assert_almost_equal(uk.y_limits, expected_y, decimal=2)
+        assert_almost_equal(uk.threshold, expected_threshold, decimal=2)
         self._check_osgb(uk)
 
     def test_epsg_compound_crs(self):
