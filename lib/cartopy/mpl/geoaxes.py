@@ -1796,7 +1796,7 @@ class GeoAxes(matplotlib.axes.Axes):
         kwargs['shading'] = 'flat'
         X = np.asanyarray(args[0])
         Y = np.asanyarray(args[1])
-        nrows, ncols = np.asanyarray(args[2]).shape
+        nrows, ncols = np.asanyarray(args[2]).shape[:2]
         Nx = X.shape[-1]
         Ny = Y.shape[0]
         if X.ndim != 2 or X.shape[0] == 1:
@@ -1843,12 +1843,13 @@ class GeoAxes(matplotlib.axes.Axes):
         Ny, Nx, _ = coords.shape
         if kwargs.get('shading') == 'gouraud':
             # Gouraud shading has the same shape for coords and data
-            data_shape = Ny, Nx
+            data_shape = Ny, Nx, -1
         else:
-            data_shape = Ny - 1, Nx - 1
+            data_shape = Ny - 1, Nx - 1, -1
         # data array
         C = collection.get_array().reshape(data_shape)
-
+        if C.shape[-1] == 1:
+            C = C.squeeze(axis=-1)
         transformed_pts = self.projection.transform_points(
             t, coords[..., 0], coords[..., 1])
 
