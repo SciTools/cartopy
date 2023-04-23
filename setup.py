@@ -53,7 +53,7 @@ if not IS_SDIST or FORCE_CYTHON:
 try:
     import numpy as np
 except ImportError:
-    raise ImportError('NumPy 1.19+ is required to install cartopy.')
+    raise ImportError('NumPy 1.21+ is required to install cartopy.')
 
 
 # Please keep in sync with INSTALL file.

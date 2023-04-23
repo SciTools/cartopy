@@ -44,8 +44,8 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 
 
-assert mpl.__version__ >= '3.1', \
-    'Cartopy is only supported with Matplotlib 3.1 or greater.'
+assert mpl.__version__ >= '3.4', \
+    'Cartopy is only supported with Matplotlib 3.4 or greater.'
 
 # A nested mapping from path, source CRS, and target projection to the
 # resulting transformed paths:

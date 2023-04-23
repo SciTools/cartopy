@@ -35,7 +35,7 @@ jobs:
         if: matrix.python-version == '3.9' && matrix.os == 'ubuntu-latest'
         id: minimum-packages
         run: |
-          echo "PACKAGES=cython=0.29.15 matplotlib-base=3.2.1 numpy=1.19 owslib=0.20.0 pyproj=3.0 proj=8.0 scipy=1.4.0 shapely=1.6.4" >> $GITHUB_ENV
+          echo "PACKAGES=cython=0.29.24 matplotlib-base=3.4 numpy=1.21 owslib=0.24.1 pyproj=3.1 proj=8.0 scipy=1.6.3 shapely=1.7.1" >> $GITHUB_ENV
 
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped' && !matrix.shapely-dev
