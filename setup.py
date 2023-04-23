@@ -10,11 +10,11 @@
 import sys
 
 
-PYTHON_MIN_VERSION = (3, 8)
+PYTHON_MIN_VERSION = (3, 9)
 
 if sys.version_info < PYTHON_MIN_VERSION:
     error = """
-Beginning with Cartopy 0.21, Python {} or above is required.
+Beginning with Cartopy 0.22, Python {} or above is required.
 You are using Python {}.
 
 This may be due to an out of date pip.
@@ -246,7 +246,6 @@ setup(
             'Programming Language :: C++',
             'Programming Language :: Python',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
             'Programming Language :: Python :: 3.10',
             'Programming Language :: Python :: 3.11',
