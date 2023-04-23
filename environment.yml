@@ -34,5 +34,6 @@ dependencies:
   - sphinx-gallery
   # Extras
   - flake8
+  - pre-commit
   - pykdtree
   - setuptools_scm

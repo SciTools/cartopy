@@ -27,6 +27,9 @@ to install all of the required dependencies
   # Install cartopy
   pip install -e .
 
+  # Optionally install pre-commit to help with linting
+  pre-commit install
+
 This will install all of the required dependencies for compiling the code, running the tests, and
 building the documentation. Remember to activate the `cartopy-dev` environment.
 
