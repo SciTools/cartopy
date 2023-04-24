@@ -1,10 +1,10 @@
 name: Build and upload to PyPI
 
-# Only build on tagged releases
+# Only build on published releases
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types:
+      - published
 
 jobs:
   build:
