@@ -58,7 +58,7 @@ jobs:
           cp packages-*/* dist/
 
       - name: Publish Package
-        uses: pypa/gh-action-pypi-publish@master
+        uses: pypa/gh-action-pypi-publish@v1.8.5
         with:
           user: __token__
           password: ${{ secrets.pypi_token }}
