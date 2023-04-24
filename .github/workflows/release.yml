@@ -46,6 +46,8 @@ jobs:
     environment:
       name: PyPI
       url: https://pypi.org/project/cartopy
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     runs-on: ubuntu-18.04
 
     steps:
@@ -59,6 +61,3 @@ jobs:
 
       - name: Publish Package
         uses: pypa/gh-action-pypi-publish@v1.8.5
-        with:
-          user: __token__
-          password: ${{ secrets.pypi_token }}
