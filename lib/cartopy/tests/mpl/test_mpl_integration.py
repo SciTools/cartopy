@@ -310,7 +310,12 @@ def test_pcolormesh_get_array_with_mask():
 
     result = c.get_array()
     assert not np.ma.is_masked(result)
-    assert np.array_equal(data2.ravel(), result), \
+
+    expected = data2
+    if MPL_VERSION.release[:2] < (3, 8):
+        expected = expected.ravel()
+
+    assert np.array_equal(expected, result), \
         'Data supplied does not match data retrieved in unwrapped case'
 
 
