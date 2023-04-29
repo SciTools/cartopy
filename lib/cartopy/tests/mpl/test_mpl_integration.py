@@ -283,7 +283,9 @@ def test_pcolormesh_get_array_with_mask():
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
-    assert np.array_equal(data.ravel(), c.get_array()), \
+    result = c.get_array()
+    assert not np.ma.is_masked(result)
+    assert np.array_equal(data.ravel(), result), \
         'Data supplied does not match data retrieved in wrapped case'
 
     ax.coastlines()
@@ -306,7 +308,9 @@ def test_pcolormesh_get_array_with_mask():
     assert getattr(c, "_wrapped_collection_fix", None) is None, \
         'pcolormesh wrapping was done when it should not have been.'
 
-    assert np.array_equal(data2.ravel(), c.get_array()), \
+    result = c.get_array()
+    assert not np.ma.is_masked(result)
+    assert np.array_equal(data2.ravel(), result), \
         'Data supplied does not match data retrieved in unwrapped case'
 
 
