@@ -32,6 +32,7 @@ import matplotlib.spines as mspines
 import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
+import packaging
 import shapely.geometry as sgeom
 
 from cartopy import config
@@ -44,7 +45,7 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 
 
-assert mpl.__version__ >= '3.4', \
+assert packaging.version.parse(mpl.__version__).release[:2] >= (3, 4), \
     'Cartopy is only supported with Matplotlib 3.4 or greater.'
 
 # A nested mapping from path, source CRS, and target projection to the
