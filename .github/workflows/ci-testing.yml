@@ -11,11 +11,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.8, 3.9, '3.10']
+        python-version: [3.9, '3.10', '3.11']
         shapely-dev: [false]
         include:
           - os: ubuntu-latest
-            python-version: '3.10'
+            python-version: '3.11'
             shapely-dev: true
     defaults:
       run:
@@ -32,10 +32,10 @@ jobs:
       - name: Minimum packages
         # Only run on Linux for now
         # Conda's linux packages don't grab the testing label of matplotlib causing failures due to freetype differences
-        if: matrix.python-version == '3.8' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.9' && matrix.os == 'ubuntu-latest'
         id: minimum-packages
         run: |
-          echo "PACKAGES=cython=0.29.15 matplotlib-base=3.2.1 numpy=1.19 owslib=0.20.0 pyproj=3.0 proj=8.0 scipy=1.4.0 shapely=1.6.4" >> $GITHUB_ENV
+          echo "PACKAGES=cython=0.29.24 matplotlib-base=3.4 numpy=1.21 owslib=0.24.1 pyproj=3.1 proj=8.0 scipy=1.6.3 shapely=1.7.1" >> $GITHUB_ENV
 
       - name: Latest packages
         if: steps.minimum-packages.conclusion == 'skipped' && !matrix.shapely-dev
@@ -50,7 +50,7 @@ jobs:
       - name: Coverage packages
         id: coverage
         # only want the coverage to be run on the latest ubuntu
-        if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
         run: |
           echo "PACKAGES=$PACKAGES pytest-cov coveralls" >> $GITHUB_ENV
           echo "CYTHON_COVERAGE=1" >> $GITHUB_ENV

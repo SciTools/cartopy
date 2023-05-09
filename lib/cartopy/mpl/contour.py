@@ -40,16 +40,9 @@ class GeoContourSet(QuadContourSet):
             # list in-place (as the contour label code does in mpl).
             paths = col.get_paths()
 
-            # The ax attribute is deprecated in MPL 3.3 in favor of
-            # axes. So, here we test if axes is present and fall back
-            # on the old self.ax to support MPL versions less than 3.3
-            if hasattr(self, "axes"):
-                data_t = self.axes.transData
-            else:
-                data_t = self.ax.transData
-
             # Define the transform that will take us from collection
             # coordinates through to axes projection coordinates.
+            data_t = self.axes.transData
             col_to_data = col.get_transform() - data_t
 
             # Now that we have the transform, project all of this

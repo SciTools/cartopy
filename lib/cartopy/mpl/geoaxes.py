@@ -32,6 +32,7 @@ import matplotlib.spines as mspines
 import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
+import packaging
 import shapely.geometry as sgeom
 
 from cartopy import config
@@ -44,8 +45,8 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 
 
-assert mpl.__version__ >= '3.1', \
-    'Cartopy is only supported with Matplotlib 3.1 or greater.'
+assert packaging.version.parse(mpl.__version__).release[:2] >= (3, 4), \
+    'Cartopy is only supported with Matplotlib 3.4 or greater.'
 
 # A nested mapping from path, source CRS, and target projection to the
 # resulting transformed paths:
@@ -1783,9 +1784,7 @@ class GeoAxes(matplotlib.axes.Axes):
         Handle the interpolation when a wrap could be involved with
         the data coordinates before passing on to Matplotlib.
         """
-        # The shading keyword argument was added in MPL 3.3, so keep
-        # this default updating until we only support MPL>=3.3
-        default_shading = mpl.rcParams.get('pcolor.shading', 'auto')
+        default_shading = mpl.rcParams.get('pcolor.shading')
         if not (kwargs.get('shading', default_shading) in
                 ('nearest', 'auto') and len(args) == 3 and
                 getattr(kwargs.get('transform'), '_wrappable', False)):
@@ -1991,10 +1990,6 @@ class GeoAxes(matplotlib.axes.Axes):
         # Add in an argument checker to handle Matplotlib's potential
         # interpolation when coordinate wraps are involved
         args, kwargs = self._wrap_args(*args, **kwargs)
-        if matplotlib.__version__ < "3.3":
-            # MPL 3.3 introduced the shading option, and it isn't
-            # handled before that for pcolor calls.
-            kwargs.pop('shading', None)
         result = super().pcolor(*args, **kwargs)
 
         # Update the datalim for this pcolor.
