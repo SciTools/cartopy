@@ -1,10 +1,10 @@
 name: Build and upload to PyPI
 
-# Only build on tagged releases
+# Only build on published releases
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -32,8 +32,32 @@ jobs:
       - name: Create sdist
         run: python setup.py build_ext sdist
 
-      - name: Publish Package
-        uses: pypa/gh-action-pypi-publish@master
+      - name: Save built packages as artifact
+        uses: actions/upload-artifact@v3
         with:
-          user: __token__
-          password: ${{ secrets.pypi_token }}
+          name: packages-${{ runner.os }}-${{ matrix.python-version }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 5
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    environment:
+      name: PyPI
+      url: https://pypi.org/project/cartopy
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Download packages
+        uses: actions/download-artifact@v3
+
+      - name: Consolidate packages for upload
+        run: |
+          mkdir dist
+          cp packages-*/* dist/
+
+      - name: Publish Package
+        uses: pypa/gh-action-pypi-publish@v1.8.5
