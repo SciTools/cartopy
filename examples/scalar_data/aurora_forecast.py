@@ -45,8 +45,9 @@ def aurora_forecast():
     """
 
     # GitHub gist to download the example data from
-    url = ('https://gist.githubusercontent.com/lgolston/594c030876c0614d36d13d03e4f115b6/'
-           'raw/342ff751419204594180e88d69b3986dbd4fea4a/ovation_aurora_latest.json')
+    url = ('https://gist.githubusercontent.com/lgolston/594c030876c0614d3'
+           '6d13d03e4f115b6/raw/342ff751419204594180e88d69b3986dbd4fea4a/'
+           'ovation_aurora_latest.json')
     # To plot the current forecast instead, uncomment the following line
     # url = 'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json'
 
@@ -55,9 +56,9 @@ def aurora_forecast():
     aurora = json.loads(response.read().decode('utf-8'))
     # parse timestamp
     dt = datetime.strptime(aurora['Forecast Time'], '%Y-%m-%dT%H:%M:%SZ')
-    # convert from lat/lon/value list to 2D array of probability values 
+    # convert lists of [lon, lat, value] to 2D array of probability values
     aurora_data = np.array(aurora['coordinates'])
-    img = np.reshape(aurora_data[:,2],(181,360),order='F')
+    img = np.reshape(aurora_data[:, 2], (181, 360), order='F')
 
     img_proj = ccrs.PlateCarree()
     img_extent = (0, 359, -90, 90)
