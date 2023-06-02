@@ -661,6 +661,73 @@ def test_pcolormesh_shading(shading, input_size, expected):
     assert coll._coordinates.shape == (expected, expected, 2)
 
 
+def make_pcolormesh_test_data(num_samples, x_bounds, y_bounds):
+    xbnds = np.linspace(*x_bounds, num_samples[0], endpoint=True)
+    ybnds = np.linspace(*y_bounds, num_samples[1], endpoint=True)
+
+    x, y = np.meshgrid(xbnds, ybnds)
+    data_r = 0.5 + 0.25 * (np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data_g = 0.5 + 0.25 * (np.sin(np.deg2rad(x + 120)) + np.cos(np.deg2rad(y)))
+    data_b = 0.5 + 0.25 * (np.sin(np.deg2rad(x + 240)) + np.cos(np.deg2rad(y)))
+    data = np.dstack((data_r, data_g, data_b))
+    return xbnds, ybnds, data
+
+
+@pytest.mark.mpl_image_compare(filename='pcolormesh_RGB_gouraud.png')
+def test_pcolormesh_RGB_gouraud():
+    num_samples = (36, 18)
+    x_bounds = (-180, 180)
+    y_bounds = (-90, 90)
+    xbnds, ybnds, data = make_pcolormesh_test_data(num_samples,
+                                                   x_bounds, y_bounds)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
+                  snap=False, shading='gouraud')
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    return fig
+
+
+@pytest.mark.mpl_image_compare(filename='pcolormesh_RGB_nearest.png')
+def test_pcolormesh_RGB_nearest():
+    num_samples = (36, 18)
+    x_bounds = (-175, 175)
+    y_bounds = (-90, 90)
+    xbnds, ybnds, data = make_pcolormesh_test_data(num_samples,
+                                                   x_bounds, y_bounds)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
+                  snap=False, shading='nearest')
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    return fig
+
+
+@pytest.mark.mpl_image_compare(filename='pcolormesh_RGB_flat.png')
+def test_pcolormesh_RGB_flat():
+    num_samples = (36, 18)
+    x_bounds = (-180, 180)
+    y_bounds = (-90, 90)
+    xbnds, ybnds, data = make_pcolormesh_test_data(num_samples,
+                                                   x_bounds, y_bounds)
+    data = data[:-1, :-1]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
+                  snap=False, shading='flat')
+    ax.coastlines()
+    ax.set_global()  # make sure everything is visible
+
+    return fig
+
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='quiver_plate_carree.png')
 def test_quiver_plate_carree():

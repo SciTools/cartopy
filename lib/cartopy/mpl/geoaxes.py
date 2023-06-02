@@ -1795,7 +1795,7 @@ class GeoAxes(matplotlib.axes.Axes):
         kwargs['shading'] = 'flat'
         X = np.asanyarray(args[0])
         Y = np.asanyarray(args[1])
-        nrows, ncols = np.asanyarray(args[2]).shape
+        nrows, ncols, *_ = np.asanyarray(args[2]).shape
         Nx = X.shape[-1]
         Ny = Y.shape[0]
         if X.ndim != 2 or X.shape[0] == 1:
@@ -1839,15 +1839,6 @@ class GeoAxes(matplotlib.axes.Axes):
 
         # Get the quadmesh data coordinates
         coords = collection._coordinates
-        Ny, Nx, _ = coords.shape
-        if kwargs.get('shading') == 'gouraud':
-            # Gouraud shading has the same shape for coords and data
-            data_shape = Ny, Nx
-        else:
-            data_shape = Ny - 1, Nx - 1
-        # data array
-        C = collection.get_array().reshape(data_shape)
-
         transformed_pts = self.projection.transform_points(
             t, coords[..., 0], coords[..., 1])
 
@@ -1891,6 +1882,22 @@ class GeoAxes(matplotlib.axes.Axes):
             # If both projections are unwrappable
             # or if there aren't any points to wrap
             return collection
+
+        Ny, Nx, _ = coords.shape
+        if kwargs.get('shading') == 'gouraud':
+            # Gouraud shading has the same shape for coords and data
+            data_shape = Ny, Nx
+        else:
+            data_shape = Ny - 1, Nx - 1
+        # Data array.  The -1 is so that we can give a helpful
+        # error message instead of a mysterious exception.
+        C = collection.get_array().reshape((*data_shape, -1))
+        if C.shape[-1] != 1:
+            # Later we call pcolor, which does not support RGB or RGBA data.
+            raise NotImplementedError("pcolormesh does not support wrapped"
+                                      " coordinates when RGB or RGBA data are"
+                                      " used.")
+        C = C.squeeze(axis=-1)
 
         # Wrapping with gouraud shading is error-prone. We will do our best,
         # but pcolor does not handle gouraud shading, so there needs to be
