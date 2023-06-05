@@ -17,11 +17,11 @@ Base CRS's
 
    crs.CRS
    crs.Globe
-   
+
 .. autosummary::
    :toctree: generated/
    :template: autosummary/class_without_inherited.rst
-   
+
    crs.Projection
    crs.Geodetic
    crs.Geocentric
