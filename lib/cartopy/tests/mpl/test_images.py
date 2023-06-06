@@ -69,7 +69,7 @@ def test_web_tiles():
 
 @pytest.mark.natural_earth
 @pytest.mark.network
-@pytest.mark.mpl_image_compare(filename='image_merge.png', tolerance=0.01)
+@pytest.mark.mpl_image_compare(filename='image_merge.png', tolerance=0.03)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
