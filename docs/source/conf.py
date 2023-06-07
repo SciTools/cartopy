@@ -225,6 +225,10 @@ html_show_sphinx = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'cartopydoc'
 
+# Show both class-level docstring and __init__ docstring in class
+# documentation
+autoclass_content = 'both'
+
 
 # -- Options for LaTeX output --------------------------------------------------
 

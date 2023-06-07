@@ -13,6 +13,7 @@ Base CRS's
 
 .. autosummary::
    :toctree: generated/
+   :template: autosummary/class_without_inherited.rst
 
    crs.CRS
    crs.Globe
