@@ -262,7 +262,6 @@ class GeoSpine(mspines.Spine):
         self._original_path = mpath.Path(np.empty((0, 2)))
         kwargs.setdefault('clip_on', False)
         super().__init__(axes, 'geo', self._original_path, **kwargs)
-        self.set_capstyle('butt')
 
     def set_boundary(self, path, transform):
         self._original_path = path
@@ -272,6 +271,7 @@ class GeoSpine(mspines.Spine):
     def _adjust_location(self):
         if self.stale:
             self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
+            self._path = mpath.Path(self._path.vertices, closed=True)
 
     def get_window_extent(self, renderer=None):
         # make sure the location is updated so that transforms etc are
