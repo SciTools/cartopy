@@ -114,7 +114,11 @@ class FionaRecord(Record):
     def __init__(self, geometry, attributes):
         self._geometry = geometry
         self.attributes = attributes
-        self._bounds = geometry.bounds
+
+        if geometry is not None:
+            self._bounds = geometry.bounds
+        else:
+            self._bounds = None
 
 
 class BasicReader:
