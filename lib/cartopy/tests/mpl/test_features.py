@@ -70,3 +70,17 @@ def test_wfs():
                                   edgecolor='red')
     ax.add_feature(feature)
     return ax.figure
+
+
+@pytest.mark.network
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=ParseError,
+                   reason="Bad XML returned from the URL")
+@pytest.mark.mpl_image_compare(filename='wfs_france.png')
+def test_wfs_france():
+    ax = plt.axes(projection=ccrs.epsg(2154))
+    url = 'https://agroenvgeo.data.inra.fr:443/geoserver/wfs'
+    typename = 'collectif:t_ser_l93'
+    feature = cfeature.WFSFeature(url, typename, edgecolor='red')
+    ax.add_feature(feature)
+    return ax.figure
