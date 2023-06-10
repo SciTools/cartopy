@@ -34,6 +34,8 @@ Longitude wrapping
    :toctree: generated/
 
     util.add_cyclic_point
+    util.add_cyclic
+
 
 LinearRing/LineString projection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -114,6 +114,11 @@ Features
 
         plt.show()
 
+* Matthias Cuntz added a new convenience utility function
+  :func:~cartopy.util.add_cyclic. This is an extension of
+  :func:~cartopy.util.add_cyclic_point for 2-dimensional coordinates lat and
+  lon. (:pull:1753)
+
 Deprecations
 ------------
 
