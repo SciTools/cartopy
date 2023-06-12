@@ -85,7 +85,7 @@ class Record:
         The bounds of this Record's :meth:`~Record.geometry`.
 
         """
-        if self._bounds is None:
+        if self._bounds is None and self.geometry is not None:
             self._bounds = self.geometry.bounds
         return self._bounds
 
