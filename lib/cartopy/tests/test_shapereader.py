@@ -14,10 +14,17 @@ import cartopy.io.shapereader as shp
 
 
 class TestLakes:
-    def setup_class(self):
+    @pytest.fixture(autouse=True, params=[0, 1])
+    def setup_class(self, request):
         LAKES_PATH = (Path(__file__).parent / 'lakes_shapefile'
                       / 'ne_110m_lakes.shp')
-        self.reader = shp.Reader(LAKES_PATH)
+        # run tests with both available Readers
+        if request.param == 0:
+            self.reader = shp.BasicReader(LAKES_PATH)
+        elif not shp._HAS_FIONA:
+            pytest.skip("Fiona library not available")
+        else:
+            self.reader = shp.FionaReader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small lake
         self.lake_name = 'Lago de\rNicaragua'
@@ -56,18 +63,19 @@ class TestLakes:
         assert actual == expected
         assert lake_record.geometry == self.test_lake_geometry
 
-    @pytest.mark.skipif(shp._HAS_FIONA,
-                        reason="Fiona reader doesn't support lazy loading.")
     def test_bounds(self):
-        # tests that a file which has a record with a bbox can
-        # use the bbox without first creating the geometry
-        record = next(self.reader.records())
-        assert not record._geometry, \
-            'The geometry was loaded before it was needed.'
-        assert len(record._bounds) == 4
-        assert record._bounds == record.bounds
-        assert not record._geometry, \
-            'The geometry was loaded in order to create the bounds.'
+        if isinstance(self.reader, shp.BasicReader):
+            # tests that a file which has a record with a bbox can
+            # use the bbox without first creating the geometry
+            record = next(self.reader.records())
+            assert not record._geometry, \
+                'The geometry was loaded before it was needed.'
+            assert len(record._bounds) == 4
+            assert record._bounds == record.bounds
+            assert not record._geometry, \
+                'The geometry was loaded in order to create the bounds.'
+        else:
+            pytest.skip("Fiona reader doesn't support lazy loading")
 
 
 @pytest.mark.filterwarnings("ignore:Downloading")

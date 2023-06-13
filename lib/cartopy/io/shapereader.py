@@ -85,7 +85,7 @@ class Record:
         The bounds of this Record's :meth:`~Record.geometry`.
 
         """
-        if self._bounds is None:
+        if self._bounds is None and self.geometry is not None:
             self._bounds = self.geometry.bounds
         return self._bounds
 
@@ -114,7 +114,11 @@ class FionaRecord(Record):
     def __init__(self, geometry, attributes):
         self._geometry = geometry
         self.attributes = attributes
-        self._bounds = geometry.bounds
+
+        if geometry is not None:
+            self._bounds = geometry.bounds
+        else:
+            self._bounds = None
 
 
 class BasicReader:
