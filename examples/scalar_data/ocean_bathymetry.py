@@ -5,20 +5,23 @@ Ocean bathymetry
 Produces a map of ocean seafloor depth.
 
 """
-import numpy as np
+from glob import glob
+
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+
 import cartopy as cart
 import cartopy.crs as ccrs
-from glob import glob
 
 
 def load_bathymetry(zip_file_url):
     """Read zip file from Natural Earth containing bathymetry shapefiles"""
     # Download and extract shapefiles
-    import requests
-    import zipfile
     import io
+    import zipfile
+
+    import requests
     r = requests.get(zip_file_url)
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall("ne_10m_bathymetry_all/")
