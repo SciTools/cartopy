@@ -11,8 +11,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-import cartopy as cart
 import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+import cartopy.io.shapereader as shpreader
 
 
 def load_bathymetry(zip_file_url):
@@ -36,7 +37,7 @@ def load_bathymetry(zip_file_url):
         depth = '-' + f.split('_')[-1].split('.')[0]  # depth from file name
         depths.append(depth)
         bbox = (90, -15, 160, 60)  # (x0, y0, x1, y1)
-        nei = cart.io.shapereader.Reader(f, bbox=bbox)
+        nei = shpreader.Reader(f, bbox=bbox)
         shp_dict[depth] = nei
     depths = np.array(depths)[::-1]  # sort from surface to bottom
     return depths, shp_dict
@@ -67,17 +68,14 @@ if __name__ == "__main__":
                           color=colors_depths[i])
 
     # Add standard features
-    land_feature = cart.feature.NaturalEarthFeature(category='physical',
-                                                    name='LAND',
-                                                    scale='110m')
-    ax.add_feature(land_feature, color='grey')
+    ax.add_feature(cfeature.LAND, color='grey')
     ax.coastlines(lw=1, resolution='110m')
     ax.gridlines(draw_labels=False)
     ax.set_position([0.03, 0.05, 0.8, 0.9])
 
     # Add custom colorbar
     axi = fig.add_axes([0.85, 0.1, 0.025, 0.8])
-    ax.add_feature(cart.feature.BORDERS, linestyle=':')
+    ax.add_feature(cfeature.BORDERS, linestyle=':')
     matplotlib.colorbar.ColorbarBase(ax=axi,
                                      cmap=tmp.reversed(),
                                      norm=norm,
