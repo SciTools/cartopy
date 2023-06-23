@@ -8,7 +8,8 @@ import warnings
 import cartopy.crs as ccrs
 
 
-def test_transform_point():
+def test_transform_point_no_warning():
+# Make sure we aren't warning on single-point numpy arrays
     # see https://github.com/SciTools/cartopy/pull/2194
     p = ccrs.PlateCarree()
     p2 = ccrs.Mercator()
