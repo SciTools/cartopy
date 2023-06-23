@@ -6,7 +6,7 @@ This example demonstrates how to use cartopy `GeoAxes` with
 `AxesGrid` from the `mpl_toolkits.axes_grid1`.
 The script constructs an `axes_class` kwarg with Plate Carree projection
 and passes it to the `AxesGrid` instance. The `AxesGrid` built-in
-labelling is switched off, and instead a standard procedure
+tick labelling is not used, and instead a standard procedure
 of creating grid lines is used. Then some fake data is plotted.
 """
 import matplotlib.pyplot as plt
@@ -54,7 +54,7 @@ def main():
                     cbar_mode='single',
                     cbar_pad=0.2,
                     cbar_size='3%',
-                    label_mode='')  # note the empty label_mode
+                    label_mode='keep')
 
     for i, ax in enumerate(axgr):
         ax.coastlines()
