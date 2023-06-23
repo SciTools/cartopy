@@ -53,22 +53,16 @@ def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
     if z is None:
         z = np.zeros_like(x)
 
-    def _sanitize_scalars(a):
+    with warnings.catch_warnings():
         # future compatibility with numpy:
         # pyproj implicitly converts size-1 arrays to scalars, which is
         # deprecated in numpy 1.25
         # see https://github.com/numpy/numpy/pull/10615
-        if isinstance(a, np.ndarray) and a.size == 1:
-            return a.item()
-        else:
-            return a
-
-    return transformer.transform(
-        _sanitize_scalars(x),
-        _sanitize_scalars(y),
-        _sanitize_scalars(z),
-        errcheck=trap,
-    )
+        warnings.filterwarnings(
+            "ignore",
+            message="Conversion of an array with ndim > 0"
+        )
+        return transformer.transform(x, y, z, errcheck=trap)
 
 
 class Globe:
