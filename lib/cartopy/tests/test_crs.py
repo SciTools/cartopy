@@ -9,6 +9,7 @@ from io import BytesIO
 import os
 from pathlib import Path
 import pickle
+import warnings
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -351,3 +352,13 @@ def test_projection__from_string():
 
 def test_crs__from_pyproj_crs():
     assert ccrs.CRS(pyproj.CRS("EPSG:4326")) == "EPSG:4326"
+
+
+def test_transform_point_no_warning():
+    # Make sure we aren't warning on single-point numpy arrays
+    # see https://github.com/SciTools/cartopy/pull/2194
+    p = ccrs.PlateCarree()
+    p2 = ccrs.Mercator()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        p2.transform_point(1, 2, p)

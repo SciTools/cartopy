@@ -53,7 +53,16 @@ def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
     if z is None:
         z = np.zeros_like(x)
 
-    return transformer.transform(x, y, z, errcheck=trap)
+    with warnings.catch_warnings():
+        # pyproj implicitly converts size-1 arrays to scalars, which is
+        # deprecated in numpy 1.25, but *also* handles the future error
+        # see https://github.com/numpy/numpy/pull/10615
+        # and https://github.com/SciTools/cartopy/pull/2194
+        warnings.filterwarnings(
+            "ignore",
+            message="Conversion of an array with ndim > 0"
+        )
+        return transformer.transform(x, y, z, errcheck=trap)
 
 
 class Globe:
