@@ -54,10 +54,10 @@ def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
         z = np.zeros_like(x)
 
     with warnings.catch_warnings():
-        # future compatibility with numpy:
         # pyproj implicitly converts size-1 arrays to scalars, which is
-        # deprecated in numpy 1.25
+        # deprecated in numpy 1.25, but *also* handles the future error
         # see https://github.com/numpy/numpy/pull/10615
+        # and https://github.com/SciTools/cartopy/pull/2194
         warnings.filterwarnings(
             "ignore",
             message="Conversion of an array with ndim > 0"
