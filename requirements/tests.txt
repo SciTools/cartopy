@@ -1,3 +1,0 @@
-packaging>=20
-pytest>=5.1.2
-pytest-mpl>=0.11
