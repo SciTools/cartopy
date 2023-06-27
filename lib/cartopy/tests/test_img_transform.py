@@ -110,7 +110,8 @@ def test_gridding_data_outside_projection():
     assert_array_equal(expected_mask, image.mask)
 
 
-@pytest.mark.parametrize("target_prj", (ccrs.Mollweide(), ccrs.LambertAzimuthalEqualArea()))
+@pytest.mark.parametrize("target_prj",
+                         (ccrs.Mollweide(), ccrs.Orthographic()))
 def test_invalid_regridding_with_invalid_extent(target_prj):
     # tests that when a valid extent results in invalid points in the
     # transformed coordinates, the regridding does not error.
@@ -122,6 +123,6 @@ def test_invalid_regridding_with_invalid_extent(target_prj):
     data_trans = ccrs.Geodetic()
 
     target_x, target_y, extent = img_trans.mesh_projection(target_prj, 8, 4)
-    
+
     _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
-                             target_x, target_y)
+                         target_x, target_y)
