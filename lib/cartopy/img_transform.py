@@ -286,7 +286,7 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
         kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
         _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :], k=1)
 
-    mask = indices >= len(xyz)
+    mask = ~finite_xyz | (indices >= len(xyz))
     indices[mask] = 0
 
     desired_ny, desired_nx = target_x_points.shape
