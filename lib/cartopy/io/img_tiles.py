@@ -374,10 +374,10 @@ class Stamen(GoogleWTS):
         # use optional desired_tile_form input if available
         # otherwise, use preset value based on the layer name
         if desired_tile_form is None:
-            if not layer_info['opaque']:
-                desired_tile_form = 'RGBA'
-            else:
+            if layer_info['opaque']:
                 desired_tile_form = 'RGB'
+            else:
+                desired_tile_form = 'RGBA'
 
         super().__init__(desired_tile_form=desired_tile_form,
                          cache=cache)
