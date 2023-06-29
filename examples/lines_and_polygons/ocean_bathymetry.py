@@ -2,7 +2,13 @@
 Ocean bathymetry
 ----------------
 
-Produces a map of ocean seafloor depth.
+Produces a map of ocean seafloor depth, demonstrating the
+:class:`cartopy.io.shapereader.Reader` interface. The data is a series
+of 10m resolution nested polygons obtained from Natural Earth, and derived
+from the NASA SRTM Plus product. Since the dataset contains a zipfile with
+multiple shapefiles representing different depths, the example demonstrates
+manually downloading and reading them with the general shapereader interface,
+instead of the specialized `cartopy.feature.NaturalEarthFeature` interface.
 
 """
 from glob import glob
@@ -81,6 +87,7 @@ if __name__ == "__main__":
                                      norm=norm,
                                      boundaries=depths.astype(int)[::-1],
                                      spacing='proportional',
+                                     extend='min',
                                      ticks=depths.astype(int),
                                      label='Depth (m)')
 
