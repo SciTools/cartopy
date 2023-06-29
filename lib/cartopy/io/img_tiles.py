@@ -350,7 +350,7 @@ class Stamen(GoogleWTS):
     """
 
     def __init__(self, style='toner',
-                 desired_tile_form='RGB', cache=False):
+                 desired_tile_form=None, cache=False):
 
         # preset layer configuration
         layer_config = {
@@ -367,13 +367,17 @@ class Stamen(GoogleWTS):
           'watercolor':         {'extension': 'jpg', 'opaque': True},
         }
 
-        # get layer information from dict if known, else use defaults
+        # get layer information from dict
         layer_info = layer_config.get(
             style, {'extension': '.png', 'opaque': True})
 
-        # allow background transparency
-        if not layer_info['opaque']:
-            desired_tile_form = 'RGBA'
+        # use optional desired_tile_form input if available
+        # otherwise, use preset value based on the layer name
+        if desired_tile_form is None:
+            if not layer_info['opaque']:
+                desired_tile_form = 'RGBA'
+            else:
+                desired_tile_form = 'RGB'
 
         super().__init__(desired_tile_form=desired_tile_form,
                          cache=cache)
