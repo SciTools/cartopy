@@ -350,14 +350,44 @@ class Stamen(GoogleWTS):
     """
 
     def __init__(self, style='toner',
-                 desired_tile_form='RGB', cache=False):
+                 desired_tile_form=None, cache=False):
+
+        # preset layer configuration
+        layer_config = {
+          'terrain':            {'extension': 'png', 'opaque': True},
+          'terrain-background': {'extension': 'png', 'opaque': True},
+          'terrain-labels':     {'extension': 'png', 'opaque': False},
+          'terrain-lines':      {'extension': 'png', 'opaque': False},
+          'toner-background':   {'extension': 'png', 'opaque': True},
+          'toner':              {'extension': 'png', 'opaque': True},
+          'toner-hybrid':       {'extension': 'png', 'opaque': False},
+          'toner-labels':       {'extension': 'png', 'opaque': False},
+          'toner-lines':        {'extension': 'png', 'opaque': False},
+          'toner-lite':         {'extension': 'png', 'opaque': True},
+          'watercolor':         {'extension': 'jpg', 'opaque': True},
+        }
+
+        # get layer information from dict
+        layer_info = layer_config.get(
+            style, {'extension': '.png', 'opaque': True})
+
+        # use optional desired_tile_form input if available
+        # otherwise, use preset value based on the layer name
+        if desired_tile_form is None:
+            if layer_info['opaque']:
+                desired_tile_form = 'RGB'
+            else:
+                desired_tile_form = 'RGBA'
+
         super().__init__(desired_tile_form=desired_tile_form,
                          cache=cache)
         self.style = style
+        self.extension = layer_info['extension']
 
     def _image_url(self, tile):
         x, y, z = tile
-        return f'http://tile.stamen.com/{self.style}/{z}/{x}/{y}.png'
+        return 'http://tile.stamen.com/' + \
+            f'{self.style}/{z}/{x}/{y}.{self.extension}'
 
 
 class MapboxTiles(GoogleWTS):

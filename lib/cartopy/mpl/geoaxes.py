@@ -629,7 +629,8 @@ class GeoAxes(matplotlib.axes.Axes):
         resolution : str or :class:`cartopy.feature.Scaler`, optional
             A named resolution to use from the Natural Earth
             dataset. Currently can be one of "auto" (default), "110m", "50m",
-            and "10m", or a Scaler object.
+            and "10m", or a Scaler object.  If "auto" is selected, the
+            resolution is defined by `~cartopy.feature.auto_scaler`.
 
         """
         kwargs['edgecolor'] = color
