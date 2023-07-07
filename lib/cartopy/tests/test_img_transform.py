@@ -7,11 +7,11 @@
 import numpy as np
 from numpy.testing import assert_array_equal
 import pytest
+import scipy.spatial
 
 import cartopy.crs as ccrs
 import cartopy.img_transform as img_trans
 
-import scipy.spatial
 
 @pytest.mark.parametrize('xmin, xmax', [
     (-90, 0), (-90, 90), (-90, None),
@@ -134,5 +134,3 @@ def test_invalid_regridding_with_invalid_extent(target_prj, use_scipy, monkeypat
     else:
         _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
                              target_x, target_y)
-
-
