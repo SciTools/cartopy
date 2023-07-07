@@ -114,7 +114,7 @@ def test_gridding_data_outside_projection():
 @pytest.mark.parametrize("target_prj",
                          (ccrs.Mollweide(), ccrs.Orthographic()))
 @pytest.mark.parametrize("use_scipy", (True, False))
-def test_invalid_regridding_with_invalid_extent(target_prj, use_scipy, monkeypatch):
+def test_regridding_with_invalid_extent(target_prj, use_scipy, monkeypatch):
     # tests that when a valid extent results in invalid points in the
     # transformed coordinates, the regridding does not error.
 
