@@ -11,6 +11,7 @@ import pytest
 import cartopy.crs as ccrs
 import cartopy.img_transform as img_trans
 
+import scipy.spatial
 
 @pytest.mark.parametrize('xmin, xmax', [
     (-90, 0), (-90, 90), (-90, None),
@@ -112,7 +113,8 @@ def test_gridding_data_outside_projection():
 
 @pytest.mark.parametrize("target_prj",
                          (ccrs.Mollweide(), ccrs.Orthographic()))
-def test_invalid_regridding_with_invalid_extent(target_prj):
+@pytest.mark.parametrize("use_scipy", (True, False))
+def test_invalid_regridding_with_invalid_extent(target_prj, use_scipy, monkeypatch):
     # tests that when a valid extent results in invalid points in the
     # transformed coordinates, the regridding does not error.
 
@@ -124,5 +126,13 @@ def test_invalid_regridding_with_invalid_extent(target_prj):
 
     target_x, target_y, extent = img_trans.mesh_projection(target_prj, 8, 4)
 
-    _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
-                         target_x, target_y)
+    if use_scipy:
+        monkeypatch.setattr(img_trans, "_is_pykdtree", False)
+        monkeypatch.setattr(img_trans, "_kdtree_handle", scipy.spatial.cKDTree)
+        _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
+                             target_x, target_y)
+    else:
+        _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
+                             target_x, target_y)
+
+
