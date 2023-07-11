@@ -45,7 +45,8 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 
 
-assert packaging.version.parse(mpl.__version__).release[:2] >= (3, 4), \
+_MPL_VERSION = packaging.version.parse(mpl.__version__)
+assert _MPL_VERSION.release >= (3, 4), \
     'Cartopy is only supported with Matplotlib 3.4 or greater.'
 
 # A nested mapping from path, source CRS, and target projection to the
@@ -1602,12 +1603,15 @@ class GeoAxes(matplotlib.axes.Axes):
         result = super().contour(*args, **kwargs)
 
         # We need to compute the dataLim correctly for contours.
-        bboxes = [col.get_datalim(self.transData)
-                  for col in result.collections
-                  if col.get_paths()]
-        if bboxes:
-            extent = mtransforms.Bbox.union(bboxes)
-            self.update_datalim(extent.get_points())
+        if _MPL_VERSION.release[:2] < (3, 8):
+            bboxes = [col.get_datalim(self.transData)
+                      for col in result.collections
+                      if col.get_paths()]
+            if bboxes:
+                extent = mtransforms.Bbox.union(bboxes)
+                self.update_datalim(extent.get_points())
+        else:
+            self.update_datalim(result.get_datalim(self.transData))
 
         self.autoscale_view()
 
@@ -1650,12 +1654,15 @@ class GeoAxes(matplotlib.axes.Axes):
         result = super().contourf(*args, **kwargs)
 
         # We need to compute the dataLim correctly for contours.
-        bboxes = [col.get_datalim(self.transData)
-                  for col in result.collections
-                  if col.get_paths()]
-        if bboxes:
-            extent = mtransforms.Bbox.union(bboxes)
-            self.update_datalim(extent.get_points())
+        if _MPL_VERSION.release[:2] < (3, 8):
+            bboxes = [col.get_datalim(self.transData)
+                      for col in result.collections
+                      if col.get_paths()]
+            if bboxes:
+                extent = mtransforms.Bbox.union(bboxes)
+                self.update_datalim(extent.get_points())
+        else:
+            self.update_datalim(result.get_datalim(self.transData))
 
         self.autoscale_view()
 

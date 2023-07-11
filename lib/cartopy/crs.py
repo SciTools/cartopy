@@ -1247,7 +1247,8 @@ class Projection(CRS, metaclass=ABCMeta):
             is required (see :meth:`cartopy.crs.Projection.project_geometry`).
 
         """
-        return_value = None
+        if vertices.size == 0:
+            return vertices
 
         if self == src_crs:
             x = vertices[:, 0]
@@ -1258,9 +1259,7 @@ class Projection(CRS, metaclass=ABCMeta):
             y_limits = (self.y_limits[0] - epsilon, self.y_limits[1] + epsilon)
             if (x.min() >= x_limits[0] and x.max() <= x_limits[1] and
                     y.min() >= y_limits[0] and y.max() <= y_limits[1]):
-                return_value = vertices
-
-        return return_value
+                return vertices
 
 
 class _RectangularProjection(Projection, metaclass=ABCMeta):
