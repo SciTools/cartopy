@@ -306,7 +306,8 @@ def test_pcolormesh_global_with_wrap1(mesh_data_kind):
     return fig
 
 
-def test_pcolormesh_get_array_with_mask():
+@PARAMETRIZE_PCOLORMESH_WRAP
+def test_pcolormesh_get_array_with_mask(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
     xbnds = np.linspace(0, 360, nx, endpoint=True)
@@ -314,7 +315,10 @@ def test_pcolormesh_get_array_with_mask():
 
     x, y = np.meshgrid(xbnds, ybnds)
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data[5, :] = np.nan  # Check that missing data is handled - GH#2208
     data = data[:-1, :-1]
+    data = _to_rgb(data, mesh_data_kind)
+
     fig = plt.figure()
 
     ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
@@ -323,7 +327,7 @@ def test_pcolormesh_get_array_with_mask():
         'No pcolormesh wrapping was done when it should have been.'
 
     result = c.get_array()
-    assert not np.ma.is_masked(result)
+    np.testing.assert_array_equal(np.ma.getmask(result), np.isnan(data))
     np.testing.assert_array_equal(
         data, result,
         err_msg='Data supplied does not match data retrieved in wrapped case')
@@ -338,7 +342,9 @@ def test_pcolormesh_get_array_with_mask():
 
     x, y = np.meshgrid(xbnds, ybnds)
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data[5, :] = np.nan
     data2 = data[:-1, :-1]
+    data2 = _to_rgb(data2, mesh_data_kind)
 
     ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree())
     c = ax.pcolormesh(xbnds, ybnds, data2, transform=ccrs.PlateCarree())
@@ -349,14 +355,15 @@ def test_pcolormesh_get_array_with_mask():
         'pcolormesh wrapping was done when it should not have been.'
 
     result = c.get_array()
-    assert not np.ma.is_masked(result)
 
     expected = data2
     if MPL_VERSION.release[:2] < (3, 8):
         expected = expected.ravel()
 
-    assert np.array_equal(expected, result), \
-        'Data supplied does not match data retrieved in unwrapped case'
+    np.testing.assert_array_equal(np.ma.getmask(result), np.isnan(expected))
+    np.testing.assert_array_equal(
+        expected, result,
+        'Data supplied does not match data retrieved in unwrapped case')
 
 
 @PARAMETRIZE_PCOLORMESH_WRAP

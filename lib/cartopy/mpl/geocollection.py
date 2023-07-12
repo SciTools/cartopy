@@ -61,6 +61,8 @@ class GeoQuadMesh(QuadMesh):
             if _MPL_VERSION.release[:2] < (3, 8):
                 A[mask] = pcolor_data
             else:
+                if A.ndim == 3:  # RGB(A) data.  Need to broadcast mask.
+                    mask = mask[:, :, np.newaxis]
                 # np.copyto is not implemented for masked arrays so handle the
                 # mask explicitly
                 np.copyto(A.mask, pcolor_data.mask, where=mask)
