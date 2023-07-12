@@ -269,6 +269,7 @@ def add_cyclic(data, x=None, y=None, axis=-1,
     --------
     Adding a cyclic point to a data array, where the cyclic dimension is
     the right-most dimension.
+
     >>> import numpy as np
     >>> data = np.ones([5, 6]) * np.arange(6)
     >>> cyclic_data = add_cyclic(data)
@@ -280,6 +281,7 @@ def add_cyclic(data, x=None, y=None, axis=-1,
      [0. 1. 2. 3. 4. 5. 0.]]
 
     Adding a cyclic point to a data array and an associated x-coordinate.
+
     >>> lons = np.arange(0, 360, 60)
     >>> cyclic_data, cyclic_lons = add_cyclic(data, x=lons)
     >>> print(cyclic_data)  # doctest: +NORMALIZE_WHITESPACE
@@ -293,6 +295,7 @@ def add_cyclic(data, x=None, y=None, axis=-1,
 
     Adding a cyclic point to a data array and an associated 2-dimensional
     x-coordinate.
+
     >>> lons = np.arange(0, 360, 60)
     >>> lats = np.arange(-90, 90, 180/5)
     >>> lon2d, lat2d = np.meshgrid(lons, lats)
@@ -312,6 +315,7 @@ def add_cyclic(data, x=None, y=None, axis=-1,
 
     Adding a cyclic point to a data array and the associated 2-dimensional
     x- and y-coordinates.
+
     >>> lons = np.arange(0, 360, 60)
     >>> lats = np.arange(-90, 90, 180/5)
     >>> lon2d, lat2d = np.meshgrid(lons, lats)
@@ -337,6 +341,7 @@ def add_cyclic(data, x=None, y=None, axis=-1,
      [ 54.  54.  54.  54.  54.  54.  54.]]
 
     Not adding a cyclic point if cyclic point detected in x.
+
     >>> lons = np.arange(0, 361, 72)
     >>> lats = np.arange(-90, 90, 180/5)
     >>> lon2d, lat2d = np.meshgrid(lons, lats)
