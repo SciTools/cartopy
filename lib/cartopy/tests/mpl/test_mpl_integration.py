@@ -506,6 +506,37 @@ def test_pcolormesh_set_array_with_mask(mesh_data_kind):
     return fig
 
 
+def test_pcolormesh_set_array_nowrap():
+    # Roundtrip check that set_array works with the correct shaped arrays
+    nx, ny = 36, 18
+    xbnds = np.linspace(-60, 60, nx, endpoint=True)
+    ybnds = np.linspace(-80, 80, ny, endpoint=True)
+    xbnds, ybnds = np.meshgrid(xbnds, ybnds)
+
+    rng = np.random.default_rng()
+    data = rng.random((ny - 1, nx - 1))
+
+    ax = plt.figure().add_subplot(projection=ccrs.PlateCarree())
+    mesh = ax.pcolormesh(xbnds, ybnds, data)
+    assert not hasattr(mesh, '_wrapped_collection_fix')
+
+    expected = data
+    if MPL_VERSION.release[:2] < (3, 8):
+        expected = expected.ravel()
+    np.testing.assert_array_equal(mesh.get_array(), expected)
+
+    # For backwards compatibility, check we can set a 1D array
+    data = rng.random((nx - 1) * (ny - 1))
+    mesh.set_array(data)
+    np.testing.assert_array_equal(
+        mesh.get_array(), data.reshape(ny - 1, nx - 1))
+
+    # Check that we can set a 2D array even if previous was flat
+    data = rng.random((ny - 1, nx - 1))
+    mesh.set_array(data)
+    np.testing.assert_array_equal(mesh.get_array(), data)
+
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
                                tolerance=1.42)
