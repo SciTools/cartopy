@@ -13,11 +13,11 @@ import numpy as np
 
 
 try:
-    from pykdtree.kdtree import KDTree as _kdtree_handle
+    from pykdtree.kdtree import KDTree as _kdtreeClass
     _is_pykdtree = True
 except ImportError:
     try:
-        from scipy.spatial import cKDTree as _kdtree_handle
+        from scipy.spatial import cKDTree as _kdtreeClass
     except ImportError as e:
         raise ImportError("Using image transforms requires either "
                           "pykdtree or scipy.") from e
@@ -274,7 +274,7 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
     finite_xyz = np.all(np.isfinite(target_xyz), axis=-1)
 
     if _is_pykdtree:
-        kdtree = _kdtree_handle(xyz)
+        kdtree = _kdtreeClass(xyz)
         # Use sqr_dists=True because we don't care about distances,
         # and it saves a sqrt.
         _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :],
@@ -283,7 +283,7 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
     else:
         # Versions of scipy >= v0.16 added the balanced_tree argument,
         # which caused the KDTree to hang with this input.
-        kdtree = _kdtree_handle(xyz, balanced_tree=False)
+        kdtree = _kdtreeClass(xyz, balanced_tree=False)
         _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :], k=1)
 
     mask = ~finite_xyz | (indices >= len(xyz))

@@ -128,9 +128,6 @@ def test_regridding_with_invalid_extent(target_prj, use_scipy, monkeypatch):
 
     if use_scipy:
         monkeypatch.setattr(img_trans, "_is_pykdtree", False)
-        monkeypatch.setattr(img_trans, "_kdtree_handle", scipy.spatial.cKDTree)
-        _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
-                             target_x, target_y)
-    else:
-        _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
-                             target_x, target_y)
+        monkeypatch.setattr(img_trans, "_kdtreeClass", scipy.spatial.cKDTree)
+    _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
+                         target_x, target_y)
