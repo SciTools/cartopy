@@ -13,11 +13,11 @@ import numpy as np
 
 
 try:
-    import pykdtree.kdtree
+    from pykdtree.kdtree import KDTree as _kdtreeClass
     _is_pykdtree = True
 except ImportError:
     try:
-        import scipy.spatial
+        from scipy.spatial import cKDTree as _kdtreeClass
     except ImportError as e:
         raise ImportError("Using image transforms requires either "
                           "pykdtree or scipy.") from e
@@ -268,17 +268,25 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
                                               target_x_points.flatten(),
                                               target_y_points.flatten())
 
+    # Find mask of valid points before querying kdtree: scipy >= 1.11 errors
+    # when querying nan points, might as well use for pykdtree too.
+    indices = np.zeros(target_xyz.shape[0], dtype=int)
+    finite_xyz = np.all(np.isfinite(target_xyz), axis=-1)
+
     if _is_pykdtree:
-        kdtree = pykdtree.kdtree.KDTree(xyz)
+        kdtree = _kdtreeClass(xyz)
         # Use sqr_dists=True because we don't care about distances,
         # and it saves a sqrt.
-        _, indices = kdtree.query(target_xyz, k=1, sqr_dists=True)
+        _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :],
+                                              k=1,
+                                              sqr_dists=True)
     else:
         # Versions of scipy >= v0.16 added the balanced_tree argument,
         # which caused the KDTree to hang with this input.
-        kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
-        _, indices = kdtree.query(target_xyz, k=1)
-    mask = indices >= len(xyz)
+        kdtree = _kdtreeClass(xyz, balanced_tree=False)
+        _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :], k=1)
+
+    mask = ~finite_xyz | (indices >= len(xyz))
     indices[mask] = 0
 
     desired_ny, desired_nx = target_x_points.shape
