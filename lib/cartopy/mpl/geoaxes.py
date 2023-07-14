@@ -45,7 +45,8 @@ import cartopy.mpl.patch as cpatch
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 
 
-assert packaging.version.parse(mpl.__version__).release[:2] >= (3, 4), \
+_MPL_VERSION = packaging.version.parse(mpl.__version__)
+assert _MPL_VERSION.release >= (3, 4), \
     'Cartopy is only supported with Matplotlib 3.4 or greater.'
 
 # A nested mapping from path, source CRS, and target projection to the
@@ -1796,7 +1797,7 @@ class GeoAxes(matplotlib.axes.Axes):
         kwargs['shading'] = 'flat'
         X = np.asanyarray(args[0])
         Y = np.asanyarray(args[1])
-        nrows, ncols = np.asanyarray(args[2]).shape
+        nrows, ncols = np.asanyarray(args[2]).shape[:2]
         Nx = X.shape[-1]
         Ny = Y.shape[0]
         if X.ndim != 2 or X.shape[0] == 1:
@@ -1843,12 +1844,13 @@ class GeoAxes(matplotlib.axes.Axes):
         Ny, Nx, _ = coords.shape
         if kwargs.get('shading') == 'gouraud':
             # Gouraud shading has the same shape for coords and data
-            data_shape = Ny, Nx
+            data_shape = Ny, Nx, -1
         else:
-            data_shape = Ny - 1, Nx - 1
+            data_shape = Ny - 1, Nx - 1, -1
         # data array
         C = collection.get_array().reshape(data_shape)
-
+        if C.shape[-1] == 1:
+            C = C.squeeze(axis=-1)
         transformed_pts = self.projection.transform_points(
             t, coords[..., 0], coords[..., 1])
 
@@ -1921,13 +1923,12 @@ class GeoAxes(matplotlib.axes.Axes):
                           "map it must be fully transparent.",
                           stacklevel=3)
 
-        # The original data mask (regardless of wrapped cells)
-        C_mask = getattr(C, 'mask', None)
+        # Get hold of masked versions of the array to be passed to set_array
+        # methods of QuadMesh and PolyQuadMesh
+        pcolormesh_data, pcolor_data, pcolor_mask = \
+            cartopy.mpl.geocollection._split_wrapped_mesh_data(C, mask)
 
-        # create the masked array to be used with this pcolormesh
-        full_mask = mask if C_mask is None else mask | C_mask
-        pcolormesh_data = np.ma.array(C, mask=full_mask)
-        collection.set_array(pcolormesh_data.ravel())
+        collection.set_array(pcolormesh_data)
 
         # plot with slightly lower zorder to avoid odd issue
         # where the main plot is obscured
@@ -1943,25 +1944,32 @@ class GeoAxes(matplotlib.axes.Axes):
         # `pcolor` only draws polygons where the data is not
         # masked, so this will only draw a limited subset of
         # polygons that were actually wrapped.
-        # We will add the original data mask in later to
-        # make sure that set_array can work in future
-        # calls on the proper sized array inputs.
-        # NOTE: we don't use C.data here because C.data could
-        #       contain nan's which would be masked in the
-        #       pcolor routines, which we don't want. We will
-        #       fill in the proper data later with set_array()
-        #       calls.
-        pcolor_data = np.ma.array(np.zeros(C.shape),
-                                  mask=~mask)
-        pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
-                                 pcolor_data, zorder=zorder,
-                                 **kwargs)
-        # Now add back in the masked data if there was any
-        full_mask = ~mask if C_mask is None else ~mask | C_mask
-        pcolor_data = np.ma.array(C, mask=full_mask)
-        # The pcolor_col is now possibly shorter than the
-        # actual collection, so grab the masked cells
-        pcolor_col.set_array(pcolor_data[mask].ravel())
+
+        if _MPL_VERSION.release[:2] < (3, 8):
+            # We will add the original data mask in later to
+            # make sure that set_array can work in future
+            # calls on the proper sized array inputs.
+            # NOTE: we don't use C.data here because C.data could
+            #       contain nan's which would be masked in the
+            #       pcolor routines, which we don't want. We will
+            #       fill in the proper data later with set_array()
+            #       calls.
+            pcolor_zeros = np.ma.array(np.zeros(C.shape), mask=pcolor_mask)
+            pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
+                                     pcolor_zeros, zorder=zorder,
+                                     **kwargs)
+
+            # The pcolor_col is now possibly shorter than the
+            # actual collection, so grab the masked cells
+            pcolor_col.set_array(pcolor_data[mask].ravel())
+        else:
+            pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
+                                     pcolor_data, zorder=zorder,
+                                     **kwargs)
+            # Currently pcolor_col.get_array() will return a compressed array
+            # and warn unless we explicitly set the 2D array.  This should be
+            # unnecessary with future matplotlib versions.
+            pcolor_col.set_array(pcolor_data)
 
         pcolor_col.set_cmap(cmap)
         pcolor_col.set_norm(norm)
@@ -1972,7 +1980,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # put the pcolor_col and mask on the pcolormesh
         # collection so that users can do things post
         # this method
-        collection._wrapped_mask = mask.ravel()
+        collection._wrapped_mask = mask
         collection._wrapped_collection_fix = pcolor_col
 
         return collection
