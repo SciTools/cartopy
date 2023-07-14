@@ -23,25 +23,21 @@ class TestBoundary:
         assert len(multi_line_string.geoms) > 1
         assert not rings
 
-        def assert_intersection_with_boundary(segment_coords):
-            # Double the length of the segment.
-            start = segment_coords[0]
-            end = segment_coords[1]
-            end = [end[i] + 2 * (end[i] - start[i]) for i in (0, 1)]
-            extended_segment = sgeom.LineString([start, end])
-            # And see if it crosses the boundary.
-            intersection = extended_segment.intersection(projection.boundary)
-            assert not intersection.is_empty, 'Bad topology near boundary'
+        def assert_close_to_boundary(xy):
+            # Are we close to the boundary, which we are considering within
+            # a fraction of the x domain limits
+            limit = (projection.x_limits[1] - projection.x_limits[0]) / 1e4
+            assert sgeom.Point(*xy).distance(projection.boundary) < limit, \
+                'Bad topology near boundary'
 
-        # Each line resulting from the split should start and end with a
-        # segment that crosses the boundary when extended to double length.
+        # Each line resulting from the split should be close to the boundary.
         # (This is important when considering polygon rings which need to be
         # attached to the boundary.)
         for line_string in multi_line_string.geoms:
             coords = list(line_string.coords)
             assert len(coords) >= 2
-            assert_intersection_with_boundary(coords[1::-1])
-            assert_intersection_with_boundary(coords[-2:])
+            assert_close_to_boundary(coords[0])
+            assert_close_to_boundary(coords[-1])
 
     def test_out_of_bounds(self):
         # Check that a ring that is completely out of the map boundary
