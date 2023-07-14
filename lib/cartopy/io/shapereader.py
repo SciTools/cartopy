@@ -130,7 +130,7 @@ class BasicReader:
 
     """
 
-    def __init__(self, filename):
+    def __init__(self, filename, bbox=None):
         # Validate the filename/shapefile
         self._reader = reader = shapefile.Reader(filename)
         if reader.shp is None or reader.shx is None or reader.dbf is None:
