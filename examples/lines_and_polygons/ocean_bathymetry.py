@@ -55,12 +55,12 @@ if __name__ == "__main__":
         'https://naturalearth.s3.amazonaws.com/' +
         '10m_physical/ne_10m_bathymetry_all.zip')
 
-    # Construct colormap:
-    # Depth levels in the colorbar are spaced as in the data
-    norm = matplotlib.colors.Normalize(vmin=-10000, vmax=0)  # in meters
-    depth_fraction = depths.astype(float) / depths.astype(float).min()
-    tmp = matplotlib.colormaps['Blues']  # to quantize: use .resampled(10)
-    colors_depths = tmp(depth_fraction)  # color values at fractional depths
+    # Construct a discrete colormap with colors corresponding to each depth
+    bounds = sorted(depths.astype(float))  # low to high
+    N = len(bounds)
+    norm = matplotlib.colors.BoundaryNorm(bounds, N)
+    blues_cm = matplotlib.colormaps['Blues_r'].resampled(N)
+    colors_depths = blues_cm(norm(depths.astype(float)))
 
     # Set up plot
     subplot_kw = {'projection': ccrs.LambertCylindrical()}
@@ -82,14 +82,14 @@ if __name__ == "__main__":
     # Add custom colorbar
     axi = fig.add_axes([0.85, 0.1, 0.025, 0.8])
     ax.add_feature(cfeature.BORDERS, linestyle=':')
-    matplotlib.colorbar.ColorbarBase(ax=axi,
-                                     cmap=tmp.reversed(),
-                                     norm=norm,
-                                     boundaries=depths.astype(int)[::-1],
-                                     spacing='proportional',
-                                     extend='min',
-                                     ticks=depths.astype(int),
-                                     label='Depth (m)')
+    sm = plt.cm.ScalarMappable(cmap=blues_cm, norm=norm)
+    fig.colorbar(mappable=sm,
+                 cax=axi,
+                 boundaries=depths.astype(int)[::-1],
+                 spacing='proportional',
+                 extend='min',
+                 ticks=depths.astype(int),
+                 label='Depth (m)')
 
     # Convert vector bathymetries to raster (saves a lot of disk space)
     # while leaving labels as vectors
