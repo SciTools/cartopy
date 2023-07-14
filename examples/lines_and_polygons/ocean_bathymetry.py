@@ -4,7 +4,7 @@ Ocean bathymetry
 
 Produces a map of ocean seafloor depth, demonstrating the
 :class:`cartopy.io.shapereader.Reader` interface. The data is a series
-of 10m resolution nested polygons obtained from Natural Earth, and derived
+of 10m resolution nested polygons obtained from Natural Earth, derived
 from the NASA SRTM Plus product. Since the dataset contains a zipfile with
 multiple shapefiles representing different depths, the example demonstrates
 manually downloading and reading them with the general shapereader interface,
@@ -51,16 +51,18 @@ def load_bathymetry(zip_file_url):
 
 if __name__ == "__main__":
     # Load data (14.8 MB file)
-    depths, shp_dict = load_bathymetry(
+    depths_str, shp_dict = load_bathymetry(
         'https://naturalearth.s3.amazonaws.com/' +
         '10m_physical/ne_10m_bathymetry_all.zip')
 
     # Construct a discrete colormap with colors corresponding to each depth
-    bounds = sorted(depths.astype(float))  # low to high
-    N = len(bounds)
-    norm = matplotlib.colors.BoundaryNorm(bounds, N)
+    depths = depths_str.astype(int)
+    N = len(depths)
+    nudge = 0.01  # shift bin edge slightly to include data
+    boundaries = [min(depths)] + sorted(depths+nudge)  # low to high
+    norm = matplotlib.colors.BoundaryNorm(boundaries, N)
     blues_cm = matplotlib.colormaps['Blues_r'].resampled(N)
-    colors_depths = blues_cm(norm(depths.astype(float)))
+    colors_depths = blues_cm(norm(depths))
 
     # Set up plot
     subplot_kw = {'projection': ccrs.LambertCylindrical()}
@@ -68,8 +70,8 @@ if __name__ == "__main__":
     ax.set_extent([90, 160, -15, 60], crs=ccrs.PlateCarree())  # x0, x1, y0, y1
 
     # Iterate and plot feature for each depth level
-    for i, depth in enumerate(depths):
-        ax.add_geometries(shp_dict[depth].geometries(),
+    for i, depth_str in enumerate(depths_str):
+        ax.add_geometries(shp_dict[depth_str].geometries(),
                           crs=ccrs.PlateCarree(),
                           color=colors_depths[i])
 
@@ -85,10 +87,9 @@ if __name__ == "__main__":
     sm = plt.cm.ScalarMappable(cmap=blues_cm, norm=norm)
     fig.colorbar(mappable=sm,
                  cax=axi,
-                 boundaries=depths.astype(int)[::-1],
                  spacing='proportional',
                  extend='min',
-                 ticks=depths.astype(int),
+                 ticks=depths,
                  label='Depth (m)')
 
     # Convert vector bathymetries to raster (saves a lot of disk space)
