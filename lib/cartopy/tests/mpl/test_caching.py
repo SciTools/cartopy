@@ -22,6 +22,7 @@ import cartopy.io.shapereader
 from cartopy.mpl.feature_artist import FeatureArtist
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
+from cartopy.tests.mpl import MPL_VERSION
 
 
 def sample_data(shape=(73, 145)):
@@ -120,7 +121,11 @@ def test_contourf_transform_path_counting():
     with mock.patch('cartopy.mpl.patch.path_to_geos') as path_to_geos_counter:
         x, y, z = sample_data((30, 60))
         cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
-        n_geom = sum(len(c.get_paths()) for c in cs.collections)
+        if MPL_VERSION.release[:2] < (3, 8):
+            n_geom = sum(len(c.get_paths()) for c in cs.collections)
+        else:
+            n_geom = len(cs.get_paths())
+
         del cs
         fig.canvas.draw()
 
