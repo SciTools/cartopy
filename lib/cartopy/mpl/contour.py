@@ -101,7 +101,7 @@ class GeoContourSet(QuadContourSet):
             # collection's paths.
             paths = self.get_paths()
             new_paths = [col_to_data.transform_path(path) for path in paths]
-            paths[:] = new_paths
+            self.set_paths(new_paths)
 
             # The collection will now be referenced in axes projection
             # coordinates.
