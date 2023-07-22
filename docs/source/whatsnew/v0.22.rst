@@ -1,0 +1,56 @@
+Version 0.22 (August 4, 2023)
+=============================
+
+Cartopy v0.22 is a major step forward in the project's development. The
+requirement to install with local PROJ and GEOS libraries has been
+removed. The previous C PROJ library calls have been replaced by pyproj
+and the C GEOS calls have been replaced by shapely. This means that
+Cartopy can now be installed with a simple ``pip install cartopy``.
+
+
+For a full list of included Pull Requests and closed Issues, please see the
+`0.22 milestone <https://github.com/SciTools/cartopy/milestone/35>`_.
+
+Features
+--------
+
+* Matthias Cuntz updated the OGC reader to handle EPSG projections. (:pull:`2191`)
+
+* Greg Lucas added the ability to build wheels for the project and
+  move towards new Python packaging standards. (:pull:`2197`)
+
+* Elliott Sales de Andrade removed the GEOS dependency and replaced it with shapely
+  and Greg Lucas added some additional speedups in the geometry transforms. (:pull:`2080`)
+
+* Ruth Comer added the ability to use RGB(A) color arrays with pcolormesh and
+  updated the code to work with Matplotlib version 3.8. (:pull:`2166`)
+
+  .. plot::
+
+    import cartopy.crs as ccrs
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    np.random.seed(100)
+
+    x = np.arange(10, 20)
+    y = np.arange(0, 10)
+    x, y = np.meshgrid(x, y)
+
+    img = np.random.randint(low=0, high=255, size=(10, 10, 4)) / 255
+
+    projection = ccrs.Mollweide()
+    transform = ccrs.PlateCarree()
+    ax = plt.axes(projection=projection)
+    ax.set_global()
+    ax.coastlines()
+
+    ax.pcolormesh(np.linspace(0, 120, 11), np.linspace(0, 80, 11), img, transform=transform)
+
+    plt.show()
+
+* Dan Hirst updated the Ordnance Survey image tiles to use the new OS API. (:pull:`2105`)
+
+* Martin Yeo added the Oblique Mercator projection. (:pull:`2096`)
+
+* Elliott Sales de Andrade added the Aitoff and Hammer projections. (:pull:`1249``)
