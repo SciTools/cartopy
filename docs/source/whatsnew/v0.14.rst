@@ -46,7 +46,7 @@ Features
 
 Deprecations
 ------------
-* :data:`cartopy.crs.GOOGLE_MERCATOR` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
+* ``cartopy.crs.GOOGLE_MERCATOR`` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
 
 
 Incompatible changes

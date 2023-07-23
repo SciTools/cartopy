@@ -1,6 +1,6 @@
 .. _api.io:
 
-.. currentmodule:: cartopy.io
+.. module:: cartopy.io
 
 Input/output capabilities (cartopy.io)
 --------------------------------------

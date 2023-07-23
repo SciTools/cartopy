@@ -3,7 +3,7 @@
 Cartopy configuration
 ---------------------
 
-.. currentmodule:: cartopy
+.. module:: cartopy
 
 The top level cartopy module contains the :attr:`~cartopy.config` dictionary which controls various aspects of cartopy's behaviour.
 
@@ -11,7 +11,7 @@ The top level cartopy module contains the :attr:`~cartopy.config` dictionary whi
     n.b. cartopy.config docstring should be mirrored in lib/cartopy/__init__.py.
 
 
-.. py:data:: cartopy.config
+.. py:data:: config
 
     The config dictionary stores global configuration values for cartopy.
 

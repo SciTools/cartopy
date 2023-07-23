@@ -119,7 +119,7 @@ Deprecations
 * The SRTM module has been re-factored for simplicity and to take advantage
   of the new :ref:`raster source interface <raster-source-interface>`. Some
   methods have therefore been deprecated and will be removed in future
-  releases. The function :func:`cartopy.io.srtm.srtm` has been replaced with
+  releases. The function ``cartopy.io.srtm.srtm`` has been replaced with
   the :meth:`cartopy.io.srtm.SRTM3Source.single_tile` method. Similarly,
   ``cartopy.io.srtm.srtm_composite`` and
   ``cartopy.io.srtm.SRTM3_retrieve`` have been replaced with the
