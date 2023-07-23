@@ -6,7 +6,7 @@ Matplotlib interface (cartopy.mpl)
 Cartopy extends some Matplotlib capabilities to handle geographic
 projections, such as non-rectangular axes and spines.
 
-.. currentmodule:: cartopy.mpl
+.. module:: cartopy.mpl
 
 Geoaxes
 ~~~~~~~
