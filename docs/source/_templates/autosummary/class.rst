@@ -6,4 +6,3 @@
 .. autoclass:: {{ objname }}
     :members:
     :inherited-members:
-
