@@ -8,10 +8,11 @@ represented in spherical coordinates. This means that the plotting methods will
 not plot data between the last and the first longitude.
 
 To help with this, the data and longitude/latitude coordinate arrays can be
-expanded with a cyclic point to close this gap. The routine `add_cyclic`
-repeats the last data column. It can also add the first longitude plus the
-cyclic keyword (defaults to 360) to the end of the longitude array so that the
-data values at the ending longitudes will be closed to the wrap point.
+expanded with a cyclic point to close this gap. The routine
+`~cartopy.util.add_cyclic` repeats the last data column. It can also add the
+first longitude plus the cyclic keyword (defaults to 360) to the end of the
+longitude array so that the data values at the ending longitudes will be closed
+to the wrap point.
 
 """
 import matplotlib.pyplot as plt

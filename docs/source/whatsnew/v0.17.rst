@@ -38,7 +38,7 @@ Features
 
 * Greg Lucas contributed functionality to plot day/night across the globe,
   which was turned into a map feature by Phil Elson. The shading can be added
-  to a map with :data:`cartopy.feature.nightshade.Nightshade(datetime)`. For
+  to a map with :meth:`cartopy.feature.nightshade.Nightshade(datetime) <cartopy.feature.nightshade.Nightshade>`. For
   more information, see the
   :ref:`sphx_glr_gallery_lines_and_polygons_nightshade.py` example.
   (:pull:`1135`, :pull:`1181`)
