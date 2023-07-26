@@ -80,9 +80,9 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         Determine potential world filename combinations, without checking
         their existence.
 
-        For example, a '*.tif' file may have one of the following
-        popular conventions for world file extensions '*.tifw',
-        '*.tfw', '*.TIFW' or '*.TFW'.
+        For example, a ``'*.tif'`` file may have one of the following
+        popular conventions for world file extensions ``'*.tifw'``,
+        ``'*.tfw'``, ``'*.TIFW'`` or ``'*.TFW'``.
 
         Given the possible world file extensions, the upper case basename
         combinations are also generated. For example, the file 'map.tif'
@@ -205,7 +205,7 @@ class ImageCollection:
             The directory path to search for image files.
         glob_pattern: optional
             The image filename glob pattern to search with.
-            Defaults to '*.tif'.
+            Defaults to ``'*.tif'``.
         img_class: optional
             The class used to construct each image in the Collection.
 
@@ -497,7 +497,8 @@ class NestedImageCollection:
         name_dir_pairs
             A list of image collection name and directory path pairs.
         glob_pattern: optional
-            The image collection filename glob pattern. Defaults to '*.tif'.
+            The image collection filename glob pattern. Defaults
+            to ``'*.tif'``.
         img_class: optional
             The class of images created in the image collection.
 
