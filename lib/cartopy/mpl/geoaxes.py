@@ -288,6 +288,7 @@ class GeoSpine(mspines.Spine):
         return ret
 
     def set_position(self, position):
+        """GeoSpine does not support changing its position."""
         raise NotImplementedError(
             'GeoSpine does not support changing its position.')
 
@@ -434,7 +435,7 @@ class GeoAxes(matplotlib.axes.Axes):
             Currently an image "factory" is just an object with
             an ``image_for_domain`` method. Examples of image factories
             are :class:`cartopy.io.img_nest.NestedImageCollection` and
-            :class:`cartopy.io.image_tiles.GoogleTiles`.
+            :class:`cartopy.io.img_tiles.GoogleTiles`.
 
         """
         if hasattr(factory, 'image_for_domain'):

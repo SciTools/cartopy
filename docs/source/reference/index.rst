@@ -6,7 +6,7 @@ API reference
 :Release: |version|
 :Date: |today|
 
-.. module:: cartopy
+.. currentmodule:: cartopy
 
 This is a detailed reference manual for functions, modules,
 and objects in cartopy. For initially learning how to use cartopy,

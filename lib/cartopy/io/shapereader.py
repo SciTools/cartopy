@@ -125,8 +125,9 @@ class BasicReader:
     """
     Provide an interface for accessing the contents of a shapefile.
 
-    The primary methods used on a Reader instance are
-    :meth:`~Reader.records` and :meth:`~Reader.geometries`.
+    The primary methods used on a BasicReader instance are
+    :meth:`~cartopy.io.shapereader.BasicReader.records` and
+    :meth:`~cartopy.io.shapereader.BasicReader.geometries`.
 
     """
 
@@ -152,7 +153,7 @@ class BasicReader:
         This interface is useful for accessing the geometries of the
         shapefile where knowledge of the associated metadata is not necessary.
         In the case where further metadata is needed use the
-        :meth:`~Reader.records`
+        :meth:`~cartopy.io.shapereader.BasicReader.records`
         interface instead, extracting the geometry from the record with the
         :meth:`~Record.geometry` method.
 
@@ -179,8 +180,9 @@ class FionaReader:
     Provides an interface for accessing the contents of a shapefile
     with the fiona library, which has a much faster reader than pyshp.
 
-    The primary methods used on a Reader instance are
-    :meth:`~Reader.records` and :meth:`~Reader.geometries`.
+    The primary methods used on a FionaReader instance are
+    :meth:`~cartopy.io.shapereader.FionaReader.records` and
+    :meth:`~cartopy.io.shapereader.FionaReader.geometries`.
 
     """
 
@@ -232,9 +234,9 @@ class FionaReader:
         This interface is useful for accessing the geometries of the
         shapefile where knowledge of the associated metadata is desired.
         In the case where further metadata is needed use the
-        :meth:`~Reader.records`
+        :meth:`~cartopy.io.shapereader.FionaReader.records`
         interface instead, extracting the geometry from the record with the
-        :meth:`~Record.geometry` method.
+        :meth:`~cartopy.io.shapereader.FionaRecord.geometry` method.
 
         """
         for item in self._data:
@@ -242,7 +244,7 @@ class FionaReader:
 
     def records(self):
         """
-        Returns an iterator of :class:`~Record` instances.
+        Returns an iterator of :class:`~FionaRecord` instances.
 
         """
         for item in self._data:

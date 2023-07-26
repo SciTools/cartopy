@@ -3,7 +3,7 @@ Animating a gridded surface
 ---------------------------
 
 This example demonstrates how to animate
-gridded data using `pcolormesh()`.
+gridded data using `~cartopy.mpl.geoaxes.GeoAxes.pcolormesh()`.
 """
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt

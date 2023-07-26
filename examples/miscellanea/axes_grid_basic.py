@@ -2,12 +2,14 @@
 Using Cartopy and AxesGrid toolkit
 ----------------------------------
 
-This example demonstrates how to use cartopy `GeoAxes` with
-`AxesGrid` from the `mpl_toolkits.axes_grid1`.
-The script constructs an `axes_class` kwarg with Plate Carree projection
-and passes it to the `AxesGrid` instance. The `AxesGrid` built-in
-tick labelling is not used, and instead a standard procedure
-of creating grid lines is used. Then some fake data is plotted.
+This example demonstrates how to use cartopy `~cartopy.mpl.geoaxes.GeoAxes`
+with `~mpl_toolkits.axes_grid1.axes_grid.AxesGrid` from the
+:mod:`mpl_toolkits.axes_grid1`. The script constructs an ``axes_class`` kwarg
+with Plate Carree projection and passes it to the
+`~mpl_toolkits.axes_grid1.axes_grid.AxesGrid` instance. The
+`~mpl_toolkits.axes_grid1.axes_grid.AxesGrid` built-in tick labelling
+is not used, and instead a standard procedure of creating grid lines is used.
+Then some fake data is plotted.
 """
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
