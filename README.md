@@ -23,9 +23,6 @@
 <a href="https://github.com/SciTools/cartopy/graphs/contributors">
 <img src="https://img.shields.io/github/contributors/SciTools/cartopy.svg"
  alt="# contributors" /></a>
-<a href="https://travis-ci.org/SciTools/cartopy/branches">
-<img src="https://api.travis-ci.org/repositories/SciTools/cartopy.svg?branch=main"
- alt="Travis-CI" /></a>
 <a href="https://zenodo.org/badge/latestdoi/5282596">
 <img src="https://zenodo.org/badge/5282596.svg"
  alt="zenodo" /></a>
