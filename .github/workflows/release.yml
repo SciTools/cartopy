@@ -1,5 +1,9 @@
 name: Build and upload to PyPI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
+  cancel-in-progress: true
+
 # Only build on published releases
 on:
   release:
@@ -7,57 +11,116 @@ on:
       - published
 
 jobs:
-  build:
-    name: Build sdist
-    runs-on: ubuntu-18.04
-    defaults:
-      run:
-        shell: bash -l {0}
+  build_sdist:
+    name: Build source distribution
+    runs-on: ubuntu-latest
+    outputs:
+      SDIST_NAME: ${{ steps.sdist.outputs.SDIST_NAME }}
 
     steps:
       - uses: actions/checkout@v3
-      - uses: conda-incubator/setup-miniconda@v2
         with:
-          activate-environment: test-environment
-          python-version: ${{ matrix.python-version }}
-          channels: conda-forge/label/testing,conda-forge
+          # We need the full history to generate the proper version number
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4
+        name: Install Python
+        with:
+          python-version: '3.11'
 
       - name: Install dependencies
+        run: python -m pip install build twine
+
+      - name: Build sdist
+        id: sdist
         run: |
-          PACKAGES="cython fiona matplotlib-base numpy pyproj pykdtree scipy"
-          PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest"
-          PACKAGES="$PACKAGES pytest-xdist setuptools_scm shapely"
-          conda install $PACKAGES
+          python -m build --sdist
+          # Get the name of the build sdist file for later use
+          echo "SDIST_NAME=$(ls -1 dist)" >> $GITHUB_OUTPUT
 
-      - name: Create sdist
-        run: python setup.py build_ext sdist
+      - name: Check README rendering for PyPI
+        run: twine check dist/*
 
-      - name: Save built packages as artifact
+      - name: Upload sdist result
         uses: actions/upload-artifact@v3
         with:
-          name: packages-${{ runner.os }}-${{ matrix.python-version }}
-          path: dist/
+          name: sdist
+          path: dist/*.tar.gz
           if-no-files-found: error
-          retention-days: 5
+
+  generate-wheels-matrix:
+    name: Generate wheels matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.set-matrix.outputs.include }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install cibuildwheel
+        run: pipx install cibuildwheel==f21bb8376a051ffb6cb5604b28ccaef7b90e8ab7 # v2.14.1
+      - id: set-matrix
+        run: |
+          MATRIX=$(
+            {
+              cibuildwheel --print-build-identifiers --platform linux \
+              | jq -nRc '{"only": inputs, "os": "ubuntu-latest"}' \
+              && cibuildwheel --print-build-identifiers --platform macos \
+              | jq -nRc '{"only": inputs, "os": "macos-latest"}' \
+              && cibuildwheel --print-build-identifiers --platform windows \
+              | jq -nRc '{"only": inputs, "os": "windows-2019"}'
+            } | jq -sc
+          )
+          echo "include=$MATRIX" >> $GITHUB_OUTPUT
+        env:
+          CIBW_BUILD: "cp39-* cp310-* cp311-*"
+          # Skip 32 bit windows builds and musllinux due to lack of numpy wheels
+          CIBW_SKIP: "*-win32 *-musllinux*"
+          CIBW_ARCHS_MACOS: x86_64 arm64
+
+  build_wheels:
+    name: Build ${{ matrix.os }} ${{ matrix.only }}
+    needs: [generate-wheels-matrix, build_sdist]
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.generate-wheels-matrix.outputs.include) }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+
+      - name: Download sdist
+        uses: actions/download-artifact@v3
+        with:
+          name: sdist
+          path: dist/
+
+      - uses: pypa/cibuildwheel@f21bb8376a051ffb6cb5604b28ccaef7b90e8ab7 # v2.14.1
+        with:
+          only: ${{ matrix.only }}
+          package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ./wheelhouse/*.whl
 
   publish:
     name: Publish to PyPI
-    needs: build
+    # Only publish on releases
+    if: github.event_name == 'release'
+    needs: [build_wheels, build_sdist]
     environment:
       name: PyPI
       url: https://pypi.org/project/cartopy
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Download packages
         uses: actions/download-artifact@v3
-
-      - name: Consolidate packages for upload
-        run: |
-          mkdir dist
-          cp packages-*/* dist/
+        with:
+          name: artifact
+          path: dist
 
       - name: Publish Package
         uses: pypa/gh-action-pypi-publish@v1.8.8

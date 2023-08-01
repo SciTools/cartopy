@@ -8,6 +8,73 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "Cartopy"
+authors = [
+    {name = "UK Met Office"},
+]
+description = "A Python library for cartographic visualizations with Matplotlib"
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["cartography", "map", "transform", "projection", "pyproj", "shapely", "shapefile"]
+license = {file = "COPYING.LESSER"}
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Framework :: Matplotlib',
+    'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Operating System :: POSIX :: AIX',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: C++',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3 :: Only',
+    'Topic :: Scientific/Engineering',
+    'Topic :: Scientific/Engineering :: GIS',
+    'Topic :: Scientific/Engineering :: Visualization',
+]
+dependencies = [
+    "numpy>=1.21",
+    "matplotlib>=3.4",
+    "shapely>=1.7",
+    "packaging>=20",
+    "pyshp>=2.1",
+    "pyproj>=3.1.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+doc = ["beautifulsoup4", "pydata-sphinx-theme", "sphinx", "sphinx-gallery"]
+speedups = ["pykdtree", "fiona"]
+ows = ["OWSLib>=0.20.0", "pillow>=6.1.0"]
+plotting = ["pillow>=6.1.0", "scipy>=1.3.1"]
+test = ["pytest>=5.1.2", "pytest-mpl>=0.11", "pytest-xdist", "pytest-cov", "coveralls"]
+
+[project.scripts]
+feature_download = "tools.cartopy_feature_download.py:__main__"
+
+[project.urls]
+documentation='https://scitools.org.uk/cartopy/docs/latest/'
+homepage='https://github.com/SciTools/cartopy'
+
+[tool.setuptools.packages.find]
+where = ["lib"]
+exclude = ["cartopy.tests*"]
+
+[tool.setuptools.package-data]
+cartopy = ["lib/cartopy/tests/mpl/baseline_images/**",
+              "lib/cartopy/data/**",
+              "lib/cartopy/tests/lakes_shapefile/**",
+              "io/srtm.npz"]
+
+[tool.setuptools_scm]
+write_to = "lib/cartopy/_version.py"
+
 [tool.codespell]
 ignore-words-list = "damon,koordinates,linz,slippy,subtiles,tring"
 skip = "./.git,./docs/build,./docs/source/gallery,./docs/source/reference,*.cpp,*.css,*.examples,*.js,*.html,*.ipynb,*.pdf,*.rst.txt"
@@ -25,3 +92,8 @@ lines_after_imports = 2
 no_lines_before = "LOCALFOLDER"
 skip_gitignore = true
 verbose = false
+
+[tool.pytest.ini_options]
+addopts = "--mpl"
+testpaths = ["lib"]
+python_files = ["test_*.py"]

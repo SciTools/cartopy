@@ -3,9 +3,7 @@ prune .circleci
 prune benchmarks
 prune docs
 prune examples
-include requirements/*.txt
 graft tools
-exclude .appveyor.yml
 exclude .coveragerc
 exclude .git-blame-ignore-revs
 include .gitattributes
@@ -15,4 +13,6 @@ include CHANGES
 include COPYING*
 include environment.yml
 include INSTALL
-recursive-include lib/cartopy *.cpp *.h *.py *.pyx
+recursive-include lib/cartopy *.cpp *.py *.pyx
+recursive-include lib/cartopy *.TXT *.dbf *.jpg *.json *.nc *.png *.shp *.shx *.txt
+include lib/cartopy/data/LICENSE

@@ -305,9 +305,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
         p_mid = interpolator.interpolate(t_mid)
 
         # Determine the closest point on the segment to the midpoint, in
-        # normalized coordinates. We could use GEOSProjectNormalized_r
-        # here, but since it's a single line segment, it's much easier to
-        # just do the math ourselves:
+        # normalized coordinates.
         #     ○̩ (x1, y1) (assume that this is not necessarily vertical)
         #     │
         #     │   D
@@ -446,7 +444,7 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
                            double threshold, LineAccumulator lines,
                            bool geom_fully_inside=False) except *:
     cdef Point p_current, p_min, p_max, p_end
-    cdef double t_current, t_min, t_max
+    cdef double t_current, t_min=0, t_max=1
     cdef State state
 
     p_current.x, p_current.y = src_from
