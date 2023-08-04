@@ -168,15 +168,20 @@ def path_to_geos(path, force_ccw=False):
             geom = sgeom.LineString(path_verts)
 
         # If geom is a Polygon and is contained within the last geom in
-        # collection, add it to its list of internal polygons, otherwise
-        # simply append it as a new external geom.
+        # collection, it usually needs to be an interior to that geom (e.g. a
+        # lake within a land mass).  Sometimes there is a further geom within
+        # this interior (e.g. an island in a lake, or some instances of
+        # contours).  This needs to be a new external geom in the collection.
         if geom.is_empty:
             pass
         elif (len(collection) > 0 and
                 isinstance(collection[-1][0], sgeom.Polygon) and
                 isinstance(geom, sgeom.Polygon) and
                 collection[-1][0].contains(geom.exterior)):
-            collection[-1][1].append(geom.exterior)
+            if any(internal.contains(geom) for internal in collection[-1][1]):
+                collection.append((geom, []))
+            else:
+                collection[-1][1].append(geom)
         elif isinstance(geom, sgeom.Point):
             other_result_geoms.append(geom)
         else:
@@ -188,8 +193,8 @@ def path_to_geos(path, force_ccw=False):
     geom_collection = []
     for external_geom, internal_polys in collection:
         if internal_polys:
-            # XXX worry about islands within lakes
-            geom = sgeom.Polygon(external_geom.exterior, internal_polys)
+            exteriors = [geom.exterior for geom in internal_polys]
+            geom = sgeom.Polygon(external_geom.exterior, exteriors)
         else:
             geom = external_geom
 
