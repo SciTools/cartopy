@@ -43,3 +43,19 @@ class Test_path_to_geos:
         geoms = cpatch.path_to_geos(p)
         assert [type(geom) for geom in geoms] == [sgeom.Polygon, sgeom.Point]
         assert len(geoms[0].interiors) == 1
+
+    def test_nested_polygons(self):
+        # A geometry with three nested squares.
+        vertices = [[0, 0], [0, 10], [10, 10], [10, 0], [0, 0],
+                    [2, 2], [2, 8], [8, 8], [8, 2], [2, 2],
+                    [4, 4], [4, 6], [6, 6], [6, 4], [4, 4]]
+        codes = [1, 2, 2, 2, 79, 1, 2, 2, 2, 79, 1, 2, 2, 2, 79]
+        p = Path(vertices, codes=codes)
+        geoms = cpatch.path_to_geos(p)
+
+        # The first square makes the first geometry with the second square as
+        # its interior.  The third square is its own geometry with no interior.
+        assert len(geoms) == 2
+        assert all(type(geom) == sgeom.Polygon for geom in geoms)
+        assert len(geoms[0].interiors) == 1
+        assert len(geoms[1].interiors) == 0
