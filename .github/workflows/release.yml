@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install cibuildwheel
-        run: pipx install cibuildwheel==f21bb8376a051ffb6cb5604b28ccaef7b90e8ab7 # v2.14.1
+        run: pipx install cibuildwheel==2.14.1
       - id: set-matrix
         run: |
           MATRIX=$(
