@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import cartopy.io.shapereader as shpreader
 import cartopy.crs as ccrs
+import cartopy.io.shapereader as shpreader
 
 
 class Suite:

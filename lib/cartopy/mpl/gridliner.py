@@ -12,15 +12,14 @@ import matplotlib
 import matplotlib.collections as mcollections
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
-import matplotlib.path as mpath
 import numpy as np
 import shapely.geometry as sgeom
 
 import cartopy
-from cartopy.crs import Projection, _RectangularProjection, PlateCarree
-from cartopy.mpl.ticker import (
-    LongitudeLocator, LatitudeLocator,
-    LongitudeFormatter, LatitudeFormatter)
+from cartopy.crs import PlateCarree, Projection, _RectangularProjection
+from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator,
+                                LongitudeFormatter, LongitudeLocator)
+
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])
 classic_locator = mticker.MaxNLocator(nbins=9)
@@ -45,6 +44,7 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
     cartopy.crs.LambertConformal,
     cartopy.crs.TransverseMercator,
     cartopy.crs.Gnomonic,
+    cartopy.crs.ObliqueMercator,
 )
 
 
@@ -756,36 +756,17 @@ class Gridliner:
             specs['coords'] = [
                 getattr(bbox, specs['coord_type'] + idx) for idx in "01"]
 
-        def remove_path_dupes(path):
-            """
-            Remove duplicate points in a path (zero-length segments).
-
-            This is necessary only for Matplotlib 3.1.0 -- 3.1.2, because
-            Path.intersects_path incorrectly returns True for any paths with
-            such segments.
-            """
-            segment_length = np.diff(path.vertices, axis=0)
-            mask = np.logical_or.reduce(segment_length != 0, axis=1)
-            mask = np.append(mask, True)
-            path = mpath.Path(np.compress(mask, path.vertices, axis=0),
-                              np.compress(mask, path.codes, axis=0))
-            return path
-
         def update_artist(artist, renderer):
             artist.update_bbox_position_size(renderer)
             this_patch = artist.get_bbox_patch()
             this_path = this_patch.get_path().transformed(
                 this_patch.get_transform())
-            if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
-                this_path = remove_path_dupes(this_path)
             return this_path
 
         # Get the real map boundaries
         self.axes.spines["geo"].get_window_extent(renderer)  # update coords
         map_boundary_path = self.axes.spines["geo"].get_path().transformed(
             self.axes.spines["geo"].get_transform())
-        if '3.1.0' <= matplotlib.__version__ <= '3.1.2':
-            map_boundary_path = remove_path_dupes(map_boundary_path)
         map_boundary = sgeom.Polygon(map_boundary_path.vertices)
 
         if self.x_inline:
@@ -839,15 +820,20 @@ class Gridliner:
                                                sgeom.MultiLineString)):
                     if isinstance(intersection, sgeom.LineString):
                         intersection = [intersection]
-                    elif len(intersection) > 4:
+                    elif len(intersection.geoms) > 4:
                         # Gridline and map boundary are parallel and they
                         # intersect themselves too much it results in a
                         # multiline string that must be converted to a single
                         # linestring. This is an empirical workaround for a
                         # problem that can probably be solved in a cleaner way.
-                        xy = np.append(intersection[0], intersection[-1],
-                                       axis=0)
+                        xy = np.append(
+                            intersection.geoms[0].coords,
+                            intersection.geoms[-1].coords,
+                            axis=0,
+                        )
                         intersection = [sgeom.LineString(xy)]
+                    else:
+                        intersection = intersection.geoms
                     tails = []
                     heads = []
                     for inter in intersection:
@@ -1254,7 +1240,7 @@ class Gridliner:
         return lon_range, lat_range
 
 
-class Label(object):
+class Label:
     """Helper class to manage the attributes for a single label"""
 
     def __init__(self, artist, path, xy, loc):

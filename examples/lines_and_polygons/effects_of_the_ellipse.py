@@ -14,15 +14,16 @@ that they are both referenced to the WGS84 ellipse and compare how the
 coastlines are shifted as a result of referencing the incorrect ellipse.
 
 """
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-from cartopy.io.img_tiles import Stamen
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D as Line
 from matplotlib.patheffects import Stroke
+import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as sgeom
 from shapely.ops import transform as geom_transform
+
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from cartopy.io.img_tiles import Stamen
 
 
 def transform_fn_factory(target_crs, source_crs):

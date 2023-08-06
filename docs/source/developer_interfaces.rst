@@ -65,4 +65,3 @@ interactive visualisation. Generally the SlippyImageArtist is a developer's
 interface, with users often creating a
 :class:`SlippyImageArtist` instance through
 the GeoAxes' :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_raster` method.
-

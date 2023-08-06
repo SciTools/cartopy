@@ -10,12 +10,14 @@ transformations.
 """
 
 import numpy as np
+
+
 try:
-    import pykdtree.kdtree
+    from pykdtree.kdtree import KDTree as _kdtreeClass
     _is_pykdtree = True
 except ImportError:
     try:
-        import scipy.spatial
+        from scipy.spatial import cKDTree as _kdtreeClass
     except ImportError as e:
         raise ImportError("Using image transforms requires either "
                           "pykdtree or scipy.") from e
@@ -219,7 +221,7 @@ def _determine_bounds(x_coords, y_coords, source_cs):
     return bounds
 
 
-def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
+def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
            target_x_points, target_y_points, mask_extrapolated=False):
     """
     Regrid the data array from the source projection to the target projection.
@@ -235,9 +237,9 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     source_y_coords
         A 2-dimensional source projection :class:`numpy.ndarray` of
         y-direction sample points.
-    source_cs
+    source_proj
         The source :class:`~cartopy.crs.Projection` instance.
-    target_cs
+    target_proj
         The target :class:`~cartopy.crs.Projection` instance.
     target_x_points
         A 2-dimensional target projection :class:`numpy.ndarray` of
@@ -256,26 +258,35 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         The data array regridded in the target projection.
 
     """
+
     # Stack our original xyz array, this will also wrap coords when necessary
-    xyz = source_cs.transform_points(source_cs,
-                                     source_x_coords.flatten(),
-                                     source_y_coords.flatten())
+    xyz = source_proj.transform_points(source_proj,
+                                       source_x_coords.flatten(),
+                                       source_y_coords.flatten())
     # Transform the target points into the source projection
-    target_xyz = source_cs.transform_points(target_proj,
-                                            target_x_points.flatten(),
-                                            target_y_points.flatten())
+    target_xyz = source_proj.transform_points(target_proj,
+                                              target_x_points.flatten(),
+                                              target_y_points.flatten())
+
+    # Find mask of valid points before querying kdtree: scipy >= 1.11 errors
+    # when querying nan points, might as well use for pykdtree too.
+    indices = np.zeros(target_xyz.shape[0], dtype=int)
+    finite_xyz = np.all(np.isfinite(target_xyz), axis=-1)
 
     if _is_pykdtree:
-        kdtree = pykdtree.kdtree.KDTree(xyz)
+        kdtree = _kdtreeClass(xyz)
         # Use sqr_dists=True because we don't care about distances,
         # and it saves a sqrt.
-        _, indices = kdtree.query(target_xyz, k=1, sqr_dists=True)
+        _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :],
+                                              k=1,
+                                              sqr_dists=True)
     else:
         # Versions of scipy >= v0.16 added the balanced_tree argument,
         # which caused the KDTree to hang with this input.
-        kdtree = scipy.spatial.cKDTree(xyz, balanced_tree=False)
-        _, indices = kdtree.query(target_xyz, k=1)
-    mask = indices >= len(xyz)
+        kdtree = _kdtreeClass(xyz, balanced_tree=False)
+        _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :], k=1)
+
+    mask = ~finite_xyz | (indices >= len(xyz))
     indices[mask] = 0
 
     desired_ny, desired_nx = target_x_points.shape
@@ -293,7 +304,7 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
     # to the same point to within a fixed fractional offset.
     # NOTE: This only needs to be done for (pseudo-)cylindrical projections,
     # or any others which have the concept of wrapping
-    back_to_target_xyz = target_proj.transform_points(source_cs,
+    back_to_target_xyz = target_proj.transform_points(source_proj,
                                                       target_xyz[:, 0],
                                                       target_xyz[:, 1])
     back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny,
@@ -323,7 +334,8 @@ def regrid(array, source_x_coords, source_y_coords, source_cs, target_proj,
         target_in_source_y = target_xyz[:, 1].reshape(desired_ny,
                                                       desired_nx)
 
-        bounds = _determine_bounds(source_x_coords, source_y_coords, source_cs)
+        bounds = _determine_bounds(source_x_coords, source_y_coords,
+                                   source_proj)
 
         outside_source_domain = ((target_in_source_y >= bounds['y'][1]) |
                                  (target_in_source_y <= bounds['y'][0]))

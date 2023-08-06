@@ -4,73 +4,78 @@ on: [push, pull_request]
 
 jobs:
   build:
+    if: github.repository == 'scitools/cartopy'
 
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: [3.7, 3.8, 3.9]
-    defaults:
-      run:
-        shell: bash -l {0}
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.9, '3.10', '3.11']
+        shapely-dev: [false]
+        include:
+          - os: ubuntu-latest
+            python-version: '3.11'
+            shapely-dev: true
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v3
         with:
-          activate-environment: test-environment
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
           python-version: ${{ matrix.python-version }}
-          channels: conda-forge/label/testing,conda-forge
+          cache: 'pip'
 
       - name: Minimum packages
-        # Only run on macos for now
-        # Conda's linux packages don't grab the testing label of matplotlib causing failures due to freetype differences
-        if: matrix.python-version == '3.7' && matrix.os == 'macos-latest'
+        if: matrix.python-version == '3.9' && matrix.os == 'ubuntu-latest'
         id: minimum-packages
         run: |
-          echo "PACKAGES=cython=0.28.5 matplotlib=3.1 numpy=1.18 owslib=0.17 pyproj=3.0 proj=8.0 scipy=1.2.0" >> $GITHUB_ENV
-          echo "CFLAGS=-stdlib=libc++" >> $GITHUB_ENV
-
-      - name: Latest packages
-        if: steps.minimum-packages.conclusion == 'skipped'
-        run: |
-          echo "PACKAGES=cython fiona matplotlib-base numpy pyproj pykdtree scipy" >> $GITHUB_ENV
+          pip install cython==0.29.24 matplotlib==3.4.3 numpy==1.21 owslib==0.24.1 pyproj==3.1 scipy==1.6.3 shapely==1.7.1
 
       - name: Coverage packages
         id: coverage
         # only want the coverage to be run on the latest ubuntu
-        if: matrix.python-version == '3.9' && matrix.os == 'ubuntu-latest'
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
         run: |
-          echo "PACKAGES=$PACKAGES pytest-cov coveralls" >> $GITHUB_ENV
           echo "CYTHON_COVERAGE=1" >> $GITHUB_ENV
-          echo "EXTRA_TEST_ARGS=--cov=cartopy -ra" >> $GITHUB_ENV
+          # Also add doctest here to avoid windows runners which expect a different path separator
+          echo "EXTRA_TEST_ARGS=--cov=cartopy -ra --doctest-modules" >> $GITHUB_ENV
+          pip install cython
 
-      - name: Install dependencies
+      - name: Install Shapely dev
+        if: matrix.shapely-dev
         run: |
-          PACKAGES="$PACKAGES owslib pep8 pillow pyshp pytest pytest-mpl"
-          PACKAGES="$PACKAGES pytest-xdist requests setuptools_scm"
-          PACKAGES="$PACKAGES setuptools_scm_git_archive shapely"
-          conda install $PACKAGES
-          conda info -a
-          conda list
+          # Install Shapely from source on ubuntu
+          sudo apt-get update
+          sudo apt-get install -yy libgeos-dev
+          pip install git+https://github.com/shapely/shapely.git@main
 
       - name: Install Cartopy
         id: install
         run: |
-          MPL_CONFIG_DIR=~/.config/matplotlib
-          mkdir -p $MPL_CONFIG_DIR
-          echo "backend : agg" > $MPL_CONFIG_DIR/matplotlibrc
-          pip install --no-deps -e .
+          pip install -e .[test]
           python -c "import cartopy; print('Version ', cartopy.__version__)"
+
+      - name: Install extras
+        # Default is to install just the minimum testing requirements,
+        # but we want to get as much coverage as possible.
+        if: steps.minimum-packages.conclusion == 'skipped'
+        run: |
+          pip install .[ows,plotting,speedups]
 
       - name: Testing
         id: test
+        # we need to force bash to use line continuations on Windows
+        shell: bash
         run: |
           # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
           python tools/cartopy_feature_download.py gshhs physical --dry-run
           CARTOPY_GIT_DIR=$PWD
-          PYPROJ_GLOBAL_CONTEXT=ON pytest -ra -n 4 --doctest-modules \
+          pytest -ra -n 4 \
+              --color=yes \
               --mpl --mpl-generate-summary=html \
               --mpl-results-path="cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}" \
               --pyargs cartopy ${EXTRA_TEST_ARGS}
@@ -83,7 +88,7 @@ jobs:
           coveralls --service=github
 
       - name: Upload image results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}

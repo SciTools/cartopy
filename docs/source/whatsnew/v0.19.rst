@@ -52,7 +52,7 @@ Features
 * Luke Davis fixed the label padding for gridliners to use points which makes
   the rendered screen image appear the same as the printed image now.
   (:pull:`1556`)
-  
+
 * Daryl Herzmann added the ability to make Hexbin plots. (:pull:`1542`)
 
     .. plot::

@@ -4,9 +4,11 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 import io
+
+import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
 
 
 # No need for anything other than the agg backend, and we don't want
@@ -31,6 +33,6 @@ def time_second_figure():
     # Successive figures with Axes of the same projection
     # could have various caching mechanisms in place.
     # At the time of writing, there is no
-    # noticable performance speedup during the second figure :(
+    # noticeable performance speedup during the second figure :(
     create_pc_png()
     create_pc_png()

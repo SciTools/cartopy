@@ -5,7 +5,6 @@
 # licensing details.
 
 import matplotlib.pyplot as plt
-from matplotlib.testing.decorators import cleanup
 import pytest
 
 import cartopy.crs as ccrs
@@ -15,8 +14,7 @@ from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
-@pytest.mark.mpl_image_compare(filename='wmts.png', tolerance=0)
+@pytest.mark.mpl_image_compare(filename='wmts.png', tolerance=0.03)
 def test_wmts():
     ax = plt.axes(projection=ccrs.PlateCarree())
     url = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
@@ -27,7 +25,6 @@ def test_wmts():
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@cleanup
 def test_wms_tight_layout():
     ax = plt.axes(projection=ccrs.PlateCarree())
     url = 'http://vmap0.tiles.osgeo.org/wms/vmap0'

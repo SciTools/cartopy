@@ -5,7 +5,7 @@
 # licensing details.
 
 import contextlib
-import os
+from pathlib import Path
 from unittest import mock
 
 import pytest
@@ -17,21 +17,21 @@ from cartopy.io.shapereader import NEShpDownloader
 
 def test_Downloader_data():
     di = cio.Downloader('https://testing.com/{category}/{name}.zip',
-                        os.path.join('{data_dir}', '{category}',
-                                     'shape.shp'),
-                        '/project/foobar/{category}/sample.shp')
+                        str(Path('{data_dir}') / '{category}' / 'shape.shp'),
+                        str(Path('/project') / 'foobar' / '{category}' /
+                            'sample.shp'))
 
     replacement_dict = {'category': 'example',
                         'name': 'test',
-                        'data_dir': os.path.join('/wibble', 'foo', 'bar')}
+                        'data_dir': str(Path('/wibble') / 'foo' / 'bar')}
 
     assert di.url(replacement_dict) == 'https://testing.com/example/test.zip'
 
     assert (di.target_path(replacement_dict) ==
-            os.path.join('/wibble', 'foo', 'bar', 'example', 'shape.shp'))
+            Path('/wibble') / 'foo' / 'bar' / 'example' / 'shape.shp')
 
     assert (di.pre_downloaded_path(replacement_dict) ==
-            '/project/foobar/example/sample.shp')
+            Path('/project/foobar/example/sample.shp'))
 
 
 @contextlib.contextmanager
@@ -41,10 +41,12 @@ def config_replace(replacement_dict):
     dict with the given dictionary. Great for testing purposes!
 
     """
-    downloads_orig = cartopy.config['downloaders']
-    cartopy.config['downloaders'] = replacement_dict
-    yield
-    cartopy.config['downloaders'] = downloads_orig
+    with contextlib.ExitStack() as stack:
+        stack.callback(cartopy.config.__setitem__, 'downloaders',
+                       cartopy.config['downloaders'])
+        cartopy.config['downloaders'] = replacement_dict
+
+        yield
 
 
 @pytest.fixture
@@ -54,16 +56,16 @@ def download_to_temp(tmp_path_factory):
     which is automatically cleaned up on exit.
 
     """
-    old_downloads_dict = cartopy.config['downloaders'].copy()
-    old_dir = cartopy.config['data_dir']
+    with contextlib.ExitStack() as stack:
+        stack.callback(cartopy.config.__setitem__, 'downloaders',
+                       cartopy.config['downloaders'].copy())
+        stack.callback(cartopy.config.__setitem__, 'data_dir',
+                       cartopy.config['data_dir'])
 
-    tmp_dir = tmp_path_factory.mktemp('cartopy_data')
-    cartopy.config['data_dir'] = str(tmp_dir)
-    try:
+        tmp_dir = tmp_path_factory.mktemp('cartopy_data')
+        cartopy.config['data_dir'] = str(tmp_dir)
+
         yield tmp_dir
-    finally:
-        cartopy.config['downloaders'] = old_downloads_dict
-        cartopy.config['data_dir'] = old_dir
 
 
 def test_from_config():
@@ -103,7 +105,7 @@ def test_downloading_simple_ascii(download_to_temp):
     format_dict = {'name': 'jquery'}
 
     target_template = str(download_to_temp / '{name}.txt')
-    tmp_fname = target_template.format(**format_dict)
+    tmp_fname = Path(target_template.format(**format_dict))
 
     dnld_item = cio.Downloader(file_url, target_template)
 
@@ -149,7 +151,7 @@ def test_natural_earth_downloader(tmp_path):
             shp_path = dnld_item.path(format_dict)
     counter.assert_called_once()
 
-    assert shp_path_template.format(**format_dict) == shp_path
+    assert shp_path_template.format(**format_dict) == str(shp_path)
 
     # check that calling path again doesn't try re-downloading
     with mock.patch.object(dnld_item, 'acquire_resource',
@@ -160,13 +162,13 @@ def test_natural_earth_downloader(tmp_path):
     # check that we have the shp and the shx
     exts = ['.shp', '.shx']
     for ext in exts:
-        stem = os.path.splitext(shp_path)[0]
-        assert os.path.exists(stem + ext), \
-            f"Shapefile's {ext} file doesn't exist in {stem}{ext}"
+        fname = shp_path.with_suffix(ext)
+        assert fname.exists(), \
+            f"Shapefile's {ext} file doesn't exist in {fname}"
 
     # check that providing a pre downloaded path actually works
     pre_dnld = NEShpDownloader(target_path_template='/not/a/real/file.txt',
-                               pre_downloaded_path_template=shp_path)
+                               pre_downloaded_path_template=str(shp_path))
 
     # check that the pre_dnld downloader doesn't re-download, but instead
     # uses the path of the previously downloaded item

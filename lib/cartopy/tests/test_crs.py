@@ -9,10 +9,12 @@ from io import BytesIO
 import os
 from pathlib import Path
 import pickle
+import warnings
 
 import numpy as np
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import assert_almost_equal
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
+from numpy.testing import assert_array_equal
 import pyproj
 import pytest
 import shapely.geometry as sgeom
@@ -66,7 +68,7 @@ class TestCRS:
 
         # results obtained by streetmap.co.uk.
         lat, lon = np.array([50.462023, -3.478831], dtype=np.double)
-        east, north = np.array([295132.1,  63512.6], dtype=np.double)
+        east, north = np.array([295132.1, 63512.6], dtype=np.double)
 
         # note the handling of precision here...
         assert_almost_equal(osgb.transform_point(lon, lat, ll), [east, north],
@@ -89,9 +91,17 @@ class TestCRS:
     def test_epsg(self):
         uk = ccrs.epsg(27700)
         assert uk.epsg_code == 27700
-        assert_almost_equal(uk.x_limits, (-104009.357,  688806.007), decimal=3)
-        assert_almost_equal(uk.y_limits, (-8908.37, 1256558.45), decimal=2)
-        assert_almost_equal(uk.threshold, 7928.15, decimal=2)
+        expected_x = (-104009.357, 688806.007)
+        expected_y = (-8908.37, 1256558.45)
+        expected_threshold = 7928.15
+        if pyproj.__proj_version__ >= '9.2.0':
+            expected_x = (-104728.764, 688806.007)
+            expected_y = (-8908.36, 1256616.32)
+            expected_threshold = 7935.34
+        assert_almost_equal(uk.x_limits,
+                            expected_x, decimal=3)
+        assert_almost_equal(uk.y_limits, expected_y, decimal=2)
+        assert_almost_equal(uk.threshold, expected_threshold, decimal=2)
         self._check_osgb(uk)
 
     def test_epsg_compound_crs(self):
@@ -173,6 +183,17 @@ class TestCRS:
         assert_arr_almost_eq(glon, soly)
         assert_arr_almost_eq(galt, solz)
 
+    def test_transform_points_180(self):
+        # Test that values less than -180 and more than 180
+        # get mapped to the -180, 180 interval
+        x = np.array([-190, 190])
+        y = np.array([0, 0])
+
+        proj = ccrs.PlateCarree()
+
+        res = proj.transform_points(x=x, y=y, src_crs=proj)
+        assert_array_equal(res[..., :2], [[170, 0], [-170, 0]])
+
     def test_globe(self):
         # Ensure the globe affects output.
         rugby_globe = ccrs.Globe(semimajor_axis=9000000,
@@ -207,9 +228,9 @@ class TestCRS:
 
         result = pc_rotated.project_geometry(multi_point, pc)
         assert isinstance(result, sgeom.MultiPoint)
-        assert len(result) == 2
-        assert_arr_almost_eq(result[0].xy, [[-180.], [45.]])
-        assert_arr_almost_eq(result[1].xy, [[0], [45.]])
+        assert len(result.geoms) == 2
+        assert_arr_almost_eq(result.geoms[0].xy, [[-180.], [45.]])
+        assert_arr_almost_eq(result.geoms[1].xy, [[0], [45.]])
 
     def test_utm(self):
         utm30n = ccrs.UTM(30)
@@ -303,8 +324,7 @@ def test_transform_points_outside_domain():
     crs = ccrs.Orthographic()
     result = crs.transform_points(ccrs.PlateCarree(),
                                   np.array([-120]), np.array([80]))
-    assert np.all(np.isnan(result[..., :2]))
-    assert result[..., -1] == 0
+    assert np.all(np.isnan(result))
     result = crs.transform_points(ccrs.PlateCarree(),
                                   np.array([-120]), np.array([80]),
                                   trap=True)
@@ -332,3 +352,13 @@ def test_projection__from_string():
 
 def test_crs__from_pyproj_crs():
     assert ccrs.CRS(pyproj.CRS("EPSG:4326")) == "EPSG:4326"
+
+
+def test_transform_point_no_warning():
+    # Make sure we aren't warning on single-point numpy arrays
+    # see https://github.com/SciTools/cartopy/pull/2194
+    p = ccrs.PlateCarree()
+    p2 = ccrs.Mercator()
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        p2.transform_point(1, 2, p)

@@ -12,8 +12,8 @@ Browse Services for 5th Feb 2016. A true color MODIS image is shown on
 the left, with the MODIS false color 'snow RGB' shown on the right.
 
 """
-import matplotlib.pyplot as plt
 from matplotlib import patheffects
+import matplotlib.pyplot as plt
 from owslib.wmts import WebMapTileService
 
 import cartopy.crs as ccrs

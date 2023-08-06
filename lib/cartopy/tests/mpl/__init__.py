@@ -5,8 +5,8 @@
 # licensing details.
 
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import packaging.version
 
 
@@ -17,7 +17,7 @@ def show(projection, geometry):
     orig_backend = mpl.get_backend()
     plt.switch_backend('tkagg')
 
-    if geometry.type == 'MultiPolygon' and 1:
+    if geometry.geom_type == 'MultiPolygon' and 1:
         multi_polygon = geometry
         for polygon in multi_polygon:
             import cartopy.mpl.patch as patch
@@ -29,20 +29,20 @@ def show(projection, geometry):
             line_string = polygon.exterior
             plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
-    elif geometry.type == 'MultiPolygon':
+    elif geometry.geom_type == 'MultiPolygon':
         multi_polygon = geometry
         for polygon in multi_polygon:
             line_string = polygon.exterior
             plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
 
-    elif geometry.type == 'MultiLineString':
+    elif geometry.geom_type == 'MultiLineString':
         multi_line_string = geometry
         for line_string in multi_line_string:
             plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
 
-    elif geometry.type == 'LinearRing':
+    elif geometry.geom_type == 'LinearRing':
         plt.plot(*zip(*geometry.coords), marker='+', linestyle='-')
 
     if 1:

@@ -10,6 +10,7 @@ Tests for the Equidistant Conic coordinate system.
 
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
+import pyproj
 import pytest
 
 import cartopy.crs as ccrs
@@ -23,11 +24,16 @@ class TestEquidistantConic:
                       'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj_params('eqdc', eqdc, other_args)
 
+        expected_x = (-22784919.35600352, 22784919.35600352)
+        expected_y = (-10001965.729313632, 17558791.85156368)
+        if pyproj.__proj_version__ >= '9.2.0':
+            expected_x = (-22784919.3559981,  22784919.3559981)
+            expected_y = (-10001965.72931272,  17558791.85157471)
         assert_almost_equal(np.array(eqdc.x_limits),
-                            (-22784919.35600352, 22784919.35600352),
+                            expected_x,
                             decimal=7)
         assert_almost_equal(np.array(eqdc.y_limits),
-                            (-10001965.729313632, 17558791.85156368),
+                            expected_y,
                             decimal=7)
 
     def test_eccentric_globe(self):
@@ -37,12 +43,16 @@ class TestEquidistantConic:
         other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0', 'x_0=0.0',
                       'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj_params('eqdc', eqdc, other_args)
-
+        expected_x = (-3016.869847713461, 3016.869847713461)
+        expected_y = (-1216.6029342241113, 2511.0574375797723)
+        if pyproj.__proj_version__ >= '9.2.0':
+            expected_x = (-2960.1009481,  2960.1009481)
+            expected_y = (-1211.05573766,  2606.04249537)
         assert_almost_equal(np.array(eqdc.x_limits),
-                            (-3016.869847713461, 3016.869847713461),
+                            expected_x,
                             decimal=7)
         assert_almost_equal(np.array(eqdc.y_limits),
-                            (-1216.6029342241113, 2511.0574375797723),
+                            expected_y,
                             decimal=7)
 
     def test_eastings(self):
@@ -61,8 +71,11 @@ class TestEquidistantConic:
                       'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj_params('eqdc', eqdc_offset, other_args)
 
-        assert_array_almost_equal(eqdc_offset.boundary, eqdc.boundary,
-                                  decimal=0)
+        assert_array_almost_equal(
+            eqdc_offset.boundary.coords,
+            eqdc.boundary.coords,
+            decimal=0,
+        )
 
     def test_standard_parallels(self):
         eqdc = ccrs.EquidistantConic(standard_parallels=(13, 37))
@@ -124,12 +137,16 @@ class TestEquidistantConic:
                       'lat_0=23.0', 'x_0=0.0', 'y_0=0.0', 'lat_1=29.5',
                       'lat_2=45.5'}
         check_proj_params('eqdc', eqdc, other_args)
-
+        expected_x = (-22421870.719894886, 22421870.719894886)
+        expected_y = (-12546277.778958388, 17260638.403203618)
+        if pyproj.__proj_version__ >= '9.2.0':
+            expected_x = (-22421870.71988974,  22421870.71988976)
+            expected_y = (-12546277.77895742,  17260638.403216)
         assert_almost_equal(np.array(eqdc.x_limits),
-                            (-22421870.719894886, 22421870.719894886),
+                            expected_x,
                             decimal=7)
         assert_almost_equal(np.array(eqdc.y_limits),
-                            (-12546277.778958388, 17260638.403203618),
+                            expected_y,
                             decimal=7)
 
         result = eqdc.transform_point(-75.0, 35.0, geodetic)

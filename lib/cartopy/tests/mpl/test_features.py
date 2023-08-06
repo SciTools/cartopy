@@ -3,6 +3,7 @@
 # This file is part of Cartopy and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+from xml.etree.ElementTree import ParseError
 
 import matplotlib.pyplot as plt
 import pytest
@@ -58,6 +59,8 @@ def test_gshhs():
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=ParseError,
+                   reason="Bad XML returned from the URL")
 @pytest.mark.mpl_image_compare(filename='wfs.png')
 def test_wfs():
     ax = plt.axes(projection=ccrs.OSGB(approx=True))
@@ -65,5 +68,19 @@ def test_wfs():
     typename = 'land_excluding_antarctica'
     feature = cfeature.WFSFeature(url, typename,
                                   edgecolor='red')
+    ax.add_feature(feature)
+    return ax.figure
+
+
+@pytest.mark.network
+@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(raises=ParseError,
+                   reason="Bad XML returned from the URL")
+@pytest.mark.mpl_image_compare(filename='wfs_france.png')
+def test_wfs_france():
+    ax = plt.axes(projection=ccrs.epsg(2154))
+    url = 'https://agroenvgeo.data.inra.fr:443/geoserver/wfs'
+    typename = 'collectif:t_ser_l93'
+    feature = cfeature.WFSFeature(url, typename, edgecolor='red')
     ax.add_feature(feature)
     return ax.figure

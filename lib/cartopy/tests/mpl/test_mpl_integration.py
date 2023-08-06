@@ -6,19 +6,18 @@
 
 import re
 
-import numpy as np
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-from packaging.version import parse as parse_version
+import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
-
 from cartopy.tests.mpl import MPL_VERSION
 
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
-                               style='mpl20')
+                               style='mpl20', tolerance=2.25)
 def test_global_contour_wrap_new_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -30,7 +29,7 @@ def test_global_contour_wrap_new_transform():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
-                               style='mpl20')
+                               style='mpl20', tolerance=2.25)
 def test_global_contour_wrap_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -110,9 +109,7 @@ def test_global_scatter_wrap_no_transform():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(
-    filename='global_hexbin_wrap.png',
-    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+@pytest.mark.mpl_image_compare(filename='global_hexbin_wrap.png')
 def test_global_hexbin_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -131,13 +128,13 @@ def test_global_hexbin_wrap():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     filename='global_hexbin_wrap.png',
-    tolerance=2 if MPL_VERSION < parse_version('3.2') else 0.5)
+    tolerance=0.5)
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
     x, y = np.meshgrid(np.arange(0, 360), np.arange(-90, 91))
     # wrap values so to match x values from test_global_hexbin_wrap
-    x_wrap = np.where(x >= 180, x-360, x)
+    x_wrap = np.where(x >= 180, x - 360, x)
     data = np.sin(np.sqrt(x_wrap**2 + y**2))
     ax.hexbin(
         x.flatten(),
@@ -146,22 +143,6 @@ def test_global_hexbin_wrap_transform():
         gridsize=20,
         zorder=1,
     )
-    return ax.figure
-
-
-@pytest.mark.mpl_image_compare(filename='global_map.png', tolerance=0.55)
-def test_global_map():
-    ax = plt.axes(projection=ccrs.Robinson())
-#    ax.coastlines()
-#    ax.gridlines(5)
-
-    ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-
-    ax.plot([-0.08, 132], [51.53, 43.17], color='red',
-            transform=ccrs.PlateCarree())
-
-    ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
-            transform=ccrs.Geodetic())
     return ax.figure
 
 
@@ -177,69 +158,62 @@ def test_simple_global():
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='multiple_projections5.png',
-                               tolerance=2.05)
-def test_multiple_projections():
-
-    projections = [ccrs.PlateCarree(),
-                   ccrs.Robinson(),
-                   ccrs.RotatedPole(pole_latitude=45, pole_longitude=180),
-                   ccrs.OSGB(approx=True),
-                   ccrs.TransverseMercator(approx=True),
-                   ccrs.Mercator(min_latitude=-85., max_latitude=85.),
-                   ccrs.LambertCylindrical(),
-                   ccrs.Miller(),
-                   ccrs.Gnomonic(),
-                   ccrs.Stereographic(),
-                   ccrs.NorthPolarStereo(),
-                   ccrs.SouthPolarStereo(),
-                   ccrs.Orthographic(),
-                   ccrs.Mollweide(),
-                   ccrs.InterruptedGoodeHomolosine(emphasis='land'),
-                   ccrs.EckertI(),
-                   ccrs.EckertII(),
-                   ccrs.EckertIII(),
-                   ccrs.EckertIV(),
-                   ccrs.EckertV(),
-                   ccrs.EckertVI(),
-                   ]
-
-    rows = np.ceil(len(projections) / 5).astype(int)
-
-    fig = plt.figure(figsize=(10, 2 * rows))
-    for i, prj in enumerate(projections, 1):
-        ax = fig.add_subplot(rows, 5, i, projection=prj)
-
-        ax.set_global()
-
-        ax.coastlines(resolution="110m")
-
-        ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-        ax.plot([-0.08, 132], [51.53, 43.17], color='red',
-                transform=ccrs.PlateCarree())
-        ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
-                transform=prj.as_geodetic())
-
-    return fig
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='multiple_projections520.png')
-def test_multiple_projections_520():
-    # Test projections added in Proj 5.2.0.
+@pytest.mark.parametrize('proj', [
+    ccrs.Aitoff,
+    ccrs.EckertI,
+    ccrs.EckertII,
+    ccrs.EckertIII,
+    ccrs.EckertIV,
+    ccrs.EckertV,
+    ccrs.EckertVI,
+    ccrs.EqualEarth,
+    ccrs.Gnomonic,
+    ccrs.Hammer,
+    pytest.param((ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
+                 id='InterruptedGoodeHomolosine'),
+    ccrs.LambertCylindrical,
+    pytest.param((ccrs.Mercator, dict(min_latitude=-85, max_latitude=85)),
+                 id='Mercator'),
+    ccrs.Miller,
+    ccrs.Mollweide,
+    ccrs.NorthPolarStereo,
+    ccrs.Orthographic,
+    pytest.param((ccrs.OSGB, dict(approx=True)), id='OSGB'),
+    ccrs.PlateCarree,
+    ccrs.Robinson,
+    pytest.param((ccrs.RotatedPole,
+                  dict(pole_latitude=45, pole_longitude=180)),
+                 id='RotatedPole'),
+    ccrs.Stereographic,
+    ccrs.SouthPolarStereo,
+    pytest.param((ccrs.TransverseMercator, dict(approx=True)),
+                 id='TransverseMercator'),
+    pytest.param(
+        (ccrs.ObliqueMercator, dict(azimuth=0.)), id='ObliqueMercator_default'
+    ),
+    pytest.param(
+        (ccrs.ObliqueMercator, dict(azimuth=90., central_latitude=-22)),
+        id='ObliqueMercator_rotated',
+    ),
+])
+@pytest.mark.mpl_image_compare(
+    tolerance=0.97 if MPL_VERSION.release[:2] < (3, 5) else 0.5,
+    style='mpl20')
+def test_global_map(proj):
+    if isinstance(proj, tuple):
+        proj, kwargs = proj
+    else:
+        kwargs = {}
+    proj = proj(**kwargs)
 
     fig = plt.figure(figsize=(2, 2))
-    ax = fig.add_subplot(1, 1, 1, projection=ccrs.EqualEarth())
-
+    ax = fig.add_subplot(projection=proj)
     ax.set_global()
-
-    ax.coastlines()
+    ax.coastlines(resolution="110m")
 
     ax.plot(-0.08, 51.53, 'o', transform=ccrs.PlateCarree())
-
     ax.plot([-0.08, 132], [51.53, 43.17], color='red',
             transform=ccrs.PlateCarree())
-
     ax.plot([-0.08, 132], [51.53, 43.17], color='blue',
             transform=ccrs.Geodetic())
 
@@ -267,10 +241,46 @@ def test_cursor_values():
                      r.encode('ascii', 'ignore'))
 
 
+SKIP_PRE_MPL38 = pytest.mark.skipif(
+    MPL_VERSION.release[:2] < (3, 8), reason='mpl < 3.8')
+PARAMETRIZE_PCOLORMESH_WRAP = pytest.mark.parametrize(
+    'mesh_data_kind',
+    [
+        'standard',
+        pytest.param('rgb', marks=SKIP_PRE_MPL38),
+        pytest.param('rgba', marks=SKIP_PRE_MPL38),
+    ],
+    ids=['standard', 'rgb', 'rgba'],
+)
+
+
+def _to_rgb(data, mesh_data_kind):
+    """
+    Helper function to convert array to RGB(A) where required
+    """
+    if mesh_data_kind in ('rgb', 'rgba'):
+        cmap = plt.get_cmap()
+        norm = mcolors.Normalize()
+        new_data = cmap(norm(data))
+        if mesh_data_kind == 'rgb':
+            new_data = new_data[..., 0:3]
+            if np.ma.is_masked(data):
+                # Use data's mask as an alpha channel
+                mask = np.ma.getmaskarray(data)
+                mask = np.broadcast_to(
+                    mask[..., np.newaxis], new_data.shape).copy()
+                new_data = np.ma.array(new_data, mask=mask)
+
+        return new_data
+
+    return data
+
+
+@PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap1.png',
                                tolerance=1.27)
-def test_pcolormesh_global_with_wrap1():
+def test_pcolormesh_global_with_wrap1(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
     xbnds = np.linspace(0, 360, nx, endpoint=True)
@@ -280,6 +290,8 @@ def test_pcolormesh_global_with_wrap1():
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
     data = data[:-1, :-1]
     fig = plt.figure()
+
+    data = _to_rgb(data, mesh_data_kind)
 
     ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
     ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
@@ -294,7 +306,8 @@ def test_pcolormesh_global_with_wrap1():
     return fig
 
 
-def test_pcolormesh_get_array_with_mask():
+@PARAMETRIZE_PCOLORMESH_WRAP
+def test_pcolormesh_get_array_with_mask(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
     xbnds = np.linspace(0, 360, nx, endpoint=True)
@@ -302,7 +315,10 @@ def test_pcolormesh_get_array_with_mask():
 
     x, y = np.meshgrid(xbnds, ybnds)
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data[5, :] = np.nan  # Check that missing data is handled - GH#2208
     data = data[:-1, :-1]
+    data = _to_rgb(data, mesh_data_kind)
+
     fig = plt.figure()
 
     ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
@@ -310,8 +326,11 @@ def test_pcolormesh_get_array_with_mask():
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
-    assert np.array_equal(data.ravel(), c.get_array()), \
-        'Data supplied does not match data retrieved in wrapped case'
+    result = c.get_array()
+    np.testing.assert_array_equal(np.ma.getmask(result), np.isnan(data))
+    np.testing.assert_array_equal(
+        data, result,
+        err_msg='Data supplied does not match data retrieved in wrapped case')
 
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
@@ -323,7 +342,9 @@ def test_pcolormesh_get_array_with_mask():
 
     x, y = np.meshgrid(xbnds, ybnds)
     data = np.exp(np.sin(np.deg2rad(x)) + np.cos(np.deg2rad(y)))
+    data[5, :] = np.nan
     data2 = data[:-1, :-1]
+    data2 = _to_rgb(data2, mesh_data_kind)
 
     ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree())
     c = ax.pcolormesh(xbnds, ybnds, data2, transform=ccrs.PlateCarree())
@@ -333,14 +354,23 @@ def test_pcolormesh_get_array_with_mask():
     assert getattr(c, "_wrapped_collection_fix", None) is None, \
         'pcolormesh wrapping was done when it should not have been.'
 
-    assert np.array_equal(data2.ravel(), c.get_array()), \
-        'Data supplied does not match data retrieved in unwrapped case'
+    result = c.get_array()
+
+    expected = data2
+    if MPL_VERSION.release[:2] < (3, 8):
+        expected = expected.ravel()
+
+    np.testing.assert_array_equal(np.ma.getmask(result), np.isnan(expected))
+    np.testing.assert_array_equal(
+        expected, result,
+        'Data supplied does not match data retrieved in unwrapped case')
 
 
+@PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap2.png',
                                tolerance=1.87)
-def test_pcolormesh_global_with_wrap2():
+def test_pcolormesh_global_with_wrap2(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
     xbnds, xstep = np.linspace(0, 360, nx - 1, retstep=True, endpoint=True)
@@ -355,6 +385,8 @@ def test_pcolormesh_global_with_wrap2():
     data = data[:-1, :-1]
     fig = plt.figure()
 
+    data = _to_rgb(data, mesh_data_kind)
+
     ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
     ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(), snap=False)
     ax.coastlines()
@@ -368,10 +400,11 @@ def test_pcolormesh_global_with_wrap2():
     return fig
 
 
+@PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.39)
-def test_pcolormesh_global_with_wrap3():
+                               tolerance=1.42)
+def test_pcolormesh_global_with_wrap3(mesh_data_kind):
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
     ybnds = np.linspace(91.25, -91.25, ny, endpoint=True)
@@ -388,6 +421,8 @@ def test_pcolormesh_global_with_wrap3():
     data = data[:-1, :-1]
     data = np.ma.masked_greater(data, 2.6)
     fig = plt.figure()
+
+    data = _to_rgb(data, mesh_data_kind)
 
     ax = fig.add_subplot(3, 1, 1, projection=ccrs.PlateCarree(-45))
     c = ax.pcolormesh(xbnds, ybnds, data, transform=ccrs.PlateCarree(),
@@ -411,10 +446,11 @@ def test_pcolormesh_global_with_wrap3():
     return fig
 
 
+@PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.39)
-def test_pcolormesh_set_array_with_mask():
+                               tolerance=1.42)
+def test_pcolormesh_set_array_with_mask(mesh_data_kind):
     """Testing that set_array works with masked arrays properly."""
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -437,10 +473,15 @@ def test_pcolormesh_set_array_with_mask():
     bad_data_mask = np.ma.array(bad_data, mask=~data.mask)
     fig = plt.figure()
 
+    data = _to_rgb(data, mesh_data_kind)
+    bad_data = _to_rgb(bad_data, mesh_data_kind)
+    bad_data_mask = _to_rgb(bad_data_mask, mesh_data_kind)
+
     ax = fig.add_subplot(3, 1, 1, projection=ccrs.PlateCarree(-45))
     c = ax.pcolormesh(xbnds, ybnds, bad_data,
                       norm=norm, transform=ccrs.PlateCarree(), snap=False)
-    c.set_array(data.ravel())
+
+    c.set_array(data)
     assert c._wrapped_collection_fix is not None, \
         'No pcolormesh wrapping was done when it should have been.'
 
@@ -450,7 +491,10 @@ def test_pcolormesh_set_array_with_mask():
     ax = fig.add_subplot(3, 1, 2, projection=ccrs.PlateCarree(-1.87499952))
     c2 = ax.pcolormesh(xbnds, ybnds, bad_data_mask,
                        norm=norm, transform=ccrs.PlateCarree(), snap=False)
-    c2.set_array(data.ravel())
+    if mesh_data_kind == 'standard':
+        c2.set_array(data.ravel())
+    else:
+        c2.set_array(data)
     ax.coastlines()
     ax.set_global()  # make sure everything is visible
 
@@ -462,9 +506,40 @@ def test_pcolormesh_set_array_with_mask():
     return fig
 
 
+def test_pcolormesh_set_array_nowrap():
+    # Roundtrip check that set_array works with the correct shaped arrays
+    nx, ny = 36, 18
+    xbnds = np.linspace(-60, 60, nx, endpoint=True)
+    ybnds = np.linspace(-80, 80, ny, endpoint=True)
+    xbnds, ybnds = np.meshgrid(xbnds, ybnds)
+
+    rng = np.random.default_rng()
+    data = rng.random((ny - 1, nx - 1))
+
+    ax = plt.figure().add_subplot(projection=ccrs.PlateCarree())
+    mesh = ax.pcolormesh(xbnds, ybnds, data)
+    assert not hasattr(mesh, '_wrapped_collection_fix')
+
+    expected = data
+    if MPL_VERSION.release[:2] < (3, 8):
+        expected = expected.ravel()
+    np.testing.assert_array_equal(mesh.get_array(), expected)
+
+    # For backwards compatibility, check we can set a 1D array
+    data = rng.random((nx - 1) * (ny - 1))
+    mesh.set_array(data)
+    np.testing.assert_array_equal(
+        mesh.get_array(), data.reshape(ny - 1, nx - 1))
+
+    # Check that we can set a 2D array even if previous was flat
+    data = rng.random((ny - 1, nx - 1))
+    mesh.set_array(data)
+    np.testing.assert_array_equal(mesh.get_array(), data)
+
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.39)
+                               tolerance=1.42)
 def test_pcolormesh_set_clim_with_mask():
     """Testing that set_clim works with masked arrays properly."""
     nx, ny = 33, 17
@@ -606,6 +681,13 @@ def test_pcolormesh_nan_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     mesh = ax.pcolormesh(xs, ys, data)
     pcolor = getattr(mesh, "_wrapped_collection_fix")
+    if MPL_VERSION.release[:2] < (3, 8):
+        assert len(pcolor.get_paths()) == 2
+    else:
+        assert not pcolor.get_paths()
+
+    # Check that we can populate the pcolor with some data.
+    mesh.set_array(np.ones((2, 2)))
     assert len(pcolor.get_paths()) == 2
 
 
@@ -640,14 +722,18 @@ def test_pcolormesh_mercator_wrap():
     return ax.figure
 
 
+@PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png')
-def test_pcolormesh_wrap_set_array():
+def test_pcolormesh_wrap_set_array(mesh_data_kind):
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
     X, Y = np.meshgrid(*[np.deg2rad(c) for c in (x, y)])
     Z = np.cos(Y) + 0.375 * np.sin(2. * X)
     Z = Z[:-1, :-1]
+
+    Z = _to_rgb(Z, mesh_data_kind)
+
     ax = plt.axes(projection=ccrs.Mercator())
     norm = plt.Normalize(np.min(Z), np.max(Z))
     ax.coastlines()
@@ -655,7 +741,7 @@ def test_pcolormesh_wrap_set_array():
     coll = ax.pcolormesh(x, y, np.ones(Z.shape), norm=norm,
                          transform=ccrs.PlateCarree(), snap=False)
     # Now update the plot with the set_array method
-    coll.set_array(Z.ravel())
+    coll.set_array(Z)
     return ax.figure
 
 
@@ -875,8 +961,7 @@ def test_barbs_1d_transformed():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     filename='streamplot.png', style='mpl20',
-    tolerance=(42 if MPL_VERSION.release[:2] < (3, 2) else
-               9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5))
+    tolerance=9.77 if MPL_VERSION.release[:2] < (3, 5) else 0.5)
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -890,5 +975,72 @@ def test_streamplot():
     ax.set_extent(plot_extent, crs=ccrs.PlateCarree())
     ax.coastlines()
     ax.streamplot(x, y, u, v, transform=ccrs.PlateCarree(),
-                  density=(1.5, 2), color=mag, linewidth=2*mag)
+                  density=(1.5, 2), color=mag, linewidth=2 * mag)
+    return fig
+
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare()
+def test_annotate():
+    """ test a variety of annotate options on multiple projections
+
+    Annotate defaults to coords passed as if they're in map projection space.
+    `transform` or `xycoords` & `textcoords` control the marker and text offset
+    through shared or independent projections or coordinates.
+    `transform` is a cartopy kwarg so expects a CRS,
+    `xycoords` and `textcoords` accept CRS or matplotlib args.
+
+    The various annotations below test a variety of the different combinations.
+    """
+    # use IGH to test annotations cross projection splits and map boundaries
+    map_projection = ccrs.InterruptedGoodeHomolosine()
+
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(1, 1, 1, projection=map_projection)
+    ax.set_global()
+    ax.coastlines()
+    arrowprops = {'facecolor': 'red',
+                  'arrowstyle': "-|>",
+                  'connectionstyle': "arc3,rad=-0.2",
+                  }
+    platecarree = ccrs.PlateCarree()
+    mpltransform = platecarree._as_mpl_transform(ax)
+
+    # Add annotation with xycoords as mpltransform as suggested here
+    # https://stackoverflow.com/questions/25416600/why-the-annotate-worked-unexpected-here-in-cartopy/25421922#25421922
+    ax.annotate('mpl xycoords', (-45, 43), xycoords=mpltransform,
+                size=5)
+
+    # Add annotation with xycoords as projection
+    ax.annotate('crs xycoords', (-75, 13), xycoords=platecarree,
+                size=5)
+
+    # set up coordinates in map projection space
+    map_coords = map_projection.transform_point(-175, -35, platecarree)
+    # Don't specify any args, default xycoords='data', transform=map projection
+    ax.annotate('default crs', map_coords, size=5)
+
+    # data in map projection using default transform, with
+    # text positioned in platecaree transform
+    ax.annotate('mixed crs transforms', map_coords, xycoords='data',
+                xytext=(-175, -55),
+                textcoords=platecarree,
+                size=5,
+                arrowprops=arrowprops,
+                )
+
+    # Add annotation with point and text via transform
+    ax.annotate('crs transform', (-75, -20), xytext=(0, -55),
+                transform=platecarree,
+                arrowprops=arrowprops,
+                )
+
+    # Add annotation with point via transform and text non transformed
+    ax.annotate('offset textcoords', (-149.8, 61.22), transform=platecarree,
+                xytext=(-35, 10), textcoords='offset points',
+                size=5,
+                ha='right',
+                arrowprops=arrowprops,
+                )
+
     return fig

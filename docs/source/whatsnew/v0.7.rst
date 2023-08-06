@@ -7,5 +7,4 @@ Version 0.7 (March 21, 2013)
 * Various documentation enhancements have been added. (:pull:`247`, :pull:`244` :pull:`240` and :pull:`242`)
 
 This is a quick release which targets two very specific requirements. The goals outlined in the development plan at
-``v0.6`` still remain the primary target for ``v0.8`` and beyond.
-
+:doc:`v0.6 <v0.6>` still remain the primary target for :doc:`v0.8 <v0.8>` and beyond.

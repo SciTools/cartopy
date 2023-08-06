@@ -12,57 +12,21 @@ version: 2.1
 apt-run: &apt-install
   name: Install apt packages
   command: |
-    apt-get -qq update
-    apt-get install -y \
+    sudo apt -qq update
+    sudo apt install -y \
       gcc \
       g++ \
       make
 
-env-run: &env-setup
-  # Create the basic testing environment
-  # Mixing conda-forge and defaults in root is a recipe for trouble, so create
-  # a separate environment.
-  name: Setup conda environment
-  command: |
-    conda config \
-        --set always_yes yes \
-        --set changeps1 no \
-        --set show_channel_urls yes
-    conda config --add channels conda-forge
-    conda create -n test-environment python=$PYTHON_VERSION
-
-deps-run: &deps-install
-  name: Install Python dependencies
-  command: |
-    conda install -n test-environment --quiet \
-        cython \
-        'matplotlib>3.3' \
-        numpy \
-        owslib \
-        pillow \
-        pyproj \
-        pykdtree \
-        pyshp \
-        requests \
-        scipy \
-        setuptools_scm \
-        setuptools_scm_git_archive \
-        shapely \
-        $EXTRA_PACKAGES \
-        --file docs/doc-requirements.txt
-    conda list -n test-environment
-
 cp-run: &cp-install
   name: Install Cartopy
   command: |
-    source activate test-environment
-    pip install -ve .
+    python -m pip install --upgrade --user pip
+    python -m pip install --user -ve .[doc,ows,plotting,speedups]
 
 doc-run: &doc-build
   name: Build documentation
   command: |
-    source activate test-environment
-    PYPROJ_GLOBAL_CONTEXT=ON
     make -C docs html
 
 
@@ -73,16 +37,11 @@ doc-run: &doc-build
 jobs:
   docs-python3:
     docker:
-      - image: continuumio/miniconda3:latest
+      - image: cimg/python:3.11
     steps:
       - checkout
 
       - run: *apt-install
-      - run:
-          <<: *env-setup
-          environment:
-            PYTHON_VERSION: 3
-      - run: *deps-install
       - run: *cp-install
 
       - run: *doc-build

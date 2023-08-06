@@ -18,6 +18,7 @@ from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 
+
 #: Maps Google tile coordinates to native mercator coordinates as defined
 #: by https://goo.gl/pgJi.
 KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
@@ -92,9 +93,9 @@ def test_google_wts():
     with pytest.raises(AssertionError):
         list(gt.find_images(target_domain, -1))
     assert (tuple(gt.find_images(target_domain, 0)) ==
-                 ((0, 0, 0),))
+            ((0, 0, 0),))
     assert (tuple(gt.find_images(target_domain, 2)) ==
-                 ((1, 1, 2), (2, 1, 2)))
+            ((1, 1, 2), (2, 1, 2)))
 
     assert (list(gt.subtiles((0, 0, 0))) ==
             [(0, 0, 1), (0, 1, 1), (1, 0, 1), (1, 1, 1)])
@@ -222,23 +223,21 @@ def test_ordnance_survey_tile_styles():
     """
     dummy_apikey = "None"
 
-    ref_url = ('https://api2.ordnancesurvey.co.uk/'
-               'mapping_api/v1/service/wmts?'
-               'key=None&height=256&width=256&version=1.0.0&'
-               'tilematrixSet=EPSG%3A3857&style=true&layer={layer}%203857&'
-               'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
-               'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
+    ref_url = "https://api.os.uk/maps/raster/v1/zxy/" \
+              "{layer}/{z}/{x}/{y}.png?key=None"
     tile = ["1", "2", "3"]
 
-    # Default is Road.
-    os = cimgt.OrdnanceSurvey(dummy_apikey)
-    url = os._image_url(tile)
-    assert url == ref_url.format(layer="Road",
+    # Default is Road_3857.
+    ordsurvey = cimgt.OrdnanceSurvey(dummy_apikey)
+    url = ordsurvey._image_url(tile)
+    assert url == ref_url.format(layer="Road_3857",
                                  z=tile[2], y=tile[1], x=tile[0])
 
-    for layer in ['Outdoor', 'Light', 'Night', 'Leisure']:
-        os = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
-        url = os._image_url(tile)
+    for layer in ("Road_3857", "Light_3857", "Outdoor_3857",
+                  "Road", "Light", "Outdoor"):
+        ordsurvey = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
+        url = ordsurvey._image_url(tile)
+        layer = layer if layer.endswith("_3857") else layer + "_3857"
         assert url == ref_url.format(layer=layer,
                                      z=tile[2], y=tile[1], x=tile[0])
 
@@ -256,8 +255,8 @@ def test_ordnance_survey_get_image():
     except KeyError:
         pytest.skip('ORDNANCE_SURVEY_API_KEY environment variable is unset.')
 
-    os1 = cimgt.OrdnanceSurvey(api_key, layer="Outdoor")
-    os2 = cimgt.OrdnanceSurvey(api_key, layer="Night")
+    os1 = cimgt.OrdnanceSurvey(api_key, layer="Outdoor_3857")
+    os2 = cimgt.OrdnanceSurvey(api_key, layer="Light_3857")
 
     tile = (500, 300, 10)
 
@@ -364,26 +363,25 @@ def test_cache(cache_dir, tmp_path):
     ]
 
     # Check the results
-    cache_dir_res = os.path.join(gt.cache_path, "GoogleTiles")
-    files = [i for i in os.listdir(cache_dir_res)]
+    cache_dir_res = gt.cache_path / "GoogleTiles"
+    files = list(cache_dir_res.iterdir())
     hashes = {
         f:
-        hashlib.md5(
-            np.load(os.path.join(cache_dir_res, f), allow_pickle=True).data
-        ).hexdigest()
+            hashlib.md5(
+                np.load(cache_dir_res / f, allow_pickle=True).data
+            ).hexdigest()
         for f in files
     }
-
-    assert sorted(files) == [f for x, y, z, f, h in x_y_z_f_h]
+    assert sorted(files) == [cache_dir_res / f for x, y, z, f, h in x_y_z_f_h]
     assert set(files) == gt.cache
 
-    assert sorted(hashes.values()) == sorted([
+    assert sorted(hashes.values()) == sorted(
         h for x, y, z, f, h in x_y_z_f_h
-    ])
+    )
 
     # Update images in cache (all white)
     for f in files:
-        filename = os.path.join(cache_dir_res, f)
+        filename = cache_dir_res / f
         img = np.load(filename, allow_pickle=True)
         img.fill(255)
         np.save(filename, img, allow_pickle=True)

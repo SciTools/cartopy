@@ -4,11 +4,11 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
+import matplotlib.patches as mpatches
 from matplotlib.path import Path
+import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 import shapely.geometry as sgeom
 

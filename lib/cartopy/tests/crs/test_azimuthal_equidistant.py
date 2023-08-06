@@ -21,7 +21,7 @@ class TestAzimuthalEquidistant:
         assert_almost_equal(np.array(aeqd.x_limits),
                             [-20037508.34278924, 20037508.34278924], decimal=6)
         assert_almost_equal(np.array(aeqd.y_limits),
-                            [-19970326.371123,  19970326.371123], decimal=6)
+                            [-19970326.371123, 19970326.371123], decimal=6)
 
     def test_eccentric_globe(self):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
@@ -47,7 +47,7 @@ class TestAzimuthalEquidistant:
         assert_almost_equal(np.array(aeqd_offset.x_limits),
                             [-20036274.34278924, 20038742.34278924], decimal=6)
         assert_almost_equal(np.array(aeqd_offset.y_limits),
-                            [-19974647.371123,  19966005.371123], decimal=6)
+                            [-19974647.371123, 19966005.371123], decimal=6)
 
     def test_grid(self):
         # USGS Professional Paper 1395, pp 196--197, Table 30

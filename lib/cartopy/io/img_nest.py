@@ -6,11 +6,10 @@
 
 
 import collections
-import glob
-import os.path
+from pathlib import Path
 
-import numpy as np
 from PIL import Image
+import numpy as np
 import shapely.geometry as sgeom
 
 
@@ -81,9 +80,9 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         Determine potential world filename combinations, without checking
         their existence.
 
-        For example, a '*.tif' file may have one of the following
-        popular conventions for world file extensions '*.tifw',
-        '*.tfw', '*.TIFW' or '*.TFW'.
+        For example, a ``'*.tif'`` file may have one of the following
+        popular conventions for world file extensions ``'*.tifw'``,
+        ``'*.tfw'``, ``'*.TIFW'`` or ``'*.TFW'``.
 
         Given the possible world file extensions, the upper case basename
         combinations are also generated. For example, the file 'map.tif'
@@ -113,32 +112,19 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         '/path/to/img/with_no_extension.w'
 
         """
-        froot, fext = os.path.splitext(fname)
+        path = Path(fname)
+        fext = path.suffix[1::].lower()
         # If there was no extension to the filename.
-        if froot == fname:
-            result = [f'{fname}.w', f'{fname}.W']
+        if len(fext) < 3:
+            result = [path.with_suffix('.w'), path.with_suffix('.W')]
         else:
-            fext = fext[1::].lower()
-            if len(fext) < 3:
-                result = [f'{fname}.w', f'{fname}.W']
-            else:
-                fext_types = [f'{fext}w', f'{fext[0]}{fext[-1]}w']
-                fext_types.extend([ext.upper() for ext in fext_types])
-                result = [f'{froot}.{ext}' for ext in fext_types]
+            fext_types = [f'.{fext}w', f'.{fext[0]}{fext[-1]}w']
+            fext_types.extend([ext.upper() for ext in fext_types])
+            result = [path.with_suffix(ext) for ext in fext_types]
 
-        def _convert_basename(name):
-            dirname, basename = os.path.split(name)
-            base, ext = os.path.splitext(basename)
-            if base == base.upper():
-                result = base.lower() + ext
-            else:
-                result = base.upper() + ext
-            if dirname:
-                result = os.path.join(dirname, result)
-            return result
-
-        result += [_convert_basename(r) for r in result]
-        return result
+        result += [p.with_name(p.stem.swapcase() + p.suffix) for p in result]
+        # return string paths rather than Path objects
+        return [str(r) for r in result]
 
     def __array__(self):
         return np.array(Image.open(self.filename))
@@ -176,12 +162,12 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                              'supported.')
         ul_corner = (float(lines[4]), float(lines[5]))
 
-        min_x, max_x = (ul_corner[0] - pix_size[0]/2.,
-                        ul_corner[0] + pix_size[0]*im_shape[0] -
-                        pix_size[0]/2.)
-        min_y, max_y = (ul_corner[1] - pix_size[1]/2.,
-                        ul_corner[1] + pix_size[1]*im_shape[1] -
-                        pix_size[1]/2.)
+        min_x, max_x = (ul_corner[0] - pix_size[0] / 2.,
+                        ul_corner[0] + pix_size[0] * im_shape[0] -
+                        pix_size[0] / 2.)
+        min_y, max_y = (ul_corner[1] - pix_size[1] / 2.,
+                        ul_corner[1] + pix_size[1] * im_shape[1] -
+                        pix_size[1] / 2.)
         return (min_x, max_x, min_y, max_y), pix_size
 
 
@@ -219,7 +205,7 @@ class ImageCollection:
             The directory path to search for image files.
         glob_pattern: optional
             The image filename glob pattern to search with.
-            Defaults to '*.tif'.
+            Defaults to ``'*.tif'``.
         img_class: optional
             The class used to construct each image in the Collection.
 
@@ -228,14 +214,14 @@ class ImageCollection:
             Does not recursively search sub-directories.
 
         """
-        imgs = glob.glob(os.path.join(directory, glob_pattern))
+        imgs = Path(directory).glob(glob_pattern)
 
         for img in imgs:
-            dirname, fname = os.path.split(img)
+            dirname, fname = img.parent, img.name
             worlds = img_class.world_files(fname)
             for fworld in worlds:
-                fworld = os.path.join(dirname, fworld)
-                if os.path.exists(fworld):
+                fworld = dirname / fworld
+                if fworld.exists():
                     break
             else:
                 raise ValueError(
@@ -511,7 +497,8 @@ class NestedImageCollection:
         name_dir_pairs
             A list of image collection name and directory path pairs.
         glob_pattern: optional
-            The image collection filename glob pattern. Defaults to '*.tif'.
+            The image collection filename glob pattern. Defaults
+            to ``'*.tif'``.
         img_class: optional
             The class of images created in the image collection.
 

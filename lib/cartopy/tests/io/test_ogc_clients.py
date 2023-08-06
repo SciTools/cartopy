@@ -5,8 +5,11 @@
 # licensing details.
 
 from unittest import mock
+from xml.etree.ElementTree import ParseError
 
 import numpy as np
+
+
 try:
     from owslib.wfs import WebFeatureService
     from owslib.wms import WebMapService
@@ -126,7 +129,6 @@ class TestWMSRasterSource:
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
 class TestWMTSRasterSource:
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
@@ -229,6 +231,8 @@ class TestWFSGeometrySource:
         with pytest.raises(ValueError, match=msg):
             source.fetch_geometries(ccrs.PlateCarree(), [-180, 180, -90, 90])
 
+    @pytest.mark.xfail(raises=ParseError,
+                       reason="Bad XML returned from the URL")
     def test_fetch_geometries(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
         # Extent covering New Zealand.

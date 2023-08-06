@@ -12,10 +12,9 @@ from shapely.geos import geos_version
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import LongitudeLocator, LongitudeFormatter
-from cartopy.mpl.gridliner import (
-    LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
-    classic_locator, classic_formatter)
+from cartopy.mpl.gridliner import (LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
+                                   classic_formatter, classic_locator)
+from cartopy.mpl.ticker import LongitudeFormatter, LongitudeLocator
 
 
 TEST_PROJS = [
@@ -419,7 +418,7 @@ def test_gridliner_draw_labels_param(draw_labels, result):
     fig.canvas.draw()
     res = {}
     for loc in 'left', 'right', 'top', 'bottom':
-        artists = getattr(gl, loc+'_label_artists')
+        artists = getattr(gl, f'{loc}_label_artists')
         res[loc] = [a.get_text() for a in artists if a.get_visible()]
     assert res == result
 

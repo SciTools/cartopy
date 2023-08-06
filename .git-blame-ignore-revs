@@ -1,0 +1,11 @@
+# style: start of pre-commit and whitespace fixes
+16aba40dd09fb95c85fac1a0bee0f795b9f8b5fe
+
+# format: spell checking (#2153)
+eb1dd508e087396948de5a3d20c5791500743ddf
+
+# style: sort __all__ statements (#2151)
+c00e0adae1b1e8695e173f4482369face82206ee
+
+# style: adopt isort to enforce import ordering (#2150)
+030a78b0f5cd6a88b04dd2fbe78f12b4b3e5e60d

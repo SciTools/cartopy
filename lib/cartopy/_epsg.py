@@ -7,8 +7,9 @@
 Provide support for converting EPSG codes to Projection instances.
 
 """
-import cartopy.crs as ccrs
 from pyproj.crs import CRS as _CRS
+
+import cartopy.crs as ccrs
 
 
 class _EPSGProjection(ccrs.Projection):

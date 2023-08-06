@@ -17,19 +17,18 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 from datetime import datetime
-import os
+from pathlib import Path
 import sys
 
-import cartopy
 import matplotlib
-import owslib
-from packaging.version import parse as parse_version
 from sphinx_gallery.sorting import ExampleTitleSortKey, ExplicitOrder
 
+import cartopy
+
+
 # If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# add these directories to sys.path here.
+sys.path.insert(0, str(Path(__file__).parent.resolve()))
 
 # -- General configuration -----------------------------------------------------
 
@@ -65,8 +64,8 @@ source_suffix = '.rst'
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
-# The master toctree document.
-master_doc = 'index'
+# The root toctree document (variable renamed in Sphinx 4.)
+root_doc = master_doc = 'index'
 
 # General information about the project.
 project = 'cartopy'
@@ -82,17 +81,6 @@ version = cartopy.__version__
 # The full version, including alpha/beta/rc tags.
 release = cartopy.__version__
 
-
-if (hasattr(owslib, '__version__') and
-        parse_version(owslib.__version__) >= parse_version('0.19.2')):
-    expected_failing_examples = []
-else:
-    # OWSLib WMTS support is broken.
-    expected_failing_examples = [
-        '../../examples/web_services/reprojected_wmts.py',
-        '../../examples/web_services/wmts.py',
-        '../../examples/web_services/wmts_time.py',
-    ]
 
 subsection_order = ExplicitOrder(['../../examples/lines_and_polygons',
                                   '../../examples/scalar_data',
@@ -111,7 +99,6 @@ sphinx_gallery_conf = {
     'doc_module': ('cartopy',),
     'reference_url': {'cartopy': None},
     'backreferences_dir': '../build/backrefs',
-    'expected_failing_examples': expected_failing_examples,
     'subsection_order': subsection_order,
     'matplotlib_animations': True,
 }
@@ -238,6 +225,10 @@ html_show_sphinx = True
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'cartopydoc'
 
+# Show both class-level docstring and __init__ docstring in class
+# documentation
+autoclass_content = 'both'
+
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -346,7 +337,7 @@ epub_copyright = '2012, Philip Elson, Richard Hattersley'
 # The format is a list of tuples containing the path and title.
 # epub_pre_files = []
 
-# HTML files shat should be inserted after the pages created by sphinx.
+# HTML files that should be inserted after the pages created by sphinx.
 # The format is a list of tuples containing the path and title.
 # epub_post_files = []
 
@@ -371,10 +362,10 @@ intersphinx_mapping = {
 
 ############ extlinks extension ############
 extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
-                      'issues labeled with '),
+                       'issues labeled with %s'),
             'issue': ('https://github.com/SciTools/cartopy/issues/%s',
-                      'Issue #'),
-            'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #'),
+                      'Issue #%s'),
+            'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #%s'),
             }
 
 
@@ -406,4 +397,3 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = False
-

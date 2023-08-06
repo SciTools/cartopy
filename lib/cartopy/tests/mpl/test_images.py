@@ -4,29 +4,25 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
-import os
 import types
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import matplotlib.colors as colors
 from PIL import Image
+import matplotlib.colors as colors
+import matplotlib.pyplot as plt
+import numpy as np
 import pytest
 import shapely.geometry as sgeom
 
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
-
 import cartopy.tests.test_img_tiles as ctest_tiles
 
 
-NATURAL_EARTH_IMG = os.path.join(config["repo_data_dir"],
-                                 'raster', 'natural_earth',
-                                 '50-natural-earth-1-downsampled.png')
-REGIONAL_IMG = os.path.join(config['repo_data_dir'], 'raster', 'sample',
-                            'Miriam.A2012270.2050.2km.jpg')
+NATURAL_EARTH_IMG = (config["repo_data_dir"] / 'raster' / 'natural_earth'
+                     / '50-natural-earth-1-downsampled.png')
+REGIONAL_IMG = (config['repo_data_dir'] / 'raster' / 'sample'
+                / 'Miriam.A2012270.2050.2km.jpg')
 
 
 # We have an exceptionally large tolerance for the web_tiles test.
@@ -73,7 +69,7 @@ def test_web_tiles():
 
 @pytest.mark.natural_earth
 @pytest.mark.network
-@pytest.mark.mpl_image_compare(filename='image_merge.png', tolerance=0.01)
+@pytest.mark.mpl_image_compare(filename='image_merge.png', tolerance=0.03)
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -142,8 +138,8 @@ def test_imshow_wrapping():
 def test_imshow_rgba():
     # tests that the alpha of a RGBA array passed to imshow is set to 0
     # instead of masked
-    z = np.ones((100, 100))*0.5
-    cmap = cm.get_cmap()
+    z = np.full((100, 100), 0.5)
+    cmap = plt.get_cmap()
     norm = colors.Normalize(vmin=0, vmax=1)
     z1 = cmap(norm(z))
     plt_crs = ccrs.LambertAzimuthalEqualArea()
@@ -154,10 +150,27 @@ def test_imshow_rgba():
     assert sum(img.get_array().data[:, 0, 3]) == 0
 
 
+def test_imshow_rgba_alpha():
+    # test that alpha channel from RGBA is not skipped
+    dy, dx = (3, 4)
+
+    ax = plt.axes(projection=ccrs.Orthographic(-120, 45))
+
+    # Create RGBA Image with random data and linspace alpha
+    RGBA = np.linspace(0, 255 * 31, dx * dy * 4,
+                       dtype=np.uint8).reshape((dy, dx, 4))
+
+    alpha = np.array([0, 85, 170, 255])
+    RGBA[:, :, 3] = alpha
+
+    img = ax.imshow(RGBA, transform=ccrs.PlateCarree())
+    assert np.all(np.unique(img.get_array().data[:, :, 3]) == alpha)
+
+
 def test_imshow_rgb():
     # tests that the alpha of a RGB array passed to imshow is set to 0
     # instead of masked
-    z = np.ones((100, 100, 3))*0.5
+    z = np.full((100, 100, 3), 0.5)
     plt_crs = ccrs.LambertAzimuthalEqualArea()
     latlon_crs = ccrs.PlateCarree()
     ax = plt.axes(projection=plt_crs)

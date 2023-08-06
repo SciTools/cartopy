@@ -14,12 +14,13 @@ from collections import OrderedDict
 import warnings
 import weakref
 
-import numpy as np
 import matplotlib.artist
 import matplotlib.collections
+import numpy as np
 
 import cartopy.mpl.patch as cpatch
-from .style import merge as style_merge, finalize as style_finalize
+from .style import finalize as style_finalize
+from .style import merge as style_merge
 
 
 class _GeomKey:
@@ -32,6 +33,7 @@ class _GeomKey:
     A workaround for Shapely polygons no longer being hashable as of 1.5.13.
 
     """
+
     def __init__(self, geom):
         self._id = id(geom)
 
@@ -131,7 +133,7 @@ class FeatureArtist(matplotlib.artist.Artist):
     def draw(self, renderer, *args, **kwargs):
         """
         Draw the geometries of the feature that intersect with the extent of
-        the :class:`cartopy.mpl.GeoAxes` instance to which this
+        the :class:`cartopy.mpl.geoaxes.GeoAxes` instance to which this
         object has been added.
 
         """

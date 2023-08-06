@@ -20,12 +20,12 @@ using tiles in this way can be found at the
 from abc import ABCMeta, abstractmethod
 import concurrent.futures
 import io
-import os
+from pathlib import Path
 import warnings
 
 from PIL import Image
-import shapely.geometry as sgeom
 import numpy as np
+import shapely.geometry as sgeom
 
 import cartopy
 import cartopy.crs as ccrs
@@ -60,11 +60,11 @@ class GoogleWTS(metaclass=ABCMeta):
         self._default_cache = False
         if cache is True:
             self._default_cache = True
-            self.cache_path = cartopy.config["cache_dir"]
+            self.cache_path = Path(cartopy.config["cache_dir"])
         elif cache is False:
             self.cache_path = None
         else:
-            self.cache_path = cache
+            self.cache_path = Path(cache)
         self.cache = set({})
         self._load_cache()
 
@@ -101,22 +101,19 @@ class GoogleWTS(metaclass=ABCMeta):
     @property
     def _cache_dir(self):
         """Return the name of the cache directory"""
-        return os.path.join(
-            self.cache_path,
-            self.__class__.__name__
-        )
+        return self.cache_path / self.__class__.__name__
 
     def _load_cache(self):
         """Load the cache"""
         if self.cache_path is not None:
             cache_dir = self._cache_dir
-            if not os.path.exists(cache_dir):
-                os.makedirs(cache_dir)
+            if not cache_dir.exists():
+                cache_dir.mkdir(parents=True)
                 if self._default_cache:
                     warnings.warn(
                         'Cartopy created the following directory to cache '
                         f'GoogleWTS tiles: {cache_dir}')
-            self.cache = self.cache.union(set(os.listdir(cache_dir)))
+            self.cache = self.cache.union(set(cache_dir.iterdir()))
 
     def _find_images(self, target_domain, target_z, start_tile=(0, 0, 0)):
         """Target domain is a shapely polygon in native coordinates."""
@@ -205,19 +202,15 @@ class GoogleWTS(metaclass=ABCMeta):
         pass
 
     def get_image(self, tile):
-        from urllib.request import urlopen, Request, HTTPError, URLError
+        from urllib.request import HTTPError, Request, URLError, urlopen
 
         if self.cache_path is not None:
             filename = "_".join([str(i) for i in tile]) + ".npy"
-            cached_file = os.path.join(
-                self._cache_dir,
-                filename
-            )
+            cached_file = self._cache_dir / filename
         else:
-            filename = None
             cached_file = None
 
-        if filename in self.cache:
+        if cached_file in self.cache:
             img = np.load(cached_file, allow_pickle=False)
         else:
             url = self._image_url(tile)
@@ -236,7 +229,7 @@ class GoogleWTS(metaclass=ABCMeta):
             img = img.convert(self.desired_tile_form)
             if self.cache_path is not None:
                 np.save(cached_file, img, allow_pickle=False)
-                self.cache.add(filename)
+                self.cache.add(cached_file)
 
         return img, self.tileextent(tile), 'lower'
 
@@ -355,15 +348,46 @@ class Stamen(GoogleWTS):
      * https://github.com/migurski/DEM-Tools
 
     """
+
     def __init__(self, style='toner',
-                 desired_tile_form='RGB', cache=False):
+                 desired_tile_form=None, cache=False):
+
+        # preset layer configuration
+        layer_config = {
+          'terrain':            {'extension': 'png', 'opaque': True},
+          'terrain-background': {'extension': 'png', 'opaque': True},
+          'terrain-labels':     {'extension': 'png', 'opaque': False},
+          'terrain-lines':      {'extension': 'png', 'opaque': False},
+          'toner-background':   {'extension': 'png', 'opaque': True},
+          'toner':              {'extension': 'png', 'opaque': True},
+          'toner-hybrid':       {'extension': 'png', 'opaque': False},
+          'toner-labels':       {'extension': 'png', 'opaque': False},
+          'toner-lines':        {'extension': 'png', 'opaque': False},
+          'toner-lite':         {'extension': 'png', 'opaque': True},
+          'watercolor':         {'extension': 'jpg', 'opaque': True},
+        }
+
+        # get layer information from dict
+        layer_info = layer_config.get(
+            style, {'extension': '.png', 'opaque': True})
+
+        # use optional desired_tile_form input if available
+        # otherwise, use preset value based on the layer name
+        if desired_tile_form is None:
+            if layer_info['opaque']:
+                desired_tile_form = 'RGB'
+            else:
+                desired_tile_form = 'RGBA'
+
         super().__init__(desired_tile_form=desired_tile_form,
                          cache=cache)
         self.style = style
+        self.extension = layer_info['extension']
 
     def _image_url(self, tile):
         x, y, z = tile
-        return f'http://tile.stamen.com/{self.style}/{z}/{x}/{y}.png'
+        return 'http://tile.stamen.com/' + \
+            f'{self.style}/{z}/{x}/{y}.{self.extension}'
 
 
 class MapboxTiles(GoogleWTS):
@@ -373,6 +397,7 @@ class MapboxTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
+
     def __init__(self, access_token, map_id, cache=False):
         """
         Set up a new Mapbox tiles instance.
@@ -416,6 +441,7 @@ class MapboxStyleTiles(GoogleWTS):
     For terms of service, see https://www.mapbox.com/tos/.
 
     """
+
     def __init__(self, access_token, username, map_id, cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
@@ -457,6 +483,7 @@ class QuadtreeTiles(GoogleWTS):
     where the length of the quatree is the zoom level in Google Tile terms.
 
     """
+
     def _image_url(self, tile):
         return ('http://ecn.dynamic.t1.tiles.virtualearth.net/comp/'
                 f'CompositionHandler/{tile}?mkt=en-'
@@ -539,18 +566,20 @@ class OrdnanceSurvey(GoogleWTS):
     """
     Implement web tile retrieval from Ordnance Survey map data.
     To use this tile image source you will need to obtain an
-    API key from Ordnance Survey.
+    API key from Ordnance Survey. You can get a free API key from
+    https://osdatahub.os.uk
 
     For more details on Ordnance Survey layer styles, see
-    https://apidocs.os.uk/docs/map-styles.
+    https://osdatahub.os.uk/docs/wmts/technicalSpecification.
 
     For the API framework agreement, see
-    https://developer.ordnancesurvey.co.uk/os-api-framework-agreement.
+    https://osdatahub.os.uk/legal/apiTermsConditions.
     """
-    # API Documentation: https://apidocs.os.uk/docs/os-maps-wmts
+    # API Documentation: https://osdatahub.os.uk/docs/wmts/overview
+
     def __init__(self,
                  apikey,
-                 layer='Road',
+                 layer='Road_3857',
                  desired_tile_form='RGB',
                  cache=False):
         """
@@ -572,19 +601,18 @@ class OrdnanceSurvey(GoogleWTS):
                          cache=cache)
         self.apikey = apikey
 
-        if layer not in ['Outdoor', 'Road', 'Light', 'Night', 'Leisure']:
+        if layer not in ("Road_3857", "Outdoor_3857", "Light_3857",
+                         "Road", "Outdoor", "Light"):
             raise ValueError(f'Invalid layer {layer}')
+        elif layer in ("Road", "Outdoor", "Light"):
+            layer += "_3857"
 
         self.layer = layer
 
     def _image_url(self, tile):
         x, y, z = tile
-        return (
-            f'https://api2.ordnancesurvey.co.uk/mapping_api/v1/service/wmts?'
-            f'key={self.apikey}&height=256&width=256&version=1.0.0&'
-            f'tilematrixSet=EPSG%3A3857&style=true&layer={self.layer}%203857&'
-            f'SERVICE=WMTS&REQUEST=GetTile&format=image%2Fpng&'
-            f'TileMatrix=EPSG%3A3857%3A{z}&TileRow={y}&TileCol={x}')
+        return f"https://api.os.uk/maps/raster/v1/zxy/" \
+               f"{self.layer}/{z}/{x}/{y}.png?key={self.apikey}"
 
 
 def _merge_tiles(tiles):
@@ -677,3 +705,39 @@ class AzureMapsTiles(GoogleWTS):
             f'https://atlas.microsoft.com/map/tile?'
             f'api-version={self.api_version}&tilesetId={self.tileset_id}&'
             f'x={x}&y={y}&zoom={z}&subscription-key={self.subscription_key}')
+
+
+class LINZMapsTiles(GoogleWTS):
+
+    def __init__(self, apikey, layer_id, api_version="v4",
+                 desired_tile_form='RGB', cache=False):
+        """
+        Set up a new instance to retrieve tiles from The LINZ
+        aka. Land Information New Zealand
+
+        Access to LINZ WMTS GetCapabilities requires an API key.
+        Register yourself free in https://id.koordinates.com/signup/
+        to gain access into the LINZ database.
+
+        Parameters
+        ----------
+        apikey
+            A valid LINZ API key specific for every users.
+        layer_id
+            A layer ID for a map. See the "Technical Details" lower down the
+            "About" tab for each layer displayed in the LINZ data service.
+        api_version
+            API version to use. Defaults to v4 for now.
+
+        """
+        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
+        self.apikey = apikey
+        self.layer_id = layer_id
+        self.api_version = api_version
+
+    def _image_url(self, tile):
+        x, y, z = tile
+        return (
+            f'https://tiles-a.koordinates.com/services;'
+            f'key={self.apikey}/tiles/{self.api_version}/'
+            f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png')

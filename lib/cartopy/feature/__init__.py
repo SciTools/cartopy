@@ -15,8 +15,8 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import shapely.geometry as sgeom
 
-import cartopy.io.shapereader as shapereader
 import cartopy.crs
+import cartopy.io.shapereader as shapereader
 
 
 COLORS = {'land': np.array((240, 240, 220)) / 256.,
@@ -100,7 +100,9 @@ class Feature(metaclass=ABCMeta):
         geometries for this dataset.
 
         """
-        if extent is not None:
+        # shapely 2.0 returns tuple of NaNs instead of None for empty geometry
+        # -> check for both
+        if extent is not None and not np.isnan(extent[0]):
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
             return (geom for geom in self.geometries() if
@@ -113,6 +115,7 @@ class Scaler:
     """
     General object for handling the scale of the geometries used in a Feature.
     """
+
     def __init__(self, scale):
         self._scale = scale
 
@@ -140,6 +143,7 @@ class AdaptiveScaler(Scaler):
     """
     Automatically select scale of geometries based on extent of plotted axes.
     """
+
     def __init__(self, default_scale, limits):
         """
         Parameters
@@ -198,6 +202,7 @@ class ShapelyFeature(Feature):
     shapely geometries.
 
     """
+
     def __init__(self, geometries, crs, **kwargs):
         """
         Parameters
@@ -214,6 +219,8 @@ class ShapelyFeature(Feature):
 
         """
         super().__init__(crs, **kwargs)
+        if isinstance(geometries, sgeom.base.BaseGeometry):
+            geometries = [geometries]
         self._geoms = tuple(geometries)
 
     def geometries(self):
@@ -227,6 +234,7 @@ class NaturalEarthFeature(Feature):
     See https://www.naturalearthdata.com/
 
     """
+
     def __init__(self, category, name, scale, **kwargs):
         """
         Parameters
@@ -345,6 +353,7 @@ class GSHHSFeature(Feature):
     instantiating multiple GSHHS artists, by reducing repeated file IO.
 
     """
+
     def __init__(self, scale='auto', levels=None, **kwargs):
         super().__init__(cartopy.crs.PlateCarree(), **kwargs)
 
@@ -424,6 +433,7 @@ class WFSFeature(Feature):
     This feature requires additional dependencies. If installed via pip,
     try ``pip install cartopy[ows]``.
     """
+
     def __init__(self, wfs, features, **kwargs):
         """
         Parameters
@@ -469,8 +479,8 @@ class WFSFeature(Feature):
 
 auto_scaler = AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
 """AdaptiveScaler for NaturalEarthFeature. Default scale is '110m'.
-'110m' is used above 50 degrees, '50m' for 50-15 degrees and '10m' below 15
-degrees."""
+'110m' is used when both latitudes and longitudes span more than 50 degrees,
+'50m' for 50-15 degrees and '10m' below 15 degrees."""
 
 
 BORDERS = NaturalEarthFeature(
@@ -493,19 +503,19 @@ COASTLINE = NaturalEarthFeature(
 
 LAKES = NaturalEarthFeature(
     'physical', 'lakes', auto_scaler,
-    edgecolor='face', facecolor=COLORS['water'])
+    edgecolor='none', facecolor=COLORS['water'])
 """Automatically scaled natural and artificial lakes."""
 
 
 LAND = NaturalEarthFeature(
     'physical', 'land', auto_scaler,
-    edgecolor='face', facecolor=COLORS['land'], zorder=-1)
+    edgecolor='none', facecolor=COLORS['land'], zorder=-1)
 """Automatically scaled land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature(
     'physical', 'ocean', auto_scaler,
-    edgecolor='face', facecolor=COLORS['water'], zorder=-1)
+    edgecolor='none', facecolor=COLORS['water'], zorder=-1)
 """Automatically scaled ocean polygons."""
 
 

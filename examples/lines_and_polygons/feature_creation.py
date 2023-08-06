@@ -13,10 +13,11 @@ In this instance however, it would be possible to make use of the
 pre-defined :data:`cartopy.feature.STATES` constant.
 
 """
+from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from matplotlib.offsetbox import AnchoredText
 
 
 def main():

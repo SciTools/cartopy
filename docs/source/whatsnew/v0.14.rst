@@ -23,7 +23,7 @@ Features
 * The SRTM3 data source has been changed to the `LP DAAC Data Pool
   <https://lpdaac.usgs.gov/data_access/data_pool>`_. The Data Pool is more
   consistent, fixing several missing tiles, and the data is void-filled.
-  Consequently, the :func:`cartopy.srtm.fill_gaps` function has been deprecated
+  Consequently, the ``cartopy.srtm.fill_gaps`` function has been deprecated
   as it has no purpose within the STRM context. The
   SRTM example has also been updated to skip the void-filling step.
   Additionally, this data source provides SRTM at a higher resolution of
@@ -46,7 +46,7 @@ Features
 
 Deprecations
 ------------
-* :data:`cartopy.crs.GOOGLE_MERCATOR` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
+* ``cartopy.crs.GOOGLE_MERCATOR`` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
 
 
 Incompatible changes

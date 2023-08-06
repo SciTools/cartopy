@@ -19,6 +19,7 @@ this way can be found at :ref:`sphx_glr_gallery_web_services_wmts.py`.
 import collections
 import io
 import math
+from urllib.parse import urlparse
 import warnings
 import weakref
 from xml.etree import ElementTree
@@ -27,10 +28,11 @@ from PIL import Image
 import numpy as np
 import shapely.geometry as sgeom
 
+
 try:
-    from owslib.wms import WebMapService
-    from owslib.wfs import WebFeatureService
     import owslib.util
+    from owslib.wfs import WebFeatureService
+    from owslib.wms import WebMapService
     import owslib.wmts
 
     _OWSLIB_AVAILABLE = True
@@ -40,17 +42,18 @@ except ImportError:
     _OWSLIB_AVAILABLE = False
 
 import cartopy.crs as ccrs
-from cartopy.io import LocatedImage, RasterSource
 from cartopy.img_transform import warp_array
+from cartopy.io import LocatedImage, RasterSource
+
 
 _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 
 # Hardcode some known EPSG codes for now.
 # The order given here determines the preferred SRS for WMS retrievals.
 _CRS_TO_OGC_SRS = collections.OrderedDict(
-    [(ccrs.PlateCarree(), 'EPSG:4326'),
-     (ccrs.Mercator.GOOGLE, 'EPSG:900913'),
-     (ccrs.OSGB(approx=True), 'EPSG:27700')
+    [(ccrs.PlateCarree(), ['EPSG:4326']),
+     (ccrs.Mercator.GOOGLE, ['EPSG:3857', 'EPSG:900913']),
+     (ccrs.OSGB(approx=True), ['EPSG:27700'])
      ])
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
@@ -162,7 +165,7 @@ def _target_extents(extent, requested_projection, available_projection):
 
     # Return the polygons' rectangular bounds as extent tuples.
     target_extents = []
-    for poly in polys:
+    for poly in polys.geoms:
         min_x, min_y, max_x, max_y = poly.bounds
         if fudge_mode:
             # If we shrunk the request area before, then here we
@@ -245,9 +248,29 @@ class WMSRasterSource(RasterSource):
         self.getmap_extra_kwargs = getmap_extra_kwargs
 
     def _native_srs(self, projection):
-        # Return the SRS which corresponds to the given projection when
-        # known, otherwise return None.
-        return _CRS_TO_OGC_SRS.get(projection)
+        # Return a list of all SRS identifiers that correspond to the given
+        # projection when known, otherwise return None.
+        native_srs_list = _CRS_TO_OGC_SRS.get(projection, None)
+
+        # If the native_srs could not be identified, return None
+        if native_srs_list is None:
+            return None
+        else:
+            # If the native_srs was identified, check if it is provided
+            # by the service. If not return None to continue checking
+            # for available fallback srs
+            contents = self.service.contents
+
+            for native_srs in native_srs_list:
+                native_OK = all(
+                    native_srs.lower() in map(
+                        str.lower, contents[layer].crsOptions)
+                    for layer in self.layers
+                )
+                if native_OK:
+                    return native_srs
+
+            return None
 
     def _fallback_proj_and_srs(self):
         """
@@ -257,15 +280,16 @@ class WMSRasterSource(RasterSource):
 
         """
         contents = self.service.contents
-        for proj, srs in _CRS_TO_OGC_SRS.items():
-            missing = any(srs not in contents[layer].crsOptions for
-                          layer in self.layers)
-            if not missing:
-                break
-        if missing:
-            raise ValueError('The requested layers are not available in a '
-                             'known SRS.')
-        return proj, srs
+        for proj, srs_list in _CRS_TO_OGC_SRS.items():
+            for srs in srs_list:
+                srs_OK = all(
+                    srs.lower() in map(str.lower, contents[layer].crsOptions)
+                    for layer in self.layers)
+                if srs_OK:
+                    return proj, srs
+
+        raise ValueError('The requested layers are not available in a '
+                         'known SRS.')
 
     def validate_projection(self, projection):
         if self._native_srs(projection) is None:
@@ -389,7 +413,12 @@ class WMTSRasterSource(RasterSource):
                     matrix_sets = self.wmts.tilematrixsets
                     tile_matrix_set = matrix_sets[tile_matrix_set_name]
                     crs_urn = tile_matrix_set.crs
-                    tms_crs = _URN_TO_CRS.get(crs_urn)
+                    tms_crs = None
+                    if crs_urn in _URN_TO_CRS:
+                        tms_crs = _URN_TO_CRS.get(crs_urn)
+                    elif ':EPSG:' in crs_urn:
+                        epsg_num = crs_urn.split(':')[-1]
+                        tms_crs = ccrs.epsg(int(epsg_num))
                     if tms_crs == match_projection:
                         result = tile_matrix_set_name
                         break
@@ -399,6 +428,7 @@ class WMTSRasterSource(RasterSource):
             matrix_set_name = find_projection(target_projection)
             if matrix_set_name is None:
                 # Search instead for a set in _any_ projection we can use.
+                # Nothing to do for EPSG
                 for possible_projection in _URN_TO_CRS.values():
                     # Look for supported projections (in a preferred order).
                     matrix_set_name = find_projection(possible_projection)
@@ -422,8 +452,15 @@ class WMTSRasterSource(RasterSource):
 
     def fetch_raster(self, projection, extent, target_resolution):
         matrix_set_name = self._matrix_set_name(projection)
-        wmts_projection = _URN_TO_CRS[
-            self.wmts.tilematrixsets[matrix_set_name].crs]
+        crs_urn = self.wmts.tilematrixsets[matrix_set_name].crs
+        if crs_urn in _URN_TO_CRS:
+            wmts_projection = _URN_TO_CRS[crs_urn]
+        elif ':EPSG:' in crs_urn:
+            epsg_num = crs_urn.split(':')[-1]
+            wmts_projection = ccrs.epsg(int(epsg_num))
+        else:
+            raise ValueError(f'Unknown coordinate reference system string:'
+                             f' {crs_urn}')
 
         if wmts_projection == projection:
             wmts_extents = [extent]
@@ -551,7 +588,25 @@ class WMTSRasterSource(RasterSource):
         # Find which tile matrix has the appropriate resolution.
         tile_matrix_set = wmts.tilematrixsets[matrix_set_name]
         tile_matrices = tile_matrix_set.tilematrix.values()
-        meters_per_unit = METERS_PER_UNIT[tile_matrix_set.crs]
+        if tile_matrix_set.crs in METERS_PER_UNIT:
+            meters_per_unit = METERS_PER_UNIT[tile_matrix_set.crs]
+        elif ':EPSG:' in tile_matrix_set.crs:
+            epsg_num = tile_matrix_set.crs.split(':')[-1]
+            tms_crs = ccrs.epsg(int(epsg_num))
+            # catch UserWarning from .to_dict(), because the resulting
+            # dictionary does not contain all information for all projections;
+            # need only 'units' here
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                crs_dict = tms_crs.to_dict()
+                crs_units = crs_dict.get('units', '')
+                if crs_units != 'm':
+                    raise ValueError('Only unit "m" implemented for'
+                                     ' EPSG projections.')
+                meters_per_unit = 1
+        else:
+            raise ValueError(f'Unknown coordinate reference system string:'
+                             f' {tile_matrix_set.crs}')
         tile_matrix = self._choose_matrix(tile_matrices, meters_per_unit,
                                           max_pixel_span)
 
@@ -643,7 +698,15 @@ class WFSGeometrySource:
             raise ImportError(_OWSLIB_REQUIRED)
 
         if isinstance(service, str):
+            # host name such as mapserver.gis.umn.edu or
+            # agroenvgeo.data.inra.fr from full address
+            # http://mapserver.gis.umn.edu/mapserver
+            # or https://agroenvgeo.data.inra.fr:443/geoserver/wfs
+            self.url = urlparse(service).hostname
+            # WebFeatureService of owslib
             service = WebFeatureService(service)
+        else:
+            self.url = ''
 
         if isinstance(features, str):
             features = [features]
@@ -680,14 +743,22 @@ class WFSGeometrySource:
             else:
                 default_urn = default_urn.pop()
 
-            if str(default_urn) not in _URN_TO_CRS:
+            if (str(default_urn) not in _URN_TO_CRS) and (
+                    ":EPSG:" not in str(default_urn)
+            ):
                 raise ValueError(
-                    f'Unknown mapping from SRS/CRS_URN {default_urn!r} to '
-                    'cartopy projection.')
-
+                    f"Unknown mapping from SRS/CRS_URN {default_urn!r} to "
+                    "cartopy projection.")
             self._default_urn = default_urn
 
-        return _URN_TO_CRS[str(self._default_urn)]
+        if str(self._default_urn) in _URN_TO_CRS:
+            return _URN_TO_CRS[str(self._default_urn)]
+        elif ':EPSG:' in str(self._default_urn):
+            epsg_num = str(self._default_urn).split(':')[-1]
+            return ccrs.epsg(int(epsg_num))
+        else:
+            raise ValueError(f'Unknown coordinate reference system:'
+                             f' {str(self._default_urn)}')
 
     def fetch_geometries(self, projection, extent):
         """
@@ -734,12 +805,20 @@ class WFSGeometrySource:
                     geom_proj = _URN_TO_CRS[srs]
                     if geom_proj != projection:
                         raise ValueError(
-                            'The geometries are not in expected projection. '
+                            f'The geometries are not in expected projection. '
                             f'Expected {projection!r}, got {geom_proj!r}.')
+                elif ':EPSG:' in srs:
+                    epsg_num = srs.split(':')[-1]
+                    geom_proj = ccrs.epsg(int(epsg_num))
+                    if geom_proj != projection:
+                        raise ValueError(
+                            f'The EPSG geometries are not in expected '
+                            f' projection. Expected {projection!r}, '
+                            f' got {geom_proj!r}.')
                 else:
                     warnings.warn(
-                        'Unable to verify matching projections due to '
-                        'incomplete mappings from SRS identifiers to cartopy '
+                        f'Unable to verify matching projections due to '
+                        f'incomplete mappings from SRS identifiers to cartopy '
                         f'projections. The geometries have an SRS of {srs!r}.')
         return geoms
 
@@ -765,24 +844,33 @@ class WFSGeometrySource:
         points_data = []
         tree = ElementTree.parse(response)
 
-        for node in tree.findall(f'.//{_MAP_SERVER_NS}msGeometry'):
-            # Find LinearRing geometries in our msGeometry node.
-            find_str = f'.//{_GML_NS}LinearRing'
-            if self._node_has_child(node, find_str):
-                data = self._find_polygon_coords(node, find_str)
-                linear_rings_data.extend(data)
+        # Get geometries from http://mapserver.gis.umn.edu/mapserver
+        # and other servers
+        for node in tree.iter():
+            snode = str(node)
+            if ((_MAP_SERVER_NS in snode) or
+                (self.url and (self.url in snode)
+                 )):
+                s1 = snode.split()[1]
+                tag = s1[s1.find('}') + 1:-1]
+                if ('geom' in tag) or ('Geom' in tag):
+                    # Find LinearRing geometries in our msGeometry node.
+                    find_str = f'.//{_GML_NS}LinearRing'
+                    if self._node_has_child(node, find_str):
+                        data = self._find_polygon_coords(node, find_str)
+                        linear_rings_data.extend(data)
 
-            # Find LineString geometries in our msGeometry node.
-            find_str = f'.//{_GML_NS}LineString'
-            if self._node_has_child(node, find_str):
-                data = self._find_polygon_coords(node, find_str)
-                linestrings_data.extend(data)
+                    # Find LineString geometries in our msGeometry node.
+                    find_str = f'.//{_GML_NS}LineString'
+                    if self._node_has_child(node, find_str):
+                        data = self._find_polygon_coords(node, find_str)
+                        linestrings_data.extend(data)
 
-            # Find Point geometries in our msGeometry node.
-            find_str = f'.//{_GML_NS}Point'
-            if self._node_has_child(node, find_str):
-                data = self._find_polygon_coords(node, find_str)
-                points_data.extend(data)
+                    # Find Point geometries in our msGeometry node.
+                    find_str = f'.//{_GML_NS}Point'
+                    if self._node_has_child(node, find_str):
+                        data = self._find_polygon_coords(node, find_str)
+                        points_data.extend(data)
 
         geoms_by_srs = {}
         for srs, x, y in linear_rings_data:

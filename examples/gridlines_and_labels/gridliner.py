@@ -17,10 +17,10 @@ boundary.
 
 In the third example, labels are drawn only on the left and bottom sides.
 """
+import matplotlib.pyplot as plt
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-
-import matplotlib.pyplot as plt
 
 
 def main():

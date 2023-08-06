@@ -22,7 +22,7 @@ Features
 
 * Phil Elson added a :py:class:`~cartopy.io.Downloader` class which allows
   automatic downloading of shapefiles (currently from Natural Earth and GSHHS).
-  The extension requires no user action and can be configured via the :py:data:`cartopy.config` dictionary.
+  The extension requires no user action and can be configured via the :data:`cartopy.config` dictionary.
 
 * Development plans for cartopy 0.7 and beyond
 

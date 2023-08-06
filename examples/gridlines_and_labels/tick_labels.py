@@ -6,9 +6,10 @@ This example demonstrates adding tick labels to maps on rectangular
 projections using special tick formatters.
 
 """
-import cartopy.crs as ccrs
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 
 def main():

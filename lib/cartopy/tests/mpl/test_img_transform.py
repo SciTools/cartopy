@@ -4,8 +4,8 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+from functools import reduce
 import operator
-import os
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -15,7 +15,6 @@ import pytest
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.img_transform as im_trans
-from functools import reduce
 
 
 class TestRegrid:
@@ -82,8 +81,8 @@ class TestRegrid:
 @pytest.mark.mpl_image_compare(filename='regrid_image.png', tolerance=5.55)
 def test_regrid_image():
     # Source data
-    fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
-                         '50-natural-earth-1-downsampled.png')
+    fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
+             / '50-natural-earth-1-downsampled.png')
     nx = 720
     ny = 360
     source_proj = ccrs.PlateCarree()

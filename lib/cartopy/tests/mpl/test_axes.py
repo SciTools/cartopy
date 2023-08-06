@@ -6,14 +6,15 @@
 
 from unittest import mock
 
-from matplotlib.testing.decorators import cleanup
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.mpl.geoaxes import InterProjectionTransform, GeoAxes
+import cartopy.feature as cfeature
+from cartopy.mpl.geoaxes import (GeoAxes, GeoAxesSubplot,
+                                 InterProjectionTransform)
 
 
 class TestNoSpherical:
@@ -98,7 +99,7 @@ class Test_Axes_add_geometries:
     @mock.patch('cartopy.feature.ShapelyFeature')
     def test_styler_kwarg(self, ShapelyFeature, add_feature_method):
         ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
-                     map_projection=ccrs.Robinson())
+                     projection=ccrs.Robinson())
         ax.add_geometries(mock.sentinel.geometries, mock.sentinel.crs,
                           styler=mock.sentinel.styler, wibble='wobble')
 
@@ -108,11 +109,18 @@ class Test_Axes_add_geometries:
         add_feature_method.assert_called_once_with(
             ShapelyFeature(), styler=mock.sentinel.styler)
 
+    @pytest.mark.natural_earth
+    def test_single_geometry(self):
+        # A single geometry is acceptable
+        proj = ccrs.PlateCarree()
+        ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
+                     projection=proj)
+        ax.add_geometries(next(cfeature.COASTLINE.geometries()), crs=proj)
 
-@cleanup
+
 def test_geoaxes_subplot():
     ax = plt.subplot(1, 1, 1, projection=ccrs.PlateCarree())
-    assert str(ax.__class__) == "<class 'cartopy.mpl.geoaxes.GeoAxesSubplot'>"
+    assert isinstance(ax, GeoAxesSubplot)
 
 
 @pytest.mark.mpl_image_compare(filename='geoaxes_subslice.png')

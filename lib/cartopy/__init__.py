@@ -3,27 +3,28 @@
 # This file is part of Cartopy and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
+import os
+from pathlib import Path
+import tempfile
 
 from ._version import version as __version__  # noqa: F401
-import tempfile
+
 
 __document_these__ = ['config']
 
-# Configuration
-import os.path
 
 # for the writable data directory (i.e. the one where new data goes), follow
 # the XDG guidelines found at
 # https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
-_writable_dir = os.path.join(os.path.expanduser('~'), '.local', 'share')
-_data_dir = os.path.join(os.environ.get("XDG_DATA_HOME", _writable_dir),
-                         'cartopy')
-_cache_dir = os.path.join(tempfile.gettempdir(), 'cartopy_cache_dir')
+_writable_dir = Path.home() / '.local' / 'share'
+_data_dir = Path(os.environ.get("XDG_DATA_HOME", _writable_dir)) / 'cartopy'
+_cache_dir = Path(tempfile.gettempdir()) / 'cartopy_cache_dir'
 
-config = {'pre_existing_data_dir': os.environ.get('CARTOPY_DATA_DIR', ''),
+config = {'pre_existing_data_dir': Path(os.environ.get('CARTOPY_DATA_DIR',
+                                        '')),
           'data_dir': _data_dir,
           'cache_dir': _cache_dir,
-          'repo_data_dir': os.path.join(os.path.dirname(__file__), 'data'),
+          'repo_data_dir': Path(__file__).parent / 'data',
           'downloaders': {},
           }
 """
@@ -101,8 +102,7 @@ try:
 except ImportError:
     pass
 
-
 # Commonly used sub-modules. Imported here to provide end-user
 # convenience.
-import cartopy.crs
-import cartopy.feature  # noqa: F401  (flake8 = unused import)
+import cartopy.crs  # noqa: E402  module-level imports
+import cartopy.feature  # noqa: E402,F401  (unused import)

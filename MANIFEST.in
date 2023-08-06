@@ -1,11 +1,18 @@
-include *.md
+prune .github
+prune .circleci
+prune benchmarks
+prune docs
+prune examples
+graft tools
+exclude .coveragerc
+exclude .git-blame-ignore-revs
+include .gitattributes
+include .gitignore
+exclude .pre-commit-config.yaml
 include CHANGES
 include COPYING*
+include environment.yml
 include INSTALL
-include README.rst
-include requirements/*.txt
-include lib/cartopy/data/*
-include lib/cartopy/io/srtm.npz
-include lib/cartopy/tests/lakes_shapefile/*
-recursive-include lib *.py
-recursive-include lib *.pyx *.pxd *.h *.c *.cpp
+recursive-include lib/cartopy *.cpp *.py *.pyx
+recursive-include lib/cartopy *.TXT *.dbf *.jpg *.json *.nc *.png *.shp *.shx *.txt
+include lib/cartopy/data/LICENSE
