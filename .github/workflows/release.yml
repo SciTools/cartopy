@@ -92,7 +92,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: sdist
-          path: dist/
+          path: dist
 
       - uses: pypa/cibuildwheel@f21bb8376a051ffb6cb5604b28ccaef7b90e8ab7 # v2.14.1
         with:
@@ -116,10 +116,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download packages
+      - name: Download wheels
         uses: actions/download-artifact@v3
         with:
           name: artifact
+          path: dist
+
+      - name: Download sdist
+        uses: actions/download-artifact@v3
+        with:
+          name: sdist
           path: dist
 
       - name: Publish Package
