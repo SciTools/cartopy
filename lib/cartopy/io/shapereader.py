@@ -131,9 +131,9 @@ class BasicReader:
 
     """
 
-    def __init__(self, filename, bbox=None):
+    def __init__(self, filename, bbox=None, encoding='utf-8'):
         # Validate the filename/shapefile
-        self._reader = reader = shapefile.Reader(filename)
+        self._reader = reader = shapefile.Reader(filename, encoding=encoding)
         if reader.shp is None or reader.shx is None or reader.dbf is None:
             raise ValueError("Incomplete shapefile definition "
                              "in '%s'." % filename)
@@ -186,10 +186,10 @@ class FionaReader:
 
     """
 
-    def __init__(self, filename, bbox=None):
+    def __init__(self, filename, bbox=None, encoding=None):
         self._data = []
 
-        with fiona.open(filename) as f:
+        with fiona.open(filename, encoding=encoding) as f:
             if bbox is not None:
                 assert len(bbox) == 4
                 features = f.filter(bbox=bbox)
