@@ -129,4 +129,4 @@ jobs:
           path: dist
 
       - name: Publish Package
-        uses: pypa/gh-action-pypi-publish@v1.8.9
+        uses: pypa/gh-action-pypi-publish@v1.8.10
