@@ -186,6 +186,13 @@ def test_stock_img():
     return ax.figure
 
 
+@pytest.mark.mpl_image_compare(filename='imshow_etopo_ortho.png')
+def test_stock_img_etopo():
+    ax = plt.axes(projection=ccrs.Orthographic())
+    ax.stock_img(name='etopo')
+    return ax.figure
+
+
 @pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)

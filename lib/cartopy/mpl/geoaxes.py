@@ -38,6 +38,7 @@ import shapely.geometry as sgeom
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
+from cartopy.io import Downloader
 import cartopy.mpl.contour
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.geocollection
@@ -1003,20 +1004,32 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Add a standard image to the map.
 
-        Currently, the only (and default) option is a downsampled version of
-        the Natural Earth shaded relief raster.
+        Currently, there are 2 options:
 
+        1. 'ne_shaded'(default) a downsampled version of the Natural Earth
+           shaded relief raster.
+        2. 'etopo' a downsampled version of global relief model of Earth's
+           surface that integrates land topography and ocean bathymetry. This
+           option is the same as the etopo from Basemap.
+           https://www.ngdc.noaa.gov/mgg/image/color_etopo1_ice_low.jpg
         """
+        if name not in ['ne_shaded', 'etopo']:
+            raise ValueError('Unknown stock image %r.' % name)
+
+        source_proj = ccrs.PlateCarree()
         if name == 'ne_shaded':
-            source_proj = ccrs.PlateCarree()
             fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
                      / '50-natural-earth-1-downsampled.png')
+        elif name == 'etopo':
+            url_template = 'https://www.ngdc.noaa.gov/mgg/image/{name}.jpg'
+            target_path_template = str(
+                     Path(config["data_dir"] / 'raster' / '{name}.jpg'))
+            d = Downloader(url_template, target_path_template)
+            fname = d.path({'name': 'color_etopo1_ice_low'})
 
-            return self.imshow(imread(fname), origin='upper',
-                               transform=source_proj,
-                               extent=[-180, 180, -90, 90])
-        else:
-            raise ValueError('Unknown stock image %r.' % name)
+        return self.imshow(imread(fname), origin='upper',
+                           transform=source_proj,
+                           extent=[-180, 180, -90, 90])
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
                        cache=False):
