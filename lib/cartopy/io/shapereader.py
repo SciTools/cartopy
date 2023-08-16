@@ -123,7 +123,9 @@ class FionaRecord(Record):
 
 class BasicReader:
     """
-    Provide an interface for accessing the contents of a shapefile.
+    Provide an interface for accessing the contents of a shapefile with the
+    Python Shapefile Library (PyShp). See the PyShp
+    `Readme <https://pypi.org/project/pyshp/>`_ for more information.
 
     The primary methods used on a BasicReader instance are
     :meth:`~cartopy.io.shapereader.BasicReader.records` and
@@ -131,9 +133,9 @@ class BasicReader:
 
     """
 
-    def __init__(self, filename, bbox=None):
+    def __init__(self, filename, **kwargs):
         # Validate the filename/shapefile
-        self._reader = reader = shapefile.Reader(filename)
+        self._reader = reader = shapefile.Reader(filename, **kwargs)
         if reader.shp is None or reader.shx is None or reader.dbf is None:
             raise ValueError("Incomplete shapefile definition "
                              "in '%s'." % filename)
@@ -178,7 +180,10 @@ class BasicReader:
 class FionaReader:
     """
     Provides an interface for accessing the contents of a shapefile
-    with the fiona library, which has a much faster reader than pyshp.
+    with the fiona library, which has a much faster reader than PyShp. See
+    `fiona.open
+    <https://fiona.readthedocs.io/en/latest/fiona.html#fiona.open>`_
+    for additional information on supported kwargs.
 
     The primary methods used on a FionaReader instance are
     :meth:`~cartopy.io.shapereader.FionaReader.records` and
@@ -186,10 +191,10 @@ class FionaReader:
 
     """
 
-    def __init__(self, filename, bbox=None):
+    def __init__(self, filename, bbox=None, **kwargs):
         self._data = []
 
-        with fiona.open(filename) as f:
+        with fiona.open(filename, **kwargs) as f:
             if bbox is not None:
                 assert len(bbox) == 4
                 features = f.filter(bbox=bbox)
@@ -253,10 +258,23 @@ class FionaReader:
                                item.items() if key != 'geometry'})
 
 
-if _HAS_FIONA:
-    Reader = FionaReader
-else:
-    Reader = BasicReader
+def Reader(filename, bbox=None, **kwargs):
+    """
+    Returns an instance of the default available shapereader interface.
+
+    Will either be :class:`~cartopy.io.shapereader.FionaReader` (if fiona
+    installed) or :class:`~cartopy.io.shapereader.BasicReader`
+    (based on PyShp). Note that FionaReader has greater speed and additional
+    functionality, including attempting to auto-detect source encoding and
+    support for bounding box filtering. Both libraries support the 'encoding'
+    keyword argument. Note that BasicReader and FionaReader instances can also
+    be created directly.
+
+    """
+    if _HAS_FIONA:
+        return FionaReader(filename, bbox, **kwargs)
+    else:
+        return BasicReader(filename, **kwargs)
 
 
 def natural_earth(resolution='110m', category='physical', name='coastline'):
