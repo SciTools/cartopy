@@ -135,7 +135,8 @@ class BasicReader:
 
     def __init__(self, filename, bbox=None, **kwargs):
         # Validate the filename/shapefile
-        self._reader = reader = shapefile.Reader(filename, bbox=bbox, **kwargs)
+        self._reader = reader = shapefile.Reader(filename, **kwargs)
+        self._bbox = bbox
         if reader.shp is None or reader.shx is None or reader.dbf is None:
             raise ValueError("Incomplete shapefile definition "
                              "in '%s'." % filename)
@@ -160,7 +161,7 @@ class BasicReader:
         :meth:`~Record.geometry` method.
 
         """
-        for shape in self._reader.iterShapes():
+        for shape in self._reader.iterShapes(bbox=self._bbox):
             # Skip the shape that can not be represented as geometry.
             if shape.shapeType != shapefile.NULL:
                 yield sgeom.shape(shape)
@@ -170,9 +171,10 @@ class BasicReader:
         Return an iterator of :class:`~Record` instances.
 
         """
+
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
-        for shape_record in self._reader.iterShapeRecords():
+        for shape_record in self._reader.iterShapeRecords(bbox=self._bbox):
             attributes = shape_record.record.as_dict()
             yield Record(shape_record.shape, attributes, fields)
 
@@ -266,15 +268,15 @@ def Reader(filename, bbox=None, **kwargs):
     installed) or :class:`~cartopy.io.shapereader.BasicReader`
     (based on PyShp). Note that FionaReader has greater speed and additional
     functionality, including attempting to auto-detect source encoding and
-    support for bounding box filtering. Both libraries support the 'encoding'
-    keyword argument. Note that BasicReader and FionaReader instances can also
-    be created directly.
+    format driver support. Both libraries support the 'encoding'
+    and 'bbox' keyword arguments. Note that BasicReader and FionaReader
+    instances can also be created directly.
 
     """
     if _HAS_FIONA:
         return FionaReader(filename, bbox, **kwargs)
     else:
-        return BasicReader(filename, **kwargs)
+        return BasicReader(filename, bbox, **kwargs)
 
 
 def natural_earth(resolution='110m', category='physical', name='coastline'):
