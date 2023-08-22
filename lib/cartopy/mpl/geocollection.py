@@ -7,7 +7,7 @@ import matplotlib as mpl
 from matplotlib.collections import QuadMesh
 import numpy as np
 import numpy.ma as ma
-import packaging
+import packaging.version
 
 
 _MPL_VERSION = packaging.version.parse(mpl.__version__)

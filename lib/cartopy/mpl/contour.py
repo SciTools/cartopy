@@ -8,7 +8,7 @@ import matplotlib as mpl
 from matplotlib.contour import QuadContourSet
 import matplotlib.path as mpath
 import numpy as np
-import packaging
+import packaging.version
 
 
 class GeoContourSet(QuadContourSet):

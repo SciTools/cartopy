@@ -32,7 +32,7 @@ import matplotlib.spines as mspines
 import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
-import packaging
+import packaging.version
 import shapely.geometry as sgeom
 
 from cartopy import config
