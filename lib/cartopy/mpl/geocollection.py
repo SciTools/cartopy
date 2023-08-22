@@ -3,14 +3,11 @@
 # This file is part of Cartopy and is released under the LGPL license.
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
-import matplotlib as mpl
 from matplotlib.collections import QuadMesh
 import numpy as np
 import numpy.ma as ma
-import packaging.version
 
-
-_MPL_VERSION = packaging.version.parse(mpl.__version__)
+from cartopy.mpl import _MPL_38
 
 
 def _split_wrapped_mesh_data(C, mask):
@@ -24,7 +21,7 @@ def _split_wrapped_mesh_data(C, mask):
     C_mask = getattr(C, 'mask', None)
     if C.ndim == 3:
         # RGB(A) array.
-        if _MPL_VERSION.release < (3, 8):
+        if not _MPL_38:
             raise ValueError("GeoQuadMesh wrapping for RGB(A) requires "
                              "Matplotlib v3.8 or later")
 
@@ -58,7 +55,7 @@ class GeoQuadMesh(QuadMesh):
         if hasattr(self, '_wrapped_mask'):
             pcolor_data = self._wrapped_collection_fix.get_array()
             mask = self._wrapped_mask
-            if _MPL_VERSION.release[:2] < (3, 8):
+            if not _MPL_38:
                 A[mask] = pcolor_data
             else:
                 if A.ndim == 3:  # RGB(A) data.  Need to broadcast mask.
@@ -72,7 +69,7 @@ class GeoQuadMesh(QuadMesh):
 
     def set_array(self, A):
         # Check the shape is appropriate up front.
-        if _MPL_VERSION.release[:2] < (3, 8):
+        if not _MPL_38:
             # Need to figure out existing shape from the coordinates.
             height, width = self._coordinates.shape[0:-1]
             if self._shading == 'flat':
@@ -102,7 +99,7 @@ class GeoQuadMesh(QuadMesh):
             # Update the pcolor data with the wrapped masked data
             A, pcolor_data, _ = _split_wrapped_mesh_data(A, self._wrapped_mask)
 
-            if _MPL_VERSION.release[:2] < (3, 8):
+            if not _MPL_38:
                 self._wrapped_collection_fix.set_array(
                     pcolor_data[self._wrapped_mask].ravel())
             else:

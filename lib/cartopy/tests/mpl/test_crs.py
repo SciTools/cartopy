@@ -8,14 +8,12 @@ import matplotlib.pyplot as plt
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import MPL_VERSION
+from cartopy.mpl import _MPL_35
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename="igh_land.png",
-                               tolerance=(3.6
-                                          if MPL_VERSION.release[:2] < (3, 5)
-                                          else 0.5))
+@pytest.mark.mpl_image_compare(
+    filename="igh_land.png", tolerance=0.5 if _MPL_35 else 3.6)
 def test_igh_land():
     crs = ccrs.InterruptedGoodeHomolosine(emphasis="land")
     ax = plt.axes(projection=crs)
@@ -26,9 +24,7 @@ def test_igh_land():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename="igh_ocean.png",
-                               tolerance=(4.5
-                                          if MPL_VERSION.release[:2] < (3, 5)
-                                          else 0.5))
+                               tolerance=0.5 if _MPL_35 else 4.5)
 def test_igh_ocean():
     crs = ccrs.InterruptedGoodeHomolosine(
         central_longitude=-160, emphasis="ocean"

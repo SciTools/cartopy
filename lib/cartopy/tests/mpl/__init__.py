@@ -7,10 +7,6 @@
 import matplotlib as mpl
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import packaging.version
-
-
-MPL_VERSION = packaging.version.parse(mpl.__version__)
 
 
 def show(projection, geometry):

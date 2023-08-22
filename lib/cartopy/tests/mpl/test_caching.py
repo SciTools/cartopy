@@ -19,10 +19,10 @@ import pytest
 import cartopy.crs as ccrs
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE, WMTSRasterSource
 import cartopy.io.shapereader
+from cartopy.mpl import _MPL_38
 from cartopy.mpl.feature_artist import FeatureArtist
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.patch
-from cartopy.tests.mpl import MPL_VERSION
 
 
 def sample_data(shape=(73, 145)):
@@ -121,7 +121,7 @@ def test_contourf_transform_path_counting():
     with mock.patch('cartopy.mpl.patch.path_to_geos') as path_to_geos_counter:
         x, y, z = sample_data((30, 60))
         cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
-        if MPL_VERSION.release[:2] < (3, 8):
+        if not _MPL_38:
             n_geom = sum(len(c.get_paths()) for c in cs.collections)
         else:
             n_geom = len(cs.get_paths())
