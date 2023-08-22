@@ -999,12 +999,13 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return super().set_yticks(yticks, minor=minor)
 
-    def stock_img(self, name='ne_shaded'):
+    def stock_img(self, name='ne_shaded', **kwargs):
         """
         Add a standard image to the map.
 
-        Currently, the only (and default) option is a downsampled version of
-        the Natural Earth shaded relief raster.
+        Currently, the only (and default) option for image is a downsampled
+        version of the Natural Earth shaded relief raster. Other options
+        (e.g., alpha) will be passed to :func:`GeoAxes.imshow`.
 
         """
         if name == 'ne_shaded':
@@ -1014,7 +1015,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
             return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
-                               extent=[-180, 180, -90, 90])
+                               extent=[-180, 180, -90, 90],
+                               **kwargs)
         else:
             raise ValueError('Unknown stock image %r.' % name)
 
