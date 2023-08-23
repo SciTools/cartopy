@@ -133,7 +133,7 @@ class BasicReader:
 
     def __init__(self, filename, bbox=None):
         # Validate the filename/shapefile
-        self._reader = reader = shapefile.Reader(filename)
+        self._reader = reader = shapefile.Reader(str(filename))
         if reader.shp is None or reader.shx is None or reader.dbf is None:
             raise ValueError("Incomplete shapefile definition "
                              "in '%s'." % filename)
