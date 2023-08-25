@@ -260,23 +260,19 @@ class FionaReader:
                                item.items() if key != 'geometry'})
 
 
-def Reader(filename, bbox=None, **kwargs):
-    """
-    Returns an instance of the default available shapereader interface.
+Reader = FionaReader if _HAS_FIONA else BasicReader
+"""
+Returns an instance of the default available shapereader interface.
 
-    Will either be :class:`~cartopy.io.shapereader.FionaReader` (if fiona
-    installed) or :class:`~cartopy.io.shapereader.BasicReader`
-    (based on PyShp). Note that FionaReader has greater speed and additional
-    functionality, including attempting to auto-detect source encoding and
-    format driver support. Both libraries support the 'encoding'
-    and 'bbox' keyword arguments. Note that BasicReader and FionaReader
-    instances can also be created directly.
+Will either be :class:`~cartopy.io.shapereader.FionaReader` (if fiona
+installed) or :class:`~cartopy.io.shapereader.BasicReader`
+(based on PyShp). Note that FionaReader has greater speed and additional
+functionality, including attempting to auto-detect source encoding and
+support for different format drivers. Both libraries support the 'encoding'
+and 'bbox' keyword arguments. Note that BasicReader and FionaReader
+instances can also be created directly.
 
-    """
-    if _HAS_FIONA:
-        return FionaReader(filename, bbox, **kwargs)
-    else:
-        return BasicReader(filename, bbox, **kwargs)
+"""
 
 
 def natural_earth(resolution='110m', category='physical', name='coastline'):
