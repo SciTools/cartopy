@@ -262,15 +262,15 @@ class FionaReader:
 
 Reader = FionaReader if _HAS_FIONA else BasicReader
 """
-Returns an instance of the default available shapereader interface.
+Alias of the default available shapereader interface.
 
 Will either be :class:`~cartopy.io.shapereader.FionaReader` (if fiona
 installed) or :class:`~cartopy.io.shapereader.BasicReader`
 (based on PyShp). Note that FionaReader has greater speed and additional
 functionality, including attempting to auto-detect source encoding and
 support for different format drivers. Both libraries support the 'encoding'
-and 'bbox' keyword arguments. Note that BasicReader and FionaReader
-instances can also be created directly.
+and 'bbox' keyword arguments. If specific functionality is needed,
+BasicReader and FionaReader instances can also be created directly.
 
 """
 
