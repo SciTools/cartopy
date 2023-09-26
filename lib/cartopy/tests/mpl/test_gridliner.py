@@ -458,16 +458,22 @@ def test_gridliner_count_draws():
         mocked.assert_called_once()
 
 
+@pytest.mark.mpl_image_compare(
+    baseline_dir='baseline_images/mpl/test_mpl_integration',
+    filename='simple_global.png')
 def test_gridliner_remove():
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_global()
+    ax.coastlines()
     gl = ax.gridlines(draw_labels=True)
     fig.draw_without_rendering()  # Generate child artists
     gl.remove()
 
-    assert not ax.artists
+    assert gl not in ax.artists
     assert not ax.collections
+
+    return fig
 
 
 def test_gridliner_save_tight_bbox():
