@@ -520,3 +520,29 @@ def test_gridliner_title_noadjust():
     ax.set_extent([-180, 180, -60, 60])
     fig.draw_without_rendering()
     assert ax.title.get_position() == pos
+
+
+def test_gridliner_labels_zoom():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+
+    # Start with a global map.
+    ax.set_global()
+    gl = ax.gridlines(draw_labels=True, auto_update=True)
+
+    fig.draw_without_rendering()  # Generate child artists
+    labels = [a.get_text() for a in gl.bottom_label_artists if a.get_visible()]
+    assert labels == ['180°', '120°W', '60°W', '0°', '60°E', '120°E', '180°']
+    # For first draw, active labels should be all of the labels.
+    assert len(gl._all_labels) == 24
+    assert gl._labels == gl._all_labels
+
+    # Zoom in.
+    ax.set_extent([-20, 10.0, 45.0, 70.0])
+
+    fig.draw_without_rendering()  # Update child artists
+    labels = [a.get_text() for a in gl.bottom_label_artists if a.get_visible()]
+    assert labels == ['15°W', '10°W', '5°W', '0°', '5°E']
+    # After zoom, we may not be using all the available labels.
+    assert len(gl._all_labels) == 24
+    assert gl._labels == gl._all_labels[:20]

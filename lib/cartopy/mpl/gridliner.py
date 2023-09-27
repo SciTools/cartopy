@@ -434,6 +434,9 @@ class Gridliner(matplotlib.artist.Artist):
         self.yline_artists = []
 
         # List of all labels (Label objects)
+        self._all_labels = []
+
+        # List of active labels (used in current draw)
         self._labels = []
 
         # Draw status
@@ -609,6 +612,25 @@ class Gridliner(matplotlib.artist.Artist):
 
         return True
 
+    def _generate_labels(self):
+        """
+        A generator to yield as many labels as needed, re-using existing ones
+        where possible.
+        """
+        for label in self._all_labels:
+            yield label
+
+        while True:
+            # Ran out of existing labels.  Create some empty ones.
+            new_artist = matplotlib.text.Text()
+            new_artist.set_figure(self.axes.figure)
+            new_artist.axes = self.axes
+
+            new_label = Label(new_artist, None, None, None)
+            self._all_labels.append(new_label)
+
+            yield new_label
+
     def _draw_gridliner(self, nx=None, ny=None, renderer=None):
         """Create Artists for all visible elements and add to our Axes.
 
@@ -625,11 +647,6 @@ class Gridliner(matplotlib.artist.Artist):
         if self._drawn and not self._auto_update:
             return
         self._drawn = True
-
-        # Clear lists of child artists
-        self.xline_artists.clear()
-        self.yline_artists.clear()
-        self._labels.clear()
 
         # Inits
         lon_lim, lat_lim = self._axes_domain(nx=nx, ny=ny)
@@ -687,9 +704,16 @@ class Gridliner(matplotlib.artist.Artist):
                     isinstance(crs, _RectangularProjection) and
                     abs(np.diff(lon_lim)) == abs(np.diff(crs.x_limits))):
                 nx -= 1
-            lon_lc = mcollections.LineCollection(lon_lines,
-                                                 **collection_kwargs)
-            self.xline_artists.append(lon_lc)
+
+            if self.xline_artists:
+                # Update existing collection.
+                lon_lc, = self.xline_artists
+                lon_lc.set(segments=lon_lines, **collection_kwargs)
+            else:
+                # Create new collection.
+                lon_lc = mcollections.LineCollection(lon_lines,
+                                                     **collection_kwargs)
+                self.xline_artists.append(lon_lc)
 
         # Parallels
         lon_min, lon_max = lon_lim
@@ -701,13 +725,21 @@ class Gridliner(matplotlib.artist.Artist):
                                          n_steps)[np.newaxis, :]
         lat_lines[:, :, 1] = np.array(lat_ticks)[:, np.newaxis]
         if self.ylines:
-            lat_lc = mcollections.LineCollection(lat_lines,
-                                                 **collection_kwargs)
-            self.yline_artists.append(lat_lc)
+            if self.yline_artists:
+                # Update existing collection.
+                lat_lc, = self.yline_artists
+                lat_lc.set(segments=lat_lines, **collection_kwargs)
+            else:
+                lat_lc = mcollections.LineCollection(lat_lines,
+                                                     **collection_kwargs)
+                self.yline_artists.append(lat_lc)
 
         #################
         # Label drawing #
         #################
+
+        # Clear drawn labels
+        self._labels.clear()
 
         if not any((self.left_labels, self.right_labels, self.bottom_labels,
                     self.top_labels, self.inline_labels, self.geo_labels)):
@@ -769,6 +801,9 @@ class Gridliner(matplotlib.artist.Artist):
         # Cache a few things so they aren't re-calculated in the loops.
         crs_transform = self._crs_transform().transform
         inverse_data_transform = self.axes.transData.inverted().transform_point
+
+        # Create a generator for the Label objects.
+        generate_labels = self._generate_labels()
 
         for xylabel, lines, line_ticks, formatter, label_style in (
                 ('x', lon_lines, lon_ticks,
@@ -915,11 +950,11 @@ class Gridliner(matplotlib.artist.Artist):
                     elif not y_set:
                         y = pt0[1]
 
-                    # Add text to the plot
+                    # Update generated label.
+                    label = next(generate_labels)
                     text = formatter(tick_value)
-                    artist = matplotlib.text.Text(x, y, text, **kw)
-                    artist.set_figure(self.axes.figure)
-                    artist.axes = self.axes
+                    artist = label.artist
+                    artist.set(x=x, y=y, text=text, **kw)
 
                     # Update loc from spine overlapping now that we have a bbox
                     # of the label.
@@ -975,8 +1010,10 @@ class Gridliner(matplotlib.artist.Artist):
                                 break
 
                     # Updates
-                    label = Label(artist, this_path, xylabel, loc)
                     label.set_visible(visible)
+                    label.path = this_path
+                    label.xy = xylabel
+                    label.loc = loc
                     self._labels.append(label)
 
         # Now check overlapping of ordered visible labels
@@ -1263,7 +1300,10 @@ class Label:
         self.loc = loc
         self.path = path
         self.xy = xy
-        self.priority = loc in ["left", "right", "top", "bottom"]
+
+    @property
+    def priority(self):
+        return self.loc in ["left", "right", "top", "bottom"]
 
     def set_visible(self, value):
         self.artist.set_visible(value)
