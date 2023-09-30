@@ -483,3 +483,40 @@ def test_gridliner_save_tight_bbox():
     ax.set_global()
     ax.gridlines(draw_labels=True, auto_update=True)
     fig.savefig(io.BytesIO(), bbox_inches='tight')
+
+
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
+                               tolerance=grid_label_tol)
+def test_gridliner_title_adjust():
+    # Test that title do not overlap labels
+    projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),
+             ccrs.Orthographic()]
+
+    # Turn on automatic title placement (this is default in mpl rcParams but
+    # not in these tests).
+    plt.rcParams['axes.titley'] = None
+
+    fig = plt.figure(layout='constrained')
+    fig.get_layout_engine().set(h_pad=1/8)
+    for n, proj in enumerate(projs, 1):
+        ax = fig.add_subplot(2, 2, n, projection=proj)
+        ax.coastlines()
+        ax.gridlines(draw_labels=True)
+        ax.set_title(proj.__class__.__name__)
+
+    return fig
+
+
+def test_gridliner_title_noadjust():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_global()
+    ax.set_title('foo')
+    ax.gridlines(draw_labels=['left', 'right'], ylocs=[-60, 0, 60])
+    fig.draw_without_rendering()
+    pos = ax.title.get_position()
+
+    # Title position shouldn't change when a label is on the top boundary.
+    ax.set_extent([-180, 180, -60, 60])
+    fig.draw_without_rendering()
+    assert ax.title.get_position() == pos

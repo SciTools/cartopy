@@ -541,11 +541,9 @@ class GeoAxes(matplotlib.axes.Axes):
         top = -1
         for gl in gridliners:
             if gl.has_labels():
+                # Both top and geo labels can appear at the top of the axes
                 for label in (gl.top_label_artists +
-                              gl.left_label_artists +
-                              gl.right_label_artists):
-                    # we skip bottom labels because they are usually
-                    # not at the top
+                              gl.geo_label_artists):
                     bb = label.get_tightbbox(renderer)
                     top = max(top, bb.ymax)
         if top < 0:
