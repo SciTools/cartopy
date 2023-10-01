@@ -481,11 +481,13 @@ class GeoAxes(matplotlib.axes.Axes):
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
-        # Adjust location of background patch so that new gridlines generated
-        # by `draw` or `get_tightbbox` are clipped correctly.
-        self.patch._adjust_location()
-
+        # apply_aspect may change the x or y data limits, so must be called
+        # before the patch is updated.
         self.apply_aspect()
+
+        # Adjust location of background patch so that new gridlines generated
+        # by `draw` or `get_tightbbox` are positioned and clipped correctly.
+        self.patch._adjust_location()
 
     def get_tightbbox(self, renderer, *args, **kwargs):
         """

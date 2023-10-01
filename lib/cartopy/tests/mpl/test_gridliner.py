@@ -7,6 +7,7 @@
 import io
 from unittest import mock
 
+from matplotlib.collections import PolyCollection
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
@@ -253,6 +254,40 @@ def test_grid_labels_tight():
                 num_gridliners_drawn += 1
 
     assert num_gridliners_drawn == 4
+
+    return fig
+
+
+@pytest.mark.mpl_image_compare(
+    filename='gridliner_constrained_adjust_datalim.png',
+    tolerance=grid_label_tol)
+def test_gridliner_constrained_adjust_datalim():
+    fig = plt.figure(figsize=(8, 4), layout="constrained")
+
+    # Make some axes that will fill the available space while maintaining
+    # correct aspect ratio
+    ax = fig.add_subplot(projection=ccrs.PlateCarree())
+    ax.set_aspect(aspect='equal', adjustable='datalim')
+
+    # Add some polygon to the map, with a colour bar
+    collection = PolyCollection(
+        verts=[
+            [[0, 0], [1, 0], [1, 1], [0, 1]],
+            [[1, 0], [2, 0], [2, 1], [1, 1]],
+            [[0, 1], [1, 1], [1, 2], [0, 2]],
+            [[1, 1], [2, 1], [2, 2], [1, 2]],
+        ],
+        array=[1, 2, 3, 4],
+    )
+    ax.add_collection(collection)
+    fig.colorbar(collection, ax=ax, location='right')
+
+    # Set up the axes data limits to keep the polygon in view
+    ax.autoscale()
+
+    # Add some gridlines
+    ax.gridlines(draw_labels=["bottom", "left"], auto_update=True,
+                 linestyle="-")
 
     return fig
 
