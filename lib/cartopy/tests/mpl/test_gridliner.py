@@ -4,6 +4,9 @@
 # See COPYING and COPYING.LESSER in the root of the repository for full
 # licensing details.
 
+import io
+from unittest import mock
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
@@ -13,7 +16,8 @@ from shapely.geos import geos_version
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import (LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
-                                   classic_formatter, classic_locator)
+                                   Gridliner, classic_formatter,
+                                   classic_locator)
 from cartopy.mpl.ticker import LongitudeFormatter, LongitudeLocator
 
 
@@ -241,9 +245,14 @@ def test_grid_labels_tight():
     fig.tight_layout()
 
     # Ensure gridliners were drawn
+    num_gridliners_drawn = 0
     for ax in fig.axes:
-        for gl in ax._gridliners:
-            assert hasattr(gl, '_drawn') and gl._drawn
+        for artist in ax.artists:
+            if isinstance(artist, Gridliner) and getattr(artist, '_drawn',
+                                                         False):
+                num_gridliners_drawn += 1
+
+    assert num_gridliners_drawn == 4
 
     return fig
 
@@ -432,3 +441,82 @@ def test_gridliner_formatter_kwargs():
     fig.canvas.draw()
     labels = [a.get_text() for a in gl.bottom_label_artists if a.get_visible()]
     assert labels == ['75°O', '70°O', '65°O', '60°O', '55°O', '50°O', '45°O']
+
+
+def test_gridliner_count_draws():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_global()
+    gl = ax.gridlines()
+
+    with mock.patch.object(gl, '_draw_gridliner', return_value=None) as mocked:
+        ax.get_tightbbox(renderer=None)
+        mocked.assert_called_once()
+
+    with mock.patch.object(gl, '_draw_gridliner', return_value=None) as mocked:
+        fig.draw_without_rendering()
+        mocked.assert_called_once()
+
+
+@pytest.mark.mpl_image_compare(
+    baseline_dir='baseline_images/mpl/test_mpl_integration',
+    filename='simple_global.png')
+def test_gridliner_remove():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_global()
+    ax.coastlines()
+    gl = ax.gridlines(draw_labels=True)
+    fig.draw_without_rendering()  # Generate child artists
+    gl.remove()
+
+    assert gl not in ax.artists
+    assert not ax.collections
+
+    return fig
+
+
+def test_gridliner_save_tight_bbox():
+    # Smoke test for save with auto_update=True and bbox_inches=Tight (gh2246).
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_global()
+    ax.gridlines(draw_labels=True, auto_update=True)
+    fig.savefig(io.BytesIO(), bbox_inches='tight')
+
+
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
+                               tolerance=grid_label_tol)
+def test_gridliner_title_adjust():
+    # Test that title do not overlap labels
+    projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),
+             ccrs.Orthographic()]
+
+    # Turn on automatic title placement (this is default in mpl rcParams but
+    # not in these tests).
+    plt.rcParams['axes.titley'] = None
+
+    fig = plt.figure(layout='constrained')
+    fig.get_layout_engine().set(h_pad=1/8)
+    for n, proj in enumerate(projs, 1):
+        ax = fig.add_subplot(2, 2, n, projection=proj)
+        ax.coastlines()
+        ax.gridlines(draw_labels=True)
+        ax.set_title(proj.__class__.__name__)
+
+    return fig
+
+
+def test_gridliner_title_noadjust():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_global()
+    ax.set_title('foo')
+    ax.gridlines(draw_labels=['left', 'right'], ylocs=[-60, 0, 60])
+    fig.draw_without_rendering()
+    pos = ax.title.get_position()
+
+    # Title position shouldn't change when a label is on the top boundary.
+    ax.set_extent([-180, 180, -60, 60])
+    fig.draw_without_rendering()
+    assert ax.title.get_position() == pos

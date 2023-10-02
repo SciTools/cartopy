@@ -410,7 +410,6 @@ class GeoAxes(matplotlib.axes.Axes):
         self.projection = projection
 
         super().__init__(*args, **kwargs)
-        self._gridliners = []
         self.img_factories = []
         self._done_img_factory = False
 
@@ -482,21 +481,19 @@ class GeoAxes(matplotlib.axes.Axes):
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
 
-        # Adjust location of background patch so that new gridlines below are
-        # clipped correctly.
+        # Adjust location of background patch so that new gridlines generated
+        # by `draw` or `get_tightbbox` are clipped correctly.
         self.patch._adjust_location()
 
         self.apply_aspect()
-        for gl in self._gridliners:
-            gl._draw_gridliner(renderer=renderer)
 
     def get_tightbbox(self, renderer, *args, **kwargs):
         """
         Extend the standard behaviour of
         :func:`matplotlib.axes.Axes.get_tightbbox`.
 
-        Adjust the axes aspect ratio, background patch location, and add
-        gridliners before calculating the tight bounding box.
+        Adjust the axes aspect ratio and background patch location before
+        calculating the tight bounding box.
         """
         # Shared processing steps
         self._draw_preprocess(renderer)
@@ -508,9 +505,8 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         Extend the standard behaviour of :func:`matplotlib.axes.Axes.draw`.
 
-        Draw grid lines and image factory results before invoking standard
-        Matplotlib drawing. A global range is used if no limits have yet
-        been set.
+        Draw image factory results before invoking standard Matplotlib drawing.
+        A global range is used if no limits have yet been set.
         """
         # Shared processing steps
         self._draw_preprocess(renderer)
@@ -532,21 +528,22 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _update_title_position(self, renderer):
         super()._update_title_position(renderer)
-        if not self._gridliners:
-            return
 
         if self._autotitlepos is not None and not self._autotitlepos:
             return
 
+        from cartopy.mpl.gridliner import Gridliner
+        gridliners = [a for a in self.artists if isinstance(a, Gridliner)]
+        if not gridliners:
+            return
+
         # Get the max ymax of all top labels
         top = -1
-        for gl in self._gridliners:
+        for gl in gridliners:
             if gl.has_labels():
+                # Both top and geo labels can appear at the top of the axes
                 for label in (gl.top_label_artists +
-                              gl.left_label_artists +
-                              gl.right_label_artists):
-                    # we skip bottom labels because they are usually
-                    # not at the top
+                              gl.geo_label_artists):
                     bb = label.get_tightbbox(renderer)
                     top = max(top, bb.ymax)
         if top < 0:
@@ -1512,7 +1509,7 @@ class GeoAxes(matplotlib.axes.Axes):
             labels_bbox_style=labels_bbox_style,
             xpadding=xpadding, ypadding=ypadding, offset_angle=offset_angle,
             auto_update=auto_update, formatter_kwargs=formatter_kwargs)
-        self._gridliners.append(gl)
+        self.add_artist(gl)
         return gl
 
     def _gen_axes_patch(self):

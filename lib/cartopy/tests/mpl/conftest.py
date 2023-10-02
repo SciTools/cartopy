@@ -35,5 +35,6 @@ def pytest_itemcollected(item):
             return
         elif path.basename == 'tests':
             subdir = item.fspath.relto(path)[:-len(item.fspath.ext)]
-            mpl_marker.kwargs['baseline_dir'] = f'baseline_images/{subdir}'
+            mpl_marker.kwargs.setdefault('baseline_dir',
+                                         f'baseline_images/{subdir}')
             break

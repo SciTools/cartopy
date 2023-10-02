@@ -9,7 +9,9 @@ import operator
 import warnings
 
 import matplotlib
+import matplotlib.artist
 import matplotlib.collections as mcollections
+import matplotlib.text
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
@@ -101,11 +103,7 @@ LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
                                            _north_south_formatted(v))
 
 
-class Gridliner:
-    # NOTE: In future, one of these objects will be add-able to a GeoAxes (and
-    # maybe even a plain old mpl axes) and it will call the "_draw_gridliner"
-    # method on draw. This will enable automatic gridline resolution
-    # determination on zoom/pan.
+class Gridliner(matplotlib.artist.Artist):
     def __init__(self, axes, crs, draw_labels=False, xlocator=None,
                  ylocator=None, collection_kwargs=None,
                  xformatter=None, yformatter=None, dms=False,
@@ -115,7 +113,7 @@ class Gridliner:
                  xpadding=5, ypadding=5, offset_angle=25,
                  auto_update=False, formatter_kwargs=None):
         """
-        Object used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
+        Artist used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
 
         Parameters
@@ -234,7 +232,13 @@ class Gridliner:
         used for the map, meridians and parallels can cross both the X axis and
         the Y axis.
         """
-        self.axes = axes
+        super().__init__()
+
+        # We do not want the labels clipped to axes.
+        self.set_clip_on(False)
+        # Backcompat: the LineCollection was previously added directly to the
+        # axes, having a default zorder of 2.
+        self.set_zorder(2)
 
         #: The :class:`~matplotlib.ticker.Locator` to use for the x
         #: gridlines and labels.
@@ -332,10 +336,10 @@ class Gridliner:
                 raise ValueError(f"Invalid draw_labels argument: {value}")
 
         if auto_inline:
-            if isinstance(self.axes.projection, _X_INLINE_PROJS):
+            if isinstance(axes.projection, _X_INLINE_PROJS):
                 self.x_inline = True
                 self.y_inline = False
-            elif isinstance(self.axes.projection, _POLAR_PROJS):
+            elif isinstance(axes.projection, _POLAR_PROJS):
                 self.x_inline = False
                 self.y_inline = True
             else:
@@ -399,7 +403,7 @@ class Gridliner:
         #: Control the rotation of labels.
         if rotate_labels is None:
             rotate_labels = (
-                self.axes.projection.__class__ in _ROTATE_LABEL_PROJS)
+                axes.projection.__class__ in _ROTATE_LABEL_PROJS)
         if not isinstance(rotate_labels, (bool, float, int)):
             raise ValueError("Invalid rotate_labels argument")
         self.rotate_labels = rotate_labels
@@ -435,10 +439,6 @@ class Gridliner:
         # Draw status
         self._drawn = False
         self._auto_update = auto_update
-
-        # Check visibility of labels at each draw event
-        # (or once drawn, only at resize event ?)
-        self.axes.figure.canvas.mpl_connect('draw_event', self._draw_event)
 
     @property
     def xlabels_top(self):
@@ -487,9 +487,6 @@ class Gridliner:
         warnings.warn('The .ylabels_right attribute is deprecated. Please '
                       'use .right_labels to toggle visibility instead.')
         self.right_labels = value
-
-    def _draw_event(self, event):
-        self._draw_gridliner(renderer=event.renderer)
 
     def has_labels(self):
         return len(self._labels) != 0
@@ -629,13 +626,9 @@ class Gridliner:
             return
         self._drawn = True
 
-        # Clear lists of artists
-        for lines in [*self.xline_artists, *self.yline_artists]:
-            lines.remove()
+        # Clear lists of child artists
         self.xline_artists.clear()
         self.yline_artists.clear()
-        for label in self._labels:
-            label.artist.remove()
         self._labels.clear()
 
         # Inits
@@ -673,6 +666,7 @@ class Gridliner:
         if not any(x in collection_kwargs for x in ['lw', 'linewidth']):
             collection_kwargs.setdefault('linewidth',
                                          matplotlib.rcParams['grid.linewidth'])
+        collection_kwargs.setdefault('clip_path', self.axes.patch)
 
         # Meridians
         lat_min, lat_max = lat_lim
@@ -696,7 +690,6 @@ class Gridliner:
             lon_lc = mcollections.LineCollection(lon_lines,
                                                  **collection_kwargs)
             self.xline_artists.append(lon_lc)
-            self.axes.add_collection(lon_lc, autolim=False)
 
         # Parallels
         lon_min, lon_max = lon_lim
@@ -711,7 +704,6 @@ class Gridliner:
             lat_lc = mcollections.LineCollection(lat_lines,
                                                  **collection_kwargs)
             self.yline_artists.append(lat_lc)
-            self.axes.add_collection(lat_lc, autolim=False)
 
         #################
         # Label drawing #
@@ -925,7 +917,9 @@ class Gridliner:
 
                     # Add text to the plot
                     text = formatter(tick_value)
-                    artist = self.axes.text(x, y, text, **kw)
+                    artist = matplotlib.text.Text(x, y, text, **kw)
+                    artist.set_figure(self.axes.figure)
+                    artist.axes = self.axes
 
                     # Update loc from spine overlapping now that we have a bbox
                     # of the label.
@@ -1238,6 +1232,26 @@ class Gridliner:
                 lat_range = (-self.ylim, self.ylim)
 
         return lon_range, lat_range
+
+    def get_visible_children(self):
+        r"""Return a list of the visible child `.Artist`\s."""
+        all_children = (self.xline_artists + self.yline_artists
+                        + self.label_artists)
+        return [c for c in all_children if c.get_visible()]
+
+    def get_tightbbox(self, renderer=None):
+        self._draw_gridliner(renderer=renderer)
+        bboxes = [c.get_tightbbox(renderer=renderer)
+                  for c in self.get_visible_children()]
+        if bboxes:
+            return mtrans.Bbox.union(bboxes)
+        else:
+            return mtrans.Bbox.null()
+
+    def draw(self, renderer=None):
+        self._draw_gridliner(renderer=renderer)
+        for c in self.get_visible_children():
+            c.draw(renderer=renderer)
 
 
 class Label:
