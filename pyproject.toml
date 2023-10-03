@@ -76,8 +76,8 @@ cartopy = ["lib/cartopy/tests/mpl/baseline_images/**",
 write_to = "lib/cartopy/_version.py"
 
 [tool.codespell]
-ignore-words-list = "damon,koordinates,linz,slippy,subtiles,tring"
-skip = "./.git,./docs/build,./docs/source/gallery,./docs/source/reference,*.cpp,*.css,*.examples,*.js,*.html,*.ipynb,*.pdf,*.rst.txt"
+ignore-words-list = "damon,koordinates,linz,manuel,slippy,subtiles,tring"
+skip = "docs/source/copyright.rst,*.cpp,*.css,*.examples,*.js,*.html,*.ipynb,*.pdf,*.rst.txt"
 
 [tool.check-manifest]
 ignore = [

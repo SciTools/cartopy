@@ -181,7 +181,7 @@ class Downloader:
         :meth:`url` to :meth:`target_path`.
 
         Typically, this is the method that most applications will call,
-        allowing implementors of new Downloaders to specialise
+        allowing implementers of new Downloaders to specialise
         :meth:`acquire_resource`.
 
         Parameters
