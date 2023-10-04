@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.mpl import _MPL_35, _MPL_38
+from cartopy.mpl import _MPL_38
 
 
 @pytest.mark.natural_earth
@@ -196,8 +196,7 @@ def test_simple_global():
         id='ObliqueMercator_rotated',
     ),
 ])
-@pytest.mark.mpl_image_compare(
-    tolerance=0.5 if _MPL_35 else 0.97, style='mpl20')
+@pytest.mark.mpl_image_compare(style='mpl20')
 def test_global_map(proj):
     if isinstance(proj, tuple):
         proj, kwargs = proj
@@ -957,9 +956,7 @@ def test_barbs_1d_transformed():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(
-    filename='streamplot.png', style='mpl20',
-    tolerance=0.5 if _MPL_35 else 9.77)
+@pytest.mark.mpl_image_compare(filename='streamplot.png', style='mpl20')
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
