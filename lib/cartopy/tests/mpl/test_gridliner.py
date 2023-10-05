@@ -14,6 +14,7 @@ import pytest
 from shapely.geos import geos_version
 
 import cartopy.crs as ccrs
+from cartopy.mpl import _MPL_36
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import (LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
                                    Gridliner, classic_formatter,
@@ -497,7 +498,10 @@ def test_gridliner_title_adjust():
     plt.rcParams['axes.titley'] = None
 
     fig = plt.figure(layout='constrained')
-    fig.get_layout_engine().set(h_pad=1/8)
+    if _MPL_36:
+        fig.get_layout_engine().set(h_pad=1/8)
+    else:
+        fig.set_constrained_layout_pads(h_pad=1/8)
     for n, proj in enumerate(projs, 1):
         ax = fig.add_subplot(2, 2, n, projection=proj)
         ax.coastlines()
