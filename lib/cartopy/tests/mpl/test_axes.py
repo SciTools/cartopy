@@ -13,8 +13,7 @@ import pytest
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from cartopy.mpl.geoaxes import (GeoAxes, GeoAxesSubplot,
-                                 InterProjectionTransform)
+from cartopy.mpl.geoaxes import GeoAxes, GeoAxesSubplot, InterProjectionTransform
 
 
 class TestNoSpherical:

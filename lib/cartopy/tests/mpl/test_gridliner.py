@@ -16,9 +16,8 @@ from shapely.geos import geos_version
 import cartopy.crs as ccrs
 from cartopy.mpl import _MPL_36
 from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.gridliner import (LATITUDE_FORMATTER, LONGITUDE_FORMATTER,
-                                   Gridliner, classic_formatter,
-                                   classic_locator)
+from cartopy.mpl.gridliner import (LATITUDE_FORMATTER, LONGITUDE_FORMATTER, Gridliner,
+                                   classic_formatter, classic_locator)
 from cartopy.mpl.ticker import LongitudeFormatter, LongitudeLocator
 
 
