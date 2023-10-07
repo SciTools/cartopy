@@ -582,7 +582,10 @@ def project_linear(geometry not None, src_crs not None,
     cdef bool geom_fully_inside = False
     if isinstance(dest_projection, (ccrs._RectangularProjection, ccrs._WarpedRectangularProjection)):
         dest_line = sgeom.LineString([(x[0], x[1]) for x in dest_coords])
-        geom_fully_inside = gp_domain.covers(dest_line)
+        if dest_line.is_valid:
+            # We can only check for covers with valid geometries
+            # some have nans/infs at this point still
+            geom_fully_inside = gp_domain.covers(dest_line)
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
