@@ -10,7 +10,7 @@ the data used by various Feature instances.
 
 For detail on how to use this tool, execute it with the `-h` option:
 
-    python cartopy_feature_download.py -h
+    python -m cartopy.feature.download -h
 
 """
 
@@ -107,7 +107,7 @@ def download_features(group_names, dry_run=True):
                               ''.format(category, name, scale, len(geoms)))
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='Download feature datasets.')
     parser.add_argument('group_names', nargs='+',
                         choices=FEATURE_DEFN_GROUPS,
@@ -146,3 +146,7 @@ if __name__ == '__main__':
     config['downloaders'][SHP_NE_SPEC].url_template = URL_TEMPLATE
 
     download_features(args.group_names, dry_run=args.dry_run)
+
+
+if __name__ == '__main__':
+    main()
