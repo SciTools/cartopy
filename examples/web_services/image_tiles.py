@@ -9,11 +9,11 @@ providing web service can be accessed.
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
-from cartopy.io.img_tiles import Stamen
+from cartopy.io.img_tiles import GoogleTiles
 
 
 def main():
-    tiler = Stamen('terrain-background')
+    tiler = GoogleTiles(style="satellite")
     mercator = tiler.crs
 
     fig = plt.figure()
