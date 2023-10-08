@@ -322,26 +322,31 @@ class OSM(GoogleWTS):
 
 class Stamen(GoogleWTS):
     """
-    Retrieves tiles from maps.stamen.com. Styles include
+    Retrieves tiles from stadiamaps.com. Styles include
+    ``stamen_terrain-background``, ``stamen_terrain``,
+    ``stamen_toner``, and ``stamen_watercolor``. Previously,
+    these were available as
     ``terrain-background``, ``terrain``, ``toner`` and ``watercolor``.
 
     For a full reference on the styles available please see
-    http://maps.stamen.com. Of particular note are the sub-styles
-    that are made available (e.g. ``terrain`` and ``terrain-background``).
-    To determine the name of the particular [sub-]style you want,
-    follow the link on http://maps.stamen.com to your desired style and
-    observe the style name in the URL. Your style name will be in the
-    form of: ``http://maps.stamen.com/{STYLE_NAME}/#9/37/-122``.
+    https://docs.stadiamaps.com/themes/. Of particular note are the sub-styles
+    that are made available (e.g. ``stamen_terrain`` and
+    ``stamen_terrain_background``).
 
     Except otherwise noted, the Stamen map tile sets are copyright Stamen
-    Design, under a Creative Commons Attribution (CC BY 3.0) license.
+    Design, under a Creative Commons Attribution (CC BY 4.0) license.
 
     Please see the attribution notice at http://maps.stamen.com on how to
     attribute this imagery.
+    For Toner and Terrain:
+    Map tiles by Stamen Design, under CC BY 4.0. Data by OpenStreetMap, under ODbL.
+    For Watercolor:
+    Map tiles by Stamen Design, under CC BY 4.0. Data by OpenStreetMap, under CC BY SA.
 
     References
     ----------
 
+     * https://docs.stadiamaps.com/themes/
      * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
      * http://maps.stamen.com/
      * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
@@ -350,22 +355,32 @@ class Stamen(GoogleWTS):
     """
 
     def __init__(self, style='toner',
-                 desired_tile_form=None, cache=False):
-
+                 desired_tile_form=None, cache=False,
+                 apikey=None):
+        if apikey is None:
+            raise ValueError("An apikey is now required to use Stamen maps. "
+                             "Visit https://maps.stadiamaps.com/ for more details.")
         # preset layer configuration
         layer_config = {
-          'terrain':            {'extension': 'png', 'opaque': True},
-          'terrain-background': {'extension': 'png', 'opaque': True},
-          'terrain-labels':     {'extension': 'png', 'opaque': False},
-          'terrain-lines':      {'extension': 'png', 'opaque': False},
-          'toner-background':   {'extension': 'png', 'opaque': True},
-          'toner':              {'extension': 'png', 'opaque': True},
-          'toner-hybrid':       {'extension': 'png', 'opaque': False},
-          'toner-labels':       {'extension': 'png', 'opaque': False},
-          'toner-lines':        {'extension': 'png', 'opaque': False},
-          'toner-lite':         {'extension': 'png', 'opaque': True},
-          'watercolor':         {'extension': 'jpg', 'opaque': True},
+          'stamen_terrain':            {'extension': 'png', 'opaque': True},
+          'stamen_terrain_background': {'extension': 'png', 'opaque': True},
+          'stamen_terrain_labels':     {'extension': 'png', 'opaque': False},
+          'stamen_terrain_lines':      {'extension': 'png', 'opaque': False},
+          'stamen_toner_background':   {'extension': 'png', 'opaque': True},
+          'stamen_toner':              {'extension': 'png', 'opaque': True},
+          'stamen_toner_hybrid':       {'extension': 'png', 'opaque': False},
+          'stamen_toner_labels':       {'extension': 'png', 'opaque': False},
+          'stamen_toner_lines':        {'extension': 'png', 'opaque': False},
+          'stamen_toner_lite':         {'extension': 'png', 'opaque': True},
+          'stamen_watercolor':         {'extension': 'jpg', 'opaque': True},
         }
+
+        # Stadia Maps has a different naming convention for the styles
+        # they prepend stamen_ and dashes are now underscores
+        if "stamen" not in style:
+            style = f"stamen_{style.replace('-', '_')}"
+            warnings.warn("Stamen maps now require the stamen_ prefix for "
+                          f"the style name, please update to the new style: {style}")
 
         # get layer information from dict
         layer_info = layer_config.get(
@@ -386,8 +401,9 @@ class Stamen(GoogleWTS):
 
     def _image_url(self, tile):
         x, y, z = tile
-        return 'http://tile.stamen.com/' + \
-            f'{self.style}/{z}/{x}/{y}.{self.extension}'
+        return ("http://tiles.stadiamaps.com/tiles/"
+                f"{self.style}/{z}/{x}/{y}.{self.extension}"
+                f"?api_key={self.apikey}")
 
 
 class MapboxTiles(GoogleWTS):
