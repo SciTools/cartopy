@@ -280,7 +280,7 @@ class TestMisc:
         target = ccrs.PlateCarree()
         # Before fixing, this would cause a segmentation fault.
         polygons = target.project_geometry(polygon, source)
-        assert type(polygons) == sgeom.MultiPolygon
+        assert isinstance(polygons, sgeom.MultiPolygon)
 
 
 class TestQuality:

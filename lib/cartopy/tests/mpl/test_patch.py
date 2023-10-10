@@ -56,6 +56,6 @@ class Test_path_to_geos:
         # The first square makes the first geometry with the second square as
         # its interior.  The third square is its own geometry with no interior.
         assert len(geoms) == 2
-        assert all(type(geom) == sgeom.Polygon for geom in geoms)
+        assert all(isinstance(geom, sgeom.Polygon) for geom in geoms)
         assert len(geoms[0].interiors) == 1
         assert len(geoms[1].interiors) == 0

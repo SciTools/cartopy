@@ -1687,7 +1687,7 @@ class GeoAxes(matplotlib.axes.Axes):
                 kwargs['transform'].source_projection.is_geodetic()):
             raise ValueError('Cartopy cannot currently do spherical '
                              'scatter. The source CRS cannot be a '
-                             'geodetic, consider using the cyllindrical form '
+                             'geodetic, consider using the cylindrical form '
                              '(PlateCarree or RotatedPole).')
 
         result = super().scatter(*args, **kwargs)
