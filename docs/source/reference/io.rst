@@ -63,6 +63,7 @@ automatically load the proper tile and resolution depending on the desired domai
     MapboxTiles
     OrdnanceSurvey
     QuadtreeTiles
+    StadiaMapsTiles
     Stamen
 
 Open Geospatial Consortium (OGC)
