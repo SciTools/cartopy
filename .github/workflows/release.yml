@@ -9,6 +9,14 @@ on:
   release:
     types:
       - published
+  # Also allow running this action on PRs if requested by applying the
+  # "Run cibuildwheel" label.
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
 
 jobs:
   build_sdist:
@@ -49,6 +57,17 @@ jobs:
           if-no-files-found: error
 
   generate-wheels-matrix:
+    if: |
+      github.event_name == 'release' ||
+      (github.event_name == 'pull_request' && (
+        (
+          github.event.action == 'labeled' &&
+          github.event.label.name == 'CI: build wheels'
+        ) ||
+        contains(github.event.pull_request.labels.*.name,
+                'CI: build wheels')
+        )
+      )
     name: Generate wheels matrix
     runs-on: ubuntu-latest
     outputs:
@@ -72,8 +91,8 @@ jobs:
           echo "include=$MATRIX" >> $GITHUB_OUTPUT
         env:
           CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
-          # Skip 32 bit windows builds and musllinux due to lack of numpy wheels
-          CIBW_SKIP: "*-win32 *-musllinux*"
+          # Skip 32 bit builds and musllinux due to lack of numpy wheels
+          CIBW_SKIP: "*-win32 *_i686 *-musllinux*"
           CIBW_ARCHS_MACOS: x86_64 arm64
 
   build_wheels:
