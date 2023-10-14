@@ -6,10 +6,10 @@
 
 import types
 
-from PIL import Image
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 import pytest
 import shapely.geometry as sgeom
 

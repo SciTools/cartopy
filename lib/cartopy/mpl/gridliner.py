@@ -19,8 +19,12 @@ import shapely.geometry as sgeom
 
 import cartopy
 from cartopy.crs import PlateCarree, Projection, _RectangularProjection
-from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator, LongitudeFormatter,
-                                LongitudeLocator)
+from cartopy.mpl.ticker import (
+    LatitudeFormatter,
+    LatitudeLocator,
+    LongitudeFormatter,
+    LongitudeLocator,
+)
 
 
 degree_locator = mticker.MaxNLocator(nbins=9, steps=[1, 1.5, 1.8, 2, 3, 6, 10])

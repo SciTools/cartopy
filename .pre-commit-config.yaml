@@ -25,10 +25,6 @@ repos:
       - id: no-commit-to-branch
         # Trims trailing whitespace
       - id: trailing-whitespace
-  - repo: https://github.com/pycqa/flake8
-    rev: "6.1.0"
-    hooks:
-      - id: flake8
   - repo: https://github.com/codespell-project/codespell
     rev: "v2.2.6"
     hooks:
@@ -40,9 +36,8 @@ repos:
     hooks:
       - id: sort-all
         types: [file, python]
-  - repo: https://github.com/PyCQA/isort
-    rev: "5.12.0"
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.1.5'
     hooks:
-      - id: isort
-        types: [file, python]
-        args: [--filter-files]
+    - id: ruff
+      args: [--fix]

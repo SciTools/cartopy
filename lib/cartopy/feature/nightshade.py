@@ -9,8 +9,8 @@ import datetime
 import numpy as np
 import shapely.geometry as sgeom
 
-from . import ShapelyFeature
 from .. import crs as ccrs
+from . import ShapelyFeature
 
 
 class Nightshade(ShapelyFeature):

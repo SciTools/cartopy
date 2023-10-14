@@ -23,8 +23,8 @@ import io
 from pathlib import Path
 import warnings
 
-from PIL import Image
 import numpy as np
+from PIL import Image
 import shapely.geometry as sgeom
 
 import cartopy
@@ -751,12 +751,12 @@ class AzureMapsTiles(GoogleWTS):
             A valid Azure Maps subscription key.
         tileset_id
             A tileset ID for a map. See
-            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid  # noqa: E501
+            https://docs.microsoft.com/en-us/rest/api/maps/renderv2/getmaptilepreview#tilesetid
             for details.
         api_version
             API version to use. Defaults to 2.0 as recommended by Microsoft.
 
-        """
+        """  # noqa: E501
         super().__init__(desired_tile_form=desired_tile_form, cache=cache)
         self.subscription_key = subscription_key
         self.tileset_id = tileset_id

@@ -13,9 +13,9 @@ matching eccentricity.
 from io import BytesIO
 from urllib.request import urlopen
 
-from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image
 
 import cartopy.crs as ccrs
 
