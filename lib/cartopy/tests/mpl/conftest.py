@@ -20,6 +20,7 @@ def mpl_test_cleanup(request):
         plt.switch_backend('Agg')
         stack.enter_context(plt.rc_context())
         yield
+        plt.close('all')
 
 
 def pytest_itemcollected(item):
