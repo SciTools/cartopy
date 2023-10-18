@@ -5,14 +5,11 @@
 # licensing details.
 
 from fnmatch import fnmatch
-import os
 from pathlib import Path
 import re
 import subprocess
 
 import pytest
-
-import cartopy
 
 
 # Add shebang possibility or C comment starter to the LICENSE_RE_PATTERN
@@ -29,12 +26,11 @@ LICENSE_TEMPLATE = """
 LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE)
 LICENSE_RE = re.compile(SHEBANG_PATTERN + LICENSE_RE_PATTERN, re.MULTILINE)
 
-
-# Guess cartopy repo directory of cartopy - realpath is used to mitigate
-# against Python finding the cartopy package via a symlink.
-CARTOPY_DIR = Path(cartopy.__file__).parent.resolve()
-REPO_DIR = Path(os.getenv('CARTOPY_GIT_DIR',
-                          CARTOPY_DIR.parent.parent))
+# Get repo directory for cartopy (https://stackoverflow.com/a/53675112)
+REPO_DIR = subprocess.Popen(['git', 'rev-parse', '--show-toplevel'],
+                            stdout=subprocess.PIPE
+                            ).communicate()[0].rstrip().decode('utf-8')
+REPO_DIR = Path(REPO_DIR)
 
 
 class TestLicenseHeaders:
