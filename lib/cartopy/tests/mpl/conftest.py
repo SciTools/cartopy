@@ -15,6 +15,7 @@ def mpl_test_cleanup(request):
     with ExitStack() as stack:
         # At exit, close all open figures and switch backend back to original.
         stack.callback(plt.switch_backend, plt.get_backend())
+        stack.callback(plt.close, 'all')
 
         # Run each test in a context manager so that state does not leak out
         plt.switch_backend('Agg')
