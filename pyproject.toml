@@ -41,7 +41,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.21",
-    "matplotlib>=3.4",
+    "matplotlib>=3.5",
     "shapely>=1.7",
     "packaging>=20",
     "pyshp>=2.1",
