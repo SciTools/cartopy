@@ -443,54 +443,6 @@ class Gridliner(matplotlib.artist.Artist):
         self._drawn = False
         self._auto_update = auto_update
 
-    @property
-    def xlabels_top(self):
-        warnings.warn('The .xlabels_top attribute is deprecated. Please '
-                      'use .top_labels to toggle visibility instead.')
-        return self.top_labels
-
-    @xlabels_top.setter
-    def xlabels_top(self, value):
-        warnings.warn('The .xlabels_top attribute is deprecated. Please '
-                      'use .top_labels to toggle visibility instead.')
-        self.top_labels = value
-
-    @property
-    def xlabels_bottom(self):
-        warnings.warn('The .xlabels_bottom attribute is deprecated. Please '
-                      'use .bottom_labels to toggle visibility instead.')
-        return self.bottom_labels
-
-    @xlabels_bottom.setter
-    def xlabels_bottom(self, value):
-        warnings.warn('The .xlabels_bottom attribute is deprecated. Please '
-                      'use .bottom_labels to toggle visibility instead.')
-        self.bottom_labels = value
-
-    @property
-    def ylabels_left(self):
-        warnings.warn('The .ylabels_left attribute is deprecated. Please '
-                      'use .left_labels to toggle visibility instead.')
-        return self.left_labels
-
-    @ylabels_left.setter
-    def ylabels_left(self, value):
-        warnings.warn('The .ylabels_left attribute is deprecated. Please '
-                      'use .left_labels to toggle visibility instead.')
-        self.left_labels = value
-
-    @property
-    def ylabels_right(self):
-        warnings.warn('The .ylabels_right attribute is deprecated. Please '
-                      'use .right_labels to toggle visibility instead.')
-        return self.right_labels
-
-    @ylabels_right.setter
-    def ylabels_right(self, value):
-        warnings.warn('The .ylabels_right attribute is deprecated. Please '
-                      'use .right_labels to toggle visibility instead.')
-        self.right_labels = value
-
     def has_labels(self):
         return len(self._labels) != 0
 
