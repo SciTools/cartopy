@@ -13,6 +13,7 @@ import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl import _MPL_38
+from cartopy.tests.conftest import requires_scipy
 
 
 @pytest.mark.natural_earth
@@ -817,6 +818,7 @@ def test_quiver_rotated_pole():
     return fig
 
 
+@requires_scipy
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='quiver_regrid.png')
 def test_quiver_regrid():
@@ -836,6 +838,7 @@ def test_quiver_regrid():
     return fig
 
 
+@requires_scipy
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='quiver_regrid_with_extent.png',
                                tolerance=0.54)
@@ -857,6 +860,7 @@ def test_quiver_regrid_with_extent():
     return fig
 
 
+@requires_scipy
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='barbs_plate_carree.png')
 def test_barbs():
@@ -880,6 +884,7 @@ def test_barbs():
     return fig
 
 
+@requires_scipy
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='barbs_regrid.png')
 def test_barbs_regrid():
@@ -899,6 +904,7 @@ def test_barbs_regrid():
     return fig
 
 
+@requires_scipy
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='barbs_regrid_with_extent.png',
                                tolerance=0.54)
@@ -955,6 +961,7 @@ def test_barbs_1d_transformed():
     return fig
 
 
+@requires_scipy
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='streamplot.png', style='mpl20')
 def test_streamplot():

@@ -21,6 +21,13 @@ except ImportError:
 import pytest
 
 import cartopy.crs as ccrs
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
+
+
 import cartopy.io.ogc_clients as ogc
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
