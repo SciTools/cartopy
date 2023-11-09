@@ -1499,7 +1499,7 @@ class GeoAxes(matplotlib.axes.Axes):
         the Y axis.
         """
         if crs is None:
-            crs = ccrs.PlateCarree()
+            crs = ccrs.PlateCarree(globe=self.projection.globe)
         from cartopy.mpl.gridliner import Gridliner
         gl = Gridliner(
             self, crs=crs, draw_labels=draw_labels, xlocator=xlocs,

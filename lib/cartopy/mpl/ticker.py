@@ -64,6 +64,9 @@ class _PlateCarreeFormatter(Formatter):
                                        ccrs.Mercator)):
                 raise TypeError("This formatter cannot be used with "
                                 "non-rectangular projections.")
+            if source.globe != self._target_projection.globe:
+                # The transforms need to use the same globe
+                self._target_projection = ccrs.PlateCarree(globe=source.globe)
             projected_value = self._apply_transform(value,
                                                     self._target_projection,
                                                     source)

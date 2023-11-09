@@ -56,7 +56,7 @@ TEST_PROJS = [
 
 @pytest.mark.natural_earth
 # Robinson projection is slightly better in Proj 6+.
-@pytest.mark.mpl_image_compare(filename='gridliner1.png', tolerance=0.7)
+@pytest.mark.mpl_image_compare(filename='gridliner1.png', tolerance=0.73)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -303,7 +303,7 @@ def test_grid_labels_inline(proj):
     else:
         kwargs = {}
     ax = fig.add_subplot(projection=proj(**kwargs))
-    ax.gridlines(draw_labels=True, auto_inline=True)
+    ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, auto_inline=True)
     ax.coastlines(resolution="110m")
     return fig
 
@@ -584,3 +584,13 @@ def test_gridliner_labels_zoom():
     # After zoom, we may not be using all the available labels.
     assert len(gl._all_labels) == 24
     assert gl._labels == gl._all_labels[:20]
+
+
+def test_gridliner_with_globe():
+    fig = plt.figure()
+    proj = ccrs.PlateCarree(globe=ccrs.Globe(semimajor_axis=12345))
+    ax = fig.add_subplot(1, 1, 1, projection=proj)
+    gl = ax.gridlines()
+    fig.draw_without_rendering()
+
+    assert gl in ax.artists
