@@ -19,9 +19,6 @@ class _PlateCarreeFormatter(Formatter):
     rectangular projection (e.g. Plate Carree, Mercator).
 
     """
-
-    _target_projection = ccrs.PlateCarree()
-
     def __init__(self, direction_label=True, degree_symbol='°',
                  number_format='g', transform_precision=1e-8, dms=False,
                  minute_symbol='′', second_symbol='″',
@@ -52,24 +49,14 @@ class _PlateCarreeFormatter(Formatter):
             cardinal_labels = {}
         self._cardinal_labels = cardinal_labels
         self._decimal_point = decimal_point
+        self._source_projection = None
+        self._target_projection = None
 
     def __call__(self, value, pos=None):
-        if self.axis is not None and isinstance(self.axis.axes, GeoAxes):
-
-            # We want to produce labels for values in the familiar Plate Carree
-            # projection, so convert the tick values from their own projection
-            # before formatting them.
-            source = self.axis.axes.projection
-            if not isinstance(source, (ccrs._RectangularProjection,
-                                       ccrs.Mercator)):
-                raise TypeError("This formatter cannot be used with "
-                                "non-rectangular projections.")
-            if source.globe != self._target_projection.globe:
-                # The transforms need to use the same globe
-                self._target_projection = ccrs.PlateCarree(globe=source.globe)
+        if self._source_projection is not None:
             projected_value = self._apply_transform(value,
                                                     self._target_projection,
-                                                    source)
+                                                    self._source_projection)
 
             # Round the transformed value using a given precision for display
             # purposes. Transforms can introduce minor rounding errors that
@@ -139,6 +126,24 @@ class _PlateCarreeFormatter(Formatter):
         mins = np.round(y, self._precision).astype('i')
         secs = np.round((y - mins) * 60, self._precision - 3)
         return x, degs, mins, secs
+
+    def set_axis(self, axis):
+        super().set_axis(axis)
+
+        # Set the source and target projections for the formatter
+        # setting them to None if we aren't interacting with a GeoAxes
+        if self.axis is None or not isinstance(self.axis.axes, GeoAxes):
+            self._source_projection = None
+            self._target_projection = None
+            return
+
+        self._source_projection = self.axis.axes.projection
+        if not isinstance(self._source_projection, (ccrs._RectangularProjection,
+                                                    ccrs.Mercator)):
+            raise TypeError("This formatter cannot be used with "
+                            "non-rectangular projections.")
+        # The transforms need to use the same globe
+        self._target_projection = ccrs.PlateCarree(globe=self._source_projection.globe)
 
     def set_locs(self, locs):
         Formatter.set_locs(self, locs)
