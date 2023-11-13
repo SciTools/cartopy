@@ -1,8 +1,7 @@
 # Copyright Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Define the SlippyImageArtist class, which interfaces with
 :class:`cartopy.io.RasterSource` instances at draw time, for interactive

@@ -1,8 +1,7 @@
 # Copyright Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 from fnmatch import fnmatch
 import os
@@ -22,9 +21,8 @@ SHEBANG_PATTERN = r'((\#\!.*|\/\*)\n)?'
 LICENSE_TEMPLATE = """
 # Copyright Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """.strip()
 LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE)
 LICENSE_RE = re.compile(SHEBANG_PATTERN + LICENSE_RE_PATTERN, re.MULTILINE)
