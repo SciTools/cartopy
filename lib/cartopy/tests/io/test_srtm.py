@@ -31,8 +31,12 @@ def srtm_login_or_skip(monkeypatch):
         pytest.skip('SRTM_PASSWORD environment variable is unset.')
 
     from http.cookiejar import CookieJar
-    from urllib.request import (HTTPBasicAuthHandler, HTTPCookieProcessor,
-                                HTTPPasswordMgrWithDefaultRealm, build_opener)
+    from urllib.request import (
+        HTTPBasicAuthHandler,
+        HTTPCookieProcessor,
+        HTTPPasswordMgrWithDefaultRealm,
+        build_opener,
+    )
 
     password_manager = HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(

@@ -24,8 +24,8 @@ import warnings
 import weakref
 from xml.etree import ElementTree
 
-from PIL import Image
 import numpy as np
+from PIL import Image
 import shapely.geometry as sgeom
 
 

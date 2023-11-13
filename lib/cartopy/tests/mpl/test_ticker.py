@@ -12,8 +12,12 @@ import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import (LatitudeFormatter, LatitudeLocator, LongitudeFormatter,
-                                LongitudeLocator)
+from cartopy.mpl.ticker import (
+    LatitudeFormatter,
+    LatitudeLocator,
+    LongitudeFormatter,
+    LongitudeLocator,
+)
 
 
 ONE_MIN = 1 / 60.

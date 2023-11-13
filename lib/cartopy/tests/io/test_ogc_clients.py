@@ -21,8 +21,8 @@ except ImportError:
 import pytest
 
 import cartopy.crs as ccrs
-import cartopy.io.ogc_clients as ogc
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
+import cartopy.io.ogc_clients as ogc
 
 
 RESOLUTION = (30, 30)
