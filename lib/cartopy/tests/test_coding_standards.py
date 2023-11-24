@@ -1,6 +1,6 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the BSD license.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
 from fnmatch import fnmatch
@@ -19,9 +19,9 @@ SHEBANG_PATTERN = r'((\#\!.*|\/\*)\n)?'
 
 
 LICENSE_TEMPLATE = """
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the BSD license.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 """.strip()
 LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE)
