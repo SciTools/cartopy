@@ -94,7 +94,7 @@ Code is just one of many ways of positively contributing to Cartopy, please see
 our [contributing guide](.github/CONTRIBUTING.md) for more details on how
 you can get involved.
 
-Cartopy is released under a BSD license with a shared copyright model.
+Cartopy is released under the 3-Clause BSD license with a shared copyright model.
 See [LICENSE](LICENSE) for full terms.
 
 The [Met Office](https://metoffice.gov.uk) has made a significant
