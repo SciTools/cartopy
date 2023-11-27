@@ -7,7 +7,7 @@ Cartopy copyright, licensing and contributors
 Cartopy code
 ------------
 
-All Cartopy source code, unless explicitly stated, is ``Copyright Crown and 
+All Cartopy source code, unless explicitly stated, is ``Copyright Crown and
 Cartopy contributors`` and is licensed under the **BSD 3-Clause License**.
 You should find all source files with the following header:
 
