@@ -69,7 +69,7 @@ Further information about the required dependencies can be found here:
 **Shapely** 1.7.1 or later (https://github.com/shapely/shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
-**pyshp** 2.1 or later (https://pypi.python.org/pypi/pyshp)
+**pyshp** 2.3 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
 **pyproj** 3.1.0 or later (https://github.com/pyproj4/pyproj/)
