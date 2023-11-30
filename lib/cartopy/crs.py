@@ -1783,7 +1783,7 @@ class LambertConformal(Projection):
             lons[1:-1] = np.linspace(central_longitude - 180 + 0.001,
                                      central_longitude + 180 - 0.001, n)
 
-        points = self.transform_points(PlateCarree(), lons, lats)
+        points = self.transform_points(PlateCarree(globe=globe), lons, lats)
 
         self._boundary = sgeom.LinearRing(points)
         mins = np.min(points, axis=0)
