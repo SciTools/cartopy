@@ -31,7 +31,7 @@ jobs:
           # We need the full history to generate the proper version number
           fetch-depth: 0
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Install Python
         with:
           python-version: '3.11'
