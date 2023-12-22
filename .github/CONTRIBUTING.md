@@ -23,9 +23,9 @@ Getting started
 Submitting changes
 ------------------
 
-1. Read and sign the Contributor Licence Agreement (CLA) if you have not already done so.
-    - See the [governance page](http://scitools.org.uk/governance.html)
-      for the CLA and what to do with it.
 1. Push your branch to your fork of cartopy.
 1. Submit your pull request.
+1. Note that you will automatically be asked to sign the 
+   [Contributor Licence Agreement](https://cla-assistant.io/SciTools-incubator/)
+   (CLA), if you have not already done so. 
 1. Sit back and wait for the core Cartopy development team to review your code.

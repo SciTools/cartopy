@@ -23,12 +23,13 @@ request could be broken into smaller parts before submitting.
 <!--
 ## Checklist
 
- * If you have not already done so, ensure you've read and signed the Contributor Licence Agreement (CLA).
-   (See the [governance page](http://scitools.org.uk/governance.html) for the CLA and what to do with it).
-
  * If this is a new feature, please provide an example of its use in the description. We may want to make a
    follow-on pull request to put the example in the gallery!
 
  * Ensure there is a suitable item in the cartopy test suite for the change you are proposing.
+
+ * Note that you will automatically be asked to sign the 
+   [Contributor Licence Agreement](https://cla-assistant.io/SciTools-incubator/)
+   (CLA), if you have not already done so. 
 
 -->
