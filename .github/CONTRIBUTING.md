@@ -25,7 +25,7 @@ Submitting changes
 
 1. Push your branch to your fork of cartopy.
 1. Submit your pull request.
-1. Note that you will automatically be asked to sign the 
+1. Note that you will automatically be asked to sign the
    [Contributor Licence Agreement](https://cla-assistant.io/SciTools/)
-   (CLA), if you have not already done so. 
+   (CLA), if you have not already done so.
 1. Sit back and wait for the core Cartopy development team to review your code.

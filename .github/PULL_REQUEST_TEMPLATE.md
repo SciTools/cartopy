@@ -28,8 +28,8 @@ request could be broken into smaller parts before submitting.
 
  * Ensure there is a suitable item in the cartopy test suite for the change you are proposing.
 
- * Note that you will automatically be asked to sign the 
+ * Note that you will automatically be asked to sign the
    [Contributor Licence Agreement](https://cla-assistant.io/SciTools/)
-   (CLA), if you have not already done so. 
+   (CLA), if you have not already done so.
 
 -->
