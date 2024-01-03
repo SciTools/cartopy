@@ -3,7 +3,7 @@ ci:
   autoupdate_schedule: 'quarterly'
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.4.0"
+    rev: "v4.5.0"
     hooks:
         # Prevent giant files from being committed
       - id: check-added-large-files
@@ -37,7 +37,7 @@ repos:
       - id: sort-all
         types: [file, python]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.1.5'
+    rev: 'v0.1.9'
     hooks:
     - id: ruff
       args: [--fix]
