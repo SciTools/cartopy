@@ -16,7 +16,12 @@ import shapely.geometry as sgeom
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
 import cartopy.tests.test_img_tiles as ctest_tiles
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
 
 
 NATURAL_EARTH_IMG = (config["repo_data_dir"] / 'raster' / 'natural_earth'

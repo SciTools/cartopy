@@ -9,6 +9,11 @@ import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl import _MPL_38
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
 
 
 @pytest.mark.natural_earth

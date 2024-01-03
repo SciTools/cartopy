@@ -6,6 +6,14 @@
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
+
+
+try:
+    import scipy  # noqa: F401
+except ImportError:
+    pytest.skip("scipy is required for vector transforms", allow_module_level=True)
+
 
 import cartopy.crs as ccrs
 import cartopy.vector_transform as vec_trans

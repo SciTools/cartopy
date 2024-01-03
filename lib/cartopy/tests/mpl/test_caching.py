@@ -17,7 +17,12 @@ import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE, WMTSRasterSource
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if _HAS_PYKDTREE_OR_SCIPY:
+    from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE, WMTSRasterSource
+
 import cartopy.io.shapereader
 from cartopy.mpl import _MPL_38
 from cartopy.mpl.feature_artist import FeatureArtist
@@ -149,7 +154,8 @@ def test_contourf_transform_path_counting():
 
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
-@pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY or not _OWSLIB_AVAILABLE,
+                    reason='OWSLib and at least one of pykdtree or scipy is required')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()

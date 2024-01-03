@@ -14,6 +14,12 @@ import pytest
 
 from cartopy import config
 import cartopy.crs as ccrs
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
+
 import cartopy.img_transform as im_trans
 
 
