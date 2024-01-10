@@ -58,7 +58,7 @@ srtm = ["beautifulsoup4"]
 test = ["pytest>=5.1.2", "pytest-mpl>=0.11", "pytest-xdist", "pytest-cov", "coveralls"]
 
 [project.scripts]
-feature_download = "tools.cartopy_feature_download.py:__main__"
+cartopy_feature_download = "cartopy.feature.download.__main__:main"
 
 [project.urls]
 documentation='https://scitools.org.uk/cartopy/docs/latest/'

@@ -72,7 +72,9 @@ jobs:
         shell: bash
         run: |
           # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
-          python tools/cartopy_feature_download.py gshhs physical --dry-run
+          python -m cartopy.feature.download gshhs physical --dry-run
+          # It should also be available as a script
+          cartopy_feature_download gshhs physical --dry-run
           CARTOPY_GIT_DIR=$PWD
           pytest -ra -n 4 \
               --color=yes \
