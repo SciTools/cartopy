@@ -93,5 +93,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}
-          path: cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}
+          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}
+          path: cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}
