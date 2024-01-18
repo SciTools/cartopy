@@ -361,7 +361,7 @@ class WMTSRasterSource(RasterSource):
 
     """
 
-    def __init__(self, wmts, layer_name, gettile_extra_kwargs=None, user_agent='CartoPy/' + cartopy.__version__, cache=False):
+    def __init__(self, wmts, layer_name, gettile_extra_kwargs=None, cache=False):
         """
         Parameters
         ----------
