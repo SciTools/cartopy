@@ -400,13 +400,12 @@ class WMTSRasterSource(RasterSource):
         self.gettile_extra_kwargs = gettile_extra_kwargs
 
         self._matrix_set_name_map = {}
-        print(f"{cache=}")
+
         # Enable a cache mechanism when cache is equal to True or to a path.
         self._default_cache = False
         if cache is True:
             self._default_cache = True
             self.cache_path = cartopy.config["cache_dir"]
-            print(f"{self.cache_path=}")
         elif cache is False:
             self.cache_path = None
         else:
@@ -680,8 +679,8 @@ class WMTSRasterSource(RasterSource):
                 img_key = (row, col)
                 img = image_cache.get(img_key)
 
-                # Try it from disk cache also
                 if img is None:
+                    # Try it from disk cache
                     if self.cache_path is not None:
                         filename = "_".join([str(i) for i in img_key]) + ".npy"
                         cached_file = os.path.join(
