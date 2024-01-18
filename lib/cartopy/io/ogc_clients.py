@@ -693,7 +693,7 @@ class WMTSRasterSource(RasterSource):
                         cached_file = None
 
                     if filename in self.cache:
-                        img = np.load(cached_file, allow_pickle=False)
+                        img = Image.fromarray(np.load(cached_file, allow_pickle=False))
                     else:
                         try:
                             tile = wmts.gettile(
