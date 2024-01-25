@@ -365,7 +365,7 @@ class GSHHSFeature(Feature):
         if levels is None:
             levels = [1]
         self._levels = set(levels)
-        unknown_levels = self._levels.difference([1, 2, 3, 4])
+        unknown_levels = self._levels.difference([1, 2, 3, 4, 5, 6])
         if unknown_levels:
             raise ValueError(f"Unknown GSHHS levels {unknown_levels!r}.")
 
