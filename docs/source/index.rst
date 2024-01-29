@@ -35,7 +35,7 @@ Getting involved
 Cartopy was originally developed at the UK Met Office to allow scientists to visualise
 their data on maps quickly, easily and most importantly, accurately.
 Cartopy has been made freely available under the terms of the
-`GNU Lesser General Public License <https://www.gnu.org/licenses/lgpl.html>`_.
+`BSD 3-Clause License <https://opensource.org/license/bsd-3-clause/>`_.
 It is suitable to be used in a variety
 of scientific fields and has an :doc:`active development community <contributors>`.
 

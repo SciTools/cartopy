@@ -17,11 +17,11 @@ description = "A Python library for cartographic visualizations with Matplotlib"
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = ["cartography", "map", "transform", "projection", "pyproj", "shapely", "shapefile"]
-license = {file = "COPYING.LESSER"}
+license = {file = "LICENSE"}
 classifiers = [
     'Development Status :: 4 - Beta',
     'Framework :: Matplotlib',
-    'License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)',
+    'License :: OSI Approved :: BSD License',
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: Microsoft :: Windows',
     'Operating System :: POSIX',

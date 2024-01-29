@@ -10,7 +10,7 @@ include .gitattributes
 include .gitignore
 exclude .pre-commit-config.yaml
 include CHANGES
-include COPYING*
+include LICENSE
 include environment.yml
 include INSTALL
 recursive-include lib/cartopy *.cpp *.py *.pyx
