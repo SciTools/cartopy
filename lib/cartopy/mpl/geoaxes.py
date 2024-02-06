@@ -713,7 +713,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Instantiate an artist to draw the feature and add it to the axes.
         artist = feature_artist.FeatureArtist(feature, **kwargs)
-        return self.add_artist(artist)
+        return self.add_collection(artist)
 
     def add_geometries(self, geoms, crs, **kwargs):
         """
