@@ -44,13 +44,10 @@ def main():
     # Add colourful filled contours.
     filled_c = ax.contourf(x, y, z, transform=ccrs.PlateCarree())
 
-    # And black line contours.
+    # And black line contours (or set colors='none' for invisible lines).
     line_c = ax.contour(x, y, z, levels=filled_c.levels,
-                        colors=['black'],
+                        colors='black',
                         transform=ccrs.PlateCarree())
-
-    # Uncomment to make the line contours invisible.
-    # plt.setp(line_c.collections, visible=False)
 
     # Add a colorbar for the filled contour.
     fig.colorbar(filled_c, orientation='horizontal')
