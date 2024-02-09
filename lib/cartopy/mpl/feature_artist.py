@@ -15,6 +15,7 @@ import weakref
 
 import matplotlib.artist
 import matplotlib.collections
+import matplotlib.path as mpath
 import numpy as np
 
 import cartopy.mpl.patch as cpatch
@@ -179,15 +180,21 @@ class FeatureArtist(matplotlib.artist.Artist):
                 geom_key, geom)
             mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
                 geom_key, {})
-            geom_paths = mapping.get(key)
-            if geom_paths is None:
+            geom_path = mapping.get(key)
+            if geom_path is None:
                 if ax.projection != feature_crs:
                     projected_geom = ax.projection.project_geometry(
                         geom, feature_crs)
                 else:
                     projected_geom = geom
+
                 geom_paths = cpatch.geos_to_path(projected_geom)
-                mapping[key] = geom_paths
+                if not geom_paths:
+                    continue
+                # The transform may have split the geometry into two paths, we only want
+                # one compound path.
+                geom_path = mpath.Path.make_compound_path(*geom_paths)
+                mapping[key] = geom_path
 
             if not self._styler:
                 style = prepared_kwargs
@@ -196,7 +203,7 @@ class FeatureArtist(matplotlib.artist.Artist):
                 style = style_merge(dict(prepared_kwargs), self._styler(geom))
                 style = _freeze(style)
 
-            stylised_paths.setdefault(style, []).extend(geom_paths)
+            stylised_paths.setdefault(style, []).append(geom_path)
 
         transform = ax.projection._as_mpl_transform(ax)
 

@@ -5,6 +5,8 @@
 
 from unittest import mock
 
+import matplotlib.path as mpath
+import matplotlib.pyplot as plt
 from matplotlib.transforms import IdentityTransform
 import numpy as np
 import pytest
@@ -79,8 +81,8 @@ def test_feature_artist_draw(path_collection_cls, feature):
     fa.draw(mock.sentinel.renderer)
 
     transform = prj_crs._as_mpl_transform(fa.axes)
-    expected_paths = (cached_paths(geoms[0], prj_crs) +
-                      cached_paths(geoms[1], prj_crs), )
+    expected_paths = ([cached_paths(geoms[0], prj_crs),
+                       cached_paths(geoms[1], prj_crs)], )
     expected_style = {'facecolor': 'red'}
 
     args, kwargs = path_collection_cls.call_args_list[0]
@@ -114,9 +116,9 @@ def test_feature_artist_draw_styler(path_collection_cls, feature):
 
     transform = prj_crs._as_mpl_transform(fa.axes)
 
-    calls = [{'paths': (cached_paths(geoms[0], prj_crs), ),
+    calls = [{'paths': ([cached_paths(geoms[0], prj_crs)], ),
               'style': dict(linewidth=2, **style1)},
-             {'paths': (cached_paths(geoms[1], prj_crs), ),
+             {'paths': ([cached_paths(geoms[1], prj_crs)], ),
               'style': style2_finalized}]
 
     assert path_collection_cls.call_count == 2
@@ -125,3 +127,17 @@ def test_feature_artist_draw_styler(path_collection_cls, feature):
         assert expected_call['paths'] == actual_args
         assert transform == actual_kwargs.pop('transform')
         assert expected_call['style'] == actual_kwargs
+
+
+def test_feature_artist_geom_single_path(feature):
+    plot_crs = ccrs.PlateCarree(central_longitude=180)
+    fig, ax = plt.subplots(
+        subplot_kw={'projection': plot_crs})
+    ax.add_feature(feature)
+
+    fig.draw_without_rendering()
+
+    # Square gets split into two geometries across the dateline, but should still be
+    # plotted as one compound path to ensure style consistency.
+    for geom in feature.geometries():
+        assert isinstance(cached_paths(geom, plot_crs), mpath.Path)
