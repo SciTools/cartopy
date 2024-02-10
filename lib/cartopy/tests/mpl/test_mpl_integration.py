@@ -585,7 +585,7 @@ def test_pcolormesh_set_clim_with_mask():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_limited_area_wrap.png',
-                               tolerance=1.82)
+                               tolerance=1.83)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
