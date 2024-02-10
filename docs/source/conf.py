@@ -92,6 +92,12 @@ subsection_order = ExplicitOrder(['../../examples/lines_and_polygons',
 sphinx_gallery_conf = {
     'capture_repr': (),
     'examples_dirs': ['../../examples'],
+    # NASA wmts servers are returning bad content metadata
+    "expected_failing_examples": [
+        '../../examples/web_services/reprojected_wmts.py',
+        '../../examples/web_services/wmts.py',
+        '../../examples/web_services/wmts_time.py',
+    ],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
     'within_subsection_order': ExampleTitleSortKey,

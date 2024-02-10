@@ -155,6 +155,7 @@ def test_contourf_transform_path_counting():
 @pytest.mark.network
 @pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY or not _OWSLIB_AVAILABLE,
                     reason='OWSLib and at least one of pykdtree or scipy is required')
+@pytest.mark.xfail(reason='NASA servers are returning bad content metadata')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
     image_cache.clear()
