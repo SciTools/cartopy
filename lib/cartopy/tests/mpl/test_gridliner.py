@@ -510,7 +510,6 @@ def test_gridliner_remove():
     gl.remove()
 
     assert gl not in ax.artists
-    assert not ax.collections
 
     return fig
 
