@@ -96,7 +96,6 @@ sphinx_gallery_conf = {
     "expected_failing_examples": [
         '../../examples/web_services/reprojected_wmts.py',
         '../../examples/web_services/wmts.py',
-        '../../examples/web_services/wmts_time.py',
     ],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
