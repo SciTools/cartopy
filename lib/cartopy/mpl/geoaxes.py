@@ -1359,7 +1359,7 @@ class GeoAxes(matplotlib.axes.Axes):
                   xformatter=None, yformatter=None, xlim=None, ylim=None,
                   rotate_labels=None, xlabel_style=None, ylabel_style=None,
                   labels_bbox_style=None, xpadding=5, ypadding=5,
-                  offset_angle=25, auto_update=False, formatter_kwargs=None,
+                  offset_angle=25, auto_update=None, formatter_kwargs=None,
                   **kwargs):
         """
         Automatically add gridlines to the axes, in the given coordinate
@@ -1464,9 +1464,13 @@ class GeoAxes(matplotlib.axes.Axes):
             a label must be flipped to be more readable.
             For example, a value of 10 makes a vertical top label to be
             flipped only at 100 degrees.
-        auto_update: bool
-            Whether to update the grilines and labels when the plot is
+        auto_update: bool, default=True
+            Whether to update the gridlines and labels when the plot is
             refreshed.
+
+            .. deprecated:: 0.23
+               In future the gridlines and labels will always be updated.
+
         formatter_kwargs: dict, optional
             Options passed to the default formatters.
             See :class:`~cartopy.mpl.ticker.LongitudeFormatter` and

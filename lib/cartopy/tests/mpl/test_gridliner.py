@@ -216,7 +216,7 @@ def test_grid_labels():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
-                               tolerance=2.92)
+                               tolerance=2.9)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -290,8 +290,7 @@ def test_gridliner_constrained_adjust_datalim():
     ax.autoscale()
 
     # Add some gridlines
-    ax.gridlines(draw_labels=["bottom", "left"], auto_update=True,
-                 linestyle="-")
+    ax.gridlines(draw_labels=["bottom", "left"], linestyle="-")
 
     return fig
 
@@ -515,11 +514,11 @@ def test_gridliner_remove():
 
 
 def test_gridliner_save_tight_bbox():
-    # Smoke test for save with auto_update=True and bbox_inches=Tight (gh2246).
+    # Smoke test for save with bbox_inches=Tight (gh2246).
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    ax.gridlines(draw_labels=True, auto_update=True)
+    ax.gridlines(draw_labels=True)
     fig.savefig(io.BytesIO(), bbox_inches='tight')
 
 
@@ -569,7 +568,7 @@ def test_gridliner_labels_zoom():
 
     # Start with a global map.
     ax.set_global()
-    gl = ax.gridlines(draw_labels=True, auto_update=True)
+    gl = ax.gridlines(draw_labels=True)
 
     fig.draw_without_rendering()  # Generate child artists
     labels = [a.get_text() for a in gl.bottom_label_artists if a.get_visible()]

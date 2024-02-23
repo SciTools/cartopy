@@ -114,7 +114,7 @@ class Gridliner(matplotlib.artist.Artist):
                  xlim=None, ylim=None, rotate_labels=None,
                  xlabel_style=None, ylabel_style=None, labels_bbox_style=None,
                  xpadding=5, ypadding=5, offset_angle=25,
-                 auto_update=False, formatter_kwargs=None):
+                 auto_update=None, formatter_kwargs=None):
         """
         Artist used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -218,9 +218,13 @@ class Gridliner(matplotlib.artist.Artist):
             a label must be flipped to be more readable.
             For example, a value of 10 makes a vertical top label to be
             flipped only at 100 degrees.
-        auto_update: bool
+        auto_update: bool, default=True
             Whether to redraw the gridlines and labels when the figure is
             updated.
+
+            .. deprecated:: 0.23
+               In future the gridlines and labels will always be redrawn.
+
         formatter_kwargs: dict, optional
             Options passed to the default formatters.
             See :class:`~cartopy.mpl.ticker.LongitudeFormatter` and
@@ -444,6 +448,13 @@ class Gridliner(matplotlib.artist.Artist):
 
         # Draw status
         self._drawn = False
+        if auto_update is None:
+            auto_update = True
+        else:
+            warnings.warn(
+                "The auto_update parameter was deprecated at Cartopy 0.23.  In future "
+                "the gridlines and labels will always be updated.",
+                DeprecationWarning)
         self._auto_update = auto_update
 
     def has_labels(self):
