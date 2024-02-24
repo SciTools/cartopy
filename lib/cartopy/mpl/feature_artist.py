@@ -9,7 +9,6 @@ This module defines the :class:`FeatureArtist` class, for drawing
 
 """
 
-from collections import OrderedDict
 import warnings
 import weakref
 
@@ -21,7 +20,6 @@ import numpy as np
 import cartopy.feature as cfeature
 from cartopy.mpl import _MPL_38
 import cartopy.mpl.patch as cpatch
-from .style import merge as style_merge
 
 
 class _GeomKey:
@@ -154,7 +152,7 @@ class FeatureArtist(matplotlib.collections.Collection):
             self._paths = paths
 
     @matplotlib.artist.allow_rasterization
-    def draw(self, renderer, *args, **kwargs):
+    def draw(self, renderer):
         """
         Draw the geometries of the feature that intersect with the extent of
         the :class:`cartopy.mpl.geoaxes.GeoAxes` instance to which this
@@ -186,12 +184,13 @@ class FeatureArtist(matplotlib.collections.Collection):
             # in view.
             geoms = self._feature.intersecting_geometries(extent)
 
-        # Freeze the kwargs so that we can use them as a dict key. We will
-        # need to unfreeze this with dict(frozen) before passing to mpl.
-        prepared_kwargs = _freeze(kwargs)
+        stylised_paths = {}
+        # Make an empty placeholder style dictionary for when styler is not
+        # used.  Freeze it so that we can use it as a dict key.  We will need
+        # to unfreeze all style dicts with dict(frozen) before passing to mpl.
+        no_style = _freeze({})
 
         # Project (if necessary) and convert geometries to matplotlib paths.
-        stylised_paths = OrderedDict()
         key = ax.projection
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
@@ -225,14 +224,11 @@ class FeatureArtist(matplotlib.collections.Collection):
                 geom_path = mpath.Path.make_compound_path(*geom_paths)
                 mapping[key] = geom_path
 
-            if not self._styler:
-                style = prepared_kwargs
+            if self._styler is None:
+                stylised_paths.setdefault(no_style, []).append(geom_path)
             else:
-                # Unfreeze, then add the computed style, and then re-freeze.
-                style = style_merge(dict(prepared_kwargs), self._styler(geom))
-                style = _freeze(style)
-
-            stylised_paths.setdefault(style, []).append(geom_path)
+                style = _freeze(self._styler(geom))
+                stylised_paths.setdefault(style, []).append(geom_path)
 
         self.set_clip_path(ax.patch)
 
