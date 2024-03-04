@@ -408,11 +408,11 @@ class WMTSRasterSource(RasterSource):
         self._default_cache = False
         if cache is True:
             self._default_cache = True
-            self.cache_path = cartopy.config["cache_dir"]
+            self.cache_path = Path(cartopy.config["cache_dir"])
         elif cache is False:
             self.cache_path = None
         else:
-            self.cache_path = cache
+            self.cache_path = Path(cache)
         self.cache = set({})
         self._load_cache()
 
@@ -532,16 +532,13 @@ class WMTSRasterSource(RasterSource):
     @property
     def _cache_dir(self):
         """Return the name of the cache directory"""
-        return os.path.join(
-            self.cache_path,
-            self.__class__.__name__
-        )
+        return self.cache_path / self.__class__.__name__
 
     def _load_cache(self):
         """Load the cache"""
         if self.cache_path is not None:
             cache_dir = self._cache_dir
-            if not os.path.exists(cache_dir):
+            if not cache_dir.exists():
                 os.makedirs(cache_dir)
                 if self._default_cache:
                     warnings.warn(
@@ -685,7 +682,7 @@ class WMTSRasterSource(RasterSource):
                 if img is None:
                     # Try it from disk cache
                     if self.cache_path is not None:
-                        filename = "_".join([str(i) for i in img_key]) + ".npy"
+                        filename = f"{img_key[0]}_{img_key[1]}.npy"
                         cached_file = os.path.join(
                             self._cache_dir,
                             filename
