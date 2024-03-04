@@ -11,6 +11,10 @@ Handles matplotlib styling in a single consistent place.
 import warnings
 
 
+warnings.warn('The style module is deprecated and will be removed in a future release.',
+              DeprecationWarning, stacklevel=2)
+
+
 # Define the matplotlib style aliases that cartopy can expand.
 # Note: This should not contain the plural aliases
 # (e.g. linewidths -> linewidth).
