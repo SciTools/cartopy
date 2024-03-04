@@ -372,6 +372,9 @@ class WMTSRasterSource(RasterSource):
         gettile_extra_kwargs: dict, optional
             Extra keywords (e.g. time) to pass through to the
             service's gettile method.
+        cache : bool or str, optional
+            If True, the default cache directory is used. If False, no cache is
+            used. If a string, the string is used as the path to the cache.
 
         """
         if WebMapService is None:
