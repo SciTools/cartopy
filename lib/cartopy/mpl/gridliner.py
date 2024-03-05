@@ -53,21 +53,11 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
 )
 
 
-def _fix_lons(lons):
-    """
-    Fix the given longitudes into the range ``[-180, 180]``.
-
-    """
-    lons = np.array(lons, copy=False, ndmin=1)
-    fixed_lons = ((lons + 180) % 360) - 180
-    # Make the positive 180s positive again.
-    fixed_lons[(fixed_lons == -180) & (lons > 0)] *= -1
-    return fixed_lons
-
-
 def _lon_hemisphere(longitude):
     """Return the hemisphere (E, W or '' for 0) for the given longitude."""
-    longitude = _fix_lons(longitude)
+    # Wrap the longitude to the range -180 to 180, keeping positive 180s
+    lon_wrapped = ((longitude + 180) % 360) - 180
+    longitude = 180 if (longitude > 0 and lon_wrapped == -180) else lon_wrapped
     if longitude > 0:
         hemisphere = 'E'
     elif longitude < 0:
