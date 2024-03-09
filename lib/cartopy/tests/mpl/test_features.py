@@ -80,7 +80,7 @@ def test_wfs():
 @pytest.mark.network
 @pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY or not _OWSLIB_AVAILABLE,
                     reason='OWSLib and at least one of pykdtree or scipy is required')
-@pytest.mark.xfail(raises=ParseError,
+@pytest.mark.xfail(raises=(ParseError, AttributeError),
                    reason="Bad XML returned from the URL")
 @pytest.mark.mpl_image_compare(filename='wfs_france.png')
 def test_wfs_france():
