@@ -113,7 +113,7 @@ jobs:
           name: sdist
           path: dist
 
-      - uses: pypa/cibuildwheel@fff9ec32ed25a9c576750c91e06b410ed0c15db7 # v2.16.2
+      - uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
         with:
           only: ${{ matrix.only }}
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
