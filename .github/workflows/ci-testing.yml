@@ -79,7 +79,7 @@ jobs:
           pytest -ra -n 4 \
               --color=yes \
               --mpl --mpl-generate-summary=html \
-              --mpl-results-path="cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}" \
+              --mpl-results-path="cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}" \
               --pyargs cartopy ${EXTRA_TEST_ARGS}
 
       - name: Coveralls
@@ -93,5 +93,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}
-          path: cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}
+          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}
+          path: cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}
