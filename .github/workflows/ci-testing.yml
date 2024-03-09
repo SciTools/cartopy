@@ -76,7 +76,7 @@ jobs:
           # It should also be available as a script
           cartopy_feature_download gshhs physical --dry-run
           CARTOPY_GIT_DIR=$PWD
-          pytest -ra -n 4 \
+          pytest -rfEsX -n 4 \
               --color=yes \
               --mpl --mpl-generate-summary=html \
               --mpl-results-path="cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}" \
