@@ -187,7 +187,7 @@ def test_equality(oblique_variants):
     "reverse_coord", [False, True], ids=["xy_order", "yx_order"]
 )
 def test_nan(oblique_mercator, plate_carree, reverse_coord):
-    coord = (0.0, np.NaN)
+    coord = (0.0, np.nan)
     if reverse_coord:
         coord = tuple(reversed(coord))
     res = oblique_mercator.transform_point(*coord, src_crs=plate_carree)
