@@ -52,7 +52,7 @@ jobs:
       - name: Upload sdist result
         uses: actions/upload-artifact@v4
         with:
-          name: sdist
+          name: cibw-sdist
           path: dist/*.tar.gz
           if-no-files-found: error
 
@@ -110,7 +110,7 @@ jobs:
       - name: Download sdist
         uses: actions/download-artifact@v4
         with:
-          name: sdist
+          name: cibw-sdist
           path: dist
 
       - uses: pypa/cibuildwheel@ce3fb7832089eb3e723a0a99cab7f3eaccf074fd # v2.16.5
@@ -120,6 +120,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: cibw-wheels-${{ matrix.os }}-${{ matrix.only }}
           path: ./wheelhouse/*.whl
 
   publish:
@@ -138,14 +139,9 @@ jobs:
       - name: Download wheels
         uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: cibw-*
           path: dist
-
-      - name: Download sdist
-        uses: actions/download-artifact@v4
-        with:
-          name: sdist
-          path: dist
+          merge-multiple: true
 
       - name: Publish Package
         uses: pypa/gh-action-pypi-publish@v1.8.14
