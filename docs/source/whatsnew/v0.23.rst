@@ -1,7 +1,7 @@
 Version 0.23 (March XX, 2024)
 =============================
 
-Cartopy has been relicensed from LBPL-3 to BSD-3-Clause. All contributions
+Cartopy has been relicensed from LGPL-3 to BSD-3-Clause. All contributions
 to Cartopy are now under the BSD-3-Clause license.
 
 Python 3.12 is now supported and the new minimum supported versions
