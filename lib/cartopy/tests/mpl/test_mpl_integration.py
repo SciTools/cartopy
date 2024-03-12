@@ -1022,7 +1022,7 @@ def test_annotate():
     ax.annotate('default crs', map_coords, size=5)
 
     # data in map projection using default transform, with
-    # text positioned in platecaree transform
+    # text positioned in platecarree transform
     ax.annotate('mixed crs transforms', map_coords, xycoords='data',
                 xytext=(-175, -55),
                 textcoords=platecarree,

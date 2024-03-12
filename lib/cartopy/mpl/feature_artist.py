@@ -90,7 +90,7 @@ class FeatureArtist(matplotlib.collections.Collection):
         feature
             An instance of :class:`cartopy.feature.Feature` to draw.
         styler
-            A callable that given a gemometry, returns matplotlib styling
+            A callable that given a geometry, returns matplotlib styling
             parameters.
 
         Other Parameters

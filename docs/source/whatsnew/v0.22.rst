@@ -53,4 +53,4 @@ Features
 
 * Martin Yeo added the Oblique Mercator projection. (:pull:`2096`)
 
-* Elliott Sales de Andrade added the Aitoff and Hammer projections. (:pull:`1249``)
+* Elliott Sales de Andrade added the Aitoff and Hammer projections. (:pull:`1249`)

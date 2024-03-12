@@ -2497,7 +2497,7 @@ class Robinson(_WarpedRectangularProjection):
 
 class InterruptedGoodeHomolosine(Projection):
     """
-    Composite equal-area projection empahsizing either land or
+    Composite equal-area projection emphasizing either land or
     ocean features.
 
     Original Reference:
