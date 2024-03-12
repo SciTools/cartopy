@@ -238,7 +238,7 @@ def test_nest(nest_from_config):
             sorted(_tile_from_img(img) for z, img in
                    nest.subtiles(('aerial z1 test', x1_y0_z1))))
 
-    # check that the the images in the nest from configuration are the
+    # check that the images in the nest from configuration are the
     # same as those created by hand.
     for name in nest_z0_z1._collections_by_name.keys():
         for img in nest_z0_z1._collections_by_name[name].images:

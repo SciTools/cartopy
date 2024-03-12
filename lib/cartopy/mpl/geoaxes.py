@@ -643,7 +643,7 @@ class GeoAxes(matplotlib.axes.Axes):
         Parameters
         ----------
         rad_km
-            The radius in km of the the circles to be drawn.
+            The radius in km of the circles to be drawn.
         lons
             A numpy.ndarray, list or tuple of longitude values that
             locate the centre of each circle. Specifying more than one
