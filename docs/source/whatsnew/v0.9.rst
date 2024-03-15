@@ -7,7 +7,7 @@ Version 0.9 (September 12, 2013)
   "Iris & Cartopy" <https://www.euroscipy.org/2013/schedule/presentation/35/>`_
   was voted best talk of the conference.
 * Other talks and tutorials during this release cycle include Phil Elson's `talk at SciPy'13
-  (with video) <https://conference.scipy.org/scipy2013/presentation_detail.php?id=132>`_,
+  (with video) <https://pyvideo.org/scipy-2013/iris-cartopy-python-packages-for-atmospheric-a.html>`_,
   `Thomas Lecocq's tutorial at EuroSciPy
   <https://www.euroscipy.org/2013/schedule/presentation/27/>`_
   and a forthcoming `talk at FOSS4G <http://2013.foss4g.org/conf/programme/presentations/29/>`_.
