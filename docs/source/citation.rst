@@ -87,4 +87,4 @@ The corresponding information for the data providers included in cartopy is list
 .. |---| unicode:: U+02014 .. em dash
    :trim:
 
-The `feature_creation example <./examples/feature_creation.html>`_ shows such annotation for Natural Earth data.
+The `feature_creation example <./gallery/lines_and_polygons/feature_creation.html>`_ shows such annotation for Natural Earth data.

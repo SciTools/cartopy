@@ -281,8 +281,8 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
 
     To identify valid components for this function, either browse
     NaturalEarthData.com, or if you know what you are looking for, go to
-    https://github.com/nvkelso/natural-earth-vector/tree/master/zips to
-    see the actual files which will be downloaded.
+    https://github.com/nvkelso/natural-earth-vector/ to see the actual
+    files which will be downloaded.
 
     Note
     ----
