@@ -94,9 +94,9 @@ python_files = ["test_*.py"]
 
 [tool.ruff]
 target-version = "py39"
-select = ["E", "F", "I", "W"]
+lint.select = ["E", "F", "I", "W"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["cartopy"]
 lines-after-imports = 2
