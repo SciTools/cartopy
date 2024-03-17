@@ -274,10 +274,12 @@ BasicReader and FionaReader instances can also be created directly.
 """
 
 
-def natural_earth(resolution='110m', category='physical', name='coastline'):
+def natural_earth(resolution='110m', category='physical',
+                  name='coastline', version=None):
     """
     Return the path to the requested natural earth shapefile,
-    downloading and unzipping if necessary.
+    downloading and unzipping if necessary. If version is not specified,
+    the latest available version will be downloaded.
 
     To identify valid components for this function, either browse
     NaturalEarthData.com, or if you know what you are looking for, go to
@@ -298,10 +300,14 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     # get hold of the Downloader (typically a NEShpDownloader instance)
     # which we can then simply call its path method to get the appropriate
     # shapefile (it will download if necessary)
-    ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
-                                            resolution, category, name))
-    format_dict = {'config': config, 'category': category,
-                   'name': name, 'resolution': resolution}
+    if version is None:
+        ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
+                                                resolution, category, name))
+    else:
+        ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth_versioned',
+                                                resolution, category, name))
+    format_dict = {'config': config, 'category': category, 'name': name,
+                   'resolution': resolution, 'version': version}
     return ne_downloader.path(format_dict)
 
 
@@ -394,12 +400,37 @@ ne_{resolution}_{name}.shp
         return NEShpDownloader(target_path_template=ne_path_template,
                                pre_downloaded_path_template=pre_path_template)
 
+    @staticmethod
+    def versioned_downloader():
+        """
+        Return a NEShpDownloader instance, which extends the default downloader
+        with support for specific file versions.
+
+        """
+        _NE_URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/'
+                            '{version}/{resolution}_{category}/'
+                            'ne_{resolution}_{name}.zip')
+
+        default_spec = ('shapefiles', 'natural_earth', '{category}', '{version}',
+                        'ne_{resolution}_{name}.shp')
+        ne_path_template = str(
+            Path('{config[data_dir]}').joinpath(*default_spec))
+        pre_path_template = str(
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
+        return NEShpDownloader(url_template=_NE_URL_TEMPLATE,
+                               target_path_template=ne_path_template,
+                               pre_downloaded_path_template=pre_path_template)
+
 
 # add a generic Natural Earth shapefile downloader to the config dictionary's
 # 'downloaders' section.
 _ne_key = ('shapefiles', 'natural_earth')
 config['downloaders'].setdefault(_ne_key,
                                  NEShpDownloader.default_downloader())
+
+_ne_key = ('shapefiles', 'natural_earth_versioned')
+config['downloaders'].setdefault(_ne_key,
+                                 NEShpDownloader.versioned_downloader())
 
 
 def gshhs(scale='c', level=1):

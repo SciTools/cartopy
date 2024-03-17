@@ -230,11 +230,13 @@ class NaturalEarthFeature(Feature):
     """
     A simple interface to Natural Earth shapefiles.
 
-    See https://www.naturalearthdata.com/
+    See https://www.naturalearthdata.com/ for an overview of the data
+    and https://github.com/nvkelso/natural-earth-vector/releases for recent
+    version information.
 
     """
 
-    def __init__(self, category, name, scale, **kwargs):
+    def __init__(self, category, name, scale, version=None, **kwargs):
         """
         Parameters
         ----------
@@ -246,6 +248,8 @@ class NaturalEarthFeature(Feature):
             The dataset scale, i.e. one of '10m', '50m', or '110m',
             or Scaler object. Dataset scales correspond to 1:10,000,000,
             1:50,000,000, and 1:110,000,000 respectively.
+        version: optional
+            The specific dataset version to use, e.g. '5.1.0'.
 
         Other Parameters
         ----------------
@@ -256,6 +260,7 @@ class NaturalEarthFeature(Feature):
         super().__init__(cartopy.crs.PlateCarree(), **kwargs)
         self.category = category
         self.name = name
+        self.version = version
 
         # Cast the given scale to a (constant) Scaler if a string is passed.
         if isinstance(scale, str):
@@ -281,11 +286,12 @@ class NaturalEarthFeature(Feature):
         Returns an iterator of (shapely) geometries for this feature.
 
         """
-        key = (self.name, self.category, self.scale)
+        key = (self.name, self.category, self.scale, self.version)
         if key not in _NATURAL_EARTH_GEOM_CACHE:
             path = shapereader.natural_earth(resolution=self.scale,
                                              category=self.category,
-                                             name=self.name)
+                                             name=self.name,
+                                             version=self.version)
             geometries = tuple(shapereader.Reader(path).geometries())
             _NATURAL_EARTH_GEOM_CACHE[key] = geometries
         else:
@@ -316,7 +322,7 @@ class NaturalEarthFeature(Feature):
 
         """
         return NaturalEarthFeature(self.category, self.name, new_scale,
-                                   **self.kwargs)
+                                   self.version, **self.kwargs)
 
 
 class GSHHSFeature(Feature):

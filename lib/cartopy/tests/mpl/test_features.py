@@ -37,7 +37,7 @@ def test_natural_earth():
 @pytest.mark.mpl_image_compare(filename='natural_earth_custom.png')
 def test_natural_earth_custom():
     ax = plt.axes(projection=ccrs.PlateCarree())
-    feature = cfeature.NaturalEarthFeature('physical', 'coastline', '50m',
+    feature = cfeature.NaturalEarthFeature('physical', 'coastline', '50m', '5.1.0',
                                            edgecolor='black',
                                            facecolor='none')
     ax.add_feature(feature)
