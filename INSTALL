@@ -12,7 +12,7 @@ Other binaries
 Additional pre-built binaries can be found at a variety of sources, including:
 
 * `Conda <https://conda.io/miniconda.html>`_
-* Christoph Gohlke (https://www.lfd.uci.edu/~gohlke/pythonlibs/)
+* Christoph Gohlke (https://github.com/cgohlke/geospatial-wheels/)
   maintains unofficial Windows binaries of cartopy.
 * `OSGeo Live <https://live.osgeo.org>`_.
 
