@@ -3,8 +3,7 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 """
-This module contains utilities that are useful in conjunction with
-cartopy.
+Utilities that are useful in conjunction with cartopy.
 
 """
 import numpy as np

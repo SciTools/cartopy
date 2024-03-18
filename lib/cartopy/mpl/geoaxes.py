@@ -4,7 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 """
-This module defines the :class:`GeoAxes` class, for use with matplotlib.
+This module defines the :class:`cartopy.mpl.geoaxes.GeoAxes` class, an extension of
+matplotlib which adds a `transform` keyword argument to many plotting methods to enable
+geographic projections and boundary wrapping to occur on the axes.
 
 When a Matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.

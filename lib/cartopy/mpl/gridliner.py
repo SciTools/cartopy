@@ -2,6 +2,12 @@
 #
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
+"""
+Cartopy can produce gridlines and ticks in any projection and add
+them to the current geoaxes projection, providing a way to add detailed
+location information to the plots.
+
+"""
 
 import itertools
 import operator
