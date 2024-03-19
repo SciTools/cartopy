@@ -91,9 +91,6 @@ Shuttle Radar Topography Mission (SRTM)
 Base classes and functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These are the base classes in :mod:`cartopy.io` that new resources can leverage
-to implement a new reader or tile client.
-
 .. automodule:: cartopy.io
 
 .. autosummary::

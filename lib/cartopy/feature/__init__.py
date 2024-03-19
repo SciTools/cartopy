@@ -4,9 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 """
-This module defines a :class:`Feature` interface, which can be used and extended to
-add various "features" to geoaxes using ax.add_feature(), such as Shapely objects and
-Natural Earth Imagery. The default zorder for Cartopy features is 1.5, which puts them
+This module defines a :class:`Feature` interface, which can be used and
+extended to add various "features" to geoaxes using ax.add_feature(), such as
+Shapely objects and Natural Earth Imagery.
+
+The default zorder for Cartopy features is defined in defined in
+:class:`~cartopy.mpl.feature_artist.FeatureArtist` as 1.5, which puts them
 above images and patches, but below lines and text.
 
 """
