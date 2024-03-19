@@ -3,12 +3,7 @@
 Feature interface (cartopy.feature)
 -----------------------------------
 
-.. module:: cartopy.feature
-
-The feature interface can be used and extended to add various "features"
-to geoaxes, such as Shapely objects and Natural Earth Imagery. The default
-zorder for Cartopy features is 1.5, which puts them above images and patches,
-but below lines and text.
+.. automodule:: cartopy.feature
 
 Feature attributes
 ~~~~~~~~~~~~~~~~~~

@@ -3,10 +3,7 @@
 Coordinate reference systems (CRS)
 ----------------------------------
 
-.. module:: cartopy.crs
-
-The :class:`cartopy.crs.CRS` class is the very core of cartopy, all coordinate reference systems
-in cartopy have :class:`~cartopy.crs.CRS` as a parent class.
+.. automodule:: cartopy.crs
 
 Base CRS's
 ~~~~~~~~~~
@@ -28,13 +25,7 @@ Base CRS's
 Geodesic calculations
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.geodesic
-
-The :mod:`cartopy.geodesic` module defines the :class:`cartopy.geodesic.Geodesic` class which can interface with the Proj
-geodesic functions. See the `Proj geodesic page`_ for more background
-information.
-
-.. _Proj geodesic page: https://proj.org/geodesic.html
+.. automodule:: cartopy.geodesic
 
 .. autosummary::
    :toctree: generated/

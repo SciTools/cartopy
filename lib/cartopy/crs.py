@@ -125,7 +125,9 @@ class Globe:
 
 class CRS(_CRS):
     """
-    Define a Coordinate Reference System using proj.
+    Define a Coordinate Reference System using proj. The :class:`cartopy.crs.CRS`
+    class is the very core of cartopy, all coordinate reference systems in cartopy
+    have :class:`~cartopy.crs.CRS` as a parent class.
     """
 
     #: Whether this projection can handle ellipses.

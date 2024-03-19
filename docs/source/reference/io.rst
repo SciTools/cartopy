@@ -9,12 +9,10 @@ data formats.
 
 .. _api.io.shapereader:
 
-Shapefiles
-~~~~~~~~~~
+Shapereader
+~~~~~~~~~~~
 
-.. module:: cartopy.io.shapereader
-
-:mod:`cartopy.io.shapereader` provides a basic interface for accessing shapefiles.
+.. automodule:: cartopy.io.shapereader
 
 .. autosummary::
     :toctree: generated/
@@ -32,9 +30,7 @@ Shapefiles
 Image collections
 ~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.io.img_nest
-
-:mod:`cartopy.io.img_nest` provides an interface for representing images.
+.. automodule:: cartopy.io.img_nest
 
 .. autosummary::
     :toctree: generated/
@@ -46,10 +42,7 @@ Image collections
 Image tiles
 ~~~~~~~~~~~
 
-.. module:: cartopy.io.img_tiles
-
-Classes in :mod:`cartopy.io.img_tiles` provide an interface to the respective tile resources to
-automatically load the proper tile and resolution depending on the desired domain.
+.. automodule:: cartopy.io.img_tiles
 
 .. autosummary::
     :toctree: generated/
@@ -66,12 +59,10 @@ automatically load the proper tile and resolution depending on the desired domai
     StadiaMapsTiles
     Stamen
 
-Open Geospatial Consortium (OGC)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Open Geospatial Consortium (OGC) Clients
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.io.ogc_clients
-
-:mod:`cartopy.io.ogc_clients` contains several classes to enable interfacing with OGC clients.
+.. automodule:: cartopy.io.ogc_clients
 
 .. autosummary::
     :toctree: generated/
@@ -83,10 +74,7 @@ Open Geospatial Consortium (OGC)
 Shuttle Radar Topography Mission (SRTM)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.io.srtm
-
-The SRTM data can be accessed through the :mod:`cartopy.io.srtm` module
-using classes and functions defined below.
+.. automodule:: cartopy.io.srtm
 
 .. autosummary::
     :toctree: generated/
@@ -103,10 +91,7 @@ using classes and functions defined below.
 Base classes and functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-These are the base classes in :mod:`cartopy.io` that new resources can leverage
-to implement a new reader or tile client.
-
-.. module:: cartopy.io
+.. automodule:: cartopy.io
 
 .. autosummary::
     :toctree: generated/

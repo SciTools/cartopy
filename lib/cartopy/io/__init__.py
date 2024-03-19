@@ -4,8 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 """
-Provides a collection of sub-packages for loading, saving and retrieving
-various data formats.
+These are the base classes in :mod:`cartopy.io` that new resources can leverage
+to implement a new reader or tile client. Together they provide a collection of
+sub-packages for loading, saving and retrieving various data formats.
 
 """
 

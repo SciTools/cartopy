@@ -4,7 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 """
-Implements image tile identification and fetching from various sources.
+Implements image tile identification and fetching from various sources,
+automatically loading the proper tile and resolution depending on the desired domain.
 
 
 The Matplotlib interface can make use of tile objects (defined below) via the
