@@ -254,11 +254,11 @@ class TestCRS:
 
 @pytest.fixture(params=[
     [ccrs.PlateCarree, {}],
-    [ccrs.PlateCarree, dict(
-        central_longitude=1.23)],
-    [ccrs.NorthPolarStereo, dict(
-        central_longitude=42.5,
-        globe=ccrs.Globe(ellipse="helmert"))],
+    [ccrs.PlateCarree, dict(central_longitude=1.23)],
+    [ccrs.NorthPolarStereo, dict(central_longitude=42.5,
+                                 globe=ccrs.Globe(ellipse="helmert"))],
+    [ccrs.CRS, dict(proj4_params="3088")],
+    [ccrs.epsg, dict(code="3088")]
 ])
 def proj_to_copy(request):
     cls, kwargs = request.param

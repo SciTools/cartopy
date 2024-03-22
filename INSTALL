@@ -72,7 +72,7 @@ Further information about the required dependencies can be found here:
 **pyshp** 2.3 or later (https://pypi.python.org/pypi/pyshp)
     Pure Python read/write support for ESRI Shapefile format.
 
-**pyproj** 3.1.0 or later (https://github.com/pyproj4/pyproj/)
+**pyproj** 3.3.1 or later (https://github.com/pyproj4/pyproj/)
     Python interface to PROJ (cartographic projections and coordinate transformations library).
 
 Optional Dependencies
