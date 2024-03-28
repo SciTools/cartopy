@@ -262,7 +262,9 @@ class GeoSpine(mspines.Spine):
     def _adjust_location(self):
         if self.stale:
             self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
-            self._path = mpath.Path(self._path.vertices, closed=True)
+            # Only close paths that represent a single closed polygon.
+            if np.count_nonzero(self._path.codes == mpath.Path.MOVETO) <= 1:
+                self._path = mpath.Path(self._path.vertices, closed=True)
 
     def get_window_extent(self, renderer=None):
         # make sure the location is updated so that transforms etc are
