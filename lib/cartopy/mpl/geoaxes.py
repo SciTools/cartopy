@@ -263,7 +263,7 @@ class GeoSpine(mspines.Spine):
     def _ensure_path_closed(path):
         """Method to ensure that a path contains only closed sub-paths."""
         # Split the path into potential sub-paths
-        path_splits = np.where(path.codes == Path.MOVETO)[0]
+        path_splits = np.where(path.codes == mpath.Path.MOVETO)[0]
 
         # Loop over sub-paths and make sure all paths are closed
         vertices, codes = [], []
@@ -273,19 +273,19 @@ class GeoSpine(mspines.Spine):
                 ):
 
             # Ignore paths with less than 3 entries to make sure polygons
-            # have a finite area, e.g. (Path.MOVETO and 2 vertices)
+            # have a finite area, e.g. (mpath.Path.MOVETO and 2 vertices)
             if len(sub_codes) < 3:
                 continue
 
             # If the path is not closed, close with the first vertex
-            if not sub_codes[-1] == Path.CLOSEPOLY:
-                codes.extend((*sub_codes, Path.CLOSEPOLY))
+            if not sub_codes[-1] == mpath.Path.CLOSEPOLY:
+                codes.extend((*sub_codes, mpath.Path.CLOSEPOLY))
                 vertices.extend((*sub_vertices, sub_vertices[0]))
             else:
                 codes.extend(sub_codes)
                 vertices.extend(sub_vertices)
 
-        return Path(vertices, codes)
+        return mpath.Path(vertices, codes)
 
     def _adjust_location(self):
         if self.stale:
