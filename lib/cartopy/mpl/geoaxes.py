@@ -259,12 +259,39 @@ class GeoSpine(mspines.Spine):
         self.set_transform(transform)
         self.stale = True
 
+    @staticmethod
+    def _ensure_path_closed(path):
+        """Method to ensure that a path contains only closed sub-paths."""
+        # Split the path into potential sub-paths
+        path_splits = np.where(path.codes == Path.MOVETO)[0]
+
+        # Loop over sub-paths and make sure all paths are closed
+        vertices, codes = [], []
+        for sub_vertices, sub_codes in zip(
+                np.split(path.vertices, path_splits),
+                np.split(path.codes, path_splits)
+                ):
+
+            # Ignore paths with less than 3 entries to make sure polygons
+            # have a finite area, e.g. (Path.MOVETO and 2 vertices)
+            if len(sub_codes) < 3:
+                continue
+
+            # If the path is not closed, close with the first vertex
+            if not sub_codes[-1] == Path.CLOSEPOLY:
+                codes.extend((*sub_codes, Path.CLOSEPOLY))
+                vertices.extend((*sub_vertices, sub_vertices[0]))
+            else:
+                codes.extend(sub_codes)
+                vertices.extend(sub_vertices)
+
+        return Path(vertices, codes)
+
     def _adjust_location(self):
         if self.stale:
-            self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
-            # Only close paths that represent a single closed polygon.
-            if np.count_nonzero(self._path.codes == mpath.Path.MOVETO) <= 1:
-                self._path = mpath.Path(self._path.vertices, closed=True)
+            self._path = self._ensure_path_closed(
+                self._original_path.clip_to_bbox(self.axes.viewLim)
+                )
 
     def get_window_extent(self, renderer=None):
         # make sure the location is updated so that transforms etc are
