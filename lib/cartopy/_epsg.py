@@ -24,3 +24,6 @@ class _EPSGProjection(ccrs.Projection):
 
     def __repr__(self):
         return f'_EPSGProjection({self.epsg_code})'
+
+    def __reduce__(self):
+        return self.__class__, (self.epsg_code, )
