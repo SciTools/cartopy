@@ -7,7 +7,8 @@
 
 """
 This module defines the Geodesic class which can interface with the Proj
-geodesic functions.
+geodesic functions. See the `Proj geodesic page <https://proj.org/geodesic.html>`_
+for more background information.
 
 """
 import numpy as np

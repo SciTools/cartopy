@@ -4,7 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 """
-Combine the shapefile access of pyshp with the
+This module provides a basic interface for accessing shapefiles.
+Combine the shapefile access of pyshp or fiona with the
 geometry representation of shapely:
 
     >>> import cartopy.io.shapereader as shapereader

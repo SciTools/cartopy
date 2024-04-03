@@ -3,13 +3,12 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 """
-Provide shapely geometry <-> matplotlib path support.
+Extra functionality that is primarily intended for developers, providing support for
+transforming between Shapely geometries and Matplotlib paths.
 
-See also `Shapely Geometric Objects <see_also_shapely>`_
+See also `Shapely Geometric Objects
+<https://shapely.readthedocs.io/en/latest/manual.html#geometric-objects>`_
 and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
-
-.. see_also_shapely:
-   https://shapely.readthedocs.io/en/latest/manual.html#geometric-objects
 
 """
 
