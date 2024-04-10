@@ -1,0 +1,68 @@
+Version 0.23 (April 10, 2024)
+=============================
+
+Cartopy has been relicensed from LGPL-3 to BSD-3-Clause. All contributions
+to Cartopy are now under the BSD-3-Clause license.
+
+Python 3.12 and Numpy 2 are now supported and the new minimum supported versions
+of dependencies that have been updated are:
+
+* Matplotlib v3.5
+* Pyshp v2.3
+
+There are several updates to the geometry and feature handling,
+making these more compatible with the Matplotlib semantics.
+
+Features
+--------
+
+* Xianxiang Li added the ability to modify the properties of the stock images (:pull:`2230`)
+
+* @lgolston updated the shapefile readers and added documentation. (:pull:`2236`)
+
+* Ruth Comer turned the ``GridLiner`` into a Matplotlib ``Artist`` making it easier to
+  add and remove gridlines and fewer internal draws for better performance. (:pull:`2249`, :pull:`2252`)
+
+* The cartopy feature download script (useful for downloading Natural Earth Features
+  for offline use) can be invoked within the package directly
+  using :code:`python -m cartopy.feature.download`, or through the installed command
+  line interface using :code:`cartopy-feature-download`. (:pull:`2263`)
+
+* The Stamen Maps API is no longer available. There is a new class ``StadiaMaps``
+  that can be used to access the Stadia Maps API which contains the
+  Stamen styled tiles. (:pull:`2269`)
+
+* Greg Lucas made it easier to handle projections on non-earth bodies that
+  would error previously. (:pull:`2283`)
+
+* Kevin Dungs added the ability to use Levels 5 and 6 in GSHHS features
+  for Antarctica. (:pull:`2317`)
+
+* Ruth Comer changed a single geometry that is split into two across a boundary
+  to be drawn as a compound path rather than two independent paths. This makes
+  it easier to style the geometry consistently. (:pull:`2325`)
+
+* Ruth Comer has converted the ``FeatureArtist`` into a Matplotlib ``Collection``.
+  This makes it easier to set properties on the features and enables arrays to
+  be used to style a set of features. (:pull:`2323`)
+  A new example demonstrating this has been added to the gallery
+  :ref:`sphx_glr_gallery_scalar_data_geometry_data.py`
+
+Deprecations and Removals
+-------------------------
+
+* The ``cartopy.mpl.style`` module has been deprecated with no replacement
+  and will be removed in a future release. Users should combine and merge styles
+  themselves now.
+* The **auto_update** keyword argument to ``gridlines`` and ``GridLiner`` is
+  deprecated and will be removed in a future release. In the future the gridlines
+  will always be updated when the plot is drawn.
+* The gridliner labelling options
+  ``cartopy.mpl.gridliner.Gridliner.xlabels_top``,
+  ``cartopy.mpl.gridliner.Gridliner.xlabels_bottom``,
+  ``cartopy.mpl.gridliner.Gridliner.ylabels_left``, and
+  ``cartopy.mpl.gridliner.Gridliner.ylabels_right`` have been removed.
+  Instead, use :attr:`cartopy.mpl.gridliner.Gridliner.top_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.bottom_labels`,
+  :attr:`cartopy.mpl.gridliner.Gridliner.left_labels`, or
+  :attr:`cartopy.mpl.gridliner.Gridliner.right_labels`.
