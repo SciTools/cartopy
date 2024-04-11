@@ -336,6 +336,7 @@ def test_grid_labels_inline_usa(proj):
     return fig
 
 
+@pytest.mark.natural_earth
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_bbox_style.png',
                                tolerance=grid_label_tol)
@@ -496,6 +497,7 @@ def test_gridliner_count_draws():
         mocked.assert_called_once()
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     baseline_dir='baseline_images/mpl/test_mpl_integration',
     filename='simple_global.png')
@@ -522,6 +524,7 @@ def test_gridliner_save_tight_bbox():
     fig.savefig(io.BytesIO(), bbox_inches='tight')
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
                                tolerance=grid_label_tol)
 def test_gridliner_title_adjust():
