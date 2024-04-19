@@ -183,7 +183,7 @@ def path_to_geos(path, force_ccw=False):
         except GEOSException:
             # If the GEOSException is raised, it is likely that the polygon
             # is invalid.  In this case, we can't use the contains method.
-            # Therefore, we need to perform a repair on the Polygon object 
+            # Therefore, we need to perform a repair on the Polygon object
             # and then attempt the contains method again. Related Issue: #2370
             polygon = collection[-1][0].buffer(0)
             collection[-1] = (polygon, collection[-1][1])
@@ -191,7 +191,7 @@ def path_to_geos(path, force_ccw=False):
                 isinstance(collection[-1][0], sgeom.Polygon) and
                 isinstance(geom, sgeom.Polygon) and
                 collection[-1][0].contains(geom.exterior))
-    
+
         if geom.is_empty:
             pass
         elif is_inside:
