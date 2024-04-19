@@ -15,7 +15,7 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 from matplotlib.path import Path
 import numpy as np
 import shapely.geometry as sgeom
-
+from shapely.errors import GEOSException
 
 def geos_to_path(shape):
     """
@@ -170,12 +170,26 @@ def path_to_geos(path, force_ccw=False):
         # lake within a land mass).  Sometimes there is a further geom within
         # this interior (e.g. an island in a lake, or some instances of
         # contours).  This needs to be a new external geom in the collection.
-        if geom.is_empty:
-            pass
-        elif (len(collection) > 0 and
+        try:
+            is_inside = (len(collection) > 0 and
                 isinstance(collection[-1][0], sgeom.Polygon) and
                 isinstance(geom, sgeom.Polygon) and
-                collection[-1][0].contains(geom.exterior)):
+                collection[-1][0].contains(geom.exterior))
+        except GEOSException:
+            # If the GEOSException is raised, it is likely that the polygon
+            # is invalid.  In this case, we can't use the contains method.
+            # Therefore, we need to perform a repair on the Polygon object 
+            # and then attempt the contains method again. Related Issue: #2370
+            polygon = collection[-1][0].buffer(0)
+            collection[-1] = (polygon, collection[-1][1])
+            is_inside = (len(collection) > 0 and
+                isinstance(collection[-1][0], sgeom.Polygon) and
+                isinstance(geom, sgeom.Polygon) and
+                collection[-1][0].contains(geom.exterior))
+    
+        if geom.is_empty:
+            pass
+        elif is_inside:
             if any(internal.contains(geom) for internal in collection[-1][1]):
                 collection.append((geom, []))
             else:
