@@ -15,7 +15,12 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 from matplotlib.path import Path
 import numpy as np
 import shapely.geometry as sgeom
-from shapely.errors import GEOSException
+import shapely
+
+if shapely.__version__ < '2.0.0':
+    from shapely.errors import TopologicalError as GEOSException
+else:
+    from shapely.errors import GEOSException
 
 def geos_to_path(shape):
     """
