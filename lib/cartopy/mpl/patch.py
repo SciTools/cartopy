@@ -22,6 +22,7 @@ if shapely.__version__ < '2.0.0':
 else:
     from shapely.errors import GEOSException
 
+
 def geos_to_path(shape):
     """
     Create a list of :class:`matplotlib.path.Path` objects that describe
@@ -175,34 +176,34 @@ def path_to_geos(path, force_ccw=False):
         # lake within a land mass).  Sometimes there is a further geom within
         # this interior (e.g. an island in a lake, or some instances of
         # contours).  This needs to be a new external geom in the collection.
-        try:
-            is_inside = (len(collection) > 0 and
-                isinstance(collection[-1][0], sgeom.Polygon) and
-                isinstance(geom, sgeom.Polygon) and
-                collection[-1][0].contains(geom.exterior))
-        except GEOSException:
-            # If the GEOSException is raised, it is likely that the polygon
-            # is invalid.  In this case, we can't use the contains method.
-            # Therefore, we need to perform a repair on the Polygon object
-            # and then attempt the contains method again. Related Issue: #2370
-            polygon = collection[-1][0].buffer(0)
-            collection[-1] = (polygon, collection[-1][1])
-            is_inside = (len(collection) > 0 and
-                isinstance(collection[-1][0], sgeom.Polygon) and
-                isinstance(geom, sgeom.Polygon) and
-                collection[-1][0].contains(geom.exterior))
-
         if geom.is_empty:
             pass
-        elif is_inside:
-            if any(internal.contains(geom) for internal in collection[-1][1]):
-                collection.append((geom, []))
-            else:
-                collection[-1][1].append(geom)
-        elif isinstance(geom, sgeom.Point):
-            other_result_geoms.append(geom)
         else:
-            collection.append((geom, []))
+            if (len(collection) > 0 and
+                    isinstance(collection[-1][0], sgeom.Polygon) and
+                    isinstance(geom, sgeom.Polygon)):
+                try:
+                    is_inside = collection[-1][0].contains(geom.exterior)
+                except GEOSException:
+                    # If the GEOSException is raised, it is likely that the polygon
+                    # is invalid. In this case, we can't use the contains method.
+                    # Therefore, we need to perform a repair on the Polygon object
+                    # and then attempt the contains method again. Related Issue: #2370
+                    polygon = collection[-1][0].buffer(0)
+                    collection[-1] = (polygon, collection[-1][1])
+                    is_inside = collection[-1][0].contains(geom.exterior)
+            else:
+                is_inside = False
+
+            if is_inside:
+                if any(internal.contains(geom) for internal in collection[-1][1]):
+                    collection.append((geom, []))
+                else:
+                    collection[-1][1].append(geom)
+            elif isinstance(geom, sgeom.Point):
+                other_result_geoms.append(geom)
+            else:
+                collection.append((geom, []))
 
     # Convert each (external_geom, [internal_polygons]) pair into a
     # a shapely Polygon that encapsulates the internal polygons, if the
