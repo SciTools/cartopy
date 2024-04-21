@@ -17,6 +17,7 @@ import numpy as np
 import shapely
 import shapely.geometry as sgeom
 
+
 if shapely.__version__ < '2.0.0':
     from shapely.errors import TopologicalError as GEOSException
 else:
