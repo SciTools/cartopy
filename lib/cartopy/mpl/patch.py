@@ -190,7 +190,7 @@ def path_to_geos(path, force_ccw=False):
                     # is invalid. In this case, we can't use the contains method.
                     # Therefore, we need to perform a repair on the Polygon object
                     # and then attempt the contains method again. Related Issue: #2370
-                    polygon = collection[-1][0].buffer(0)
+                    polygon = collection[-1][0].buffer(0.001).buffer(-0.001)
                     collection[-1] = (polygon, collection[-1][1])
                     is_inside = collection[-1][0].contains(geom.exterior)
             else:
