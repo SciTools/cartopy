@@ -14,7 +14,7 @@ from . import ShapelyFeature
 
 class Nightshade(ShapelyFeature):
     def __init__(self, date=None, delta=0.1, refraction=-0.83,
-                 color="k", alpha=0.5, **kwargs):
+                 color="k", alpha=0.5, sub_solar_coords=None, **kwargs):
         """
         Shade the darkside of the Earth, accounting for refraction.
 
@@ -47,8 +47,12 @@ class Nightshade(ShapelyFeature):
 
         # Returns the Greenwich hour angle,
         # need longitude (opposite direction)
-        lat, lon = _solar_position(date)
+        if sub_solar_coords is None:        #if not specified proceed as usual
+            lat, lon = _solar_position(date)
+        else:
+            lat, lon = sub_solar_coords     #if specified, use given coordinates
         pole_lon = lon
+                     
         if lat > 0:
             pole_lat = -90 + lat
             central_lon = 180
