@@ -190,8 +190,23 @@ def path_to_geos(path, force_ccw=False):
                     # is invalid. In this case, we can't use the contains method.
                     # Therefore, we need to perform a repair on the Polygon object
                     # and then attempt the contains method again. Related Issue: #2370
-                    polygon = collection[-1][0].buffer(0.001).buffer(-0.001)
-                    collection[-1] = (polygon, collection[-1][1])
+                    invalid_polygon = collection[-1][0]
+
+                    # Due to some invalid Polygon objects being connected by isolated points, 
+                    # using buffer(0) would convert them into a MultiPolygon, leading to more 
+                    # complex situations. Therefore, in this case, applying a small +/- buffer 
+                    # offset is used to connect these polygons together and resolve the issue.
+
+                    # To adapt to processing at different scales, the choice of the buffer 
+                    # parameter needs to be dynamically adjusted based on the size of the polygon. 
+                    # Here, 0.0001 times the maximum latitude and longitude difference of the 
+                    # polygon is used as the buffer size.
+                    minx, miny, maxx, maxy = invalid_polygon.bounds
+                    dimension = max(maxx - minx, maxy - miny)
+                    buffer_size = dimension * 0.0001
+
+                    valid_polygon = invalid_polygon.buffer(buffer_size).buffer(-buffer_size)
+                    collection[-1] = (valid_polygon, collection[-1][1])
                     is_inside = collection[-1][0].contains(geom.exterior)
             else:
                 is_inside = False
