@@ -1790,7 +1790,7 @@ class LambertConformal(Projection):
             lons[1:-1] = np.linspace(central_longitude - 180 + 0.001,
                                      central_longitude + 180 - 0.001, n)
 
-        points = self.transform_points(PlateCarree(globe=globe), lons, lats)
+        points = self.transform_points(self.as_geodetic(), lons, lats)
 
         self._boundary = sgeom.LinearRing(points)
         mins = np.min(points, axis=0)
@@ -1866,7 +1866,7 @@ class LambertAzimuthalEqualArea(Projection):
         lon = central_longitude + 180
         sign = np.sign(central_latitude) or 1
         lat = -central_latitude + sign * 0.01
-        x, max_y = self.transform_point(lon, lat, PlateCarree(globe=globe))
+        x, max_y = self.transform_point(lon, lat, self.as_geodetic())
 
         coords = _ellipse_boundary(a * 1.9999, max_y - false_northing,
                                    false_easting, false_northing, 61)
