@@ -33,7 +33,7 @@ class Nightshade(ShapelyFeature):
             The coordinates in degrees of the point at which the sun is directly
             overhead. If both sub_solar_point and date are provided, sub_solar_point
             takes precedence.
-            
+
         Note
         ----
             Matplotlib keyword arguments can be used when drawing the feature.
