@@ -51,10 +51,12 @@ class Nightshade(ShapelyFeature):
 
         # Returns the Greenwich hour angle,
         # need longitude (opposite direction)
-        if sub_solar_point is None:        #if not specified proceed as usual
+        if sub_solar_point is None:
+            #If not specified proceed as usual
             lat, lon = _solar_position(date)
         else:
-            lat, lon = sub_solar_point     #if specified, use given coordinates
+            #If specified, use given coordinates
+            lat, lon = sub_solar_point
         pole_lon = lon
         if lat > 0:
             pole_lat = -90 + lat
