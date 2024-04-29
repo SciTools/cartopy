@@ -16,7 +16,7 @@ class Nightshade(ShapelyFeature):
     def __init__(self, date=None, delta=0.1, refraction=-0.83,
                  color="k", alpha=0.5, sub_solar_point=None, **kwargs):
         """
-        Shade the darkside of the Earth, accounting for refraction.
+        Shade the darkside of a body, accounting for refraction.
 
         Parameters
         ----------
@@ -29,12 +29,11 @@ class Nightshade(ShapelyFeature):
         refraction : float
             The adjustment in degrees due to refraction,
             thickness of the solar disc, elevation etc...
-        sub_solar_point : tuple of latitude, longitude
-            The coordinates in degrees of the point at which the sun is directly 
+        sub_solar_point : tuple of latitude, longitude, optional
+            The coordinates in degrees of the point at which the sun is directly
             overhead. If both sub_solar_point and date are provided, sub_solar_point
             takes precedence.
             
-
         Note
         ----
             Matplotlib keyword arguments can be used when drawing the feature.
@@ -57,7 +56,6 @@ class Nightshade(ShapelyFeature):
         else:
             lat, lon = sub_solar_point     #if specified, use given coordinates
         pole_lon = lon
-                     
         if lat > 0:
             pole_lat = -90 + lat
             central_lon = 180
