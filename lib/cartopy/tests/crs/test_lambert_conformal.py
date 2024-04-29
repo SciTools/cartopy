@@ -3,6 +3,7 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
+import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pyproj
 import pytest
@@ -36,6 +37,17 @@ def test_default_with_cutoff():
 
     assert_array_almost_equal(crs.y_limits,
                               (-49788019.81831982, 30793476.08487709))
+
+
+def test_sphere():
+    """Test LambertConformal with spherical globe. (#2377)"""
+    globe = ccrs.Globe(ellipse='sphere')
+
+    # This would error creating a boundary
+    crs = ccrs.LambertConformal(globe=globe)
+
+    assert np.all(np.isfinite(crs.x_limits))
+    assert np.all(np.isfinite(crs.y_limits))
 
 
 def test_specific_lambert():
