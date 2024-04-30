@@ -4,12 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 from itertools import chain
 
-import matplotlib.pyplot as plt
 from matplotlib.path import Path
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
+
 
 circle_verts = np.array([
     (21.33625905034713, 41.90051020408163),
