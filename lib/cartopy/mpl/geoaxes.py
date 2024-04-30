@@ -16,27 +16,26 @@ plot results from source coordinates to the GeoAxes' target projection.
 import collections
 import contextlib
 import functools
+import itertools
 import json
 import os
 from pathlib import Path
 import warnings
 import weakref
-import itertools
 
 import matplotlib as mpl
 import matplotlib.artist
 import matplotlib.axes
 import matplotlib.contour
 from matplotlib.image import imread
-from matplotlib.patheffects import Stroke, Normal
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
+from matplotlib.patheffects import Normal, Stroke
 import matplotlib.spines as mspines
 import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
-
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -1517,7 +1516,7 @@ class GeoAxes(matplotlib.axes.Axes):
         self.add_artist(gl)
         return gl
 
-    def zebra_frame(self, lw=3, colors= None, crs=None, zorder=None, use_ticks = False, use_extent = True, nrow=8, ncolumn=8):    
+    def zebra_frame(self, lw=3, colors= None, crs=None, zorder=None, use_ticks = False, use_extent = True, nrow=8, ncolumn=8):
         """
         Author: Chang Liao (changliao1025@outlook.com)
         Automatically add zebra frame to the axes, in the given coordinate
@@ -1544,7 +1543,7 @@ class GeoAxes(matplotlib.axes.Axes):
         Notes
         -----
         Details: https://github.com/SciTools/cartopy/issues/1830
-        
+
         """
         # Alternate black and white line segments
         if colors is None:
@@ -1557,30 +1556,30 @@ class GeoAxes(matplotlib.axes.Axes):
             for color in colors:
                 if not matplotlib.colors.is_color_like(color):
                     raise ValueError(f"{color} is not a valid color.")
-                
+
             bws = itertools.cycle(colors)
-            
+
         self.spines["geo"].set_visible(False)
         #by default, the extent will be used
         if use_extent is True:
             left, right, bottom, top = self.get_extent()
             crs_map = self.projection
             xticks = np.arange(left, right+(right-left)/(ncolumn+1), (right-left)/ncolumn)
-            yticks = np.arange(bottom, top+(top-bottom)/(nrow+1), (top-bottom)/nrow)   
-        else:  
-            if use_ticks is True:                 
+            yticks = np.arange(bottom, top+(top-bottom)/(nrow+1), (top-bottom)/nrow)
+        else:
+            if use_ticks is True:
                 crs_map = crs
                 xticks = sorted([*self.get_xticks()])
-                xticks = np.unique(np.array(xticks))        
+                xticks = np.unique(np.array(xticks))
                 yticks = sorted([*self.get_yticks()])
-                yticks = np.unique(np.array(yticks))    
+                yticks = np.unique(np.array(yticks))
                 #check ticks size
                 if len(xticks) < 2 or len(yticks) < 2:
-                    raise ValueError("The ticks must have at least two values.")    
+                    raise ValueError("The ticks must have at least two values.")
             else:
                 #throw an error that one option must be true
                 raise ValueError("One of the options 'use_extent' or 'use_ticks' must be set to True.")
-            
+
 
         for ticks, which in zip([xticks, yticks], ["lon", "lat"]):
             for idx, (start, end) in enumerate(zip(ticks, ticks[1:])):

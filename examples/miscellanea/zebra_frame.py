@@ -19,14 +19,12 @@ In the third example, labels are drawn only on the left and bottom sides.
 """
 import matplotlib.pyplot as plt
 
-
 import cartopy.crs as ccrs
-import cartopy.feature as cfeature
 
 
 def main():
 
-    
+
 
     plt.figure(figsize=(6.9228, 3))
     ax1 = plt.axes(projection=ccrs.InterruptedGoodeHomolosine())
