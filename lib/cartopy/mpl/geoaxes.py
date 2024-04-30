@@ -1573,7 +1573,10 @@ class GeoAxes(matplotlib.axes.Axes):
                 xticks = sorted([*self.get_xticks()])
                 xticks = np.unique(np.array(xticks))        
                 yticks = sorted([*self.get_yticks()])
-                yticks = np.unique(np.array(yticks))        
+                yticks = np.unique(np.array(yticks))    
+                #check ticks size
+                if len(xticks) < 2 or len(yticks) < 2:
+                    raise ValueError("The ticks must have at least two values.")    
             else:
                 #throw an error that one option must be true
                 raise ValueError("One of the options 'use_extent' or 'use_ticks' must be set to True.")
