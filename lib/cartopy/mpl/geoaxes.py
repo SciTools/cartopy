@@ -1517,6 +1517,9 @@ class GeoAxes(matplotlib.axes.Axes):
         return gl
 
     def zebra_frame(self, lw=3, colors= None, crs=None, zorder=None, use_ticks = False, use_extent = True, nrow=8, ncolumn=8):
+    def zebra_frame(self, lw=3, colors= None, crs=None, 
+                    zorder=None, use_ticks = False,
+                      use_extent = True, nrow=8, ncolumn=8):    
         """
         Author: Chang Liao (changliao1025@outlook.com)
         Automatically add zebra frame to the axes, in the given coordinate
@@ -1549,18 +1552,15 @@ class GeoAxes(matplotlib.axes.Axes):
         if colors is None:
             bws = itertools.cycle(["k", "w"])
         else:
-            #check colors size
-            nColor = len(colors)
-            if nColor !=2 :
+            if len(colors) != 2:
                 raise ValueError("The colors must be a list of two colors.")
             for color in colors:
                 if not matplotlib.colors.is_color_like(color):
                     raise ValueError(f"{color} is not a valid color.")
-
             bws = itertools.cycle(colors)
 
         self.spines["geo"].set_visible(False)
-        #by default, the extent will be used
+
         if use_extent is True:
             left, right, bottom, top = self.get_extent()
             crs_map = self.projection
@@ -1590,18 +1590,19 @@ class GeoAxes(matplotlib.axes.Axes):
                 else:
                     xs = [[xticks[0], xticks[0]], [xticks[-1], xticks[-1]]]
                     ys = [[start, end], [start, end]]
-
-                # For first and last lines, used the "projecting" effect
                 capstyle = "butt" if idx not in (0, len(ticks) - 2) else "projecting"
                 for (xx, yy) in zip(xs, ys):
-                    self.plot(xx, yy, color=bw, linewidth=max(0, lw - self.spines["geo"].get_linewidth()*2), clip_on=False,
-                        transform=crs_map, zorder=zorder, solid_capstyle=capstyle,
-                        # Add a black border to accentuate white segments
-                        path_effects=[
-                            Stroke(linewidth=lw, foreground="black"),
-                            Normal(),
-                        ],
-                    )
+                    lw_geo = self.spines["geo"].get_linewidth()
+                    self.plot(xx, yy, color=bw,
+                              linewidth=max(0, lw - lw_geo * 2),
+                              clip_on=False,
+                              transform=crs_map, zorder=zorder,
+                              solid_capstyle=capstyle,
+                              path_effects=[
+                                  Stroke(linewidth=lw, foreground="black"),
+                                  Normal(),
+                              ],
+                              )
 
         return
 
