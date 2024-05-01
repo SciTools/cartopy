@@ -580,18 +580,11 @@ class GeoAxes(matplotlib.axes.Axes):
         self.dataLim.intervalx = self.projection.x_limits
         self.dataLim.intervaly = self.projection.y_limits
 
-    if mpl.__version__ >= '3.6':
-        def clear(self):
-            """Clear the current Axes and add boundary lines."""
-            result = super().clear()
-            self.__clear()
-            return result
-    else:
-        def cla(self):
-            """Clear the current Axes and add boundary lines."""
-            result = super().cla()
-            self.__clear()
-            return result
+    def clear(self):
+        """Clear the current Axes and add boundary lines."""
+        result = super().clear()
+        self.__clear()
+        return result
 
     def format_coord(self, x, y):
         """

@@ -59,14 +59,14 @@ To use it::
 
 Further information about the required dependencies can be found here:
 
-**Python** 3.9 or later (https://www.python.org/)
+**Python** 3.10 or later (https://www.python.org/)
     Python 2 support was removed in v0.19.
 
-**Matplotlib** 3.5 or later (https://matplotlib.org/)
+**Matplotlib** 3.6 or later (https://matplotlib.org/)
     Python package for 2D plotting. Python package required for any
     graphical capabilities.
 
-**Shapely** 1.7.1 or later (https://github.com/shapely/shapely)
+**Shapely** 1.8 or later (https://github.com/shapely/shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
 **pyshp** 2.3 or later (https://pypi.python.org/pypi/pyshp)
@@ -83,17 +83,17 @@ to install these optional dependencies. They are also included in some of the
 optional groups when installing. For example, use `pip install .[ows]` to install
 the optional OWS libraries.
 
-**Pillow** 6.1.0 or later (https://python-pillow.org)
+**Pillow** 9.1 or later (https://python-pillow.org)
     A popular fork of PythonImagingLibrary.
 
 **pykdtree** 1.2.2 or later (https://github.com/storpipfugl/pykdtree)
     A fast kd-tree implementation that is used for faster warping
     of images than SciPy.
 
-**SciPy** 1.6.3 or later (https://www.scipy.org/)
+**SciPy** 1.9 or later (https://www.scipy.org/)
     A Python package for scientific computing.
 
-**OWSLib** 0.24.1 or later (https://pypi.python.org/pypi/OWSLib)
+**OWSLib** 0.27 or later (https://pypi.python.org/pypi/OWSLib)
      A Python package for client programming with the Open Geospatial
      Consortium (OGC) web service, and which gives access to Cartopy ogc
      clients.
