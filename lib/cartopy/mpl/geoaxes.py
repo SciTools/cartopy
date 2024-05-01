@@ -1515,8 +1515,8 @@ class GeoAxes(matplotlib.axes.Axes):
             auto_update=auto_update, formatter_kwargs=formatter_kwargs)
         self.add_artist(gl)
         return gl
-    
-    def zebra_frame(self, lw=3, colors= None, crs=None, 
+
+    def zebra_frame(self, lw=3, colors= None, crs=None,
                     zorder=None, use_ticks = False,
                     use_extent = True, nrow=8, ncolumn=8):
         """
