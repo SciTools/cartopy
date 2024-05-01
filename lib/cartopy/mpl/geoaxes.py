@@ -1563,8 +1563,10 @@ class GeoAxes(matplotlib.axes.Axes):
         if use_extent is True:
             left, right, bottom, top = self.get_extent()
             crs_map = self.projection
-            xticks = np.arange(left, right+(right-left)/(ncolumn+1), (right-left)/ncolumn)
-            yticks = np.arange(bottom, top+(top-bottom)/(nrow+1), (top-bottom)/nrow)
+            dx = right - left
+            dy = top - bottom
+            xticks = np.arange(left, right+dx/(ncolumn+1), dx/ncolumn)
+            yticks = np.arange(bottom, top+dy/(nrow+1), dy/nrow)
         else:
             if use_ticks is True:
                 crs_map = crs
@@ -1577,7 +1579,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     raise ValueError("The ticks must have at least two values.")
             else:
                 #throw an error that one option must be true
-                raise ValueError("One of the options 'use_extent' or 'use_ticks' must be set to True.")
+                raise ValueError("'use_extent' or 'use_ticks' must be set to True.")
 
 
         for ticks, which in zip([xticks, yticks], ["lon", "lat"]):
