@@ -90,7 +90,7 @@ jobs:
           )
           echo "include=$MATRIX" >> $GITHUB_OUTPUT
         env:
-          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
+          CIBW_BUILD: "cp310-* cp311-* cp312-*"
           # Skip 32 bit builds and musllinux due to lack of numpy wheels
           CIBW_SKIP: "*-win32 *_i686 *-musllinux*"
           CIBW_ARCHS_MACOS: x86_64 arm64

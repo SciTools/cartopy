@@ -8,21 +8,21 @@ name: cartopy-dev
 channels:
   - conda-forge
 dependencies:
-  - cython>=0.29.24
-  - numpy>=1.21
-  - shapely>=1.7.1
+  - cython>=0.29.28
+  - numpy>=1.23
+  - shapely>=1.8
   - pyshp>=2.3
   - pyproj>=3.3.1
+  - packaging>=21
   # The testing label has the proper version of freetype included
-  - conda-forge/label/testing::matplotlib-base>=3.5
+  - conda-forge/label/testing::matplotlib-base>=3.6
 
   # OWS
-  - owslib>=0.24.1
-  - pillow>=6.1.0
+  - owslib>=0.27
+  - pillow>=9.1
   # Plotting
-  - scipy>=1.6.3
+  - scipy>=1.9
   # Testing
-  - packaging>=20
   - pytest
   - pytest-mpl
   - pytest-xdist
