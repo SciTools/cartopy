@@ -31,6 +31,7 @@ def test_wmts():
 
 
 @pytest.mark.network
+@pytest.mark.xfail(reason='URL no longer valid')
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 def test_wms_tight_layout():
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -41,6 +42,7 @@ def test_wms_tight_layout():
 
 
 @pytest.mark.network
+@pytest.mark.xfail(reason='URL no longer valid')
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @pytest.mark.mpl_image_compare(filename='wms.png', tolerance=0.02)
 def test_wms():
