@@ -9,6 +9,7 @@ location information to the plots.
 
 """
 
+import inspect
 import itertools
 import operator
 import warnings
@@ -447,10 +448,13 @@ class Gridliner(matplotlib.artist.Artist):
         if auto_update is None:
             auto_update = True
         else:
+            calling_module = inspect.stack()[1].filename
             warnings.warn(
                 "The auto_update parameter was deprecated at Cartopy 0.23.  In future "
                 "the gridlines and labels will always be updated.",
-                DeprecationWarning)
+                DeprecationWarning,
+                stacklevel=(3 if calling_module.endswith('cartopy/mpl/geoaxes.py')
+                            else 2))
         self._auto_update = auto_update
 
     def has_labels(self):
