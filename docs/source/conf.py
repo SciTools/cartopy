@@ -97,6 +97,9 @@ sphinx_gallery_conf = {
         '../../examples/web_services/reprojected_wmts.py',
         '../../examples/web_services/wmts.py',
         '../../examples/web_services/wmts_time.py',
+        # OSGeo WMS has been shut off
+        # https://discourse.osgeo.org/t/map-tile-loading-pin-location-issues/6910/2
+        '../../examples/web_services/wms.py'
     ],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],

@@ -35,6 +35,7 @@ RESOLUTION = (30, 30)
 
 
 @pytest.mark.network
+@pytest.mark.xfail(reason='URL no longer valid')
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWMSRasterSource:
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
