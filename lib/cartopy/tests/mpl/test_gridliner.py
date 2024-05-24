@@ -561,6 +561,20 @@ def test_gridliner_title_noadjust():
     assert ax.title.get_position() == pos
 
 
+def test_gridliner_title_adjust_no_layout_engine():
+    fig = plt.figure()
+    ax = fig.add_subplot(projection=ccrs.PlateCarree())
+    gl = ax.gridlines(draw_labels=True)
+    title = ax.set_title("MY TITLE")
+
+    # After first draw, title should be above top labels.
+    fig.draw_without_rendering()
+    max_label_y = max([bb.get_tightbbox().ymax for bb in gl.top_label_artists])
+    min_title_y = title.get_tightbbox().ymin
+
+    assert min_title_y > max_label_y
+
+
 def test_gridliner_labels_zoom():
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
