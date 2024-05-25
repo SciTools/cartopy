@@ -448,6 +448,7 @@ class Gridliner(matplotlib.artist.Artist):
         if auto_update is None:
             auto_update = True
         else:
+            # Note #2394 should be addressed before this deprecation expires.
             calling_module = inspect.stack()[1].filename
             warnings.warn(
                 "The auto_update parameter was deprecated at Cartopy 0.23.  In future "
