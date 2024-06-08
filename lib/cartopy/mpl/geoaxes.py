@@ -538,8 +538,10 @@ class GeoAxes(matplotlib.axes.Axes):
         # Get the max ymax of all top labels
         top = -1
         for gl in gridliners:
-            if gl.has_labels():
-                # Both top and geo labels can appear at the top of the axes
+            # Both top and geo labels can appear at the top of the axes
+            if gl.top_labels or gl.geo_labels:
+                # Make sure Gridliner is populated and up-to-date
+                gl._draw_gridliner(renderer=renderer)
                 for label in (gl.top_label_artists +
                               gl.geo_label_artists):
                     bb = label.get_tightbbox(renderer)
