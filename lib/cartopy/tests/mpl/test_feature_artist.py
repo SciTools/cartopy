@@ -61,6 +61,7 @@ def cached_paths(geom, target_projection):
     return geom_cache.get(target_projection, None)
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='feature_artist.png')
 def test_feature_artist_draw(feature):
     fig, ax = robinson_map()
@@ -69,6 +70,7 @@ def test_feature_artist_draw(feature):
     return fig
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='feature_artist.png')
 def test_feature_artist_draw_facecolor_list(feature):
     fig, ax = robinson_map()
@@ -77,6 +79,7 @@ def test_feature_artist_draw_facecolor_list(feature):
     return fig
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='feature_artist.png')
 def test_feature_artist_draw_cmap(feature):
     fig, ax = robinson_map()
@@ -87,6 +90,7 @@ def test_feature_artist_draw_cmap(feature):
     return fig
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='feature_artist.png')
 def test_feature_artist_draw_styled_feature(feature):
     geoms = list(feature.geometries())
@@ -98,6 +102,7 @@ def test_feature_artist_draw_styled_feature(feature):
     return fig
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='feature_artist.png')
 def test_feature_artist_draw_styler(feature):
     geoms = list(feature.geometries())

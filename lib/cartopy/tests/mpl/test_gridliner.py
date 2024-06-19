@@ -14,7 +14,6 @@ import pytest
 from shapely.geos import geos_version
 
 import cartopy.crs as ccrs
-from cartopy.mpl import _MPL_36
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER,
@@ -336,6 +335,7 @@ def test_grid_labels_inline_usa(proj):
     return fig
 
 
+@pytest.mark.natural_earth
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_bbox_style.png',
                                tolerance=grid_label_tol)
@@ -496,6 +496,7 @@ def test_gridliner_count_draws():
         mocked.assert_called_once()
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     baseline_dir='baseline_images/mpl/test_mpl_integration',
     filename='simple_global.png')
@@ -522,6 +523,7 @@ def test_gridliner_save_tight_bbox():
     fig.savefig(io.BytesIO(), bbox_inches='tight')
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
                                tolerance=grid_label_tol)
 def test_gridliner_title_adjust():
@@ -534,10 +536,7 @@ def test_gridliner_title_adjust():
     plt.rcParams['axes.titley'] = None
 
     fig = plt.figure(layout='constrained')
-    if _MPL_36:
-        fig.get_layout_engine().set(h_pad=1/8)
-    else:
-        fig.set_constrained_layout_pads(h_pad=1/8)
+    fig.get_layout_engine().set(h_pad=1/8)
     for n, proj in enumerate(projs, 1):
         ax = fig.add_subplot(2, 2, n, projection=proj)
         ax.coastlines()
@@ -560,6 +559,20 @@ def test_gridliner_title_noadjust():
     ax.set_extent([-180, 180, -60, 60])
     fig.draw_without_rendering()
     assert ax.title.get_position() == pos
+
+
+def test_gridliner_title_adjust_no_layout_engine():
+    fig = plt.figure()
+    ax = fig.add_subplot(projection=ccrs.PlateCarree())
+    gl = ax.gridlines(draw_labels=True)
+    title = ax.set_title("MY TITLE")
+
+    # After first draw, title should be above top labels.
+    fig.draw_without_rendering()
+    max_label_y = max([bb.get_tightbbox().ymax for bb in gl.top_label_artists])
+    min_title_y = title.get_tightbbox().ymin
+
+    assert min_title_y > max_label_y
 
 
 def test_gridliner_labels_zoom():

@@ -34,6 +34,11 @@ KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
 
 
 def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
+    # TODO: This is a hack to replace the Google image URL with a static image.
+    #       This service has been deprecated by Google, so we need to replace it
+    #       See https://developers.google.com/chart/image for the notice
+    pytest.xfail(reason="Google has deprecated the tile API used in this test")
+
     x, y, z = tile
     return (f'https://chart.googleapis.com/chart?chst=d_text_outline&'
             f'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'

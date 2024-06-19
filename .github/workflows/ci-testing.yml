@@ -1,6 +1,12 @@
 name: Tests
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    # 10th of each month
+    - cron: "0 0 10 * *"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,12 +17,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.9, '3.10', '3.11', '3.12']
-        shapely-dev: [false]
+        python-version: ['3.10', '3.11', '3.12']
+        use-network: [true]
         include:
           - os: ubuntu-latest
             python-version: '3.11'
-            shapely-dev: true
+            use-network: false
 
     steps:
       - uses: actions/checkout@v4
@@ -30,28 +36,30 @@ jobs:
           cache: 'pip'
 
       - name: Minimum packages
-        if: matrix.python-version == '3.9' && matrix.os == 'ubuntu-latest'
+        if: |
+          matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest' &&
+          (github.event_name == 'push' || github.event_name == 'pull_request')
         id: minimum-packages
         run: |
-          pip install cython==0.29.24 matplotlib==3.5.3 numpy==1.21 owslib==0.24.1 pyproj==3.1 scipy==1.6.3 shapely==1.7.1 pyshp==2.3.1
+          pip install cython==0.29.28 matplotlib==3.6 numpy==1.23 owslib==0.27 pyproj==3.3.1 scipy==1.9 shapely==1.8 pyshp==2.3.1
 
       - name: Coverage packages
         id: coverage
-        # only want the coverage to be run on the latest ubuntu
-        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
+        # only want the coverage to be run on the latest ubuntu and for code changes i.e. push and pr
+        if: |
+          matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest' &&
+          (github.event_name == 'push' || github.event_name == 'pull_request')
         run: |
           echo "CYTHON_COVERAGE=1" >> $GITHUB_ENV
           # Also add doctest here to avoid windows runners which expect a different path separator
           echo "EXTRA_TEST_ARGS=--cov=cartopy -ra --doctest-modules" >> $GITHUB_ENV
           pip install cython
 
-      - name: Install Shapely dev
-        if: matrix.shapely-dev
+      - name: Install Nightlies
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
-          # Install Shapely from source on ubuntu
-          sudo apt-get update
-          sudo apt-get install -yy libgeos-dev
-          pip install git+https://github.com/shapely/shapely.git@main
+          # Install Nightly builds from Scientific Python
+          python -m pip install --pre --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple matplotlib scipy shapely
 
       - name: Install Cartopy
         id: install
@@ -68,6 +76,7 @@ jobs:
 
       - name: Testing
         id: test
+        if: matrix.use-network
         # we need to force bash to use line continuations on Windows
         shell: bash
         run: |
@@ -82,6 +91,15 @@ jobs:
               --mpl-results-path="cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}" \
               --pyargs cartopy ${EXTRA_TEST_ARGS}
 
+      - name: No Network Tests
+        # Ensure any test that needs network access has been marked as such
+        if: ${{ ! matrix.use-network }}
+        run: |
+          pip install pytest-socket
+          pytest -rfEsX -n 4 \
+              --color=yes \
+              --pyargs cartopy -m "not natural_earth and not network" --disable-socket
+
       - name: Coveralls
         if: steps.coverage.conclusion == 'success'
         env:
@@ -93,5 +111,30 @@ jobs:
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}
-          path: cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}-${{ matrix.shapely-dev }}
+          name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}
+          path: cartopy_test_output-${{ matrix.os }}-${{ matrix.python-version }}
+
+  # Separate dependent job to only upload one issue from the matrix of jobs
+  create-issue:
+    if: ${{ failure() && github.event_name == 'schedule' }}
+    needs: [build]
+    permissions:
+      issues: write
+    runs-on: ubuntu-latest
+    name: Create issue on failure
+
+    steps:
+      - name: Create issue on failure
+        uses: imjohnbo/issue-bot@v3
+        with:
+          title: "[TST] Upcoming dependency test failures"
+          body: |
+            The build with nightly wheels from matplotlib, scipy, shapely and their
+            dependencies has failed. Check the logs for any updates that need to be
+            made in cartopy.
+            https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+
+          pinned: false
+          close-previous: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

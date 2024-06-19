@@ -5,7 +5,7 @@
 
 """
 This module defines the :class:`FeatureArtist` class, for drawing
-:class:`Feature` instances with matplotlib.
+:class:`Feature` instances through an extension of the Matplotlib Artist interfaces.
 
 """
 

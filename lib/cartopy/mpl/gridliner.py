@@ -2,7 +2,14 @@
 #
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
+"""
+Cartopy can produce gridlines and ticks in any projection and add
+them to the current geoaxes projection, providing a way to add detailed
+location information to the plots.
 
+"""
+
+import inspect
 import itertools
 import operator
 import warnings
@@ -441,10 +448,14 @@ class Gridliner(matplotlib.artist.Artist):
         if auto_update is None:
             auto_update = True
         else:
+            # Note #2394 should be addressed before this deprecation expires.
+            calling_module = inspect.stack()[1].filename
             warnings.warn(
                 "The auto_update parameter was deprecated at Cartopy 0.23.  In future "
                 "the gridlines and labels will always be updated.",
-                DeprecationWarning)
+                DeprecationWarning,
+                stacklevel=(3 if calling_module.endswith('cartopy/mpl/geoaxes.py')
+                            else 2))
         self._auto_update = auto_update
 
     def has_labels(self):

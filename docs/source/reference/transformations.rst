@@ -9,9 +9,7 @@ and reshape data when going from one projection to another.
 Image transformations
 ~~~~~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.img_transform
-
-:mod:`cartopy.img_transform` contains:
+.. automodule:: cartopy.img_transform
 
 .. autosummary::
     :toctree: generated/
@@ -24,9 +22,7 @@ Image transformations
 Vector transformations
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.vector_transform
-
-:mod:`cartopy.vector_transform` contains:
+.. automodule:: cartopy.vector_transform
 
 .. autosummary::
     :toctree: generated/
@@ -36,9 +32,7 @@ Vector transformations
 Longitude wrapping
 ~~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.util
-
-:mod:`cartopy.util` contains:
+.. automodule:: cartopy.util
 
 .. autosummary::
     :toctree: generated/
@@ -50,9 +44,7 @@ Longitude wrapping
 LinearRing/LineString projection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. module:: cartopy.trace
-
-:mod:`cartopy.trace` contains:
+.. automodule:: cartopy.trace
 
 .. autosummary::
     :toctree: generated/

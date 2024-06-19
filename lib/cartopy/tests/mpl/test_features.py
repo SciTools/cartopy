@@ -46,6 +46,7 @@ def test_natural_earth_custom():
     return ax.figure
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY, reason='pykdtree or scipy is required')
 @pytest.mark.mpl_image_compare(filename='gshhs_coastlines.png', tolerance=0.95)
 def test_gshhs():

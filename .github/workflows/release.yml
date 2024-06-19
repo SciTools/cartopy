@@ -90,7 +90,7 @@ jobs:
           )
           echo "include=$MATRIX" >> $GITHUB_OUTPUT
         env:
-          CIBW_BUILD: "cp39-* cp310-* cp311-* cp312-*"
+          CIBW_BUILD: "cp310-* cp311-* cp312-*"
           # Skip 32 bit builds and musllinux due to lack of numpy wheels
           CIBW_SKIP: "*-win32 *_i686 *-musllinux*"
           CIBW_ARCHS_MACOS: x86_64 arm64
@@ -113,7 +113,7 @@ jobs:
           name: cibw-sdist
           path: dist
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce # v2.17.0
+      - uses: pypa/cibuildwheel@932529cab190fafca8c735a551657247fa8f8eaf # v2.19.1
         with:
           only: ${{ matrix.only }}
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}

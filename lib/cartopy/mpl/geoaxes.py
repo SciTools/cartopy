@@ -4,7 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 """
-This module defines the :class:`GeoAxes` class, for use with matplotlib.
+This module defines the :class:`cartopy.mpl.geoaxes.GeoAxes` class, an extension of
+matplotlib which adds a `transform` keyword argument to many plotting methods to enable
+geographic projections and boundary wrapping to occur on the axes.
 
 When a Matplotlib figure contains a GeoAxes the plotting commands can transform
 plot results from source coordinates to the GeoAxes' target projection.
@@ -565,8 +567,10 @@ class GeoAxes(matplotlib.axes.Axes):
         # Get the max ymax of all top labels
         top = -1
         for gl in gridliners:
-            if gl.has_labels():
-                # Both top and geo labels can appear at the top of the axes
+            # Both top and geo labels can appear at the top of the axes
+            if gl.top_labels or gl.geo_labels:
+                # Make sure Gridliner is populated and up-to-date
+                gl._draw_gridliner(renderer=renderer)
                 for label in (gl.top_label_artists +
                               gl.geo_label_artists):
                     bb = label.get_tightbbox(renderer)
@@ -607,18 +611,11 @@ class GeoAxes(matplotlib.axes.Axes):
         self.dataLim.intervalx = self.projection.x_limits
         self.dataLim.intervaly = self.projection.y_limits
 
-    if mpl.__version__ >= '3.6':
-        def clear(self):
-            """Clear the current Axes and add boundary lines."""
-            result = super().clear()
-            self.__clear()
-            return result
-    else:
-        def cla(self):
-            """Clear the current Axes and add boundary lines."""
-            result = super().cla()
-            self.__clear()
-            return result
+    def clear(self):
+        """Clear the current Axes and add boundary lines."""
+        result = super().clear()
+        self.__clear()
+        return result
 
     def format_coord(self, x, y):
         """
@@ -1507,7 +1504,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         Keyword Parameters
         ------------------
-        **kwargs: dict
+        **kwargs:
             All other keywords control line properties.  These are passed
             through to :class:`matplotlib.collections.Collection`.
 

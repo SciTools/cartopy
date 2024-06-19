@@ -11,6 +11,9 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
 
    - Wikipedia (August 2012)
 
+The SRTM data can be accessed through the :mod:`cartopy.io.srtm` module
+using classes and functions defined below.
+
 """
 
 import io
