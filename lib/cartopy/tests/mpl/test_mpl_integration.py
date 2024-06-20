@@ -654,6 +654,17 @@ def test_pcolormesh_single_column_wrap():
     return fig
 
 
+def test_pcolormesh_wrap_gouraud_shading_failing_mask_creation():
+    x_range = np.linspace(-180, 180, 50)
+    y_range = np.linspace(90, -90, 50)
+    x, y = np.meshgrid(x_range, y_range)
+    data = ((np.sin(np.deg2rad(x))) / 10. + np.exp(np.cos(np.deg2rad(y))))
+
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
+    ax.pcolormesh(x, y, data, transform=ccrs.PlateCarree(), shading='gouraud')
+
+
 def test_pcolormesh_diagonal_wrap():
     # Check that a cell with the top edge on one side of the domain
     # and the bottom edge on the other gets wrapped properly
