@@ -257,27 +257,22 @@ class GeoSpine(mspines.Spine):
         super().__init__(axes, 'geo', self._original_path, **kwargs)
 
     def set_boundary(self, path, transform):
-        self._original_path = path
+        # Make sure path is closed (required by "Path.clip_to_bbox")
+        self._original_path = self._ensure_path_closed(path)
         self.set_transform(transform)
         self.stale = True
 
-    @contextlib.contextmanager
-    def _cx_disable_path_siplification(self, path):
-        """Contextmanager to temporarily disable path simplification."""
-        try:
-            should_simplify = path.should_simplify
-            path.should_simplify = False
-            yield
-        finally:
-            path.should_simplify = should_simplify
-
-    def _ensure_path_closed(self, path):
+    @staticmethod
+    def _ensure_path_closed(path):
         """Method to ensure that a path contains only closed sub-paths."""
         # Split path into potential sub-paths and close all polygons
-        with self._cx_disable_path_siplification(path):
+        # (explicitly disable path simplification applied in to_polygons)
+        should_simplify = path.should_simplify
+        try:
+            path.should_simplify = False
             polygons = path.to_polygons()
-
-        m, l, c = mpath.Path.MOVETO, mpath.Path.LINETO, mpath.Path.CLOSEPOLY
+        finally:
+            path.should_simplify = should_simplify
 
         codes, vertices = [], []
         for poly in polygons:
@@ -290,9 +285,7 @@ class GeoSpine(mspines.Spine):
 
     def _adjust_location(self):
         if self.stale:
-            self._path = self._ensure_path_closed(
-                self._original_path.clip_to_bbox(self.axes.viewLim)
-                )
+            self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
 
     def get_window_extent(self, renderer=None):
         # make sure the location is updated so that transforms etc are
