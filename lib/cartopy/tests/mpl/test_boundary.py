@@ -2,7 +2,6 @@
 #
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
-from itertools import chain
 
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
@@ -32,6 +31,12 @@ circle_verts = np.array([
     (21.33625905034713, 41.90051020408163)
     ])
 
+circle_codes = [
+    Path.MOVETO,
+    *[Path.LINETO]*(len(circle_verts)),
+    Path.CLOSEPOLY
+    ]
+
 rectangle_verts = np.array([
     (55.676020408163225, 36.16071428571428),
     (130.29336734693877, 36.16071428571428),
@@ -40,55 +45,43 @@ rectangle_verts = np.array([
     (55.676020408163225, 36.16071428571428)
     ])
 
-@pytest.mark.mpl_image_compare(filename='single_path_boundary_circle.png')
-def test_single_path_boundary_circle():
-    path = circle_verts
-    bnds = [*map(min,zip(*path)), *map(max,zip(*path))]
+rectangle_codes = [
+    Path.MOVETO,
+    *[Path.LINETO]*(len(rectangle_verts)),
+    Path.CLOSEPOLY
+    ]
 
-    f, ax = plt.subplots(subplot_kw=dict(projection=ccrs.PlateCarree()))
-    ax.set_extent((bnds[0], bnds[2], bnds[1], bnds[3]))
-    ax.coastlines()
-    ax.set_boundary(Path(path))
-    return f
-
-@pytest.mark.mpl_image_compare(filename='single_path_boundary_rectangle.png')
-def test_single_path_boundary_rectangle():
-    path = rectangle_verts
-    bnds = [*map(min,zip(*path)), *map(max,zip(*path))]
-
-    f, ax = plt.subplots(subplot_kw=dict(projection=ccrs.PlateCarree()))
-    ax.set_extent((bnds[0], bnds[2], bnds[1], bnds[3]))
-    ax.coastlines()
-    ax.set_boundary(Path(path))
-    return f
 
 @pytest.mark.mpl_image_compare(filename='multi_path_boundary.png')
 def test_multi_path_boundary():
     offsets = np.array([[30, 30], [70, 30], [110, 20]])
-    circles = [circle_verts + o for o in offsets]
 
-    circle_codes = [
-        Path.MOVETO,
-        *[Path.LINETO]*(len(circle_verts)),
-        Path.CLOSEPOLY
-        ]
+    closed = [True, False, False]
 
-    rectangle_codes = [
-        Path.MOVETO,
-        *[Path.LINETO]*(len(rectangle_verts)),
-        Path.CLOSEPOLY
-        ]
+    vertices, codes = [], []
+    # add closed and open circles
+    for offset, close in zip(offsets, closed):
+        c = circle_verts + offset
+        if close:
+            vertices.extend([c[0], *c, c[-1]])
+            codes.extend([Path.MOVETO, *[Path.LINETO]*len(c), Path.CLOSEPOLY])
+        else:
+            vertices.extend([c[0], *c])
+            codes.extend([Path.MOVETO, *[Path.LINETO]*len(c)])
 
-    path = [*chain(*[[c[0], *c, c[-1]] for c in circles]),
-            rectangle_verts[0], *rectangle_verts, rectangle_verts[-1]]
+    # add rectangle
+    vertices.extend(
+        [rectangle_verts[0], *rectangle_verts, rectangle_verts[-1]]
+        )
+    codes.extend(
+        [Path.MOVETO, *[Path.LINETO]*len(rectangle_verts), Path.CLOSEPOLY]
+        )
 
-    codes = [*chain(*[circle_codes] * len(circles)), *rectangle_codes]
-
-    bnds = [*map(min,zip(*path)), *map(max,zip(*path))]
+    bnds = [*map(min, zip(*vertices)), *map(max, zip(*vertices))]
 
     f, ax = plt.subplots(subplot_kw=dict(projection=ccrs.PlateCarree()))
     ax.set_extent((bnds[0], bnds[2], bnds[1], bnds[3]))
     ax.coastlines()
-    ax.set_boundary(Path(path, codes))
+    ax.set_boundary(Path(vertices, codes))
 
     return f
