@@ -261,31 +261,28 @@ class GeoSpine(mspines.Spine):
         self.set_transform(transform)
         self.stale = True
 
-    @staticmethod
-    def _ensure_path_closed(path):
+    @contextlib.contextmanager
+    def _cx_disable_path_siplification(self, path):
+        """Contextmanager to temporarily disable path simplification."""
+        try:
+            should_simplify = path.should_simplify
+            path.should_simplify = False
+            yield
+        finally:
+            path.should_simplify = should_simplify
+
+    def _ensure_path_closed(self, path):
         """Method to ensure that a path contains only closed sub-paths."""
-        # Split the path into potential sub-paths
-        path_splits = np.where(path.codes == mpath.Path.MOVETO)[0]
+        # Split path into potential sub-paths and close all polygons
+        with self._cx_disable_path_siplification(path):
+            polygons = path.to_polygons()
 
-        # Loop over sub-paths and make sure all paths are closed
-        vertices, codes = [], []
-        for sub_vertices, sub_codes in zip(
-                np.split(path.vertices, path_splits),
-                np.split(path.codes, path_splits)
-                ):
+        m, l, c = mpath.Path.MOVETO, mpath.Path.LINETO, mpath.Path.CLOSEPOLY
 
-            # Ignore paths with less than 3 entries to make sure polygons
-            # have a finite area, e.g. (mpath.Path.MOVETO and 2 vertices)
-            if len(sub_codes) < 3:
-                continue
-
-            # If the path is not closed, close with the first vertex
-            if not sub_codes[-1] == mpath.Path.CLOSEPOLY:
-                codes.extend((*sub_codes, mpath.Path.CLOSEPOLY))
-                vertices.extend((*sub_vertices, sub_vertices[0]))
-            else:
-                codes.extend(sub_codes)
-                vertices.extend(sub_vertices)
+        codes, vertices = [], []
+        for poly in polygons:
+            vertices.extend([poly[0], *poly])
+            codes.extend([m, *[l]*(len(poly) - 1)], c)
 
         return mpath.Path(vertices, codes)
 
