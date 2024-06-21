@@ -282,7 +282,7 @@ class GeoSpine(mspines.Spine):
         codes, vertices = [], []
         for poly in polygons:
             vertices.extend([poly[0], *poly])
-            codes.extend([m, *[l]*(len(poly) - 1)], c)
+            codes.extend([m, *[l]*(len(poly) - 1), c])
 
         return mpath.Path(vertices, codes)
 
