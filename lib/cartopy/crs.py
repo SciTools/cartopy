@@ -1372,7 +1372,7 @@ class PlateCarree(_CylindricalProjection):
         bbox = [[lon_lower_bound_0, lon_lower_bound_1],
                 [lon_lower_bound_1, lon_lower_bound_0]]
 
-        bbox[1][1] += np.diff(self.x_limits)[0]
+        bbox[1][1] += self.x_limits[1] - self.x_limits[0]
 
         return bbox, lon_0_offset
 
