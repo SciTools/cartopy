@@ -1893,7 +1893,7 @@ class GeoAxes(matplotlib.axes.Axes):
                           "It is recommended to remove the wrap manually "
                           "before calling pcolormesh.")
             # With gouraud shading, we actually want an (Ny, Nx) shaped mask
-            gmask = np.zeros(data_shape, dtype=bool)
+            gmask = np.zeros((data_shape[0], data_shape[1]), dtype=bool)
             # If any of the cells were wrapped, apply it to all 4 corners
             gmask[:-1, :-1] |= mask
             gmask[1:, :-1] |= mask
