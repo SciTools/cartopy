@@ -92,11 +92,12 @@ subsection_order = ExplicitOrder(['../../examples/lines_and_polygons',
 sphinx_gallery_conf = {
     'capture_repr': (),
     'examples_dirs': ['../../examples'],
-    # NASA wmts servers are returning bad content metadata
     "expected_failing_examples": [
-        '../../examples/web_services/reprojected_wmts.py',
-        '../../examples/web_services/wmts.py',
-        '../../examples/web_services/wmts_time.py',
+        # NASA wmts servers frequently return bad content metadata
+        # uncomment these to fix the doc build failures
+        # '../../examples/web_services/reprojected_wmts.py',
+        # '../../examples/web_services/wmts.py',
+        # '../../examples/web_services/wmts_time.py',
         # OSGeo WMS has been shut off
         # https://discourse.osgeo.org/t/map-tile-loading-pin-location-issues/6910/2
         '../../examples/web_services/wms.py'
