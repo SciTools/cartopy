@@ -14,7 +14,14 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 
 from matplotlib.path import Path
 import numpy as np
+import shapely
 import shapely.geometry as sgeom
+
+
+if shapely.__version__ < '2.0.0':
+    from shapely.errors import TopologicalError as GEOSException
+else:
+    from shapely.errors import GEOSException
 
 
 def geos_to_path(shape):
@@ -172,18 +179,48 @@ def path_to_geos(path, force_ccw=False):
         # contours).  This needs to be a new external geom in the collection.
         if geom.is_empty:
             pass
-        elif (len(collection) > 0 and
-                isinstance(collection[-1][0], sgeom.Polygon) and
-                isinstance(geom, sgeom.Polygon) and
-                collection[-1][0].contains(geom.exterior)):
-            if any(internal.contains(geom) for internal in collection[-1][1]):
-                collection.append((geom, []))
-            else:
-                collection[-1][1].append(geom)
-        elif isinstance(geom, sgeom.Point):
-            other_result_geoms.append(geom)
         else:
-            collection.append((geom, []))
+            if (len(collection) > 0 and
+                    isinstance(collection[-1][0], sgeom.Polygon) and
+                    isinstance(geom, sgeom.Polygon)):
+                try:
+                    is_inside = collection[-1][0].contains(geom.exterior)
+                except GEOSException:
+                    # If the GEOSException is raised, it is likely that the polygon
+                    # is invalid. In this case, we can't use the contains method.
+                    # Therefore, we need to perform a repair on the Polygon object
+                    # and then attempt the contains method again. Related Issue: #2370
+                    invalid_polygon = collection[-1][0]
+
+                    # Due to some invalid Polygon objects being connected by isolated
+                    # points, using buffer(0) would convert them into a MultiPolygon,
+                    # leading to more complex situations. Therefore, in this case,
+                    # applying a small +/- buffer offset is used to connect these
+                    # polygons together and resolve the issue.
+
+                    # To adapt to processing at different scales, the choice of the
+                    # buffer parameter needs to be dynamically adjusted based on the
+                    # size of the polygon. Here, 0.0001 times the maximum latitude and
+                    # longitude difference of the polygon is used as the buffer size.
+                    minx, miny, maxx, maxy = invalid_polygon.bounds
+                    dimension = max(maxx - minx, maxy - miny)
+                    buffer_size = dimension * 0.0001
+
+                    polygon = invalid_polygon.buffer(buffer_size).buffer(-buffer_size)
+                    collection[-1] = (polygon, collection[-1][1])
+                    is_inside = collection[-1][0].contains(geom.exterior)
+            else:
+                is_inside = False
+
+            if is_inside:
+                if any(internal.contains(geom) for internal in collection[-1][1]):
+                    collection.append((geom, []))
+                else:
+                    collection[-1][1].append(geom)
+            elif isinstance(geom, sgeom.Point):
+                other_result_geoms.append(geom)
+            else:
+                collection.append((geom, []))
 
     # Convert each (external_geom, [internal_polygons]) pair into a
     # a shapely Polygon that encapsulates the internal polygons, if the
