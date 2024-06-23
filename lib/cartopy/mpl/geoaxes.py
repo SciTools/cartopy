@@ -61,7 +61,6 @@ _BACKG_IMG_CACHE = {}
 # CARTOPY_USER_BACKGROUNDS environment variable.
 _USER_BG_IMGS = {}
 
-
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
     """
@@ -229,13 +228,15 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
         super().set_transform(self._trans_wrap)
 
     def set_boundary(self, path, transform):
-        self._original_path = path
+        self._original_path = cpatch._ensure_path_closed(path)
         self.set_transform(transform)
         self.stale = True
 
     def _adjust_location(self):
         if self.stale:
-            self.set_path(self._original_path.clip_to_bbox(self.axes.viewLim))
+            self.set_path(
+                cpatch._ensure_path_closed(
+                    self._original_path.clip_to_bbox(self.axes.viewLim)))
             # Some places in matplotlib's transform stack cache the actual
             # path so we trigger an update by invalidating the transform.
             self._trans_wrap.invalidate()
@@ -253,14 +254,16 @@ class GeoSpine(mspines.Spine):
         super().__init__(axes, 'geo', self._original_path, **kwargs)
 
     def set_boundary(self, path, transform):
-        self._original_path = path
+        # Make sure path is closed (required by "Path.clip_to_bbox")
+        self._original_path = cpatch._ensure_path_closed(path)
         self.set_transform(transform)
         self.stale = True
 
     def _adjust_location(self):
         if self.stale:
-            self._path = self._original_path.clip_to_bbox(self.axes.viewLim)
-            self._path = mpath.Path(self._path.vertices, closed=True)
+            self._path = cpatch._ensure_path_closed(
+                self._original_path.clip_to_bbox(self.axes.viewLim)
+                )
 
     def get_window_extent(self, renderer=None):
         # make sure the location is updated so that transforms etc are
