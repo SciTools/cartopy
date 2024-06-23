@@ -2225,7 +2225,7 @@ class GeoAxes(matplotlib.axes.Axes):
             sp = super().streamplot(x, y, u, v, **kwargs)
         return sp
 
-    def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
+    def add_wmts(self, wmts, layer_name, wmts_kwargs=None, cache=False, **kwargs):
         """
         Add the specified WMTS layer to the axes.
 
@@ -2250,7 +2250,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         from cartopy.io.ogc_clients import WMTSRasterSource
         wmts = WMTSRasterSource(wmts, layer_name,
-                                gettile_extra_kwargs=wmts_kwargs)
+                                gettile_extra_kwargs=wmts_kwargs, cache=cache)
         return self.add_raster(wmts, **kwargs)
 
     def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):
