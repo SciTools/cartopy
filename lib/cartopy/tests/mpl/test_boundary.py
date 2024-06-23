@@ -52,6 +52,7 @@ rectangle_codes = [
     ]
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='multi_path_boundary.png')
 def test_multi_path_boundary():
     offsets = np.array([[30, 30], [70, 30], [110, 20]])
