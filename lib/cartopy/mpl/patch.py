@@ -17,6 +17,37 @@ import numpy as np
 import shapely.geometry as sgeom
 
 
+def _ensure_path_closed(path):
+    """
+    Method to ensure that a path contains only closed sub-paths.
+
+    Parameters
+    ----------
+    path
+        A :class:`matplotlib.path.Path` instance.
+
+    Returns
+    -------
+    path
+        A :class:`matplotlib.path.Path` instance with only closed polygons.
+
+    """
+    # Split path into potential sub-paths and close all polygons
+    # (explicitly disable path simplification applied in to_polygons)
+    should_simplify = path.should_simplify
+    try:
+        path.should_simplify = False
+        polygons = path.to_polygons()
+    finally:
+        path.should_simplify = should_simplify
+
+    codes, vertices = [], []
+    for poly in polygons:
+        vertices.extend([poly[0], *poly])
+        codes.extend([Path.MOVETO, *[Path.LINETO]*(len(poly) - 1), Path.CLOSEPOLY])
+
+    return Path(vertices, codes)
+
 def geos_to_path(shape):
     """
     Create a list of :class:`matplotlib.path.Path` objects that describe

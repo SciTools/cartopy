@@ -258,34 +258,13 @@ class GeoSpine(mspines.Spine):
 
     def set_boundary(self, path, transform):
         # Make sure path is closed (required by "Path.clip_to_bbox")
-        self._original_path = self._ensure_path_closed(path)
+        self._original_path = cpatch._ensure_path_closed(path)
         self.set_transform(transform)
         self.stale = True
 
-    @staticmethod
-    def _ensure_path_closed(path):
-        """Method to ensure that a path contains only closed sub-paths."""
-        # Split path into potential sub-paths and close all polygons
-        # (explicitly disable path simplification applied in to_polygons)
-        should_simplify = path.should_simplify
-        try:
-            path.should_simplify = False
-            polygons = path.to_polygons()
-        finally:
-            path.should_simplify = should_simplify
-
-        codes, vertices = [], []
-        for poly in polygons:
-            vertices.extend([poly[0], *poly])
-            codes.extend([mpath.Path.MOVETO,
-                          *[mpath.Path.LINETO]*(len(poly) - 1),
-                          mpath.Path.CLOSEPOLY])
-
-        return mpath.Path(vertices, codes)
-
     def _adjust_location(self):
         if self.stale:
-            self._path = self._ensure_path_closed(
+            self._path = cpatch._ensure_path_closed(
                 self._original_path.clip_to_bbox(self.axes.viewLim)
                 )
 
