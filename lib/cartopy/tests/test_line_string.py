@@ -8,6 +8,7 @@ import time
 
 import numpy as np
 import pytest
+import shapely
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
@@ -72,6 +73,15 @@ class TestLineString:
         cutoff_time = time.time() + 1
         tgt_proj.project_geometry(line_string, src_proj)
         assert time.time() < cutoff_time, 'Projection took too long'
+
+    @pytest.mark.skipif(shapely.__version__ < "2",
+                        reason="Shapely <2 has an incorrect geom_type ")
+    def test_multi_linestring_return_type(self):
+        # Check that the return type of project_geometry is a MultiLineString
+        # and not an empty list
+        multi_line_string = ccrs.Mercator().project_geometry(
+            sgeom.MultiLineString(), ccrs.PlateCarree())
+        assert isinstance(multi_line_string, sgeom.MultiLineString)
 
 
 class FakeProjection(ccrs.PlateCarree):

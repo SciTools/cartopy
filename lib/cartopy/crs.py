@@ -918,10 +918,7 @@ class Projection(CRS, metaclass=ABCMeta):
         geoms = []
         for geom in geometry.geoms:
             geoms.append(self._project_point(geom, src_crs))
-        if geoms:
-            return sgeom.MultiPoint(geoms)
-        else:
-            return sgeom.MultiPoint()
+        return sgeom.MultiPoint(geoms)
 
     def _project_multiline(self, geometry, src_crs):
         geoms = []
@@ -929,10 +926,7 @@ class Projection(CRS, metaclass=ABCMeta):
             r = self._project_line_string(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        if geoms:
-            return sgeom.MultiLineString(geoms)
-        else:
-            return []
+        return sgeom.MultiLineString(geoms)
 
     def _project_multipolygon(self, geometry, src_crs):
         geoms = []
@@ -940,11 +934,7 @@ class Projection(CRS, metaclass=ABCMeta):
             r = self._project_polygon(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        if geoms:
-            result = sgeom.MultiPolygon(geoms)
-        else:
-            result = sgeom.MultiPolygon()
-        return result
+        return sgeom.MultiPolygon(geoms)
 
     def _project_polygon(self, polygon, src_crs):
         """
