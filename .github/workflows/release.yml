@@ -20,6 +20,17 @@ on:
 
 jobs:
   build_sdist:
+    if: |
+      github.event_name == 'release' ||
+      (github.event_name == 'pull_request' && (
+        (
+          github.event.action == 'labeled' &&
+          github.event.label.name == 'CI: build wheels'
+        ) ||
+        contains(github.event.pull_request.labels.*.name,
+                'CI: build wheels')
+        )
+      )
     name: Build source distribution
     runs-on: ubuntu-latest
     outputs:
@@ -57,18 +68,8 @@ jobs:
           if-no-files-found: error
 
   generate-wheels-matrix:
-    if: |
-      github.event_name == 'release' ||
-      (github.event_name == 'pull_request' && (
-        (
-          github.event.action == 'labeled' &&
-          github.event.label.name == 'CI: build wheels'
-        ) ||
-        contains(github.event.pull_request.labels.*.name,
-                'CI: build wheels')
-        )
-      )
     name: Generate wheels matrix
+    needs: [build_sdist]
     runs-on: ubuntu-latest
     outputs:
       include: ${{ steps.set-matrix.outputs.include }}
