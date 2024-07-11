@@ -1282,6 +1282,11 @@ class GeoAxes(matplotlib.axes.Axes):
 
         if (transform is None or transform == self.transData or
                 same_projection and inside_bounds):
+            if "regrid_shape" in kwargs:
+                warnings.warn("ignoring regrid_shape because it doesn't do anything "
+                              "when working in the same projection. To avoid this "
+                              "warning, remove the 'regrid_shape' keyword argument.")
+                kwargs.pop("regrid_shape")
             result = super().imshow(img, *args, **kwargs)
         else:
             extent = kwargs.pop('extent', None)
