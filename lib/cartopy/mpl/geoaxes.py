@@ -1594,8 +1594,8 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         result = super().contour(*args, **kwargs)
 
-        # We need to compute the dataLim correctly for contours.
         if not _MPL_38:
+            # We need to compute the dataLim correctly for contours.
             bboxes = [col.get_datalim(self.transData)
                       for col in result.collections
                       if col.get_paths()]
@@ -1603,7 +1603,12 @@ class GeoAxes(matplotlib.axes.Axes):
                 extent = mtransforms.Bbox.union(bboxes)
                 self.update_datalim(extent.get_points())
         else:
-            self.update_datalim(result.get_datalim(self.transData))
+            # We need to compute the dataLim correctly for contours and set the
+            # artist's sticky edges to match.
+            datalim = result.get_datalim(self.transData)
+            self.update_datalim(datalim)
+            result.sticky_edges.x[:] = datalim.xmin, datalim.xmax
+            result.sticky_edges.y[:] = datalim.ymin, datalim.ymax
 
         self.autoscale_view()
 
@@ -1635,8 +1640,8 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         result = super().contourf(*args, **kwargs)
 
-        # We need to compute the dataLim correctly for contours.
         if not _MPL_38:
+            # We need to compute the dataLim correctly for contours.
             bboxes = [col.get_datalim(self.transData)
                       for col in result.collections
                       if col.get_paths()]
@@ -1644,7 +1649,12 @@ class GeoAxes(matplotlib.axes.Axes):
                 extent = mtransforms.Bbox.union(bboxes)
                 self.update_datalim(extent.get_points())
         else:
-            self.update_datalim(result.get_datalim(self.transData))
+            # We need to compute the dataLim correctly for contours and set the
+            # artist's sticky edges to match.
+            datalim = result.get_datalim(self.transData)
+            self.update_datalim(datalim)
+            result.sticky_edges.x[:] = datalim.xmin, datalim.xmax
+            result.sticky_edges.y[:] = datalim.ymin, datalim.ymax
 
         self.autoscale_view()
 
