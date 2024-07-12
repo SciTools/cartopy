@@ -139,6 +139,16 @@ def test_imshow_wrapping():
     assert ax.get_xlim() == (-180, 180)
 
 
+def test_imshow_arguments():
+    """Smoke test for imshow argument passing in the fast-path"""
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    # Set the regrid_shape parameter to ensure it isn't passed to Axes.imshow()
+    # in the fast-path call to super()
+    with pytest.warns(UserWarning, match="ignoring regrid_shape"):
+        ax.imshow(np.random.random((10, 10)), transform=ccrs.PlateCarree(),
+              extent=(-180, 180, -90, 90), regrid_shape=500)
+
+
 def test_imshow_rgba():
     # tests that the alpha of a RGBA array passed to imshow is set to 0
     # instead of masked
