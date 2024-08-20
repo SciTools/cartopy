@@ -466,7 +466,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                self.get_autoscaley_on())
             yield
 
-    def _draw_preprocess(self, renderer):
+    def _draw_preprocess(self):
         """
         Perform pre-processing steps shared between :func:`GeoAxes.draw`
         and :func:`GeoAxes.get_tightbbox`.
@@ -484,7 +484,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # by `draw` or `get_tightbbox` are positioned and clipped correctly.
         self.patch._adjust_location()
 
-    def get_tightbbox(self, renderer, *args, **kwargs):
+    def get_tightbbox(self, renderer=None, *args, **kwargs):
         """
         Extend the standard behaviour of
         :func:`matplotlib.axes.Axes.get_tightbbox`.
@@ -493,7 +493,7 @@ class GeoAxes(matplotlib.axes.Axes):
         calculating the tight bounding box.
         """
         # Shared processing steps
-        self._draw_preprocess(renderer)
+        self._draw_preprocess()
 
         return super().get_tightbbox(renderer, *args, **kwargs)
 
@@ -506,7 +506,7 @@ class GeoAxes(matplotlib.axes.Axes):
         A global range is used if no limits have yet been set.
         """
         # Shared processing steps
-        self._draw_preprocess(renderer)
+        self._draw_preprocess()
 
         # XXX This interface needs a tidy up:
         #       image drawing on pan/zoom;

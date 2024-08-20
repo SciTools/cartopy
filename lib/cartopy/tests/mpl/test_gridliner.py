@@ -488,7 +488,7 @@ def test_gridliner_count_draws():
     gl = ax.gridlines()
 
     with mock.patch.object(gl, '_draw_gridliner', return_value=None) as mocked:
-        ax.get_tightbbox(renderer=None)
+        ax.get_tightbbox()
         mocked.assert_called_once()
 
     with mock.patch.object(gl, '_draw_gridliner', return_value=None) as mocked:
