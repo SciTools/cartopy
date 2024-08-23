@@ -1790,8 +1790,8 @@ class GeoAxes(matplotlib.axes.Axes):
         the data coordinates before passing on to Matplotlib.
         """
         default_shading = mpl.rcParams.get('pcolor.shading')
-        if not (kwargs.get('shading', default_shading) in
-                ('nearest', 'auto') and len(args) == 3 and
+        shading = kwargs.get('shading') or default_shading
+        if not (shading in ('nearest', 'auto') and len(args) == 3 and
                 getattr(kwargs.get('transform'), '_wrappable', False)):
             return args, kwargs
 
