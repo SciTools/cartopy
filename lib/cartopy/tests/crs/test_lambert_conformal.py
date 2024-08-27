@@ -118,8 +118,8 @@ class Test_LambertConformal_standard_parallels:
 
 class TestL2E:
     def setup_class(self):
-        self.point_a = (48.13277955695077, 1.4868268900254693)
-        self.point_b = (48.68412929316207, -2.3188020040300126)
+        self.point_a = (1.4868268900254693, 48.13277955695077)
+        self.point_b = (-2.3188020040300126, 48.68412929316207)
         self.src_crs = ccrs.PlateCarree()
         self.nan = float('nan')
 
