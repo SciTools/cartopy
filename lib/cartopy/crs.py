@@ -1815,6 +1815,60 @@ class LambertConformal(Projection):
         return self._y_limits
 
 
+class L2E(Projection):
+    """
+    Lambert zone II projection (also known as "Lambert 2 étendue" in French)
+    (https://epsg.io/27572).
+
+    """
+    def __init__(self):
+        proj4_params = [('proj', 'lcc'),
+                        ('lat_1', 46.8),
+                        ('lat_0', 46.8),
+                        ('lon_0', 0.0),
+                        ('k_0', 0.99987742),
+                        ('x_0', 600000.0),
+                        ('y_0', 2200000.0),
+                        ('pm', 'paris'),
+                        ('units', 'm'),
+                        ('no_defs', None)]
+
+        globe = Globe(semimajor_axis='6378249.2',
+                      semiminor_axis='6356515.0',
+                      towgs84='-168,-60,320,0,0,0,0')
+
+        super().__init__(proj4_params, globe=globe)
+
+        x0, x1, y0, y1 = [0, 1.2e6, 1.6e6, 2.7e6]
+
+        self.bounds = (x0, x1, y0, y1)
+
+        self._boundary = sgeom.LineString(
+            [(x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0)]
+        )
+
+        self._x_limits = [x0, x1]
+        self._y_limits = [y0, y1]
+
+        self._threshold = min(x1 - x0, y1 - y0) / 100.
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+    @property
+    def x_limits(self):
+        return self._x_limits
+
+    @property
+    def y_limits(self):
+        return self._y_limits
+
+    @property
+    def threshold(self):
+        return self._threshold
+
+
 class LambertAzimuthalEqualArea(Projection):
     """
     A Lambert Azimuthal Equal-Area projection.
