@@ -59,7 +59,7 @@ jobs:
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           # Install Nightly builds from Scientific Python
-          python -m pip install --pre --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple matplotlib scipy shapely
+          python -m pip install --pre --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple matplotlib pyproj scipy shapely
 
       - name: Install Cartopy
         id: install
@@ -129,9 +129,9 @@ jobs:
         with:
           title: "[TST] Upcoming dependency test failures"
           body: |
-            The build with nightly wheels from matplotlib, scipy, shapely and their
-            dependencies has failed. Check the logs for any updates that need to be
-            made in cartopy.
+            The build with nightly wheels from matplotlib, pyproj, scipy, shapely and
+            their dependencies has failed. Check the logs for any updates that need to
+            be made in cartopy.
             https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
 
           pinned: false
