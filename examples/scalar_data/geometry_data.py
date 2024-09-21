@@ -1,6 +1,6 @@
 """
-Associating data with geometries
---------------------------------
+Choropleth map: associating data with geometries
+------------------------------------------------
 
 This example shows how to colour geometries based on a data array.  This
 functionality is available since Cartopy 0.23.
