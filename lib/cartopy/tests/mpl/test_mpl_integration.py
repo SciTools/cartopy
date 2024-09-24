@@ -1071,3 +1071,9 @@ def test_annotate():
                 )
 
     return fig
+
+
+def test_inset_axes():
+    fig, ax = plt.subplots()
+    ax.inset_axes([0.75, 0.75, 0.25, 0.25], projection=ccrs.PlateCarree())
+    fig.draw_without_rendering()
