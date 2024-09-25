@@ -2302,13 +2302,12 @@ GeoAxesSubplot = matplotlib.axes.subplot_class_factory(GeoAxes)
 GeoAxesSubplot.__module__ = GeoAxes.__module__
 
 
-def _trigger_patch_reclip(event):
+def _trigger_patch_reclip(axes):
     """
     Define an event callback for a GeoAxes which forces the background patch to
     be re-clipped next time it is drawn.
 
     """
-    axes = event.axes
     # trigger the outline and background patches to be re-clipped
     axes.spines['geo'].stale = True
     axes.patch.stale = True
