@@ -27,6 +27,7 @@ geometry representation of shapely:
 
 """
 
+import os
 import io
 import itertools
 from pathlib import Path
@@ -135,6 +136,8 @@ class BasicReader:
 
     def __init__(self, filename, bbox=None, **kwargs):
         # Validate the filename/shapefile
+        if filename.suffix == 'shp':
+            filename = os.path.join(filename.parent, filename.stem)
         self._reader = reader = shapefile.Reader(filename, **kwargs)
         self._bbox = bbox
         if reader.shp is None or reader.shx is None or reader.dbf is None:
@@ -161,7 +164,7 @@ class BasicReader:
         :meth:`~Record.geometry` method.
 
         """
-        for shape in self._reader.iterShapes(bbox=self._bbox):
+        for shape in self._reader.iterShapes():#bbox=self._bbox):
             # Skip the shape that can not be represented as geometry.
             if shape.shapeType != shapefile.NULL:
                 yield sgeom.shape(shape)
