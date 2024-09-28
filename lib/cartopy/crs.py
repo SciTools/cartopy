@@ -1815,10 +1815,9 @@ class LambertConformal(Projection):
         return self._y_limits
 
 
-class L2E(Projection):
+class LambertZoneII(Projection):
     """
-    Lambert zone II projection (also known as "Lambert 2 étendue" in French)
-    (https://epsg.io/27572).
+    Lambert zone II (extended) projection (https://epsg.io/27572).
 
     """
     def __init__(self):
