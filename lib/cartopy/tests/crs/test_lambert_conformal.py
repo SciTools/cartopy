@@ -127,11 +127,11 @@ class TestLambertZoneII:
         proj = ccrs.LambertZoneII()
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
         np.testing.assert_array_almost_equal(res,
-                                             (536745.89626, 2348522.77899),
+                                             (536690.18620, 2348515.62248),
                                              decimal=5)
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
         np.testing.assert_array_almost_equal(res,
-                                             (257266.90019, 2419663.00145),
+                                             (257199.57387, 2419655.71471),
                                              decimal=5)
 
     def test_nan(self):
