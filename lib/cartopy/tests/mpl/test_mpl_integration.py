@@ -172,6 +172,7 @@ def test_simple_global():
     pytest.param((ccrs.InterruptedGoodeHomolosine, dict(emphasis='land')),
                  id='InterruptedGoodeHomolosine'),
     ccrs.LambertCylindrical,
+    ccrs.LambertZoneII,
     pytest.param((ccrs.Mercator, dict(min_latitude=-85, max_latitude=85)),
                  id='Mercator'),
     ccrs.Miller,
