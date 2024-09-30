@@ -685,7 +685,9 @@ class Projection(CRS, metaclass=ABCMeta):
             y1 = self.area_of_use.north
             lons = np.array([x0, x0, x1, x1])
             lats = np.array([y0, y1, y1, y0])
-            points = self.transform_points(self.as_geodetic(), lons, lats)
+            points = self.transform_points(
+                PlateCarree().as_geodetic(), lons, lats
+            )
             x = points[:, 0]
             y = points[:, 1]
             self.bounds = (x.min(), x.max(), y.min(), y.max())
