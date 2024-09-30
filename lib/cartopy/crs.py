@@ -1819,7 +1819,8 @@ class LambertConformal(Projection):
 
 class LambertZoneII(Projection):
     """
-    Lambert zone II (extended) projection (https://epsg.io/27572).
+    Lambert zone II (extended) projection (https://epsg.io/27572), a
+    legacy projection that covers hexagonal France and Corsica.
 
     """
     def __init__(self):
