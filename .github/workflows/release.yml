@@ -145,4 +145,4 @@ jobs:
           merge-multiple: true
 
       - name: Publish Package
-        uses: pypa/gh-action-pypi-publish@v1.10.2
+        uses: pypa/gh-action-pypi-publish@v1.10.3
