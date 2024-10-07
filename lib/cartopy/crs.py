@@ -2511,7 +2511,7 @@ class WinkelTripel(_WarpedRectangularProjection):
                         ('lon_0', central_longitude),
                         ('lat_0', 0.0)]
 
-        super(WinkelTripel, self).__init__(proj4_params,
+        super().__init__(proj4_params,
                                            central_longitude,
                                            globe=globe)
 
