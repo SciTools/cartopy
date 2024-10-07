@@ -114,3 +114,29 @@ class Test_LambertConformal_standard_parallels:
         assert_array_almost_equal(n_pole_crs.y_limits,
                                   expected_y,
                                   decimal=0)
+
+
+class TestLambertZoneII:
+    def setup_class(self):
+        self.point_a = (1.4868268900254693, 48.13277955695077)
+        self.point_b = (-2.3188020040300126, 48.68412929316207)
+        self.src_crs = ccrs.PlateCarree()
+        self.nan = float('nan')
+
+    def test_default(self):
+        proj = ccrs.LambertZoneII()
+        res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
+        np.testing.assert_array_almost_equal(res,
+                                             (536690.18620, 2348515.62248),
+                                             decimal=5)
+        res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
+        np.testing.assert_array_almost_equal(res,
+                                             (257199.57387, 2419655.71471),
+                                             decimal=5)
+
+    def test_nan(self):
+        proj = ccrs.LambertZoneII()
+        res = proj.transform_point(0.0, float('nan'), src_crs=self.src_crs)
+        assert np.all(np.isnan(res))
+        res = proj.transform_point(float('nan'), 0.0, src_crs=self.src_crs)
+        assert np.all(np.isnan(res))

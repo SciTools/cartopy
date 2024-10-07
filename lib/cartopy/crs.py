@@ -18,6 +18,7 @@ import math
 import warnings
 
 import numpy as np
+import pyproj
 from pyproj import Transformer
 from pyproj.exceptions import ProjError
 import shapely.geometry as sgeom
@@ -685,7 +686,9 @@ class Projection(CRS, metaclass=ABCMeta):
             y1 = self.area_of_use.north
             lons = np.array([x0, x0, x1, x1])
             lats = np.array([y0, y1, y1, y0])
-            points = self.transform_points(self.as_geodetic(), lons, lats)
+            points = self.transform_points(
+                PlateCarree().as_geodetic(), lons, lats
+            )
             x = points[:, 0]
             y = points[:, 1]
             self.bounds = (x.min(), x.max(), y.min(), y.max())
@@ -1813,6 +1816,20 @@ class LambertConformal(Projection):
     @property
     def y_limits(self):
         return self._y_limits
+
+
+class LambertZoneII(Projection):
+    """
+    Lambert zone II (extended) projection (https://epsg.io/27572), a
+    legacy projection that covers hexagonal France and Corsica.
+
+    """
+    def __init__(self):
+        crs = pyproj.CRS.from_epsg(27572)
+        super().__init__(crs.to_wkt())
+
+        # Projected bounds from https://epsg.io/27572
+        self.bounds = [-5242.32, 1212512.16, 1589155.51, 2706796.21]
 
 
 class LambertAzimuthalEqualArea(Projection):
