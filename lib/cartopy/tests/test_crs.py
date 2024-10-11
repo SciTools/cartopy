@@ -36,7 +36,7 @@ class TestCRS:
         ll = ccrs.Geodetic()
 
         # results obtained by nearby.org.uk.
-        lat, lon = np.array([54.5622169298669, -5.54159863617957],
+        lon, lat = np.array([-5.54159863617957, 54.5622169298669],
                             dtype=np.double)
         east, north = np.array([359000, 371000], dtype=np.double)
 
@@ -65,7 +65,7 @@ class TestCRS:
         ll = ccrs.Geodetic()
 
         # results obtained by streetmap.co.uk.
-        lat, lon = np.array([50.462023, -3.478831], dtype=np.double)
+        lon, lat = np.array([-3.478831, 50.462023], dtype=np.double)
         east, north = np.array([295132.1, 63512.6], dtype=np.double)
 
         # note the handling of precision here...
@@ -233,7 +233,7 @@ class TestCRS:
     def test_utm(self):
         utm30n = ccrs.UTM(30)
         ll = ccrs.Geodetic()
-        lat, lon = np.array([51.5, -3.0], dtype=np.double)
+        lon, lat = np.array([-3.0, 51.5], dtype=np.double)
         east, north = np.array([500000, 5705429.2], dtype=np.double)
         assert_arr_almost_eq(utm30n.transform_point(lon, lat, ll),
                              [east, north],
@@ -242,7 +242,7 @@ class TestCRS:
                              [lon, lat],
                              decimal=1)
         utm38s = ccrs.UTM(38, southern_hemisphere=True)
-        lat, lon = np.array([-18.92, 47.5], dtype=np.double)
+        lon, lat = np.array([47.5, -18.92], dtype=np.double)
         east, north = np.array([763316.7, 7906160.8], dtype=np.double)
         assert_arr_almost_eq(utm38s.transform_point(lon, lat, ll),
                              [east, north],
