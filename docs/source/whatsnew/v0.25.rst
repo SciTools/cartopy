@@ -4,3 +4,27 @@ Version 0.25 (Date TBD)
 The new minimum supported versions of dependencies that have been updated are:
 
 * Shapely 2.0
+
+
+Features
+--------
+
+* Ruth Comer introduced `~cartopy.mpl.path.shapely_to_path` and
+  `~cartopy.mpl.path.path_to_shapely` which map a single Shapely geometry or
+  collection to a single Matplotlib path and *vice versa*. (:pull:`2455`)
+
+
+Deprecations and Removals
+-------------------------
+
+* `~cartopy.mpl.patch.path_to_geos` and `~cartopy.mpl.patch.geos_to_path` are
+  deprecated.  Use `~cartopy.mpl.path.path_to_shapely` and
+  `~cartopy.mpl.path.shapely_to_path` instead.
+
+* `~cartopy.mpl.patch.path_segments` is deprecated without replacement.  The
+  implementation is simply
+
+  .. code-block:: python
+
+    pth = path.cleaned(**kwargs)
+    return pth.vertices[:-1, :], pth.codes[:-1]

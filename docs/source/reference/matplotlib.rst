@@ -64,7 +64,7 @@ Artist extensions
     SlippyImageArtist
 
 Patch
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~
 
 .. automodule:: cartopy.mpl.patch
 
@@ -74,3 +74,14 @@ Patch
     geos_to_path
     path_segments
     path_to_geos
+
+Path
+~~~~
+
+.. automodule:: cartopy.mpl.path
+
+.. autosummary::
+    :toctree: generated/
+
+    path_to_shapely
+    shapely_to_path

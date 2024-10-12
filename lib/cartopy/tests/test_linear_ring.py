@@ -16,7 +16,7 @@ class TestBoundary:
         # original ... ?
         linear_ring = sgeom.LinearRing([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.5)
-        rings, multi_line_string = projection.project_geometry(linear_ring)
+        *rings, multi_line_string = projection.project_geometry(linear_ring).geoms
 
         # The original ring should have been split into multiple pieces.
         assert len(multi_line_string.geoms) > 1
@@ -58,7 +58,7 @@ class TestBoundary:
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords, expected_n_lines in rings:
             linear_ring = sgeom.LinearRing(coords)
-            rings, mlinestr = projection.project_geometry(linear_ring)
+            *rings, mlinestr = projection.project_geometry(linear_ring).geoms
             if expected_n_lines == -1:
                 assert rings
                 assert not mlinestr
@@ -78,7 +78,7 @@ class TestMisc:
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
         ])
-        rings, multi_line_string = projection.project_geometry(linear_ring)
+        *rings, multi_line_string = projection.project_geometry(linear_ring).geoms
         # There should be one, and only one, returned ring.
         assert isinstance(multi_line_string, sgeom.MultiLineString)
         assert len(multi_line_string.geoms) == 0
@@ -129,13 +129,13 @@ class TestMisc:
         target_proj = ccrs.Stereographic(80)
 
         linear_ring = sgeom.LinearRing(coords)
-        rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
+        *rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj).geoms
         assert len(mlinestr.geoms) == 1
         assert len(rings) == 0
 
         # Check the stitch works in either direction.
         linear_ring = sgeom.LinearRing(coords[::-1])
-        rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
+        *rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj).geoms
         assert len(mlinestr.geoms) == 1
         assert len(rings) == 0
 
@@ -162,7 +162,7 @@ class TestMisc:
         tcrs = ccrs.PlateCarree()
         scrs = ccrs.PlateCarree()
 
-        rings, mlinestr = tcrs._project_linear_ring(tring, scrs)
+        *rings, mlinestr = tcrs._project_linear_ring(tring, scrs).geoms
 
         # Number of linearstrings
         assert len(mlinestr.geoms) == 4

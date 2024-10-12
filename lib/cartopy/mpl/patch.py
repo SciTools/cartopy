@@ -12,46 +12,22 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 
 """
 
+import warnings
+
 from matplotlib.path import Path
 import numpy as np
 import shapely.geometry as sgeom
 
+import cartopy.mpl.path as cpath
 
-def _ensure_path_closed(path):
-    """
-    Method to ensure that a path contains only closed sub-paths.
-
-    Parameters
-    ----------
-    path
-        A :class:`matplotlib.path.Path` instance.
-
-    Returns
-    -------
-    path
-        A :class:`matplotlib.path.Path` instance with only closed polygons.
-
-    """
-    # Split path into potential sub-paths and close all polygons
-    # (explicitly disable path simplification applied in to_polygons)
-    should_simplify = path.should_simplify
-    try:
-        path.should_simplify = False
-        polygons = path.to_polygons()
-    finally:
-        path.should_simplify = should_simplify
-
-    codes, vertices = [], []
-    for poly in polygons:
-        vertices.extend([poly[0], *poly])
-        codes.extend([Path.MOVETO, *[Path.LINETO]*(len(poly) - 1), Path.CLOSEPOLY])
-
-    return Path(vertices, codes)
 
 def geos_to_path(shape):
     """
     Create a list of :class:`matplotlib.path.Path` objects that describe
     a shape.
+
+    .. deprecated:: 0.25
+       Use `cartopy.mpl.path.shapely_to_path` instead.
 
     Parameters
     ----------
@@ -59,7 +35,7 @@ def geos_to_path(shape):
         A list, tuple or single instance of any of the following
         types: :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
-        :class:`shapely.geometry.linestring.LinearRing`,
+        :class:`shapely.geometry.polygon.LinearRing`,
         :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.multipoint.MultiPoint`,
         :class:`shapely.geometry.multipolygon.MultiPolygon`,
@@ -73,6 +49,9 @@ def geos_to_path(shape):
         A list of :class:`matplotlib.path.Path` objects.
 
     """
+    warnings.warn("geos_to_path is deprecated and will be removed in a future release."
+                  "  Use cartopy.mpl.path.shapely_to_path instead.",
+                  DeprecationWarning, stacklevel=2)
     if isinstance(shape, (list, tuple)):
         paths = []
         for shp in shape:
@@ -115,6 +94,8 @@ def path_segments(path, **kwargs):
     Create an array of vertices and a corresponding array of codes from a
     :class:`matplotlib.path.Path`.
 
+    .. deprecated:: 0.25
+
     Parameters
     ----------
     path
@@ -123,7 +104,7 @@ def path_segments(path, **kwargs):
     Other Parameters
     ----------------
     kwargs
-        See :func:`matplotlib.path.iter_segments` for details of the keyword
+        See `matplotlib.path.Path.iter_segments` for details of the keyword
         arguments.
 
     Returns
@@ -135,14 +116,19 @@ def path_segments(path, **kwargs):
         codes and their meanings.
 
     """
-    pth = path.cleaned(**kwargs)
-    return pth.vertices[:-1, :], pth.codes[:-1]
+    warnings.warn(
+        "path_segments is deprecated and will be removed in a future release.",
+        DeprecationWarning, stacklevel=2)
+    return cpath._path_segments(path, **kwargs)
 
 
 def path_to_geos(path, force_ccw=False):
     """
     Create a list of Shapely geometric objects from a
     :class:`matplotlib.path.Path`.
+
+    .. deprecated:: 0.25
+       Use `cartopy.mpl.path.path_to_shapely` instead.
 
     Parameters
     ----------
@@ -163,8 +149,11 @@ def path_to_geos(path, force_ccw=False):
         :class:`shapely.geometry.multilinestring.MultiLineString`.
 
     """
+    warnings.warn("path_to_geos is deprecated and will be removed in a future release."
+                  "  Use cartopy.mpl.path.path_to_shapely instead.",
+                  DeprecationWarning, stacklevel=2)
     # Convert path into numpy array of vertices (and associated codes)
-    path_verts, path_codes = path_segments(path, curves=False)
+    path_verts, path_codes = cpath._path_segments(path, curves=False)
 
     # Split into subarrays such that each subarray consists of connected
     # line segments based on the start of each one being marked by a

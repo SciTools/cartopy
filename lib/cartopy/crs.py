@@ -667,6 +667,7 @@ class Projection(CRS, metaclass=ABCMeta):
         'MultiPoint': '_project_multipoint',
         'MultiLineString': '_project_multiline',
         'MultiPolygon': '_project_multipolygon',
+        'GeometryCollection': '_project_geometry_collection'
     }
     # Whether or not this projection can handle wrapped coordinates
     _wrappable = False
@@ -835,7 +836,8 @@ class Projection(CRS, metaclass=ABCMeta):
     def _project_linear_ring(self, linear_ring, src_crs):
         """
         Project the given LinearRing from the src_crs into this CRS and
-        returns a list of LinearRings and a single MultiLineString.
+        returns a GeometryCollection containing zero or more LinearRings and
+        a single MultiLineString.
 
         """
         debug = False
@@ -915,7 +917,7 @@ class Projection(CRS, metaclass=ABCMeta):
         if rings:
             multi_line_string = sgeom.MultiLineString(line_strings)
 
-        return rings, multi_line_string
+        return sgeom.GeometryCollection([*rings, multi_line_string])
 
     def _project_multipoint(self, geometry, src_crs):
         geoms = []
@@ -939,6 +941,11 @@ class Projection(CRS, metaclass=ABCMeta):
                 geoms.extend(r.geoms)
         return sgeom.MultiPolygon(geoms)
 
+    def _project_geometry_collection(self, geometry, src_crs):
+        return sgeom.GeometryCollection(
+            [self.project_geometry(geom, src_crs) for geom in geometry.geoms])
+
+
     def _project_polygon(self, polygon, src_crs):
         """
         Return the projected polygon(s) derived from the given polygon.
@@ -957,7 +964,8 @@ class Projection(CRS, metaclass=ABCMeta):
         rings = []
         multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
-            p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
+            geom_collection = self._project_linear_ring(src_ring, src_crs)
+            *p_rings, p_mline = geom_collection.geoms
             if p_rings:
                 rings.extend(p_rings)
             if len(p_mline.geoms) > 0:
