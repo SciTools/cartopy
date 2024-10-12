@@ -14,7 +14,6 @@ import weakref
 
 import matplotlib.artist
 import matplotlib.collections
-import matplotlib.path as mpath
 import numpy as np
 
 import cartopy.feature as cfeature
@@ -217,11 +216,7 @@ class FeatureArtist(matplotlib.collections.Collection):
                 else:
                     projected_geom = geom
 
-                geom_paths = cpatch.geos_to_path(projected_geom)
-
-                # The transform may have split the geometry into two paths, we only want
-                # one compound path.
-                geom_path = mpath.Path.make_compound_path(*geom_paths)
+                geom_path = cpatch.shapely_to_path(projected_geom)
                 mapping[key] = geom_path
 
             if self._styler is None:

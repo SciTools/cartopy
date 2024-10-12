@@ -122,7 +122,8 @@ def test_contourf_transform_path_counting():
     gc.collect()
     initial_cache_size = len(cgeoaxes._PATH_TRANSFORM_CACHE)
 
-    with mock.patch('cartopy.mpl.patch.path_to_geos') as path_to_geos_counter:
+    with mock.patch('cartopy.mpl.patch.path_to_shapely',
+                    wraps=cartopy.mpl.patch.path_to_shapely) as path_to_shapely_counter:
         x, y, z = sample_data((30, 60))
         cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
         if not _MPL_38:
@@ -135,9 +136,9 @@ def test_contourf_transform_path_counting():
 
     # Before the performance enhancement, the count would have been 2 * n_geom,
     # but should now be just n_geom.
-    assert path_to_geos_counter.call_count == n_geom, (
+    assert path_to_shapely_counter.call_count == n_geom, (
         f'The given geometry was transformed too many times (expected: '
-        f'{n_geom}; got {path_to_geos_counter.call_count}) - the caching is '
+        f'{n_geom}; got {path_to_shapely_counter.call_count}) - the caching is '
         f'not working.')
 
     # Check the cache has an entry for each geometry.
@@ -146,7 +147,7 @@ def test_contourf_transform_path_counting():
     # Check that the cache is empty again once we've dropped all references
     # to the source paths.
     fig.clf()
-    del path_to_geos_counter
+    del path_to_shapely_counter
     gc.collect()
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size
 

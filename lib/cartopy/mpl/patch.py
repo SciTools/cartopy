@@ -12,9 +12,13 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 
 """
 
+import warnings
+
 from matplotlib.path import Path
 import numpy as np
 import shapely.geometry as sgeom
+
+from cartopy.mpl import _MPL_38
 
 
 def _ensure_path_closed(path):
@@ -53,13 +57,16 @@ def geos_to_path(shape):
     Create a list of :class:`matplotlib.path.Path` objects that describe
     a shape.
 
+    .. deprecated:: 0.25
+       Use `shapely_to_path` instead.
+
     Parameters
     ----------
     shape
         A list, tuple or single instance of any of the following
         types: :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
-        :class:`shapely.geometry.linestring.LinearRing`,
+        :class:`shapely.geometry.polygon.LinearRing`,
         :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.multipoint.MultiPoint`,
         :class:`shapely.geometry.multipolygon.MultiPolygon`,
@@ -73,6 +80,9 @@ def geos_to_path(shape):
         A list of :class:`matplotlib.path.Path` objects.
 
     """
+    warnings.warn("geos_to_path is deprecated and will be removed in a future release."
+                  "  Use shapely_to_path instead.",
+                  DeprecationWarning, stacklevel=2)
     if isinstance(shape, (list, tuple)):
         paths = []
         for shp in shape:
@@ -144,6 +154,9 @@ def path_to_geos(path, force_ccw=False):
     Create a list of Shapely geometric objects from a
     :class:`matplotlib.path.Path`.
 
+    .. deprecated:: 0.25
+       Use `path_to_shapely` instead.
+
     Parameters
     ----------
     path
@@ -163,6 +176,9 @@ def path_to_geos(path, force_ccw=False):
         :class:`shapely.geometry.multilinestring.MultiLineString`.
 
     """
+    warnings.warn("path_to_geos is deprecated and will be removed in a future release."
+                  "  Use path_to_shapely instead.",
+                  DeprecationWarning, stacklevel=2)
     # Convert path into numpy array of vertices (and associated codes)
     path_verts, path_codes = path_segments(path, curves=False)
 
@@ -253,8 +269,7 @@ def path_to_geos(path, force_ccw=False):
 
 def path_to_shapely(path, force_ccw=False):
     """
-    Create a list of Shapely geometric objects from a
-    :class:`matplotlib.path.Path`.
+    Create a Shapely geometric objects from a :class:`matplotlib.path.Path`.
 
     Parameters
     ----------
@@ -269,10 +284,15 @@ def path_to_shapely(path, force_ccw=False):
 
     Returns
     -------
-    A list of instances of the following type(s):
+    One of the following Shapely objects:
+
         :class:`shapely.geometry.polygon.Polygon`,
-        :class:`shapely.geometry.linestring.LineString` and/or
-        :class:`shapely.geometry.multilinestring.MultiLineString`.
+        :class:`shapely.geometry.linestring.LineString`
+        :class:`shapely.geometry.point.Point`,
+        :class:`shapely.geometry.multipolygon.MultiPolygon`
+        :class:`shapely.geometry.multilinestring.MultiLineString`
+        :class:`shapely.geometry.multipoint.MultiPoint`
+        :class:`shapely.geometry.collection.GeometryCollection`.
 
     """
     # Convert path into numpy array of vertices (and associated codes)
@@ -286,9 +306,11 @@ def path_to_shapely(path, force_ccw=False):
     codes_split = np.split(path_codes, verts_split_inds)
 
     # Iterate through the vertices generating a list of
-    # (external_geom, [internal_polygons]) tuples.
-    other_result_geoms = []
-    collection = []
+    # (external_poly, [internal_polygons]) tuples for the polygons and separate
+    # lists for linestrings and points.
+    points = []
+    linestrings = []
+    polygon_bits = []
     for path_verts, path_codes in zip(verts_split, codes_split):
         if len(path_verts) == 0:
             continue
@@ -302,79 +324,83 @@ def path_to_shapely(path, force_ccw=False):
                                                     axis=1)
 
         if all(verts_same_as_first):
-            geom = sgeom.Point(path_verts[0, :])
-        elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:
+            points.append(sgeom.Point(path_verts[0, :]))
+        elif not(path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY):
+            linestrings.append(sgeom.LineString(path_verts))
+        else:
             geom = sgeom.Polygon(path_verts[:-1, :])
-        else:
-            geom = sgeom.LineString(path_verts)
-
-        # If geom is a Polygon and is contained within the last geom in
-        # collection, it usually needs to be an interior to that geom (e.g. a
-        # lake within a land mass).  Sometimes there is a further geom within
-        # this interior (e.g. an island in a lake, or some instances of
-        # contours).  This needs to be a new external geom in the collection.
-        if geom.is_empty:
-            pass
-        elif (len(collection) > 0 and
-                isinstance(collection[-1][0], sgeom.Polygon) and
-                isinstance(geom, sgeom.Polygon) and
-                collection[-1][0].contains(geom.exterior)):
-            if any(internal.contains(geom) for internal in collection[-1][1]):
-                collection.append((geom, []))
+            # If geom is a Polygon and is contained within the last geom in
+            # polygon_bits, it usually needs to be an interior to that geom (e.g. a
+            # lake within a land mass).  Sometimes there is a further geom within
+            # this interior (e.g. an island in a lake, or some instances of
+            # contours).  This needs to be a new external geom in polygon_bits.
+            if (len(polygon_bits) > 0 and polygon_bits[-1][0].contains(geom.exterior)):
+                if any(internal.contains(geom) for internal in polygon_bits[-1][1]):
+                    polygon_bits.append((geom, []))
+                else:
+                    polygon_bits[-1][1].append(geom)
             else:
-                collection[-1][1].append(geom)
-        elif isinstance(geom, sgeom.Point):
-            other_result_geoms.append(geom)
-        else:
-            collection.append((geom, []))
+                polygon_bits.append((geom, []))
 
-    # Convert each (external_geom, [internal_polygons]) pair into a
-    # a shapely Polygon that encapsulates the internal polygons, if the
-    # external geom is a LineString leave it alone.
-    geom_collection = []
-    for external_geom, internal_polys in collection:
+    # Convert each (external_polygon, [internal_polygons]) pair into a
+    # a shapely Polygon that encapsulates the internal polygons.
+    polygons = []
+    for external_poly, internal_polys in polygon_bits:
         if internal_polys:
             exteriors = [geom.exterior for geom in internal_polys]
-            geom = sgeom.Polygon(external_geom.exterior, exteriors)
+            geom = sgeom.Polygon(external_poly.exterior, exteriors)
         else:
-            geom = external_geom
+            geom = external_poly
 
         # Correctly orientate the polygon (ccw)
-        if isinstance(geom, sgeom.Polygon):
-            if force_ccw and not geom.exterior.is_ccw:
-                geom = sgeom.polygon.orient(geom)
+        if force_ccw and not geom.exterior.is_ccw:
+            geom = sgeom.polygon.orient(geom)
 
-        geom_collection.append(geom)
-
-    # If the geom_collection only contains LineStrings combine them
-    # into a single MultiLinestring.
-    if geom_collection and all(isinstance(geom, sgeom.LineString) for
-                               geom in geom_collection):
-        geom_collection = [sgeom.MultiLineString(geom_collection)]
+        polygons.append(geom)
 
     # Remove any zero area Polygons
     def not_zero_poly(geom):
-        return ((isinstance(geom, sgeom.Polygon) and not geom.is_empty and
-                 geom.area != 0) or
-                not isinstance(geom, sgeom.Polygon))
+        return (not geom.is_empty and geom.area != 0)
 
-    result = list(filter(not_zero_poly, geom_collection))
+    polygons = list(filter(not_zero_poly, polygons))
 
-    return result + other_result_geoms
+    # Figure out what type of object to return
+    if not polygons:
+        if not linestrings:
+            if not points:
+                # No geometries.  Return an empty point
+                return sgeom.Point()
+            elif len(points) > 1:
+                return sgeom.MultiPoint(points)
+            else:
+                return points[0]
+        elif not points:
+            if len(linestrings) > 1:
+                return sgeom.MultiLineString(linestrings)
+            else:
+                return linestrings[0]
+    else:
+        if not linestrings and not points:
+            if len(polygons) > 1:
+                return sgeom.MultiPolygon(polygons)
+            else:
+                return polygons[0]
+
+    # If we got to here, we have at least two types of geometry, so return
+    # a geometry collection.
+    return sgeom.GeometryCollection(polygons + linestrings + points)
 
 
 def shapely_to_path(shape):
     """
-    Create a list of :class:`matplotlib.path.Path` objects that describe
-    a shape.
+    Create a :class:`matplotlib.path.Path` object that describes a shape.
 
     Parameters
     ----------
     shape
-        A list, tuple or single instance of any of the following
-        types: :class:`shapely.geometry.point.Point`,
+        :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
-        :class:`shapely.geometry.linestring.LinearRing`,
+        :class:`shapely.geometry.polygon.LinearRing`,
         :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.multipoint.MultiPoint`,
         :class:`shapely.geometry.multipolygon.MultiPolygon`,
@@ -384,42 +410,38 @@ def shapely_to_path(shape):
 
     Returns
     -------
-    paths
-        A list of :class:`matplotlib.path.Path` objects.
+    path
+        :class:`matplotlib.path.Path`
 
     """
-    if isinstance(shape, (list, tuple)):
-        paths = []
-        for shp in shape:
-            paths.extend(geos_to_path(shp))
-        return paths
-
-    if isinstance(shape, sgeom.LinearRing):
-        return [Path(np.column_stack(shape.xy), closed=True)]
+    if shape.is_empty:
+        return Path(np.empty([0, 2]))
+    elif isinstance(shape, sgeom.LinearRing):
+        return Path(np.column_stack(shape.xy), closed=True)
     elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
-        return [Path(np.column_stack(shape.xy))]
+        return Path(np.column_stack(shape.xy))
     elif isinstance(shape, sgeom.Polygon):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
             codes[-1] = Path.CLOSEPOLY
             return codes
-        if shape.is_empty:
-            return []
         vertices = np.concatenate([np.array(shape.exterior.xy)] +
                                   [np.array(ring.xy) for ring in
                                    shape.interiors], 1).T
         codes = np.concatenate([poly_codes(shape.exterior)] +
                                [poly_codes(ring) for ring in shape.interiors])
-        return [Path(vertices, codes)]
+        return Path(vertices, codes)
     elif isinstance(shape, (sgeom.MultiPolygon, sgeom.GeometryCollection,
                             sgeom.MultiLineString, sgeom.MultiPoint)):
         paths = []
         for geom in shape.geoms:
-            paths.extend(geos_to_path(geom))
-        return paths
+            path = shapely_to_path(geom)
+            if _MPL_38 or path.vertices.size > 0:
+                paths.append(path)
+        return Path.make_compound_path(*paths)
     elif hasattr(shape, '_as_mpl_path'):
         vertices, codes = shape._as_mpl_path()
-        return [Path(vertices, codes)]
+        return Path(vertices, codes)
     else:
         raise ValueError(f'Unsupported shape type {type(shape)}.')

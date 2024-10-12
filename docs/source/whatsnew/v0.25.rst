@@ -1,0 +1,19 @@
+Version 0.25 (Date TBD)
+=======================
+
+
+
+Features
+--------
+
+* Ruth Comer introduced `~cartopy.mpl.patch.shapely_to_path` and
+  `~cartopy.mpl.patch.path_to_shapely` which map a single Shapely geometry or
+  collection to a single Matplotlib path and *vice versa*. (:pull:`XXXX`)
+
+
+Deprecations and Removals
+-------------------------
+
+* `~cartopy.mpl.patch.path_to_geos` and `~cartopy.mpl.patch.geos_to_path` are
+  deprecated.  Use `~cartopy.mpl.patch.path_to_shapely` and
+  `~cartopy.mpl.patch.shapely_to_path` instead.

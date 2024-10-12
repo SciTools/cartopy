@@ -821,6 +821,10 @@ class Projection(CRS, metaclass=ABCMeta):
             raise TypeError('Source CRS must be an instance of CRS'
                             ' or one of its subclasses, or None.')
         geom_type = geometry.geom_type
+        if geom_type == 'GeometryCollection':
+            return sgeom.GeometryCollection(
+                [self.project_geometry(geom, src_crs) for geom in geometry.geoms])
+
         method_name = self._method_map.get(geom_type)
         if not method_name:
             raise ValueError(f'Unsupported geometry type {geom_type!r}')
@@ -915,7 +919,7 @@ class Projection(CRS, metaclass=ABCMeta):
         if rings:
             multi_line_string = sgeom.MultiLineString(line_strings)
 
-        return rings, multi_line_string
+        return sgeom.GeometryCollection([*rings, multi_line_string])
 
     def _project_multipoint(self, geometry, src_crs):
         geoms = []
@@ -957,7 +961,8 @@ class Projection(CRS, metaclass=ABCMeta):
         rings = []
         multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
-            p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
+            geom_collection = self._project_linear_ring(src_ring, src_crs)
+            *p_rings, p_mline = geom_collection.geoms
             if p_rings:
                 rings.extend(p_rings)
             if len(p_mline.geoms) > 0:
