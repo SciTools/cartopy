@@ -74,3 +74,5 @@ Patch
     geos_to_path
     path_segments
     path_to_geos
+    path_to_shapely
+    shapely_to_path

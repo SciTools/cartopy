@@ -19,7 +19,8 @@ import cartopy.mpl.patch as cpatch
 # https://github.com/matplotlib/matplotlib/issues/15946
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='poly_interiors.png', tolerance=3.1)
-def test_polygon_interiors():
+@pytest.mark.parametrize('legacy', [False, True])
+def test_polygon_interiors(legacy):
     fig = plt.figure()
 
     ax = fig.add_subplot(2, 1, 1, projection=ccrs.PlateCarree())
@@ -30,16 +31,29 @@ def test_polygon_interiors():
                 [10, -20], [10, 20], [40, 20], [40, -20], [10, 20]],
                [1, 2, 2, 2, 79, 1, 2, 2, 2, 79])
 
-    patches_native = []
-    patches = []
-    for geos in cpatch.path_to_geos(pth):
-        for pth in cpatch.geos_to_path(geos):
-            patches.append(mpatches.PathPatch(pth))
+    if legacy:
+        patches_native = []
+        patches = []
+        with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+            for geos in cpatch.path_to_geos(pth):
+                with pytest.warns(DeprecationWarning, match="geos_to_path is deprecat"):
+                    for pth in cpatch.geos_to_path(geos):
+                        patches.append(mpatches.PathPatch(pth))
 
-        # buffer by 10 degrees (leaves a small hole in the middle)
-        geos_buffered = geos.buffer(10)
-        for pth in cpatch.geos_to_path(geos_buffered):
-            patches_native.append(mpatches.PathPatch(pth))
+                # buffer by 10 degrees (leaves a small hole in the middle)
+                geos_buffered = geos.buffer(10)
+                with pytest.warns(DeprecationWarning, match="geos_to_path is deprecat"):
+                    for pth in cpatch.geos_to_path(geos_buffered):
+                        patches_native.append(mpatches.PathPatch(pth))
+    else:
+        geom = cpatch.path_to_shapely(pth)
+        assert isinstance(geom, sgeom.Polygon)
+        path = cpatch.shapely_to_path(geom)
+        patches = [mpatches.PathPatch(path)]
+
+        geom_buffered = geom.buffer(10)
+        path_buffered = cpatch.shapely_to_path(geom_buffered)
+        patches_native = [mpatches.PathPatch(path_buffered)]
 
     # Set high zorder to ensure the polygons are drawn on top of coastlines.
     collection = PatchCollection(patches_native, facecolor='red', alpha=0.4,
@@ -61,9 +75,14 @@ def test_polygon_interiors():
                  np.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords)]
     poly = sgeom.Polygon(exterior, interiors)
 
-    patches = []
-    for pth in cpatch.geos_to_path(poly):
-        patches.append(mpatches.PathPatch(pth))
+    if legacy:
+        patches = []
+        with pytest.warns(DeprecationWarning, match="geos_to_path is deprecated"):
+            for pth in cpatch.geos_to_path(poly):
+                patches.append(mpatches.PathPatch(pth))
+    else:
+        path = cpatch.shapely_to_path(poly)
+        patches = [mpatches.PathPatch(path)]
 
     collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
                                  transform=ccrs.Geodetic(), zorder=10)

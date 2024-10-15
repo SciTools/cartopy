@@ -170,26 +170,11 @@ class InterProjectionTransform(mtransforms.Transform):
         if src_path.vertices.shape == (1, 2):
             return mpath.Path(self.transform(src_path.vertices))
 
-        transformed_geoms = []
-        geoms = cpatch.path_to_geos(src_path)
+        geom = cpatch.path_to_shapely(src_path)
+        transformed_geom = self.target_projection.project_geometry(
+            geom, self.source_projection)
 
-        for geom in geoms:
-            proj_geom = self.target_projection.project_geometry(
-                geom, self.source_projection)
-            transformed_geoms.append(proj_geom)
-
-        if not transformed_geoms:
-            result = mpath.Path(np.empty([0, 2]))
-        else:
-            paths = cpatch.geos_to_path(transformed_geoms)
-            if not paths:
-                return mpath.Path(np.empty([0, 2]))
-            points, codes = list(zip(*[cpatch.path_segments(path,
-                                                            curves=False,
-                                                            simplify=False)
-                                       for path in paths]))
-            result = mpath.Path(np.concatenate(points, 0),
-                                np.concatenate(codes))
+        result = cpatch.shapely_to_path(transformed_geom)
 
         # store the result in the cache for future performance boosts
         key = (self.source_projection, self.target_projection)
@@ -1535,7 +1520,7 @@ class GeoAxes(matplotlib.axes.Axes):
         The :data:`.patch` and :data:`.spines['geo']` are updated to match.
 
         """
-        path, = cpatch.geos_to_path(self.projection.boundary)
+        path = cpatch.shapely_to_path(self.projection.boundary)
 
         # Get the outline path in terms of self.transData
         proj_to_data = self.projection._as_mpl_transform(self) - self.transData
