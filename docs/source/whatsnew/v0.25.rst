@@ -1,0 +1,6 @@
+Version 0.25 (Date TBD)
+=======================
+
+The new minimum supported versions of dependencies that have been updated are:
+
+* Shapely 2.0
