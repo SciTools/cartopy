@@ -47,7 +47,7 @@ class Nightshade(ShapelyFeature):
 
         # Returns the Greenwich hour angle,
         # need longitude (opposite direction)
-        lat, lon = _solar_position(date)
+        lon, lat = _solar_position(date)
         pole_lon = lon
         if lat > 0:
             pole_lat = -90 + lat
@@ -149,7 +149,7 @@ def _solar_position(date):
 
     Returns
     -------
-    (latitude, longitude) in degrees
+    (longitude, latitude) in degrees
 
     Note
     ----
@@ -203,4 +203,4 @@ def _solar_position(date):
     if lon < -180:
         lon += 360
 
-    return (delta_sun, lon)
+    return (lon, delta_sun)

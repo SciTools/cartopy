@@ -69,7 +69,7 @@ def test_eccentric_globe():
 
 @pytest.mark.parametrize('lat', [-10, 0, 10])
 @pytest.mark.parametrize('lon', [-10, 0, 10])
-def test_central_params(lat, lon):
+def test_central_params(lon, lat):
     gnom = ccrs.Gnomonic(central_latitude=lat, central_longitude=lon)
     other_args = {f'lat_0={lat}', f'lon_0={lon}',
                   'a=6378137.0'}
