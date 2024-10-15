@@ -66,7 +66,7 @@ Further information about the required dependencies can be found here:
     Python package for 2D plotting. Python package required for any
     graphical capabilities.
 
-**Shapely** 1.8 or later (https://github.com/shapely/shapely)
+**Shapely** 2.0 or later (https://github.com/shapely/shapely)
     Python package for the manipulation and analysis of planar geometric objects.
 
 **pyshp** 2.3 or later (https://pypi.python.org/pypi/pyshp)
