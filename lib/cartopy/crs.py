@@ -1862,6 +1862,115 @@ class LambertZoneII(Projection):
         self.bounds = [-5242.32, 1212512.16, 1589155.51, 2706796.21]
 
 
+class HEALPix(Projection):
+    """
+    Hierarchical Equal Area isoLatitude Pixelisation (HEALPix) of a 2-sphere is an
+    algorithm for pixelisation of the 2-sphere based on subdivision of a distorted
+    rhombic dodecahedron. The HEALPix projection is area preserving and can be used
+    with a spherical and ellipsoidal model. It was initially developed for mapping
+    cosmic background microwave radiation.
+
+    """
+    _wrappable = True
+
+    def __init__(self, central_longitude=0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: optional
+            The true longitude of the central meridian in degrees.
+            Defaults to 0.
+
+        globe: optional
+            An instance of :class:`cartopy.crs.Globe`. If omitted, a default
+            globe with a spherical radius of 6370997 meters is created.
+        """
+        proj4_params = [('proj', 'healpix'),
+                        ('lon_0', central_longitude)]
+        super().__init__(proj4_params, globe=globe)
+        # Defaults to the PROJ sphere with semimajor axis 6370997m
+        w = (self.globe.semimajor_axis or 6370997) * np.pi
+        h = w/2
+        self.bounds = [-w, w, -h, h]
+        self._threshold = w / 1e4
+
+        self._boundary = sgeom.LinearRing(
+            [(-w, h/2), (-3/4*w, h), (-w/2, h/2), (-w/4, h), (0, h/2),
+             (w/4, h), (w/2, h/2), (3/4*w, h), (w, h/2),
+             (w, -h/2), (3/4*w, -h), (w/2, -h/2), (w/4, -h), (0, -h/2),
+             (-w/4, -h), (-w/2, -h/2), (-3/4*w, -h), (-w, -h/2), (-w, h/2)])
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+
+class RHEALPix(Projection):
+    """
+    Also known as rHEALPix in PROJ, this projection is an extension of the
+    HEALPix projection to present rectangles, rather than triangles, at the
+    north and south poles.
+
+    Parameters
+    ----------
+    central_longitude: optional
+        The true longitude of the central meridian in degrees.
+        Defaults to 0.
+    north_square : int
+        The position for the north pole square. Must be one of 0, 1, 2 or 3.
+        0 would have the north pole square aligned with the left-most square,
+        and 3 would be aligned with the right-most.
+    south_square : int
+        The position for the south pole square. Must be one of 0, 1, 2 or 3.
+    """
+    _wrappable = True
+
+    def __init__(self, central_longitude=0, north_square=0, south_square=0, globe=None):
+        valid_square_pos = [0, 1, 2, 3]
+        if north_square not in valid_square_pos:
+            raise ValueError(f'north_square must be one of {valid_square_pos}')
+        if south_square not in valid_square_pos:
+            raise ValueError(f'south_square must be one of {valid_square_pos}')
+
+        proj4_params = [('proj', 'rhealpix'),
+                        ('north_square', north_square),
+                        ('south_square', south_square),
+                        ('lon_0', central_longitude)]
+        super().__init__(proj4_params)
+
+        # Defaults to the PROJ sphere with semimajor axis 6370997m
+        w = (self.globe.semimajor_axis or 6370997) * np.pi
+        h = 3/4 * w
+        box_h = w / 4
+        self.bounds = [-w, w, -h, h]
+        self._threshold = w / 1e4
+
+        self._boundary = sgeom.LinearRing([
+            # Left edge
+            (-w, box_h),
+            # Cut-out for the north square
+            (-w + north_square * w/2, box_h),
+            (-w + north_square * w/2, h),
+            (-w + (north_square + 1) * w/2, h),
+            (-w + (north_square + 1) * w/2, box_h),
+            # Right edge
+            (w, box_h),
+            (w, -box_h),
+            # Cut-out for the south square
+            (-w + (south_square + 1) * w/2, -box_h),
+            (-w + (south_square + 1) * w/2, -h),
+            (-w + south_square * w/2, -h),
+            (-w + south_square * w/2, -box_h),
+            # Left edge
+            (-w, -box_h),
+            (-w, box_h)
+            ])
+
+    @property
+    def boundary(self):
+        return self._boundary
+
+
 class LambertAzimuthalEqualArea(Projection):
     """
     A Lambert Azimuthal Equal-Area projection.
