@@ -10,7 +10,7 @@ channels:
 dependencies:
   - cython>=0.29.28
   - numpy>=1.23
-  - shapely>=1.8
+  - shapely>=2.0
   - pyshp>=2.3
   - pyproj>=3.3.1
   - packaging>=21

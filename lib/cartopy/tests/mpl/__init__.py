@@ -14,26 +14,24 @@ def show(projection, geometry):
 
     if geometry.geom_type == 'MultiPolygon' and 1:
         multi_polygon = geometry
-        for polygon in multi_polygon:
-            import cartopy.mpl.patch as patch
-            paths = patch.geos_to_path(polygon)
-            for pth in paths:
-                patch = mpatches.PathPatch(pth, edgecolor='none',
-                                           lw=0, alpha=0.2)
-                plt.gca().add_patch(patch)
+        import cartopy.mpl.path as cpath
+        pth = cpath.shapely_to_path(multi_polygon)
+        patch = mpatches.PathPatch(pth, edgecolor='none', lw=0, alpha=0.2)
+        plt.gca().add_patch(patch)
+        for polygon in multi_polygon.geoms:
             line_string = polygon.exterior
-            plt.plot(*zip(*line_string.coords),
-                     marker='+', linestyle='-')
+        plt.plot(*zip(*line_string.coords), marker='+', linestyle='-')
+
     elif geometry.geom_type == 'MultiPolygon':
         multi_polygon = geometry
-        for polygon in multi_polygon:
+        for polygon in multi_polygon.geoms:
             line_string = polygon.exterior
             plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
 
     elif geometry.geom_type == 'MultiLineString':
         multi_line_string = geometry
-        for line_string in multi_line_string:
+        for line_string in multi_line_string.geoms:
             plt.plot(*zip(*line_string.coords),
                      marker='+', linestyle='-')
 
