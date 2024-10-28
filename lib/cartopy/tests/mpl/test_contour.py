@@ -165,4 +165,3 @@ def test_contourf_with_conflict_points():
         fig = plt.figure()
         ax = fig.add_subplot(projection=ccrs.Mercator())
         ax.contourf(lons, lats, data, levels=[60, 65], transform=ccrs.PlateCarree())
-        plt.draw()
