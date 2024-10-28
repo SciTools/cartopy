@@ -206,7 +206,7 @@ def path_to_shapely(path):
                         area = invalid_polygon.area
                         bfsize = area * 0.0001
                         fixed_polygon = invalid_polygon.buffer(bfsize).buffer(-bfsize)
-            
+
                     polygon_bits[-1] = (fixed_polygon, polygon_bits[-1][1])
                     is_inside = polygon_bits[-1][0].contains(geom.exterior)
                 if is_inside:
