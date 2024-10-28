@@ -200,31 +200,23 @@ def path_to_shapely(path):
                 try:
                     is_inside = polygon_bits[-1][0].contains(geom.exterior)
                 except GEOSException:
-                    # If there is a GEOSException, attempt to fix the invalid polygon
                     invalid_polygon = polygon_bits[-1][0]
                     fixed_polygon = invalid_polygon.buffer(0)
                     if isinstance(fixed_polygon, sgeom.MultiPolygon):
-                        # If the fixed polygon is a MultiPolygon, adjust the buffer size
                         area = invalid_polygon.area
-                        buffer_size = area * 0.0001
-                        fixed_polygon = invalid_polygon.buffer(buffer_size).buffer(-buffer_size)
+                        bfsize = area * 0.0001
+                        fixed_polygon = invalid_polygon.buffer(bfsize).buffer(-bfsize)
             
-                    # Replace the invalid polygon with the fixed polygon
                     polygon_bits[-1] = (fixed_polygon, polygon_bits[-1][1])
                     is_inside = polygon_bits[-1][0].contains(geom.exterior)
                 if is_inside:
-                    # If geom is inside the last polygon, check if it is contained within any internal polygons
                     if any(internal.contains(geom) for internal in polygon_bits[-1][1]):
-                        # If it is contained within an internal polygon, add it as a new external geom
                         polygon_bits.append((geom, []))
                     else:
-                        # Otherwise, add it as an internal polygon
                         polygon_bits[-1][1].append(geom)
                 else:
-                    # If geom is not inside the last polygon, add it as a new external geom
                     polygon_bits.append((geom, []))
             else:
-                # If polygon_bits is empty, add geom as the first external geom
                 polygon_bits.append((geom, []))
 
     # Convert each (external_polygon, [internal_polygons]) pair into a
