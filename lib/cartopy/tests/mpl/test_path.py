@@ -90,3 +90,21 @@ class Test_path_to_shapely:
             assert len(geoms.geoms) == 2
             assert len(geoms.geoms[0].interiors) == 1
             assert len(geoms.geoms[1].interiors) == 0
+
+    def test_invalid_polygons(self, use_legacy_path_to_geos):
+        # A geometry with a self-intersecting exterior ring.
+        vertices = [
+            [97.25, 16.517156862745097],
+            [97.0, 16.5],
+            [97.0, 16.25],
+            [97.0, 16.25],
+            [97.0, 16.25],
+            [97.0, 16.5],
+            [96.75, 16.507075471698112],
+            [97.25, 16.517156862745097],
+        ]
+        assert sgeom.Polygon(vertices).is_valid is False
+
+        codes = [1, 2, 2, 2, 2, 2, 2, 79]
+        p = Path(vertices, codes=codes)
+        cpath.path_to_shapely(p)

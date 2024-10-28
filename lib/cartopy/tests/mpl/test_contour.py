@@ -146,3 +146,23 @@ def test_contourf_transform_first(func):
     test_func(xx, yy, z, transform=ccrs.PlateCarree(),
               transform_first=False)
     assert_array_almost_equal(ax.get_extent(), (-180, 180, -25, 25))
+
+def test_contourf_with_conflict_points():
+        """Testing the issue mentioned in #2370"""
+
+        lons = [96.75, 97.  , 97.25]
+        lats = np.arange(17.25, 15.9, -0.25)
+
+        lons, lats = np.meshgrid(lons, lats)
+
+        data = [[26.9, 43.7, 26.8],
+                [33.2, 65.8, 34.6],
+                [54.7, 66.9, 55.5],
+                [65.3, 65. , 65.7],
+                [65.9, 65. , 65.6],
+                [65.8, 65.2, 65.5]]
+
+        fig = plt.figure()
+        ax = fig.add_subplot(projection=ccrs.Mercator())
+        ax.contourf(lons, lats, data, levels=[60, 65], transform=ccrs.PlateCarree())
+        plt.draw()

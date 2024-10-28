@@ -14,6 +14,7 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 
 from matplotlib.path import Path
 import numpy as np
+from shapely import GEOSException
 import shapely.geometry as sgeom
 
 from cartopy.mpl import _MPL_38
@@ -192,15 +193,38 @@ def path_to_shapely(path):
             geom = sgeom.Polygon(path_verts[:-1, :])
             # If geom is a Polygon and is contained within the last geom in
             # polygon_bits, it usually needs to be an interior to that geom (e.g. a
-            # lake within a land mass).  Sometimes there is a further geom within
+            # lake within a land mass). Sometimes there is a further geom within
             # this interior (e.g. an island in a lake, or some instances of
-            # contours).  This needs to be a new external geom in polygon_bits.
-            if (len(polygon_bits) > 0 and polygon_bits[-1][0].contains(geom.exterior)):
-                if any(internal.contains(geom) for internal in polygon_bits[-1][1]):
-                    polygon_bits.append((geom, []))
+            # contours). This needs to be a new external geom in polygon_bits.
+            if len(polygon_bits) > 0:
+                try:
+                    is_inside = polygon_bits[-1][0].contains(geom.exterior)
+                except GEOSException:
+                    # If there is a GEOSException, attempt to fix the invalid polygon
+                    invalid_polygon = polygon_bits[-1][0]
+                    fixed_polygon = invalid_polygon.buffer(0)
+                    if isinstance(fixed_polygon, sgeom.MultiPolygon):
+                        # If the fixed polygon is a MultiPolygon, adjust the buffer size
+                        area = invalid_polygon.area
+                        buffer_size = area * 0.0001
+                        fixed_polygon = invalid_polygon.buffer(buffer_size).buffer(-buffer_size)
+            
+                    # Replace the invalid polygon with the fixed polygon
+                    polygon_bits[-1] = (fixed_polygon, polygon_bits[-1][1])
+                    is_inside = polygon_bits[-1][0].contains(geom.exterior)
+                if is_inside:
+                    # If geom is inside the last polygon, check if it is contained within any internal polygons
+                    if any(internal.contains(geom) for internal in polygon_bits[-1][1]):
+                        # If it is contained within an internal polygon, add it as a new external geom
+                        polygon_bits.append((geom, []))
+                    else:
+                        # Otherwise, add it as an internal polygon
+                        polygon_bits[-1][1].append(geom)
                 else:
-                    polygon_bits[-1][1].append(geom)
+                    # If geom is not inside the last polygon, add it as a new external geom
+                    polygon_bits.append((geom, []))
             else:
+                # If polygon_bits is empty, add geom as the first external geom
                 polygon_bits.append((geom, []))
 
     # Convert each (external_polygon, [internal_polygons]) pair into a
