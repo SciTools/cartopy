@@ -451,10 +451,12 @@ class GeoAxes(matplotlib.axes.Axes):
                                self.get_autoscaley_on())
             yield
 
-    def _draw_preprocess(self):
+    def _draw_preprocess(self, renderer=None):
         """
         Perform pre-processing steps shared between :func:`GeoAxes.draw`
         and :func:`GeoAxes.get_tightbbox`.
+
+        Renderer argument does nothing, but is retained for API compatibility.
         """
         # If data has been added (i.e. autoscale hasn't been turned off)
         # then we should autoscale the view.
