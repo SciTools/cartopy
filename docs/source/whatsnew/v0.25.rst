@@ -17,6 +17,9 @@ Features
 Deprecations and Removals
 -------------------------
 
+* The ``cartopy.mpl.clip_path`` module is deprecated without replacement.
+  Please vendor these functions if you need them.
+
 * `~cartopy.mpl.patch.path_to_geos` and `~cartopy.mpl.patch.geos_to_path` are
   deprecated.  Use `~cartopy.mpl.path.path_to_shapely` and
   `~cartopy.mpl.path.shapely_to_path` instead.
