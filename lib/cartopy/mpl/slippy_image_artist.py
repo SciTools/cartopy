@@ -53,7 +53,7 @@ class SlippyImageArtist(AxesImage):
 
         ax = self.axes
         window_extent = ax.get_window_extent()
-        [x1, y1], [x2, y2] = ax.viewLim.get_points()
+        [x1, y1], [x2, y2] = ax.viewLim.get_points().tolist()
         if not self.user_is_interacting:
             located_images = self.raster_source.fetch_raster(
                 ax.projection, extent=[x1, x2, y1, y2],
