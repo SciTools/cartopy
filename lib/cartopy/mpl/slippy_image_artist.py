@@ -53,6 +53,9 @@ class SlippyImageArtist(AxesImage):
 
         ax = self.axes
         window_extent = ax.get_window_extent()
+        # We need to extract to a list to get native Python datatypes
+        # rather than Numpy datatypes since not all fetch_raster
+        # implementers handle Numpy datatypes properly.
         [x1, y1], [x2, y2] = ax.viewLim.get_points().tolist()
         if not self.user_is_interacting:
             located_images = self.raster_source.fetch_raster(
