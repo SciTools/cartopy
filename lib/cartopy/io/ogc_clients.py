@@ -26,6 +26,7 @@ import os
 
 import numpy as np
 from PIL import Image
+from pathlib import Path
 import shapely.geometry as sgeom
 
 import cartopy
