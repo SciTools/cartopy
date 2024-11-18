@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 from xml.etree.ElementTree import ParseError
 
 import matplotlib.pyplot as plt
@@ -47,6 +46,7 @@ def test_natural_earth_custom():
     return ax.figure
 
 
+@pytest.mark.network
 @pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY, reason='pykdtree or scipy is required')
 @pytest.mark.mpl_image_compare(filename='gshhs_coastlines.png', tolerance=0.95)
 def test_gshhs():
@@ -81,7 +81,7 @@ def test_wfs():
 @pytest.mark.network
 @pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY or not _OWSLIB_AVAILABLE,
                     reason='OWSLib and at least one of pykdtree or scipy is required')
-@pytest.mark.xfail(raises=ParseError,
+@pytest.mark.xfail(raises=(ParseError, AttributeError),
                    reason="Bad XML returned from the URL")
 @pytest.mark.mpl_image_compare(filename='wfs_france.png')
 def test_wfs_france():

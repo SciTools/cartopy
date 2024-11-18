@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 from unittest import mock
 from xml.etree.ElementTree import ParseError
@@ -36,6 +35,7 @@ RESOLUTION = (30, 30)
 
 
 @pytest.mark.network
+@pytest.mark.xfail(reason='URL no longer valid')
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWMSRasterSource:
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
@@ -136,6 +136,7 @@ class TestWMSRasterSource:
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.xfail(reason='NASA servers are returning bad content metadata')
 class TestWMTSRasterSource:
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'

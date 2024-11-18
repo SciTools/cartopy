@@ -1,11 +1,11 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
-Implements image tile identification and fetching from various sources.
+Implements image tile identification and fetching from various sources,
+automatically loading the proper tile and resolution depending on the desired domain.
 
 
 The Matplotlib interface can make use of tile objects (defined below) via the
@@ -297,7 +297,7 @@ class MapQuestOSM(GoogleWTS):
         mqdevurl = ('https://devblog.mapquest.com/2016/06/15/'
                     'modernization-of-mapquest-results-in-changes'
                     '-to-open-tile-access/')
-        warnings.warn(f'{url} will require a log in and and will likely'
+        warnings.warn(f'{url} will require a log in and will likely'
                       f' fail. see {mqdevurl} for more details.')
         return url
 

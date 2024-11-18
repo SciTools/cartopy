@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Gnomonic coordinate system.
 
@@ -70,7 +69,7 @@ def test_eccentric_globe():
 
 @pytest.mark.parametrize('lat', [-10, 0, 10])
 @pytest.mark.parametrize('lon', [-10, 0, 10])
-def test_central_params(lat, lon):
+def test_central_params(lon, lat):
     gnom = ccrs.Gnomonic(central_latitude=lat, central_longitude=lon)
     other_args = {f'lat_0={lat}', f'lon_0={lon}',
                   'a=6378137.0'}

@@ -1,11 +1,11 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
-Combine the shapefile access of pyshp with the
+This module provides a basic interface for accessing shapefiles.
+Combine the shapefile access of pyshp or fiona with the
 geometry representation of shapely:
 
     >>> import cartopy.io.shapereader as shapereader
@@ -282,8 +282,8 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
 
     To identify valid components for this function, either browse
     NaturalEarthData.com, or if you know what you are looking for, go to
-    https://github.com/nvkelso/natural-earth-vector/tree/master/zips to
-    see the actual files which will be downloaded.
+    https://github.com/nvkelso/natural-earth-vector/ to see the actual
+    files which will be downloaded.
 
     Note
     ----

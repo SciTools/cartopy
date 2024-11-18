@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -69,16 +68,16 @@ def test_gridding_data_std_range():
                              mask_extrapolated=True)
 
     # The expected image. n.b. on a map the data is reversed in the y axis.
-    expected = np.array([[3, 3, 3, 3, 3, 3, 3, 3],
-                         [3, 1, 2, 2, 2, 3, 3, 3],
-                         [1, 1, 1, 2, 2, 2, 3, 1],
-                         [1, 1, 1, 1, 1, 1, 1, 1]], dtype=np.float64)
+    expected = np.array([[1, 1, 2, 2, 3, 3, 3, 3],
+                         [1, 1, 2, 2, 2, 3, 3, 3],
+                         [1, 1, 1, 2, 2, 2, 3, 3],
+                         [1, 1, 1, 2, 2, 2, 3, 3]], dtype=np.float64)
 
     expected_mask = np.array(
-        [[True, True, True, True, True, True, True, True],
+        [[True, False, False, False, False, False, False, True],
          [True, False, False, False, False, False, False, True],
          [True, False, False, False, False, False, False, True],
-         [True, True, True, True, True, True, True, True]])
+         [True, False, False, False, False, False, False, True]])
 
     assert_array_equal([-180, 180, -90, 90], extent)
     assert_array_equal(expected, image)
@@ -109,10 +108,10 @@ def test_gridding_data_outside_projection():
          [3, 3, 3, 1, 1, 1, 1, 1]], dtype=np.float64)
 
     expected_mask = np.array(
-        [[True, True, True, True, True, True, True, True],
+        [[False, False, True, True, True, True, False, False],
          [False, False, True, True, True, True, False, False],
          [False, False, True, True, True, True, False, False],
-         [True, True, True, True, True, True, True, True]])
+         [False, False, True, True, True, True, False, False]])
 
     assert_array_equal([-180, 180, -90, 90], extent)
     assert_array_equal(expected, image)

@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import datetime
 
@@ -23,7 +22,7 @@ class Nightshade(ShapelyFeature):
         ----------
         date : datetime
             A UTC datetime object used to calculate the position of the sun.
-            Default: datetime.datetime.utcnow()
+            Default: The current UTC time.
         delta : float
             Stepsize in degrees to determine the resolution of the
             night polygon feature (``npts = 180 / delta``).
@@ -39,7 +38,7 @@ class Nightshade(ShapelyFeature):
 
         """
         if date is None:
-            date = datetime.datetime.utcnow()
+            date = datetime.datetime.now(datetime.UTC)
 
         # make sure date is UTC, or naive with respect to time zones
         if date.utcoffset():
@@ -48,7 +47,7 @@ class Nightshade(ShapelyFeature):
 
         # Returns the Greenwich hour angle,
         # need longitude (opposite direction)
-        lat, lon = _solar_position(date)
+        lon, lat = _solar_position(date)
         pole_lon = lon
         if lat > 0:
             pole_lat = -90 + lat
@@ -150,7 +149,7 @@ def _solar_position(date):
 
     Returns
     -------
-    (latitude, longitude) in degrees
+    (longitude, latitude) in degrees
 
     Note
     ----
@@ -204,4 +203,4 @@ def _solar_position(date):
     if lon < -180:
         lon += 360
 
-    return (delta_sun, lon)
+    return (lon, delta_sun)

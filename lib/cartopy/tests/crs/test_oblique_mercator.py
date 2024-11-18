@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Oblique Mercator projection.
 
@@ -188,7 +187,7 @@ def test_equality(oblique_variants):
     "reverse_coord", [False, True], ids=["xy_order", "yx_order"]
 )
 def test_nan(oblique_mercator, plate_carree, reverse_coord):
-    coord = (0.0, np.NaN)
+    coord = (0.0, np.nan)
     if reverse_coord:
         coord = tuple(reversed(coord))
     res = oblique_mercator.transform_point(*coord, src_crs=plate_carree)

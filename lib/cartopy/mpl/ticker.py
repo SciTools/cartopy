@@ -1,9 +1,8 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""This module contains tools for handling tick marks in cartopy."""
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Tools for handling tick marks in cartopy."""
 
 import matplotlib as mpl
 from matplotlib.ticker import Formatter, MaxNLocator

@@ -1,9 +1,15 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
+"""
+Cartopy can produce gridlines and ticks in any projection and add
+them to the current geoaxes projection, providing a way to add detailed
+location information to the plots.
 
+"""
+
+import inspect
 import itertools
 import operator
 import warnings
@@ -54,21 +60,11 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
 )
 
 
-def _fix_lons(lons):
-    """
-    Fix the given longitudes into the range ``[-180, 180]``.
-
-    """
-    lons = np.array(lons, copy=False, ndmin=1)
-    fixed_lons = ((lons + 180) % 360) - 180
-    # Make the positive 180s positive again.
-    fixed_lons[(fixed_lons == -180) & (lons > 0)] *= -1
-    return fixed_lons
-
-
 def _lon_hemisphere(longitude):
     """Return the hemisphere (E, W or '' for 0) for the given longitude."""
-    longitude = _fix_lons(longitude)
+    # Wrap the longitude to the range -180 to 180, keeping positive 180s
+    lon_wrapped = ((longitude + 180) % 360) - 180
+    longitude = 180 if (longitude > 0 and lon_wrapped == -180) else lon_wrapped
     if longitude > 0:
         hemisphere = 'E'
     elif longitude < 0:
@@ -115,7 +111,7 @@ class Gridliner(matplotlib.artist.Artist):
                  xlim=None, ylim=None, rotate_labels=None,
                  xlabel_style=None, ylabel_style=None, labels_bbox_style=None,
                  xpadding=5, ypadding=5, offset_angle=25,
-                 auto_update=False, formatter_kwargs=None):
+                 auto_update=None, formatter_kwargs=None):
         """
         Artist used by :meth:`cartopy.mpl.geoaxes.GeoAxes.gridlines`
         to add gridlines and tick labels to a map.
@@ -219,9 +215,13 @@ class Gridliner(matplotlib.artist.Artist):
             a label must be flipped to be more readable.
             For example, a value of 10 makes a vertical top label to be
             flipped only at 100 degrees.
-        auto_update: bool
+        auto_update: bool, default=True
             Whether to redraw the gridlines and labels when the figure is
             updated.
+
+            .. deprecated:: 0.23
+               In future the gridlines and labels will always be redrawn.
+
         formatter_kwargs: dict, optional
             Options passed to the default formatters.
             See :class:`~cartopy.mpl.ticker.LongitudeFormatter` and
@@ -445,6 +445,17 @@ class Gridliner(matplotlib.artist.Artist):
 
         # Draw status
         self._drawn = False
+        if auto_update is None:
+            auto_update = True
+        else:
+            # Note #2394 should be addressed before this deprecation expires.
+            calling_module = inspect.stack()[1].filename
+            warnings.warn(
+                "The auto_update parameter was deprecated at Cartopy 0.23.  In future "
+                "the gridlines and labels will always be updated.",
+                DeprecationWarning,
+                stacklevel=(3 if calling_module.endswith('cartopy/mpl/geoaxes.py')
+                            else 2))
         self._auto_update = auto_update
 
     def has_labels(self):

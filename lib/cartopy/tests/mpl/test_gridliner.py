@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import io
 from unittest import mock
@@ -15,7 +14,6 @@ import pytest
 from shapely.geos import geos_version
 
 import cartopy.crs as ccrs
-from cartopy.mpl import _MPL_36
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER,
@@ -217,7 +215,7 @@ def test_grid_labels():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
-                               tolerance=2.92)
+                               tolerance=2.9)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -291,8 +289,7 @@ def test_gridliner_constrained_adjust_datalim():
     ax.autoscale()
 
     # Add some gridlines
-    ax.gridlines(draw_labels=["bottom", "left"], auto_update=True,
-                 linestyle="-")
+    ax.gridlines(draw_labels=["bottom", "left"], linestyle="-")
 
     return fig
 
@@ -338,6 +335,7 @@ def test_grid_labels_inline_usa(proj):
     return fig
 
 
+@pytest.mark.natural_earth
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_bbox_style.png',
                                tolerance=grid_label_tol)
@@ -490,7 +488,7 @@ def test_gridliner_count_draws():
     gl = ax.gridlines()
 
     with mock.patch.object(gl, '_draw_gridliner', return_value=None) as mocked:
-        ax.get_tightbbox(renderer=None)
+        ax.get_tightbbox()
         mocked.assert_called_once()
 
     with mock.patch.object(gl, '_draw_gridliner', return_value=None) as mocked:
@@ -498,6 +496,7 @@ def test_gridliner_count_draws():
         mocked.assert_called_once()
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     baseline_dir='baseline_images/mpl/test_mpl_integration',
     filename='simple_global.png')
@@ -511,20 +510,20 @@ def test_gridliner_remove():
     gl.remove()
 
     assert gl not in ax.artists
-    assert not ax.collections
 
     return fig
 
 
 def test_gridliner_save_tight_bbox():
-    # Smoke test for save with auto_update=True and bbox_inches=Tight (gh2246).
+    # Smoke test for save with bbox_inches=Tight (gh2246).
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
     ax.set_global()
-    ax.gridlines(draw_labels=True, auto_update=True)
+    ax.gridlines(draw_labels=True)
     fig.savefig(io.BytesIO(), bbox_inches='tight')
 
 
+@pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
                                tolerance=grid_label_tol)
 def test_gridliner_title_adjust():
@@ -537,10 +536,7 @@ def test_gridliner_title_adjust():
     plt.rcParams['axes.titley'] = None
 
     fig = plt.figure(layout='constrained')
-    if _MPL_36:
-        fig.get_layout_engine().set(h_pad=1/8)
-    else:
-        fig.set_constrained_layout_pads(h_pad=1/8)
+    fig.get_layout_engine().set(h_pad=1/8)
     for n, proj in enumerate(projs, 1):
         ax = fig.add_subplot(2, 2, n, projection=proj)
         ax.coastlines()
@@ -565,13 +561,27 @@ def test_gridliner_title_noadjust():
     assert ax.title.get_position() == pos
 
 
+def test_gridliner_title_adjust_no_layout_engine():
+    fig = plt.figure()
+    ax = fig.add_subplot(projection=ccrs.PlateCarree())
+    gl = ax.gridlines(draw_labels=True)
+    title = ax.set_title("MY TITLE")
+
+    # After first draw, title should be above top labels.
+    fig.draw_without_rendering()
+    max_label_y = max([bb.get_tightbbox().ymax for bb in gl.top_label_artists])
+    min_title_y = title.get_tightbbox().ymin
+
+    assert min_title_y > max_label_y
+
+
 def test_gridliner_labels_zoom():
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 
     # Start with a global map.
     ax.set_global()
-    gl = ax.gridlines(draw_labels=True, auto_update=True)
+    gl = ax.gridlines(draw_labels=True)
 
     fig.draw_without_rendering()  # Generate child artists
     labels = [a.get_text() for a in gl.bottom_label_artists if a.get_visible()]

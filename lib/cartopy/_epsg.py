@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Provide support for converting EPSG codes to Projection instances.
 
@@ -25,3 +24,6 @@ class _EPSGProjection(ccrs.Projection):
 
     def __repr__(self):
         return f'_EPSGProjection({self.epsg_code})'
+
+    def __reduce__(self):
+        return self.__class__, (self.epsg_code, )

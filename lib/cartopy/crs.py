@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
 The crs module defines Coordinate Reference Systems and the transformations
@@ -19,6 +18,7 @@ import math
 import warnings
 
 import numpy as np
+import pyproj
 from pyproj import Transformer
 from pyproj.exceptions import ProjError
 import shapely.geometry as sgeom
@@ -126,7 +126,9 @@ class Globe:
 
 class CRS(_CRS):
     """
-    Define a Coordinate Reference System using proj.
+    Define a Coordinate Reference System using proj. The :class:`cartopy.crs.CRS`
+    class is the very core of cartopy, all coordinate reference systems in cartopy
+    have :class:`~cartopy.crs.CRS` as a parent class.
     """
 
     #: Whether this projection can handle ellipses.
@@ -148,6 +150,8 @@ class CRS(_CRS):
             See :class:`~cartopy.crs.Globe` for details.
 
         """
+        self.input = (proj4_params, globe)
+
         # for compatibility with pyproj.CRS and rasterio.crs.CRS
         try:
             proj4_params = proj4_params.to_wkt()
@@ -210,13 +214,17 @@ class CRS(_CRS):
 
     def __reduce__(self):
         """
-        Implement the __reduce__ API so that unpickling produces a stateless
-        instance of this class (e.g. an empty tuple). The state will then be
-        added via __getstate__ and __setstate__.
-        We are forced to this approach because a CRS does not store
-        the constructor keyword arguments in its state.
+        Implement the __reduce__ method used when pickling or performing deepcopy.
         """
-        return self.__class__, (), self.__getstate__()
+        if type(self) is CRS:
+            # State can be reproduced by the proj4_params and globe inputs.
+            return self.__class__, self.input
+        else:
+            # Produces a stateless instance of this class (e.g. an empty tuple).
+            # The state will then be added via __getstate__ and __setstate__.
+            # We are forced to this approach because a CRS does not store
+            # the constructor keyword arguments in its state.
+            return self.__class__, (), self.__getstate__()
 
     def __getstate__(self):
         """Return the full state of this instance for reconstruction
@@ -659,6 +667,7 @@ class Projection(CRS, metaclass=ABCMeta):
         'MultiPoint': '_project_multipoint',
         'MultiLineString': '_project_multiline',
         'MultiPolygon': '_project_multipolygon',
+        'GeometryCollection': '_project_geometry_collection'
     }
     # Whether or not this projection can handle wrapped coordinates
     _wrappable = False
@@ -678,7 +687,9 @@ class Projection(CRS, metaclass=ABCMeta):
             y1 = self.area_of_use.north
             lons = np.array([x0, x0, x1, x1])
             lats = np.array([y0, y1, y1, y0])
-            points = self.transform_points(self.as_geodetic(), lons, lats)
+            points = self.transform_points(
+                PlateCarree().as_geodetic(), lons, lats
+            )
             x = points[:, 0]
             y = points[:, 1]
             self.bounds = (x.min(), x.max(), y.min(), y.max())
@@ -825,7 +836,8 @@ class Projection(CRS, metaclass=ABCMeta):
     def _project_linear_ring(self, linear_ring, src_crs):
         """
         Project the given LinearRing from the src_crs into this CRS and
-        returns a list of LinearRings and a single MultiLineString.
+        returns a GeometryCollection containing zero or more LinearRings and
+        a single MultiLineString.
 
         """
         debug = False
@@ -905,16 +917,13 @@ class Projection(CRS, metaclass=ABCMeta):
         if rings:
             multi_line_string = sgeom.MultiLineString(line_strings)
 
-        return rings, multi_line_string
+        return sgeom.GeometryCollection([*rings, multi_line_string])
 
     def _project_multipoint(self, geometry, src_crs):
         geoms = []
         for geom in geometry.geoms:
             geoms.append(self._project_point(geom, src_crs))
-        if geoms:
-            return sgeom.MultiPoint(geoms)
-        else:
-            return sgeom.MultiPoint()
+        return sgeom.MultiPoint(geoms)
 
     def _project_multiline(self, geometry, src_crs):
         geoms = []
@@ -922,10 +931,7 @@ class Projection(CRS, metaclass=ABCMeta):
             r = self._project_line_string(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        if geoms:
-            return sgeom.MultiLineString(geoms)
-        else:
-            return []
+        return sgeom.MultiLineString(geoms)
 
     def _project_multipolygon(self, geometry, src_crs):
         geoms = []
@@ -933,11 +939,12 @@ class Projection(CRS, metaclass=ABCMeta):
             r = self._project_polygon(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        if geoms:
-            result = sgeom.MultiPolygon(geoms)
-        else:
-            result = sgeom.MultiPolygon()
-        return result
+        return sgeom.MultiPolygon(geoms)
+
+    def _project_geometry_collection(self, geometry, src_crs):
+        return sgeom.GeometryCollection(
+            [self.project_geometry(geom, src_crs) for geom in geometry.geoms])
+
 
     def _project_polygon(self, polygon, src_crs):
         """
@@ -957,7 +964,8 @@ class Projection(CRS, metaclass=ABCMeta):
         rings = []
         multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
-            p_rings, p_mline = self._project_linear_ring(src_ring, src_crs)
+            geom_collection = self._project_linear_ring(src_ring, src_crs)
+            *p_rings, p_mline = geom_collection.geoms
             if p_rings:
                 rings.extend(p_rings)
             if len(p_mline.geoms) > 0:
@@ -1365,7 +1373,7 @@ class PlateCarree(_CylindricalProjection):
         bbox = [[lon_lower_bound_0, lon_lower_bound_1],
                 [lon_lower_bound_1, lon_lower_bound_0]]
 
-        bbox[1][1] += np.diff(self.x_limits)[0]
+        bbox[1][1] += self.x_limits[1] - self.x_limits[0]
 
         return bbox, lon_0_offset
 
@@ -1783,7 +1791,7 @@ class LambertConformal(Projection):
             lons[1:-1] = np.linspace(central_longitude - 180 + 0.001,
                                      central_longitude + 180 - 0.001, n)
 
-        points = self.transform_points(PlateCarree(globe=globe), lons, lats)
+        points = self.transform_points(self.as_geodetic(), lons, lats)
 
         self._boundary = sgeom.LinearRing(points)
         mins = np.min(points, axis=0)
@@ -1816,6 +1824,20 @@ class LambertConformal(Projection):
     @property
     def y_limits(self):
         return self._y_limits
+
+
+class LambertZoneII(Projection):
+    """
+    Lambert zone II (extended) projection (https://epsg.io/27572), a
+    legacy projection that covers hexagonal France and Corsica.
+
+    """
+    def __init__(self):
+        crs = pyproj.CRS.from_epsg(27572)
+        super().__init__(crs.to_wkt())
+
+        # Projected bounds from https://epsg.io/27572
+        self.bounds = [-5242.32, 1212512.16, 1589155.51, 2706796.21]
 
 
 class LambertAzimuthalEqualArea(Projection):
@@ -1859,7 +1881,7 @@ class LambertAzimuthalEqualArea(Projection):
         lon = central_longitude + 180
         sign = np.sign(central_latitude) or 1
         lat = -central_latitude + sign * 0.01
-        x, max_y = self.transform_point(lon, lat, PlateCarree(globe=globe))
+        x, max_y = self.transform_point(lon, lat, self.as_geodetic())
 
         coords = _ellipse_boundary(a * 1.9999, max_y - false_northing,
                                    false_easting, false_northing, 61)
@@ -2498,7 +2520,7 @@ class Robinson(_WarpedRectangularProjection):
 
 class InterruptedGoodeHomolosine(Projection):
     """
-    Composite equal-area projection empahsizing either land or
+    Composite equal-area projection emphasizing either land or
     ocean features.
 
     Original Reference:

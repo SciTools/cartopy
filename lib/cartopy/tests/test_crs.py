@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import copy
 from io import BytesIO
@@ -37,7 +36,7 @@ class TestCRS:
         ll = ccrs.Geodetic()
 
         # results obtained by nearby.org.uk.
-        lat, lon = np.array([54.5622169298669, -5.54159863617957],
+        lon, lat = np.array([-5.54159863617957, 54.5622169298669],
                             dtype=np.double)
         east, north = np.array([359000, 371000], dtype=np.double)
 
@@ -66,7 +65,7 @@ class TestCRS:
         ll = ccrs.Geodetic()
 
         # results obtained by streetmap.co.uk.
-        lat, lon = np.array([50.462023, -3.478831], dtype=np.double)
+        lon, lat = np.array([-3.478831, 50.462023], dtype=np.double)
         east, north = np.array([295132.1, 63512.6], dtype=np.double)
 
         # note the handling of precision here...
@@ -234,7 +233,7 @@ class TestCRS:
     def test_utm(self):
         utm30n = ccrs.UTM(30)
         ll = ccrs.Geodetic()
-        lat, lon = np.array([51.5, -3.0], dtype=np.double)
+        lon, lat = np.array([-3.0, 51.5], dtype=np.double)
         east, north = np.array([500000, 5705429.2], dtype=np.double)
         assert_arr_almost_eq(utm30n.transform_point(lon, lat, ll),
                              [east, north],
@@ -243,7 +242,7 @@ class TestCRS:
                              [lon, lat],
                              decimal=1)
         utm38s = ccrs.UTM(38, southern_hemisphere=True)
-        lat, lon = np.array([-18.92, 47.5], dtype=np.double)
+        lon, lat = np.array([47.5, -18.92], dtype=np.double)
         east, north = np.array([763316.7, 7906160.8], dtype=np.double)
         assert_arr_almost_eq(utm38s.transform_point(lon, lat, ll),
                              [east, north],
@@ -255,11 +254,11 @@ class TestCRS:
 
 @pytest.fixture(params=[
     [ccrs.PlateCarree, {}],
-    [ccrs.PlateCarree, dict(
-        central_longitude=1.23)],
-    [ccrs.NorthPolarStereo, dict(
-        central_longitude=42.5,
-        globe=ccrs.Globe(ellipse="helmert"))],
+    [ccrs.PlateCarree, dict(central_longitude=1.23)],
+    [ccrs.NorthPolarStereo, dict(central_longitude=42.5,
+                                 globe=ccrs.Globe(ellipse="helmert"))],
+    [ccrs.CRS, dict(proj4_params="3088")],
+    [ccrs.epsg, dict(code="3088")]
 ])
 def proj_to_copy(request):
     cls, kwargs = request.param

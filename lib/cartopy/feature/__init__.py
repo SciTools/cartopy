@@ -1,12 +1,16 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
-This module defines :class:`Feature` instances, for use with
-ax.add_feature().
+This module defines a :class:`Feature` interface, which can be used and
+extended to add various "features" to geoaxes using ax.add_feature(), such as
+Shapely objects and Natural Earth Imagery.
+
+The default zorder for Cartopy features is defined in defined in
+:class:`~cartopy.mpl.feature_artist.FeatureArtist` as 1.5, which puts them
+above images and patches, but below lines and text.
 
 """
 
@@ -365,7 +369,7 @@ class GSHHSFeature(Feature):
         if levels is None:
             levels = [1]
         self._levels = set(levels)
-        unknown_levels = self._levels.difference([1, 2, 3, 4])
+        unknown_levels = self._levels.difference([1, 2, 3, 4, 5, 6])
         if unknown_levels:
             raise ValueError(f"Unknown GSHHS levels {unknown_levels!r}.")
 

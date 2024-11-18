@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # -*- coding: utf-8 -*-
 #
@@ -46,6 +45,7 @@ extensions = [
               'sphinx.ext.extlinks',
               'sphinx.ext.autosummary',
               'matplotlib.sphinxext.plot_directive',
+              'matplotlib.sphinxext.roles',
               'sphinx_gallery.gen_gallery',
               'sphinx.ext.napoleon'
               ]
@@ -93,6 +93,16 @@ subsection_order = ExplicitOrder(['../../examples/lines_and_polygons',
 sphinx_gallery_conf = {
     'capture_repr': (),
     'examples_dirs': ['../../examples'],
+    "expected_failing_examples": [
+        # NASA wmts servers frequently return bad content metadata
+        # uncomment these to fix the doc build failures
+        # '../../examples/web_services/reprojected_wmts.py',
+        # '../../examples/web_services/wmts.py',
+        # '../../examples/web_services/wmts_time.py',
+        # OSGeo WMS has been shut off
+        # https://discourse.osgeo.org/t/map-tile-loading-pin-location-issues/6910/2
+        '../../examples/web_services/wms.py'
+    ],
     'filename_pattern': '^((?!sgskip).)*$',
     'gallery_dirs': ['gallery'],
     'within_subsection_order': ExampleTitleSortKey,

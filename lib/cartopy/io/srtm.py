@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
 The Shuttle Radar Topography Mission (SRTM) is an international research
@@ -11,6 +10,9 @@ effort that obtained digital elevation models on a near-global scale from
 database of Earth prior to the release of the ASTER GDEM in 2009.
 
    - Wikipedia (August 2012)
+
+The SRTM data can be accessed through the :mod:`cartopy.io.srtm` module
+using classes and functions defined below.
 
 """
 

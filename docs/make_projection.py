@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import inspect
 from pathlib import Path
@@ -80,7 +79,8 @@ MULTI_PLOT_CASES = {
 
 COASTLINE_RESOLUTION = {ccrs.OSNI: '10m',
                         ccrs.OSGB: '50m',
-                        ccrs.EuroPP: '50m'}
+                        ccrs.EuroPP: '50m',
+                        ccrs.LambertZoneII: '10m'}
 
 
 PRJ_SORT_ORDER = {'PlateCarree': 1,
@@ -92,7 +92,7 @@ PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'Orthographic': 2, 'UTM': 2, 'AlbersEqualArea': 2,
                   'AzimuthalEquidistant': 2, 'Sinusoidal': 2,
                   'InterruptedGoodeHomolosine': 3, 'RotatedPole': 3,
-                  'OSGB': 4, 'EuroPP': 5,
+                  'OSGB': 4, 'LambertZoneII': 4.1, 'EuroPP': 5,
                   'Geostationary': 6, 'NearsidePerspective': 7,
                   'EckertI': 8.1, 'EckertII': 8.2, 'EckertIII': 8.3,
                   'EckertIV': 8.4, 'EckertV': 8.5, 'EckertVI': 8.6}

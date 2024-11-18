@@ -1,11 +1,9 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
-This module contains generic functionality to support Cartopy image
-transformations.
+Generic functionality to support Cartopy image transformations.
 
 """
 
@@ -217,7 +215,9 @@ def _determine_bounds(x_coords, y_coords, source_cs):
         bounds['x'].append([x_coords.min() - half_px,
                             x_coords.max() + half_px])
 
-    bounds['y'] = [y_coords.min(), y_coords.max()]
+    # y_coords are the centers, so adjust a half-pixel out in y too
+    half_px = abs(np.diff(y_coords, axis=0)).max() / 2.
+    bounds['y'] = [y_coords.min() - half_px, y_coords.max() + half_px]
     return bounds
 
 

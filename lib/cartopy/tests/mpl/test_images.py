@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import types
 
@@ -117,7 +116,7 @@ def test_imshow():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png',
-                               tolerance=0.8)
+                               tolerance=1.96)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
@@ -138,6 +137,16 @@ def test_imshow_wrapping():
               extent=(0, 360, -90, 90))
 
     assert ax.get_xlim() == (-180, 180)
+
+
+def test_imshow_arguments():
+    """Smoke test for imshow argument passing in the fast-path"""
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    # Set the regrid_shape parameter to ensure it isn't passed to Axes.imshow()
+    # in the fast-path call to super()
+    with pytest.warns(UserWarning, match="ignoring regrid_shape"):
+        ax.imshow(np.random.random((10, 10)), transform=ccrs.PlateCarree(),
+              extent=(-180, 180, -90, 90), regrid_shape=500)
 
 
 def test_imshow_rgba():

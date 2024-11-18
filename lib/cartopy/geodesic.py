@@ -1,14 +1,14 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 #
 # cython: embedsignature=True
 
 """
 This module defines the Geodesic class which can interface with the Proj
-geodesic functions.
+geodesic functions. See the `Proj geodesic page <https://proj.org/geodesic.html>`_
+for more background information.
 
 """
 import numpy as np
