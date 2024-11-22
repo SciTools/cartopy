@@ -21,6 +21,7 @@ import numpy as np
 import pyproj
 from pyproj import Transformer
 from pyproj.exceptions import ProjError
+import shapely
 import shapely.geometry as sgeom
 from shapely.prepared import prep
 
@@ -1214,10 +1215,26 @@ class Projection(CRS, metaclass=ABCMeta):
             y3 -= by
             x4 += bx
             y4 += by
+
+            interior_polys = []
+
             for ring in interior_rings:
-                # Use shapely buffer in an attempt to fix invalid geometries
-                polygon = sgeom.Polygon(ring).buffer(0)
-                if not polygon.is_empty and polygon.is_valid:
+                polygon = shapely.make_valid(sgeom.Polygon(ring))
+                if not polygon.is_empty:
+                    if isinstance(polygon, sgeom.Polygon):
+                        interior_polys.append(polygon)
+                    elif isinstance(polygon, sgeom.MultiPolygon):
+                        interior_polys.extend(polygon.geoms)
+                    elif isinstance(polygon, sgeom.GeometryCollection):
+                        for geom in polygon.geoms:
+                            if isinstance(geom, sgeom.Polygon):
+                                interior_polys.append(geom)
+                            elif isinstance(geom, sgeom.MultiPolygon):
+                                interior_polys.extend(geom.geoms)
+                    else:
+                        # make_valid may produce some linestrings.  Ignore these
+                        continue
+
                     x1, y1, x2, y2 = polygon.bounds
                     bx = (x2 - x1) * 0.1
                     by = (y2 - y1) * 0.1
@@ -1225,23 +1242,27 @@ class Projection(CRS, metaclass=ABCMeta):
                     y1 -= by
                     x2 += bx
                     y2 += by
-                    box = sgeom.box(min(x1, x3), min(y1, y3),
-                                    max(x2, x4), max(y2, y4))
 
-                    # Invert the polygon
-                    polygon = box.difference(polygon)
+                    x3 = min(x1, x3)
+                    x4 = max(x2, x4)
+                    y3 = min(y1, y3)
+                    y4 = max(y2, y4)
 
-                    # Intersect the inverted polygon with the boundary
-                    polygon = boundary_poly.intersection(polygon)
+            box = sgeom.box(x3, y3, x4, y4, ccw=is_ccw)
 
-                    if not polygon.is_empty:
-                        polygon_bits.append(polygon)
+            # Invert the polygons
+            polygon = box.difference(sgeom.MultiPolygon(interior_polys))
 
-        if polygon_bits:
-            multi_poly = sgeom.MultiPolygon(polygon_bits)
-        else:
-            multi_poly = sgeom.MultiPolygon()
-        return multi_poly
+            # Intersect the inverted polygon with the boundary
+            polygon = boundary_poly.intersection(polygon)
+
+            if not polygon.is_empty:
+                if isinstance(polygon, sgeom.MultiPolygon):
+                    polygon_bits.extend(polygon.geoms)
+                else:
+                    polygon_bits.append(polygon)
+
+        return sgeom.MultiPolygon(polygon_bits)
 
     def quick_vertices_transform(self, vertices, src_crs):
         """
