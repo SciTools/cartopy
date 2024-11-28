@@ -22,7 +22,7 @@ For example::
 
  @manual{Cartopy,
  author = {{Met Office}},
- title = {Cartopy: a cartographic python library with a Matplotlib interface},
+ title = {Cartopy: a cartographic {Python} library with a {Matplotlib} interface},
  year = {2010 - 2015},
  address = {Exeter, Devon },
  url = {https://scitools.org.uk/cartopy}
