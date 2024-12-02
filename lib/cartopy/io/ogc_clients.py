@@ -543,8 +543,8 @@ class WMTSRasterSource(RasterSource):
                 if self._default_cache:
                     warnings.warn(
                         'Cartopy created the following directory to cache '
-                        'WMTSRasterSource tiles: {}'.format(cache_dir))
-            self.cache = self.cache.union(set(os.listdir(cache_dir)))
+                        f'WMTSRasterSource tiles: {cache_dir}')
+            self.cache = self.cache.union(set(cache_dir.iterdir()))
 
     def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span):
         # Get the tile matrices in order of increasing resolution.
@@ -683,15 +683,12 @@ class WMTSRasterSource(RasterSource):
                     # Try it from disk cache
                     if self.cache_path is not None:
                         filename = f"{img_key[0]}_{img_key[1]}.npy"
-                        cached_file = os.path.join(
-                            self._cache_dir,
-                            filename
-                        )
+                        cached_file = self._cache_dir / filename
                     else:
                         filename = None
                         cached_file = None
 
-                    if filename in self.cache:
+                    if cached_file in self.cache:
                         img = Image.fromarray(np.load(cached_file, allow_pickle=False))
                     else:
                         try:
