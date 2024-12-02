@@ -18,15 +18,15 @@ this way can be found at :ref:`sphx_glr_gallery_web_services_wmts.py`.
 import collections
 import io
 import math
+import os
+from pathlib import Path
 from urllib.parse import urlparse
 import warnings
 import weakref
 from xml.etree import ElementTree
-import os
 
 import numpy as np
 from PIL import Image
-from pathlib import Path
 import shapely.geometry as sgeom
 
 import cartopy
