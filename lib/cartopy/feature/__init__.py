@@ -291,7 +291,10 @@ class NaturalEarthFeature(Feature):
             path = shapereader.natural_earth(resolution=self.scale,
                                              category=self.category,
                                              name=self.name)
-            geometries = tuple(shapereader.Reader(path).geometries())
+            reader = shapereader.Reader(path)
+            if reader.crs is not None:
+                self._crs = reader.crs
+            geometries = tuple(reader.geometries())
             _NATURAL_EARTH_GEOM_CACHE[key] = geometries
         else:
             geometries = _NATURAL_EARTH_GEOM_CACHE[key]
@@ -422,7 +425,10 @@ class GSHHSFeature(Feature):
                 # Load GSHHS geometries from appropriate shape file.
                 # TODO selective load based on bbox of each geom in file.
                 path = shapereader.gshhs(scale, level)
-                geoms = tuple(shapereader.Reader(path).geometries())
+                reader = shapereader.Reader(path)
+                if reader.crs is not None:
+                    self._crs = reader.crs
+                geoms = tuple(reader.geometries())
                 GSHHSFeature._geometries_cache[(scale, level)] = geoms
             for geom in geoms:
                 if extent is None or extent_geom.intersects(geom):
