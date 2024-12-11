@@ -16,7 +16,9 @@ import shapely.geometry as sgeom
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
+import cartopy.io.ogc_clients as ogc
 
+RESOLUTION = (30, 30)
 
 #: Maps Google tile coordinates to native mercator coordinates as defined
 #: by https://goo.gl/pgJi.
@@ -326,6 +328,81 @@ def test_azuremaps_get_image():
 
     # The extent is the same though
     assert extent1 == extent2
+
+
+@pytest.mark.network
+@pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
+def test_wmts_cache(cache_dir, tmp_path):
+    if cache_dir == "tmpdir":
+        tmpdir_str = str(tmp_path)
+    else:
+        tmpdir_str = cache_dir
+
+    if cache_dir is True:
+        config["cache_dir"] = str(tmp_path)
+
+    # URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
+    # layer_name = 'VIIRS_CityLights_2012'
+    URI = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/1.0.0/WMTSCapabilities.xml'
+    layer_name='USGSImageryOnly'
+    projection = ccrs.PlateCarree()
+
+    # Fetch tiles and save them in the cache
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        source = ogc.WMTSRasterSource(URI, layer_name, cache=tmpdir_str)
+    extent = [-40, 40, 20, 60]
+    located_image, = source.fetch_raster(projection, extent,
+                                         RESOLUTION)
+
+    # Do not check the result if the cache is disabled
+    if cache_dir is False:
+        assert source.cache_path is None
+        return
+
+    print (source.cache_path)
+
+    img = np.array(located_image.image)
+
+    # Define expected results
+    x_y_f_h = [
+        (0, 0, '0_0.npy', 'c8c6151b76b1cc127c05118ac30b68f4'),
+        (0, 1, '0_1.npy', '09ec87c17d39fac2d0a8d98bf4ea78af'),
+    ]
+
+    # Check the results
+    cache_dir_res = source.cache_path / "WMTSRasterSource"
+    files = list(cache_dir_res.iterdir())
+    print(files)
+    hashes = {
+        f:
+            hashlib.md5(
+                np.load(cache_dir_res / f, allow_pickle=True).data
+            ).hexdigest()
+        for f in files
+    }
+    print(hashes)
+    assert sorted(files) == [cache_dir_res / f for x, y, f, h in x_y_f_h]
+    assert set(files) == set([cache_dir_res / c for c in source.cache])
+
+    assert sorted(hashes.values()) == sorted(
+        h for x, y, f, h in x_y_f_h
+    )
+
+    # Update images in cache (all white)
+    for f in files:
+        filename = cache_dir_res / f
+        img = np.load(filename, allow_pickle=True)
+        img.fill(255)
+        np.save(filename, img, allow_pickle=True)
+
+    wmts_cache = source = ogc.WMTSRasterSource(URI, layer_name, cache=tmpdir_str)
+    print(dir(wmts_cache))
+    img_cache, _, _ = wmts_cache.image_for_domain(target_domain, 6)
+
+    # Check that the new image_for_domain() call used cached images
+    assert gt_cache.cache == gt.cache
+    assert (img_cache == 255).all()
 
 
 @pytest.mark.network
