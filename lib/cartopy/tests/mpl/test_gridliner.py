@@ -149,13 +149,10 @@ def test_grid_labels():
     ax.coastlines(resolution="110m")
     ax.gridlines(draw_labels=True)
 
-    # Check that adding labels to Mercator gridlines gives an error.
-    # (Currently can only label PlateCarree gridlines.)
     ax = fig.add_subplot(
         3, 2, 2, projection=ccrs.PlateCarree(central_longitude=180))
     ax.coastlines(resolution="110m")
 
-    ax.set_title('Known bug')
     gl = ax.gridlines(crs=crs_pc, draw_labels=True)
     gl.top_labels = False
     gl.left_labels = False
