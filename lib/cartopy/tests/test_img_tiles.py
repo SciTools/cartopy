@@ -18,6 +18,7 @@ import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.ogc_clients as ogc
 
+
 RESOLUTION = (30, 30)
 
 #: Maps Google tile coordinates to native mercator coordinates as defined
