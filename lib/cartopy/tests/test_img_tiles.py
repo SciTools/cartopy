@@ -351,7 +351,7 @@ def test_wmts_cache(cache_dir, tmp_path):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         source = ogc.WMTSRasterSource(URI, layer_name, cache=tmpdir_str)
-    extent = [-40, 40, 20, 60]
+    extent = [-10, 10, 40, 60]
     located_image, = source.fetch_raster(projection, extent,
                                          RESOLUTION)
 
@@ -360,14 +360,16 @@ def test_wmts_cache(cache_dir, tmp_path):
         assert source.cache_path is None
         return
 
-    print (source.cache_path)
-
-    img = np.array(located_image.image)
+    # Check that the warning is properly raised (only when cache is True)
+    if cache_dir is True:
+        assert len(w) == 1
+    else:
+        assert len(w) == 0
 
     # Define expected results
     x_y_f_h = [
-        (0, 0, '0_0.npy', 'c8c6151b76b1cc127c05118ac30b68f4'),
-        (0, 1, '0_1.npy', '09ec87c17d39fac2d0a8d98bf4ea78af'),
+        (1, 1, '1_1.npy', '0de548bd47e4579ae0500da6ceeb08e7'),
+        (1, 2, '1_2.npy', '4beebcd3e4408af5accb440d7b4c8933'),
     ]
 
     # Check the results
@@ -381,7 +383,6 @@ def test_wmts_cache(cache_dir, tmp_path):
             ).hexdigest()
         for f in files
     }
-    print(hashes)
     assert sorted(files) == [cache_dir_res / f for x, y, f, h in x_y_f_h]
     assert set(files) == set([cache_dir_res / c for c in source.cache])
 
@@ -396,13 +397,13 @@ def test_wmts_cache(cache_dir, tmp_path):
         img.fill(255)
         np.save(filename, img, allow_pickle=True)
 
-    wmts_cache = source = ogc.WMTSRasterSource(URI, layer_name, cache=tmpdir_str)
-    print(dir(wmts_cache))
-    img_cache, _, _ = wmts_cache.image_for_domain(target_domain, 6)
+    wmts_cache = ogc.WMTSRasterSource(URI, layer_name, cache=tmpdir_str)
+    located_image_cache, = wmts_cache.fetch_raster(projection, extent,
+                                         RESOLUTION)
 
-    # Check that the new image_for_domain() call used cached images
-    assert gt_cache.cache == gt.cache
-    assert (img_cache == 255).all()
+    # Check that the new fetch_raster() call used cached images
+    assert wmts_cache.cache == set([cache_dir_res / c for c in source.cache])
+    assert (np.array(located_image_cache.image) == 255).all()
 
 
 @pytest.mark.network
