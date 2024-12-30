@@ -376,7 +376,6 @@ def test_wmts_cache(cache_dir, tmp_path):
     # Check the results
     cache_dir_res = source.cache_path / "WMTSRasterSource"
     files = list(cache_dir_res.iterdir())
-    print(files)
     hashes = {
         f:
             hashlib.md5(
