@@ -333,6 +333,7 @@ def test_azuremaps_get_image():
 
 @pytest.mark.network
 @pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
+@pytest.mark.skipif(not ogc._OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 def test_wmts_cache(cache_dir, tmp_path):
     if cache_dir == "tmpdir":
         tmpdir_str = str(tmp_path)
