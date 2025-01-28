@@ -5,10 +5,11 @@ Raster reprojections
 When plotting raster data onto a map with `imshow`, we need to first set the
 extend of the map so the reprojection is done correctly.
 
-In this example, we have a raster data stored as a numpy array that is
+In this example, we have some raster data stored as a numpy array that is
 referenced to a rectangular coordinate system. Cartopy reproject these
 data to match the map's coordinate system, however, the map extent
-must be set *before* `imshow` is called.
+must be set *before* `imshow` is called, otherwise, the reprojection
+will not succeed.
 
 """
 
