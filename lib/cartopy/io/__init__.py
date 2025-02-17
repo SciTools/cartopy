@@ -38,6 +38,10 @@ def fh_getter(fh, mode='r', needs_filename=False):
         Opened in the given mode.
 
     """
+
+    # Initiliaze a variable
+    filename = None
+    
     if mode != 'r':
         raise ValueError('Only mode "r" currently supported.')
 
