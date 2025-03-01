@@ -173,7 +173,6 @@ def test_grid_labels():
     gl.xlocator = mticker.FixedLocator([-180, -45, 45, 180])
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
-    gl.xlabel_style = {'size': 15, 'color': 'gray'}
     gl.xlabel_style = {'color': 'red'}
     gl.xpadding = 10
     gl.ypadding = 15

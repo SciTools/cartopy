@@ -53,7 +53,7 @@ class to produce customized gridlines and tick labels:
     gl.ylocator = LatitudeLocator()
     gl.xformatter = LongitudeFormatter()
     gl.yformatter = LatitudeFormatter()
-    gl.xlabel_style = {'size': 15, 'color': 'gray'}
+    gl.ylabel_style = {'size': 15, 'color': 'gray'}
     gl.xlabel_style = {'color': 'red', 'weight': 'bold'}
 
     plt.show()
