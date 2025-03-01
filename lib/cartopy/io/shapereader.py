@@ -31,6 +31,7 @@ import io
 import itertools
 from pathlib import Path
 from urllib.error import HTTPError
+from zipfile import ZipFile
 
 import shapefile
 import shapely.geometry as sgeom
@@ -349,25 +350,15 @@ class NEShpDownloader(Downloader):
         :meth:`zip_file_contents` to the target path.
 
         """
-        from zipfile import ZipFile
-
         target_dir = Path(target_path).parent
         target_dir.mkdir(parents=True, exist_ok=True)
 
         url = self.url(format_dict)
 
         shapefile_online = self._urlopen(url)
-
-        zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
-
-        for member_path in self.zip_file_contents(format_dict):
-            member = zfh.getinfo(member_path.replace('\\', '/'))
-            with open(target_path.with_suffix(
-                    Path(member_path).suffix), 'wb') as fh:
-                fh.write(zfh.open(member).read())
-
+        with ZipFile(io.BytesIO(shapefile_online.read()), 'r') as zfh:
+            zfh.extractall(target_dir)
         shapefile_online.close()
-        zfh.close()
 
         return target_path
 
@@ -456,8 +447,6 @@ class GSHHSShpDownloader(Downloader):
             yield str(p).format(extension=ext, **format_dict)
 
     def acquire_all_resources(self, format_dict):
-        from zipfile import ZipFile
-
         # Download archive.
         url = self.url(format_dict)
         try:
