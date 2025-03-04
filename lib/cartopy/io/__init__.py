@@ -41,6 +41,8 @@ def fh_getter(fh, mode='r', needs_filename=False):
     if mode != 'r':
         raise ValueError('Only mode "r" currently supported.')
 
+    filename = None
+
     if isinstance(fh, str):
         filename = fh
         fh = open(fh, mode)
