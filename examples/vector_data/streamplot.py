@@ -8,7 +8,6 @@ Generating a vector-based streamplot.
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 import cartopy.crs as ccrs
 
 
