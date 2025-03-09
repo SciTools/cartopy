@@ -88,8 +88,7 @@ class TestLicenseHeaders:
                     # Allow completely empty files (e.g. ``__init__.py``)
                     continue
 
-                with open(full_fname, encoding='utf-8') as fh:
-                    content = fh.read()
+                content = full_fname.read_text(encoding="utf-8")
 
                 if not bool(LICENSE_RE.match(content)):
                     failed.append(full_fname)
