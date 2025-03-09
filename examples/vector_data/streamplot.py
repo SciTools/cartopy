@@ -6,6 +6,8 @@ Generating a vector-based streamplot.
 
 """
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 import cartopy.crs as ccrs
 
@@ -18,8 +20,6 @@ def sample_data(shape=(20, 30)):
     regular PlateCarree space.
 
     """
-    import numpy as np
-
     crs = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
 
     x = np.linspace(311.9, 391.1, shape[1])
@@ -39,7 +39,7 @@ def main():
     ax.coastlines()
 
     x, y, u, v, vector_crs = sample_data(shape=(80, 100))
-    magnitude = (u ** 2 + v ** 2) ** 0.5
+    magnitude = np.hypot(u, v)
     ax.streamplot(x, y, u, v, transform=vector_crs,
                   linewidth=2, density=2, color=magnitude)
     plt.show()
