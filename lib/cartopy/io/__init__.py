@@ -226,8 +226,7 @@ class Downloader:
         # try getting the resource (no exception handling, just let it raise)
         response = self._urlopen(url)
 
-        with open(target_path, 'wb') as fh:
-            fh.write(response.read())
+        target_path.write_bytes(response.read())
 
         return target_path
 
