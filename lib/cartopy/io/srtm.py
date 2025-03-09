@@ -243,7 +243,7 @@ def add_shading(elevation, azimuth, altitude):
     azimuth = np.deg2rad(azimuth)
     altitude = np.deg2rad(altitude)
     x, y = np.gradient(elevation)
-    slope = np.pi / 2 - np.arctan(np.sqrt(x * x + y * y))
+    slope = np.pi / 2 - np.arctan(np.hypot(x, y))
     # -x here because of pixel orders in the SRTM tile
     aspect = np.arctan2(-x, y)
     shaded = np.sin(altitude) * np.sin(slope) \

@@ -100,7 +100,7 @@ def test_contour_interiors():
     numlev = 2
     lons, lats = np.meshgrid(np.linspace(-50, 50, nx),
                              np.linspace(-45, 45, ny))
-    data = np.sin(np.sqrt(lons ** 2 + lats ** 2))
+    data = np.sin(np.hypot(lons, lats))
     fig = plt.figure()
 
     ax = fig.add_subplot(2, 2, 1, projection=ccrs.PlateCarree())
@@ -118,7 +118,7 @@ def test_contour_interiors():
     numlev = 2
     x, y = np.meshgrid(np.arange(-5.5, 5.5, 0.25), np.arange(-5.5, 5.5, 0.25))
     dim = x.shape[0]
-    data = np.sin(np.sqrt(x ** 2 + y ** 2))
+    data = np.sin(np.hypot(x, y))
     lats = np.arange(dim) + 30
     lons = np.arange(dim) - 20
 

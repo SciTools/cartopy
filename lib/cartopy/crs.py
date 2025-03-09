@@ -494,7 +494,7 @@ class CRS(_CRS):
         # Rotate the input vectors to the projection.
         #
         # 1: Find the magnitude and direction of the input vectors.
-        vector_magnitudes = (u**2 + v**2)**0.5
+        vector_magnitudes = np.hypot(u, v)
         vector_angles = np.arctan2(v, u)
         # 2: Find a point in the direction of the original vector that is
         #    a small distance away from the base point of the vector (near
