@@ -361,10 +361,10 @@ class NEShpDownloader(Downloader):
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
-            member = zfh.getinfo(member_path.replace('\\', '/'))
-            with open(target_path.with_suffix(
-                    Path(member_path).suffix), 'wb') as fh:
-                fh.write(zfh.open(member).read())
+            member = zfh.getinfo(member_path.replace("\\", "/"))
+            target_path.with_suffix(Path(member_path).suffix).write_bytes(
+                zfh.open(member).read()
+            )
 
         shapefile_online.close()
         zfh.close()
@@ -504,10 +504,9 @@ class GSHHSShpDownloader(Downloader):
 
             for member_path in self.zip_file_contents(modified_format_dict):
                 member = zfh.getinfo(member_path.replace('\\', '/'))
-                with open(target_path.with_suffix(
-                        Path(member_path).suffix), 'wb') as fh:
-                    fh.write(zfh.open(member).read())
-
+                target_path.with_suffix(Path(member_path).suffix).write_bytes(
+                    zfh.open(member).read()
+                )
         zfh.close()
 
     def acquire_resource(self, target_path, format_dict):

@@ -373,8 +373,7 @@ class SRTMDownloader(Downloader):
 
         zip_member_path = '{y}{x}.hgt'.format(**format_dict)
         member = zfh.getinfo(zip_member_path)
-        with open(target_path, 'wb') as fh:
-            fh.write(zfh.open(member).read())
+        target_path.write_bytes(zfh.open(member).read())
 
         srtm_online.close()
         zfh.close()
@@ -407,8 +406,7 @@ class SRTMDownloader(Downloader):
             with urlopen(url) as f:
                 html = f.read()
         else:
-            with open(filename) as f:
-                html = f.read()
+            html = Path(filename).read_text()
 
         mask = np.zeros((360, 181), dtype=bool)
 

@@ -61,8 +61,7 @@ def _save_world(fname, args):
               '{y_pix_size}\n'
               '{x_center}\n'
               '{y_center}\n')
-    with open(fname, 'w') as fh:
-        fh.write(_world.format(**args))
+    fname.write_text(_world.format(**args))
 
 
 def test_intersect(tmp_path):
@@ -298,8 +297,7 @@ def wmts_data():
                           f'{_TEST_DATA_DIR}.')
             shutil.rmtree(_TEST_DATA_DIR)
             _TEST_DATA_DIR.mkdir(parents=True)
-            with open(data_version_fname, 'w') as fh:
-                fh.write(str(_TEST_DATA_VERSION))
+            data_version_fname.write_text(str(_TEST_DATA_VERSION))
 
     # Download the tiles.
     for tile in tiles:
