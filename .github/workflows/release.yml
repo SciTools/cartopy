@@ -98,7 +98,7 @@ jobs:
           path: dist
 
       - name: Build wheels for CPython
-        uses: pypa/cibuildwheel@6cccd09a31908ffd175b012fb8bf4e1dbda3bc6c # v2.23.0
+        uses: pypa/cibuildwheel@42728e866bbc80d544a70825bd9990b9a26f1a50 # v2.23.1
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
         env:
