@@ -403,8 +403,9 @@ class SRTMDownloader(Downloader):
         if filename is None:
             from urllib3 import request
             url = SRTMDownloader._SRTM_BASE_URL.format(resolution=resolution)
-            with request('GET', url, preload_content=False) as f:
+            with request('GET', url, preload_content=False) as r:
                 html = f.read()
+                r.release_conn()
         else:
             html = Path(filename).read_text()
 

@@ -228,6 +228,7 @@ class Downloader:
         response = self._urlopen(url)
 
         target_path.write_bytes(response.read())
+        response.release_conn()
 
         return target_path
 
