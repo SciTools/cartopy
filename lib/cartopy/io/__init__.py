@@ -13,8 +13,9 @@ sub-packages for loading, saving and retrieving various data formats.
 import collections
 from pathlib import Path
 import string
-from urllib.request import urlopen
 import warnings
+
+from urllib3 import request
 
 from cartopy import config
 
@@ -238,7 +239,7 @@ class Downloader:
 
         """
         warnings.warn(f'Downloading: {url}', DownloadWarning)
-        return urlopen(url)
+        return request('GET', url, preload_content=False)
 
     @staticmethod
     def from_config(specification, config_dict=None):

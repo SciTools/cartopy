@@ -401,9 +401,9 @@ class SRTMDownloader(Downloader):
         # dependencies of cartopy.
         from bs4 import BeautifulSoup
         if filename is None:
-            from urllib.request import urlopen
+            from urllib3 import request
             url = SRTMDownloader._SRTM_BASE_URL.format(resolution=resolution)
-            with urlopen(url) as f:
+            with request('GET', url, preload_content=False) as f:
                 html = f.read()
         else:
             html = Path(filename).read_text()
