@@ -30,7 +30,7 @@ geometry representation of shapely:
 import io
 import itertools
 from pathlib import Path
-from urllib.error import HTTPError
+from urllib3.exceptions import HTTPError
 
 import shapefile
 import shapely.geometry as sgeom
