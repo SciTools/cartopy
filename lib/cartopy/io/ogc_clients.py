@@ -19,7 +19,6 @@ import collections
 import io
 import math
 from pathlib import Path
-from urllib3.util import parse_url
 import warnings
 import weakref
 from xml.etree import ElementTree
@@ -27,6 +26,7 @@ from xml.etree import ElementTree
 import numpy as np
 from PIL import Image
 import shapely.geometry as sgeom
+from urllib3.util import parse_url
 
 import cartopy
 
