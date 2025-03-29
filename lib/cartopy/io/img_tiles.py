@@ -216,7 +216,8 @@ class GoogleWTS(metaclass=ABCMeta):
         else:
             url = self._image_url(tile)
             try:
-                r = request('GET', url, headers={"User-Agent": self.user_agent}, preload_content=False)
+                r = request('GET', url, headers={"User-Agent": self.user_agent},
+                            preload_content=False)
                 im_data = io.BytesIO(r.read())
                 r.release_conn()
                 img = Image.open(im_data)
