@@ -582,7 +582,7 @@ class Gridliner(matplotlib.artist.Artist):
 
     def _generate_labels(self):
         """
-        A generator to yield as many labels as needed, re-using existing ones
+        A generator to yield as many labels as needed, reusing existing ones
         where possible.
         """
         for label in self._all_labels:
