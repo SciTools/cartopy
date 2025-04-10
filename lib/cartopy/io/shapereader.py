@@ -275,10 +275,12 @@ BasicReader and FionaReader instances can also be created directly.
 """
 
 
-def natural_earth(resolution='110m', category='physical', name='coastline'):
+def natural_earth(resolution='110m', category='physical',
+                  name='coastline', version=None):
     """
     Return the path to the requested natural earth shapefile,
-    downloading and unzipping if necessary.
+    downloading and unzipping if necessary. If version is not specified,
+    the latest available version will be downloaded.
 
     To identify valid components for this function, either browse
     NaturalEarthData.com, or if you know what you are looking for, go to
@@ -299,10 +301,11 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
     # get hold of the Downloader (typically a NEShpDownloader instance)
     # which we can then simply call its path method to get the appropriate
     # shapefile (it will download if necessary)
+    _version_string = "" if version is None else f"{version}/"
     ne_downloader = Downloader.from_config(('shapefiles', 'natural_earth',
-                                            resolution, category, name))
-    format_dict = {'config': config, 'category': category,
-                   'name': name, 'resolution': resolution}
+                                                resolution, category, name))
+    format_dict = {'config': config, 'category': category, 'name': name,
+                   'resolution': resolution, 'version': _version_string}
     return ne_downloader.path(format_dict)
 
 
@@ -321,7 +324,7 @@ class NEShpDownloader(Downloader):
     # Define the NaturalEarth URL template. Shapefiles are hosted on AWS since
     # 2021: https://github.com/nvkelso/natural-earth-vector/issues/445
     _NE_URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/'
-                        '{resolution}_{category}/ne_{resolution}_{name}.zip')
+                        '{version}{resolution}_{category}/ne_{resolution}_{name}.zip')
 
     def __init__(self,
                  url_template=_NE_URL_TEMPLATE,
@@ -386,7 +389,7 @@ class NEShpDownloader(Downloader):
 ne_{resolution}_{name}.shp
 
         """
-        default_spec = ('shapefiles', 'natural_earth', '{category}',
+        default_spec = ('shapefiles', 'natural_earth', '{category}', '{version}',
                         'ne_{resolution}_{name}.shp')
         ne_path_template = str(
             Path('{config[data_dir]}').joinpath(*default_spec))
