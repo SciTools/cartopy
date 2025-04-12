@@ -1354,6 +1354,11 @@ class PlateCarree(_CylindricalProjection):
         self.threshold = x_max / 360
         super().__init__(proj4_params, x_max, y_max, globe=globe)
 
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params):
+        return cls(globe=globe)
+
     def _bbox_and_offset(self, other_plate_carree):
         """
         Return a pair of (xmin, xmax) pairs and an offset which can be used
@@ -1683,6 +1688,18 @@ class Mercator(Projection):
         self.threshold = min(np.diff(self.x_limits)[0] / 720,
                              np.diff(self.y_limits)[0] / 360)
 
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            latitude_true_scale=cf_params.get('standard_parallel'),
+            scale_factor=cf_params.get('scale_factor_at_projection_origin'),
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            globe=globe
+        )
+
     def __eq__(self, other):
         res = super().__eq__(other)
         if hasattr(other, "_y_limits") and hasattr(other, "_x_limits"):
@@ -1731,6 +1748,20 @@ class LambertCylindrical(_RectangularProjection):
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
         super().__init__(proj4_params, 180, math.degrees(1), globe=globe)
+
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        if cf_params.get('false_northing', 0) != 0 or cf_params.get('false_easting', 0) != 0:
+            raise ValueError('Lambert cylindrical equal area projections with non-zero false_northing or false_easting are not supported in cartopy.')
+        if cf_params.get('standard_parallel', 0) != 0:
+            raise ValueError('Lambert cylindrical equal area projections with non-zero standard parallel are not supported in cartopy.')
+        if cf_params.get('scale_factor_at_projection_origin', 1) != 1:
+            raise ValueError('Lambert cylindrical equal area projections with scale factor different than 1 are not supported in cartopy.')
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            globe=globe
+        )
 
 
 class LambertConformal(Projection):
@@ -1821,6 +1852,18 @@ class LambertConformal(Projection):
         self._y_limits = mins[1], maxs[1]
 
         self.threshold = 1e5
+
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            standard_parallels=cf_params['standard_parallel'],
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            central_latitude=cf_params['latitude_of_projection_origin'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            globe=globe
+        )
 
     def __eq__(self, other):
         res = super().__eq__(other)
@@ -1913,6 +1956,17 @@ class LambertAzimuthalEqualArea(Projection):
         self._y_limits = mins[1], maxs[1]
         self.threshold = np.diff(self._x_limits)[0] * 1e-3
 
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            central_latitude=cf_params['latitude_of_projection_origin'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            globe=globe
+        )
+
     @property
     def boundary(self):
         return self._boundary
@@ -1983,6 +2037,16 @@ class RotatedPole(_CylindricalProjection):
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
         super().__init__(proj4_params, 180, 90, globe=globe)
+
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            pole_longitude=cf_params['grid_north_pole_longitude'],
+            pole_latitude=cf_params['grid_north_pole_latitude'],
+            central_rotated_longitude=cf_params.get('north_pole_grid_longitude', 0),
+            globe=globe
+        )
 
 
 class Gnomonic(Projection):
@@ -2068,6 +2132,22 @@ class Stereographic(Projection):
     def y_limits(self):
         return self._y_limits
 
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        central_longitude = cf_params.get('straight_vertical_longitude_from_pole', cf_params.get('longitude_of_projection_origin'))
+        if central_longitude is None:
+            raise KeyError('longitude_of_projection_origin')
+        if cf_params.get('scale_factor_at_projection_origin', 1) != 1:
+            raise ValueError('Stereographic projections with a scale factor at projection origins different than one are not supported by cartopy.')
+        if cf_params.get('false_northing', 0) != 0 and cf_params.get('false_easting', 0) != 0:
+            raise ValueError('Stereographic projections with non-zero false northing or false easting are not yet supported in cartopy.')
+        return cls(
+            central_longitude=central_longitude,
+            true_scale_latitude=cf_params['standard_parallel'],
+            globe=globe
+        )
+
 
 class NorthPolarStereo(Stereographic):
     def __init__(self, central_longitude=0.0, true_scale_latitude=None,
@@ -2077,6 +2157,7 @@ class NorthPolarStereo(Stereographic):
             central_longitude=central_longitude,
             true_scale_latitude=true_scale_latitude,  # None is +90
             globe=globe)
+
 
 
 class SouthPolarStereo(Stereographic):
@@ -2110,6 +2191,17 @@ class Orthographic(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
         self.threshold = np.diff(self._x_limits)[0] * 0.02
+
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        if cf_params.get('false_northing', 0) != 0 and cf_params.get('false_easting', 0) != 0:
+            raise ValueError('Orthographic projections with non-zero false northing or false easting are not yet supported in cartopy.')
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            central_latitude=cf_params['latitude_of_projection_origin'],
+            globe=globe
+        )
 
     @property
     def boundary(self):
@@ -2786,6 +2878,26 @@ class Geostationary(_Satellite):
         coords += np.array([[false_easting], [false_northing]])
         self._set_boundary(coords)
 
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        if 'sweep_angle_axis' in cf_params:
+            sweep_axis = cf_params['sweep_angle_axis']
+        else:
+            sweep_axis = {'x': 'y', 'y': 'x'}[cf_params['fixed_angle_axis']]
+        if cf_params.get('latitude_of_projection_origin', 0) != 0:
+            raise ValueError(
+                "Cartopy doesn't support Geostationary projections with non-zero latitude of projection origin".
+            )
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            satellite_height=cf_params['perspective_point_height'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            sweep_axis=sweep_axis,
+            globe=globe
+        )
+
 
 class NearsidePerspective(_Satellite):
     """
@@ -2912,6 +3024,18 @@ class AlbersEqualArea(Projection):
 
         self.threshold = 1e5
 
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            standard_parallels=cf_params['standard_parallels'],
+            central_longitude=cf_params['longitude_of_central_meridian'],
+            central_latitude=cf_params['latitude_of_projection_origin'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            globe=globe
+        )
+
     @property
     def boundary(self):
         return self._boundary
@@ -2973,6 +3097,17 @@ class AzimuthalEquidistant(Projection):
         self._y_limits = mins[1], maxs[1]
 
         self.threshold = 1e5
+
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            central_latitude=cf_params['latitude_of_projection_origin'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            globe=globe
+        )
 
     @property
     def boundary(self):
@@ -3037,6 +3172,16 @@ class Sinusoidal(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
         self.threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
+
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            globe=globe
+        )
 
     @property
     def boundary(self):
@@ -3202,6 +3347,19 @@ class ObliqueMercator(Projection):
         self._y_limits = mercator.y_limits
         self.threshold = mercator.threshold
 
+    @classmethod
+    def from_cf(cls, **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            central_longitude=cf_params['longitude_of_projection_origin'],
+            central_latitude=cf_params['latitude_of_projection_origin'],
+            scale_factor=cf_params['scale_factor_at_projection_origin'],
+            azimuth=cf_params['azimuth_of_central_line'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0),
+            globe=globe
+        )
+
     @property
     def boundary(self):
         x0, x1 = self.x_limits
@@ -3268,3 +3426,11 @@ def epsg(code):
     """
     import cartopy._epsg
     return cartopy._epsg._EPSGProjection(code)
+
+
+def from_cf(**cf_attrs):
+    """
+    Return the projection defined by the grid mapping attributes as defined by the CF conventions.
+    """
+    import cartopy._cf
+    return cartopy._cf._parse_gid_mapping(**cf_attrs)
