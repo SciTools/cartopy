@@ -3,13 +3,12 @@ Raster reprojections
 ====================
 
 When plotting raster data onto a map with `imshow`, we need to first set the
-extend of the map so the reprojection is done correctly.
+extent of the map so the reprojection is done correctly.
 
 In this example, we have some raster data stored as a numpy array that is
-referenced to a rectangular coordinate system. Cartopy reproject these
-data to match the map's coordinate system, however, the map extent
-must be set *before* `imshow` is called, otherwise, the reprojection
-will not succeed.
+referenced to a rectangular coordinate system (PlateCarree). Cartopy reprojects the
+data to match the map's coordinate system based on the currently set map limits.
+This means that the map extent/boundary must be set *before* `imshow` is called.
 
 """
 
@@ -50,6 +49,7 @@ def main():
         subplot_kw={"projection": map_proj},
         sharex=True,
         sharey=True,
+        layout="constrained",
     )
 
     # Adding the raster *before* setting the map extent
@@ -91,7 +91,6 @@ def main():
         ax.legend()
         ax.gridlines(draw_labels=True, x_inline=False, dms=True)
 
-    fig.tight_layout()
     plt.show()
 
 
