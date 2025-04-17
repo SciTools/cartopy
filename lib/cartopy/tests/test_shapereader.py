@@ -62,6 +62,10 @@ class TestLakes:
         assert actual == expected
         assert lake_record.geometry == self.test_lake_geometry
 
+    def test_no_included_projection_file(self):
+        # No .prj file included with the lakes shapefile
+        assert self.reader.crs is None
+
     def test_bounds(self):
         if isinstance(self.reader, shp.BasicReader):
             # tests that a file which has a record with a bbox can
@@ -120,3 +124,15 @@ class TestRivers:
             if key in expected_attributes:
                 assert value == expected_attributes[key]
         assert river_record.geometry == self.test_river_geometry
+
+    def test_included_projection_file(self):
+        # This shapefile includes a .prj definition
+        wkt = ('GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",'
+            'ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],'
+            'ID["EPSG",6326]],PRIMEM["Greenwich",0,'
+            'ANGLEUNIT["Degree",0.0174532925199433]],CS[ellipsoidal,2],'
+            'AXIS["longitude",east,ORDER[1],'
+            'ANGLEUNIT["Degree",0.0174532925199433]],'
+            'AXIS["latitude",north,ORDER[2],'
+            'ANGLEUNIT["Degree",0.0174532925199433]]]')
+        assert self.reader.crs.to_wkt() == wkt
