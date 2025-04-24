@@ -18,6 +18,7 @@ this way can be found at :ref:`sphx_glr_gallery_web_services_wmts.py`.
 import collections
 import io
 import math
+from pathlib import Path
 from urllib.parse import urlparse
 import warnings
 import weakref
@@ -26,6 +27,8 @@ from xml.etree import ElementTree
 import numpy as np
 from PIL import Image
 import shapely.geometry as sgeom
+
+import cartopy
 
 
 try:
@@ -357,7 +360,7 @@ class WMTSRasterSource(RasterSource):
 
     """
 
-    def __init__(self, wmts, layer_name, gettile_extra_kwargs=None):
+    def __init__(self, wmts, layer_name, gettile_extra_kwargs=None, cache=False):
         """
         Parameters
         ----------
@@ -368,6 +371,9 @@ class WMTSRasterSource(RasterSource):
         gettile_extra_kwargs: dict, optional
             Extra keywords (e.g. time) to pass through to the
             service's gettile method.
+        cache : bool or str, optional
+            If True, the default cache directory is used. If False, no cache is
+            used. If a string, the string is used as the path to the cache.
 
         """
         if WebMapService is None:
@@ -396,6 +402,18 @@ class WMTSRasterSource(RasterSource):
         self.gettile_extra_kwargs = gettile_extra_kwargs
 
         self._matrix_set_name_map = {}
+
+        # Enable a cache mechanism when cache is equal to True or to a path.
+        self._default_cache = False
+        if cache is True:
+            self._default_cache = True
+            self.cache_path = Path(cartopy.config["cache_dir"])
+        elif cache is False:
+            self.cache_path = None
+        else:
+            self.cache_path = Path(cache)
+        self.cache = set({})
+        self._load_cache()
 
     def _matrix_set_name(self, target_projection):
         key = id(target_projection)
@@ -509,6 +527,23 @@ class WMTSRasterSource(RasterSource):
             located_images.append(located_image)
 
         return located_images
+
+    @property
+    def _cache_dir(self):
+        """Return the name of the cache directory"""
+        return self.cache_path / self.__class__.__name__
+
+    def _load_cache(self):
+        """Load the cache"""
+        if self.cache_path is not None:
+            cache_dir = self._cache_dir
+            if not cache_dir.exists():
+                cache_dir.mkdir(parents=True, exist_ok=True)
+                if self._default_cache:
+                    warnings.warn(
+                        'Cartopy created the following directory to cache '
+                        f'WMTSRasterSource tiles: {cache_dir}')
+            self.cache = self.cache.union(set(cache_dir.iterdir()))
 
     def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span):
         # Get the tile matrices in order of increasing resolution.
@@ -642,21 +677,38 @@ class WMTSRasterSource(RasterSource):
                 # Get the tile's Image from the cache if possible.
                 img_key = (row, col)
                 img = image_cache.get(img_key)
+
                 if img is None:
-                    try:
-                        tile = wmts.gettile(
-                            layer=layer.id,
-                            tilematrixset=matrix_set_name,
-                            tilematrix=str(tile_matrix_id),
-                            row=str(row), column=str(col),
-                            **self.gettile_extra_kwargs)
-                    except owslib.util.ServiceException as exception:
-                        if ('TileOutOfRange' in exception.message and
-                                ignore_out_of_range):
-                            continue
-                        raise exception
-                    img = Image.open(io.BytesIO(tile.read()))
-                    image_cache[img_key] = img
+                    # Try it from disk cache
+                    if self.cache_path is not None:
+                        filename = f"{img_key[0]}_{img_key[1]}.npy"
+                        cached_file = self._cache_dir / filename
+                    else:
+                        filename = None
+                        cached_file = None
+
+                    if cached_file in self.cache:
+                        img = Image.fromarray(np.load(cached_file, allow_pickle=False))
+                    else:
+                        try:
+                            tile = wmts.gettile(
+                                layer=layer.id,
+                                tilematrixset=matrix_set_name,
+                                tilematrix=str(tile_matrix_id),
+                                row=str(row), column=str(col),
+                                **self.gettile_extra_kwargs)
+                        except owslib.util.ServiceException as exception:
+                            if ('TileOutOfRange' in exception.message and
+                                    ignore_out_of_range):
+                                continue
+                            raise exception
+                        img = Image.open(io.BytesIO(tile.read()))
+                        image_cache[img_key] = img
+                        # save image to local cache
+                        if self.cache_path is not None:
+                            np.save(cached_file, img, allow_pickle=False)
+                            self.cache.add(filename)
+
                 if big_img is None:
                     size = (img.size[0] * n_cols, img.size[1] * n_rows)
                     big_img = Image.new('RGBA', size, (255, 255, 255, 255))

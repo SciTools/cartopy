@@ -23,8 +23,9 @@ def main():
 
     # generate a matplotlib path representing the word "cartopy"
     fp = FontProperties(family='DejaVu Sans', weight='bold')
-    logo_path = matplotlib.textpath.TextPath((-175, -35), 'cartopy',
+    logo_path = matplotlib.textpath.TextPath((-171.01406, -39.33125), 'cartopy',
                                              size=80, prop=fp)
+
     # scale the letters up to sensible longitude and latitude sizes
     transform = matplotlib.transforms.Affine2D().scale(1, 2).translate(0, 35)
 

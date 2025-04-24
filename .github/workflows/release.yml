@@ -1,3 +1,4 @@
+---
 name: Build and upload to PyPI
 
 concurrency:
@@ -18,9 +19,12 @@ on:
       - reopened
       - labeled
 
+permissions:
+  contents: read
+
 jobs:
   build_sdist:
-    if: |
+    if: >-
       github.event_name == 'release' ||
       (github.event_name == 'pull_request' && (
         (
@@ -67,62 +71,47 @@ jobs:
           path: dist/*.tar.gz
           if-no-files-found: error
 
-  generate-wheels-matrix:
-    name: Generate wheels matrix
-    needs: [build_sdist]
-    runs-on: ubuntu-latest
-    outputs:
-      include: ${{ steps.set-matrix.outputs.include }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install cibuildwheel
-        run: pipx install cibuildwheel==2.16.2
-      - id: set-matrix
-        run: |
-          MATRIX=$(
-            {
-              cibuildwheel --print-build-identifiers --platform linux \
-              | jq -nRc '{"only": inputs, "os": "ubuntu-latest"}' \
-              && cibuildwheel --print-build-identifiers --platform macos \
-              | jq -nRc '{"only": inputs, "os": "macos-latest"}' \
-              && cibuildwheel --print-build-identifiers --platform windows \
-              | jq -nRc '{"only": inputs, "os": "windows-2019"}'
-            } | jq -sc
-          )
-          echo "include=$MATRIX" >> $GITHUB_OUTPUT
-        env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-*"
-          # Skip 32 bit builds and musllinux due to lack of numpy wheels
-          CIBW_SKIP: "*-win32 *_i686 *-musllinux*"
-          CIBW_ARCHS_MACOS: x86_64 arm64
-
   build_wheels:
-    name: Build ${{ matrix.os }} ${{ matrix.only }}
-    needs: [generate-wheels-matrix, build_sdist]
+    needs: build_sdist
+    name: Build wheels on ${{ matrix.os }} for ${{ matrix.cibw_archs }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include: ${{ fromJson(needs.generate-wheels-matrix.outputs.include) }}
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-latest
+            cibw_archs: "x86_64"
+          - os: windows-2019
+            cibw_archs: "auto64"
+          - os: macos-latest
+            cibw_archs: "x86_64"
+          - os: macos-latest
+            cibw_archs: "arm64"
     defaults:
       run:
         shell: bash
-    steps:
 
+    steps:
       - name: Download sdist
         uses: actions/download-artifact@v4
         with:
           name: cibw-sdist
           path: dist
 
-      - uses: pypa/cibuildwheel@d4a2945fcc8d13f20a1b99d461b8e844d5fc6e23 # v2.21.1
+      - name: Build wheels for CPython
+        uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a # v2.23.2
         with:
-          only: ${{ matrix.only }}
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
+        env:
+          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
+          # Skip 32 bit builds and musllinux due to lack of numpy wheels
+          CIBW_SKIP: "*-win32 *_i686 *-musllinux*"
+          CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ matrix.only }}
+          name: cibw-wheels-${{ matrix.os }}-${{ matrix.cibw_archs }}
           path: ./wheelhouse/*.whl
+          if-no-files-found: error
 
   publish:
     name: Publish to PyPI
@@ -145,4 +134,4 @@ jobs:
           merge-multiple: true
 
       - name: Publish Package
-        uses: pypa/gh-action-pypi-publish@v1.10.1
+        uses: pypa/gh-action-pypi-publish@v1.12.4

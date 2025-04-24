@@ -41,6 +41,8 @@ def fh_getter(fh, mode='r', needs_filename=False):
     if mode != 'r':
         raise ValueError('Only mode "r" currently supported.')
 
+    filename = None
+
     if isinstance(fh, str):
         filename = fh
         fh = open(fh, mode)
@@ -226,8 +228,7 @@ class Downloader:
         # try getting the resource (no exception handling, just let it raise)
         response = self._urlopen(url)
 
-        with open(target_path, 'wb') as fh:
-            fh.write(response.read())
+        target_path.write_bytes(response.read())
 
         return target_path
 

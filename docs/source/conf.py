@@ -45,6 +45,7 @@ extensions = [
               'sphinx.ext.extlinks',
               'sphinx.ext.autosummary',
               'matplotlib.sphinxext.plot_directive',
+              'matplotlib.sphinxext.roles',
               'sphinx_gallery.gen_gallery',
               'sphinx.ext.napoleon'
               ]

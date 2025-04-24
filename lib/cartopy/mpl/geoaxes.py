@@ -42,7 +42,7 @@ from cartopy.mpl import _MPL_38
 import cartopy.mpl.contour
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.geocollection
-import cartopy.mpl.patch as cpatch
+import cartopy.mpl.path as cpath
 from cartopy.mpl.slippy_image_artist import SlippyImageArtist
 
 
@@ -170,26 +170,11 @@ class InterProjectionTransform(mtransforms.Transform):
         if src_path.vertices.shape == (1, 2):
             return mpath.Path(self.transform(src_path.vertices))
 
-        transformed_geoms = []
-        geoms = cpatch.path_to_geos(src_path)
+        geom = cpath.path_to_shapely(src_path)
+        transformed_geom = self.target_projection.project_geometry(
+            geom, self.source_projection)
 
-        for geom in geoms:
-            proj_geom = self.target_projection.project_geometry(
-                geom, self.source_projection)
-            transformed_geoms.append(proj_geom)
-
-        if not transformed_geoms:
-            result = mpath.Path(np.empty([0, 2]))
-        else:
-            paths = cpatch.geos_to_path(transformed_geoms)
-            if not paths:
-                return mpath.Path(np.empty([0, 2]))
-            points, codes = list(zip(*[cpatch.path_segments(path,
-                                                            curves=False,
-                                                            simplify=False)
-                                       for path in paths]))
-            result = mpath.Path(np.concatenate(points, 0),
-                                np.concatenate(codes))
+        result = cpath.shapely_to_path(transformed_geom)
 
         # store the result in the cache for future performance boosts
         key = (self.source_projection, self.target_projection)
@@ -228,14 +213,14 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
         super().set_transform(self._trans_wrap)
 
     def set_boundary(self, path, transform):
-        self._original_path = cpatch._ensure_path_closed(path)
+        self._original_path = cpath._ensure_path_closed(path)
         self.set_transform(transform)
         self.stale = True
 
     def _adjust_location(self):
         if self.stale:
             self.set_path(
-                cpatch._ensure_path_closed(
+                cpath._ensure_path_closed(
                     self._original_path.clip_to_bbox(self.axes.viewLim)))
             # Some places in matplotlib's transform stack cache the actual
             # path so we trigger an update by invalidating the transform.
@@ -255,13 +240,13 @@ class GeoSpine(mspines.Spine):
 
     def set_boundary(self, path, transform):
         # Make sure path is closed (required by "Path.clip_to_bbox")
-        self._original_path = cpatch._ensure_path_closed(path)
+        self._original_path = cpath._ensure_path_closed(path)
         self.set_transform(transform)
         self.stale = True
 
     def _adjust_location(self):
         if self.stale:
-            self._path = cpatch._ensure_path_closed(
+            self._path = cpath._ensure_path_closed(
                 self._original_path.clip_to_bbox(self.axes.viewLim)
                 )
 
@@ -1535,7 +1520,7 @@ class GeoAxes(matplotlib.axes.Axes):
         The :data:`.patch` and :data:`.spines['geo']` are updated to match.
 
         """
-        path, = cpatch.geos_to_path(self.projection.boundary)
+        path = cpath.shapely_to_path(self.projection.boundary)
 
         # Get the outline path in terms of self.transData
         proj_to_data = self.projection._as_mpl_transform(self) - self.transData
@@ -2239,7 +2224,7 @@ class GeoAxes(matplotlib.axes.Axes):
             sp = super().streamplot(x, y, u, v, **kwargs)
         return sp
 
-    def add_wmts(self, wmts, layer_name, wmts_kwargs=None, **kwargs):
+    def add_wmts(self, wmts, layer_name, wmts_kwargs=None, cache=False, **kwargs):
         """
         Add the specified WMTS layer to the axes.
 
@@ -2264,7 +2249,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         from cartopy.io.ogc_clients import WMTSRasterSource
         wmts = WMTSRasterSource(wmts, layer_name,
-                                gettile_extra_kwargs=wmts_kwargs)
+                                gettile_extra_kwargs=wmts_kwargs, cache=cache)
         return self.add_raster(wmts, **kwargs)
 
     def add_wms(self, wms, layers, wms_kwargs=None, **kwargs):
@@ -2302,13 +2287,12 @@ GeoAxesSubplot = matplotlib.axes.subplot_class_factory(GeoAxes)
 GeoAxesSubplot.__module__ = GeoAxes.__module__
 
 
-def _trigger_patch_reclip(event):
+def _trigger_patch_reclip(axes):
     """
     Define an event callback for a GeoAxes which forces the background patch to
     be re-clipped next time it is drawn.
 
     """
-    axes = event.axes
     # trigger the outline and background patches to be re-clipped
     axes.spines['geo'].stale = True
     axes.patch.stale = True

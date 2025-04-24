@@ -3,7 +3,7 @@ ci:
   autoupdate_schedule: 'quarterly'
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.6.0"
+    rev: "v5.0.0"
     hooks:
         # Prevent giant files from being committed
       - id: check-added-large-files
@@ -26,18 +26,18 @@ repos:
         # Trims trailing whitespace
       - id: trailing-whitespace
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.3.0"
+    rev: "v2.4.1"
     hooks:
     - id: codespell
       types_or: [python, markdown, rst]
       additional_dependencies: [tomli]
   - repo: https://github.com/aio-libs/sort-all
-    rev: "v1.2.0"
+    rev: "v1.3.0"
     hooks:
       - id: sort-all
         types: [file, python]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.5.0'
+    rev: 'v0.11.4'
     hooks:
     - id: ruff
       args: [--fix]

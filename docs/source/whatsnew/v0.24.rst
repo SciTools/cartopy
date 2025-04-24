@@ -1,0 +1,30 @@
+Version 0.24 (October 7, 2024)
+==============================
+
+Python 3.13 and Numpy 2 are supported and the new minimum supported versions
+of dependencies that have been updated are:
+
+* Python 3.10
+* Matplotlib 3.6
+
+Features
+--------
+
+* Ryan May fixed some internal usages of PlateCarree coordinates to use geodetic lat/lon
+  coordinates of the proper ellipse, improving boundary handling for some projections. (:pull:`2378`)
+
+* Ruth Comer added more improvements to gridlines, including title adjustments to avoid overlaps. (:pull:`2393`)
+
+* Eric Matti fixed an issue with gouraud shading when using wrapped coordinates in a pcolormesh. (:pull:`2401`)
+
+* Raphael Quast added the ability to use multi-path geometries as boundaries of the maps.
+  This means that an Axes doesn't have to be fully connected anymore and can be separate
+  land masses and avoid the oceans if a user wants. (:pull:`2362`)
+
+* Thibault Hallouin added the Lambert Zone II (epsg:27572) projection, which is widely
+  used for maps of mainland France. (:pull:`2427`)
+
+Deprecations and Removals
+-------------------------
+
+There are no new deprecations or removals in this release.

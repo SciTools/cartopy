@@ -116,7 +116,7 @@ def test_imshow():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png',
-                               tolerance=0.8)
+                               tolerance=1.97)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,

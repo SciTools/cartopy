@@ -21,6 +21,7 @@ import matplotlib.text
 import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
+import shapely
 import shapely.geometry as sgeom
 
 import cartopy
@@ -581,7 +582,7 @@ class Gridliner(matplotlib.artist.Artist):
 
     def _generate_labels(self):
         """
-        A generator to yield as many labels as needed, re-using existing ones
+        A generator to yield as many labels as needed, reusing existing ones
         where possible.
         """
         for label in self._all_labels:
@@ -815,17 +816,16 @@ class Gridliner(matplotlib.artist.Artist):
                     if isinstance(intersection, sgeom.LineString):
                         intersection = [intersection]
                     elif len(intersection.geoms) > 4:
-                        # Gridline and map boundary are parallel and they
-                        # intersect themselves too much it results in a
-                        # multiline string that must be converted to a single
-                        # linestring. This is an empirical workaround for a
-                        # problem that can probably be solved in a cleaner way.
-                        xy = np.append(
-                            intersection.geoms[0].coords,
-                            intersection.geoms[-1].coords,
-                            axis=0,
-                        )
-                        intersection = [sgeom.LineString(xy)]
+                        # If lines are parallel, there will be many intersections
+                        # merge them to get only one for the calculations below
+                        merged_line = shapely.line_merge(intersection)
+                        if isinstance(merged_line, sgeom.MultiLineString):
+                            # our merge still produced a multilinestring, so
+                            # manually concatenate the original coordinates
+                            xy = np.concatenate(
+                                [inter.coords for inter in intersection.geoms], axis=0)
+                            merged_line = shapely.LineString(xy)
+                        intersection = [merged_line]
                     else:
                         intersection = intersection.geoms
                     tails = []
