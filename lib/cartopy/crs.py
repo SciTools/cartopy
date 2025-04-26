@@ -1251,7 +1251,8 @@ class Projection(CRS, metaclass=ABCMeta):
             box = sgeom.box(x3, y3, x4, y4, ccw=is_ccw)
 
             # Invert the polygons
-            polygon = box.difference(sgeom.MultiPolygon(interior_polys))
+            multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
+            polygon = box.difference(multi_poly)
 
             # Intersect the inverted polygon with the boundary
             polygon = boundary_poly.intersection(polygon)
