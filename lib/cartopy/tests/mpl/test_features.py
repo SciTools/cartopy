@@ -83,6 +83,7 @@ def test_wfs():
                     reason='OWSLib and at least one of pykdtree or scipy is required')
 @pytest.mark.xfail(raises=(ParseError, AttributeError),
                    reason="Bad XML returned from the URL")
+@pytest.mark.xfail(reason="ReadTimeoutError from host currently")
 @pytest.mark.mpl_image_compare(filename='wfs_france.png')
 def test_wfs_france():
     ax = plt.axes(projection=ccrs.epsg(2154))
