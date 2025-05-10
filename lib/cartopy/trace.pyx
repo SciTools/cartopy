@@ -17,7 +17,7 @@ from functools import lru_cache
 
 cimport cython
 from libc.math cimport HUGE_VAL, sqrt
-from numpy.math cimport isfinite, isnan
+from libc.math cimport isfinite, isnan
 from libcpp cimport bool
 from libcpp.list cimport list
 
