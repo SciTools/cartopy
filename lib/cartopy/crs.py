@@ -3228,8 +3228,15 @@ class Spilhaus(Projection):
         """
         Parameters
         ----------
+<<<<<<< HEAD
         rotation : optional
             Clockwise rotation of the map in degrees. Defaults to 45.
+=======
+        greenland_at: optional
+            Orientation of the map. 0,1,2,3, stand for Greenland at upper left,
+            upper right, lower right and lower left, respecivly. Defaults to 0.
+            Strings like 'upper left' are also allowed.
+>>>>>>> 555100673675a8ca6931059d52c6aac04b86f422
         false_easting : optional
             X offset from the planar origin in metres. Defaults to 0.0.
         false_northing : optional
