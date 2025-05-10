@@ -196,6 +196,7 @@ def test_simple_global():
         (ccrs.ObliqueMercator, dict(azimuth=90., central_latitude=-22)),
         id='ObliqueMercator_rotated',
     ),
+    ccrs.WinkelTripel,
 ])
 @pytest.mark.mpl_image_compare(style='mpl20')
 def test_global_map(proj):
