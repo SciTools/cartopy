@@ -12,14 +12,11 @@ import pytest
 import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
+
 proj_version = parse_version(pyproj.proj_version_str)
 common_arg = {
-    'azi=40.17823482',
     'datum=WGS84',
     'ellps=WGS84',
-    'k_0=1.414213562373095',
-    'lat_0=-49.56371678',
-    'lon_0=66.94970198',
     'no_defs',
     'units=m',
 }
@@ -38,18 +35,8 @@ def test_defaults():
     (proj_version < parse_version("9.6.0")),
     reason="Requires pyproj > 3.7.0"
 )
-@pytest.mark.parametrize("orientation",[0,1,2,3])
-def test_greenland_at(orientation):
-    crs = ccrs.Spilhaus(greenland_at = orientation)
-    expected = {f'rot={orientation*90+45}','x_0=0.0','y_0=0.0'} | common_arg
+@pytest.mark.parametrize("rotation",[45,135,225])
+def test_rotation(rotation):
+    crs = ccrs.Spilhaus(rotation = rotation)
+    expected = {f'rot={rotation}','x_0=0.0','y_0=0.0'} | common_arg
     check_proj_params('spilhaus', crs, expected)
-
-@pytest.mark.skipif(
-    (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or
-    (proj_version < parse_version("9.6.0")),
-    reason="Requires pyproj > 3.7.0"
-)
-@pytest.mark.parametrize("orientation",['some random string',4,2.5])
-def test_disallowed_orientation(orientation):
-    with pytest.raises(ValueError):
-        ccrs.Spilhaus(greenland_at = orientation)
