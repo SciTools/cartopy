@@ -3219,9 +3219,9 @@ class ObliqueMercator(Projection):
     def y_limits(self):
         return self._y_limits
 
-class Spilhause(Projection):
+class Spilhaus(Projection):
     """
-    Spihause-Adams World Ocean Map in a Square II
+    Spihaus-Adams World Ocean Map in a Square II
 
     """
     def __init__(self,greenland_at = 0,false_easting = 0.0,false_northing = 0.0):
