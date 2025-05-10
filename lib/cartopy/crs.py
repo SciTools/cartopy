@@ -3224,33 +3224,38 @@ class Spilhause(Projection):
     Spihause World Ocean Map in a Square
 
     """
-    def __init__(self):
-        _wkt = '''
-        PROJCS["WGS_1984_Spilhaus_Ocean_Map_in_Square",
-            GEOGCS["WGS 84",
-                DATUM["WGS_1984",
-                    SPHEROID["WGS 84",6378137,298.257223563,
-                        AUTHORITY["EPSG","7030"]],
-                    AUTHORITY["EPSG","6326"]],
-                PRIMEM["Greenwich",0],
-                UNIT["Degree",0.0174532925199433]],
-            PROJECTION["Adams_Square_II"],
-            PARAMETER["False_Easting",0],
-            PARAMETER["False_Northing",0],
-            PARAMETER["Scale_Factor",1],
-            PARAMETER["Azimuth",40.17823482],
-            PARAMETER["Longitude_Of_Center",66.94970198],
-            PARAMETER["Latitude_Of_Center",-49.56371678],
-            PARAMETER["XY_Plane_Rotation",45],
-            UNIT["metre",1,
-                AUTHORITY["EPSG","9001"]],
-            AXIS["Easting",EAST],
-            AXIS["Northing",NORTH],
-            AUTHORITY["ESRI","54099"]]
-        '''
-        super().__init__(_wkt)
+    def __init__(self,greenland_at = 0,false_easting = 0.0,false_northing = 0.0):
+        """
+        Parameters
+        ----------
+        greenland_at: optional
+            Orientation of the map. 0,1,2,3, stand for Greenland at upper left,
+            upper right, lower right and lower left, respecivly. Defaults to 0
+        false_easting: optional
+            X offset from the planar origin in metres. Defaults to 0.0.
+        false_northing: optional
+            Y offset from the planar origin in metres. Defaults to 0.0.
+        """
+        if isinstance(greenland_at, int) and (0<=greenland_at<4):
+            rot_spil = 45+(greenland_at%4)*90
+        else:
+            raise ValueError("greenland_at needs to be a integer in 0,1,2,3, which stand "
+                            "for Greenland at upper left, upper right, lower right and lower left, respecivly")
+        proj4_params = [('proj', 'spilhaus'), 
+                        ('lat_0', -49.56371678),
+                        ('lon_0', 66.94970198),
+                        ('azi',40.17823482),
+                        ('k_0', 1.4142135623730951),
+                        ('rot',rot_spil),
+                        ('x_0', false_easting), 
+                        ('y_0', false_northing),
+                        ('datum', 'WGS84'),
+                        ('units', 'm')]
+
+        super().__init__(proj4_params)
         # The boundary on https://epsg.io/54099 are wrong
-        # The following bounds are calculated based on [-65.00000012, -29.99999981] and [115.00000024,  30.00000036]
+        # The following bounds are calculated based on [-65.00000012, -29.99999981] 
+        # and [115.00000024,  30.00000036]
         self.bounds = [-16691515.903110268,16691515.713393781,-16689317.992575731,16689317.992575731]
 
 
