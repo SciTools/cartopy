@@ -21,7 +21,6 @@ common_arg = {
     'units=m',
 }
 @pytest.mark.skipif(
-    (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or
     (proj_version < parse_version("9.6.0")),
     reason="Requires pyproj > 3.7.0"
 )
@@ -31,7 +30,6 @@ def test_defaults():
     check_proj_params('spilhaus', crs, expected)
 
 @pytest.mark.skipif(
-    (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or
     (proj_version < parse_version("9.6.0")),
     reason="Requires pyproj > 3.7.0"
 )

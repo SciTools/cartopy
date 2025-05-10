@@ -178,7 +178,6 @@ def test_simple_global():
     ccrs.LambertCylindrical,
     ccrs.LambertZoneII,
     pytest.param(ccrs.Spilhaus,marks=pytest.mark.skipif(
-            (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or
             (proj_version < parse_version("9.6.0")),
             reason="Spilhaus not supported in pyproj ≤ 3.7.0"
         )),
