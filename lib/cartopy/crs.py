@@ -3231,7 +3231,7 @@ class Spilhaus(Projection):
         greenland_at: optional
             Orientation of the map. 0,1,2,3, stand for Greenland at upper left,
             upper right, lower right and lower left, respecivly. Defaults to 0.
-            Strings like 'upper left' are also allowed. 
+            Strings like 'upper left' are also allowed.
         false_easting: optional
             X offset from the planar origin in metres. Defaults to 0.0.
         false_northing: optional
@@ -3242,27 +3242,35 @@ class Spilhaus(Projection):
             if greenland_at in allowed_ori:
                 greenland_at = allowed_ori.index(greenland_at)
             else:
-                raise ValueError(f'The orientation of Greenland must be one of {allowed_ori}, or integer [0,1,2,3]')
+                raise ValueError('The orientation of Greenland must be one'
+                    ' of {allowed_ori}, or integer [0,1,2,3]')
         if isinstance(greenland_at, int) and (0<=greenland_at<4):
             rot_spil = 45+(greenland_at%4)*90
         else:
-            raise ValueError(f'The orientation of Greenland must be one of {allowed_ori}, or integer [0,1,2,3]')
-        proj4_params = [('proj', 'spilhaus'), 
+            raise ValueError('The orientation of Greenland must be one'
+                ' of {allowed_ori}, or integer [0,1,2,3]')
+        proj4_params = [('proj', 'spilhaus'),
                         ('lat_0', -49.56371678),
                         ('lon_0', 66.94970198),
                         ('azi',40.17823482),
                         ('k_0', 1.4142135623730951),
                         ('rot',rot_spil),
-                        ('x_0', false_easting), 
+                        ('x_0', false_easting),
                         ('y_0', false_northing),
                         ('datum', 'WGS84'),
                         ('units', 'm')]
 
         super().__init__(proj4_params)
         # The boundary on https://epsg.io/54099 are wrong
-        # The following bounds are calculated based on [-65.00000012, -29.99999981] 
+        # The following bounds are calculated based on
+        #[-65.00000012, -29.99999981]
         # and [115.00000024,  30.00000036]
-        self.bounds = [-16691515.903110268,16691515.713393781,-16689317.992575731,16689317.992575731]
+        self.bounds = [
+            -16691515.903110268,
+            16691515.713393781,
+            -16689317.992575731,
+            16689317.992575731
+        ]
 
 
 class _BoundaryPoint:

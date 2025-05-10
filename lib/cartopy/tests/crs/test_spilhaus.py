@@ -5,9 +5,11 @@
 """
 Tests for the HEALPix projection.
 """
-import cartopy.crs as ccrs
 import pytest
+
+import cartopy.crs as ccrs
 from .helpers import check_proj_params
+
 
 common_arg = {
     'azi=40.17823482',
@@ -33,4 +35,4 @@ def test_greenland_at(orientation):
 @pytest.mark.parametrize("orientation",['some random string',4,2.5])
 def test_disallowed_orientation(orientation):
     with pytest.raises(ValueError):
-        crs = ccrs.Spilhaus(greenland_at = orientation)
+        ccrs.Spilhaus(greenland_at = orientation)
