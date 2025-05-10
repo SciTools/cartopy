@@ -3221,7 +3221,7 @@ class ObliqueMercator(Projection):
 
 class Spilhause(Projection):
     """
-    Spihause World Ocean Map in a Square
+    Spihause-Adams World Ocean Map in a Square II
 
     """
     def __init__(self,greenland_at = 0,false_easting = 0.0,false_northing = 0.0):
