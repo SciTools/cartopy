@@ -3219,6 +3219,40 @@ class ObliqueMercator(Projection):
     def y_limits(self):
         return self._y_limits
 
+class Spilhause(Projection):
+    """
+    Spihause World Ocean Map in a Square
+
+    """
+    def __init__(self):
+        _wkt = '''
+        PROJCS["WGS_1984_Spilhaus_Ocean_Map_in_Square",
+            GEOGCS["WGS 84",
+                DATUM["WGS_1984",
+                    SPHEROID["WGS 84",6378137,298.257223563,
+                        AUTHORITY["EPSG","7030"]],
+                    AUTHORITY["EPSG","6326"]],
+                PRIMEM["Greenwich",0],
+                UNIT["Degree",0.0174532925199433]],
+            PROJECTION["Adams_Square_II"],
+            PARAMETER["False_Easting",0],
+            PARAMETER["False_Northing",0],
+            PARAMETER["Scale_Factor",1],
+            PARAMETER["Azimuth",40.17823482],
+            PARAMETER["Longitude_Of_Center",66.94970198],
+            PARAMETER["Latitude_Of_Center",-49.56371678],
+            PARAMETER["XY_Plane_Rotation",45],
+            UNIT["metre",1,
+                AUTHORITY["EPSG","9001"]],
+            AXIS["Easting",EAST],
+            AXIS["Northing",NORTH],
+            AUTHORITY["ESRI","54099"]]
+        '''
+        super().__init__(_wkt)
+        # The boundary on https://epsg.io/54099 are wrong
+        # The following bounds are calculated based on [-65.00000012, -29.99999981] and [115.00000024,  30.00000036]
+        self.bounds = [-16691515.903110268,16691515.713393781,-16689317.992575731,16689317.992575731]
+
 
 class _BoundaryPoint:
     def __init__(self, distance, kind, data):
