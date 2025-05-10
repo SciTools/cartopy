@@ -16,6 +16,7 @@ import cartopy.crs as ccrs
 from cartopy.mpl import _MPL_38
 from cartopy.tests.conftest import requires_scipy
 
+proj_version = parse_version(pyproj.proj_version_str)
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
@@ -176,7 +177,8 @@ def test_simple_global():
     ccrs.LambertCylindrical,
     ccrs.LambertZoneII,
     pytest.param(ccrs.Spilhaus,marks=pytest.mark.skipif(
-            parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+            (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or 
+            (proj_version < parse_version("9.6.0")),
             reason="Spilhaus not supported in pyproj ≤ 3.7.0"
         )),
     pytest.param((ccrs.Mercator, dict(min_latitude=-85, max_latitude=85)),

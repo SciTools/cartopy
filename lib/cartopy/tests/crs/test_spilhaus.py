@@ -12,7 +12,7 @@ import pytest
 import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
-
+proj_version = parse_version(pyproj.proj_version_str)
 common_arg = {
     'azi=40.17823482',
     'datum=WGS84',
@@ -24,7 +24,8 @@ common_arg = {
     'units=m',
 }
 @pytest.mark.skipif(
-    parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+    (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or
+    (proj_version < parse_version("9.6.0")),
     reason="Requires pyproj > 3.7.0"
 )
 def test_defaults():
@@ -33,7 +34,8 @@ def test_defaults():
     check_proj_params('spilhaus', crs, expected)
 
 @pytest.mark.skipif(
-    parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+    (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or
+    (proj_version < parse_version("9.6.0")),
     reason="Requires pyproj > 3.7.0"
 )
 @pytest.mark.parametrize("orientation",[0,1,2,3])
@@ -43,7 +45,8 @@ def test_greenland_at(orientation):
     check_proj_params('spilhaus', crs, expected)
 
 @pytest.mark.skipif(
-    parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+    (parse_version(pyproj.__version__) <= parse_version("3.7.0")) or
+    (proj_version < parse_version("9.6.0")),
     reason="Requires pyproj > 3.7.0"
 )
 @pytest.mark.parametrize("orientation",['some random string',4,2.5])
