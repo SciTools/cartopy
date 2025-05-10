@@ -3232,7 +3232,7 @@ class Spilhaus(Projection):
             Orientation of the map. 0,1,2,3, stand for Greenland at upper left,
             upper right, lower right and lower left, respecivly. Defaults to 0.
             Strings like 'upper left' are also allowed.
-        false_easting: optional
+        false_easting : optional
             X offset from the planar origin in metres. Defaults to 0.0.
         false_northing: optional
             Y offset from the planar origin in metres. Defaults to 0.0.
