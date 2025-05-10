@@ -8,6 +8,8 @@ import re
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+from packaging.version import parse as parse_version
+import pyproj
 import pytest
 
 import cartopy.crs as ccrs
@@ -173,7 +175,10 @@ def test_simple_global():
                  id='InterruptedGoodeHomolosine'),
     ccrs.LambertCylindrical,
     ccrs.LambertZoneII,
-    ccrs.Spilhaus,
+    pytest.param(ccrs.Spilhaus,marks=pytest.mark.skipif(
+            parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+            reason="Spilhaus not supported in pyproj ≤ 3.7.0"
+        )),
     pytest.param((ccrs.Mercator, dict(min_latitude=-85, max_latitude=85)),
                  id='Mercator'),
     ccrs.Miller,

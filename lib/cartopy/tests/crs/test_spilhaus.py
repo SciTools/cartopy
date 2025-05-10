@@ -5,6 +5,8 @@
 """
 Tests for the HEALPix projection.
 """
+from packaging.version import parse as parse_version
+import pyproj
 import pytest
 
 import cartopy.crs as ccrs
@@ -21,17 +23,29 @@ common_arg = {
     'no_defs',
     'units=m',
 }
+@pytest.mark.skipif(
+    parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+    reason="Requires pyproj > 3.7.0"
+)
 def test_defaults():
     crs = ccrs.Spilhaus()
     expected = {'rot=45','x_0=0.0','y_0=0.0'} | common_arg
     check_proj_params('spilhaus', crs, expected)
 
+@pytest.mark.skipif(
+    parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+    reason="Requires pyproj > 3.7.0"
+)
 @pytest.mark.parametrize("orientation",[0,1,2,3])
 def test_greenland_at(orientation):
     crs = ccrs.Spilhaus(greenland_at = orientation)
     expected = {f'rot={orientation*90+45}','x_0=0.0','y_0=0.0'} | common_arg
     check_proj_params('spilhaus', crs, expected)
 
+@pytest.mark.skipif(
+    parse_version(pyproj.__version__) <= parse_version("3.7.0"),
+    reason="Requires pyproj > 3.7.0"
+)
 @pytest.mark.parametrize("orientation",['some random string',4,2.5])
 def test_disallowed_orientation(orientation):
     with pytest.raises(ValueError):
