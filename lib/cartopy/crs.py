@@ -3230,17 +3230,23 @@ class Spilhaus(Projection):
         ----------
         greenland_at: optional
             Orientation of the map. 0,1,2,3, stand for Greenland at upper left,
-            upper right, lower right and lower left, respecivly. Defaults to 0
+            upper right, lower right and lower left, respecivly. Defaults to 0.
+            Strings like 'upper left' are also allowed. 
         false_easting: optional
             X offset from the planar origin in metres. Defaults to 0.0.
         false_northing: optional
             Y offset from the planar origin in metres. Defaults to 0.0.
         """
+        allowed_ori = ['upper left', 'upper right', 'lower right','lower left']
+        if isinstance(greenland_at, str):
+            if greenland_at in allowed_ori:
+                greenland_at = allowed_ori.index(greenland_at)
+            else:
+                raise ValueError(f'The orientation of Greenland must be one of {allowed_ori}, or integer [0,1,2,3]')
         if isinstance(greenland_at, int) and (0<=greenland_at<4):
             rot_spil = 45+(greenland_at%4)*90
         else:
-            raise ValueError("greenland_at needs to be a integer in 0,1,2,3, which stand "
-                            "for Greenland at upper left, upper right, lower right and lower left, respecivly")
+            raise ValueError(f'The orientation of Greenland must be one of {allowed_ori}, or integer [0,1,2,3]')
         proj4_params = [('proj', 'spilhaus'), 
                         ('lat_0', -49.56371678),
                         ('lon_0', 66.94970198),
