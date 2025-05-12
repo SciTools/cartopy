@@ -3239,9 +3239,7 @@ class Spilhaus(Projection):
         proj4_params = [('proj', 'spilhaus'),
                         ('rot',rotation),
                         ('x_0', false_easting),
-                        ('y_0', false_northing),
-                        ('datum', 'WGS84'),
-                        ('units', 'm')]
+                        ('y_0', false_northing)]
 
         super().__init__(proj4_params)
         # The boundary on https://epsg.io/54099 are wrong
