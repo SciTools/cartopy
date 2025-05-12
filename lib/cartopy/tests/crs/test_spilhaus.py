@@ -22,7 +22,7 @@ common_arg = {
 }
 @pytest.mark.skipif(
     (proj_version < parse_version("9.6.0")),
-    reason="Requires pyproj > 3.7.0"
+    reason="Requires PROJ >= 9.6.0"
 )
 def test_defaults():
     crs = ccrs.Spilhaus()
