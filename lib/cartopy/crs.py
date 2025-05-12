@@ -3224,7 +3224,7 @@ class Spilhaus(Projection):
     Spilhaus World Ocean Map in a Square
 
     """
-    def __init__(self,rotation = 45, false_easting = 0.0, false_northing = 0.0):
+    def __init__(self, rotation=45, false_easting=0.0, false_northing=0.0, globe=None):
         """
         Parameters
         ----------
