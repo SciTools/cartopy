@@ -3241,7 +3241,7 @@ class Spilhaus(Projection):
                         ('x_0', false_easting),
                         ('y_0', false_northing)]
 
-        super().__init__(proj4_params)
+        super().__init__(proj4_params, globe=globe)
         # The boundary on https://epsg.io/54099 are wrong
         # The following bounds are calculated based on
         #[-65.00000012, -29.99999981]
