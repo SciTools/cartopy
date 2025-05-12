@@ -179,7 +179,7 @@ def test_simple_global():
     ccrs.LambertZoneII,
     pytest.param(ccrs.Spilhaus,marks=pytest.mark.skipif(
             (proj_version < parse_version("9.6.0")),
-            reason="Spilhaus not supported in pyproj ≤ 3.7.0"
+            reason="Requires PROJ >= 9.6.0"
         )),
     pytest.param((ccrs.Mercator, dict(min_latitude=-85, max_latitude=85)),
                  id='Mercator'),
