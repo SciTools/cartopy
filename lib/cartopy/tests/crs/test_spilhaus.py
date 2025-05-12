@@ -3,7 +3,7 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 """
-Tests for the HEALPix projection.
+Tests for the Spilhaus projection.
 """
 from packaging.version import parse as parse_version
 import pyproj
