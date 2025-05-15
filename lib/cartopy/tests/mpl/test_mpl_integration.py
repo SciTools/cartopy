@@ -8,12 +8,16 @@ import re
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
+from packaging.version import parse as parse_version
+import pyproj
 import pytest
 
 import cartopy.crs as ccrs
 from cartopy.mpl import _MPL_38
 from cartopy.tests.conftest import requires_scipy
 
+
+proj_version = parse_version(pyproj.proj_version_str)
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
@@ -173,6 +177,10 @@ def test_simple_global():
                  id='InterruptedGoodeHomolosine'),
     ccrs.LambertCylindrical,
     ccrs.LambertZoneII,
+    pytest.param(ccrs.Spilhaus,marks=pytest.mark.skipif(
+            (proj_version < parse_version("9.6.0")),
+            reason="Requires PROJ >= 9.6.0"
+        )),
     pytest.param((ccrs.Mercator, dict(min_latitude=-85, max_latitude=85)),
                  id='Mercator'),
     ccrs.Miller,

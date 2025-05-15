@@ -3219,6 +3219,44 @@ class ObliqueMercator(Projection):
     def y_limits(self):
         return self._y_limits
 
+class Spilhaus(Projection):
+    """
+    Spilhaus World Ocean Map in a Square.
+
+    This is a projection based on Adams World in a Square II projection with the
+    two major antipodal areas on land: South China
+    (115°E and 30°N) and Argentina (65°W and 30°S).
+    See https://storymaps.arcgis.com/stories/756bcae18d304a1eac140f19f4d5cb3d
+    """
+    def __init__(self, rotation=45, false_easting=0.0, false_northing=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        rotation : optional
+            Clockwise rotation of the map in degrees. Defaults to 45.
+        false_easting : optional
+            X offset from the planar origin in metres. Defaults to 0.0.
+        false_northing : optional
+            Y offset from the planar origin in metres. Defaults to 0.0.
+
+        """
+        proj4_params = [('proj', 'spilhaus'),
+                        ('rot',rotation),
+                        ('x_0', false_easting),
+                        ('y_0', false_northing)]
+
+        super().__init__(proj4_params, globe=globe)
+        # The boundary on https://epsg.io/54099 are wrong
+        # The following bounds are calculated based on
+        #[-65.00000012, -29.99999981]
+        # and [115.00000024,  30.00000036]
+        self.bounds = [
+            -11802684.083372328,
+            11802683.949222516,
+            -11801129.925928915,
+            11801129.925928915
+        ]
+
 
 class _BoundaryPoint:
     def __init__(self, distance, kind, data):
