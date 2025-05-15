@@ -3221,8 +3221,12 @@ class ObliqueMercator(Projection):
 
 class Spilhaus(Projection):
     """
-    Spilhaus World Ocean Map in a Square
+    Spilhaus World Ocean Map in a Square.
 
+    This is a projection based on Adams World in a Sqare II projection with the 
+    two major antipodal areas on land: South China 
+    (115°E and 30°N) and Argentina (65°W and 30°S).
+    See https://storymaps.arcgis.com/stories/756bcae18d304a1eac140f19f4d5cb3d
     """
     def __init__(self, rotation=45, false_easting=0.0, false_northing=0.0, globe=None):
         """
