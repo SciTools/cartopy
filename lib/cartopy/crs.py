@@ -2094,9 +2094,14 @@ class Orthographic(Projection):
     _handles_ellipses = False
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
-                 globe=None):
+                 azimuth=0.0, globe=None):
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
-                        ('lat_0', central_latitude)]
+                        ('lat_0', central_latitude), ('alpha', azimuth)]
+        if pyproj.__proj_version__ < '9.5.0' and azimuth != 0.0:
+            warnings.warn(
+                'Setting azimuth is not supported with PROJ versions < 9.5.0. '
+                'Assuming azimuth=0. '
+                'Current PROJ version: %s' % pyproj.__proj_version__)
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
