@@ -83,7 +83,8 @@ class TestRivers:
     def setup_class(self):
         RIVERS_PATH = shp.natural_earth(resolution='110m',
                                         category='physical',
-                                        name='rivers_lake_centerlines')
+                                        name='rivers_lake_centerlines',
+                                        version='5.0.0')
         self.reader = shp.Reader(RIVERS_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small river

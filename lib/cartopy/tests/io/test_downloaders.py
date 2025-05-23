@@ -139,7 +139,8 @@ def test_natural_earth_downloader(tmp_path):
     # isn't important - it is the download mechanism that is.
     format_dict = {'category': 'physical',
                    'name': 'rivers_lake_centerlines',
-                   'resolution': '110m'}
+                   'resolution': '110m',
+                   'version': ''}
 
     dnld_item = NEShpDownloader(target_path_template=shp_path_template)
 
