@@ -2556,9 +2556,7 @@ class WinkelTripel(_WarpedRectangularProjection):
         proj4_params = [('proj', 'wintri'),
                         ('lon_0', central_longitude)]
 
-        super().__init__(proj4_params,
-                                           central_longitude,
-                                           globe=globe)
+        super().__init__(proj4_params, central_longitude, globe=globe)
 
     @property
     def threshold(self):
