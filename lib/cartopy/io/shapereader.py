@@ -32,10 +32,12 @@ import itertools
 from pathlib import Path
 from urllib.error import HTTPError
 
+from pyproj import CRS
 import shapefile
 import shapely.geometry as sgeom
 
 from cartopy import config
+import cartopy.crs as ccrs
 from cartopy.io import Downloader
 
 
@@ -136,6 +138,13 @@ class BasicReader:
     def __init__(self, filename, bbox=None, **kwargs):
         # Validate the filename/shapefile
         self._reader = reader = shapefile.Reader(filename, **kwargs)
+        # Try to set the CRS from the .prj file if it exists
+        self.crs = None
+        try:
+            with open(Path(filename).with_suffix('.prj'), 'rt') as fobj:
+                self.crs = ccrs.CRS(CRS.from_wkt(fobj.read()))
+        except FileNotFoundError:
+            pass
         self._bbox = bbox
         if reader.shp is None or reader.shx is None or reader.dbf is None:
             raise ValueError("Incomplete shapefile definition "
@@ -195,7 +204,13 @@ class FionaReader:
 
     def __init__(self, filename, bbox=None, **kwargs):
         self._data = []
-
+        # Try to set the CRS from the .prj file if it exists
+        self.crs = None
+        try:
+            with open(Path(filename).with_suffix('.prj'), 'rt') as fobj:
+                self.crs = ccrs.CRS(CRS.from_wkt(fobj.read()))
+        except FileNotFoundError:
+            pass
         with fiona.open(filename, **kwargs) as f:
             if bbox is not None:
                 assert len(bbox) == 4
