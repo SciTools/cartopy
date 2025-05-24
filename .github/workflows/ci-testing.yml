@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  tests:
     if: github.repository == 'scitools/cartopy'
 
     runs-on: ${{ matrix.os }}
@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13-dev']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         use-network: [true]
         include:
           - os: ubuntu-latest
@@ -117,7 +117,7 @@ jobs:
   # Separate dependent job to only upload one issue from the matrix of jobs
   create-issue:
     if: ${{ failure() && github.event_name == 'schedule' }}
-    needs: [build]
+    needs: [tests]
     permissions:
       issues: write
     runs-on: ubuntu-latest
@@ -138,3 +138,43 @@ jobs:
           close-previous: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  conda-tests:
+    # Tests our environment.yml file and will get the latest PROJ library
+    # to test against rather than only the one included in pyproj wheels.
+    if: github.repository == 'scitools/cartopy'
+    name: Conda Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: '3.13'
+          activate-environment: cartopy-dev
+          environment-file: environment.yml
+
+      - name: Conda info
+        run: |
+          conda info
+          conda list
+          conda config --show-sources
+          conda config --show
+
+      - name: Install Cartopy
+        # All test and extra dependencies should come from the environment.yml file
+        run: |
+          pip install -e .
+          python -c "import cartopy; print('Version ', cartopy.__version__)"
+
+      - name: Testing
+        run: |
+          pytest -rfEsX -n 4 --color=yes --pyargs cartopy
