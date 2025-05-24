@@ -15,10 +15,8 @@ from .helpers import check_proj_params
 
 proj_version = parse_version(pyproj.proj_version_str)
 common_arg = {
-    'datum=WGS84',
     'ellps=WGS84',
     'no_defs',
-    'units=m',
 }
 @pytest.mark.skipif(
     (proj_version < parse_version("9.6.0")),
