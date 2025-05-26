@@ -585,8 +585,7 @@ class Gridliner(matplotlib.artist.Artist):
         A generator to yield as many labels as needed, reusing existing ones
         where possible.
         """
-        for label in self._all_labels:
-            yield label
+        yield from self._all_labels
 
         while True:
             # Ran out of existing labels.  Create some empty ones.
