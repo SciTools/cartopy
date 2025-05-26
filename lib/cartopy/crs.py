@@ -696,6 +696,10 @@ class Projection(CRS, metaclass=ABCMeta):
             self.bounds = (x.min(), x.max(), y.min(), y.max())
             x0, x1, y0, y1 = self.bounds
             self.threshold = min(x1 - x0, y1 - y0) / 100.
+        elif self.is_geographic:
+            # If the projection is geographic without an area of use, assume
+            # the bounds are the full globe.
+            self.bounds = (-180, 180, -90, 90)
 
     @property
     def boundary(self):

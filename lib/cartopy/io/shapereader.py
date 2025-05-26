@@ -142,7 +142,7 @@ class BasicReader:
         self.crs = None
         try:
             with open(Path(filename).with_suffix('.prj'), 'rt') as fobj:
-                self.crs = ccrs.CRS(CRS.from_wkt(fobj.read()))
+                self.crs = ccrs.Projection(CRS.from_wkt(fobj.read()))
         except FileNotFoundError:
             pass
         self._bbox = bbox
@@ -208,7 +208,7 @@ class FionaReader:
         self.crs = None
         try:
             with open(Path(filename).with_suffix('.prj'), 'rt') as fobj:
-                self.crs = ccrs.CRS(CRS.from_wkt(fobj.read()))
+                self.crs = ccrs.Projection(CRS.from_wkt(fobj.read()))
         except FileNotFoundError:
             pass
         with fiona.open(filename, **kwargs) as f:
