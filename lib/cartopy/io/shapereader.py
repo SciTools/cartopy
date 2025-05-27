@@ -361,7 +361,15 @@ class NEShpDownloader(Downloader):
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
-            member = zfh.getinfo(member_path.replace("\\", "/"))
+            try:
+                member = zfh.getinfo(member_path.replace("\\", "/"))
+            except KeyError:
+                # These extensions are required for shapefiles, so raise
+                # if they are missing, continue on otherwise as the other
+                # extensions are optional
+                if member_path.endswith(('.shp', '.shx', '.dbf')):
+                    raise
+                continue
             target_path.with_suffix(Path(member_path).suffix).write_bytes(
                 zfh.open(member).read()
             )
