@@ -9,3 +9,6 @@ c00e0adae1b1e8695e173f4482369face82206ee
 
 # style: adopt isort to enforce import ordering (#2150)
 030a78b0f5cd6a88b04dd2fbe78f12b4b3e5e60d
+
+# style: adopt ruff formatter (#2540)
+a44e1d66406b69a3fb11d6c2b2d91c8cedb65013
