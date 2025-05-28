@@ -13,7 +13,7 @@ import numpy as np
 try:
     from scipy.interpolate import griddata
 except ImportError as e:
-    raise ImportError("Regridding vectors requires scipy.") from e
+    raise ImportError('Regridding vectors requires scipy.') from e
 
 
 def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
@@ -50,17 +50,18 @@ def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
     xr = x1 - x0
     yr = y1 - y0
     points = np.column_stack([(x.ravel() - x0) / xr, (y.ravel() - y0) / yr])
-    x_grid, y_grid = np.meshgrid(np.linspace(0, 1, nx),
-                                 np.linspace(0, 1, ny))
+    x_grid, y_grid = np.meshgrid(np.linspace(0, 1, nx), np.linspace(0, 1, ny))
     s_grid_tuple = tuple()
     for s in scalars:
-        s_grid_tuple += (griddata(points, s.ravel(), (x_grid, y_grid),
-                                  method='linear'),)
+        s_grid_tuple += (
+            griddata(points, s.ravel(), (x_grid, y_grid), method='linear'),
+        )
     return (x_grid * xr + x0, y_grid * yr + y0) + s_grid_tuple
 
 
-def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
-                          *scalars, **kwargs):
+def vector_scalar_to_grid(
+    src_crs, target_proj, regrid_shape, x, y, u, v, *scalars, **kwargs
+):
     """
     Transform and interpolate a vector field to a regular grid in the
     target projection.
@@ -119,16 +120,19 @@ def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
     if x.shape != u.shape:
         x, y = np.meshgrid(x, y)
         if not (x.shape == y.shape == u.shape):
-            raise ValueError('x and y coordinates are not compatible '
-                             'with the shape of the vector components')
+            raise ValueError(
+                'x and y coordinates are not compatible '
+                'with the shape of the vector components'
+            )
     if scalars:
         np_like_scalars = ()
         for s in scalars:
             s = np.asanyarray(s)
             np_like_scalars = np_like_scalars + (s,)
             if s.shape != u.shape:
-                raise ValueError('scalar fields must have the same '
-                                 'shape as the vector components')
+                raise ValueError(
+                    'scalar fields must have the same shape as the vector components'
+                )
         scalars = np_like_scalars
     try:
         nx, ny = regrid_shape
@@ -161,14 +165,12 @@ def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
     # projection to account for original points outside the wrapped domain
     xyz = src_crs.transform_points(src_crs, x, y)
     x, y = xyz[..., 0], xyz[..., 1]
-    points = np.column_stack([(x.ravel() - x0) / xr,
-                              (y.ravel() - y0) / yr])
+    points = np.column_stack([(x.ravel() - x0) / xr, (y.ravel() - y0) / yr])
     newx = (sourcex - x0) / xr
     newy = (sourcey - y0) / yr
     s_grid_tuple = tuple()
     for s in (u, v) + scalars:
-        s_grid_tuple += (griddata(points, s.ravel(), (newx, newy),
-                                  method='linear'),)
+        s_grid_tuple += (griddata(points, s.ravel(), (newx, newy), method='linear'),)
 
     u, v = s_grid_tuple[0], s_grid_tuple[1]
     # Finally, transform the vectors (in the source frame) to the target CRS.

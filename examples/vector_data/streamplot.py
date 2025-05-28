@@ -5,6 +5,7 @@ Streamplot
 Generating a vector-based streamplot.
 
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -39,8 +40,9 @@ def main():
 
     x, y, u, v, vector_crs = sample_data(shape=(80, 100))
     magnitude = np.hypot(u, v)
-    ax.streamplot(x, y, u, v, transform=vector_crs,
-                  linewidth=2, density=2, color=magnitude)
+    ax.streamplot(
+        x, y, u, v, transform=vector_crs, linewidth=2, density=2, color=magnitude
+    )
     plt.show()
 
 

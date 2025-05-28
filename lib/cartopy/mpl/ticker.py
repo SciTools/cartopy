@@ -18,11 +18,21 @@ class _PlateCarreeFormatter(Formatter):
     rectangular projection (e.g. Plate Carree, Mercator).
 
     """
-    def __init__(self, direction_label=True, degree_symbol='°',
-                 number_format='g', transform_precision=1e-8, dms=False,
-                 minute_symbol='′', second_symbol='″',
-                 seconds_number_format='g',
-                 auto_hide=True, decimal_point=None, cardinal_labels=None):
+
+    def __init__(
+        self,
+        direction_label=True,
+        degree_symbol='°',
+        number_format='g',
+        transform_precision=1e-8,
+        dms=False,
+        minute_symbol='′',
+        second_symbol='″',
+        seconds_number_format='g',
+        auto_hide=True,
+        decimal_point=None,
+        cardinal_labels=None,
+    ):
         """
         Base class for simpler implementation of specialised formatters
         for latitude and longitude axes.
@@ -40,10 +50,10 @@ class _PlateCarreeFormatter(Formatter):
         self._auto_hide_degrees = False
         self._auto_hide_minutes = False
         self._precision = 5  # locator precision
-        if (decimal_point is None and
-                mpl.rcParams['axes.formatter.use_locale']):
+        if decimal_point is None and mpl.rcParams['axes.formatter.use_locale']:
             import locale
-            decimal_point = locale.localeconv()["decimal_point"]
+
+            decimal_point = locale.localeconv()['decimal_point']
         if cardinal_labels is None:
             cardinal_labels = {}
         self._cardinal_labels = cardinal_labels
@@ -53,18 +63,17 @@ class _PlateCarreeFormatter(Formatter):
 
     def __call__(self, value, pos=None):
         if self._source_projection is not None:
-            projected_value = self._apply_transform(value,
-                                                    self._target_projection,
-                                                    self._source_projection)
+            projected_value = self._apply_transform(
+                value, self._target_projection, self._source_projection
+            )
 
             # Round the transformed value using a given precision for display
             # purposes. Transforms can introduce minor rounding errors that
             # make the tick values look bad, these need to be accounted for.
-            f = 1. / self._transform_precision
+            f = 1.0 / self._transform_precision
             projected_value = round(f * projected_value) / f
 
         else:
-
             # There is no projection so we assume it is already PlateCarree
             projected_value = value
 
@@ -73,20 +82,17 @@ class _PlateCarreeFormatter(Formatter):
         return self._format_value(projected_value, value)
 
     def _format_value(self, value, original_value):
-
         hemisphere = ''
         sign = ''
 
         if self._direction_labels:
             hemisphere = self._hemisphere(value, original_value)
         else:
-            if (value != 0 and
-                    self._hemisphere(value, original_value) in ['W', 'S']):
+            if value != 0 and self._hemisphere(value, original_value) in ['W', 'S']:
                 sign = '-'
 
         if not self._dms:
-            return (sign + self._format_degrees(abs(value)) +
-                    hemisphere)
+            return sign + self._format_degrees(abs(value)) + hemisphere
 
         value, deg, mn, sec = self._get_dms(abs(value))
 
@@ -137,10 +143,12 @@ class _PlateCarreeFormatter(Formatter):
             return
 
         self._source_projection = self.axis.axes.projection
-        if not isinstance(self._source_projection, (ccrs._RectangularProjection,
-                                                    ccrs.Mercator)):
-            raise TypeError("This formatter cannot be used with "
-                            "non-rectangular projections.")
+        if not isinstance(
+            self._source_projection, (ccrs._RectangularProjection, ccrs.Mercator)
+        ):
+            raise TypeError(
+                'This formatter cannot be used with non-rectangular projections.'
+            )
         # The transforms need to use the same globe
         self._target_projection = ccrs.PlateCarree(globe=self._source_projection.globe)
 
@@ -174,9 +182,9 @@ class _PlateCarreeFormatter(Formatter):
             number_format = 'd'
         else:
             number_format = self._degrees_number_format
-        value = f"{abs(deg):{number_format}}{self._degree_symbol}"
+        value = f'{abs(deg):{number_format}}{self._degree_symbol}'
         if self._decimal_point is not None:
-            value = value.replace(".", self._decimal_point)
+            value = value.replace('.', self._decimal_point)
         return value
 
     def _format_minutes(self, mn):
@@ -194,7 +202,7 @@ class _PlateCarreeFormatter(Formatter):
         projection, returning a single value.
 
         """
-        raise NotImplementedError("A subclass must implement this method.")
+        raise NotImplementedError('A subclass must implement this method.')
 
     def _hemisphere(self, value, value_source_crs):
         """
@@ -205,19 +213,26 @@ class _PlateCarreeFormatter(Formatter):
         Must be over-ridden by the derived class.
 
         """
-        raise NotImplementedError("A subclass must implement this method.")
+        raise NotImplementedError('A subclass must implement this method.')
 
 
 class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
 
-    def __init__(self, direction_label=True,
-                 degree_symbol='°', number_format='g',
-                 transform_precision=1e-8, dms=False,
-                 minute_symbol='′', second_symbol='″',
-                 seconds_number_format='g', auto_hide=True,
-                 decimal_point=None, cardinal_labels=None
-                 ):
+    def __init__(
+        self,
+        direction_label=True,
+        degree_symbol='°',
+        number_format='g',
+        transform_precision=1e-8,
+        dms=False,
+        minute_symbol='′',
+        second_symbol='″',
+        seconds_number_format='g',
+        auto_hide=True,
+        decimal_point=None,
+        cardinal_labels=None,
+    ):
         """
         Tick formatter for latitudes.
 
@@ -309,14 +324,13 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
             decimal_point=decimal_point,
-            cardinal_labels=cardinal_labels
+            cardinal_labels=cardinal_labels,
         )
 
     def _apply_transform(self, value, target_proj, source_crs):
         return target_proj.transform_point(0, value, source_crs)[1]
 
     def _hemisphere(self, value, value_source_crs):
-
         if value > 0:
             hemisphere = self._cardinal_labels.get('north', 'N')
         elif value < 0:
@@ -329,21 +343,22 @@ class LatitudeFormatter(_PlateCarreeFormatter):
 class LongitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for a longitude axis."""
 
-    def __init__(self,
-                 direction_label=True,
-                 zero_direction_label=False,
-                 dateline_direction_label=False,
-                 degree_symbol='°',
-                 number_format='g',
-                 transform_precision=1e-8,
-                 dms=False,
-                 minute_symbol='′',
-                 second_symbol='″',
-                 seconds_number_format='g',
-                 auto_hide=True,
-                 decimal_point=None,
-                 cardinal_labels=None
-                 ):
+    def __init__(
+        self,
+        direction_label=True,
+        zero_direction_label=False,
+        dateline_direction_label=False,
+        degree_symbol='°',
+        number_format='g',
+        transform_precision=1e-8,
+        dms=False,
+        minute_symbol='′',
+        second_symbol='″',
+        seconds_number_format='g',
+        auto_hide=True,
+        decimal_point=None,
+        cardinal_labels=None,
+    ):
         """
         Create a formatter for longitudes.
 
@@ -443,7 +458,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
             decimal_point=decimal_point,
-            cardinal_labels=cardinal_labels
+            cardinal_labels=cardinal_labels,
         )
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
@@ -478,7 +493,6 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         return _PlateCarreeFormatter._format_degrees(self, self._fix_lons(deg))
 
     def _hemisphere(self, value, value_source_crs):
-
         value = self._fix_lons(value)
         # Perform basic hemisphere detection.
         if value < 0:
@@ -519,21 +533,18 @@ class LongitudeLocator(MaxNLocator):
         MaxNLocator.set_params(self, **kwargs)
 
     def _guess_steps(self, vmin, vmax):
-
         dv = abs(vmax - vmin)
         if dv > 180:
             dv -= 180
 
-        if dv > 50.:
-
+        if dv > 50.0:
             steps = np.array([1, 2, 3, 6, 10])
 
-        elif not self._dms or dv > 3.:
-
+        elif not self._dms or dv > 3.0:
             steps = np.array([1, 1.5, 2, 2.5, 3, 5, 10])
 
         else:
-            steps = np.array([1, 10 / 6., 15 / 6., 20 / 6., 30 / 6., 10])
+            steps = np.array([1, 10 / 6.0, 15 / 6.0, 20 / 6.0, 30 / 6.0, 10])
 
         self.set_params(steps=np.array(steps))
 
@@ -557,13 +568,13 @@ class LatitudeLocator(LongitudeLocator):
     """
 
     def tick_values(self, vmin, vmax):
-        vmin = max(vmin, -90.)
-        vmax = min(vmax, 90.)
+        vmin = max(vmin, -90.0)
+        vmax = min(vmax, 90.0)
         return LongitudeLocator.tick_values(self, vmin, vmax)
 
     def _guess_steps(self, vmin, vmax):
-        vmin = max(vmin, -90.)
-        vmax = min(vmax, 90.)
+        vmin = max(vmin, -90.0)
+        vmax = min(vmax, 90.0)
         LongitudeLocator._guess_steps(self, vmin, vmax)
 
     def _raw_ticks(self, vmin, vmax):

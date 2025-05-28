@@ -36,16 +36,15 @@ class TestCRS:
         ll = ccrs.Geodetic()
 
         # results obtained by nearby.org.uk.
-        lon, lat = np.array([-5.54159863617957, 54.5622169298669],
-                            dtype=np.double)
+        lon, lat = np.array([-5.54159863617957, 54.5622169298669], dtype=np.double)
         east, north = np.array([359000, 371000], dtype=np.double)
 
-        assert_arr_almost_eq(osni.transform_point(lon, lat, ll),
-                             np.array([east, north]),
-                             -1)
-        assert_arr_almost_eq(ll.transform_point(east, north, osni),
-                             np.array([lon, lat]),
-                             3)
+        assert_arr_almost_eq(
+            osni.transform_point(lon, lat, ll), np.array([east, north]), -1
+        )
+        assert_arr_almost_eq(
+            ll.transform_point(east, north, osni), np.array([lon, lat]), 3
+        )
 
     def _check_osgb(self, osgb):
         precision = 1
@@ -53,13 +52,15 @@ class TestCRS:
         if os.environ.get('PROJ_NETWORK') != 'ON':
             grid_name = 'uk_os_OSTN15_NTv2_OSGBtoETRS.tif'
             available = (
-                Path(pyproj.datadir.get_data_dir(), grid_name).exists() or
-                Path(pyproj.datadir.get_user_data_dir(), grid_name).exists()
+                Path(pyproj.datadir.get_data_dir(), grid_name).exists()
+                or Path(pyproj.datadir.get_user_data_dir(), grid_name).exists()
             )
             if not available:
                 import warnings
-                warnings.warn(f'{grid_name} is unavailable; '
-                              'testing OSGB at reduced precision')
+
+                warnings.warn(
+                    f'{grid_name} is unavailable; testing OSGB at reduced precision'
+                )
                 precision = -1
 
         ll = ccrs.Geodetic()
@@ -69,10 +70,12 @@ class TestCRS:
         east, north = np.array([295132.1, 63512.6], dtype=np.double)
 
         # note the handling of precision here...
-        assert_almost_equal(osgb.transform_point(lon, lat, ll), [east, north],
-                            decimal=precision)
-        assert_almost_equal(ll.transform_point(east, north, osgb), [lon, lat],
-                            decimal=2)
+        assert_almost_equal(
+            osgb.transform_point(lon, lat, ll), [east, north], decimal=precision
+        )
+        assert_almost_equal(
+            ll.transform_point(east, north, osgb), [lon, lat], decimal=2
+        )
 
         r_lon, r_lat = ll.transform_point(east, north, osgb)
         r_inverted = np.array(osgb.transform_point(r_lon, r_lat, ll))
@@ -96,8 +99,7 @@ class TestCRS:
             expected_x = (-104728.764, 688806.007)
             expected_y = (-8908.36, 1256616.32)
             expected_threshold = 7935.34
-        assert_almost_equal(uk.x_limits,
-                            expected_x, decimal=3)
+        assert_almost_equal(uk.x_limits, expected_x, decimal=3)
         assert_almost_equal(uk.y_limits, expected_y, decimal=2)
         assert_almost_equal(uk.threshold, expected_threshold, decimal=2)
         self._check_osgb(uk)
@@ -116,42 +118,44 @@ class TestCRS:
         assert '+ellps=intl' in proj4_init
 
     def test_transform_points_nD(self):
-        rlons = np.array([[350., 352., 354.], [350., 352., 354.]])
-        rlats = np.array([[-5., -0., 1.], [-4., -1., 0.]])
+        rlons = np.array([[350.0, 352.0, 354.0], [350.0, 352.0, 354.0]])
+        rlats = np.array([[-5.0, -0.0, 1.0], [-4.0, -1.0, 0.0]])
 
-        src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0,
-                                        pole_latitude=38.0)
+        src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0, pole_latitude=38.0)
         target_proj = ccrs.Geodetic()
-        res = target_proj.transform_points(x=rlons, y=rlats,
-                                           src_crs=src_proj)
+        res = target_proj.transform_points(x=rlons, y=rlats, src_crs=src_proj)
         unrotated_lon = res[..., 0]
         unrotated_lat = res[..., 1]
 
         # Solutions derived by proj direct.
-        solx = np.array([[-16.42176094, -14.85892262, -11.90627520],
-                         [-16.71055023, -14.58434624, -11.68799988]])
-        soly = np.array([[46.00724251, 51.29188893, 52.59101488],
-                         [46.98728486, 50.30706042, 51.60004528]])
+        solx = np.array(
+            [
+                [-16.42176094, -14.85892262, -11.90627520],
+                [-16.71055023, -14.58434624, -11.68799988],
+            ]
+        )
+        soly = np.array(
+            [
+                [46.00724251, 51.29188893, 52.59101488],
+                [46.98728486, 50.30706042, 51.60004528],
+            ]
+        )
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
 
     def test_transform_points_1D(self):
-        rlons = np.array([350., 352., 354., 356.])
-        rlats = np.array([-5., -0., 5., 10.])
+        rlons = np.array([350.0, 352.0, 354.0, 356.0])
+        rlats = np.array([-5.0, -0.0, 5.0, 10.0])
 
-        src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0,
-                                        pole_latitude=38.0)
+        src_proj = ccrs.RotatedGeodetic(pole_longitude=178.0, pole_latitude=38.0)
         target_proj = ccrs.Geodetic()
-        res = target_proj.transform_points(x=rlons, y=rlats,
-                                           src_crs=src_proj)
+        res = target_proj.transform_points(x=rlons, y=rlats, src_crs=src_proj)
         unrotated_lon = res[..., 0]
         unrotated_lat = res[..., 1]
 
         # Solutions derived by proj direct.
-        solx = np.array([-16.42176094, -14.85892262,
-                         -12.88946157, -10.35078336])
-        soly = np.array([46.00724251, 51.29188893,
-                         56.55031485, 61.77015703])
+        solx = np.array([-16.42176094, -14.85892262, -12.88946157, -10.35078336])
+        soly = np.array([46.00724251, 51.29188893, 56.55031485, 61.77015703])
 
         assert_arr_almost_eq(unrotated_lon, solx)
         assert_arr_almost_eq(unrotated_lat, soly)
@@ -165,8 +169,7 @@ class TestCRS:
         src_proj = ccrs.Geocentric()
         target_proj = ccrs.Geodetic()
 
-        res = target_proj.transform_points(x=rx, y=ry, z=rz,
-                                           src_crs=src_proj)
+        res = target_proj.transform_points(x=rx, y=ry, z=rz, src_crs=src_proj)
 
         glat = res[..., 0]
         glon = res[..., 1]
@@ -194,21 +197,25 @@ class TestCRS:
 
     def test_globe(self):
         # Ensure the globe affects output.
-        rugby_globe = ccrs.Globe(semimajor_axis=9000000,
-                                 semiminor_axis=9000000,
-                                 ellipse=None)
-        footy_globe = ccrs.Globe(semimajor_axis=1000000,
-                                 semiminor_axis=1000000,
-                                 ellipse=None)
+        rugby_globe = ccrs.Globe(
+            semimajor_axis=9000000, semiminor_axis=9000000, ellipse=None
+        )
+        footy_globe = ccrs.Globe(
+            semimajor_axis=1000000, semiminor_axis=1000000, ellipse=None
+        )
 
         rugby_moll = ccrs.Mollweide(globe=rugby_globe)
         footy_moll = ccrs.Mollweide(globe=footy_globe)
 
         rugby_pt = rugby_moll.transform_point(
-            10, 10, rugby_moll.as_geodetic(),
+            10,
+            10,
+            rugby_moll.as_geodetic(),
         )
         footy_pt = footy_moll.transform_point(
-            10, 10, footy_moll.as_geodetic(),
+            10,
+            10,
+            footy_moll.as_geodetic(),
         )
 
         assert_arr_almost_eq(rugby_pt, (1400915, 1741319), decimal=0)
@@ -222,44 +229,48 @@ class TestCRS:
         pc_rotated = ccrs.PlateCarree(central_longitude=180)
 
         result = pc_rotated.project_geometry(point, pc)
-        assert_arr_almost_eq(result.xy, [[-180.], [45.]])
+        assert_arr_almost_eq(result.xy, [[-180.0], [45.0]])
 
         result = pc_rotated.project_geometry(multi_point, pc)
         assert isinstance(result, sgeom.MultiPoint)
         assert len(result.geoms) == 2
-        assert_arr_almost_eq(result.geoms[0].xy, [[-180.], [45.]])
-        assert_arr_almost_eq(result.geoms[1].xy, [[0], [45.]])
+        assert_arr_almost_eq(result.geoms[0].xy, [[-180.0], [45.0]])
+        assert_arr_almost_eq(result.geoms[1].xy, [[0], [45.0]])
 
     def test_utm(self):
         utm30n = ccrs.UTM(30)
         ll = ccrs.Geodetic()
         lon, lat = np.array([-3.0, 51.5], dtype=np.double)
         east, north = np.array([500000, 5705429.2], dtype=np.double)
-        assert_arr_almost_eq(utm30n.transform_point(lon, lat, ll),
-                             [east, north],
-                             decimal=1)
-        assert_arr_almost_eq(ll.transform_point(east, north, utm30n),
-                             [lon, lat],
-                             decimal=1)
+        assert_arr_almost_eq(
+            utm30n.transform_point(lon, lat, ll), [east, north], decimal=1
+        )
+        assert_arr_almost_eq(
+            ll.transform_point(east, north, utm30n), [lon, lat], decimal=1
+        )
         utm38s = ccrs.UTM(38, southern_hemisphere=True)
         lon, lat = np.array([47.5, -18.92], dtype=np.double)
         east, north = np.array([763316.7, 7906160.8], dtype=np.double)
-        assert_arr_almost_eq(utm38s.transform_point(lon, lat, ll),
-                             [east, north],
-                             decimal=1)
-        assert_arr_almost_eq(ll.transform_point(east, north, utm38s),
-                             [lon, lat],
-                             decimal=1)
+        assert_arr_almost_eq(
+            utm38s.transform_point(lon, lat, ll), [east, north], decimal=1
+        )
+        assert_arr_almost_eq(
+            ll.transform_point(east, north, utm38s), [lon, lat], decimal=1
+        )
 
 
-@pytest.fixture(params=[
-    [ccrs.PlateCarree, {}],
-    [ccrs.PlateCarree, dict(central_longitude=1.23)],
-    [ccrs.NorthPolarStereo, dict(central_longitude=42.5,
-                                 globe=ccrs.Globe(ellipse="helmert"))],
-    [ccrs.CRS, dict(proj4_params="3088")],
-    [ccrs.epsg, dict(code="3088")]
-])
+@pytest.fixture(
+    params=[
+        [ccrs.PlateCarree, {}],
+        [ccrs.PlateCarree, dict(central_longitude=1.23)],
+        [
+            ccrs.NorthPolarStereo,
+            dict(central_longitude=42.5, globe=ccrs.Globe(ellipse='helmert')),
+        ],
+        [ccrs.CRS, dict(proj4_params='3088')],
+        [ccrs.epsg, dict(code='3088')],
+    ]
+)
 def proj_to_copy(request):
     cls, kwargs = request.param
     return cls(**kwargs)
@@ -281,16 +292,16 @@ def test_deepcopy(proj_to_copy):
 
 
 def test_PlateCarree_shortcut():
-    central_lons = [[0, 0], [0, 180], [0, 10], [10, 0], [-180, 180], [
-        180, -180]]
+    central_lons = [[0, 0], [0, 180], [0, 10], [10, 0], [-180, 180], [180, -180]]
 
-    target = [([[-180, -180], [-180, 180]], 0),
-              ([[-180, 0], [0, 180]], 180),
-              ([[-180, -170], [-170, 180]], 10),
-              ([[-180, 170], [170, 180]], -10),
-              ([[-180, 180], [180, 180]], 360),
-              ([[-180, -180], [-180, 180]], -360),
-              ]
+    target = [
+        ([[-180, -180], [-180, 180]], 0),
+        ([[-180, 0], [0, 180]], 180),
+        ([[-180, -170], [-170, 180]], 10),
+        ([[-180, 170], [170, 180]], -10),
+        ([[-180, 180], [180, 180]], 360),
+        ([[-180, -180], [-180, 180]], -360),
+    ]
 
     assert len(target) == len(central_lons)
 
@@ -309,8 +320,7 @@ def test_PlateCarree_shortcut():
 def test_transform_points_empty():
     """Test CRS.transform_points with empty array."""
     crs = ccrs.Stereographic()
-    result = crs.transform_points(ccrs.PlateCarree(),
-                                  np.array([]), np.array([]))
+    result = crs.transform_points(ccrs.PlateCarree(), np.array([]), np.array([]))
     assert_array_equal(result, np.array([], dtype=np.float64).reshape(0, 3))
 
 
@@ -320,17 +330,17 @@ def test_transform_points_outside_domain():
     # greater than 1 arrays put infinity into the return array
     # where the bad values occur
     crs = ccrs.Orthographic()
-    result = crs.transform_points(ccrs.PlateCarree(),
-                                  np.array([-120]), np.array([80]))
+    result = crs.transform_points(ccrs.PlateCarree(), np.array([-120]), np.array([80]))
     assert np.all(np.isnan(result))
-    result = crs.transform_points(ccrs.PlateCarree(),
-                                  np.array([-120]), np.array([80]),
-                                  trap=True)
+    result = crs.transform_points(
+        ccrs.PlateCarree(), np.array([-120]), np.array([80]), trap=True
+    )
     assert np.all(np.isnan(result))
     # A length-2 array of the same transform produces "inf" rather
     # than nan due to PROJ never returning nan itself.
-    result = crs.transform_points(ccrs.PlateCarree(),
-                                  np.array([-120, -120]), np.array([80, 80]))
+    result = crs.transform_points(
+        ccrs.PlateCarree(), np.array([-120, -120]), np.array([80, 80])
+    )
     assert np.all(~np.isfinite(result[..., :2]))
 
     # Test singular transform to make sure it is producing all nan's
@@ -340,8 +350,8 @@ def test_transform_points_outside_domain():
 
 
 def test_projection__from_string():
-    crs = ccrs.Projection("NAD83 / Pennsylvania South")
-    assert crs.as_geocentric().datum.name == "North American Datum 1983"
+    crs = ccrs.Projection('NAD83 / Pennsylvania South')
+    assert crs.as_geocentric().datum.name == 'North American Datum 1983'
     assert_almost_equal(
         crs.bounds,
         [361633.1351868, 859794.6690229, 45575.5693199, 209415.9845754],
@@ -349,7 +359,7 @@ def test_projection__from_string():
 
 
 def test_crs__from_pyproj_crs():
-    assert ccrs.CRS(pyproj.CRS("EPSG:4326")) == "EPSG:4326"
+    assert ccrs.CRS(pyproj.CRS('EPSG:4326')) == 'EPSG:4326'
 
 
 def test_transform_point_no_warning():
@@ -358,15 +368,17 @@ def test_transform_point_no_warning():
     p = ccrs.PlateCarree()
     p2 = ccrs.Mercator()
     with warnings.catch_warnings():
-        warnings.simplefilter("error")
+        warnings.simplefilter('error')
         p2.transform_point(1, 2, p)
 
 
 def test_geographic_bounds_no_area_of_use():
     # Should default to global bounds if no area of use
-    wkt = ('GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",'
-           'SPHEROID["WGS_1984",6378137.0,298.257223563]],'
-           'PRIMEM["Greenwich",0.0],UNIT["Degree",0.017453292519943295]]')
+    wkt = (
+        'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",'
+        'SPHEROID["WGS_1984",6378137.0,298.257223563]],'
+        'PRIMEM["Greenwich",0.0],UNIT["Degree",0.017453292519943295]]'
+    )
     p = pyproj.CRS.from_wkt(wkt)
     assert p.is_geographic
     assert p.area_of_use is None

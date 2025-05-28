@@ -6,6 +6,7 @@ Produces a map showing London Underground station locations with high
 resolution background imagery provided by OpenStreetMap.
 
 """
+
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,18 +23,33 @@ def tube_locations():
     Source: https://www.doogal.co.uk/london_stations.php
 
     """
-    return np.array([[531738., 180890.], [532379., 179734.],
-                     [531096., 181642.], [530234., 180492.],
-                     [531688., 181150.], [530242., 180982.],
-                     [531940., 179144.], [530406., 180380.],
-                     [529012., 180283.], [530553., 181488.],
-                     [531165., 179489.], [529987., 180812.],
-                     [532347., 180962.], [529102., 181227.],
-                     [529612., 180625.], [531566., 180025.],
-                     [529629., 179503.], [532105., 181261.],
-                     [530995., 180810.], [529774., 181354.],
-                     [528941., 179131.], [531050., 179933.],
-                     [530240., 179718.]])
+    return np.array(
+        [
+            [531738.0, 180890.0],
+            [532379.0, 179734.0],
+            [531096.0, 181642.0],
+            [530234.0, 180492.0],
+            [531688.0, 181150.0],
+            [530242.0, 180982.0],
+            [531940.0, 179144.0],
+            [530406.0, 180380.0],
+            [529012.0, 180283.0],
+            [530553.0, 181488.0],
+            [531165.0, 179489.0],
+            [529987.0, 180812.0],
+            [532347.0, 180962.0],
+            [529102.0, 181227.0],
+            [529612.0, 180625.0],
+            [531566.0, 180025.0],
+            [529629.0, 179503.0],
+            [532105.0, 181261.0],
+            [530995.0, 180810.0],
+            [529774.0, 181354.0],
+            [528941.0, 179131.0],
+            [531050.0, 179933.0],
+            [530240.0, 179718.0],
+        ]
+    )
 
 
 def main():
@@ -47,8 +63,9 @@ def main():
     # suitable for a London Underground logo.
     theta = np.linspace(0, 2 * np.pi, 100)
     circle_verts = np.vstack([np.sin(theta), np.cos(theta)]).T
-    concentric_circle = Path.make_compound_path(Path(circle_verts[::-1]),
-                                                Path(circle_verts * 0.6))
+    concentric_circle = Path.make_compound_path(
+        Path(circle_verts[::-1]), Path(circle_verts * 0.6)
+    )
 
     rectangle = Path([[-1.1, -0.2], [1, -0.2], [1, 0.3], [-1.1, 0.3]])
 
@@ -58,10 +75,24 @@ def main():
     # Plot the locations twice, first with the red concentric circles,
     # then with the blue rectangle.
     xs, ys = tube_locations().T
-    ax.plot(xs, ys, transform=ccrs.OSGB(approx=False),
-            marker=concentric_circle, color='red', markersize=9, linestyle='')
-    ax.plot(xs, ys, transform=ccrs.OSGB(approx=False),
-            marker=rectangle, color='blue', markersize=11, linestyle='')
+    ax.plot(
+        xs,
+        ys,
+        transform=ccrs.OSGB(approx=False),
+        marker=concentric_circle,
+        color='red',
+        markersize=9,
+        linestyle='',
+    )
+    ax.plot(
+        xs,
+        ys,
+        transform=ccrs.OSGB(approx=False),
+        marker=rectangle,
+        color='blue',
+        markersize=11,
+        linestyle='',
+    )
 
     ax.set_title('London underground locations')
     plt.show()

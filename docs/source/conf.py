@@ -37,18 +37,18 @@ needs_sphinx = '1.6'
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-              'sphinx.ext.autodoc',
-              'sphinx.ext.doctest',
-              'sphinx.ext.intersphinx',
-              'sphinx.ext.coverage',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.extlinks',
-              'sphinx.ext.autosummary',
-              'matplotlib.sphinxext.plot_directive',
-              'matplotlib.sphinxext.roles',
-              'sphinx_gallery.gen_gallery',
-              'sphinx.ext.napoleon'
-              ]
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.coverage',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.extlinks',
+    'sphinx.ext.autosummary',
+    'matplotlib.sphinxext.plot_directive',
+    'matplotlib.sphinxext.roles',
+    'sphinx_gallery.gen_gallery',
+    'sphinx.ext.napoleon',
+]
 
 # generate autosummary even if no references
 autosummary_generate = True
@@ -69,8 +69,10 @@ root_doc = master_doc = 'index'
 
 # General information about the project.
 project = 'cartopy'
-copyright = ('2011 - 2018 British Crown Copyright, '
-             f'2018 - {datetime.now().year} Cartopy contributors')
+copyright = (
+    '2011 - 2018 British Crown Copyright, '
+    f'2018 - {datetime.now().year} Cartopy contributors'
+)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -82,18 +84,22 @@ version = cartopy.__version__
 release = cartopy.__version__
 
 
-subsection_order = ExplicitOrder(['../../examples/lines_and_polygons',
-                                  '../../examples/scalar_data',
-                                  '../../examples/vector_data',
-                                  '../../examples/web_services',
-                                  '../../examples/gridlines_and_labels',
-                                  '../../examples/miscellanea'])
+subsection_order = ExplicitOrder(
+    [
+        '../../examples/lines_and_polygons',
+        '../../examples/scalar_data',
+        '../../examples/vector_data',
+        '../../examples/web_services',
+        '../../examples/gridlines_and_labels',
+        '../../examples/miscellanea',
+    ]
+)
 
 # Sphinx gallery configuration
 sphinx_gallery_conf = {
     'capture_repr': (),
     'examples_dirs': ['../../examples'],
-    "expected_failing_examples": [
+    'expected_failing_examples': [
         # NASA wmts servers frequently return bad content metadata
         # uncomment these to fix the doc build failures
         # '../../examples/web_services/reprojected_wmts.py',
@@ -166,8 +172,8 @@ html_theme = 'pydata_sphinx_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "external_links": [],
-    "github_url": "https://github.com/SciTools/cartopy",
+    'external_links': [],
+    'github_url': 'https://github.com/SciTools/cartopy',
 }
 
 # The name for this set of Sphinx documents.  If None, it defaults to
@@ -179,12 +185,12 @@ html_theme_options = {
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "_static/cartopy.png"
+html_logo = '_static/cartopy.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-html_favicon = "_static/favicon.ico"
+html_favicon = '_static/favicon.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -243,23 +249,33 @@ autoclass_content = 'both'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-                    # The paper size ('letterpaper' or 'a4paper').
-                    # 'papersize': 'letterpaper',
-
-                    # The font size ('10pt', '11pt' or '12pt').
-                    # 'pointsize': '10pt',
-
-                    # Additional stuff for the LaTeX preamble.
-                    # 'preamble': '',
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'cartopy.tex', 'Cartopy Introduction',
-   'Philip Elson, Richard Hattersley', 'manual', False),
-  ('introductory_examples/index', 'cartopy_examples.tex', 'Cartopy examples',
-   'Philip Elson, Richard Hattersley', 'manual', True)
+    (
+        'index',
+        'cartopy.tex',
+        'Cartopy Introduction',
+        'Philip Elson, Richard Hattersley',
+        'manual',
+        False,
+    ),
+    (
+        'introductory_examples/index',
+        'cartopy_examples.tex',
+        'Cartopy examples',
+        'Philip Elson, Richard Hattersley',
+        'manual',
+        True,
+    ),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -288,8 +304,13 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cartopy', 'cartopy Documentation',
-     ['Philip Elson, Richard Hattersley'], 1)
+    (
+        'index',
+        'cartopy',
+        'cartopy Documentation',
+        ['Philip Elson, Richard Hattersley'],
+        1,
+    )
 ]
 
 # If true, show URL addresses after external links.
@@ -302,10 +323,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'cartopy', 'cartopy Documentation',
-   'Philip Elson, Richard Hattersley', 'cartopy',
-   'One line description of project.',
-   'Miscellaneous'),
+    (
+        'index',
+        'cartopy',
+        'cartopy Documentation',
+        'Philip Elson, Richard Hattersley',
+        'cartopy',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -371,26 +397,27 @@ intersphinx_mapping = {
 
 
 ############ extlinks extension ############
-extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
-                       'issues labeled with %s'),
-            'issue': ('https://github.com/SciTools/cartopy/issues/%s',
-                      'Issue #%s'),
-            'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #%s'),
-            }
+extlinks = {
+    'issues': (
+        'https://github.com/SciTools/cartopy/labels/%s',
+        'issues labeled with %s',
+    ),
+    'issue': ('https://github.com/SciTools/cartopy/issues/%s', 'Issue #%s'),
+    'pull': ('https://github.com/SciTools/cartopy/pull/%s', 'PR #%s'),
+}
 
 
 ############ plot directive ##############
 
 plot_html_show_formats = False
 # plot_rcparams = {'figure.autolayout': True}
-plot_rcparams = {'figure.subplot.bottom': 0.04,
-                 'figure.subplot.top': 0.96,
-                 'figure.subplot.left': 0.04,
-                 'figure.subplot.right': 0.96}
-plot_formats = ['png',
-                ('thumb.png', 20),
-                'pdf'
-                ]
+plot_rcparams = {
+    'figure.subplot.bottom': 0.04,
+    'figure.subplot.top': 0.96,
+    'figure.subplot.left': 0.04,
+    'figure.subplot.right': 0.96,
+}
+plot_formats = ['png', ('thumb.png', 20), 'pdf']
 
 
 ############ autodoc config ##############

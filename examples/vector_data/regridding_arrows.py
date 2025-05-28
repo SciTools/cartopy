@@ -9,6 +9,7 @@ Regridding can be an effective way of visualising a vector field, particularly
 if the data is dense or warped.
 
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 

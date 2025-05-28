@@ -34,7 +34,6 @@ def pytest_itemcollected(item):
         if path.basename == 'cartopy':
             return
         elif path.basename == 'tests':
-            subdir = item.fspath.relto(path)[:-len(item.fspath.ext)]
-            mpl_marker.kwargs.setdefault('baseline_dir',
-                                         f'baseline_images/{subdir}')
+            subdir = item.fspath.relto(path)[: -len(item.fspath.ext)]
+            mpl_marker.kwargs.setdefault('baseline_dir', f'baseline_images/{subdir}')
             break

@@ -19,9 +19,9 @@ FORCE_CYTHON = os.environ.get('FORCE_CYTHON', False)
 USE_CYTHON = not IS_SDIST or FORCE_CYTHON
 if USE_CYTHON:
     import Cython
+
     if Cython.__version__ < '0.29':
-        raise ImportError(
-            "Cython 0.29+ is required to install cartopy from source.")
+        raise ImportError('Cython 0.29+ is required to install cartopy from source.')
     ext = '.pyx'
 else:
     ext = '.cpp'
@@ -37,14 +37,16 @@ extensions = [
         [f'lib/cartopy/trace{ext}'],
         include_dirs=[np.get_include()],
         language='c++',
-        define_macros=define_macros),
+        define_macros=define_macros,
+    ),
 ]
 
 if USE_CYTHON:
     # We need to explicitly cythonize the extension in order
     # to control the Cython compiler_directives.
     from Cython.Build import cythonize
-    compiler_directives = {"profile": True, "linetrace": True}
+
+    compiler_directives = {'profile': True, 'linetrace': True}
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 
 

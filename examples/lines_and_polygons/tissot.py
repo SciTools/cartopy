@@ -5,6 +5,7 @@ Tissot's Indicatrix
 Visualize Tissot's indicatrix on a map.
 
 """
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

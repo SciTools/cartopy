@@ -7,6 +7,7 @@ demand from the Google tile server. Internally these tiles are then combined
 into a single image and displayed in the cartopy GeoAxes.
 
 """
+
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
 
@@ -16,7 +17,7 @@ import cartopy.io.img_tiles as cimgt
 
 def main():
     # Create a background image tile.
-    google_terrain = cimgt.GoogleTiles(style="satellite")
+    google_terrain = cimgt.GoogleTiles(style='satellite')
 
     fig = plt.figure()
 
@@ -30,8 +31,15 @@ def main():
     ax.add_image(google_terrain, 8)
 
     # Add a marker for the Eyjafjallajökull volcano.
-    ax.plot(-19.613333, 63.62, marker='o', color='red', markersize=12,
-            alpha=0.7, transform=ccrs.Geodetic())
+    ax.plot(
+        -19.613333,
+        63.62,
+        marker='o',
+        color='red',
+        markersize=12,
+        alpha=0.7,
+        transform=ccrs.Geodetic(),
+    )
 
     # Use the cartopy interface to create a matplotlib transform object
     # for the Geodetic coordinate system. We will use this along with
@@ -41,10 +49,15 @@ def main():
     text_transform = offset_copy(geodetic_transform, units='dots', x=-25)
 
     # Add text 25 pixels to the left of the volcano.
-    ax.text(-19.613333, 63.62, 'Eyjafjallajökull',
-            verticalalignment='center', horizontalalignment='right',
-            transform=text_transform,
-            bbox=dict(facecolor='sandybrown', alpha=0.5, boxstyle='round'))
+    ax.text(
+        -19.613333,
+        63.62,
+        'Eyjafjallajökull',
+        verticalalignment='center',
+        horizontalalignment='right',
+        transform=text_transform,
+        bbox=dict(facecolor='sandybrown', alpha=0.5, boxstyle='round'),
+    )
     plt.show()
 
 

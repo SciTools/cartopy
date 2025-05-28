@@ -11,6 +11,7 @@ geodesic functions. See the `Proj geodesic page <https://proj.org/geodesic.html>
 for more background information.
 
 """
+
 import numpy as np
 import pyproj
 import shapely.geometry as sgeom
@@ -44,8 +45,10 @@ class Geodesic:
         self.flattening = flattening
 
     def __str__(self):
-        return (f'<Geodesic: radius={self.radius:0.3f}, '
-                f'flattening=1/{1/self.flattening:0.3f}>')
+        return (
+            f'<Geodesic: radius={self.radius:0.3f}, '
+            f'flattening=1/{1 / self.flattening:0.3f}>'
+        )
 
     def direct(self, points, azimuths, distances):
         """
@@ -85,7 +88,7 @@ class Geodesic:
         sizes = [pts.shape[0], azims.size, dists.size]
         n_points = max(sizes)
         if not all(size in [1, n_points] for size in sizes):
-            raise ValueError("Inputs must have common length n or length one.")
+            raise ValueError('Inputs must have common length n or length one.')
 
         # Broadcast any length 1 arrays to the correct size.
         if pts.shape[0] == 1:
@@ -133,8 +136,7 @@ class Geodesic:
         endpoints = np.array(endpoints, dtype=np.float64)
 
         if points.ndim > 2 or (points.ndim == 2 and points.shape[1] != 2):
-            raise ValueError(
-                f'Expecting input points to be (N, 2), got {points.shape}')
+            raise ValueError(f'Expecting input points to be (N, 2), got {points.shape}')
 
         pts = points.reshape((-1, 2))
         epts = endpoints.reshape((-1, 2))
@@ -142,7 +144,7 @@ class Geodesic:
         sizes = [pts.shape[0], epts.shape[0]]
         n_points = max(sizes)
         if not all(size in [1, n_points] for size in sizes):
-            raise ValueError("Inputs must have common length n or length one.")
+            raise ValueError('Inputs must have common length n or length one.')
 
         # Broadcast any length 1 arrays to the correct size.
         if pts.shape[0] == 1:
@@ -155,8 +157,9 @@ class Geodesic:
             epts = np.empty([n_points, 2], dtype=np.float64)
             epts[:, :] = orig_pts
 
-        start_azims, end_azims, dists = self.geod.inv(pts[:, 0], pts[:, 1],
-                                                      epts[:, 0], epts[:, 1])
+        start_azims, end_azims, dists = self.geod.inv(
+            pts[:, 0], pts[:, 1], epts[:, 0], epts[:, 1]
+        )
         # Convert back azimuth to forward azimuth.
         end_azims += np.where(end_azims > 0, -180, 180)
         return np.column_stack([dists, start_azims, end_azims])
@@ -189,8 +192,9 @@ class Geodesic:
         center = np.array([lon, lat]).reshape((1, 2))
         radius_m = np.asarray(radius).reshape(1)
 
-        azimuths = np.linspace(360., 0., n_samples,
-                               endpoint=endpoint).astype(np.double)
+        azimuths = np.linspace(360.0, 0.0, n_samples, endpoint=endpoint).astype(
+            np.double
+        )
 
         return self.direct(center, azimuths, radius_m)[:, 0:2]
 
@@ -217,15 +221,13 @@ class Geodesic:
             # Polygon.
             result = self.geometry_length(geometry.exterior)
 
-        elif (hasattr(geometry, 'coords') and
-                not isinstance(geometry, sgeom.Point)):
+        elif hasattr(geometry, 'coords') and not isinstance(geometry, sgeom.Point):
             coords = np.array(geometry.coords)
             result = self.geometry_length(coords)
 
         elif isinstance(geometry, np.ndarray):
             coords = geometry
-            distances, _, _ = np.array(
-                self.inverse(coords[:-1, :], coords[1:, :]).T)
+            distances, _, _ = np.array(self.inverse(coords[:-1, :], coords[1:, :]).T)
             result = distances.sum()
 
         else:

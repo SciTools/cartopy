@@ -5,6 +5,7 @@ Filled contours
 An example of contourf on manufactured data.
 
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -33,9 +34,7 @@ def main():
 
     lons, lats, data = sample_data()
 
-    ax.contourf(lons, lats, data,
-                transform=ccrs.PlateCarree(),
-                cmap='nipy_spectral')
+    ax.contourf(lons, lats, data, transform=ccrs.PlateCarree(), cmap='nipy_spectral')
     ax.coastlines()
     ax.set_global()
     plt.show()

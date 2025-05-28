@@ -6,6 +6,7 @@ A demonstration of the power of Matplotlib combined with cartopy's Azimuthal
 Equidistant projection to reproduce the UN flag.
 
 """
+
 from matplotlib.patches import PathPatch
 import matplotlib.path
 import matplotlib.pyplot as plt
@@ -65,7 +66,7 @@ def olive_path():
           595, 342, 349, 355, 357, 346, 326, 309, 303, 297, 291, 290, 297,
           304, 310, 321, 327, 343, 321, 305, 292, 286, 278, 270, 276, 281,
           287, 306, 328, 342, 595, 379, 369, 355, 343, 333, 326, 318, 328,
-          340, 349, 366, 373, 379, 595]]).T
+          340, 349, 366, 373, 379, 595]]).T  # fmt: skip
     olives_codes = np.array([1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
                              4, 4, 4, 4, 4, 4, 4, 4, 4, 79, 1, 4, 4, 4, 4, 4,
                              4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -80,7 +81,7 @@ def olive_path():
                              4, 4, 4, 4, 4, 4, 79, 1, 4, 4, 4, 4, 4, 4, 4, 4,
                              4, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
                              4, 4, 4, 4, 79, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-                             4, 4, 79], dtype=np.uint8)
+                             4, 4, 79], dtype=np.uint8)  # fmt: skip
 
     return matplotlib.path.Path(olives_verts, olives_codes)
 
@@ -91,9 +92,12 @@ def main():
     # We're drawing a flag with a 3:5 aspect ratio.
     fig = plt.figure(figsize=[7.5, 4.5], facecolor=blue)
     # Put a blue background on the figure.
-    blue_background = PathPatch(matplotlib.path.Path.unit_rectangle(),
-                                transform=fig.transFigure, color=blue,
-                                zorder=-1)
+    blue_background = PathPatch(
+        matplotlib.path.Path.unit_rectangle(),
+        transform=fig.transFigure,
+        color=blue,
+        zorder=-1,
+    )
     fig.patches.append(blue_background)
 
     # Set up the Azimuthal Equidistant and Plate Carree projections
@@ -122,8 +126,7 @@ def main():
     ax.set_boundary(circular_path)
 
     if filled_land:
-        ax.add_feature(
-            cfeature.LAND, facecolor='white', edgecolor='none')
+        ax.add_feature(cfeature.LAND, facecolor='white', edgecolor='none')
     else:
         ax.stock_img()
 
@@ -148,10 +151,18 @@ def main():
     olive2_axes_bbox = Bbox([[0.55, 0.15], [0.275, 0.75]])
     olive2_trans = BboxTransform(olives_bbox, olive2_axes_bbox)
 
-    olive1 = PathPatch(olive_leaf, facecolor='white', edgecolor='none',
-                       transform=olive1_trans + fig.transFigure)
-    olive2 = PathPatch(olive_leaf, facecolor='white', edgecolor='none',
-                       transform=olive2_trans + fig.transFigure)
+    olive1 = PathPatch(
+        olive_leaf,
+        facecolor='white',
+        edgecolor='none',
+        transform=olive1_trans + fig.transFigure,
+    )
+    olive2 = PathPatch(
+        olive_leaf,
+        facecolor='white',
+        edgecolor='none',
+        transform=olive2_trans + fig.transFigure,
+    )
 
     fig.patches.append(olive1)
     fig.patches.append(olive2)

@@ -10,6 +10,7 @@ Next we set the projection of each axis in the figure to a specific UTM zone.
 Then we add coastlines, gridlines and the number of the zone.
 Finally we add a supertitle and display the figure.
 """
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
@@ -24,11 +25,13 @@ def main():
 
     # Loop through each zone in the list
     for zone in zones:
-
         # Add GeoAxes object with specific UTM zone projection to the figure
-        ax = fig.add_subplot(1, len(zones), zone,
-                             projection=ccrs.UTM(zone=zone,
-                                                 southern_hemisphere=True))
+        ax = fig.add_subplot(
+            1,
+            len(zones),
+            zone,
+            projection=ccrs.UTM(zone=zone, southern_hemisphere=True),
+        )
 
         # Add coastlines, gridlines and zone number for the subplot
         ax.coastlines(resolution='110m')
@@ -36,7 +39,7 @@ def main():
         ax.set_title(zone)
 
     # Add a supertitle for the figure
-    fig.suptitle("UTM Projection - Zones")
+    fig.suptitle('UTM Projection - Zones')
 
     # Display the figure
     plt.show()

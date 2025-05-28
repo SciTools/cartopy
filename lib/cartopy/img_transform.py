@@ -12,21 +12,21 @@ import numpy as np
 
 try:
     from pykdtree.kdtree import KDTree as _kdtreeClass
+
     _is_pykdtree = True
 except ImportError:
     try:
         from scipy.spatial import cKDTree as _kdtreeClass
     except ImportError as e:
-        raise ImportError("Using image transforms requires either "
-                          "pykdtree or scipy.") from e
+        raise ImportError(
+            'Using image transforms requires either pykdtree or scipy.'
+        ) from e
     _is_pykdtree = False
 
 import cartopy.crs as ccrs
 
 
-def mesh_projection(projection, nx, ny,
-                    x_extents=(None, None),
-                    y_extents=(None, None)):
+def mesh_projection(projection, nx, ny, x_extents=(None, None), y_extents=(None, None)):
     """
     Return sample points in the given projection which span the entire
     projection range evenly.
@@ -74,10 +74,8 @@ def mesh_projection(projection, nx, ny,
 
     # Calculate evenly spaced sample points spanning the
     # extent - excluding endpoint.
-    x, xstep = np.linspace(x_lower, x_upper, nx, retstep=True,
-                           endpoint=False)
-    y, ystep = np.linspace(y_lower, y_upper, ny, retstep=True,
-                           endpoint=False)
+    x, xstep = np.linspace(x_lower, x_upper, nx, retstep=True, endpoint=False)
+    y, ystep = np.linspace(y_lower, y_upper, ny, retstep=True, endpoint=False)
 
     # Deal with single point corner case and the difference
     # between np.linspace v1.9 and v1.10+ retstep nan result.
@@ -121,9 +119,15 @@ def warp_img(fname, target_proj, source_proj=None, target_res=(400, 200)):
     raise NotImplementedError('Not yet implemented.')
 
 
-def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
-               source_extent=None, target_extent=None,
-               mask_extrapolated=False):
+def warp_array(
+    array,
+    target_proj,
+    source_proj=None,
+    target_res=(400, 200),
+    source_extent=None,
+    target_extent=None,
+    mask_extrapolated=False,
+):
     """
     Regrid the data array from the source projection to the target projection.
 
@@ -179,20 +183,30 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
         source_proj = ccrs.PlateCarree()
 
     ny, nx = array.shape[:2]
-    source_native_xy = mesh_projection(source_proj, nx, ny,
-                                       x_extents=source_x_extents,
-                                       y_extents=source_y_extents)
+    source_native_xy = mesh_projection(
+        source_proj, nx, ny, x_extents=source_x_extents, y_extents=source_y_extents
+    )
 
     # XXX Take into account the extents of the original to determine
     # target_extents?
     target_native_x, target_native_y, extent = mesh_projection(
-        target_proj, target_res[0], target_res[1],
-        x_extents=target_x_extents, y_extents=target_y_extents)
+        target_proj,
+        target_res[0],
+        target_res[1],
+        x_extents=target_x_extents,
+        y_extents=target_y_extents,
+    )
 
-    array = regrid(array, source_native_xy[0], source_native_xy[1],
-                   source_proj, target_proj,
-                   target_native_x, target_native_y,
-                   mask_extrapolated)
+    array = regrid(
+        array,
+        source_native_xy[0],
+        source_native_xy[1],
+        source_proj,
+        target_proj,
+        target_native_x,
+        target_native_y,
+        mask_extrapolated,
+    )
     return array, extent
 
 
@@ -200,29 +214,38 @@ def _determine_bounds(x_coords, y_coords, source_cs):
     # Returns bounds corresponding to one or two rectangles depending on
     # transformation between ranges.
     bounds = dict(x=[])
-    half_px = abs(np.diff(x_coords[:2])).max() / 2.
+    half_px = abs(np.diff(x_coords[:2])).max() / 2.0
 
-    if (((hasattr(source_cs, 'is_geodetic') and
-            source_cs.is_geodetic()) or
-            isinstance(source_cs, ccrs.PlateCarree)) and x_coords.max() > 180):
+    if (
+        (hasattr(source_cs, 'is_geodetic') and source_cs.is_geodetic())
+        or isinstance(source_cs, ccrs.PlateCarree)
+    ) and x_coords.max() > 180:
         if x_coords.min() < 180:
             bounds['x'].append([x_coords.min() - half_px, 180])
             bounds['x'].append([-180, x_coords.max() - 360 + half_px])
         else:
-            bounds['x'].append([x_coords.min() - 180 - half_px,
-                                x_coords.max() - 180 + half_px])
+            bounds['x'].append(
+                [x_coords.min() - 180 - half_px, x_coords.max() - 180 + half_px]
+            )
     else:
-        bounds['x'].append([x_coords.min() - half_px,
-                            x_coords.max() + half_px])
+        bounds['x'].append([x_coords.min() - half_px, x_coords.max() + half_px])
 
     # y_coords are the centers, so adjust a half-pixel out in y too
-    half_px = abs(np.diff(y_coords, axis=0)).max() / 2.
+    half_px = abs(np.diff(y_coords, axis=0)).max() / 2.0
     bounds['y'] = [y_coords.min() - half_px, y_coords.max() + half_px]
     return bounds
 
 
-def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
-           target_x_points, target_y_points, mask_extrapolated=False):
+def regrid(
+    array,
+    source_x_coords,
+    source_y_coords,
+    source_proj,
+    target_proj,
+    target_x_points,
+    target_y_points,
+    mask_extrapolated=False,
+):
     """
     Regrid the data array from the source projection to the target projection.
 
@@ -260,13 +283,13 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
     """
 
     # Stack our original xyz array, this will also wrap coords when necessary
-    xyz = source_proj.transform_points(source_proj,
-                                       source_x_coords.flatten(),
-                                       source_y_coords.flatten())
+    xyz = source_proj.transform_points(
+        source_proj, source_x_coords.flatten(), source_y_coords.flatten()
+    )
     # Transform the target points into the source projection
-    target_xyz = source_proj.transform_points(target_proj,
-                                              target_x_points.flatten(),
-                                              target_y_points.flatten())
+    target_xyz = source_proj.transform_points(
+        target_proj, target_x_points.flatten(), target_y_points.flatten()
+    )
 
     # Find mask of valid points before querying kdtree: scipy >= 1.11 errors
     # when querying nan points, might as well use for pykdtree too.
@@ -277,9 +300,9 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
         kdtree = _kdtreeClass(xyz)
         # Use sqr_dists=True because we don't care about distances,
         # and it saves a sqrt.
-        _, indices[finite_xyz] = kdtree.query(target_xyz[finite_xyz, :],
-                                              k=1,
-                                              sqr_dists=True)
+        _, indices[finite_xyz] = kdtree.query(
+            target_xyz[finite_xyz, :], k=1, sqr_dists=True
+        )
     else:
         # Versions of scipy >= v0.16 added the balanced_tree argument,
         # which caused the KDTree to hang with this input.
@@ -304,22 +327,23 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
     # to the same point to within a fixed fractional offset.
     # NOTE: This only needs to be done for (pseudo-)cylindrical projections,
     # or any others which have the concept of wrapping
-    back_to_target_xyz = target_proj.transform_points(source_proj,
-                                                      target_xyz[:, 0],
-                                                      target_xyz[:, 1])
-    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny,
-                                                        desired_nx)
-    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny,
-                                                        desired_nx)
+    back_to_target_xyz = target_proj.transform_points(
+        source_proj, target_xyz[:, 0], target_xyz[:, 1]
+    )
+    back_to_target_x = back_to_target_xyz[:, 0].reshape(desired_ny, desired_nx)
+    back_to_target_y = back_to_target_xyz[:, 1].reshape(desired_ny, desired_nx)
     FRACTIONAL_OFFSET_THRESHOLD = 0.1  # data has moved by 10% of the map
 
     x_extent = np.abs(target_proj.x_limits[1] - target_proj.x_limits[0])
     y_extent = np.abs(target_proj.y_limits[1] - target_proj.y_limits[0])
 
-    non_self_inverse_points = (((np.abs(target_x_points - back_to_target_x) /
-                                 x_extent) > FRACTIONAL_OFFSET_THRESHOLD) |
-                               ((np.abs(target_y_points - back_to_target_y) /
-                                 y_extent) > FRACTIONAL_OFFSET_THRESHOLD))
+    non_self_inverse_points = (
+        (np.abs(target_x_points - back_to_target_x) / x_extent)
+        > FRACTIONAL_OFFSET_THRESHOLD
+    ) | (
+        (np.abs(target_y_points - back_to_target_y) / y_extent)
+        > FRACTIONAL_OFFSET_THRESHOLD
+    )
     if np.any(non_self_inverse_points):
         if not np.ma.isMaskedArray(new_array):
             new_array = np.ma.array(new_array, mask=False)
@@ -329,21 +353,20 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
     # Transform the target points to the source projection and mask any points
     # that fall outside the original source domain.
     if mask_extrapolated:
-        target_in_source_x = target_xyz[:, 0].reshape(desired_ny,
-                                                      desired_nx)
-        target_in_source_y = target_xyz[:, 1].reshape(desired_ny,
-                                                      desired_nx)
+        target_in_source_x = target_xyz[:, 0].reshape(desired_ny, desired_nx)
+        target_in_source_y = target_xyz[:, 1].reshape(desired_ny, desired_nx)
 
-        bounds = _determine_bounds(source_x_coords, source_y_coords,
-                                   source_proj)
+        bounds = _determine_bounds(source_x_coords, source_y_coords, source_proj)
 
-        outside_source_domain = ((target_in_source_y >= bounds['y'][1]) |
-                                 (target_in_source_y <= bounds['y'][0]))
+        outside_source_domain = (target_in_source_y >= bounds['y'][1]) | (
+            target_in_source_y <= bounds['y'][0]
+        )
 
         tmp_inside = np.zeros_like(outside_source_domain)
         for bound_x in bounds['x']:
-            tmp_inside = tmp_inside | ((target_in_source_x <= bound_x[1]) &
-                                       (target_in_source_x >= bound_x[0]))
+            tmp_inside = tmp_inside | (
+                (target_in_source_x <= bound_x[1]) & (target_in_source_x >= bound_x[0])
+            )
         outside_source_domain = outside_source_domain | ~tmp_inside
 
         if np.any(outside_source_domain):

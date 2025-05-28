@@ -10,6 +10,7 @@ The image is reprojected on-the-fly onto a geostationary projection with
 matching eccentricity.
 
 """
+
 from io import BytesIO
 from urllib.request import urlopen
 
@@ -43,16 +44,15 @@ def vesta_image():
     # The image is extremely high-resolution, which takes a long time to
     # plot. Sub-sampling reduces the time taken to plot while not
     # significantly altering the integrity of the result.
-    smaller_image = raw_image.resize([raw_image.size[0] // 10,
-                                      raw_image.size[1] // 10])
+    smaller_image = raw_image.resize([raw_image.size[0] // 10, raw_image.size[1] // 10])
     img = np.asarray(smaller_image)
     # We define the semimajor and semiminor axes, but must also tell the
     # globe not to use the WGS84 ellipse, which is its default behaviour.
-    img_globe = ccrs.Globe(semimajor_axis=285000., semiminor_axis=229000.,
-                           ellipse=None)
+    img_globe = ccrs.Globe(
+        semimajor_axis=285000.0, semiminor_axis=229000.0, ellipse=None
+    )
     img_proj = ccrs.PlateCarree(globe=img_globe)
-    img_extent = (-180, 180,
-                  -90, 90)
+    img_extent = (-180, 180, -90, 90)
     return img, img_globe, img_proj, img_extent
 
 
@@ -63,8 +63,12 @@ def main():
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=projection)
     ax.imshow(img, transform=crs, extent=extent)
-    fig.text(.075, .012, "Image credit: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA/PSI",
-             bbox={'facecolor': 'w', 'edgecolor': 'k'})
+    fig.text(
+        0.075,
+        0.012,
+        'Image credit: NASA/JPL-Caltech/UCLA/MPS/DLR/IDA/PSI',
+        bbox={'facecolor': 'w', 'edgecolor': 'k'},
+    )
     plt.show()
 
 
