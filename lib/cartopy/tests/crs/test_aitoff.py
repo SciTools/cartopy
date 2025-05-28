@@ -36,8 +36,7 @@ def test_sphere_globe():
 
 def test_ellipse_globe():
     globe = ccrs.Globe(ellipse='WGS84')
-    with pytest.warns(UserWarning,
-                      match='does not handle elliptical globes.') as w:
+    with pytest.warns(UserWarning, match='does not handle elliptical globes.') as w:
         aitoff = ccrs.Aitoff(globe=globe)
         assert len(w) == 1
 
@@ -50,10 +49,8 @@ def test_ellipse_globe():
 
 
 def test_eccentric_globe():
-    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
-                       ellipse=None)
-    with pytest.warns(UserWarning,
-                      match='does not handle elliptical globes.') as w:
+    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500, ellipse=None)
+    with pytest.warns(UserWarning, match='does not handle elliptical globes.') as w:
         aitoff = ccrs.Aitoff(globe=globe)
         assert len(w) == 1
 
@@ -80,6 +77,7 @@ def test_central_longitude(lon):
     other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
     check_proj_params('aitoff', aitoff, other_args)
 
-    assert_almost_equal(aitoff.x_limits, [-20037508.3427892, 20037508.3427892],
-                        decimal=5)
+    assert_almost_equal(
+        aitoff.x_limits, [-20037508.3427892, 20037508.3427892], decimal=5
+    )
     assert_almost_equal(aitoff.y_limits, [-10018754.1713946, 10018754.1713946])

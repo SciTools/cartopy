@@ -27,7 +27,7 @@ def main():
     # Define the origin and extent of the image following matplotlib's
     # convention `(left, right, bottom, top)`. These are referenced to
     # a rectangular coordinate system.
-    img_origin = "lower"
+    img_origin = 'lower'
     img_extent = (-87.6, -86.4, 41.4, 42.0)
     img_proj = ccrs.PlateCarree()
 
@@ -35,7 +35,7 @@ def main():
         extent=img_extent,
         origin=img_origin,
         transform=img_proj,
-        cmap="spring",
+        cmap='spring',
     )
 
     # Define extent and projection for the map
@@ -46,22 +46,22 @@ def main():
         nrows=1,
         ncols=2,
         figsize=(12, 5),
-        subplot_kw={"projection": map_proj},
+        subplot_kw={'projection': map_proj},
         sharex=True,
         sharey=True,
-        layout="constrained",
+        layout='constrained',
     )
 
     # Adding the raster *before* setting the map extent
     ax = axs[0]
-    ax.set_title("\u2717 Adding the raster\nBEFORE setting the map extent")
+    ax.set_title('\u2717 Adding the raster\nBEFORE setting the map extent')
 
     ax.imshow(img, **imshow_kwargs)
     ax.set_extent(map_extent, crs=img_proj)
 
     # Adding the raster *after* setting the map extent
     ax = axs[1]
-    ax.set_title("\u2713 Adding the raster\nAFTER setting the map extent")
+    ax.set_title('\u2713 Adding the raster\nAFTER setting the map extent')
 
     ax.set_extent(map_extent, crs=img_proj)
     ax.imshow(img, **imshow_kwargs)
@@ -81,10 +81,10 @@ def main():
                 width,
                 height,
                 transform=img_proj,
-                edgecolor="black",
-                facecolor="None",
+                edgecolor='black',
+                facecolor='None',
                 linewidth=3,
-                label="Raster data bounds",
+                label='Raster data bounds',
             )
         )
 
@@ -94,5 +94,5 @@ def main():
     plt.show()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

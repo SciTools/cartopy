@@ -13,6 +13,7 @@ In this instance however, it would be possible to make use of the
 pre-defined :data:`cartopy.feature.STATES` constant.
 
 """
+
 from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
 
@@ -33,7 +34,8 @@ def main():
         category='cultural',
         name='admin_1_states_provinces_lines',
         scale='50m',
-        facecolor='none')
+        facecolor='none',
+    )
 
     SOURCE = 'Natural Earth'
     LICENSE = 'public domain'
@@ -46,9 +48,12 @@ def main():
 
     # Add a text annotation for the license information to the
     # the bottom right corner.
-    text = AnchoredText('\u00A9 {}; license: {}'
-                        ''.format(SOURCE, LICENSE),
-                        loc=4, prop={'size': 12}, frameon=True)
+    text = AnchoredText(
+        '\u00a9 {}; license: {}'.format(SOURCE, LICENSE),
+        loc=4,
+        prop={'size': 12},
+        frameon=True,
+    )
     ax.add_artist(text)
 
     plt.show()

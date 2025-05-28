@@ -21,7 +21,7 @@ class TestQuiverShapes:
         self.y = np.linspace(30, 72.5, 7)
         self.x2d, self.y2d = np.meshgrid(self.x, self.y)
         self.u = np.cos(np.deg2rad(self.y2d))
-        self.v = np.cos(2. * np.deg2rad(self.x2d))
+        self.v = np.cos(2.0 * np.deg2rad(self.x2d))
         self.rp = ccrs.RotatedPole(pole_longitude=177.5, pole_latitude=37.5)
         self.pc = ccrs.PlateCarree()
         self.fig = plt.figure()
@@ -29,14 +29,19 @@ class TestQuiverShapes:
 
     def test_quiver_transform_xyuv_1d(self):
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
-            self.ax.quiver(self.x2d.ravel(), self.y2d.ravel(),
-                           self.u.ravel(), self.v.ravel(), transform=self.rp)
+            self.ax.quiver(
+                self.x2d.ravel(),
+                self.y2d.ravel(),
+                self.u.ravel(),
+                self.v.ravel(),
+                transform=self.rp,
+            )
         args, kwargs = patch.call_args
         assert len(args) == 4
         assert sorted(kwargs.keys()) == ['transform']
         shapes = [arg.shape for arg in args]
         # Assert that all the shapes have been broadcast.
-        assert shapes == [(70, )] * 4
+        assert shapes == [(70,)] * 4
 
     def test_quiver_transform_xy_1d_uv_2d(self):
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
@@ -50,10 +55,12 @@ class TestQuiverShapes:
 
     def test_quiver_transform_xy_2d_uv_1d(self):
         with pytest.raises(ValueError):
-            self.ax.quiver(self.x2d, self.y2d,
-                           self.u.ravel(), self.v.ravel(), transform=self.rp)
+            self.ax.quiver(
+                self.x2d, self.y2d, self.u.ravel(), self.v.ravel(), transform=self.rp
+            )
 
     def test_quiver_transform_inconsistent_shape(self):
         with pytest.raises(ValueError):
-            self.ax.quiver(self.x, self.y,
-                           self.u.ravel(), self.v.ravel(), transform=self.rp)
+            self.ax.quiver(
+                self.x, self.y, self.u.ravel(), self.v.ravel(), transform=self.rp
+            )

@@ -5,6 +5,7 @@ Nightshade feature
 Draws a polygon where there is no sunlight for the given datetime.
 
 """
+
 import datetime
 
 import matplotlib.pyplot as plt

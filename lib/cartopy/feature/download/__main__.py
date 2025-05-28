@@ -24,8 +24,10 @@ from cartopy.io import Downloader, DownloadWarning
 ALL_SCALES = ('110m', '50m', '10m')
 
 # See https://github.com/SciTools/cartopy/pull/1833
-URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/{resolution}_'
-                '{category}/ne_{resolution}_{name}.zip')
+URL_TEMPLATE = (
+    'https://naturalearth.s3.amazonaws.com/{resolution}_'
+    '{category}/ne_{resolution}_{name}.zip'
+)
 SHP_NE_SPEC = ('shapefiles', 'natural_earth')
 
 FEATURE_DEFN_GROUPS = {
@@ -42,16 +44,14 @@ FEATURE_DEFN_GROUPS = {
         ('physical', 'geography_regions_points', ALL_SCALES),
         ('physical', 'geography_marine_polys', ALL_SCALES),
         ('physical', 'glaciated_areas', ALL_SCALES),
-        ('physical', 'antarctic_ice_shelves_polys', ('50m', '10m'))
+        ('physical', 'antarctic_ice_shelves_polys', ('50m', '10m')),
     ),
     'cultural': (
         ('cultural', 'admin_0_countries', ALL_SCALES),
         ('cultural', 'admin_0_countries_lakes', ALL_SCALES),
         ('cultural', 'admin_0_sovereignty', ALL_SCALES),
         ('cultural', 'admin_0_boundary_lines_land', ALL_SCALES),
-
         ('cultural', 'urban_areas', ('50m', '10m')),
-
         ('cultural', 'roads', '10m'),
         ('cultural', 'roads_north_america', '10m'),
         ('cultural', 'railroads', '10m'),
@@ -75,10 +75,10 @@ def download_features(group_names, dry_run=True):
         if isinstance(feature_defns, Feature):
             feature = feature_defns
             level = list(feature._levels)[0]
-            downloader = Downloader.from_config(('shapefiles', 'gshhs',
-                                                 feature._scale, level))
-            format_dict = {'config': config, 'scale': feature._scale,
-                           'level': level}
+            downloader = Downloader.from_config(
+                ('shapefiles', 'gshhs', feature._scale, level)
+            )
+            format_dict = {'config': config, 'scale': feature._scale, 'level': level}
             if dry_run:
                 print(f'URL: {downloader.url(format_dict)}')
             else:
@@ -90,39 +90,55 @@ def download_features(group_names, dry_run=True):
                 if not isinstance(scales, tuple):
                     scales = (scales,)
                 for scale in scales:
-                    downloader = Downloader.from_config(('shapefiles',
-                                                         'natural_earth',
-                                                         scale, category,
-                                                         name))
+                    downloader = Downloader.from_config(
+                        ('shapefiles', 'natural_earth', scale, category, name)
+                    )
                     feature = NaturalEarthFeature(category, name, scale)
-                    format_dict = {'config': config, 'category': category,
-                                   'name': name, 'resolution': scale}
+                    format_dict = {
+                        'config': config,
+                        'category': category,
+                        'name': name,
+                        'resolution': scale,
+                    }
                     if dry_run:
                         print(f'URL: {downloader.url(format_dict)}')
                     else:
                         downloader.path(format_dict)
                         geoms = list(feature.geometries())
-                        print('Feature {}, {}, {} length: {}'
-                              ''.format(category, name, scale, len(geoms)))
+                        print(
+                            'Feature {}, {}, {} length: {}'.format(
+                                category, name, scale, len(geoms)
+                            )
+                        )
 
 
 def main():
     parser = argparse.ArgumentParser(description='Download feature datasets.')
-    parser.add_argument('group_names', nargs='+',
-                        choices=FEATURE_DEFN_GROUPS,
-                        metavar='GROUP_NAME',
-                        help='Feature group name: %(choices)s')
-    parser.add_argument('--output', '-o',
-                        help='save datasets in the specified directory '
-                             '(default: user cache directory)')
-    parser.add_argument('--dry-run',
-                        help='just print the URLs to download',
-                        action='store_true')
-    parser.add_argument('--ignore-repo-data', action='store_true',
-                        help='ignore existing repo data when downloading')
-    parser.add_argument('--no-warn',
-                        action='store_true',
-                        help='ignore cartopy "DownloadWarning" warnings')
+    parser.add_argument(
+        'group_names',
+        nargs='+',
+        choices=FEATURE_DEFN_GROUPS,
+        metavar='GROUP_NAME',
+        help='Feature group name: %(choices)s',
+    )
+    parser.add_argument(
+        '--output',
+        '-o',
+        help='save datasets in the specified directory (default: user cache directory)',
+    )
+    parser.add_argument(
+        '--dry-run', help='just print the URLs to download', action='store_true'
+    )
+    parser.add_argument(
+        '--ignore-repo-data',
+        action='store_true',
+        help='ignore existing repo data when downloading',
+    )
+    parser.add_argument(
+        '--no-warn',
+        action='store_true',
+        help='ignore cartopy "DownloadWarning" warnings',
+    )
     args = parser.parse_args()
 
     if args.output:
@@ -134,6 +150,7 @@ def main():
         config['repo_data_dir'] = config['data_dir']
     if args.no_warn:
         import warnings
+
         warnings.filterwarnings('ignore', category=DownloadWarning)
 
     # Enforce use of stable AWS endpoint, regardless of cartopy version.

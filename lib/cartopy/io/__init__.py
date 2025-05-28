@@ -63,6 +63,7 @@ def fh_getter(fh, mode='r', needs_filename=False):
 
 class DownloadWarning(Warning):
     """Issued when a file is being downloaded by a :class:`Downloader`."""
+
     pass
 
 
@@ -113,8 +114,9 @@ class Downloader:
 
     """
 
-    def __init__(self, url_template, target_path_template,
-                 pre_downloaded_path_template=''):
+    def __init__(
+        self, url_template, target_path_template, pre_downloaded_path_template=''
+    ):
         self.url_template = url_template
         self.target_path_template = target_path_template
         self.pre_downloaded_path_template = pre_downloaded_path_template
@@ -152,8 +154,7 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return Path(self._formatter.format(self.target_path_template,
-                                           **format_dict))
+        return Path(self._formatter.format(self.target_path_template, **format_dict))
 
     def pre_downloaded_path(self, format_dict):
         """
@@ -169,8 +170,7 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        p = self._formatter.format(self.pre_downloaded_path_template,
-                                   **format_dict)
+        p = self._formatter.format(self.pre_downloaded_path_template, **format_dict)
         return None if p == '' else Path(p)
 
     def path(self, format_dict):
@@ -294,8 +294,10 @@ class Downloader:
             # should never really happen, but could if the user does
             # some strange things like not having any downloaders defined
             # in the config...
-            raise ValueError('No generic downloadable item in the config '
-                             f'dictionary for {specification}')
+            raise ValueError(
+                'No generic downloadable item in the config '
+                f'dictionary for {specification}'
+            )
 
         return result_downloader
 
@@ -384,8 +386,7 @@ class RasterSourceContainer(RasterSource):
         self._source = contained_source
 
     def fetch_raster(self, projection, extent, target_resolution):
-        return self._source.fetch_raster(projection, extent,
-                                         target_resolution)
+        return self._source.fetch_raster(projection, extent, target_resolution)
 
     def validate_projection(self, projection):
         return self._source.validate_projection(projection)

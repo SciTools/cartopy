@@ -5,6 +5,7 @@ Contour labels
 An example of adding contour labels to matplotlib contours.
 
 """
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
@@ -45,9 +46,9 @@ def main():
     filled_c = ax.contourf(x, y, z, transform=ccrs.PlateCarree())
 
     # And black line contours (or set colors='none' for invisible lines).
-    line_c = ax.contour(x, y, z, levels=filled_c.levels,
-                        colors='black',
-                        transform=ccrs.PlateCarree())
+    line_c = ax.contour(
+        x, y, z, levels=filled_c.levels, colors='black', transform=ccrs.PlateCarree()
+    )
 
     # Add a colorbar for the filled contour.
     fig.colorbar(filled_c, orientation='horizontal')

@@ -138,10 +138,12 @@ class FeatureArtist(matplotlib.collections.Collection):
             self._never_fc = True
             super().set_facecolor('none')
 
-        elif (getattr(self, '_never_fc', False) and
-                (not isinstance(c, str) or c != 'none')):
-            warnings.warn('facecolor will have no effect as it has been '
-                          'defined as "never".')
+        elif getattr(self, '_never_fc', False) and (
+            not isinstance(c, str) or c != 'none'
+        ):
+            warnings.warn(
+                'facecolor will have no effect as it has been defined as "never".'
+            )
         else:
             super().set_facecolor(c)
 
@@ -204,15 +206,12 @@ class FeatureArtist(matplotlib.collections.Collection):
             # cache of transformed geometries. So when the geom-key is
             # garbage collected so are the transformed geometries.
             geom_key = _GeomKey(geom)
-            FeatureArtist._geom_key_to_geometry_cache.setdefault(
-                geom_key, geom)
-            mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
-                geom_key, {})
+            FeatureArtist._geom_key_to_geometry_cache.setdefault(geom_key, geom)
+            mapping = FeatureArtist._geom_key_to_path_cache.setdefault(geom_key, {})
             geom_path = mapping.get(key)
             if geom_path is None:
                 if ax.projection != feature_crs:
-                    projected_geom = ax.projection.project_geometry(
-                        geom, feature_crs)
+                    projected_geom = ax.projection.project_geometry(geom, feature_crs)
                 else:
                     projected_geom = geom
 
@@ -233,7 +232,7 @@ class FeatureArtist(matplotlib.collections.Collection):
             style = dict(style)
 
             # Temporarily replace properties.
-            orig_style = {k: getattr(self, f"get_{k}")() for k in style}
+            orig_style = {k: getattr(self, f'get_{k}')() for k in style}
             self.set(paths=paths, **style)
 
             super().draw(renderer)

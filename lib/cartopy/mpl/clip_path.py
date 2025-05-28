@@ -8,9 +8,12 @@ import matplotlib.path as mpath
 import numpy as np
 
 
-warnings.warn('The clip_path module is deprecated and will be removed '
-              'in a future release with no replacement.',
-              DeprecationWarning, stacklevel=2)
+warnings.warn(
+    'The clip_path module is deprecated and will be removed '
+    'in a future release with no replacement.',
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 def intersection_point(p0, p1, p2, p3):
@@ -30,13 +33,14 @@ def intersection_point(p0, p1, p2, p3):
     div = (x_1 - x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 - x_4)
 
     if div == 0:
-        raise ValueError('Lines are parallel and cannot '
-                         'intersect at any one point.')
+        raise ValueError('Lines are parallel and cannot intersect at any one point.')
 
-    x = ((x_1 * y_2 - y_1 * x_2) * (x_3 - x_4) - (x_1 - x_2) * (x_3 *
-         y_4 - y_3 * x_4)) / div
-    y = ((x_1 * y_2 - y_1 * x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 *
-         y_4 - y_3 * x_4)) / div
+    x = (
+        (x_1 * y_2 - y_1 * x_2) * (x_3 - x_4) - (x_1 - x_2) * (x_3 * y_4 - y_3 * x_4)
+    ) / div
+    y = (
+        (x_1 * y_2 - y_1 * x_2) * (y_3 - y_4) - (y_1 - y_2) * (x_3 * y_4 - y_3 * x_4)
+    ) / div
 
     return x, y
 
@@ -66,7 +70,13 @@ def bbox_to_path(bbox):
     a :class:`matplotlib.path.Path` instance.
 
     """
-    verts = np.array([[bbox.x0, bbox.y0], [bbox.x1, bbox.y0],
-                      [bbox.x1, bbox.y1], [bbox.x0, bbox.y1],
-                      [bbox.x0, bbox.y0]])
+    verts = np.array(
+        [
+            [bbox.x0, bbox.y0],
+            [bbox.x1, bbox.y0],
+            [bbox.x1, bbox.y1],
+            [bbox.x0, bbox.y1],
+            [bbox.x0, bbox.y0],
+        ]
+    )
     return mpath.Path(verts)

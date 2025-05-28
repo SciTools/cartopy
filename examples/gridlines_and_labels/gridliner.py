@@ -17,6 +17,7 @@ boundary.
 
 In the third example, labels are drawn only on the left and bottom sides.
 """
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
@@ -24,7 +25,6 @@ import cartopy.feature as cfeature
 
 
 def main():
-
     rotated_crs = ccrs.RotatedPole(pole_longitude=120.0, pole_latitude=70.0)
     ax0 = plt.axes(projection=rotated_crs)
     ax0.set_extent([-6, 1, 47.5, 51.5], crs=ccrs.PlateCarree())

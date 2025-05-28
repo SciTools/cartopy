@@ -11,8 +11,11 @@ Handles matplotlib styling in a single consistent place.
 import warnings
 
 
-warnings.warn('The style module is deprecated and will be removed in a future release.',
-              DeprecationWarning, stacklevel=2)
+warnings.warn(
+    'The style module is deprecated and will be removed in a future release.',
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 
 # Define the matplotlib style aliases that cartopy can expand.
@@ -72,12 +75,12 @@ def merge(*style_dicts):
         if isinstance(facecolor, str) and facecolor == 'never':
             requested_color = this_style.pop('facecolor', None)
             setting_color = not (
-                isinstance(requested_color, str) and
-                requested_color.lower() == 'none')
-            if (('fc' in orig_style or 'facecolor' in orig_style) and
-                    setting_color):
-                warnings.warn('facecolor will have no effect as it has been '
-                              'defined as "never".')
+                isinstance(requested_color, str) and requested_color.lower() == 'none'
+            )
+            if ('fc' in orig_style or 'facecolor' in orig_style) and setting_color:
+                warnings.warn(
+                    'facecolor will have no effect as it has been defined as "never".'
+                )
         else:
             facecolor = this_style.get('facecolor', facecolor)
 

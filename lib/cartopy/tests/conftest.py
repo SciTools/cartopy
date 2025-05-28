@@ -18,19 +18,16 @@ try:
 except ImportError:
     _HAS_SCIPY = False
 
-requires_scipy = pytest.mark.skipif(
-    not _HAS_SCIPY,
-    reason="scipy is required")
-requires_pykdtree = pytest.mark.skipif(
-    not _HAS_PYKDTREE,
-    reason="pykdtree is required")
+requires_scipy = pytest.mark.skipif(not _HAS_SCIPY, reason='scipy is required')
+requires_pykdtree = pytest.mark.skipif(not _HAS_PYKDTREE, reason='pykdtree is required')
 _HAS_PYKDTREE_OR_SCIPY = _HAS_PYKDTREE or _HAS_SCIPY
 
 
 def pytest_configure(config):
     # Register additional markers.
-    config.addinivalue_line('markers',
-                            'natural_earth: mark tests that use Natural Earth '
-                            'data, and the network, if not cached.')
-    config.addinivalue_line('markers',
-                            'network: mark tests that use the network.')
+    config.addinivalue_line(
+        'markers',
+        'natural_earth: mark tests that use Natural Earth '
+        'data, and the network, if not cached.',
+    )
+    config.addinivalue_line('markers', 'network: mark tests that use the network.')

@@ -6,6 +6,7 @@ This example demonstrates how imagery from a tile
 providing web service can be accessed.
 
 """
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
@@ -13,7 +14,7 @@ from cartopy.io.img_tiles import GoogleTiles
 
 
 def main():
-    tiler = GoogleTiles(style="satellite")
+    tiler = GoogleTiles(style='satellite')
     mercator = tiler.crs
 
     fig = plt.figure()

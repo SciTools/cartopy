@@ -6,6 +6,7 @@ An example of a simple map that compares Geodetic and Plate Carree lines
 between two locations.
 
 """
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

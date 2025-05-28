@@ -11,6 +11,7 @@ the data's native Geostationary coordinate system - it is then projected by
 cartopy into a global Miller map.
 
 """
+
 from io import BytesIO
 from urllib.request import urlopen
 
@@ -36,8 +37,7 @@ def geos_image():
         The origin of the image to be passed through to matplotlib's imshow.
 
     """
-    url = ('https://gist.github.com/pelson/5871263/raw/'
-           'EIDA50_201211061300_clip2.png')
+    url = 'https://gist.github.com/pelson/5871263/raw/EIDA50_201211061300_clip2.png'
     img_handle = BytesIO(urlopen(url).read())
     img = plt.imread(img_handle)
     img_proj = ccrs.Geostationary(satellite_height=35786000)

@@ -53,10 +53,12 @@ _OWSLIB_REQUIRED = 'OWSLib is required to use OGC web services.'
 # Hardcode some known EPSG codes for now.
 # The order given here determines the preferred SRS for WMS retrievals.
 _CRS_TO_OGC_SRS = collections.OrderedDict(
-    [(ccrs.PlateCarree(), ['EPSG:4326']),
-     (ccrs.Mercator.GOOGLE, ['EPSG:3857', 'EPSG:900913']),
-     (ccrs.OSGB(approx=True), ['EPSG:27700'])
-     ])
+    [
+        (ccrs.PlateCarree(), ['EPSG:4326']),
+        (ccrs.Mercator.GOOGLE, ['EPSG:3857', 'EPSG:900913']),
+        (ccrs.OSGB(approx=True), ['EPSG:27700']),
+    ]
+)
 
 # Standard pixel size of 0.28 mm as defined by WMTS.
 METERS_PER_PIXEL = 0.28e-3
@@ -70,32 +72,43 @@ METERS_PER_UNIT = {
     'urn:ogc:def:crs:EPSG::3031': 1,
     'urn:ogc:def:crs:EPSG::3413': 1,
     'urn:ogc:def:crs:EPSG::3857': 1,
-    'urn:ogc:def:crs:EPSG:6.18.3:3857': 1
+    'urn:ogc:def:crs:EPSG:6.18.3:3857': 1,
 }
 
 _URN_TO_CRS = collections.OrderedDict(
-    [('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
-     ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
-     ('urn:ogc:def:crs:EPSG::900913', ccrs.Mercator.GOOGLE),
-     ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB(approx=True)),
-     ('urn:ogc:def:crs:EPSG::3031', ccrs.Stereographic(
-         central_latitude=-90,
-         true_scale_latitude=-71)),
-     ('urn:ogc:def:crs:EPSG::3413', ccrs.Stereographic(
-         central_longitude=-45,
-         central_latitude=90,
-         true_scale_latitude=70)),
-     ('urn:ogc:def:crs:EPSG::3857', ccrs.Mercator.GOOGLE),
-     ('urn:ogc:def:crs:EPSG:6.18.3:3857', ccrs.Mercator.GOOGLE)
-     ])
+    [
+        ('urn:ogc:def:crs:OGC:1.3:CRS84', ccrs.PlateCarree()),
+        ('urn:ogc:def:crs:EPSG::4326', ccrs.PlateCarree()),
+        ('urn:ogc:def:crs:EPSG::900913', ccrs.Mercator.GOOGLE),
+        ('urn:ogc:def:crs:EPSG::27700', ccrs.OSGB(approx=True)),
+        (
+            'urn:ogc:def:crs:EPSG::3031',
+            ccrs.Stereographic(central_latitude=-90, true_scale_latitude=-71),
+        ),
+        (
+            'urn:ogc:def:crs:EPSG::3413',
+            ccrs.Stereographic(
+                central_longitude=-45, central_latitude=90, true_scale_latitude=70
+            ),
+        ),
+        ('urn:ogc:def:crs:EPSG::3857', ccrs.Mercator.GOOGLE),
+        ('urn:ogc:def:crs:EPSG:6.18.3:3857', ccrs.Mercator.GOOGLE),
+    ]
+)
 
 # XML namespace definitions
 _MAP_SERVER_NS = '{http://mapserver.gis.umn.edu/mapserver}'
 _GML_NS = '{http://www.opengis.net/gml}'
 
 
-def _warped_located_image(image, source_projection, source_extent,
-                          output_projection, output_extent, target_resolution):
+def _warped_located_image(
+    image,
+    source_projection,
+    source_extent,
+    output_projection,
+    output_extent,
+    target_resolution,
+):
     """
     Reproject an Image from one source-projection and extent to another.
 
@@ -113,22 +126,22 @@ def _warped_located_image(image, source_projection, source_extent,
         # is 'lower').
         # Convert to RGBA to keep the color palette in the regrid process
         # if any
-        img, extent = warp_array(np.asanyarray(image.convert('RGBA'))[::-1],
-                                 source_proj=source_projection,
-                                 source_extent=source_extent,
-                                 target_proj=output_projection,
-                                 target_res=np.asarray(target_resolution,
-                                                       dtype=int),
-                                 target_extent=output_extent,
-                                 mask_extrapolated=True)
+        img, extent = warp_array(
+            np.asanyarray(image.convert('RGBA'))[::-1],
+            source_proj=source_projection,
+            source_extent=source_extent,
+            target_proj=output_projection,
+            target_res=np.asarray(target_resolution, dtype=int),
+            target_extent=output_extent,
+            mask_extrapolated=True,
+        )
 
         # Convert arrays with masked RGB(A) values to non-masked RGBA
         # arrays, setting the alpha channel to zero for masked values.
         # This avoids unsightly grey boundaries appearing when the
         # extent is limited (i.e. not global).
         if np.ma.is_masked(img):
-            img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0,
-                                    img[:, :, 3])
+            img[:, :, 3] = np.where(np.any(img.mask, axis=2), 0, img[:, :, 3])
             img = img.data
 
         # Convert warped image array back to an Image, undoing the
@@ -154,16 +167,15 @@ def _target_extents(extent, requested_projection, available_projection):
     # If the requested area (i.e. target_box) is bigger (or nearly bigger) than
     # the entire output requested_projection domain, then we erode the request
     # area to avoid re-projection instabilities near the projection boundary.
-    buffered_target_box = target_box.buffer(requested_projection.threshold,
-                                            resolution=1)
+    buffered_target_box = target_box.buffer(
+        requested_projection.threshold, resolution=1
+    )
     fudge_mode = buffered_target_box.contains(requested_projection.domain)
     if fudge_mode:
-        target_box = requested_projection.domain.buffer(
-            -requested_projection.threshold)
+        target_box = requested_projection.domain.buffer(-requested_projection.threshold)
 
     # Translate the requested area into the server projection.
-    polys = available_projection.project_geometry(target_box,
-                                                  requested_projection)
+    polys = available_projection.project_geometry(target_box, requested_projection)
 
     # Return the polygons' rectangular bounds as extent tuples.
     target_extents = []
@@ -237,8 +249,7 @@ class WMSRasterSource(RasterSource):
             raise ValueError('One or more layers must be defined.')
         for layer in layers:
             if layer not in service.contents:
-                raise ValueError(f'The {layer!r} layer does not exist in '
-                                 'this service.')
+                raise ValueError(f'The {layer!r} layer does not exist in this service.')
 
         #: The OWSLib WebMapService instance.
         self.service = service
@@ -265,8 +276,7 @@ class WMSRasterSource(RasterSource):
 
             for native_srs in native_srs_list:
                 native_OK = all(
-                    native_srs.lower() in map(
-                        str.lower, contents[layer].crsOptions)
+                    native_srs.lower() in map(str.lower, contents[layer].crsOptions)
                     for layer in self.layers
                 )
                 if native_OK:
@@ -286,31 +296,45 @@ class WMSRasterSource(RasterSource):
             for srs in srs_list:
                 srs_OK = all(
                     srs.lower() in map(str.lower, contents[layer].crsOptions)
-                    for layer in self.layers)
+                    for layer in self.layers
+                )
                 if srs_OK:
                     return proj, srs
 
-        raise ValueError('The requested layers are not available in a '
-                         'known SRS.')
+        raise ValueError('The requested layers are not available in a known SRS.')
 
     def validate_projection(self, projection):
         if self._native_srs(projection) is None:
             self._fallback_proj_and_srs()
 
-    def _image_and_extent(self, wms_proj, wms_srs, wms_extent, output_proj,
-                          output_extent, target_resolution):
+    def _image_and_extent(
+        self,
+        wms_proj,
+        wms_srs,
+        wms_extent,
+        output_proj,
+        output_extent,
+        target_resolution,
+    ):
         min_x, max_x, min_y, max_y = wms_extent
-        wms_image = self.service.getmap(layers=self.layers,
-                                        srs=wms_srs,
-                                        bbox=(min_x, min_y, max_x, max_y),
-                                        size=target_resolution,
-                                        format='image/png',
-                                        **self.getmap_extra_kwargs)
+        wms_image = self.service.getmap(
+            layers=self.layers,
+            srs=wms_srs,
+            bbox=(min_x, min_y, max_x, max_y),
+            size=target_resolution,
+            format='image/png',
+            **self.getmap_extra_kwargs,
+        )
         wms_image = Image.open(io.BytesIO(wms_image.read()))
 
-        return _warped_located_image(wms_image, wms_proj, wms_extent,
-                                     output_proj, output_extent,
-                                     target_resolution)
+        return _warped_located_image(
+            wms_image,
+            wms_proj,
+            wms_extent,
+            output_proj,
+            output_extent,
+            target_resolution,
+        )
 
     def fetch_raster(self, projection, extent, target_resolution):
         target_resolution = [math.ceil(val) for val in target_resolution]
@@ -329,10 +353,11 @@ class WMSRasterSource(RasterSource):
 
         located_images = []
         for wms_extent in wms_extents:
-            located_images.append(self._image_and_extent(wms_proj, wms_srs,
-                                                         wms_extent,
-                                                         projection, extent,
-                                                         target_resolution))
+            located_images.append(
+                self._image_and_extent(
+                    wms_proj, wms_srs, wms_extent, projection, extent, target_resolution
+                )
+            )
         return located_images
 
 
@@ -379,16 +404,19 @@ class WMTSRasterSource(RasterSource):
         if WebMapService is None:
             raise ImportError(_OWSLIB_REQUIRED)
 
-        if not (hasattr(wmts, 'tilematrixsets') and
-                hasattr(wmts, 'contents') and
-                hasattr(wmts, 'gettile')):
+        if not (
+            hasattr(wmts, 'tilematrixsets')
+            and hasattr(wmts, 'contents')
+            and hasattr(wmts, 'gettile')
+        ):
             wmts = owslib.wmts.WebMapTileService(wmts)
 
         try:
             layer = wmts.contents[layer_name]
         except KeyError:
             raise ValueError(
-                f'Invalid layer name {layer_name!r} for WMTS at {wmts.url!r}')
+                f'Invalid layer name {layer_name!r} for WMTS at {wmts.url!r}'
+            )
 
         #: The OWSLib WebMapTileService instance.
         self.wmts = wmts
@@ -407,7 +435,7 @@ class WMTSRasterSource(RasterSource):
         self._default_cache = False
         if cache is True:
             self._default_cache = True
-            self.cache_path = Path(cartopy.config["cache_dir"])
+            self.cache_path = Path(cartopy.config['cache_dir'])
         elif cache is False:
             self.cache_path = None
         else:
@@ -453,9 +481,12 @@ class WMTSRasterSource(RasterSource):
                         break
                 if matrix_set_name is None:
                     # Fail completely.
-                    available_urns = sorted({
-                        self.wmts.tilematrixsets[name].crs
-                        for name in matrix_set_names})
+                    available_urns = sorted(
+                        {
+                            self.wmts.tilematrixsets[name].crs
+                            for name in matrix_set_names
+                        }
+                    )
                     msg = 'Unable to find tile matrix for projection.'
                     msg += f'\n    Projection: {target_projection}'
                     msg += '\n    Available tile CRS URNs:'
@@ -476,8 +507,7 @@ class WMTSRasterSource(RasterSource):
             epsg_num = crs_urn.split(':')[-1]
             wmts_projection = ccrs.epsg(int(epsg_num))
         else:
-            raise ValueError(f'Unknown coordinate reference system string:'
-                             f' {crs_urn}')
+            raise ValueError(f'Unknown coordinate reference system string: {crs_urn}')
 
         if wmts_projection == projection:
             wmts_extents = [extent]
@@ -500,18 +530,19 @@ class WMTSRasterSource(RasterSource):
             # which is potentially excessive!
             min_x, max_x, min_y, max_y = wmts_desired_extent
             if wmts_projection == projection:
-                max_pixel_span = min((max_x - min_x) / width,
-                                     (max_y - min_y) / height)
+                max_pixel_span = min((max_x - min_x) / width, (max_y - min_y) / height)
             else:
                 # X/Y orientation is arbitrary, so use a worst-case guess.
-                max_pixel_span = (min(max_x - min_x, max_y - min_y) /
-                                  max(width, height))
+                max_pixel_span = min(max_x - min_x, max_y - min_y) / max(width, height)
 
             # Fetch a suitable image and its actual extent.
             wmts_image, wmts_actual_extent = self._wmts_images(
-                self.wmts, self.layer, matrix_set_name,
+                self.wmts,
+                self.layer,
+                matrix_set_name,
                 extent=wmts_desired_extent,
-                max_pixel_span=max_pixel_span)
+                max_pixel_span=max_pixel_span,
+            )
 
             # Return each (image, extent) as a LocatedImage.
             if wmts_projection == projection:
@@ -520,9 +551,12 @@ class WMTSRasterSource(RasterSource):
                 # Reproject the image to the desired projection.
                 located_image = _warped_located_image(
                     wmts_image,
-                    wmts_projection, wmts_actual_extent,
-                    output_projection=projection, output_extent=extent,
-                    target_resolution=target_resolution)
+                    wmts_projection,
+                    wmts_actual_extent,
+                    output_projection=projection,
+                    output_extent=extent,
+                    target_resolution=target_resolution,
+                )
 
             located_images.append(located_image)
 
@@ -542,14 +576,15 @@ class WMTSRasterSource(RasterSource):
                 if self._default_cache:
                     warnings.warn(
                         'Cartopy created the following directory to cache '
-                        f'WMTSRasterSource tiles: {cache_dir}')
+                        f'WMTSRasterSource tiles: {cache_dir}'
+                    )
             self.cache = self.cache.union(set(cache_dir.iterdir()))
 
     def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span):
         # Get the tile matrices in order of increasing resolution.
-        tile_matrices = sorted(tile_matrices,
-                               key=lambda tm: tm.scaledenominator,
-                               reverse=True)
+        tile_matrices = sorted(
+            tile_matrices, key=lambda tm: tm.scaledenominator, reverse=True
+        )
 
         # Find which tile matrix has the appropriate resolution.
         max_scale = max_pixel_span * meters_per_unit / METERS_PER_PIXEL
@@ -559,14 +594,14 @@ class WMTSRasterSource(RasterSource):
         return tile_matrices[-1]
 
     def _tile_span(self, tile_matrix, meters_per_unit):
-        pixel_span = (tile_matrix.scaledenominator *
-                      (METERS_PER_PIXEL / meters_per_unit))
+        pixel_span = tile_matrix.scaledenominator * (METERS_PER_PIXEL / meters_per_unit)
         tile_span_x = tile_matrix.tilewidth * pixel_span
         tile_span_y = tile_matrix.tileheight * pixel_span
         return tile_span_x, tile_span_y
 
-    def _select_tiles(self, tile_matrix, tile_matrix_limits,
-                      tile_span_x, tile_span_y, extent):
+    def _select_tiles(
+        self, tile_matrix, tile_matrix_limits, tile_span_x, tile_span_y, extent
+    ):
         # Convert the requested extent from CRS coordinates to tile
         # indices. See annex H of the WMTS v1.0.0 spec.
         # NB. The epsilons get rid of any tiles which only just
@@ -593,8 +628,7 @@ class WMTSRasterSource(RasterSource):
             max_row = min(max_row, tile_matrix_limits.maxtilerow)
         return min_col, max_col, min_row, max_row
 
-    def _wmts_images(self, wmts, layer, matrix_set_name, extent,
-                     max_pixel_span):
+    def _wmts_images(self, wmts, layer, matrix_set_name, extent, max_pixel_span):
         """
         Add images from the specified WMTS layer and matrix set to cover
         the specified extent at an appropriate resolution.
@@ -631,38 +665,39 @@ class WMTSRasterSource(RasterSource):
             # dictionary does not contain all information for all projections;
             # need only 'units' here
             with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
+                warnings.simplefilter('ignore')
                 crs_dict = tms_crs.to_dict()
                 crs_units = crs_dict.get('units', '')
                 if crs_units != 'm':
-                    raise ValueError('Only unit "m" implemented for'
-                                     ' EPSG projections.')
+                    raise ValueError('Only unit "m" implemented for EPSG projections.')
                 meters_per_unit = 1
         else:
-            raise ValueError(f'Unknown coordinate reference system string:'
-                             f' {tile_matrix_set.crs}')
-        tile_matrix = self._choose_matrix(tile_matrices, meters_per_unit,
-                                          max_pixel_span)
+            raise ValueError(
+                f'Unknown coordinate reference system string: {tile_matrix_set.crs}'
+            )
+        tile_matrix = self._choose_matrix(
+            tile_matrices, meters_per_unit, max_pixel_span
+        )
 
         # Determine which tiles are required to cover the requested extent.
-        tile_span_x, tile_span_y = self._tile_span(tile_matrix,
-                                                   meters_per_unit)
+        tile_span_x, tile_span_y = self._tile_span(tile_matrix, meters_per_unit)
         tile_matrix_set_links = getattr(layer, 'tilematrixsetlinks', None)
         if tile_matrix_set_links is None:
             tile_matrix_limits = None
         else:
             tile_matrix_set_link = tile_matrix_set_links[matrix_set_name]
             tile_matrix_limits = tile_matrix_set_link.tilematrixlimits.get(
-                tile_matrix.identifier)
+                tile_matrix.identifier
+            )
         min_col, max_col, min_row, max_row = self._select_tiles(
-            tile_matrix, tile_matrix_limits, tile_span_x, tile_span_y, extent)
+            tile_matrix, tile_matrix_limits, tile_span_x, tile_span_y, extent
+        )
 
         # Find the relevant section of the image cache.
         tile_matrix_id = tile_matrix.identifier
         cache_by_wmts = WMTSRasterSource._shared_image_cache
         cache_by_layer_matrix = cache_by_wmts.setdefault(wmts, {})
-        image_cache = cache_by_layer_matrix.setdefault((layer.id,
-                                                        tile_matrix_id), {})
+        image_cache = cache_by_layer_matrix.setdefault((layer.id, tile_matrix_id), {})
 
         # To avoid nasty seams between the individual tiles, we
         # accumulate the tile images into a single image.
@@ -681,7 +716,7 @@ class WMTSRasterSource(RasterSource):
                 if img is None:
                     # Try it from disk cache
                     if self.cache_path is not None:
-                        filename = f"{img_key[0]}_{img_key[1]}.npy"
+                        filename = f'{img_key[0]}_{img_key[1]}.npy'
                         cached_file = self._cache_dir / filename
                     else:
                         filename = None
@@ -695,11 +730,15 @@ class WMTSRasterSource(RasterSource):
                                 layer=layer.id,
                                 tilematrixset=matrix_set_name,
                                 tilematrix=str(tile_matrix_id),
-                                row=str(row), column=str(col),
-                                **self.gettile_extra_kwargs)
+                                row=str(row),
+                                column=str(col),
+                                **self.gettile_extra_kwargs,
+                            )
                         except owslib.util.ServiceException as exception:
-                            if ('TileOutOfRange' in exception.message and
-                                    ignore_out_of_range):
+                            if (
+                                'TileOutOfRange' in exception.message
+                                and ignore_out_of_range
+                            ):
                                 continue
                             raise exception
                         img = Image.open(io.BytesIO(tile.read()))
@@ -722,8 +761,12 @@ class WMTSRasterSource(RasterSource):
             matrix_min_x, matrix_max_y = tile_matrix.topleftcorner
             min_img_x = matrix_min_x + tile_span_x * min_col
             max_img_y = matrix_max_y - tile_span_y * min_row
-            img_extent = (min_img_x, min_img_x + n_cols * tile_span_x,
-                          max_img_y - n_rows * tile_span_y, max_img_y)
+            img_extent = (
+                min_img_x,
+                min_img_x + n_cols * tile_span_x,
+                max_img_y - n_rows * tile_span_y,
+                max_img_y,
+            )
         return big_img, img_extent
 
 
@@ -770,7 +813,8 @@ class WFSGeometrySource:
         for feature in features:
             if feature not in service.contents:
                 raise ValueError(
-                    f'The {feature!r} feature does not exist in this service.')
+                    f'The {feature!r} feature does not exist in this service.'
+                )
 
         self.service = service
         self.features = features
@@ -786,20 +830,25 @@ class WFSGeometrySource:
         """
         # Using first element in crsOptions (default).
         if self._default_urn is None:
-            default_urn = {self.service.contents[feature].crsOptions[0] for
-                           feature in self.features}
+            default_urn = {
+                self.service.contents[feature].crsOptions[0]
+                for feature in self.features
+            }
             if len(default_urn) != 1:
-                ValueError('Failed to find a single common default SRS '
-                           'across all features (typenames).')
+                ValueError(
+                    'Failed to find a single common default SRS '
+                    'across all features (typenames).'
+                )
             else:
                 default_urn = default_urn.pop()
 
             if (str(default_urn) not in _URN_TO_CRS) and (
-                    ":EPSG:" not in str(default_urn)
+                ':EPSG:' not in str(default_urn)
             ):
                 raise ValueError(
-                    f"Unknown mapping from SRS/CRS_URN {default_urn!r} to "
-                    "cartopy projection.")
+                    f'Unknown mapping from SRS/CRS_URN {default_urn!r} to '
+                    'cartopy projection.'
+                )
             self._default_urn = default_urn
 
         if str(self._default_urn) in _URN_TO_CRS:
@@ -808,8 +857,9 @@ class WFSGeometrySource:
             epsg_num = str(self._default_urn).split(':')[-1]
             return ccrs.epsg(int(epsg_num))
         else:
-            raise ValueError(f'Unknown coordinate reference system:'
-                             f' {str(self._default_urn)}')
+            raise ValueError(
+                f'Unknown coordinate reference system: {str(self._default_urn)}'
+            )
 
     def fetch_geometries(self, projection, extent):
         """
@@ -833,20 +883,26 @@ class WFSGeometrySource:
 
         """
         if self.default_projection() != projection:
-            raise ValueError('Geometries are only available in projection '
-                             f'{self.default_projection()!r}.')
+            raise ValueError(
+                'Geometries are only available in projection '
+                f'{self.default_projection()!r}.'
+            )
 
         min_x, max_x, min_y, max_y = extent
-        response = self.service.getfeature(typename=self.features,
-                                           bbox=(min_x, min_y, max_x, max_y),
-                                           **self.getfeature_extra_kwargs)
+        response = self.service.getfeature(
+            typename=self.features,
+            bbox=(min_x, min_y, max_x, max_y),
+            **self.getfeature_extra_kwargs,
+        )
         geoms_by_srs = self._to_shapely_geoms(response)
         if not geoms_by_srs:
             geoms = []
         elif len(geoms_by_srs) > 1:
-            raise ValueError('Unexpected response from the WFS server. The '
-                             'geometries are in multiple SRSs, when only one '
-                             'was expected.')
+            raise ValueError(
+                'Unexpected response from the WFS server. The '
+                'geometries are in multiple SRSs, when only one '
+                'was expected.'
+            )
         else:
             srs, geoms = list(geoms_by_srs.items())[0]
             # Attempt to verify the SRS associated with the geometries (if any)
@@ -857,7 +913,8 @@ class WFSGeometrySource:
                     if geom_proj != projection:
                         raise ValueError(
                             f'The geometries are not in expected projection. '
-                            f'Expected {projection!r}, got {geom_proj!r}.')
+                            f'Expected {projection!r}, got {geom_proj!r}.'
+                        )
                 elif ':EPSG:' in srs:
                     epsg_num = srs.split(':')[-1]
                     geom_proj = ccrs.epsg(int(epsg_num))
@@ -865,12 +922,14 @@ class WFSGeometrySource:
                         raise ValueError(
                             f'The EPSG geometries are not in expected '
                             f' projection. Expected {projection!r}, '
-                            f' got {geom_proj!r}.')
+                            f' got {geom_proj!r}.'
+                        )
                 else:
                     warnings.warn(
                         f'Unable to verify matching projections due to '
                         f'incomplete mappings from SRS identifiers to cartopy '
-                        f'projections. The geometries have an SRS of {srs!r}.')
+                        f'projections. The geometries have an SRS of {srs!r}.'
+                    )
         return geoms
 
     def _to_shapely_geoms(self, response):
@@ -899,11 +958,9 @@ class WFSGeometrySource:
         # and other servers
         for node in tree.iter():
             snode = str(node)
-            if ((_MAP_SERVER_NS in snode) or
-                (self.url and (self.url in snode)
-                 )):
+            if (_MAP_SERVER_NS in snode) or (self.url and (self.url in snode)):
                 s1 = snode.split()[1]
-                tag = s1[s1.find('}') + 1:-1]
+                tag = s1[s1.find('}') + 1 : -1]
                 if ('geom' in tag) or ('Geom' in tag):
                     # Find LinearRing geometries in our msGeometry node.
                     find_str = f'.//{_GML_NS}LinearRing'
@@ -925,14 +982,11 @@ class WFSGeometrySource:
 
         geoms_by_srs = {}
         for srs, x, y in linear_rings_data:
-            geoms_by_srs.setdefault(srs, []).append(
-                sgeom.LinearRing(zip(x, y)))
+            geoms_by_srs.setdefault(srs, []).append(sgeom.LinearRing(zip(x, y)))
         for srs, x, y in linestrings_data:
-            geoms_by_srs.setdefault(srs, []).append(
-                sgeom.LineString(zip(x, y)))
+            geoms_by_srs.setdefault(srs, []).append(sgeom.LineString(zip(x, y)))
         for srs, x, y in points_data:
-            geoms_by_srs.setdefault(srs, []).append(
-                sgeom.Point(zip(x, y)))
+            geoms_by_srs.setdefault(srs, []).append(sgeom.Point(zip(x, y)))
         return geoms_by_srs
 
     def _find_polygon_coords(self, node, find_str):
@@ -977,8 +1031,9 @@ class WFSGeometrySource:
                     x.append(float(coord.findtext(f'{_GML_NS}X')))
                     y.append(float(coord.findtext(f'{_GML_NS}Y')))
             else:
-                raise ValueError('Unable to find or parse coordinate values '
-                                 'from the XML.')
+                raise ValueError(
+                    'Unable to find or parse coordinate values from the XML.'
+                )
 
             data.append((feature_srs, x, y))
         return data

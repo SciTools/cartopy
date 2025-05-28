@@ -40,8 +40,7 @@ def test_sphere_globe():
 
 def test_ellipse_globe():
     globe = ccrs.Globe(ellipse='WGS84')
-    with pytest.warns(UserWarning,
-                      match='does not handle elliptical globes.') as w:
+    with pytest.warns(UserWarning, match='does not handle elliptical globes.') as w:
         robin = ccrs.Robinson(globe=globe)
         assert len(w) == 1
 
@@ -54,10 +53,8 @@ def test_ellipse_globe():
 
 
 def test_eccentric_globe():
-    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,
-                       ellipse=None)
-    with pytest.warns(UserWarning,
-                      match='does not handle elliptical globes.') as w:
+    globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500, ellipse=None)
+    with pytest.warns(UserWarning, match='does not handle elliptical globes.') as w:
         robin = ccrs.Robinson(globe=globe)
         assert len(w) == 1
 
@@ -84,8 +81,9 @@ def test_central_longitude(lon):
     other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('robin', robin, other_args)
 
-    assert_almost_equal(robin.x_limits, [-17005833.3305252, 17005833.3305252],
-                        decimal=5)
+    assert_almost_equal(
+        robin.x_limits, [-17005833.3305252, 17005833.3305252], decimal=5
+    )
     assert_almost_equal(robin.y_limits, [-8625154.6651000, 8625154.6651000])
 
 
@@ -117,29 +115,20 @@ def test_transform_points():
     """
 
     # these always worked
-    result = _CRS_ROB.transform_points(_CRS_PC,
-                                       np.array([35.0]),
-                                       np.array([70.0]))
-    assert_array_almost_equal(result,
-                              [[2376187.2182271, 7275318.1162980, 0]])
+    result = _CRS_ROB.transform_points(_CRS_PC, np.array([35.0]), np.array([70.0]))
+    assert_array_almost_equal(result, [[2376187.2182271, 7275318.1162980, 0]])
 
-    result = _CRS_ROB.transform_points(_CRS_PC,
-                                       np.array([35.0]),
-                                       np.array([70.0]),
-                                       np.array([0.0]))
-    assert_array_almost_equal(result,
-                              [[2376187.2182271, 7275318.1162980, 0]])
+    result = _CRS_ROB.transform_points(
+        _CRS_PC, np.array([35.0]), np.array([70.0]), np.array([0.0])
+    )
+    assert_array_almost_equal(result, [[2376187.2182271, 7275318.1162980, 0]])
 
     # this always did something, but result has altered
-    result = _CRS_ROB.transform_points(_CRS_PC,
-                                       np.array([np.nan]),
-                                       np.array([70.0]))
+    result = _CRS_ROB.transform_points(_CRS_PC, np.array([np.nan]), np.array([70.0]))
     assert np.all(np.isnan(result))
 
     # this used to crash + is now fixed
-    result = _CRS_ROB.transform_points(_CRS_PC,
-                                       np.array([35.0]),
-                                       np.array([np.nan]))
+    result = _CRS_ROB.transform_points(_CRS_PC, np.array([35.0]), np.array([np.nan]))
     assert np.all(np.isnan(result))
 
     # multipoint case
@@ -147,12 +136,15 @@ def test_transform_points():
     y = np.array([10.0, np.nan, 10.0, 77.7, 55.5, 0.0])
     z = np.array([10.0, 0.0, 0.0, np.nan, 55.5, 0.0])
     expect_result = np.array(
-        [[9.40422591e+05, 1.06952091e+06, 1.00000000e+01],
-         [11.1, 11.2, 11.3],
-         [0.0, 1069520.91213902, 0.0],
-         [22.1, 22.2, 22.3],
-         [33.1, 33.2, 33.3],
-         [0.0, 0.0, 0.0]])
+        [
+            [9.40422591e05, 1.06952091e06, 1.00000000e01],
+            [11.1, 11.2, 11.3],
+            [0.0, 1069520.91213902, 0.0],
+            [22.1, 22.2, 22.3],
+            [33.1, 33.2, 33.3],
+            [0.0, 0.0, 0.0],
+        ]
+    )
     result = _CRS_ROB.transform_points(_CRS_PC, x, y, z)
     assert result.shape == (6, 3)
     assert np.all(np.isnan(result[[1, 3, 4], :]))

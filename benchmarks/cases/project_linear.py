@@ -9,15 +9,15 @@ import cartopy.io.shapereader as shpreader
 
 class Suite:
     params = [
-        ('PlateCarree', 'NorthPolarStereo', 'Robinson',
-         'InterruptedGoodeHomolosine'),
+        ('PlateCarree', 'NorthPolarStereo', 'Robinson', 'InterruptedGoodeHomolosine'),
         ('110m', '50m'),
     ]
     param_names = ['projection', 'resolution']
 
     def setup(self, projection, resolution):
         shpfilename = shpreader.natural_earth(
-            resolution=resolution, category='physical', name='ocean')
+            resolution=resolution, category='physical', name='ocean'
+        )
         reader = shpreader.Reader(shpfilename)
         oceans = list(reader.geometries())
         self.geoms = oceans[0]

@@ -20,8 +20,7 @@ def test_pcolormesh_partially_masked():
     with mock.patch('cartopy.mpl.geoaxes.GeoAxes.pcolor') as pcolor:
         ax = plt.axes(projection=ccrs.PlateCarree())
         ax.pcolormesh(np.linspace(0, 360, 30), np.linspace(-90, 90, 40), data)
-        assert pcolor.call_count == 1, ("pcolor should have been called "
-                                        "exactly once.")
+        assert pcolor.call_count == 1, 'pcolor should have been called exactly once.'
 
 
 def test_pcolormesh_invisible():
@@ -30,10 +29,13 @@ def test_pcolormesh_invisible():
     # Check that a fully invisible mesh doesn't fail.
     with mock.patch('cartopy.mpl.geoaxes.GeoAxes.pcolor') as pcolor:
         ax = plt.axes(projection=ccrs.Orthographic())
-        ax.pcolormesh(np.linspace(-75, 75, 3), np.linspace(105, 255, 3), data,
-                      transform=ccrs.PlateCarree())
-        assert pcolor.call_count == 0, ("pcolor shouldn't have been called, "
-                                        "but was.")
+        ax.pcolormesh(
+            np.linspace(-75, 75, 3),
+            np.linspace(105, 255, 3),
+            data,
+            transform=ccrs.PlateCarree(),
+        )
+        assert pcolor.call_count == 0, "pcolor shouldn't have been called, but was."
 
 
 def test_savefig_tight():
@@ -63,22 +65,16 @@ def test_pcolormesh_arg_interpolation():
     z = np.zeros(xs.shape)
 
     ax = plt.subplot(2, 1, 1, projection=ccrs.PlateCarree())
-    coll = ax.pcolormesh(xs, ys, z, shading='auto',
-                         transform=ccrs.PlateCarree())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto', transform=ccrs.PlateCarree())
 
     # Compare the output coordinates of the generated mesh
-    expected = np.array([[[358, -20],
-                          [360, -20],
-                          [2, -20],
-                          [4, -20]],
-                         [[358, 0],
-                          [360, 0],
-                          [2, 0],
-                          [4, 0]],
-                         [[358, 20],
-                          [360, 20],
-                          [2, 20],
-                          [4, 20]]])
+    expected = np.array(
+        [
+            [[358, -20], [360, -20], [2, -20], [4, -20]],
+            [[358, 0], [360, 0], [2, 0], [4, 0]],
+            [[358, 20], [360, 20], [2, 20], [4, 20]],
+        ]
+    )
     np.testing.assert_array_almost_equal(expected, coll._coordinates)
 
 
@@ -92,8 +88,7 @@ def test_pcolormesh_datalim():
     z = np.zeros(xs.shape)
 
     ax = plt.subplot(3, 1, 1, projection=ccrs.PlateCarree())
-    coll = ax.pcolormesh(xs, ys, z, shading='auto',
-                         transform=ccrs.PlateCarree())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto', transform=ccrs.PlateCarree())
 
     coll_bbox = coll.get_datalim(ax.transData)
     np.testing.assert_array_equal(coll_bbox, [[-2, -20], [4, 20]])
@@ -104,8 +99,7 @@ def test_pcolormesh_datalim():
 
     xs, ys = np.meshgrid(x, y)
     ax = plt.subplot(3, 1, 2, projection=ccrs.PlateCarree())
-    coll = ax.pcolormesh(xs, ys, z, shading='auto',
-                         transform=ccrs.PlateCarree())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto', transform=ccrs.PlateCarree())
 
     coll_bbox = coll.get_datalim(ax.transData)
     np.testing.assert_array_equal(coll_bbox, [[-120, -20], [120, 20]])
@@ -116,10 +110,8 @@ def test_pcolormesh_datalim():
 
     xs, ys = np.meshgrid(x, y)
     ax = plt.subplot(3, 1, 3, projection=ccrs.Orthographic())
-    coll = ax.pcolormesh(xs, ys, z, shading='auto',
-                         transform=ccrs.PlateCarree())
+    coll = ax.pcolormesh(xs, ys, z, shading='auto', transform=ccrs.PlateCarree())
 
     coll_bbox = coll.get_datalim(ax.transData)
-    expected = [[-1650783.327873, -2181451.330891],
-                [1650783.327873, 2181451.330891]]
+    expected = [[-1650783.327873, -2181451.330891], [1650783.327873, 2181451.330891]]
     np.testing.assert_array_almost_equal(coll_bbox, expected)

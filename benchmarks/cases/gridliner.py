@@ -18,8 +18,9 @@ class Gridliner:
     def setup(self, draw_labels, inline):
         self.proj = ccrs.PlateCarree()
         fig, ax = plt.subplots(subplot_kw=dict(projection=self.proj))
-        ax.gridlines(draw_labels=draw_labels, x_inline=inline, y_inline=inline,
-                     auto_inline=False)
+        ax.gridlines(
+            draw_labels=draw_labels, x_inline=inline, y_inline=inline, auto_inline=False
+        )
         self.figure = fig
 
     def time_gridlines(self, draw_labels, inline):

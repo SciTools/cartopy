@@ -15,6 +15,7 @@ def show(projection, geometry):
     if geometry.geom_type == 'MultiPolygon' and 1:
         multi_polygon = geometry
         import cartopy.mpl.path as cpath
+
         pth = cpath.shapely_to_path(multi_polygon)
         patch = mpatches.PathPatch(pth, edgecolor='none', lw=0, alpha=0.2)
         plt.gca().add_patch(patch)
@@ -26,14 +27,12 @@ def show(projection, geometry):
         multi_polygon = geometry
         for polygon in multi_polygon.geoms:
             line_string = polygon.exterior
-            plt.plot(*zip(*line_string.coords),
-                     marker='+', linestyle='-')
+            plt.plot(*zip(*line_string.coords), marker='+', linestyle='-')
 
     elif geometry.geom_type == 'MultiLineString':
         multi_line_string = geometry
         for line_string in multi_line_string.geoms:
-            plt.plot(*zip(*line_string.coords),
-                     marker='+', linestyle='-')
+            plt.plot(*zip(*line_string.coords), marker='+', linestyle='-')
 
     elif geometry.geom_type == 'LinearRing':
         plt.plot(*zip(*geometry.coords), marker='+', linestyle='-')
@@ -58,8 +57,13 @@ def show(projection, geometry):
         plt.xlim(1.55e7, 1.65e7)
         plt.ylim(0.3e7, 0.4e7)
 
-    plt.plot(*zip(*projection.boundary.coords), marker='o',
-             scalex=False, scaley=False, zorder=-1)
+    plt.plot(
+        *zip(*projection.boundary.coords),
+        marker='o',
+        scalex=False,
+        scaley=False,
+        zorder=-1,
+    )
 
     plt.show()
     plt.switch_backend(orig_backend)

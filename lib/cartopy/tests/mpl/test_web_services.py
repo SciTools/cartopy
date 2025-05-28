@@ -17,7 +17,7 @@ import cartopy.crs as ccrs
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
 
-@pytest.mark.filterwarnings("ignore:TileMatrixLimits")
+@pytest.mark.filterwarnings('ignore:TileMatrixLimits')
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 @pytest.mark.mpl_image_compare(filename='wmts.png', tolerance=0.03)

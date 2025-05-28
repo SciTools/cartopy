@@ -16,16 +16,29 @@ from cartopy.feature import ShapelyFeature
 from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
 
 
-@pytest.mark.parametrize("source, expected", [
-    [{1: 0}, frozenset({(1, 0)})],
-    [[1, 2], (1, 2)],
-    [[1, {}], (1, frozenset())],
-    [[1, {'a': [1, 2, 3]}], (1, frozenset([('a', (1, 2, 3))]))],
-    [{'edgecolor': 'face', 'zorder': -1,
-      'facecolor': np.array([0.9375, 0.9375, 0.859375])},
-     frozenset([('edgecolor', 'face'), ('zorder', -1),
-                ('facecolor', (0.9375, 0.9375, 0.859375))])],
-])
+@pytest.mark.parametrize(
+    'source, expected',
+    [
+        [{1: 0}, frozenset({(1, 0)})],
+        [[1, 2], (1, 2)],
+        [[1, {}], (1, frozenset())],
+        [[1, {'a': [1, 2, 3]}], (1, frozenset([('a', (1, 2, 3))]))],
+        [
+            {
+                'edgecolor': 'face',
+                'zorder': -1,
+                'facecolor': np.array([0.9375, 0.9375, 0.859375]),
+            },
+            frozenset(
+                [
+                    ('edgecolor', 'face'),
+                    ('zorder', -1),
+                    ('facecolor', (0.9375, 0.9375, 0.859375)),
+                ]
+            ),
+        ],
+    ],
+)
 def test_freeze(source, expected):
     assert _freeze(source) == expected
 
@@ -47,7 +60,7 @@ def robinson_map():
     `array` or a list of facecolors remains 1-to-1 with the list of geometries.
     """
     prj_crs = ccrs.Robinson()
-    fig, ax = plt.subplots(subplot_kw={'projection':prj_crs})
+    fig, ax = plt.subplots(subplot_kw={'projection': prj_crs})
     ax.set_extent([20, 180, -90, 90])
     ax.coastlines()
 
@@ -111,7 +124,7 @@ def test_feature_artist_draw_styler(feature):
         if geom == geoms[1]:
             return {'facecolor': 'red'}
         else:
-            return {'facecolor':'blue'}
+            return {'facecolor': 'blue'}
 
     fig, ax = robinson_map()
     ax.add_feature(feature, facecolor='red', styler=styler)

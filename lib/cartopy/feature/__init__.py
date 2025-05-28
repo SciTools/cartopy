@@ -23,9 +23,11 @@ import cartopy.crs
 import cartopy.io.shapereader as shapereader
 
 
-COLORS = {'land': np.array((240, 240, 220)) / 256.,
-          'land_alt1': np.array((220, 220, 220)) / 256.,
-          'water': np.array((152, 183, 226)) / 256.}
+COLORS = {
+    'land': np.array((240, 240, 220)) / 256.0,
+    'land_alt1': np.array((220, 220, 220)) / 256.0,
+    'water': np.array((152, 183, 226)) / 256.0,
+}
 """
 A dictionary of colors useful for drawing Features.
 
@@ -107,10 +109,12 @@ class Feature(metaclass=ABCMeta):
         # shapely 2.0 returns tuple of NaNs instead of None for empty geometry
         # -> check for both
         if extent is not None and not np.isnan(extent[0]):
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
-            return (geom for geom in self.geometries() if
-                    geom is not None and extent_geom.intersects(geom))
+            extent_geom = sgeom.box(extent[0], extent[2], extent[1], extent[3])
+            return (
+                geom
+                for geom in self.geometries()
+                if geom is not None and extent_geom.intersects(geom)
+            )
         else:
             return self.geometries()
 
@@ -288,9 +292,9 @@ class NaturalEarthFeature(Feature):
         """
         key = (self.name, self.category, self.scale)
         if key not in _NATURAL_EARTH_GEOM_CACHE:
-            path = shapereader.natural_earth(resolution=self.scale,
-                                             category=self.category,
-                                             name=self.name)
+            path = shapereader.natural_earth(
+                resolution=self.scale, category=self.category, name=self.name
+            )
             reader = shapereader.Reader(path)
             if reader.crs is not None:
                 self._crs = reader.crs
@@ -323,8 +327,7 @@ class NaturalEarthFeature(Feature):
             respectively.
 
         """
-        return NaturalEarthFeature(self.category, self.name, new_scale,
-                                   **self.kwargs)
+        return NaturalEarthFeature(self.category, self.name, new_scale, **self.kwargs)
 
 
 class GSHHSFeature(Feature):
@@ -364,9 +367,21 @@ class GSHHSFeature(Feature):
     def __init__(self, scale='auto', levels=None, **kwargs):
         super().__init__(cartopy.crs.PlateCarree(), **kwargs)
 
-        if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
-                         'intermediate', 'i', 'high', 'h', 'full', 'f'):
-            raise ValueError(f"Unknown GSHHS scale {scale!r}.")
+        if scale not in (
+            'auto',
+            'a',
+            'coarse',
+            'c',
+            'low',
+            'l',
+            'intermediate',
+            'i',
+            'high',
+            'h',
+            'full',
+            'f',
+        ):
+            raise ValueError(f'Unknown GSHHS scale {scale!r}.')
         self._scale = scale
 
         if levels is None:
@@ -374,7 +389,7 @@ class GSHHSFeature(Feature):
         self._levels = set(levels)
         unknown_levels = self._levels.difference([1, 2, 3, 4, 5, 6])
         if unknown_levels:
-            raise ValueError(f"Unknown GSHHS levels {unknown_levels!r}.")
+            raise ValueError(f'Unknown GSHHS levels {unknown_levels!r}.')
 
         # Default kwargs
         self._kwargs.setdefault('edgecolor', 'black')
@@ -391,11 +406,13 @@ class GSHHSFeature(Feature):
 
         if extent is not None:
             # Upper limit on extent in degrees.
-            scale_limits = (('c', 20.0),
-                            ('l', 10.0),
-                            ('i', 2.0),
-                            ('h', 0.5),
-                            ('f', 0.1))
+            scale_limits = (
+                ('c', 20.0),
+                ('l', 10.0),
+                ('i', 2.0),
+                ('h', 0.5),
+                ('f', 0.1),
+            )
 
             width = abs(extent[1] - extent[0])
             height = abs(extent[3] - extent[2])
@@ -417,8 +434,7 @@ class GSHHSFeature(Feature):
             scale = self._scale[0]
 
         if extent is not None:
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
+            extent_geom = sgeom.box(extent[0], extent[2], extent[1], extent[3])
         for level in self._levels:
             geoms = GSHHSFeature._geometries_cache.get((scale, level))
             if geoms is None:
@@ -466,7 +482,8 @@ class WFSFeature(Feature):
         except ImportError as e:
             raise ImportError(
                 'WFSFeature requires additional dependencies. If installed '
-                'via pip, try `pip install cartopy[ows]`.\n') from e
+                'via pip, try `pip install cartopy[ows]`.\n'
+            ) from e
 
         self.source = WFSGeometrySource(wfs, features)
         crs = self.source.default_projection()
@@ -477,9 +494,9 @@ class WFSFeature(Feature):
 
     def geometries(self):
         min_x, min_y, max_x, max_y = self.crs.boundary.bounds
-        geoms = self.source.fetch_geometries(self.crs,
-                                             extent=(min_x, max_x,
-                                                     min_y, max_y))
+        geoms = self.source.fetch_geometries(
+            self.crs, extent=(min_x, max_x, min_y, max_y)
+        )
         return iter(geoms)
 
     def intersecting_geometries(self, extent):
@@ -494,42 +511,64 @@ auto_scaler = AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
 
 
 BORDERS = NaturalEarthFeature(
-    'cultural', 'admin_0_boundary_lines_land',
-    auto_scaler, edgecolor='black', facecolor='never')
+    'cultural',
+    'admin_0_boundary_lines_land',
+    auto_scaler,
+    edgecolor='black',
+    facecolor='never',
+)
 """Automatically scaled country boundaries."""
 
 
 STATES = NaturalEarthFeature(
-    'cultural', 'admin_1_states_provinces_lakes',
-    auto_scaler, edgecolor='black', facecolor='none')
+    'cultural',
+    'admin_1_states_provinces_lakes',
+    auto_scaler,
+    edgecolor='black',
+    facecolor='none',
+)
 """Automatically scaled state and province boundaries."""
 
 
 COASTLINE = NaturalEarthFeature(
-    'physical', 'coastline', auto_scaler,
-    edgecolor='black', facecolor='never')
+    'physical', 'coastline', auto_scaler, edgecolor='black', facecolor='never'
+)
 """Automatically scaled coastline, including major islands."""
 
 
 LAKES = NaturalEarthFeature(
-    'physical', 'lakes', auto_scaler,
-    edgecolor='none', facecolor=COLORS['water'])
+    'physical', 'lakes', auto_scaler, edgecolor='none', facecolor=COLORS['water']
+)
 """Automatically scaled natural and artificial lakes."""
 
 
 LAND = NaturalEarthFeature(
-    'physical', 'land', auto_scaler,
-    edgecolor='none', facecolor=COLORS['land'], zorder=-1)
+    'physical',
+    'land',
+    auto_scaler,
+    edgecolor='none',
+    facecolor=COLORS['land'],
+    zorder=-1,
+)
 """Automatically scaled land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature(
-    'physical', 'ocean', auto_scaler,
-    edgecolor='none', facecolor=COLORS['water'], zorder=-1)
+    'physical',
+    'ocean',
+    auto_scaler,
+    edgecolor='none',
+    facecolor=COLORS['water'],
+    zorder=-1,
+)
 """Automatically scaled ocean polygons."""
 
 
 RIVERS = NaturalEarthFeature(
-    'physical', 'rivers_lake_centerlines', auto_scaler,
-    edgecolor=COLORS['water'], facecolor='never')
+    'physical',
+    'rivers_lake_centerlines',
+    auto_scaler,
+    edgecolor=COLORS['water'],
+    facecolor='never',
+)
 """Automatically scaled single-line drainages, including lake centerlines."""

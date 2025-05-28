@@ -9,7 +9,7 @@ import cartopy
 import cartopy.io.shapereader as shp
 
 
-@pytest.mark.filterwarnings("ignore:Downloading")
+@pytest.mark.filterwarnings('ignore:Downloading')
 @pytest.mark.natural_earth
 class TestCoastline:
     def test_robust(self):
@@ -17,8 +17,7 @@ class TestCoastline:
 
         # Make sure all the coastlines can be projected without raising any
         # exceptions.
-        projection = cartopy.crs.TransverseMercator(central_longitude=-90,
-                                                    approx=False)
+        projection = cartopy.crs.TransverseMercator(central_longitude=-90, approx=False)
         reader = shp.Reader(COASTLINE_PATH)
         all_geometries = list(reader.geometries())
         geometries = []

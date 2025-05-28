@@ -57,8 +57,7 @@ def test_set_yticks_cylindrical():
     ax.coastlines('110m')
     ax.yaxis.set_major_formatter(LatitudeFormatter(degree_symbol=''))
     ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.PlateCarree())
-    ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True,
-                  crs=ccrs.PlateCarree())
+    ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True, crs=ccrs.PlateCarree())
     return ax.figure
 
 
@@ -67,17 +66,18 @@ def test_set_yticks_non_cylindrical():
     with pytest.raises(RuntimeError):
         ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.Geodetic())
     with pytest.raises(RuntimeError):
-        ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True,
-                      crs=ccrs.Geodetic())
+        ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
 
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='xyticks.png')
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
-    projections = (ccrs.PlateCarree(),
-                   ccrs.Mercator(),
-                   ccrs.TransverseMercator(approx=False))
+    projections = (
+        ccrs.PlateCarree(),
+        ccrs.Mercator(),
+        ccrs.TransverseMercator(approx=False),
+    )
     x = -3.275024
     y = 50.753998
     for i, prj in enumerate(projections, 1):

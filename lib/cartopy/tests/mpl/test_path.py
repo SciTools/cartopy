@@ -16,17 +16,29 @@ class Test_path_to_shapely:
     def test_empty_polygon(self, use_legacy_path_to_geos):
         p = Path(
             [
-                [0, 0], [0, 0], [0, 0], [0, 0],
-                [1, 2], [1, 2], [1, 2], [1, 2],
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [1, 2],
+                [1, 2],
+                [1, 2],
+                [1, 2],
                 # The vertex for CLOSEPOLY should be ignored.
-                [2, 3], [2, 3], [2, 3], [42, 42],
+                [2, 3],
+                [2, 3],
+                [2, 3],
+                [42, 42],
                 # Very close points should be treated the same.
-                [193.75, -14.166664123535156], [193.75, -14.166664123535158],
-                [193.75, -14.166664123535156], [193.75, -14.166664123535156],
+                [193.75, -14.166664123535156],
+                [193.75, -14.166664123535158],
+                [193.75, -14.166664123535156],
+                [193.75, -14.166664123535156],
             ],
-            codes=[1, 2, 2, 79] * 4)
+            codes=[1, 2, 2, 79] * 4,
+        )
         if use_legacy_path_to_geos:
-            with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+            with pytest.warns(DeprecationWarning, match='path_to_geos is deprecated'):
                 geoms = cpatch.path_to_geos(p)
             assert [type(geom) for geom in geoms] == [sgeom.Point] * 4
             assert len(geoms) == 4
@@ -36,10 +48,9 @@ class Test_path_to_shapely:
             assert len(geoms.geoms) == 4
 
     def test_non_polygon_loop(self, use_legacy_path_to_geos):
-        p = Path([[0, 10], [170, 20], [-170, 30], [0, 10]],
-                 codes=[1, 2, 2, 2])
+        p = Path([[0, 10], [170, 20], [-170, 30], [0, 10]], codes=[1, 2, 2, 2])
         if use_legacy_path_to_geos:
-            with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+            with pytest.warns(DeprecationWarning, match='path_to_geos is deprecated'):
                 geoms = cpatch.path_to_geos(p)
 
             assert [type(geom) for geom in geoms] == [sgeom.MultiLineString]
@@ -50,12 +61,28 @@ class Test_path_to_shapely:
 
     def test_polygon_with_interior_and_singularity(self, use_legacy_path_to_geos):
         # A geometry with two interiors, one a single point.
-        p = Path([[0, -90], [200, -40], [200, 40], [0, 40], [0, -90],
-                  [126, 26], [126, 26], [126, 26], [126, 26], [126, 26],
-                  [114, 5], [103, 8], [126, 12], [126, 0], [114, 5]],
-                 codes=[1, 2, 2, 2, 79, 1, 2, 2, 2, 79, 1, 2, 2, 2, 79])
+        p = Path(
+            [
+                [0, -90],
+                [200, -40],
+                [200, 40],
+                [0, 40],
+                [0, -90],
+                [126, 26],
+                [126, 26],
+                [126, 26],
+                [126, 26],
+                [126, 26],
+                [114, 5],
+                [103, 8],
+                [126, 12],
+                [126, 0],
+                [114, 5],
+            ],
+            codes=[1, 2, 2, 2, 79, 1, 2, 2, 2, 79, 1, 2, 2, 2, 79],
+        )
         if use_legacy_path_to_geos:
-            with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+            with pytest.warns(DeprecationWarning, match='path_to_geos is deprecated'):
                 geoms = cpatch.path_to_geos(p)
 
             assert [type(geom) for geom in geoms] == [sgeom.Polygon, sgeom.Point]
@@ -68,16 +95,30 @@ class Test_path_to_shapely:
 
     def test_nested_polygons(self, use_legacy_path_to_geos):
         # A geometry with three nested squares.
-        vertices = [[0, 0], [0, 10], [10, 10], [10, 0], [0, 0],
-                    [2, 2], [2, 8], [8, 8], [8, 2], [2, 2],
-                    [4, 4], [4, 6], [6, 6], [6, 4], [4, 4]]
+        vertices = [
+            [0, 0],
+            [0, 10],
+            [10, 10],
+            [10, 0],
+            [0, 0],
+            [2, 2],
+            [2, 8],
+            [8, 8],
+            [8, 2],
+            [2, 2],
+            [4, 4],
+            [4, 6],
+            [6, 6],
+            [6, 4],
+            [4, 4],
+        ]
         codes = [1, 2, 2, 2, 79, 1, 2, 2, 2, 79, 1, 2, 2, 2, 79]
         p = Path(vertices, codes=codes)
 
         # The first square makes the first geometry with the second square as
         # its interior.  The third square is its own geometry with no interior.
         if use_legacy_path_to_geos:
-            with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+            with pytest.warns(DeprecationWarning, match='path_to_geos is deprecated'):
                 geoms = cpatch.path_to_geos(p)
 
             assert len(geoms) == 2
