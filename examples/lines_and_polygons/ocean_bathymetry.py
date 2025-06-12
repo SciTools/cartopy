@@ -11,6 +11,7 @@ manually downloading and reading them with the general shapereader interface,
 instead of the specialized `cartopy.feature.NaturalEarthFeature` interface.
 
 """
+
 from glob import glob
 
 import matplotlib
@@ -29,9 +30,10 @@ def load_bathymetry(zip_file_url):
     import zipfile
 
     import requests
+
     r = requests.get(zip_file_url)
     z = zipfile.ZipFile(io.BytesIO(r.content))
-    z.extractall("ne_10m_bathymetry_all/")
+    z.extractall('ne_10m_bathymetry_all/')
 
     # Read shapefiles, sorted by depth
     shp_dict = {}
@@ -49,17 +51,18 @@ def load_bathymetry(zip_file_url):
     return depths, shp_dict
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Load data (14.8 MB file)
     depths_str, shp_dict = load_bathymetry(
-        'https://naturalearth.s3.amazonaws.com/' +
-        '10m_physical/ne_10m_bathymetry_all.zip')
+        'https://naturalearth.s3.amazonaws.com/'
+        + '10m_physical/ne_10m_bathymetry_all.zip'
+    )
 
     # Construct a discrete colormap with colors corresponding to each depth
     depths = depths_str.astype(int)
     N = len(depths)
     nudge = 0.01  # shift bin edge slightly to include data
-    boundaries = [min(depths)] + sorted(depths+nudge)  # low to high
+    boundaries = [min(depths)] + sorted(depths + nudge)  # low to high
     norm = matplotlib.colors.BoundaryNorm(boundaries, N)
     blues_cm = matplotlib.colormaps['Blues_r'].resampled(N)
     colors_depths = blues_cm(norm(depths))
@@ -71,9 +74,11 @@ if __name__ == "__main__":
 
     # Iterate and plot feature for each depth level
     for i, depth_str in enumerate(depths_str):
-        ax.add_geometries(shp_dict[depth_str].geometries(),
-                          crs=ccrs.PlateCarree(),
-                          color=colors_depths[i])
+        ax.add_geometries(
+            shp_dict[depth_str].geometries(),
+            crs=ccrs.PlateCarree(),
+            color=colors_depths[i],
+        )
 
     # Add standard features
     ax.add_feature(cfeature.LAND, color='grey')
@@ -85,12 +90,14 @@ if __name__ == "__main__":
     axi = fig.add_axes([0.85, 0.1, 0.025, 0.8])
     ax.add_feature(cfeature.BORDERS, linestyle=':')
     sm = plt.cm.ScalarMappable(cmap=blues_cm, norm=norm)
-    fig.colorbar(mappable=sm,
-                 cax=axi,
-                 spacing='proportional',
-                 extend='min',
-                 ticks=depths,
-                 label='Depth (m)')
+    fig.colorbar(
+        mappable=sm,
+        cax=axi,
+        spacing='proportional',
+        extend='min',
+        ticks=depths,
+        label='Depth (m)',
+    )
 
     # Convert vector bathymetries to raster (saves a lot of disk space)
     # while leaving labels as vectors

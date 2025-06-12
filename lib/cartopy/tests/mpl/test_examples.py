@@ -37,9 +37,11 @@ def test_global_map():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
-    filename='contour_label.png', tolerance=3.9 if _MPL_38 else 0.5)
+    filename='contour_label.png', tolerance=3.9 if _MPL_38 else 0.5
+)
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
+
     fig = plt.figure()
 
     # Setup a global EckertIII map with faint coastlines.
@@ -56,9 +58,9 @@ def test_contour_label():
     filled_c = ax.contourf(x, y, z, transform=ccrs.PlateCarree())
 
     # And black line contours.
-    line_c = ax.contour(x, y, z, levels=filled_c.levels,
-                        colors=['black'],
-                        transform=ccrs.PlateCarree())
+    line_c = ax.contour(
+        x, y, z, levels=filled_c.levels, colors=['black'], transform=ccrs.PlateCarree()
+    )
 
     # Uncomment to make the line contours invisible.
     # plt.setp(line_c.collections, visible=False)

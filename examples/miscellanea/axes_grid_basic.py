@@ -11,6 +11,7 @@ with Plate Carree projection and passes it to the
 is not used, and instead a standard procedure of creating grid lines is used.
 Then some fake data is plotted.
 """
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
 import numpy as np
@@ -34,7 +35,7 @@ def sample_data_3d(shape):
     data = wave + mean
 
     times = np.linspace(-1, 1, ntimes)
-    new_shape = data.shape + (ntimes, )
+    new_shape = data.shape + (ntimes,)
     data = np.rollaxis(data.repeat(ntimes).reshape(new_shape), -1)
     data *= times[:, np.newaxis, np.newaxis]
 
@@ -43,20 +44,23 @@ def sample_data_3d(shape):
 
 def main():
     projection = ccrs.PlateCarree()
-    axes_class = (GeoAxes,
-                  dict(projection=projection))
+    axes_class = (GeoAxes, dict(projection=projection))
 
     lons, lats, times, data = sample_data_3d((6, 73, 145))
 
     fig = plt.figure()
-    axgr = AxesGrid(fig, 111, axes_class=axes_class,
-                    nrows_ncols=(3, 2),
-                    axes_pad=0.6,
-                    cbar_location='right',
-                    cbar_mode='single',
-                    cbar_pad=0.2,
-                    cbar_size='3%',
-                    label_mode='keep')
+    axgr = AxesGrid(
+        fig,
+        111,
+        axes_class=axes_class,
+        nrows_ncols=(3, 2),
+        axes_pad=0.6,
+        cbar_location='right',
+        cbar_mode='single',
+        cbar_pad=0.2,
+        cbar_size='3%',
+        label_mode='keep',
+    )
 
     for i, ax in enumerate(axgr):
         ax.coastlines()
@@ -67,9 +71,7 @@ def main():
         ax.xaxis.set_major_formatter(lon_formatter)
         ax.yaxis.set_major_formatter(lat_formatter)
 
-        p = ax.contourf(lons, lats, data[i, ...],
-                        transform=projection,
-                        cmap='RdBu')
+        p = ax.contourf(lons, lats, data[i, ...], transform=projection, cmap='RdBu')
 
     axgr.cbar_axes[0].colorbar(p)
 

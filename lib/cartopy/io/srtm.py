@@ -59,8 +59,7 @@ class _SRTMSource(RasterSource):
         elif resolution == 1:
             self._shape = (3601, 3601)
         else:
-            raise ValueError(
-                f'Resolution is an unexpected value ({resolution}).')
+            raise ValueError(f'Resolution is an unexpected value ({resolution}).')
         self._resolution = resolution
 
         #: The CRS of the underlying SRTM data.
@@ -71,8 +70,7 @@ class _SRTMSource(RasterSource):
         self.downloader = downloader
 
         if self.downloader is None:
-            self.downloader = Downloader.from_config(
-                ('SRTM', f'SRTM{resolution}'))
+            self.downloader = Downloader.from_config(('SRTM', f'SRTM{resolution}'))
 
         #: A tuple of (max_x_tiles, max_y_tiles).
         self._max_tiles = (max_nx, max_ny)
@@ -86,8 +84,9 @@ class _SRTMSource(RasterSource):
 
         """
         if not self.validate_projection(projection):
-            raise ValueError(f'Unsupported projection for the '
-                             f'SRTM{self._resolution} source.')
+            raise ValueError(
+                f'Unsupported projection for the SRTM{self._resolution} source.'
+            )
 
         min_x, max_x, min_y, max_y = extent
         min_x, min_y = np.floor([min_x, min_y])
@@ -97,12 +96,14 @@ class _SRTMSource(RasterSource):
         if nx > self._max_tiles[0]:
             warnings.warn(
                 f'Required SRTM{self._resolution} tile count ({nx}) exceeds '
-                f'maximum ({self._max_tiles[0]}). Increase max_nx limit.')
+                f'maximum ({self._max_tiles[0]}). Increase max_nx limit.'
+            )
             skip = True
         if ny > self._max_tiles[1]:
             warnings.warn(
                 f'Required SRTM{self._resolution} tile count ({ny}) exceeds '
-                f'maximum ({self._max_tiles[1]}). Increase max_ny limit.')
+                f'maximum ({self._max_tiles[1]}). Increase max_ny limit.'
+            )
             skip = True
         if skip:
             return []
@@ -123,10 +124,8 @@ class _SRTMSource(RasterSource):
         x = '%s%03d' % ('E' if lon >= 0 else 'W', abs(int(lon)))
         y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
 
-        srtm_downloader = Downloader.from_config(
-            ('SRTM', f'SRTM{self._resolution}'))
-        params = {'config': config, 'resolution': self._resolution,
-                  'x': x, 'y': y}
+        srtm_downloader = Downloader.from_config(('SRTM', f'SRTM{self._resolution}'))
+        params = {'config': config, 'resolution': self._resolution, 'x': x, 'y': y}
 
         # If the URL doesn't exist then we are over sea/north/south of the
         # limits of the SRTM data and we return None.
@@ -150,15 +149,20 @@ class _SRTMSource(RasterSource):
             y_img_slice = slice(j * shape[0], (j + 1) * shape[0])
 
             try:
-                tile_img, _, _ = self.single_tile(bottom_left_ll[0] + i,
-                                                  bottom_left_ll[1] + j)
+                tile_img, _, _ = self.single_tile(
+                    bottom_left_ll[0] + i, bottom_left_ll[1] + j
+                )
             except ValueError:
                 img[y_img_slice, x_img_slice] = 0
             else:
                 img[y_img_slice, x_img_slice] = tile_img
 
-        extent = (bottom_left_ll[0], bottom_left_ll[0] + nx,
-                  bottom_left_ll[1], bottom_left_ll[1] + ny)
+        extent = (
+            bottom_left_ll[0],
+            bottom_left_ll[0] + nx,
+            bottom_left_ll[1],
+            bottom_left_ll[1] + ny,
+        )
 
         return img, self.crs, extent
 
@@ -193,8 +197,9 @@ class SRTM3Source(_SRTMSource):
             producing a taller composite for this RasterSource.
 
         """
-        super().__init__(resolution=3, downloader=downloader,
-                         max_nx=max_nx, max_ny=max_ny)
+        super().__init__(
+            resolution=3, downloader=downloader, max_nx=max_nx, max_ny=max_ny
+        )
 
 
 class SRTM1Source(_SRTMSource):
@@ -221,8 +226,9 @@ class SRTM1Source(_SRTMSource):
             producing a taller composite for this RasterSource.
 
         """
-        super().__init__(resolution=1, downloader=downloader,
-                         max_nx=max_nx, max_ny=max_ny)
+        super().__init__(
+            resolution=1, downloader=downloader, max_nx=max_nx, max_ny=max_ny
+        )
 
 
 def add_shading(elevation, azimuth, altitude):
@@ -246,9 +252,9 @@ def add_shading(elevation, azimuth, altitude):
     slope = np.pi / 2 - np.arctan(np.hypot(x, y))
     # -x here because of pixel orders in the SRTM tile
     aspect = np.arctan2(-x, y)
-    shaded = np.sin(altitude) * np.sin(slope) \
-        + np.cos(altitude) * np.cos(slope) \
-        * np.cos((azimuth - np.pi / 2) - aspect)
+    shaded = np.sin(altitude) * np.sin(slope) + np.cos(altitude) * np.cos(
+        slope
+    ) * np.cos((azimuth - np.pi / 2) - aspect)
     return shaded
 
 
@@ -279,6 +285,7 @@ def read_SRTM(fh):
     fh, fname = fh_getter(fh, needs_filename=True)
     if fname.endswith('.zip'):
         from zipfile import ZipFile
+
         zfh = ZipFile(fh, 'rb')
         fh = zfh.open(Path(fname).stem, 'r')
 
@@ -288,8 +295,7 @@ def read_SRTM(fh):
     elif elev.size == 1442401:
         elev.shape = (1201, 1201)
     else:
-        raise ValueError(
-            f'Shape of SRTM data ({elev.size}) is unexpected.')
+        raise ValueError(f'Shape of SRTM data ({elev.size}) is unexpected.')
 
     fname = Path(fname).name
     y_dir, y, x_dir, x = fname[0], int(fname[1:3]), fname[3], int(fname[4:7])
@@ -312,10 +318,12 @@ class SRTMDownloader(Downloader):
     Provide a SRTM download mechanism.
 
     """
+
     FORMAT_KEYS = ('config', 'resolution', 'x', 'y')
 
-    _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/MEASURES/'
-                      'SRTMGL{resolution}.003/2000.02.11/')
+    _SRTM_BASE_URL = (
+        'https://e4ftl01.cr.usgs.gov/MEASURES/SRTMGL{resolution}.003/2000.02.11/'
+    )
     _SRTM_LOOKUP_CACHE = Path(__file__).parent / 'srtm.npz'
     _SRTM_LOOKUP_MASK = np.load(_SRTM_LOOKUP_CACHE)['mask']
     """
@@ -324,21 +332,24 @@ class SRTMDownloader(Downloader):
 
     """
 
-    def __init__(self,
-                 target_path_template,
-                 pre_downloaded_path_template='',
-                 ):
+    def __init__(
+        self,
+        target_path_template,
+        pre_downloaded_path_template='',
+    ):
         # adds some SRTM defaults to the __init__ of a Downloader
         # namely, the URL is determined on the fly using the
         # ``SRTMDownloader._SRTM_LOOKUP_MASK`` array
-        Downloader.__init__(self, None,
-                            target_path_template,
-                            pre_downloaded_path_template)
+        Downloader.__init__(
+            self, None, target_path_template, pre_downloaded_path_template
+        )
 
     def url(self, format_dict):
-        warnings.warn('SRTM requires an account set up and log in to access. '
-                      'Use of this Downloader is likely to fail with HTTP 401 '
-                      'errors.')
+        warnings.warn(
+            'SRTM requires an account set up and log in to access. '
+            'Use of this Downloader is likely to fail with HTTP 401 '
+            'errors.'
+        )
 
         # override the url method, looking up the url from the
         # ``SRTMDownloader._SRTM_LOOKUP_MASK`` array
@@ -355,8 +366,9 @@ class SRTMDownloader(Downloader):
             lon = 360 - lon
 
         if SRTMDownloader._SRTM_LOOKUP_MASK[lon, colat]:
-            return (SRTMDownloader._SRTM_BASE_URL +
-                    '{y}{x}.SRTMGL{resolution}.hgt.zip').format(**format_dict)
+            return (
+                SRTMDownloader._SRTM_BASE_URL + '{y}{x}.SRTMGL{resolution}.hgt.zip'
+            ).format(**format_dict)
         else:
             return None
 
@@ -400,8 +412,10 @@ class SRTMDownloader(Downloader):
         # lazy imports. In most situations, these are not
         # dependencies of cartopy.
         from bs4 import BeautifulSoup
+
         if filename is None:
             from urllib.request import urlopen
+
             url = SRTMDownloader._SRTM_BASE_URL.format(resolution=resolution)
             with urlopen(url) as f:
                 html = f.read()
@@ -439,16 +453,16 @@ class SRTMDownloader(Downloader):
 
         """
         default_spec = ('SRTM', 'SRTMGL{resolution}', '{y}{x}.hgt')
-        target_path_template = str(
-            Path('{config[data_dir]}').joinpath(*default_spec))
+        target_path_template = str(Path('{config[data_dir]}').joinpath(*default_spec))
         pre_path_template = str(
-            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
-        return cls(target_path_template=target_path_template,
-                   pre_downloaded_path_template=pre_path_template)
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec)
+        )
+        return cls(
+            target_path_template=target_path_template,
+            pre_downloaded_path_template=pre_path_template,
+        )
 
 
 # add a generic SRTM downloader to the config 'downloaders' section.
-config['downloaders'].setdefault(('SRTM', 'SRTM3'),
-                                 SRTMDownloader.default_downloader())
-config['downloaders'].setdefault(('SRTM', 'SRTM1'),
-                                 SRTMDownloader.default_downloader())
+config['downloaders'].setdefault(('SRTM', 'SRTM3'), SRTMDownloader.default_downloader())
+config['downloaders'].setdefault(('SRTM', 'SRTM1'), SRTMDownloader.default_downloader())

@@ -98,7 +98,10 @@ testpaths = ["lib"]
 python_files = ["test_*.py"]
 
 [tool.ruff]
-lint.select = ["E", "F", "I", "W"]
+lint.select = ["E", "F", "I", "RUF022", "W"]
+
+[tool.ruff.format]
+quote-style = "single"
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true

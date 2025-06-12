@@ -14,7 +14,6 @@ from matplotlib.image import AxesImage
 
 
 class SlippyImageArtist(AxesImage):
-
     """
     A subclass of :class:`~matplotlib.image.AxesImage` which provides an
     interface for getting a raster from the given object with interactive
@@ -56,8 +55,10 @@ class SlippyImageArtist(AxesImage):
         [x1, y1], [x2, y2] = ax.viewLim.get_points()
         if not self.user_is_interacting:
             located_images = self.raster_source.fetch_raster(
-                ax.projection, extent=[x1, x2, y1, y2],
-                target_resolution=(window_extent.width, window_extent.height))
+                ax.projection,
+                extent=[x1, x2, y1, y2],
+                target_resolution=(window_extent.width, window_extent.height),
+            )
             self.cache = located_images
 
         for img, extent in self.cache:

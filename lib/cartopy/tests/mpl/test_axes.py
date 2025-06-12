@@ -48,34 +48,37 @@ def test_transform_PlateCarree_shortcut():
 
     trans = InterProjectionTransform(src, target)
 
-    with mock.patch.object(target, 'project_geometry',
-                           wraps=target.project_geometry) as counter:
+    with mock.patch.object(
+        target, 'project_geometry', wraps=target.project_geometry
+    ) as counter:
         trans.transform_path(pth1)
         # pth1 should allow a short-cut.
         counter.assert_not_called()
 
-    with mock.patch.object(target, 'project_geometry',
-                           wraps=target.project_geometry) as counter:
+    with mock.patch.object(
+        target, 'project_geometry', wraps=target.project_geometry
+    ) as counter:
         trans.transform_path(pth2)
         counter.assert_called_once()
 
-    with mock.patch.object(target, 'project_geometry',
-                           wraps=target.project_geometry) as counter:
+    with mock.patch.object(
+        target, 'project_geometry', wraps=target.project_geometry
+    ) as counter:
         trans.transform_path(pth3)
         counter.assert_called_once()
 
 
 class Test_InterProjectionTransform:
     def pc_2_pc(self):
-        return InterProjectionTransform(
-            ccrs.PlateCarree(), ccrs.PlateCarree())
+        return InterProjectionTransform(ccrs.PlateCarree(), ccrs.PlateCarree())
 
     def pc_2_rob(self):
         return InterProjectionTransform(ccrs.PlateCarree(), ccrs.Robinson())
 
     def rob_2_rob_shifted(self):
         return InterProjectionTransform(
-            ccrs.Robinson(), ccrs.Robinson(central_longitude=0))
+            ccrs.Robinson(), ccrs.Robinson(central_longitude=0)
+        )
 
     def test_eq(self):
         assert self.pc_2_pc() == self.pc_2_pc()
@@ -92,27 +95,30 @@ class Test_InterProjectionTransform:
 
 
 class Test_Axes_add_geometries:
-
     @mock.patch('cartopy.mpl.geoaxes.GeoAxes.add_feature')
     @mock.patch('cartopy.feature.ShapelyFeature')
     def test_styler_kwarg(self, ShapelyFeature, add_feature_method):
-        ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
-                     projection=ccrs.Robinson())
-        ax.add_geometries(mock.sentinel.geometries, mock.sentinel.crs,
-                          styler=mock.sentinel.styler, wibble='wobble')
+        ax = GeoAxes(plt.figure(), [0, 0, 1, 1], projection=ccrs.Robinson())
+        ax.add_geometries(
+            mock.sentinel.geometries,
+            mock.sentinel.crs,
+            styler=mock.sentinel.styler,
+            wibble='wobble',
+        )
 
         ShapelyFeature.assert_called_once_with(
-            mock.sentinel.geometries, mock.sentinel.crs, wibble='wobble')
+            mock.sentinel.geometries, mock.sentinel.crs, wibble='wobble'
+        )
 
         add_feature_method.assert_called_once_with(
-            ShapelyFeature(), styler=mock.sentinel.styler)
+            ShapelyFeature(), styler=mock.sentinel.styler
+        )
 
     @pytest.mark.natural_earth
     def test_single_geometry(self):
         # A single geometry is acceptable
         proj = ccrs.PlateCarree()
-        ax = GeoAxes(plt.figure(), [0, 0, 1, 1],
-                     projection=proj)
+        ax = GeoAxes(plt.figure(), [0, 0, 1, 1], projection=proj)
         ax.add_geometries(next(cfeature.COASTLINE.geometries()), crs=proj)
 
 
@@ -139,8 +145,9 @@ def test_geoaxes_no_subslice():
 @pytest.mark.mpl_image_compare(filename='geoaxes_set_boundary_clipping.png')
 def test_geoaxes_set_boundary_clipping():
     """Test that setting the boundary works properly for clipping #1620."""
-    lon, lat = np.meshgrid(np.linspace(-180., 180., 361),
-                           np.linspace(-90., -60., 31))
+    lon, lat = np.meshgrid(
+        np.linspace(-180.0, 180.0, 361), np.linspace(-90.0, -60.0, 31)
+    )
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1, projection=ccrs.SouthPolarStereo())
 
@@ -150,7 +157,8 @@ def test_geoaxes_set_boundary_clipping():
 
     ax1.contourf(lon, lat, lat, transform=ccrs.PlateCarree())
 
-    ax1.set_boundary(mpath.Path.circle(center=(0.5, 0.5), radius=0.5),
-                     transform=ax1.transAxes)
+    ax1.set_boundary(
+        mpath.Path.circle(center=(0.5, 0.5), radius=0.5), transform=ax1.transAxes
+    )
 
     return fig

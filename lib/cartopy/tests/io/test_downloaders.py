@@ -15,22 +15,28 @@ from cartopy.io.shapereader import NEShpDownloader
 
 
 def test_Downloader_data():
-    di = cio.Downloader('https://testing.com/{category}/{name}.zip',
-                        str(Path('{data_dir}') / '{category}' / 'shape.shp'),
-                        str(Path('/project') / 'foobar' / '{category}' /
-                            'sample.shp'))
+    di = cio.Downloader(
+        'https://testing.com/{category}/{name}.zip',
+        str(Path('{data_dir}') / '{category}' / 'shape.shp'),
+        str(Path('/project') / 'foobar' / '{category}' / 'sample.shp'),
+    )
 
-    replacement_dict = {'category': 'example',
-                        'name': 'test',
-                        'data_dir': str(Path('/wibble') / 'foo' / 'bar')}
+    replacement_dict = {
+        'category': 'example',
+        'name': 'test',
+        'data_dir': str(Path('/wibble') / 'foo' / 'bar'),
+    }
 
     assert di.url(replacement_dict) == 'https://testing.com/example/test.zip'
 
-    assert (di.target_path(replacement_dict) ==
-            Path('/wibble') / 'foo' / 'bar' / 'example' / 'shape.shp')
+    assert (
+        di.target_path(replacement_dict)
+        == Path('/wibble') / 'foo' / 'bar' / 'example' / 'shape.shp'
+    )
 
-    assert (di.pre_downloaded_path(replacement_dict) ==
-            Path('/project/foobar/example/sample.shp'))
+    assert di.pre_downloaded_path(replacement_dict) == Path(
+        '/project/foobar/example/sample.shp'
+    )
 
 
 @contextlib.contextmanager
@@ -41,8 +47,9 @@ def config_replace(replacement_dict):
 
     """
     with contextlib.ExitStack() as stack:
-        stack.callback(cartopy.config.__setitem__, 'downloaders',
-                       cartopy.config['downloaders'])
+        stack.callback(
+            cartopy.config.__setitem__, 'downloaders', cartopy.config['downloaders']
+        )
         cartopy.config['downloaders'] = replacement_dict
 
         yield
@@ -56,10 +63,14 @@ def download_to_temp(tmp_path_factory):
 
     """
     with contextlib.ExitStack() as stack:
-        stack.callback(cartopy.config.__setitem__, 'downloaders',
-                       cartopy.config['downloaders'].copy())
-        stack.callback(cartopy.config.__setitem__, 'data_dir',
-                       cartopy.config['data_dir'])
+        stack.callback(
+            cartopy.config.__setitem__,
+            'downloaders',
+            cartopy.config['downloaders'].copy(),
+        )
+        stack.callback(
+            cartopy.config.__setitem__, 'data_dir', cartopy.config['data_dir']
+        )
 
         tmp_dir = tmp_path_factory.mktemp('cartopy_data')
         cartopy.config['data_dir'] = str(tmp_dir)
@@ -77,9 +88,10 @@ def test_from_config():
     land_spec = ('shapefile', 'natural_earth', '110m', 'physical', 'land')
     generic_spec = ('shapefile', 'natural_earth')
 
-    target_config = {land_spec: land_downloader,
-                     generic_spec: generic_ne_downloader,
-                     }
+    target_config = {
+        land_spec: land_downloader,
+        generic_spec: generic_ne_downloader,
+    }
 
     with config_replace(target_config):
         # ocean spec is not explicitly in the config, but a subset of it is,
@@ -87,8 +99,7 @@ def test_from_config():
         r = cio.Downloader.from_config(ocean_spec)
 
         # check the resulting download item produces a sensible url.
-        assert (r.url({'name': 'ocean'}) ==
-                'https://example.com/generic_ne/ocean.zip')
+        assert r.url({'name': 'ocean'}) == 'https://example.com/generic_ne/ocean.zip'
 
         r = cio.Downloader.from_config(land_spec)
         assert r is land_downloader
@@ -115,11 +126,12 @@ def test_downloading_simple_ascii(download_to_temp):
 
     with open(tmp_fname) as fh:
         fh.readline()
-        assert fh.readline() == " * jQuery JavaScript Library v1.8.2\n"
+        assert fh.readline() == ' * jQuery JavaScript Library v1.8.2\n'
 
     # check that calling path again doesn't try re-downloading
-    with mock.patch.object(dnld_item, 'acquire_resource',
-                           wraps=dnld_item.acquire_resource) as counter:
+    with mock.patch.object(
+        dnld_item, 'acquire_resource', wraps=dnld_item.acquire_resource
+    ) as counter:
         assert dnld_item.path(format_dict) == tmp_fname
     counter.assert_not_called()
 
@@ -137,24 +149,28 @@ def test_natural_earth_downloader(tmp_path):
 
     # picking a small-ish file to speed up download times, the file itself
     # isn't important - it is the download mechanism that is.
-    format_dict = {'category': 'physical',
-                   'name': 'rivers_lake_centerlines',
-                   'resolution': '110m'}
+    format_dict = {
+        'category': 'physical',
+        'name': 'rivers_lake_centerlines',
+        'resolution': '110m',
+    }
 
     dnld_item = NEShpDownloader(target_path_template=shp_path_template)
 
     # check that the file gets downloaded the first time path is called
-    with mock.patch.object(dnld_item, 'acquire_resource',
-                           wraps=dnld_item.acquire_resource) as counter:
-        with pytest.warns(cartopy.io.DownloadWarning, match="Downloading:"):
+    with mock.patch.object(
+        dnld_item, 'acquire_resource', wraps=dnld_item.acquire_resource
+    ) as counter:
+        with pytest.warns(cartopy.io.DownloadWarning, match='Downloading:'):
             shp_path = dnld_item.path(format_dict)
     counter.assert_called_once()
 
     assert shp_path_template.format(**format_dict) == str(shp_path)
 
     # check that calling path again doesn't try re-downloading
-    with mock.patch.object(dnld_item, 'acquire_resource',
-                           wraps=dnld_item.acquire_resource) as counter:
+    with mock.patch.object(
+        dnld_item, 'acquire_resource', wraps=dnld_item.acquire_resource
+    ) as counter:
         assert dnld_item.path(format_dict) == shp_path
     counter.assert_not_called()
 
@@ -162,16 +178,18 @@ def test_natural_earth_downloader(tmp_path):
     exts = ['.shp', '.shx']
     for ext in exts:
         fname = shp_path.with_suffix(ext)
-        assert fname.exists(), \
-            f"Shapefile's {ext} file doesn't exist in {fname}"
+        assert fname.exists(), f"Shapefile's {ext} file doesn't exist in {fname}"
 
     # check that providing a pre downloaded path actually works
-    pre_dnld = NEShpDownloader(target_path_template='/not/a/real/file.txt',
-                               pre_downloaded_path_template=str(shp_path))
+    pre_dnld = NEShpDownloader(
+        target_path_template='/not/a/real/file.txt',
+        pre_downloaded_path_template=str(shp_path),
+    )
 
     # check that the pre_dnld downloader doesn't re-download, but instead
     # uses the path of the previously downloaded item
-    with mock.patch.object(pre_dnld, 'acquire_resource',
-                           wraps=pre_dnld.acquire_resource) as counter:
+    with mock.patch.object(
+        pre_dnld, 'acquire_resource', wraps=pre_dnld.acquire_resource
+    ) as counter:
         assert pre_dnld.path(format_dict) == shp_path
     counter.assert_not_called()

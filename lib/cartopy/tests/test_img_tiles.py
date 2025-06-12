@@ -23,30 +23,33 @@ RESOLUTION = (30, 30)
 
 #: Maps Google tile coordinates to native mercator coordinates as defined
 #: by https://goo.gl/pgJi.
-KNOWN_EXTENTS = {(0, 0, 0): (-20037508.342789244, 20037508.342789244,
-                             -20037508.342789244, 20037508.342789244),
-                 (2, 0, 2): (0., 10018754.17139462,
-                             10018754.17139462, 20037508.342789244),
-                 (0, 2, 2): (-20037508.342789244, -10018754.171394622,
-                             -10018754.171394622, 0),
-                 (2, 2, 2): (0, 10018754.17139462,
-                             -10018754.171394622, 0),
-                 (8, 9, 4): (0, 2504688.542848654,
-                             -5009377.085697312, -2504688.542848654),
-                 }
+KNOWN_EXTENTS = {
+    (0, 0, 0): (
+        -20037508.342789244,
+        20037508.342789244,
+        -20037508.342789244,
+        20037508.342789244,
+    ),
+    (2, 0, 2): (0.0, 10018754.17139462, 10018754.17139462, 20037508.342789244),
+    (0, 2, 2): (-20037508.342789244, -10018754.171394622, -10018754.171394622, 0),
+    (2, 2, 2): (0, 10018754.17139462, -10018754.171394622, 0),
+    (8, 9, 4): (0, 2504688.542848654, -5009377.085697312, -2504688.542848654),
+}
 
 
 def GOOGLE_IMAGE_URL_REPLACEMENT(self, tile):
     # TODO: This is a hack to replace the Google image URL with a static image.
     #       This service has been deprecated by Google, so we need to replace it
     #       See https://developers.google.com/chart/image for the notice
-    pytest.xfail(reason="Google has deprecated the tile API used in this test")
+    pytest.xfail(reason='Google has deprecated the tile API used in this test')
 
     x, y, z = tile
-    return (f'https://chart.googleapis.com/chart?chst=d_text_outline&'
-            f'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
-            f'Google:%20%20({x},{y})|Zoom%20{z}||||||'
-            f'____________________________')
+    return (
+        f'https://chart.googleapis.com/chart?chst=d_text_outline&'
+        f'chs=256x256&chf=bg,s,00000055&chld=FFFFFF|16|h|000000|b||||'
+        f'Google:%20%20({x},{y})|Zoom%20{z}||||||'
+        f'____________________________'
+    )
 
 
 def test_google_tile_styles():
@@ -56,38 +59,40 @@ def test_google_tile_styles():
     This is essentially just assures information is properly propagated through
     the class structure.
     """
-    reference_url = ("https://mts0.google.com/vt/lyrs={style}@177000000&hl=en"
-                     "&src=api&x=1&y=2&z=3&s=G")
-    tile = ["1", "2", "3"]
+    reference_url = (
+        'https://mts0.google.com/vt/lyrs={style}@177000000&hl=en'
+        '&src=api&x=1&y=2&z=3&s=G'
+    )
+    tile = ['1', '2', '3']
 
     # Default is street.
     gt = cimgt.GoogleTiles()
     url = gt._image_url(tile)
-    assert reference_url.format(style="m") == url
+    assert reference_url.format(style='m') == url
 
     # Street
-    gt = cimgt.GoogleTiles(style="street")
+    gt = cimgt.GoogleTiles(style='street')
     url = gt._image_url(tile)
-    assert reference_url.format(style="m") == url
+    assert reference_url.format(style='m') == url
 
     # Satellite
-    gt = cimgt.GoogleTiles(style="satellite")
+    gt = cimgt.GoogleTiles(style='satellite')
     url = gt._image_url(tile)
-    assert reference_url.format(style="s") == url
+    assert reference_url.format(style='s') == url
 
     # Terrain
-    gt = cimgt.GoogleTiles(style="terrain")
+    gt = cimgt.GoogleTiles(style='terrain')
     url = gt._image_url(tile)
-    assert reference_url.format(style="t") == url
+    assert reference_url.format(style='t') == url
 
     # Streets only
-    gt = cimgt.GoogleTiles(style="only_streets")
+    gt = cimgt.GoogleTiles(style='only_streets')
     url = gt._image_url(tile)
-    assert reference_url.format(style="h") == url
+    assert reference_url.format(style='h') == url
 
     # Exception is raised if unknown style is passed.
     with pytest.raises(ValueError):
-        cimgt.GoogleTiles(style="random_style")
+        cimgt.GoogleTiles(style='random_style')
 
 
 def test_google_wts():
@@ -99,15 +104,11 @@ def test_google_wts():
 
     with pytest.raises(AssertionError):
         list(gt.find_images(target_domain, -1))
-    assert (tuple(gt.find_images(target_domain, 0)) ==
-            ((0, 0, 0),))
-    assert (tuple(gt.find_images(target_domain, 2)) ==
-            ((1, 1, 2), (2, 1, 2)))
+    assert tuple(gt.find_images(target_domain, 0)) == ((0, 0, 0),)
+    assert tuple(gt.find_images(target_domain, 2)) == ((1, 1, 2), (2, 1, 2))
 
-    assert (list(gt.subtiles((0, 0, 0))) ==
-            [(0, 0, 1), (0, 1, 1), (1, 0, 1), (1, 1, 1)])
-    assert (list(gt.subtiles((1, 0, 1))) ==
-            [(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)])
+    assert list(gt.subtiles((0, 0, 0))) == [(0, 0, 1), (0, 1, 1), (1, 0, 1), (1, 1, 1)]
+    assert list(gt.subtiles((1, 0, 1))) == [(2, 0, 2), (2, 1, 2), (3, 0, 2), (3, 1, 2)]
 
     with pytest.raises(AssertionError):
         gt.tileextent((0, 1, 0))
@@ -123,8 +124,10 @@ def test_tile_bbox_y0_at_south_pole():
     tms = cimgt.MapQuestOpenAerial()
 
     # Check the y0_at_north_pole keywords returns the appropriate bounds.
-    assert_arr_almost(tms.tile_bbox(8, 6, 4, y0_at_north_pole=False),
-                      np.array(KNOWN_EXTENTS[(8, 9, 4)]).reshape([2, 2]))
+    assert_arr_almost(
+        tms.tile_bbox(8, 6, 4, y0_at_north_pole=False),
+        np.array(KNOWN_EXTENTS[(8, 9, 4)]).reshape([2, 2]),
+    )
 
 
 def test_tile_find_images():
@@ -134,8 +137,12 @@ def test_tile_find_images():
     multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 
-    assert (list(gt.find_images(target_domain, 4)) ==
-            [(7, 4, 4), (7, 5, 4), (8, 4, 4), (8, 5, 4)])
+    assert list(gt.find_images(target_domain, 4)) == [
+        (7, 4, 4),
+        (7, 5, 4),
+        (8, 4, 4),
+        (8, 5, 4),
+    ]
 
 
 @pytest.mark.network
@@ -149,12 +156,10 @@ def test_image_for_domain():
 
     _, extent, _ = gt.image_for_domain(target_domain, 6)
 
-    ll_extent = ccrs.Geodetic().transform_points(gt.crs,
-                                                 np.array(extent[:2]),
-                                                 np.array(extent[2:]))
-    assert_arr_almost(ll_extent[:, :2],
-                      [[-11.25, 48.92249926],
-                       [11.25, 61.60639637]])
+    ll_extent = ccrs.Geodetic().transform_points(
+        gt.crs, np.array(extent[:2]), np.array(extent[2:])
+    )
+    assert_arr_almost(ll_extent[:, :2], [[-11.25, 48.92249926], [11.25, 61.60639637]])
 
 
 def test_quadtree_wts():
@@ -183,24 +188,33 @@ def test_quadtree_wts():
         qt.tileextent('4')
 
     assert_arr_almost(qt.tileextent(''), KNOWN_EXTENTS[(0, 0, 0)])
-    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
-                      KNOWN_EXTENTS[(2, 0, 2)])
-    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((0, 2, 2), google=True)),
-                      KNOWN_EXTENTS[(0, 2, 2)])
-    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
-                      KNOWN_EXTENTS[(2, 0, 2)])
-    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((2, 2, 2), google=True)),
-                      KNOWN_EXTENTS[(2, 2, 2)])
-    assert_arr_almost(qt.tileextent(qt.tms_to_quadkey((8, 9, 4), google=True)),
-                      KNOWN_EXTENTS[(8, 9, 4)])
+    assert_arr_almost(
+        qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
+        KNOWN_EXTENTS[(2, 0, 2)],
+    )
+    assert_arr_almost(
+        qt.tileextent(qt.tms_to_quadkey((0, 2, 2), google=True)),
+        KNOWN_EXTENTS[(0, 2, 2)],
+    )
+    assert_arr_almost(
+        qt.tileextent(qt.tms_to_quadkey((2, 0, 2), google=True)),
+        KNOWN_EXTENTS[(2, 0, 2)],
+    )
+    assert_arr_almost(
+        qt.tileextent(qt.tms_to_quadkey((2, 2, 2), google=True)),
+        KNOWN_EXTENTS[(2, 2, 2)],
+    )
+    assert_arr_almost(
+        qt.tileextent(qt.tms_to_quadkey((8, 9, 4), google=True)),
+        KNOWN_EXTENTS[(8, 9, 4)],
+    )
 
 
 def test_mapbox_tiles_api_url():
     token = 'foo'
     map_name = 'bar'
     tile = [0, 1, 2]
-    exp_url = ('https://api.mapbox.com/styles/v1/mapbox/bar/tiles'
-               '/2/0/1?access_token=foo')
+    exp_url = 'https://api.mapbox.com/styles/v1/mapbox/bar/tiles/2/0/1?access_token=foo'
 
     mapbox_sample = cimgt.MapboxTiles(token, map_name)
     url_str = mapbox_sample._image_url(tile)
@@ -212,25 +226,31 @@ def test_mapbox_style_tiles_api_url():
     username = 'baz'
     map_id = 'bar'
     tile = [0, 1, 2]
-    exp_url = ('https://api.mapbox.com/styles/v1/'
-               'baz/bar/tiles/256/2/0/1'
-               '?access_token=foo')
+    exp_url = (
+        'https://api.mapbox.com/styles/v1/baz/bar/tiles/256/2/0/1?access_token=foo'
+    )
 
     mapbox_sample = cimgt.MapboxStyleTiles(token, username, map_id)
     url_str = mapbox_sample._image_url(tile)
     assert url_str == exp_url
 
 
-@pytest.mark.parametrize("style,extension,resolution", [
-    ("alidade_smooth", "png", ""),
-    ("alidade_smooth", "png", "@2x"),
-    ("stamen_watercolor", "jpg", "")])
+@pytest.mark.parametrize(
+    'style,extension,resolution',
+    [
+        ('alidade_smooth', 'png', ''),
+        ('alidade_smooth', 'png', '@2x'),
+        ('stamen_watercolor', 'jpg', ''),
+    ],
+)
 def test_stadia_maps_tiles_api_url(style, extension, resolution):
     apikey = 'foo'
     tile = [0, 1, 2]
-    exp_url = ('http://tiles.stadiamaps.com/tiles/'
-               f'{style}/2/0/1{resolution}.{extension}'
-               '?api_key=foo')
+    exp_url = (
+        'http://tiles.stadiamaps.com/tiles/'
+        f'{style}/2/0/1{resolution}.{extension}'
+        '?api_key=foo'
+    )
 
     sample = cimgt.StadiaMapsTiles(apikey, style=style, resolution=resolution)
     url_str = sample._image_url(tile)
@@ -244,29 +264,32 @@ def test_ordnance_survey_tile_styles():
     This is essentially just assures information is properly propagated through
     the class structure.
     """
-    dummy_apikey = "None"
+    dummy_apikey = 'None'
 
-    ref_url = "https://api.os.uk/maps/raster/v1/zxy/" \
-              "{layer}/{z}/{x}/{y}.png?key=None"
-    tile = ["1", "2", "3"]
+    ref_url = 'https://api.os.uk/maps/raster/v1/zxy/{layer}/{z}/{x}/{y}.png?key=None'
+    tile = ['1', '2', '3']
 
     # Default is Road_3857.
     ordsurvey = cimgt.OrdnanceSurvey(dummy_apikey)
     url = ordsurvey._image_url(tile)
-    assert url == ref_url.format(layer="Road_3857",
-                                 z=tile[2], y=tile[1], x=tile[0])
+    assert url == ref_url.format(layer='Road_3857', z=tile[2], y=tile[1], x=tile[0])
 
-    for layer in ("Road_3857", "Light_3857", "Outdoor_3857",
-                  "Road", "Light", "Outdoor"):
+    for layer in (
+        'Road_3857',
+        'Light_3857',
+        'Outdoor_3857',
+        'Road',
+        'Light',
+        'Outdoor',
+    ):
         ordsurvey = cimgt.OrdnanceSurvey(dummy_apikey, layer=layer)
         url = ordsurvey._image_url(tile)
-        layer = layer if layer.endswith("_3857") else layer + "_3857"
-        assert url == ref_url.format(layer=layer,
-                                     z=tile[2], y=tile[1], x=tile[0])
+        layer = layer if layer.endswith('_3857') else layer + '_3857'
+        assert url == ref_url.format(layer=layer, z=tile[2], y=tile[1], x=tile[0])
 
     # Exception is raised if unknown style is passed.
     with pytest.raises(ValueError):
-        cimgt.OrdnanceSurvey(dummy_apikey, layer="random_style")
+        cimgt.OrdnanceSurvey(dummy_apikey, layer='random_style')
 
 
 @pytest.mark.network
@@ -278,8 +301,8 @@ def test_ordnance_survey_get_image():
     except KeyError:
         pytest.skip('ORDNANCE_SURVEY_API_KEY environment variable is unset.')
 
-    os1 = cimgt.OrdnanceSurvey(api_key, layer="Outdoor_3857")
-    os2 = cimgt.OrdnanceSurvey(api_key, layer="Light_3857")
+    os1 = cimgt.OrdnanceSurvey(api_key, layer='Outdoor_3857')
+    os2 = cimgt.OrdnanceSurvey(api_key, layer='Light_3857')
 
     tile = (500, 300, 10)
 
@@ -298,8 +321,10 @@ def test_azuremaps_tiles_api_url():
     tileset_id = 'bar'
     tile = [0, 1, 2]
 
-    exp_url = ('https://atlas.microsoft.com/map/tile?api-version=2.0'
-               '&tilesetId=bar&x=0&y=1&zoom=2&subscription-key=foo')
+    exp_url = (
+        'https://atlas.microsoft.com/map/tile?api-version=2.0'
+        '&tilesetId=bar&x=0&y=1&zoom=2&subscription-key=foo'
+    )
 
     az_maps_sample = cimgt.AzureMapsTiles(subscription_key, tileset_id)
     url_str = az_maps_sample._image_url(tile)
@@ -313,11 +338,10 @@ def test_azuremaps_get_image():
     try:
         api_key = os.environ['AZURE_MAPS_SUBSCRIPTION_KEY']
     except KeyError:
-        pytest.skip('AZURE_MAPS_SUBSCRIPTION_KEY environment variable '
-                    'is unset.')
+        pytest.skip('AZURE_MAPS_SUBSCRIPTION_KEY environment variable is unset.')
 
-    am1 = cimgt.AzureMapsTiles(api_key, tileset_id="microsoft.imagery")
-    am2 = cimgt.AzureMapsTiles(api_key, tileset_id="microsoft.base.road")
+    am1 = cimgt.AzureMapsTiles(api_key, tileset_id='microsoft.imagery')
+    am2 = cimgt.AzureMapsTiles(api_key, tileset_id='microsoft.base.road')
 
     tile = (500, 300, 10)
 
@@ -332,21 +356,21 @@ def test_azuremaps_get_image():
 
 
 @pytest.mark.network
-@pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
+@pytest.mark.parametrize('cache_dir', ['tmpdir', True, False])
 @pytest.mark.skipif(not ogc._OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 def test_wmts_cache(cache_dir, tmp_path):
-    if cache_dir == "tmpdir":
+    if cache_dir == 'tmpdir':
         tmpdir_str = str(tmp_path)
     else:
         tmpdir_str = cache_dir
 
     if cache_dir is True:
-        config["cache_dir"] = str(tmp_path)
+        config['cache_dir'] = str(tmp_path)
 
     # URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     # layer_name = 'VIIRS_CityLights_2012'
     URI = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/1.0.0/WMTSCapabilities.xml'
-    layer_name='USGSImageryOnly'
+    layer_name = 'USGSImageryOnly'
     projection = ccrs.PlateCarree()
 
     # Fetch tiles and save them in the cache
@@ -354,8 +378,7 @@ def test_wmts_cache(cache_dir, tmp_path):
         warnings.simplefilter('always')
         source = ogc.WMTSRasterSource(URI, layer_name, cache=tmpdir_str)
     extent = [-10, 10, 40, 60]
-    located_image, = source.fetch_raster(projection, extent,
-                                         RESOLUTION)
+    (located_image,) = source.fetch_raster(projection, extent, RESOLUTION)
 
     # Do not check the result if the cache is disabled
     if cache_dir is False:
@@ -375,21 +398,16 @@ def test_wmts_cache(cache_dir, tmp_path):
     ]
 
     # Check the results
-    cache_dir_res = source.cache_path / "WMTSRasterSource"
+    cache_dir_res = source.cache_path / 'WMTSRasterSource'
     files = list(cache_dir_res.iterdir())
     hashes = {
-        f:
-            hashlib.md5(
-                np.load(cache_dir_res / f, allow_pickle=True).data
-            ).hexdigest()
+        f: hashlib.md5(np.load(cache_dir_res / f, allow_pickle=True).data).hexdigest()
         for f in files
     }
     assert sorted(files) == [cache_dir_res / f for x, y, f, h in x_y_f_h]
     assert set(files) == set([cache_dir_res / c for c in source.cache])
 
-    assert sorted(hashes.values()) == sorted(
-        h for x, y, f, h in x_y_f_h
-    )
+    assert sorted(hashes.values()) == sorted(h for x, y, f, h in x_y_f_h)
 
     # Update images in cache (all white)
     for f in files:
@@ -399,8 +417,7 @@ def test_wmts_cache(cache_dir, tmp_path):
         np.save(filename, img, allow_pickle=True)
 
     wmts_cache = ogc.WMTSRasterSource(URI, layer_name, cache=tmpdir_str)
-    located_image_cache, = wmts_cache.fetch_raster(projection, extent,
-                                         RESOLUTION)
+    (located_image_cache,) = wmts_cache.fetch_raster(projection, extent, RESOLUTION)
 
     # Check that the new fetch_raster() call used cached images
     assert wmts_cache.cache == set([cache_dir_res / c for c in source.cache])
@@ -408,15 +425,15 @@ def test_wmts_cache(cache_dir, tmp_path):
 
 
 @pytest.mark.network
-@pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
+@pytest.mark.parametrize('cache_dir', ['tmpdir', True, False])
 def test_cache(cache_dir, tmp_path):
-    if cache_dir == "tmpdir":
+    if cache_dir == 'tmpdir':
         tmpdir_str = str(tmp_path)
     else:
         tmpdir_str = cache_dir
 
     if cache_dir is True:
-        config["cache_dir"] = str(tmp_path)
+        config['cache_dir'] = str(tmp_path)
 
     # Fetch tiles and save them in the cache
     with warnings.catch_warnings(record=True) as w:
@@ -458,25 +475,20 @@ def test_cache(cache_dir, tmp_path):
         (33, 18, 6, '33_18_6.npy', '4e51e32da73fb99229817dcd7b7e1f4f'),
         (33, 19, 6, '33_19_6.npy', 'b9b5057fa012c5788cbbe1e18c9bb512'),
         (33, 20, 6, '33_20_6.npy', 'b55a7c0a8d86167df496732f85bddcf9'),
-        (33, 21, 6, '33_21_6.npy', '4208ba897c460e9bb0d2469552e127ff')
+        (33, 21, 6, '33_21_6.npy', '4208ba897c460e9bb0d2469552e127ff'),
     ]
 
     # Check the results
-    cache_dir_res = gt.cache_path / "GoogleTiles"
+    cache_dir_res = gt.cache_path / 'GoogleTiles'
     files = list(cache_dir_res.iterdir())
     hashes = {
-        f:
-            hashlib.md5(
-                np.load(cache_dir_res / f, allow_pickle=True).data
-            ).hexdigest()
+        f: hashlib.md5(np.load(cache_dir_res / f, allow_pickle=True).data).hexdigest()
         for f in files
     }
     assert sorted(files) == [cache_dir_res / f for x, y, z, f, h in x_y_z_f_h]
     assert set(files) == gt.cache
 
-    assert sorted(hashes.values()) == sorted(
-        h for x, y, z, f, h in x_y_z_f_h
-    )
+    assert sorted(hashes.values()) == sorted(h for x, y, z, f, h in x_y_z_f_h)
 
     # Update images in cache (all white)
     for f in files:
@@ -486,8 +498,7 @@ def test_cache(cache_dir, tmp_path):
         np.save(filename, img, allow_pickle=True)
 
     gt_cache = cimgt.GoogleTiles(cache=tmpdir_str)
-    gt_cache._image_url = types.MethodType(
-        GOOGLE_IMAGE_URL_REPLACEMENT, gt_cache)
+    gt_cache._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt_cache)
     img_cache, _, _ = gt_cache.image_for_domain(target_domain, 6)
 
     # Check that the new image_for_domain() call used cached images

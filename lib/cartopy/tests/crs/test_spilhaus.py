@@ -5,6 +5,7 @@
 """
 Tests for the Spilhaus projection.
 """
+
 from packaging.version import parse as parse_version
 import pyproj
 import pytest
@@ -18,21 +19,22 @@ common_arg = {
     'ellps=WGS84',
     'no_defs',
 }
+
+
 @pytest.mark.skipif(
-    (proj_version < parse_version("9.6.0")),
-    reason="Requires PROJ >= 9.6.0"
+    (proj_version < parse_version('9.6.0')), reason='Requires PROJ >= 9.6.0'
 )
 def test_defaults():
     crs = ccrs.Spilhaus()
-    expected = {'rot=45','x_0=0.0','y_0=0.0'} | common_arg
+    expected = {'rot=45', 'x_0=0.0', 'y_0=0.0'} | common_arg
     check_proj_params('spilhaus', crs, expected)
 
+
 @pytest.mark.skipif(
-    (proj_version < parse_version("9.6.0")),
-    reason="Requires PROJ >= 9.6.0"
+    (proj_version < parse_version('9.6.0')), reason='Requires PROJ >= 9.6.0'
 )
-@pytest.mark.parametrize("rotation",[45,135,225])
+@pytest.mark.parametrize('rotation', [45, 135, 225])
 def test_rotation(rotation):
-    crs = ccrs.Spilhaus(rotation = rotation)
-    expected = {f'rot={rotation}','x_0=0.0','y_0=0.0'} | common_arg
+    crs = ccrs.Spilhaus(rotation=rotation)
+    expected = {f'rot={rotation}', 'x_0=0.0', 'y_0=0.0'} | common_arg
     check_proj_params('spilhaus', crs, expected)

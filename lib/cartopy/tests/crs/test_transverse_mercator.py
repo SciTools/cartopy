@@ -23,28 +23,30 @@ class TestTransverseMercator:
     def test_default(self, approx):
         proj = ccrs.TransverseMercator(approx=approx)
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res,
-                                             (-245269.53181, 5627508.74355),
-                                             decimal=5)
+        np.testing.assert_array_almost_equal(
+            res, (-245269.53181, 5627508.74355), decimal=5
+        )
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (35474.63566645,
-                                                   5596583.41949901))
+        np.testing.assert_array_almost_equal(res, (35474.63566645, 5596583.41949901))
 
     def test_osgb_vals(self, approx):
-        proj = ccrs.TransverseMercator(central_longitude=-2,
-                                       central_latitude=49,
-                                       scale_factor=0.9996012717,
-                                       false_easting=400000,
-                                       false_northing=-100000,
-                                       globe=ccrs.Globe(datum='OSGB36',
-                                                        ellipse='airy'),
-                                       approx=approx)
+        proj = ccrs.TransverseMercator(
+            central_longitude=-2,
+            central_latitude=49,
+            scale_factor=0.9996012717,
+            false_easting=400000,
+            false_northing=-100000,
+            globe=ccrs.Globe(datum='OSGB36', ellipse='airy'),
+            approx=approx,
+        )
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (295971.28668, 93064.27666),
-                                             decimal=5)
+        np.testing.assert_array_almost_equal(
+            res, (295971.28668, 93064.27666), decimal=5
+        )
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (577274.98380, 69740.49227),
-                                             decimal=5)
+        np.testing.assert_array_almost_equal(
+            res, (577274.98380, 69740.49227), decimal=5
+        )
 
     def test_nan(self, approx):
         if not approx:
@@ -67,11 +69,13 @@ class TestOSGB:
     def test_default(self, approx):
         proj = ccrs.OSGB(approx=approx)
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (295971.28668, 93064.27666),
-                                             decimal=5)
+        np.testing.assert_array_almost_equal(
+            res, (295971.28668, 93064.27666), decimal=5
+        )
         res = proj.transform_point(*self.point_b, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res, (577274.98380, 69740.49227),
-                                             decimal=5)
+        np.testing.assert_array_almost_equal(
+            res, (577274.98380, 69740.49227), decimal=5
+        )
 
     def test_nan(self):
         proj = ccrs.OSGB(approx=True)
@@ -91,8 +95,7 @@ class TestOSNI:
     def test_default(self, approx):
         proj = ccrs.OSNI(approx=approx)
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(res,
-                                             (275614.267627, 386984.206430))
+        np.testing.assert_array_almost_equal(res, (275614.267627, 386984.206430))
 
     def test_nan(self):
         proj = ccrs.OSNI(approx=True)

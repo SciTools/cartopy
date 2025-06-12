@@ -12,6 +12,7 @@ Browse Services for 5th Feb 2016. A true color MODIS image is shown on
 the left, with the MODIS false color 'snow RGB' shown on the right.
 
 """
+
 from matplotlib import patheffects
 import matplotlib.pyplot as plt
 from owslib.wmts import WebMapTileService
@@ -25,8 +26,10 @@ def main():
     wmts = WebMapTileService(url)
 
     # Layers for MODIS true color and snow RGB
-    layers = ['MODIS_Terra_SurfaceReflectance_Bands143',
-              'MODIS_Terra_CorrectedReflectance_Bands367']
+    layers = [
+        'MODIS_Terra_SurfaceReflectance_Bands143',
+        'MODIS_Terra_CorrectedReflectance_Bands367',
+    ]
 
     date_str = '2016-02-05'
 
@@ -44,10 +47,15 @@ def main():
         ax.set_xlim((x0, x1))
         ax.set_ylim((y0, y1))
         ax.add_wmts(wmts, layer, wmts_kwargs={'time': date_str})
-        txt = ax.text(4.7, 43.2, wmts[layer].title, fontsize=18, color='wheat',
-                      transform=geodetic_crs)
-        txt.set_path_effects([patheffects.withStroke(linewidth=5,
-                                                     foreground='black')])
+        txt = ax.text(
+            4.7,
+            43.2,
+            wmts[layer].title,
+            fontsize=18,
+            color='wheat',
+            transform=geodetic_crs,
+        )
+        txt.set_path_effects([patheffects.withStroke(linewidth=5, foreground='black')])
     plt.show()
 
 

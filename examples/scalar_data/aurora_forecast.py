@@ -12,6 +12,7 @@ published for the coming 30 minutes. The data is provided as a
 data spaced equally in degrees from 0 to 359 and -90 to 90.
 
 """
+
 from datetime import datetime
 import json
 from urllib.request import urlopen
@@ -45,9 +46,11 @@ def aurora_forecast():
     """
 
     # GitHub gist to download the example data from
-    url = ('https://gist.githubusercontent.com/lgolston/594c030876c0614d3'
-           '6d13d03e4f115b6/raw/342ff751419204594180e88d69b3986dbd4fea4a/'
-           'ovation_aurora_latest.json')
+    url = (
+        'https://gist.githubusercontent.com/lgolston/594c030876c0614d3'
+        '6d13d03e4f115b6/raw/342ff751419204594180e88d69b3986dbd4fea4a/'
+        'ovation_aurora_latest.json'
+    )
     # To plot the current forecast instead, uncomment the following line
     # url = 'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json'
 
@@ -67,21 +70,20 @@ def aurora_forecast():
 
 def aurora_cmap():
     """Return a colormap with aurora like colors"""
-    stops = {'red': [(0.00, 0.1725, 0.1725),
-                     (0.50, 0.1725, 0.1725),
-                     (1.00, 0.8353, 0.8353)],
-
-             'green': [(0.00, 0.9294, 0.9294),
-                       (0.50, 0.9294, 0.9294),
-                       (1.00, 0.8235, 0.8235)],
-
-             'blue': [(0.00, 0.3843, 0.3843),
-                      (0.50, 0.3843, 0.3843),
-                      (1.00, 0.6549, 0.6549)],
-
-             'alpha': [(0.00, 0.0, 0.0),
-                       (0.50, 1.0, 1.0),
-                       (1.00, 1.0, 1.0)]}
+    stops = {
+        'red': [(0.00, 0.1725, 0.1725), (0.50, 0.1725, 0.1725), (1.00, 0.8353, 0.8353)],
+        'green': [
+            (0.00, 0.9294, 0.9294),
+            (0.50, 0.9294, 0.9294),
+            (1.00, 0.8235, 0.8235),
+        ],
+        'blue': [
+            (0.00, 0.3843, 0.3843),
+            (0.50, 0.3843, 0.3843),
+            (1.00, 0.6549, 0.6549),
+        ],
+        'alpha': [(0.00, 0.0, 0.0), (0.50, 1.0, 1.0), (1.00, 1.0, 1.0)],
+    }
 
     return LinearSegmentedColormap('aurora', stops)
 
@@ -106,9 +108,16 @@ def main():
         ax.stock_img()
         ax.gridlines()
         ax.add_feature(Nightshade(dt))
-        ax.imshow(img, vmin=0, vmax=100, transform=crs,
-                  extent=extent, origin=origin, zorder=2,
-                  cmap=aurora_cmap())
+        ax.imshow(
+            img,
+            vmin=0,
+            vmax=100,
+            transform=crs,
+            extent=extent,
+            origin=origin,
+            zorder=2,
+            cmap=aurora_cmap(),
+        )
 
     plt.show()
 

@@ -13,37 +13,29 @@ import cartopy.crs as ccrs
 
 
 class TestTransformVectors:
-
     def test_transform(self):
         # Test some simple vectors to make sure they are transformed
         # correctly.
-        rlons = np.array([-90., 0, 90., 180.])
-        rlats = np.array([0., 0., 0., 0.])
+        rlons = np.array([-90.0, 0, 90.0, 180.0])
+        rlats = np.array([0.0, 0.0, 0.0, 0.0])
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         # transform grid eastward vectors
-        ut, vt = target_proj.transform_vectors(src_proj,
-                                               rlons,
-                                               rlats,
-                                               np.ones([4]),
-                                               np.zeros([4]))
+        ut, vt = target_proj.transform_vectors(
+            src_proj, rlons, rlats, np.ones([4]), np.zeros([4])
+        )
         assert_array_almost_equal(ut, np.array([0, 1, 0, -1]), decimal=2)
         assert_array_almost_equal(vt, np.array([-1, 0, 1, 0]), decimal=2)
         # transform grid northward vectors
-        ut, vt = target_proj.transform_vectors(src_proj,
-                                               rlons,
-                                               rlats,
-                                               np.zeros([4]),
-                                               np.ones([4]))
+        ut, vt = target_proj.transform_vectors(
+            src_proj, rlons, rlats, np.zeros([4]), np.ones([4])
+        )
         assert_array_almost_equal(ut, np.array([1, 0, -1, 0]), decimal=2)
         assert_array_almost_equal(vt, np.array([0, 1, 0, -1]), decimal=2)
         # transform grid north-eastward vectors
-        ut, vt = target_proj.transform_vectors(src_proj,
-                                               rlons,
-                                               rlats,
-                                               np.ones([4]),
-                                               np.ones([4]))
+        ut, vt = target_proj.transform_vectors(
+            src_proj, rlons, rlats, np.ones([4]), np.ones([4])
+        )
         assert_array_almost_equal(ut, np.array([1, 1, -1, -1]), decimal=2)
         assert_array_almost_equal(vt, np.array([-1, 1, 1, -1]), decimal=2)
 
@@ -53,10 +45,9 @@ class TestTransformVectors:
         y = np.arange(30, 72.5, 2.5)
         x2d, y2d = np.meshgrid(x, y)
         u = np.cos(np.deg2rad(y2d))
-        v = np.cos(2. * np.deg2rad(x2d))
+        v = np.cos(2.0 * np.deg2rad(x2d))
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         proj_xyz = target_proj.transform_points(src_proj, x2d, y2d)
         xt, yt = proj_xyz[..., 0], proj_xyz[..., 1]
         ut, vt = target_proj.transform_vectors(src_proj, x2d, y2d, u, v)
@@ -67,13 +58,12 @@ class TestTransformVectors:
     def test_invalid_input_domain(self):
         # If an input coordinate is outside the input projection domain
         # we should be able to handle it correctly.
-        rlon = np.array([270.])
-        rlat = np.array([0.])
-        u = np.array([1.])
-        v = np.array([0.])
+        rlon = np.array([270.0])
+        rlat = np.array([0.0])
+        u = np.array([1.0])
+        v = np.array([0.0])
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
         assert_array_almost_equal(ut, np.array([0]), decimal=2)
         assert_array_almost_equal(vt, np.array([-1]), decimal=2)
@@ -82,57 +72,53 @@ class TestTransformVectors:
         # If the point we need to calculate the vector angle falls outside the
         # source projection x-domain it should be handled correctly as long as
         # it is not a corner point.
-        rlon = np.array([180.])
-        rlat = np.array([0.])
-        u = np.array([1.])
-        v = np.array([0.])
+        rlon = np.array([180.0])
+        rlat = np.array([0.0])
+        u = np.array([1.0])
+        v = np.array([0.0])
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
         assert_array_almost_equal(ut, np.array([-1]), decimal=2)
-        assert_array_almost_equal(vt, np.array([0.]), decimal=2)
+        assert_array_almost_equal(vt, np.array([0.0]), decimal=2)
 
     def test_invalid_y_domain(self):
         # If the point we need to calculate the vector angle falls outside the
         # source projection y-domain it should be handled correctly as long as
         # it is not a corner point.
-        rlon = np.array([0.])
-        rlat = np.array([90.])
-        u = np.array([0.])
-        v = np.array([1.])
+        rlon = np.array([0.0])
+        rlat = np.array([90.0])
+        u = np.array([0.0])
+        v = np.array([1.0])
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
-        assert_array_almost_equal(ut, np.array([0.]), decimal=2)
-        assert_array_almost_equal(vt, np.array([1.]), decimal=2)
+        assert_array_almost_equal(ut, np.array([0.0]), decimal=2)
+        assert_array_almost_equal(vt, np.array([1.0]), decimal=2)
 
     def test_invalid_xy_domain_corner(self):
         # If the point we need to calculate the vector angle falls outside the
         # source projection x and y-domain it should be handled correctly.
-        rlon = np.array([180.])
-        rlat = np.array([90.])
-        u = np.array([1.])
-        v = np.array([1.])
+        rlon = np.array([180.0])
+        rlat = np.array([90.0])
+        u = np.array([1.0])
+        v = np.array([1.0])
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
-        assert_array_almost_equal(ut, np.array([0.]), decimal=2)
-        assert_array_almost_equal(vt, np.array([-2**.5]), decimal=2)
+        assert_array_almost_equal(ut, np.array([0.0]), decimal=2)
+        assert_array_almost_equal(vt, np.array([-(2**0.5)]), decimal=2)
 
     def test_invalid_x_domain_corner(self):
         # If the point we need to calculate the vector angle falls outside the
         # source projection x-domain and is a corner point, it may be handled
         # incorrectly and a warning should be raised.
-        rlon = np.array([180.])
-        rlat = np.array([90.])
-        u = np.array([1.])
-        v = np.array([-1.])
+        rlon = np.array([180.0])
+        rlat = np.array([90.0])
+        u = np.array([1.0])
+        v = np.array([-1.0])
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         with pytest.warns(UserWarning):
             warnings.simplefilter('always')
             ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)
@@ -141,13 +127,12 @@ class TestTransformVectors:
         # If the point we need to calculate the vector angle falls outside the
         # source projection y-domain and is a corner point, it may be handled
         # incorrectly and a warning should be raised.
-        rlon = np.array([180.])
-        rlat = np.array([90.])
-        u = np.array([-1.])
-        v = np.array([1.])
+        rlon = np.array([180.0])
+        rlat = np.array([90.0])
+        u = np.array([-1.0])
+        v = np.array([1.0])
         src_proj = ccrs.PlateCarree()
-        target_proj = ccrs.Stereographic(central_latitude=90,
-                                         central_longitude=0)
+        target_proj = ccrs.Stereographic(central_latitude=90, central_longitude=0)
         with pytest.warns(UserWarning):
             warnings.simplefilter('always')
             ut, vt = target_proj.transform_vectors(src_proj, rlon, rlat, u, v)

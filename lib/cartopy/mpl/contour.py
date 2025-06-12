@@ -15,6 +15,7 @@ class GeoContourSet(QuadContourSet):
     A contourset designed to handle things like contour labels.
 
     """
+
     # nb. No __init__ method here - most of the time a GeoContourSet will
     # come from GeoAxes.contour[f]. These methods morph a ContourSet by
     # fiddling with instance.__class__.
@@ -48,10 +49,8 @@ class GeoContourSet(QuadContourSet):
 
                 # Now that we have the transform, project all of this
                 # collection's paths.
-                new_paths = [col_to_data.transform_path(path)
-                             for path in paths]
-                new_paths = [path for path in new_paths
-                             if path.vertices.size >= 1]
+                new_paths = [col_to_data.transform_path(path) for path in paths]
+                new_paths = [path for path in new_paths if path.vertices.size >= 1]
 
                 # The collection will now be referenced in axes projection
                 # coordinates.
@@ -66,8 +65,7 @@ class GeoContourSet(QuadContourSet):
                         continue
 
                     # Split the path if it has multiple MOVETO statements.
-                    codes = np.array(
-                        path.codes if path.codes is not None else [0])
+                    codes = np.array(path.codes if path.codes is not None else [0])
                     moveto = codes == mpath.Path.MOVETO
                     if moveto.sum() <= 1:
                         # This is only one path, so add it to the collection.

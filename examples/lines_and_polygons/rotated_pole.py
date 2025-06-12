@@ -9,6 +9,7 @@ Try changing the ``box_top`` to ``44``, ``46`` and ``75`` to see the effect
 that including the pole in the polygon has.
 
 """
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs

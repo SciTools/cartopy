@@ -21,8 +21,9 @@ def _split_wrapped_mesh_data(C, mask):
     if C.ndim == 3:
         # RGB(A) array.
         if not _MPL_38:
-            raise ValueError("GeoQuadMesh wrapping for RGB(A) requires "
-                             "Matplotlib v3.8 or later")
+            raise ValueError(
+                'GeoQuadMesh wrapping for RGB(A) requires Matplotlib v3.8 or later'
+            )
 
         # mask will need an extra trailing dimension
         mask = np.broadcast_to(mask[..., np.newaxis], C.shape)
@@ -43,6 +44,7 @@ class GeoQuadMesh(QuadMesh):
     A QuadMesh designed to help handle the case when the mesh is wrapped.
 
     """
+
     # No __init__ method here - most of the time a GeoQuadMesh will
     # come from GeoAxes.pcolormesh. These methods morph a QuadMesh by
     # fiddling with instance.__class__.
@@ -81,8 +83,7 @@ class GeoQuadMesh(QuadMesh):
         ok_shapes = [(h, w, 3), (h, w, 4), (h, w), (h * w,)]
         if A.shape not in ok_shapes:
             ok_shape_str = ' or '.join(map(str, ok_shapes))
-            raise ValueError(
-                f"A should have shape {ok_shape_str}, not {A.shape}")
+            raise ValueError(f'A should have shape {ok_shape_str}, not {A.shape}')
 
         if A.ndim == 1:
             # Always use array with at least two dimensions.  This is
@@ -94,13 +95,13 @@ class GeoQuadMesh(QuadMesh):
 
         # Only use the mask attribute if it is there.
         if hasattr(self, '_wrapped_mask'):
-
             # Update the pcolor data with the wrapped masked data
             A, pcolor_data, _ = _split_wrapped_mesh_data(A, self._wrapped_mask)
 
             if not _MPL_38:
                 self._wrapped_collection_fix.set_array(
-                    pcolor_data[self._wrapped_mask].ravel())
+                    pcolor_data[self._wrapped_mask].ravel()
+                )
             else:
                 self._wrapped_collection_fix.set_array(pcolor_data)
 

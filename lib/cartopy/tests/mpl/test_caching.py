@@ -57,8 +57,9 @@ def test_coastline_loading_cache():
     fig.canvas.draw()
     # Create another instance of the coastlines and count
     # the number of times shapereader.Reader is created.
-    with mock.patch('cartopy.io.shapereader.Reader.__init__',
-                    return_value=None) as counter:
+    with mock.patch(
+        'cartopy.io.shapereader.Reader.__init__', return_value=None
+    ) as counter:
         ax2 = fig.add_subplot(2, 1, 1, projection=ccrs.Robinson())
         ax2.coastlines()
         fig.canvas.draw()
@@ -70,9 +71,9 @@ def test_shapefile_transform_cache():
     # a5caae040ee11e72a62a53100fe5edc355304419 added shapefile mpl
     # geometry caching based on geometry object id. This test ensures
     # it is working.
-    coastline_path = cartopy.io.shapereader.natural_earth(resolution="110m",
-                                                          category='physical',
-                                                          name='coastline')
+    coastline_path = cartopy.io.shapereader.natural_earth(
+        resolution='110m', category='physical', name='coastline'
+    )
     geoms = cartopy.io.shapereader.Reader(coastline_path).geometries()
     # Use the first 10 of them.
     geoms = tuple(geoms)[:10]
@@ -87,8 +88,9 @@ def test_shapefile_transform_cache():
     assert len(FeatureArtist._geom_key_to_geometry_cache) == 0
     assert len(FeatureArtist._geom_key_to_path_cache) == 0
 
-    with mock.patch.object(ax.projection, 'project_geometry',
-                           wraps=ax.projection.project_geometry) as counter:
+    with mock.patch.object(
+        ax.projection, 'project_geometry', wraps=ax.projection.project_geometry
+    ) as counter:
         ax.add_geometries(geoms, ccrs.PlateCarree())
         ax.add_geometries(geoms, ccrs.PlateCarree())
         ax.add_geometries(geoms[:], ccrs.PlateCarree())
@@ -98,7 +100,8 @@ def test_shapefile_transform_cache():
     # n_calls * n_geom, but should now be just n_geom.
     assert counter.call_count == n_geom, (
         f'The given geometry was transformed too many times (expected: '
-        f'{n_geom}; got {counter.call_count}) - the caching is not working.')
+        f'{n_geom}; got {counter.call_count}) - the caching is not working.'
+    )
 
     # Check the cache has an entry for each geometry.
     assert len(FeatureArtist._geom_key_to_geometry_cache) == n_geom
@@ -122,8 +125,9 @@ def test_contourf_transform_path_counting():
     gc.collect()
     initial_cache_size = len(cgeoaxes._PATH_TRANSFORM_CACHE)
 
-    with mock.patch('cartopy.mpl.path.path_to_shapely',
-                    wraps=cartopy.mpl.path.path_to_shapely) as path_to_shapely_counter:
+    with mock.patch(
+        'cartopy.mpl.path.path_to_shapely', wraps=cartopy.mpl.path.path_to_shapely
+    ) as path_to_shapely_counter:
         x, y, z = sample_data((30, 60))
         cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
         if not _MPL_38:
@@ -139,7 +143,8 @@ def test_contourf_transform_path_counting():
     assert path_to_shapely_counter.call_count == n_geom, (
         f'The given geometry was transformed too many times (expected: '
         f'{n_geom}; got {path_to_shapely_counter.call_count}) - the caching is '
-        f'not working.')
+        f'not working.'
+    )
 
     # Check the cache has an entry for each geometry.
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size + n_geom
@@ -152,10 +157,12 @@ def test_contourf_transform_path_counting():
     assert len(cgeoaxes._PATH_TRANSFORM_CACHE) == initial_cache_size
 
 
-@pytest.mark.filterwarnings("ignore:TileMatrixLimits")
+@pytest.mark.filterwarnings('ignore:TileMatrixLimits')
 @pytest.mark.network
-@pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY or not _OWSLIB_AVAILABLE,
-                    reason='OWSLib and at least one of pykdtree or scipy is required')
+@pytest.mark.skipif(
+    not _HAS_PYKDTREE_OR_SCIPY or not _OWSLIB_AVAILABLE,
+    reason='OWSLib and at least one of pykdtree or scipy is required',
+)
 @pytest.mark.xfail(reason='NASA servers are returning bad content metadata')
 def test_wmts_tile_caching():
     image_cache = WMTSRasterSource._shared_image_cache
@@ -172,12 +179,12 @@ def test_wmts_tile_caching():
     extent = (-180, 180, -90, 90)
     resolution = (20, 10)
     n_tiles = 2
-    with mock.patch.object(wmts, 'gettile',
-                           wraps=wmts.gettile) as gettile_counter:
+    with mock.patch.object(wmts, 'gettile', wraps=wmts.gettile) as gettile_counter:
         source.fetch_raster(crs, extent, resolution)
     assert gettile_counter.call_count == n_tiles, (
         f'Too many tile requests - expected {n_tiles}, got '
-        f'{gettile_counter.call_count}.')
+        f'{gettile_counter.call_count}.'
+    )
     del gettile_counter
     gc.collect()
     assert len(image_cache) == 1
@@ -186,8 +193,7 @@ def test_wmts_tile_caching():
     assert len(image_cache[wmts][tiles_key]) == n_tiles
 
     # Second time around we shouldn't request any more tiles.
-    with mock.patch.object(wmts, 'gettile',
-                           wraps=wmts.gettile) as gettile_counter:
+    with mock.patch.object(wmts, 'gettile', wraps=wmts.gettile) as gettile_counter:
         source.fetch_raster(crs, extent, resolution)
     gettile_counter.assert_not_called()
     del gettile_counter

@@ -28,22 +28,34 @@ def test_polygon_interiors(use_legacy_geos_funcs):
     ax.coastlines()
     ax.set_global()
 
-    pth = Path([[0, -45], [60, -45], [60, 45], [0, 45], [0, 45],
-                [10, -20], [10, 20], [40, 20], [40, -20], [10, 20]],
-               [1, 2, 2, 2, 79, 1, 2, 2, 2, 79])
+    pth = Path(
+        [
+            [0, -45],
+            [60, -45],
+            [60, 45],
+            [0, 45],
+            [0, 45],
+            [10, -20],
+            [10, 20],
+            [40, 20],
+            [40, -20],
+            [10, 20],
+        ],
+        [1, 2, 2, 2, 79, 1, 2, 2, 2, 79],
+    )
 
     if use_legacy_geos_funcs:
         patches_native = []
         patches = []
-        with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+        with pytest.warns(DeprecationWarning, match='path_to_geos is deprecated'):
             for geos in cpatch.path_to_geos(pth):
-                with pytest.warns(DeprecationWarning, match="geos_to_path is deprecat"):
+                with pytest.warns(DeprecationWarning, match='geos_to_path is deprecat'):
                     for pth in cpatch.geos_to_path(geos):
                         patches.append(mpatches.PathPatch(pth))
 
                 # buffer by 10 degrees (leaves a small hole in the middle)
                 geos_buffered = geos.buffer(10)
-                with pytest.warns(DeprecationWarning, match="geos_to_path is deprecat"):
+                with pytest.warns(DeprecationWarning, match='geos_to_path is deprecat'):
                     for pth in cpatch.geos_to_path(geos_buffered):
                         patches_native.append(mpatches.PathPatch(pth))
     else:
@@ -57,36 +69,42 @@ def test_polygon_interiors(use_legacy_geos_funcs):
         patches_native = [mpatches.PathPatch(path_buffered)]
 
     # Set high zorder to ensure the polygons are drawn on top of coastlines.
-    collection = PatchCollection(patches_native, facecolor='red', alpha=0.4,
-                                 transform=ax.projection, zorder=10)
+    collection = PatchCollection(
+        patches_native, facecolor='red', alpha=0.4, transform=ax.projection, zorder=10
+    )
     ax.add_collection(collection)
 
-    collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
-                                 transform=ccrs.Geodetic(), zorder=10)
+    collection = PatchCollection(
+        patches, facecolor='yellow', alpha=0.4, transform=ccrs.Geodetic(), zorder=10
+    )
 
     ax.add_collection(collection)
 
     # test multiple interior polygons
-    ax = fig.add_subplot(2, 1, 2, projection=ccrs.PlateCarree(),
-                         xlim=[-5, 15], ylim=[-5, 15])
-    ax.coastlines(resolution="110m")
+    ax = fig.add_subplot(
+        2, 1, 2, projection=ccrs.PlateCarree(), xlim=[-5, 15], ylim=[-5, 15]
+    )
+    ax.coastlines(resolution='110m')
 
     exterior = np.array(sgeom.box(0, 0, 12, 12).exterior.coords)
-    interiors = [np.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
-                 np.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords)]
+    interiors = [
+        np.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
+        np.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords),
+    ]
     poly = sgeom.Polygon(exterior, interiors)
 
     if use_legacy_geos_funcs:
         patches = []
-        with pytest.warns(DeprecationWarning, match="geos_to_path is deprecated"):
+        with pytest.warns(DeprecationWarning, match='geos_to_path is deprecated'):
             for pth in cpatch.geos_to_path(poly):
                 patches.append(mpatches.PathPatch(pth))
     else:
         path = cpath.shapely_to_path(poly)
         patches = [mpatches.PathPatch(path)]
 
-    collection = PatchCollection(patches, facecolor='yellow', alpha=0.4,
-                                 transform=ccrs.Geodetic(), zorder=10)
+    collection = PatchCollection(
+        patches, facecolor='yellow', alpha=0.4, transform=ccrs.Geodetic(), zorder=10
+    )
     ax.add_collection(collection)
 
     return fig
@@ -98,8 +116,7 @@ def test_contour_interiors():
     # produces a polygon with multiple holes:
     nx, ny = 10, 10
     numlev = 2
-    lons, lats = np.meshgrid(np.linspace(-50, 50, nx),
-                             np.linspace(-45, 45, ny))
+    lons, lats = np.meshgrid(np.linspace(-50, 50, nx), np.linspace(-45, 45, ny))
     data = np.sin(np.hypot(lons, lats))
     fig = plt.figure()
 

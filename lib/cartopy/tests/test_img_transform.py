@@ -15,28 +15,45 @@ from cartopy.tests.conftest import (
 
 
 if not _HAS_PYKDTREE_OR_SCIPY:
-    pytest.skip("pykdtree or scipy are required", allow_module_level=True)
+    pytest.skip('pykdtree or scipy are required', allow_module_level=True)
 import cartopy.crs as ccrs
 import cartopy.img_transform as img_trans
 
 
-@pytest.mark.parametrize('xmin, xmax', [
-    (-90, 0), (-90, 90), (-90, None),
-    (0, 90), (0, None),
-    (None, 0), (None, 90), (None, None)])
-@pytest.mark.parametrize('ymin, ymax', [
-    (-45, 0), (-45, 45), (-45, None),
-    (0, 45), (0, None),
-    (None, 0), (None, 45), (None, None)])
+@pytest.mark.parametrize(
+    'xmin, xmax',
+    [
+        (-90, 0),
+        (-90, 90),
+        (-90, None),
+        (0, 90),
+        (0, None),
+        (None, 0),
+        (None, 90),
+        (None, None),
+    ],
+)
+@pytest.mark.parametrize(
+    'ymin, ymax',
+    [
+        (-45, 0),
+        (-45, 45),
+        (-45, None),
+        (0, 45),
+        (0, None),
+        (None, 0),
+        (None, 45),
+        (None, None),
+    ],
+)
 def test_mesh_projection_extent(xmin, xmax, ymin, ymax):
     proj = ccrs.PlateCarree()
     nx = 4
     ny = 2
 
     target_x, target_y, extent = img_trans.mesh_projection(
-        proj, nx, ny,
-        x_extents=(xmin, xmax),
-        y_extents=(ymin, ymax))
+        proj, nx, ny, x_extents=(xmin, xmax), y_extents=(ymin, ymax)
+    )
 
     if xmin is None:
         xmin = proj.x_limits[0]
@@ -63,21 +80,36 @@ def test_gridding_data_std_range():
 
     target_x, target_y, extent = img_trans.mesh_projection(target_prj, 8, 4)
 
-    image = img_trans.regrid(data, lons, lats, data_trans, target_prj,
-                             target_x, target_y,
-                             mask_extrapolated=True)
+    image = img_trans.regrid(
+        data,
+        lons,
+        lats,
+        data_trans,
+        target_prj,
+        target_x,
+        target_y,
+        mask_extrapolated=True,
+    )
 
     # The expected image. n.b. on a map the data is reversed in the y axis.
-    expected = np.array([[1, 1, 2, 2, 3, 3, 3, 3],
-                         [1, 1, 2, 2, 2, 3, 3, 3],
-                         [1, 1, 1, 2, 2, 2, 3, 3],
-                         [1, 1, 1, 2, 2, 2, 3, 3]], dtype=np.float64)
+    expected = np.array(
+        [
+            [1, 1, 2, 2, 3, 3, 3, 3],
+            [1, 1, 2, 2, 2, 3, 3, 3],
+            [1, 1, 1, 2, 2, 2, 3, 3],
+            [1, 1, 1, 2, 2, 2, 3, 3],
+        ],
+        dtype=np.float64,
+    )
 
     expected_mask = np.array(
-        [[True, False, False, False, False, False, False, True],
-         [True, False, False, False, False, False, False, True],
-         [True, False, False, False, False, False, False, True],
-         [True, False, False, False, False, False, False, True]])
+        [
+            [True, False, False, False, False, False, False, True],
+            [True, False, False, False, False, False, False, True],
+            [True, False, False, False, False, False, False, True],
+            [True, False, False, False, False, False, False, True],
+        ]
+    )
 
     assert_array_equal([-180, 180, -90, 90], extent)
     assert_array_equal(expected, image)
@@ -96,32 +128,50 @@ def test_gridding_data_outside_projection():
 
     target_x, target_y, extent = img_trans.mesh_projection(target_prj, 8, 4)
 
-    image = img_trans.regrid(data, lons, lats, data_trans, target_prj,
-                             target_x, target_y,
-                             mask_extrapolated=True)
+    image = img_trans.regrid(
+        data,
+        lons,
+        lats,
+        data_trans,
+        target_prj,
+        target_x,
+        target_y,
+        mask_extrapolated=True,
+    )
 
     # The expected image. n.b. on a map the data is reversed in the y axis.
     expected = np.array(
-        [[3, 3, 3, 3, 3, 2, 2, 2],
-         [3, 3, 3, 3, 1, 1, 2, 2],
-         [3, 3, 3, 3, 1, 1, 1, 2],
-         [3, 3, 3, 1, 1, 1, 1, 1]], dtype=np.float64)
+        [
+            [3, 3, 3, 3, 3, 2, 2, 2],
+            [3, 3, 3, 3, 1, 1, 2, 2],
+            [3, 3, 3, 3, 1, 1, 1, 2],
+            [3, 3, 3, 1, 1, 1, 1, 1],
+        ],
+        dtype=np.float64,
+    )
 
     expected_mask = np.array(
-        [[False, False, True, True, True, True, False, False],
-         [False, False, True, True, True, True, False, False],
-         [False, False, True, True, True, True, False, False],
-         [False, False, True, True, True, True, False, False]])
+        [
+            [False, False, True, True, True, True, False, False],
+            [False, False, True, True, True, True, False, False],
+            [False, False, True, True, True, True, False, False],
+            [False, False, True, True, True, True, False, False],
+        ]
+    )
 
     assert_array_equal([-180, 180, -90, 90], extent)
     assert_array_equal(expected, image)
     assert_array_equal(expected_mask, image.mask)
 
 
-@pytest.mark.parametrize("target_prj",
-                         (ccrs.Mollweide(), ccrs.Orthographic()))
-@pytest.mark.parametrize("use_scipy", (pytest.param(True, marks=requires_scipy),
-                                       pytest.param(False, marks=requires_pykdtree)))
+@pytest.mark.parametrize('target_prj', (ccrs.Mollweide(), ccrs.Orthographic()))
+@pytest.mark.parametrize(
+    'use_scipy',
+    (
+        pytest.param(True, marks=requires_scipy),
+        pytest.param(False, marks=requires_pykdtree),
+    ),
+)
 def test_regridding_with_invalid_extent(target_prj, use_scipy, monkeypatch):
     # tests that when a valid extent results in invalid points in the
     # transformed coordinates, the regridding does not error.
@@ -135,8 +185,8 @@ def test_regridding_with_invalid_extent(target_prj, use_scipy, monkeypatch):
     target_x, target_y, extent = img_trans.mesh_projection(target_prj, 8, 4)
 
     if use_scipy:
-        monkeypatch.setattr(img_trans, "_is_pykdtree", False)
+        monkeypatch.setattr(img_trans, '_is_pykdtree', False)
         import scipy.spatial
-        monkeypatch.setattr(img_trans, "_kdtreeClass", scipy.spatial.cKDTree)
-    _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
-                         target_x, target_y)
+
+        monkeypatch.setattr(img_trans, '_kdtreeClass', scipy.spatial.cKDTree)
+    _ = img_trans.regrid(data, lons, lats, data_trans, target_prj, target_x, target_y)
