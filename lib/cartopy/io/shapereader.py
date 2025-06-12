@@ -147,8 +147,7 @@ class BasicReader:
             pass
         self._bbox = bbox
         if reader.shp is None or reader.shx is None or reader.dbf is None:
-            raise ValueError("Incomplete shapefile definition "
-                             "in '%s'." % filename)
+            raise ValueError(f"Incomplete shapefile definition in '{filename}'.")
 
         self._fields = self._reader.fields
 

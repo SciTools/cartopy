@@ -98,7 +98,10 @@ testpaths = ["lib"]
 python_files = ["test_*.py"]
 
 [tool.ruff]
-lint.select = ["E", "F", "I", "W"]
+lint.select = ["E", "F", "I", "UP", "W"]
+lint.ignore = [
+    "UP038",  # deprecated rule that should be ignored
+]
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true

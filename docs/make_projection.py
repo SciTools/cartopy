@@ -156,7 +156,7 @@ if __name__ == '__main__':
         table.write(name + '\n')
         table.write('-' * len(name) + '\n\n')
 
-        table.write('.. autoclass:: cartopy.crs.%s\n' % name)
+        table.write(f'.. autoclass:: cartopy.crs.{name}\n')
 
         if prj not in MULTI_PLOT_CASES:
             # Get instance arguments and number of plots

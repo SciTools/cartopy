@@ -547,7 +547,7 @@ class GeoAxes(matplotlib.axes.Axes):
             title.set_position((x, y))
 
     def __str__(self):
-        return '< GeoAxes: %s >' % self.projection
+        return f'< GeoAxes: {self.projection} >'
 
     def __clear(self):
         """Clear the current axes and add boundary lines."""
@@ -988,7 +988,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                extent=[-180, 180, -90, 90],
                                **kwargs)
         else:
-            raise ValueError('Unknown stock image %r.' % name)
+            raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
                        cache=False):
@@ -1285,7 +1285,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
             if not isinstance(transform, ccrs.Projection):
                 raise ValueError('Expected a projection subclass. Cannot '
-                                 'handle a %s in imshow.' % type(transform))
+                                 f'handle a {type(transform)} in imshow.')
 
             target_extent = self.get_extent(self.projection)
             regrid_shape = kwargs.pop('regrid_shape', 750)

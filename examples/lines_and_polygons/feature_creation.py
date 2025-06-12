@@ -46,8 +46,7 @@ def main():
 
     # Add a text annotation for the license information to the
     # the bottom right corner.
-    text = AnchoredText('\u00A9 {}; license: {}'
-                        ''.format(SOURCE, LICENSE),
+    text = AnchoredText(f'\u00A9 {SOURCE}; license: {LICENSE}',
                         loc=4, prop={'size': 12}, frameon=True)
     ax.add_artist(text)
 
