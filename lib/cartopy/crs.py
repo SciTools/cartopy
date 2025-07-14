@@ -129,7 +129,10 @@ class Globe:
         return cls(
             datum=cf_params.get('horizontal_datum_name'),
             ellipse=cf_params.get('reference_ellipsoid_name', 'WGS84'),
-            semimajor_axis=cf_params.get('earth_radius') or cf_params.get('semi_major_axis'),
+            semimajor_axis=(
+                cf_params.get('earth_radius')
+                or cf_params.get('semi_major_axis')
+            ),
             semiminor_axis=cf_params.get('semi_minor_axis'),
             inverse_flattening=cf_params.get('inverse_flattening'),
             towgs84=cf_params.get('towgs84')
@@ -578,7 +581,10 @@ class CRS(_CRS):
 
     @classmethod
     def from_cf(self):
-        raise NotImplementedError("'from_cf' constructor only implemented on specific projections. Try using `cartopy.crs.from_cf` instead.")
+        raise NotImplementedError(
+            "'from_cf' constructor only implemented on specific projections. "
+            "Try using `cartopy.crs.from_cf` instead."
+        )
 
 
 class Geodetic(CRS):
@@ -1767,12 +1773,24 @@ class LambertCylindrical(_RectangularProjection):
     @classmethod
     def from_cf(cls, **cf_params):
         globe = Globe.from_cf(**cf_params)
-        if cf_params.get('false_northing', 0) != 0 or cf_params.get('false_easting', 0) != 0:
-            raise ValueError('Lambert cylindrical equal area projections with non-zero false_northing or false_easting are not supported in cartopy.')
+        if (
+            cf_params.get('false_northing', 0) != 0
+            or cf_params.get('false_easting', 0) != 0
+        ):
+            raise ValueError(
+                'Lambert cylindrical equal area projections with non-zero '
+                'false_northing or false_easting are not supported in cartopy.'
+            )
         if cf_params.get('standard_parallel', 0) != 0:
-            raise ValueError('Lambert cylindrical equal area projections with non-zero standard parallel are not supported in cartopy.')
+            raise ValueError(
+                'Lambert cylindrical equal area projections with non-zero standard '
+                'parallel are not supported in cartopy.'
+            )
         if cf_params.get('scale_factor_at_projection_origin', 1) != 1:
-            raise ValueError('Lambert cylindrical equal area projections with scale factor different than 1 are not supported in cartopy.')
+            raise ValueError(
+                'Lambert cylindrical equal area projections with scale '
+                'factor different than 1 are not supported in cartopy.'
+            )
         return cls(
             central_longitude=cf_params['longitude_of_projection_origin'],
             globe=globe
@@ -2150,7 +2168,10 @@ class Stereographic(Projection):
     @classmethod
     def from_cf(cls, **cf_params):
         globe = Globe.from_cf(**cf_params)
-        central_longitude = cf_params.get('straight_vertical_longitude_from_pole', cf_params.get('longitude_of_projection_origin'))
+        central_longitude = cf_params.get(
+            'straight_vertical_longitude_from_pole',
+            cf_params.get('longitude_of_projection_origin')
+        )
         if central_longitude is None:
             raise KeyError('longitude_of_projection_origin')
         scale_factor = cf_params.get('scale_factor_at_projection_origin')
@@ -2160,9 +2181,17 @@ class Stereographic(Projection):
         if scale_factor is None and false_northing == 0 and false_easting == 0:
             # We can use our PolarStereo classes
             if central_latitude == 90:
-                return NorthPolarStereo(central_longitude=central_longitude, true_scale_latitude=cf_params.get('standard_parallel'), globe=globe)
+                return NorthPolarStereo(
+                    central_longitude=central_longitude,
+                    true_scale_latitude=cf_params.get('standard_parallel'),
+                    globe=globe
+                )
             if central_latitude == -90:
-                return SouthPolarStereo(central_longitude=central_longitude, true_scale_latitude=cf_params.get('standard_parallel'), globe=globe)
+                return SouthPolarStereo(
+                    central_longitude=central_longitude,
+                    true_scale_latitude=cf_params.get('standard_parallel'),
+                    globe=globe
+                )
         # Else, we must use a more generic Stereographic
         return Stereographic(
             central_longitude=central_longitude,
@@ -2221,8 +2250,13 @@ class Orthographic(Projection):
     @classmethod
     def from_cf(cls, **cf_params):
         globe = Globe.from_cf(**cf_params)
-        if cf_params.get('false_northing', 0) != 0 and cf_params.get('false_easting', 0) != 0:
-            raise ValueError('Orthographic projections with non-zero false northing or false easting are not yet supported in cartopy.')
+        if (cf_params.get('false_northing', 0) != 0
+            and cf_params.get('false_easting', 0) != 0
+        ):
+            raise ValueError(
+                'Orthographic projections with non-zero false northing or '
+                'false easting are not yet supported in cartopy.'
+            )
         return cls(
             central_longitude=cf_params['longitude_of_projection_origin'],
             central_latitude=cf_params['latitude_of_projection_origin'],
@@ -2913,7 +2947,8 @@ class Geostationary(_Satellite):
             sweep_axis = {'x': 'y', 'y': 'x'}[cf_params['fixed_angle_axis']]
         if cf_params.get('latitude_of_projection_origin', 0) != 0:
             raise ValueError(
-                "Cartopy doesn't support Geostationary projections with non-zero latitude of projection origin."
+                "Cartopy doesn't support Geostationary projections with "
+                "non-zero latitude of projection origin."
             )
         return cls(
             central_longitude=cf_params['longitude_of_projection_origin'],
@@ -3487,7 +3522,8 @@ _cf_mapping = {
 
 def from_cf(**cf_attrs):
     """
-    Return the projection defined by the grid mapping attributes as defined by the CF conventions.
+    Return the projection defined by the grid mapping attributes
+    as defined by the CF conventions.
     """
     name = cf_attrs.pop('grid_mapping_name')
     if name not in _cf_mapping:
