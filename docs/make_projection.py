@@ -95,7 +95,8 @@ PRJ_SORT_ORDER = {'PlateCarree': 1,
                   'OSGB': 4, 'LambertZoneII': 4.1, 'EuroPP': 5,
                   'Geostationary': 6, 'NearsidePerspective': 7,
                   'EckertI': 8.1, 'EckertII': 8.2, 'EckertIII': 8.3,
-                  'EckertIV': 8.4, 'EckertV': 8.5, 'EckertVI': 8.6}
+                  'EckertIV': 8.4, 'EckertV': 8.5, 'EckertVI': 8.6,
+                  'Spilhaus': 9}
 
 
 def find_projections():

@@ -32,10 +32,12 @@ import itertools
 from pathlib import Path
 from urllib.error import HTTPError
 
+from pyproj import CRS
 import shapefile
 import shapely.geometry as sgeom
 
 from cartopy import config
+import cartopy.crs as ccrs
 from cartopy.io import Downloader
 
 
@@ -136,6 +138,13 @@ class BasicReader:
     def __init__(self, filename, bbox=None, **kwargs):
         # Validate the filename/shapefile
         self._reader = reader = shapefile.Reader(filename, **kwargs)
+        # Try to set the CRS from the .prj file if it exists
+        self.crs = None
+        try:
+            with open(Path(filename).with_suffix('.prj'), 'rt') as fobj:
+                self.crs = ccrs.Projection(CRS.from_wkt(fobj.read()))
+        except FileNotFoundError:
+            pass
         self._bbox = bbox
         if reader.shp is None or reader.shx is None or reader.dbf is None:
             raise ValueError("Incomplete shapefile definition "
@@ -195,7 +204,13 @@ class FionaReader:
 
     def __init__(self, filename, bbox=None, **kwargs):
         self._data = []
-
+        # Try to set the CRS from the .prj file if it exists
+        self.crs = None
+        try:
+            with open(Path(filename).with_suffix('.prj'), 'rt') as fobj:
+                self.crs = ccrs.Projection(CRS.from_wkt(fobj.read()))
+        except FileNotFoundError:
+            pass
         with fiona.open(filename, **kwargs) as f:
             if bbox is not None:
                 assert len(bbox) == 4
@@ -361,7 +376,15 @@ class NEShpDownloader(Downloader):
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
-            member = zfh.getinfo(member_path.replace("\\", "/"))
+            try:
+                member = zfh.getinfo(member_path.replace("\\", "/"))
+            except KeyError:
+                # These extensions are required for shapefiles, so raise
+                # if they are missing, continue on otherwise as the other
+                # extensions are optional
+                if member_path.endswith(('.shp', '.shx', '.dbf')):
+                    raise
+                continue
             target_path.with_suffix(Path(member_path).suffix).write_bytes(
                 zfh.open(member).read()
             )

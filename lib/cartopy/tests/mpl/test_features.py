@@ -83,10 +83,11 @@ def test_wfs():
                     reason='OWSLib and at least one of pykdtree or scipy is required')
 @pytest.mark.xfail(raises=(ParseError, AttributeError),
                    reason="Bad XML returned from the URL")
+@pytest.mark.xfail(reason="Unauthorized access to the WFS service")
 @pytest.mark.mpl_image_compare(filename='wfs_france.png')
 def test_wfs_france():
     ax = plt.axes(projection=ccrs.epsg(2154))
-    url = 'https://agroenvgeo.data.inra.fr:443/geoserver/wfs'
+    url = 'https://geodata.inrae.fr/geoserver/wfs'
     typename = 'collectif:t_ser_l93'
     feature = cfeature.WFSFeature(url, typename, edgecolor='red')
     ax.add_feature(feature)

@@ -360,3 +360,25 @@ def test_transform_point_no_warning():
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         p2.transform_point(1, 2, p)
+
+
+def test_geographic_bounds_no_area_of_use():
+    # Should default to global bounds if no area of use
+    wkt = ('GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",'
+           'SPHEROID["WGS_1984",6378137.0,298.257223563]],'
+           'PRIMEM["Greenwich",0.0],UNIT["Degree",0.017453292519943295]]')
+    p = pyproj.CRS.from_wkt(wkt)
+    assert p.is_geographic
+    assert p.area_of_use is None
+    p_cartopy = ccrs.Projection(p)
+    assert p_cartopy.bounds == (-180, 180, -90, 90)
+
+
+def test_geographic_bounds_with_area_of_use():
+    # Should default to area of use bounds if available
+    p = pyproj.CRS.from_epsg(4267)
+    assert p.is_geographic
+    assert p.area_of_use is not None
+    p_cartopy = ccrs.Projection(p)
+    x0, x1, y0, y1 = p_cartopy.bounds
+    assert_array_equal((x1, y0, x0, y1), p.area_of_use.bounds)

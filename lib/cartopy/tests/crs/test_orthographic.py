@@ -9,6 +9,7 @@ Tests for the Orthographic coordinate system.
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pyproj
 import pytest
 
 import cartopy.crs as ccrs
@@ -17,7 +18,7 @@ from .helpers import check_proj_params
 
 def test_default():
     ortho = ccrs.Orthographic()
-    other_args = {'a=6378137.0', 'lon_0=0.0', 'lat_0=0.0'}
+    other_args = {'a=6378137.0', 'lat_0=0.0', 'lon_0=0.0', 'alpha=0.0'}
     check_proj_params('ortho', ortho, other_args)
 
     # WGS84 radius * 0.99999
@@ -30,7 +31,7 @@ def test_default():
 def test_sphere_globe():
     globe = ccrs.Globe(semimajor_axis=1000, ellipse=None)
     ortho = ccrs.Orthographic(globe=globe)
-    other_args = {'a=1000', 'lon_0=0.0', 'lat_0=0.0'}
+    other_args = {'a=1000', 'lat_0=0.0', 'lon_0=0.0', 'alpha=0.0'}
     check_proj_params('ortho', ortho, other_args)
 
     assert_almost_equal(ortho.x_limits, [-999.99, 999.99])
@@ -44,7 +45,7 @@ def test_ellipse_globe():
         ortho = ccrs.Orthographic(globe=globe)
         assert len(w) == 1
 
-    other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0=0.0'}
+    other_args = {'ellps=WGS84', 'lat_0=0.0', 'lon_0=0.0', 'alpha=0.0'}
     check_proj_params('ortho', ortho, other_args)
 
     # Limits are the same as default since ellipses are not supported.
@@ -60,7 +61,7 @@ def test_eccentric_globe():
         ortho = ccrs.Orthographic(globe=globe)
         assert len(w) == 1
 
-    other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'lat_0=0.0'}
+    other_args = {'a=1000', 'b=500', 'lat_0=0.0', 'lon_0=0.0', 'alpha=0.0'}
     check_proj_params('ortho', ortho, other_args)
 
     # Limits are the same as spheres since ellipses are not supported.
@@ -73,7 +74,7 @@ def test_eccentric_globe():
 def test_central_params(lon, lat):
     ortho = ccrs.Orthographic(central_latitude=lat, central_longitude=lon)
     other_args = {f'lat_0={lat}', f'lon_0={lon}',
-                  'a=6378137.0'}
+                  'a=6378137.0', 'alpha=0.0'}
     check_proj_params('ortho', ortho, other_args)
 
     # WGS84 radius * 0.99999
@@ -90,7 +91,7 @@ def test_grid():
     ortho = ccrs.Orthographic(globe=globe)
     geodetic = ortho.as_geodetic()
 
-    other_args = {'a=1.0', 'b=1.0', 'lon_0=0.0', 'lat_0=0.0'}
+    other_args = {'a=1.0', 'b=1.0', 'lon_0=0.0', 'lat_0=0.0', 'alpha=0.0'}
     check_proj_params('ortho', ortho, other_args)
 
     assert_almost_equal(np.array(ortho.x_limits),
@@ -143,7 +144,7 @@ def test_sphere_transform():
                               globe=globe)
     geodetic = ortho.as_geodetic()
 
-    other_args = {'a=1.0', 'b=1.0', 'lon_0=-100.0', 'lat_0=40.0'}
+    other_args = {'a=1.0', 'b=1.0', 'lon_0=-100.0', 'lat_0=40.0', 'alpha=0.0'}
     check_proj_params('ortho', ortho, other_args)
 
     assert_almost_equal(np.array(ortho.x_limits),
@@ -153,6 +154,31 @@ def test_sphere_transform():
 
     result = ortho.transform_point(-110.0, 30.0, geodetic)
     assert_almost_equal(result, np.array([-0.1503837, -0.1651911]))
+
+    inverse_result = geodetic.transform_point(result[0], result[1], ortho)
+    assert_almost_equal(inverse_result, [-110.0, 30.0])
+
+def test_sphere_rotate():
+    globe = ccrs.Globe(semimajor_axis=1.0, semiminor_axis=1.0,
+                       ellipse=None)
+    ortho = ccrs.Orthographic(central_latitude=40.0, central_longitude=-100.0,
+                              azimuth=180.0, globe=globe)
+    geodetic = ortho.as_geodetic()
+
+    other_args = {'a=1.0', 'b=1.0', 'lon_0=-100.0', 'lat_0=40.0',
+                  'alpha=180.0'}
+    check_proj_params('ortho', ortho, other_args)
+
+    assert_almost_equal(np.array(ortho.x_limits),
+                        [-0.99999, 0.99999])
+    assert_almost_equal(np.array(ortho.y_limits),
+                        [-0.99999, 0.99999])
+
+    result = ortho.transform_point(-110.0, 30.0, geodetic)
+    if pyproj.__proj_version__ >= '9.5.0': # support for alpha (azimuthal rotation)
+        assert_almost_equal(result, np.array([ 0.1503837,  0.1651911]))
+    else:
+        assert_almost_equal(result, np.array([-0.1503837, -0.1651911]))
 
     inverse_result = geodetic.transform_point(result[0], result[1], ortho)
     assert_almost_equal(inverse_result, [-110.0, 30.0])

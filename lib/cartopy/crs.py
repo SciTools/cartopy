@@ -717,6 +717,10 @@ class Projection(CRS, metaclass=ABCMeta):
             self.bounds = (x.min(), x.max(), y.min(), y.max())
             x0, x1, y0, y1 = self.bounds
             self.threshold = min(x1 - x0, y1 - y0) / 100.
+        elif self.is_geographic:
+            # If the projection is geographic without an area of use, assume
+            # the bounds are the full globe.
+            self.bounds = (-180, 180, -90, 90)
 
     @property
     def boundary(self):
@@ -1272,7 +1276,8 @@ class Projection(CRS, metaclass=ABCMeta):
             box = sgeom.box(x3, y3, x4, y4, ccw=is_ccw)
 
             # Invert the polygons
-            polygon = box.difference(sgeom.MultiPolygon(interior_polys))
+            multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
+            polygon = box.difference(multi_poly)
 
             # Intersect the inverted polygon with the boundary
             polygon = boundary_poly.intersection(polygon)
@@ -2229,9 +2234,14 @@ class Orthographic(Projection):
     _handles_ellipses = False
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
-                 globe=None):
+                 azimuth=0.0, globe=None):
         proj4_params = [('proj', 'ortho'), ('lon_0', central_longitude),
-                        ('lat_0', central_latitude)]
+                        ('lat_0', central_latitude), ('alpha', azimuth)]
+        if pyproj.__proj_version__ < '9.5.0' and azimuth != 0.0:
+            warnings.warn(
+                'Setting azimuth is not supported with PROJ versions < 9.5.0. '
+                'Assuming azimuth=0. '
+                'Current PROJ version: %s' % pyproj.__proj_version__)
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
@@ -3448,6 +3458,44 @@ class ObliqueMercator(Projection):
     @property
     def y_limits(self):
         return self._y_limits
+
+class Spilhaus(Projection):
+    """
+    Spilhaus World Ocean Map in a Square.
+
+    This is a projection based on Adams World in a Square II projection with the
+    two major antipodal areas on land: South China
+    (115°E and 30°N) and Argentina (65°W and 30°S).
+    See https://storymaps.arcgis.com/stories/756bcae18d304a1eac140f19f4d5cb3d
+    """
+    def __init__(self, rotation=45, false_easting=0.0, false_northing=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        rotation : optional
+            Clockwise rotation of the map in degrees. Defaults to 45.
+        false_easting : optional
+            X offset from the planar origin in metres. Defaults to 0.0.
+        false_northing : optional
+            Y offset from the planar origin in metres. Defaults to 0.0.
+
+        """
+        proj4_params = [('proj', 'spilhaus'),
+                        ('rot',rotation),
+                        ('x_0', false_easting),
+                        ('y_0', false_northing)]
+
+        super().__init__(proj4_params, globe=globe)
+        # The boundary on https://epsg.io/54099 are wrong
+        # The following bounds are calculated based on
+        #[-65.00000012, -29.99999981]
+        # and [115.00000024,  30.00000036]
+        self.bounds = [
+            -11802684.083372328,
+            11802683.949222516,
+            -11801129.925928915,
+            11801129.925928915
+        ]
 
 
 class _BoundaryPoint:

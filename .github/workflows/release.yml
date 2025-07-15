@@ -1,10 +1,6 @@
 ---
 name: Build and upload to PyPI
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number }}-${{ github.event.ref }}
-  cancel-in-progress: true
-
 # Only build on published releases
 on:
   release:
@@ -98,7 +94,7 @@ jobs:
           path: dist
 
       - name: Build wheels for CPython
-        uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a # v2.23.2
+        uses: pypa/cibuildwheel@95d2f3a92fbf80abe066b09418bbf128a8923df2 # v3.0.1
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
         env:
