@@ -1,5 +1,5 @@
-Version 0.25 (Date TBD)
-=======================
+Version 0.25 (August 8, 2025)
+=============================
 
 This version contains a lot of maintenance work and updating internal
 portions of the code to use more modern Python features and methods.
