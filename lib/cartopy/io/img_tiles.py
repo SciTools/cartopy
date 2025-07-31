@@ -505,7 +505,7 @@ class MapboxStyleTiles(GoogleWTS):
 
     """
 
-    def __init__(self, access_token, username, map_id, 
+    def __init__(self, access_token, username, map_id,
                  desired_tile_form='RGB', cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
