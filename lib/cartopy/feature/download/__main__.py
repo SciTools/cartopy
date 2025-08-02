@@ -102,8 +102,8 @@ def download_features(group_names, dry_run=True):
                     else:
                         downloader.path(format_dict)
                         geoms = list(feature.geometries())
-                        print('Feature {}, {}, {} length: {}'
-                              ''.format(category, name, scale, len(geoms)))
+                        print(f"Feature {category}, {name}, {scale} "
+                              f"length: {len(geoms)}")
 
 
 def main():

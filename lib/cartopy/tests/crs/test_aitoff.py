@@ -77,7 +77,7 @@ def test_offset():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     aitoff = ccrs.Aitoff(central_longitude=lon)
-    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('aitoff', aitoff, other_args)
 
     assert_almost_equal(aitoff.x_limits, [-20037508.3427892, 20037508.3427892],

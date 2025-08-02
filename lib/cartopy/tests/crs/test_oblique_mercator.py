@@ -8,7 +8,7 @@ Tests for the Oblique Mercator projection.
 """
 
 from copy import deepcopy
-from typing import Dict, List, NamedTuple, Tuple
+from typing import NamedTuple
 
 import numpy as np
 import pytest
@@ -49,11 +49,11 @@ class TestCrsArgs:
     class ParamTuple(NamedTuple):
         id: str
         crs_kwargs: dict
-        proj_kwargs: Dict[str, str]
-        expected_a: Tuple[float, float]
-        expected_b: Tuple[float, float]
+        proj_kwargs: dict[str, str]
+        expected_a: tuple[float, float]
+        expected_b: tuple[float, float]
 
-    param_list: List[ParamTuple] = [
+    param_list: list[ParamTuple] = [
         ParamTuple(
             "default",
             dict(),
@@ -128,7 +128,7 @@ class TestCrsArgs:
             (-4138080.80706, 1631302.04295),
         ),
     ]
-    param_ids: List[str] = [p.id for p in param_list]
+    param_ids: list[str] = [p.id for p in param_list]
 
     @pytest.fixture(autouse=True, params=param_list, ids=param_ids)
     def make_variant_inputs(self, request) -> None:
@@ -166,7 +166,7 @@ class TestCrsArgs:
 def oblique_variants(
     oblique_mercator,
     rotated_mercator,
-) -> Tuple[ccrs.ObliqueMercator, ccrs.ObliqueMercator, ccrs.ObliqueMercator]:
+) -> tuple[ccrs.ObliqueMercator, ccrs.ObliqueMercator, ccrs.ObliqueMercator]:
     """Setup three ObliqueMercator objects, two identical, for eq testing."""
     default = oblique_mercator
     alt_1 = rotated_mercator
