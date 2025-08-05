@@ -9,6 +9,7 @@ exclude .git-blame-ignore-revs
 include .gitattributes
 include .gitignore
 exclude .pre-commit-config.yaml
+exclude .readthedocs.yml
 include CHANGES
 include LICENSE
 include environment.yml
