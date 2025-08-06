@@ -1,5 +1,4 @@
 prune .github
-prune .circleci
 prune benchmarks
 prune docs
 prune examples
