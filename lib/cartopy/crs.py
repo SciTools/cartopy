@@ -266,7 +266,7 @@ class CRS(_CRS):
         import cartopy.mpl.geoaxes as geoaxes
         if not isinstance(axes, geoaxes.GeoAxes):
             raise ValueError(
-                'Axes should be an instance of GeoAxes, got %s' % type(axes)
+                f'Axes should be an instance of GeoAxes, got {type(axes)}'
             )
         return (
             geoaxes.InterProjectionTransform(self, axes.projection) +
@@ -2105,7 +2105,7 @@ class Orthographic(Projection):
             warnings.warn(
                 'Setting azimuth is not supported with PROJ versions < 9.5.0. '
                 'Assuming azimuth=0. '
-                'Current PROJ version: %s' % pyproj.__proj_version__)
+                f'Current PROJ version: {pyproj.__proj_version__}')
         super().__init__(proj4_params, globe=globe)
 
         # TODO: Let the globe return the semimajor axis always.
