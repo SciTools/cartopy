@@ -16,6 +16,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 from datetime import datetime
+import os
 from pathlib import Path
 import sys
 
@@ -169,6 +170,15 @@ html_theme_options = {
     "external_links": [],
     "github_url": "https://github.com/SciTools/cartopy",
 }
+
+# Warn users if they are looking at latest unreleased docs on RTD.
+if (os.environ.get("READTHEDOCS") == "True" and
+        os.environ.get("READTHEDOCS_VERSION") == "latest"):
+    html_theme_options["announcement"] = f"""
+        You are viewing the <b>latest</b> unreleased documentation
+        <strong>{version}</strong>. You can switch to a
+        <a href="https://cartopy.readthedocs.io/stable/">stable</a>
+        version."""
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
