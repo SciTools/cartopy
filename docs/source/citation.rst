@@ -25,7 +25,7 @@ For example::
  title = {Cartopy: a cartographic {Python} library with a {Matplotlib} interface},
  year = {2010 - 2015},
  address = {Exeter, Devon },
- url = {https://scitools.org.uk/cartopy}
+ url = {https://cartopy.readthedocs.io}
  }
 
 
