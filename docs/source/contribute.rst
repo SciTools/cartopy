@@ -3,13 +3,16 @@
 Contributing to Cartopy
 =======================
 
-Cartopy is an open-source project that welcomes contributions from anyone. More information
-about the copyright and license agreement can be found on the `SciTools Governance page <https://scitools.org.uk/organisation.html>`_.
+Cartopy is an open-source project that welcomes contributions from anyone.
 A good place to start contributing is by fixing typos, adding examples, or improving the explanations
 of the functions.
 
 To contribute new features or bug fixes, you can create a pull request with your code changes
-on GitHub. The easiest way to get started contributing code is to `Fork Cartopy <https://github.com/scitools/cartopy/fork>`_
+on GitHub. All authors on a pull request will automatically be asked to sign the
+`SciTools Contributor's License Agreement (CLA) <https://cla-assistant.io/SciTools/>`_,
+if they have not already done so.
+
+The easiest way to get started contributing code is to `Fork Cartopy <https://github.com/scitools/cartopy/fork>`_
 to your GitHub account and then clone the repository to your
 local system. After that you can install the conda development environment included with the source code
 to install all of the required dependencies
