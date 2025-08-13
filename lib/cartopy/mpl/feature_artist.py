@@ -205,6 +205,17 @@ class FeatureArtist(matplotlib.collections.Collection):
 
             yield geom, geom_path
 
+    def get_paths(self):
+        paths = super().get_paths()
+        if paths:
+            # When we are drawing, there is an explicit list of paths set.
+            # Return these for the renderer.
+            return paths
+
+        # When not drawing, the path list is empty.  Find all the relevant paths for
+        # the current axes extent.
+        return [path for _, path in self._get_geoms_paths()]
+
     @matplotlib.artist.allow_rasterization
     def draw(self, renderer):
         """

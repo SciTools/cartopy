@@ -105,7 +105,7 @@ class Test_Axes_add_geometries:
             mock.sentinel.geometries, mock.sentinel.crs, wibble='wobble')
 
         add_feature_method.assert_called_once_with(
-            ShapelyFeature(), styler=mock.sentinel.styler)
+            ShapelyFeature(), styler=mock.sentinel.styler, autolim=False)
 
     @pytest.mark.natural_earth
     def test_single_geometry(self):
