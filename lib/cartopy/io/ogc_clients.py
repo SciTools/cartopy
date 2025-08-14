@@ -19,7 +19,6 @@ import collections
 import io
 import math
 from pathlib import Path
-from urllib.parse import urlparse
 import warnings
 import weakref
 from xml.etree import ElementTree
@@ -27,6 +26,7 @@ from xml.etree import ElementTree
 import numpy as np
 from PIL import Image
 import shapely.geometry as sgeom
+from urllib3.util import parse_url
 
 import cartopy
 
@@ -753,7 +753,7 @@ class WFSGeometrySource:
             # agroenvgeo.data.inra.fr from full address
             # http://mapserver.gis.umn.edu/mapserver
             # or https://agroenvgeo.data.inra.fr:443/geoserver/wfs
-            self.url = urlparse(service).hostname
+            self.url = parse_url(service).hostname
             # WebFeatureService of owslib
             service = WebFeatureService(service)
         else:
