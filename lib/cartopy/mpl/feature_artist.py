@@ -150,17 +150,7 @@ class FeatureArtist(matplotlib.collections.Collection):
         def set_paths(self, paths):
             self._paths = paths
 
-    @matplotlib.artist.allow_rasterization
-    def draw(self, renderer):
-        """
-        Draw the geometries of the feature that intersect with the extent of
-        the :class:`cartopy.mpl.geoaxes.GeoAxes` instance to which this
-        object has been added.
-
-        """
-        if not self.get_visible():
-            return
-
+    def _get_geoms_paths(self):
         ax = self.axes
         feature_crs = self._feature.crs
 
@@ -182,12 +172,6 @@ class FeatureArtist(matplotlib.collections.Collection):
             # from Natural Earth), only create paths for geometries that are
             # in view.
             geoms = self._feature.intersecting_geometries(extent)
-
-        stylised_paths = {}
-        # Make an empty placeholder style dictionary for when styler is not
-        # used.  Freeze it so that we can use it as a dict key.  We will need
-        # to unfreeze all style dicts with dict(frozen) before passing to mpl.
-        no_style = _freeze({})
 
         # Project (if necessary) and convert geometries to matplotlib paths.
         key = ax.projection
@@ -219,13 +203,43 @@ class FeatureArtist(matplotlib.collections.Collection):
                 geom_path = cpath.shapely_to_path(projected_geom)
                 mapping[key] = geom_path
 
+            yield geom, geom_path
+
+    def get_paths(self):
+        paths = super().get_paths()
+        if paths:
+            # When we are drawing, there is an explicit list of paths set.
+            # Return these for the renderer.
+            return paths
+
+        # When not drawing, the path list is empty.  Find all the relevant paths for
+        # the current axes extent.
+        return [path for _, path in self._get_geoms_paths()]
+
+    @matplotlib.artist.allow_rasterization
+    def draw(self, renderer):
+        """
+        Draw the geometries of the feature that intersect with the extent of
+        the :class:`cartopy.mpl.geoaxes.GeoAxes` instance to which this
+        object has been added.
+
+        """
+        if not self.get_visible():
+            return
+
+        stylised_paths = {}
+        # Make an empty placeholder style dictionary for when styler is not
+        # used.  Freeze it so that we can use it as a dict key.  We will need
+        # to unfreeze all style dicts with dict(frozen) before passing to mpl.
+        no_style = _freeze({})
+        for geom, geom_path in self._get_geoms_paths():
             if self._styler is None:
                 stylised_paths.setdefault(no_style, []).append(geom_path)
             else:
                 style = _freeze(self._styler(geom))
                 stylised_paths.setdefault(style, []).append(geom_path)
 
-        self.set_clip_path(ax.patch)
+        self.set_clip_path(self.axes.patch)
 
         # Draw each style individually.  Note that there will only be multiple
         # styles if styler was used.

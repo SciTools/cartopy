@@ -671,7 +671,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                                  **kwargs)
         return self.add_feature(feature)
 
-    def add_feature(self, feature, **kwargs):
+    def add_feature(self, feature, *, autolim=False, **kwargs):
         """
         Add the given :class:`~cartopy.feature.Feature` instance to the axes.
 
@@ -679,6 +679,9 @@ class GeoAxes(matplotlib.axes.Axes):
         ----------
         feature
             An instance of :class:`~cartopy.feature.Feature`.
+        autolim: bool, default=False
+            Whether to automatically update the axes extents to include the
+            feature.
 
         Returns
         -------
@@ -694,9 +697,9 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         # Instantiate an artist to draw the feature and add it to the axes.
         artist = feature_artist.FeatureArtist(feature, **kwargs)
-        return self.add_collection(artist)
+        return self.add_collection(artist, autolim=autolim)
 
-    def add_geometries(self, geoms, crs, **kwargs):
+    def add_geometries(self, geoms, crs, *, autolim=False, **kwargs):
         """
         Add the given shapely geometries (in the given crs) to the axes.
 
@@ -708,6 +711,9 @@ class GeoAxes(matplotlib.axes.Axes):
             The cartopy CRS in which the provided geometries are defined.
         styler
             A callable that returns matplotlib patch styling given a geometry.
+        autolim: bool, default=False
+            Whether to automatically update the axes extents to include the
+            geometries.
 
         Returns
         -------
@@ -724,7 +730,7 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         styler = kwargs.pop('styler', None)
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
-        return self.add_feature(feature, styler=styler)
+        return self.add_feature(feature, styler=styler, autolim=autolim)
 
     def get_extent(self, crs=None):
         """

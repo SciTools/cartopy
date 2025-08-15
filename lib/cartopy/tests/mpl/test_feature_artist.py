@@ -114,7 +114,7 @@ def test_feature_artist_draw_styler(feature):
             return {'facecolor':'blue'}
 
     fig, ax = robinson_map()
-    ax.add_feature(feature, facecolor='red', styler=styler)
+    ax.add_feature(feature, facecolor='grey', styler=styler)
 
     return fig
 
@@ -130,3 +130,19 @@ def test_feature_artist_geom_single_path(feature):
     # plotted as one compound path to ensure style consistency.
     for geom in feature.geometries():
         assert isinstance(cached_paths(geom, plot_crs), mpath.Path)
+
+
+@pytest.mark.parametrize('autolim', [False, True])
+def test_feature_artist_autolim(autolim):
+    plot_crs = ccrs.PlateCarree(central_longitude=180)
+    fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
+
+    square = sgeom.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
+    ax.add_geometries([square], crs=ccrs.PlateCarree(), autolim=autolim)
+
+    if autolim:
+        expected = [-150, 0, 20, 20]  # Fit to square projected 180 degrees
+    else:
+        expected = [-180, -90, 360, 180]  # Leave at default of whole globe
+
+    np.testing.assert_allclose(ax.dataLim.bounds, expected)
