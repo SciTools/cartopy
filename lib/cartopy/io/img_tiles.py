@@ -476,7 +476,7 @@ class Stamen(GoogleWTS):
             f'{self.style}/{z}/{x}/{y}.{self.extension}'
 
 
-class Thunderforest(GoogleWTS):
+class ThunderforestTiles(GoogleWTS):
     """
     Retrieves tiles from https://www.thunderforest.com.
 
@@ -488,7 +488,7 @@ class Thunderforest(GoogleWTS):
     apikey : str, required
         The authentication key provided by Thunderforest to query their APIs
     style : str, optional
-        Name of the desired style. Defaults to "atlas". See
+        Name of the desired style. Defaults to "landscape". See
         https://www.thunderforest.com/maps/ for a full list of styles.
     resolution : str, optional
         Resolution of the images to return. Defaults to an empty string,
@@ -509,7 +509,7 @@ class Thunderforest(GoogleWTS):
 
     def __init__(self,
                     apikey,
-                    style="atlas",
+                    style="landscape",
                     resolution="",
                     cache=False):
         super().__init__(cache=cache, desired_tile_form="RGBA")
