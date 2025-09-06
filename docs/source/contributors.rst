@@ -43,6 +43,7 @@ the package wouldn't be as rich or diverse as it is today:
  * Stephane Raynaud
  * John Krasting
  * Matthias Cuntz
+ * Thomas Guymer
 
 Thank you!
 
