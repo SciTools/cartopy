@@ -476,7 +476,7 @@ class Stamen(GoogleWTS):
             f'{self.style}/{z}/{x}/{y}.{self.extension}'
 
 
-class ThunderforestTiles(GoogleWTS):
+class Thunderforest(GoogleWTS):
     """
     Retrieves tiles from https://www.thunderforest.com.
 
