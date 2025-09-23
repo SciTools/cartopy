@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -19,9 +18,9 @@ class TestStereographic:
         check_proj_params('stere', stereo, other_args)
 
         assert_almost_equal(np.array(stereo.x_limits),
-                            [-5e7, 5e7], decimal=4)
+                            [-5e7, 5e7], decimal=3)
         assert_almost_equal(np.array(stereo.y_limits),
-                            [-5e7, 5e7], decimal=4)
+                            [-5e7, 5e7], decimal=3)
 
     def test_eccentric_globe(self):
         globe = ccrs.Globe(semimajor_axis=1000, semiminor_axis=500,

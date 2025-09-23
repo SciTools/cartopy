@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import numpy as np
 from numpy.testing import assert_almost_equal
@@ -52,6 +51,6 @@ class TestLambertAzimuthalEqualArea:
     @pytest.mark.parametrize("latitude", [-90, 90])
     def test_extrema(self, latitude):
         crs = ccrs.LambertAzimuthalEqualArea(central_latitude=latitude)
-        other_args = {'ellps=WGS84', 'lon_0=0.0', 'lat_0={}'.format(latitude),
+        other_args = {'ellps=WGS84', 'lon_0=0.0', f'lat_0={latitude}',
                       'x_0=0.0', 'y_0=0.0'}
         check_proj_params('laea', crs, other_args)

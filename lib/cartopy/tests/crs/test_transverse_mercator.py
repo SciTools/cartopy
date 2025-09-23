@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Transverse Mercator projection, including OSGB and OSNI.
 
@@ -92,9 +91,8 @@ class TestOSNI:
     def test_default(self, approx):
         proj = ccrs.OSNI(approx=approx)
         res = proj.transform_point(*self.point_a, src_crs=self.src_crs)
-        np.testing.assert_array_almost_equal(
-            res, (275614.26762651594, 386984.206429612),
-            decimal=0 if ccrs.PROJ4_VERSION < (5, 0, 0) else 6)
+        np.testing.assert_array_almost_equal(res,
+                                             (275614.267627, 386984.206430))
 
     def test_nan(self):
         proj = ccrs.OSNI(approx=True)

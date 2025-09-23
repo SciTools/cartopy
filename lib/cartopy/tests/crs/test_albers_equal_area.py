@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Albers Equal Area coordinate system.
 
@@ -57,12 +56,15 @@ class TestAlbersEqualArea:
     def test_central_longitude(self, lon):
         aea = ccrs.AlbersEqualArea()
         aea_offset = ccrs.AlbersEqualArea(central_longitude=lon)
-        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon), 'lat_0=0.0',
+        other_args = {'ellps=WGS84', f'lon_0={lon}', 'lat_0=0.0',
                       'x_0=0.0', 'y_0=0.0', 'lat_1=20.0', 'lat_2=50.0'}
         check_proj_params('aea', aea_offset, other_args)
 
-        assert_array_almost_equal(aea_offset.boundary, aea.boundary,
-                                  decimal=0)
+        assert_array_almost_equal(
+            aea_offset.boundary.coords,
+            aea.boundary.coords,
+            decimal=0,
+        )
 
     def test_standard_parallels(self):
         aea = ccrs.AlbersEqualArea(standard_parallels=(13, 37))

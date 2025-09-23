@@ -1,0 +1,103 @@
+Version 0.25 (August 8, 2025)
+=============================
+
+This version contains a lot of maintenance work and updating internal
+portions of the code to use more modern Python features and methods.
+There was a lot of work done in path transformations to provide more
+robust Shapely to Matplotlib Path and vice versa transformations. Additionally,
+there are several new projections that were added in this release.
+
+The new minimum supported versions of dependencies that have been updated are:
+
+* Shapely 2.0
+
+
+🎉 Features
+-----------
+
+* Ruth Comer introduced `~cartopy.mpl.path.shapely_to_path` and
+  `~cartopy.mpl.path.path_to_shapely` which map a single Shapely geometry or
+  collection to a single Matplotlib path and *vice versa*. (:pull:`2455`)
+
+* The Orthographic projection now supports a ``rotation`` keyword argument
+  that applies azimuthal rotation to the projection.
+  Thanks Ken Hirata for this work. (:pull:`2504`)
+
+* The Spilhaus projection was added by Wenrui Jiang (requires PROJ 9.6+).
+  (:pull:`2529`)
+
+
+🐛 Bug Fixes
+------------
+
+* Greg Lucas fixed the image transform code to add a half-pixel shift to
+  the y coordinate (the x coordinate was already shifted a half-pixel).
+  (:pull:`2461`)
+
+* Ruth Comer fixed cases where a single inverted polygon was being
+  projected incorrectly. (:pull:`2470`)
+
+* Transforming multipolygons with holes was improved by Ruth Comer to
+  avoid some libgeos errors. (:pull:`2521`)
+
+* Greg Lucas fixed gridline handling of offset central longitudes.
+  The gridlines now extend to the edges of the maps. (:pull:`2489`)
+
+* Romain Jolivet fixed a potential initialization error when downloading with
+  a PosixPath. (:pull:`2500`)
+
+📚 Documentation
+----------------
+
+* Philippe Miron updated the logo to center the Cartopy text. (:pull:`2460`)
+
+* Warrick Ball updated the BibTex citation. (:pull:`2485`)
+
+* Edwin added an example demonstrating how to reproject a raster image.
+  :ref:`sphx_glr_gallery_scalar_data_raster_reprojections.py` (:pull:`2496`)
+
+* Ruth Comer added an example aligning Cartopy and Matplotlib Axes.
+  :ref:`sphx_glr_gallery_gridlines_and_labels_map_latitudes.py` (:pull:`2502`)
+
+* Jan Meischner updated the gridliner label example.
+  :ref:`sphx_glr_gallery_gridlines_and_labels_gridliner.py` (:pull:`2505`)
+
+
+🛠️ Maintenance
+--------------
+
+* Greg Lucas changed all internal function calls to prefer the (lon, lat)
+  ordering for all inputs and outputs to provide more consistency. (:pull:`2453`)
+
+* Greg Lucas replaced the deprecated ``utcnow()`` calls.
+
+* Miroslav Šedivý updated path and math functions with modern replacements.
+  (:pull:`2508` and :pull:`2509`)
+
+* Mattias Cuntz updated the French WFS server addresses for tests.
+  (:pull:`2524`)
+
+* Katelyn Fitzgerald updated the Cython code to use ``libc.math`` instead of
+  ``numpy.math``. (:pull:`2528`)
+
+* Bill Little updated the license and license-file fields to conform with
+  PEP 639. (:pull:`2526`)
+
+
+🚫 Deprecations and Removals
+----------------------------
+
+* The ``cartopy.mpl.clip_path`` module is deprecated without replacement.
+  Please vendor these functions if you need them.
+
+* `~cartopy.mpl.patch.path_to_geos` and `~cartopy.mpl.patch.geos_to_path` are
+  deprecated.  Use `~cartopy.mpl.path.path_to_shapely` and
+  `~cartopy.mpl.path.shapely_to_path` instead.
+
+* `~cartopy.mpl.patch.path_segments` is deprecated without replacement.  The
+  implementation is simply
+
+  .. code-block:: python
+
+    pth = path.cleaned(**kwargs)
+    return pth.vertices[:-1, :], pth.codes[:-1]

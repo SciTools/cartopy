@@ -1,11 +1,10 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
+from functools import reduce
 import operator
-import os
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -13,10 +12,14 @@ import numpy as np
 import pytest
 
 from cartopy import config
-from cartopy.tests.mpl import ImageTesting
 import cartopy.crs as ccrs
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
+
 import cartopy.img_transform as im_trans
-from functools import reduce
 
 
 class TestRegrid:
@@ -80,11 +83,11 @@ class TestRegrid:
 
 # Bug in latest Matplotlib that we don't consider correct.
 @pytest.mark.natural_earth
-@ImageTesting(['regrid_image'], tolerance=5.55)
+@pytest.mark.mpl_image_compare(filename='regrid_image.png', tolerance=5.55)
 def test_regrid_image():
     # Source data
-    fname = os.path.join(config["repo_data_dir"], 'raster', 'natural_earth',
-                         '50-natural-earth-1-downsampled.png')
+    fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
+             / '50-natural-earth-1-downsampled.png')
     nx = 720
     ny = 360
     source_proj = ccrs.PlateCarree()
@@ -96,7 +99,7 @@ def test_regrid_image():
     # Target grid
     target_nx = 300
     target_ny = 300
-    target_proj = ccrs.InterruptedGoodeHomolosine()
+    target_proj = ccrs.InterruptedGoodeHomolosine(emphasis='land')
     target_x, target_y, target_extent = im_trans.mesh_projection(target_proj,
                                                                  target_nx,
                                                                  target_ny)
@@ -106,20 +109,21 @@ def test_regrid_image():
                                 target_proj, target_x, target_y)
 
     # Plot
-    plt.figure(figsize=(10, 10))
+    fig = plt.figure(figsize=(10, 10))
     gs = mpl.gridspec.GridSpec(nrows=4, ncols=1,
                                hspace=1.5, wspace=0.5)
     # Set up axes and title
-    ax = plt.subplot(gs[0], projection=target_proj)
-    plt.imshow(new_array, origin='lower', extent=target_extent)
+    ax = fig.add_subplot(gs[0], projection=target_proj)
+    ax.imshow(new_array, origin='lower', extent=target_extent)
     ax.coastlines()
     # Plot each color slice (tests masking)
     cmaps = {'red': 'Reds', 'green': 'Greens', 'blue': 'Blues'}
     for i, color in enumerate(['red', 'green', 'blue']):
-        ax = plt.subplot(gs[i + 1], projection=target_proj)
-        plt.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
-                   cmap=cmaps[color])
+        ax = fig.add_subplot(gs[i + 1], projection=target_proj)
+        ax.imshow(new_array[:, :, i], extent=target_extent, origin='lower',
+                  cmap=cmaps[color])
         ax.coastlines()
 
     # Tighten up layout
-    gs.tight_layout(plt.gcf())
+    gs.tight_layout(fig)
+    return fig

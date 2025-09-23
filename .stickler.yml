@@ -1,3 +1,0 @@
-linters:
-    flake8:
-        python: 3

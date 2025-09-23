@@ -3,33 +3,10 @@
 The cartopy Feature interface
 =============================
 
-The :ref:`data copyright, license and attribution  <referencing_copyright>` can be blended on the map using `text annotations (mpl docs) <https://matplotlib.org/users/annotations_intro.html>`_ as shown in `feature_creation <../gallery/feature_creation.html>`_.
-
-.. currentmodule:: cartopy.feature
-
-.. autoclass:: Feature
-    :members:
-    :undoc-members:
-
-
----------
+The :ref:`data copyright, license and attribution  <referencing_copyright>` can be blended on the map using `text annotations (mpl docs) <https://matplotlib.org/stable/users/explain/text/annotations.html>`_ as shown in `feature_creation <../gallery/lines_and_polygons/feature_creation.html>`_.
 
 Specific Feature subclasses have been defined for common functionality, such as accessing
-Natural Earth or GSHHS shapefiles.
-
-
-.. autoclass:: ShapelyFeature
-
-.. autoclass:: NaturalEarthFeature
-    :members: with_scale
-
-.. autoclass:: GSHHSFeature
-
-.. autoclass:: WFSFeature
-
-.. autoclass:: AdaptiveScaler
-
-----------
+Natural Earth or GSHHS shapefiles. A list of these can be found in :ref:`the reference documentation <api.feature>`.
 
 To simplify some very common cases, some pre-defined Features exist as :mod:`cartopy.feature`
 constants. The pre-defined Features are all small-scale (1:110m)
@@ -55,7 +32,7 @@ Name                     Description
                          United States at this scale).
                          Natural Earth have first-order admin boundaries for most
                          countries at the 1:10,000,000 scale; these may be
-                         accessed with ``cartopy.feature.STATES.with_scale('10m')`` 
+                         accessed with ``cartopy.feature.STATES.with_scale('10m')``
 =======================  ================================================================
 
 .. note::
@@ -70,9 +47,7 @@ Name                     Description
                                                 facecolor=cfeature.COLORS['land'])
 
 
-A dictionary of some useful colors for drawing features also exists:
-
-.. autodata:: COLORS
+A dictionary of some useful colors for drawing features also exists in :attr:`cartopy.feature.COLORS`.
 
 For a full list of names in this dictionary:
 

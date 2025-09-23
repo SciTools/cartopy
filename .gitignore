@@ -7,24 +7,17 @@ dist
 
 # cartopy build files
 lib/cartopy/_version.py
-lib/cartopy/trace.cpp
-lib/cartopy/trace.so
-lib/cartopy/trace.*.so
-lib/cartopy/trace.pyd
-lib/cartopy/_crs.c
-lib/cartopy/_crs.so
-lib/cartopy/_crs.*.so
-lib/cartopy/_crs.pyd
-lib/cartopy/geodesic/_geodesic.c
-lib/cartopy/geodesic/_geodesic.so
-lib/cartopy/geodesic/_geodesic.*.so
-lib/cartopy/geodesic/_geodesic.pyd
+*.cpp
+*.so
+*.pyd
+
 docs/build
 lib/cartopy/tests/mpl/output/
 docs/source/cartopy/examples/
-docs/source/cartopy_outline.rst
 docs/source/gallery
 docs/source/matplotlib/coastlines.p??
+docs/source/*/generated/
+docs/source/sg_execution_times.rst
 
 # some data files:
 lib/cartopy/data/SRTM3
@@ -32,10 +25,10 @@ lib/cartopy/data/gshhs
 lib/cartopy/data/shapefiles
 
 # some configuration files which aren't part of cartopy repo
-lib/cartopy/tests/.pep8_test_exclude.txt
 lib/cartopy/siteconfig.py
 
-cartopy_test_output
+# Possible local downloads of these files during doc builds
+ne_10m_bathymetry*
 
 
 benchmarks/results/
@@ -52,6 +45,7 @@ benchmarks/envs/
 *.swp
 .ipynb_checkpoints/
 .idea/
+.vscode/
 
 # Operating system files
 \.DS_Store

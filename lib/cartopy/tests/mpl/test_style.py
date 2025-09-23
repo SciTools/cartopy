@@ -1,12 +1,16 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
+
+import warnings
 
 import pytest
 
-from cartopy.mpl import style
+
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore', DeprecationWarning)
+    from cartopy.mpl import style
 
 
 @pytest.mark.parametrize(
@@ -37,6 +41,7 @@ from cartopy.mpl import style
      ([dict(color=None), dict(facecolor='red')],
       dict(facecolor='red', edgecolor=None)),
      ([dict(linewidth=1), dict(lw=None)], dict(linewidth=None)),
+     ([dict(facecolor='never'), dict(fc='NoNe')], dict(facecolor='never')),
      ]
 )
 def test_merge(styles, expected):
@@ -44,14 +49,10 @@ def test_merge(styles, expected):
     assert merged_style == expected
 
 
-@pytest.mark.parametrize(
-    ('case', 'should_warn'),
-    [[{'fc': 'red'}, True], [{'fc': 'NoNe'}, False], [{'fc': 1}, True]])
-def test_merge_warning(case, should_warn):
-    warn_type = UserWarning if should_warn else None
-    with pytest.warns(warn_type, match=r'defined as \"never\"') as record:
+@pytest.mark.parametrize("case", [{'fc': 'red'}, {'fc': 1}])
+def test_merge_warning(case):
+    with pytest.warns(UserWarning, match=r'defined as \"never\"'):
         style.merge({'facecolor': 'never'}, case)
-    assert len(record) == (1 if should_warn else 0)
 
 
 @pytest.mark.parametrize(

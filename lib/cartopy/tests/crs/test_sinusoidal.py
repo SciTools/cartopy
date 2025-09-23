@@ -1,11 +1,11 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import numpy as np
 from numpy.testing import assert_almost_equal
+import pyproj
 import pytest
 
 import cartopy.crs as ccrs
@@ -32,10 +32,15 @@ class TestSinusoidal:
         other_args = {'a=1000', 'b=500', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0'}
         check_proj_params('sinu', crs, other_args)
 
+        expected_x = [-3141.59, 3141.59]
+        expected_y = [-1216.60, 1216.60]
+        if pyproj.__proj_version__ >= '9.2.0':
+            expected_x = [-3141.60, 3141.60]
+            expected_y = [-1211.05,  1211.05]
         assert_almost_equal(np.array(crs.x_limits),
-                            [-3141.59, 3141.59], decimal=2)
+                            expected_x, decimal=2)
         assert_almost_equal(np.array(crs.y_limits),
-                            [-1216.60, 1216.60], decimal=2)
+                            expected_y, decimal=2)
 
     def test_offset(self):
         crs = ccrs.Sinusoidal()
@@ -49,7 +54,7 @@ class TestSinusoidal:
     @pytest.mark.parametrize('lon', [-10.0, 10.0])
     def test_central_longitude(self, lon):
         crs = ccrs.Sinusoidal(central_longitude=lon)
-        other_args = {'ellps=WGS84', 'lon_0={}'.format(lon),
+        other_args = {'ellps=WGS84', f'lon_0={lon}',
                       'x_0=0.0', 'y_0=0.0'}
         check_proj_params('sinu', crs, other_args)
 

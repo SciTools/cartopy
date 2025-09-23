@@ -1,17 +1,17 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
-Provides a collection of sub-packages for loading, saving and retrieving
-various data formats.
+These are the base classes in :mod:`cartopy.io` that new resources can leverage
+to implement a new reader or tile client. Together they provide a collection of
+sub-packages for loading, saving and retrieving various data formats.
 
 """
 
 import collections
-import os
+from pathlib import Path
 import string
 from urllib.request import urlopen
 import warnings
@@ -40,6 +40,8 @@ def fh_getter(fh, mode='r', needs_filename=False):
     """
     if mode != 'r':
         raise ValueError('Only mode "r" currently supported.')
+
+    filename = None
 
     if isinstance(fh, str):
         filename = fh
@@ -150,8 +152,8 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return self._formatter.format(self.target_path_template,
-                                      **format_dict)
+        return Path(self._formatter.format(self.target_path_template,
+                                           **format_dict))
 
     def pre_downloaded_path(self, format_dict):
         """
@@ -167,8 +169,9 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        return self._formatter.format(self.pre_downloaded_path_template,
-                                      **format_dict)
+        p = self._formatter.format(self.pre_downloaded_path_template,
+                                   **format_dict)
+        return None if p == '' else Path(p)
 
     def path(self, format_dict):
         """
@@ -180,7 +183,7 @@ class Downloader:
         :meth:`url` to :meth:`target_path`.
 
         Typically, this is the method that most applications will call,
-        allowing implementors of new Downloaders to specialise
+        allowing implementers of new Downloaders to specialise
         :meth:`acquire_resource`.
 
         Parameters
@@ -193,10 +196,9 @@ class Downloader:
         """
         pre_downloaded_path = self.pre_downloaded_path(format_dict)
         target_path = self.target_path(format_dict)
-        if (pre_downloaded_path is not None and
-                os.path.exists(pre_downloaded_path)):
+        if pre_downloaded_path is not None and pre_downloaded_path.exists():
             result_path = pre_downloaded_path
-        elif os.path.exists(target_path):
+        elif target_path.exists():
             result_path = target_path
         else:
             # we need to download the file
@@ -217,17 +219,16 @@ class Downloader:
             expected as a minimum in their ``FORMAT_KEYS`` class attribute.
 
         """
-        target_dir = os.path.dirname(target_path)
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
+        target_path = Path(target_path)
+        target_dir = target_path.parent
+        target_dir.mkdir(parents=True, exist_ok=True)
 
         url = self.url(format_dict)
 
         # try getting the resource (no exception handling, just let it raise)
         response = self._urlopen(url)
 
-        with open(target_path, 'wb') as fh:
-            fh.write(response.read())
+        target_path.write_bytes(response.read())
 
         return target_path
 
@@ -238,7 +239,7 @@ class Downloader:
         Caller should close the file handle when finished with it.
 
         """
-        warnings.warn('Downloading: {}'.format(url), DownloadWarning)
+        warnings.warn(f'Downloading: {url}', DownloadWarning)
         return urlopen(url)
 
     @staticmethod
@@ -294,7 +295,7 @@ class Downloader:
             # some strange things like not having any downloaders defined
             # in the config...
             raise ValueError('No generic downloadable item in the config '
-                             'dictionary for {}'.format(specification))
+                             f'dictionary for {specification}')
 
         return result_downloader
 
@@ -323,6 +324,7 @@ class RasterSource:
     .. _raster-source-interface:
 
     """
+
     def validate_projection(self, projection):
         """
         Raise an error if this raster source cannot provide images in the
@@ -370,6 +372,7 @@ class RasterSourceContainer(RasterSource):
     contained :class:`RasterSource`.
 
     """
+
     def __init__(self, contained_source):
         """
         Parameters
@@ -394,6 +397,7 @@ class PostprocessedRasterSource(RasterSourceContainer):
     post-processing step on the raster fetched from the contained source.
 
     """
+
     def __init__(self, contained_source, img_post_process):
         """
         Parameters

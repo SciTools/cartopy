@@ -6,8 +6,9 @@ This example demonstrates the interactive pan and zoom capability
 supported by an OGC web services Web Map Service (WMS) aware axes.
 
 """
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
 
 
 def main():

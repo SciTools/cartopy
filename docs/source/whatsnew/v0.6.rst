@@ -1,0 +1,36 @@
+Version 0.6 (February 19, 2013)
+===============================
+
+
+Features
+--------
+
+* Patrick Peglar added the ability to draw ticks for some limited projections
+  when using the :py:func:`~cartopy.mpl.geoaxes.GeoAxes.gridlines` method on an Axes.
+
+* Phil Elson and Carwyn Pelley extended the cartopy documentation to include
+  new tutorials such as :ref:`using_the_shapereader`.
+
+* Ian Edwards :doc:`added a new example <../gallery/miscellanea/favicon>` to create a favicon for cartopy.
+
+* Phil Elson :doc:`added a new example <../gallery/lines_and_polygons/hurricane_katrina>` to show polygon analysis
+  and visualisation with Shapely and cartopy.
+
+* Edward Campbell added a new :py:class:`cartopy.crs.EuroPP` projection for UTM zone 32.
+
+* Andrew Dawson added a ``central_longitude`` keyword for the Stereographic family of projections.
+
+* Phil Elson added a :py:class:`~cartopy.io.Downloader` class which allows
+  automatic downloading of shapefiles (currently from Natural Earth and GSHHS).
+  The extension requires no user action and can be configured via the :data:`cartopy.config` dictionary.
+
+* Development plans for cartopy 0.7 and beyond
+
+    * Improve the projection definitions to support better control over datum definitions
+      and consider adding WKT support (:issue:`ticket <153>`).
+
+    * Begin work on vector field support (barbs, quiver, streamlines etc.).
+
+    * Continue identifying and implementing performance enhancements (particularly in contour drawing).
+
+    * Extend the number of projections for which it is possible to draw tick marks.

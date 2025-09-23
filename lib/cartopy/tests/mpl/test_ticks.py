@@ -1,70 +1,34 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-
-import math
-
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 import matplotlib.pyplot as plt
-import matplotlib.ticker
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import ImageTesting
-
-
-def _format_lat(val, i):
-    if val > 0:
-        return '%.0fN' % val
-    elif val < 0:
-        return '%.0fS' % abs(val)
-    else:
-        return '0'
-
-
-def _format_lon(val, i):
-    # Apply periodic boundary conditions, with an almost equal test on 180 lon.
-    while val > 180:
-        val -= 360
-    while val < -180:
-        val += 360
-    if abs(abs(val) - 180.) <= 1e-06 or val == 0:
-        return '%.0f' % abs(val)
-    elif val > 0:
-        return '%.0fE' % val
-    elif val < 0:
-        return '%.0fW' % abs(val)
-
-
-ticks_tolerance = 7
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['xticks_no_transform'],
-              tolerance=ticks_tolerance)
+@pytest.mark.mpl_image_compare(filename='xticks_no_transform.png')
 def test_set_xticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
-    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
+    ax.xaxis.set_major_formatter(LongitudeFormatter(degree_symbol=''))
     ax.set_xticks([-180, -90, 0, 90, 180])
     ax.set_xticks([-135, -45, 45, 135], minor=True)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['xticks_cylindrical'],
-              tolerance=ticks_tolerance)
+@pytest.mark.mpl_image_compare(filename='xticks_cylindrical.png')
 def test_set_xticks_cylindrical():
-    ax = plt.axes(projection=ccrs.Mercator(
-                  min_latitude=-85.,
-                  max_latitude=85.,
-                  globe=ccrs.Globe(semimajor_axis=math.degrees(1))))
+    ax = plt.axes(projection=ccrs.Mercator(min_latitude=-85, max_latitude=85))
     ax.coastlines('110m')
-    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
+    ax.xaxis.set_major_formatter(LongitudeFormatter(degree_symbol=''))
     ax.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.PlateCarree())
     ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.PlateCarree())
+    return ax.figure
 
 
 def test_set_xticks_non_cylindrical():
@@ -73,34 +37,29 @@ def test_set_xticks_non_cylindrical():
         ax.set_xticks([-180, -90, 0, 90, 180], crs=ccrs.Geodetic())
     with pytest.raises(RuntimeError):
         ax.set_xticks([-135, -45, 45, 135], minor=True, crs=ccrs.Geodetic())
-    plt.close()
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['yticks_no_transform'],
-              tolerance=ticks_tolerance)
+@pytest.mark.mpl_image_compare(filename='yticks_no_transform.png')
 def test_set_yticks_no_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines('110m')
-    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
+    ax.yaxis.set_major_formatter(LatitudeFormatter(degree_symbol=''))
     ax.set_yticks([-60, -30, 0, 30, 60])
-    ax.set_yticks([-75, -45, 15, 45, 75], minor=True)
+    ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True)
+    return ax.figure
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['yticks_cylindrical'],
-              tolerance=ticks_tolerance)
+@pytest.mark.mpl_image_compare(filename='yticks_cylindrical.png')
 def test_set_yticks_cylindrical():
-    ax = plt.axes(projection=ccrs.Mercator(
-                  min_latitude=-85.,
-                  max_latitude=85.,
-                  globe=ccrs.Globe(semimajor_axis=math.degrees(1))))
+    ax = plt.axes(projection=ccrs.Mercator(min_latitude=-85, max_latitude=85))
     ax.coastlines('110m')
-    ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lon))
-    ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(_format_lat))
+    ax.yaxis.set_major_formatter(LatitudeFormatter(degree_symbol=''))
     ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.PlateCarree())
-    ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.PlateCarree())
+    ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True,
+                  crs=ccrs.PlateCarree())
+    return ax.figure
 
 
 def test_set_yticks_non_cylindrical():
@@ -108,17 +67,16 @@ def test_set_yticks_non_cylindrical():
     with pytest.raises(RuntimeError):
         ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.Geodetic())
     with pytest.raises(RuntimeError):
-        ax.set_yticks([-75, -45, 15, 45, 75], minor=True, crs=ccrs.Geodetic())
-    plt.close()
+        ax.set_yticks([-75, -45, -15, 15, 45, 75], minor=True,
+                      crs=ccrs.Geodetic())
 
 
 @pytest.mark.natural_earth
-@ImageTesting(['xyticks'], tolerance=ticks_tolerance)
+@pytest.mark.mpl_image_compare(filename='xyticks.png')
 def test_set_xyticks():
     fig = plt.figure(figsize=(10, 10))
     projections = (ccrs.PlateCarree(),
-                   ccrs.Mercator(globe=ccrs.Globe(
-                       semimajor_axis=math.degrees(1))),
+                   ccrs.Mercator(),
                    ccrs.TransverseMercator(approx=False))
     x = -3.275024
     y = 50.753998
@@ -129,3 +87,4 @@ def test_set_xyticks():
         p, q = prj.transform_point(x, y, ccrs.Geodetic())
         ax.set_xticks([p])
         ax.set_yticks([q])
+    return fig

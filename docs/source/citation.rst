@@ -5,19 +5,28 @@ Citing cartopy
 
 If cartopy played an important part in your research then please add us to your reference list by using one of the recommendations below.
 
+
+*********************************
+Latest release DOI through Zenodo
+*********************************
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.1182735.svg
+   :target: https://doi.org/10.5281/zenodo.1182735
+
+
 ************
-BibTeX entry 
+BibTeX entry
 ************
 
 For example::
 
  @manual{Cartopy,
  author = {{Met Office}},
- title = {Cartopy: a cartographic python library with a Matplotlib interface},
+ title = {Cartopy: a cartographic {Python} library with a {Matplotlib} interface},
  year = {2010 - 2015},
  address = {Exeter, Devon },
- url = {https://scitools.org.uk/cartopy}
- } 
+ url = {https://cartopy.readthedocs.io}
+ }
 
 
 *******************
@@ -41,10 +50,10 @@ For example::
 
  Cartopy. Met Office. git@github.com:SciTools/cartopy.git. 2015-02-18. 7b2242e.
 
-.. _How to cite and describe software: https://software.ac.uk/so-exactly-what-software-did-you-use
+.. _How to cite and describe software: https://www.software.ac.uk/publication/how-cite-and-describe-software
 
 
-[Jackson] Jackson, M. 2012. `How to cite and describe software`_. Accessed 2013-03-06.
+[Jackson] Jackson, M. 2012. `How to cite and describe software`_. Accessed 2024-03-15.
 
 
 .. _referencing_copyright:
@@ -78,4 +87,4 @@ The corresponding information for the data providers included in cartopy is list
 .. |---| unicode:: U+02014 .. em dash
    :trim:
 
-The `feature_creation example <./examples/feature_creation.html>`_ shows such annotation for Natural Earth data.
+The `feature_creation example <./gallery/lines_and_polygons/feature_creation.html>`_ shows such annotation for Natural Earth data.

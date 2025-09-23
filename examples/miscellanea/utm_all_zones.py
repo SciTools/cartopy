@@ -10,8 +10,9 @@ Next we set the projection of each axis in the figure to a specific UTM zone.
 Then we add coastlines, gridlines and the number of the zone.
 Finally we add a supertitle and display the figure.
 """
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
 
 
 def main():

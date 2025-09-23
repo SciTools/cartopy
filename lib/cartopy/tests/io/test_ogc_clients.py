@@ -1,12 +1,14 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 from unittest import mock
+from xml.etree.ElementTree import ParseError
 
 import numpy as np
+
+
 try:
     from owslib.wfs import WebFeatureService
     from owslib.wms import WebMapService
@@ -18,6 +20,13 @@ except ImportError:
 import pytest
 
 import cartopy.crs as ccrs
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
+
+
 import cartopy.io.ogc_clients as ogc
 from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE
 
@@ -26,6 +35,7 @@ RESOLUTION = (30, 30)
 
 
 @pytest.mark.network
+@pytest.mark.xfail(reason='URL no longer valid')
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
 class TestWMSRasterSource:
     URI = 'http://vmap0.tiles.osgeo.org/wms/vmap0'
@@ -35,16 +45,10 @@ class TestWMSRasterSource:
 
     def test_string_service(self):
         source = ogc.WMSRasterSource(self.URI, self.layer)
-        if isinstance(WebMapService, type):
-            # OWSLib < 0.13.0
-            assert isinstance(source.service, WebMapService)
-        else:
-            # OWSLib >= 0.13.0: WebMapService is a function that creates
-            # instances of these two classes.
-            from owslib.map.wms111 import WebMapService_1_1_1
-            from owslib.map.wms130 import WebMapService_1_3_0
-            assert isinstance(source.service,
-                              (WebMapService_1_1_1, WebMapService_1_3_0))
+        from owslib.map.wms111 import WebMapService_1_1_1
+        from owslib.map.wms130 import WebMapService_1_3_0
+        assert isinstance(source.service,
+                          (WebMapService_1_1_1, WebMapService_1_3_0))
         assert isinstance(source.layers, list)
         assert source.layers == [self.layer]
 
@@ -132,7 +136,7 @@ class TestWMSRasterSource:
 @pytest.mark.filterwarnings("ignore:TileMatrixLimits")
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
-@pytest.mark.xfail(raises=KeyError, reason='OWSLib WMTS support is broken.')
+@pytest.mark.xfail(reason='NASA servers are returning bad content metadata')
 class TestWMTSRasterSource:
     URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     layer_name = 'VIIRS_CityLights_2012'
@@ -235,6 +239,8 @@ class TestWFSGeometrySource:
         with pytest.raises(ValueError, match=msg):
             source.fetch_geometries(ccrs.PlateCarree(), [-180, 180, -90, 90])
 
+    @pytest.mark.xfail(raises=ParseError,
+                       reason="Bad XML returned from the URL")
     def test_fetch_geometries(self):
         source = ogc.WFSGeometrySource(self.URI, self.typename)
         # Extent covering New Zealand.

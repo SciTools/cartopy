@@ -1,11 +1,11 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
-Combine the shapefile access of pyshp with the
+This module provides a basic interface for accessing shapefiles.
+Combine the shapefile access of pyshp or fiona with the
 geometry representation of shapely:
 
     >>> import cartopy.io.shapereader as shapereader
@@ -27,16 +27,20 @@ geometry representation of shapely:
 
 """
 
-import glob
 import io
 import itertools
-import os
+from pathlib import Path
+from urllib.error import HTTPError
 
-import shapely.geometry as sgeom
+from pyproj import CRS
 import shapefile
+import shapely.geometry as sgeom
 
-from cartopy.io import Downloader
 from cartopy import config
+import cartopy.crs as ccrs
+from cartopy.io import Downloader
+
+
 _HAS_FIONA = False
 try:
     import fiona
@@ -44,7 +48,7 @@ try:
 except ImportError:
     pass
 
-__all__ = ['Reader', 'Record']
+__all__ = ["Reader", "Record"]
 
 
 class Record:
@@ -53,6 +57,7 @@ class Record:
     their associated geometry.
 
     """
+
     def __init__(self, shape, attributes, fields):
         self._shape = shape
 
@@ -71,14 +76,10 @@ class Record:
         self._fields = fields
 
     def __repr__(self):
-        return '<Record: {!r}, {!r}, <fields>>'.format(
-            self.geometry, self.attributes
-        )
+        return f'<Record: {self.geometry!r}, {self.attributes!r}, <fields>>'
 
     def __str__(self):
-        return 'Record({}, {}, <fields>)'.format(
-            self.geometry, self.attributes
-        )
+        return f'Record({self.geometry}, {self.attributes}, <fields>)'
 
     @property
     def bounds(self):
@@ -86,7 +87,7 @@ class Record:
         The bounds of this Record's :meth:`~Record.geometry`.
 
         """
-        if self._bounds is None:
+        if self._bounds is None and self.geometry is not None:
             self._bounds = self.geometry.bounds
         return self._bounds
 
@@ -111,26 +112,42 @@ class FionaRecord(Record):
     with the FionaReader.
 
     """
+
     def __init__(self, geometry, attributes):
         self._geometry = geometry
         self.attributes = attributes
-        self._bounds = geometry.bounds
+
+        if geometry is not None:
+            self._bounds = geometry.bounds
+        else:
+            self._bounds = None
 
 
 class BasicReader:
     """
-    Provide an interface for accessing the contents of a shapefile.
+    Provide an interface for accessing the contents of a shapefile with the
+    Python Shapefile Library (PyShp). See the PyShp
+    `Readme <https://pypi.org/project/pyshp/>`_ for more information.
 
-    The primary methods used on a Reader instance are
-    :meth:`~Reader.records` and :meth:`~Reader.geometries`.
+    The primary methods used on a BasicReader instance are
+    :meth:`~cartopy.io.shapereader.BasicReader.records` and
+    :meth:`~cartopy.io.shapereader.BasicReader.geometries`.
 
     """
-    def __init__(self, filename):
+
+    def __init__(self, filename, bbox=None, **kwargs):
         # Validate the filename/shapefile
-        self._reader = reader = shapefile.Reader(filename)
+        self._reader = reader = shapefile.Reader(filename, **kwargs)
+        # Try to set the CRS from the .prj file if it exists
+        self.crs = None
+        try:
+            self.crs = ccrs.Projection(
+                CRS.from_wkt(Path(filename).with_suffix('.prj').read_text()))
+        except FileNotFoundError:
+            pass
+        self._bbox = bbox
         if reader.shp is None or reader.shx is None or reader.dbf is None:
-            raise ValueError("Incomplete shapefile definition "
-                             "in '%s'." % filename)
+            raise ValueError(f"Incomplete shapefile definition in '{filename}'.")
 
         self._fields = self._reader.fields
 
@@ -147,12 +164,12 @@ class BasicReader:
         This interface is useful for accessing the geometries of the
         shapefile where knowledge of the associated metadata is not necessary.
         In the case where further metadata is needed use the
-        :meth:`~Reader.records`
+        :meth:`~cartopy.io.shapereader.BasicReader.records`
         interface instead, extracting the geometry from the record with the
         :meth:`~Record.geometry` method.
 
         """
-        for shape in self._reader.iterShapes():
+        for shape in self._reader.iterShapes(bbox=self._bbox):
             # Skip the shape that can not be represented as geometry.
             if shape.shapeType != shapefile.NULL:
                 yield sgeom.shape(shape)
@@ -162,9 +179,10 @@ class BasicReader:
         Return an iterator of :class:`~Record` instances.
 
         """
+
         # Ignore the "DeletionFlag" field which always comes first
         fields = self._reader.fields[1:]
-        for shape_record in self._reader.iterShapeRecords():
+        for shape_record in self._reader.iterShapeRecords(bbox=self._bbox):
             attributes = shape_record.record.as_dict()
             yield Record(shape_record.shape, attributes, fields)
 
@@ -172,16 +190,27 @@ class BasicReader:
 class FionaReader:
     """
     Provides an interface for accessing the contents of a shapefile
-    with the fiona library, which has a much faster reader than pyshp.
+    with the fiona library, which has a much faster reader than PyShp. See
+    `fiona.open
+    <https://fiona.readthedocs.io/en/latest/fiona.html#fiona.open>`_
+    for additional information on supported kwargs.
 
-    The primary methods used on a Reader instance are
-    :meth:`~Reader.records` and :meth:`~Reader.geometries`.
+    The primary methods used on a FionaReader instance are
+    :meth:`~cartopy.io.shapereader.FionaReader.records` and
+    :meth:`~cartopy.io.shapereader.FionaReader.geometries`.
 
     """
-    def __init__(self, filename, bbox=None):
-        self._data = []
 
-        with fiona.open(filename) as f:
+    def __init__(self, filename, bbox=None, **kwargs):
+        self._data = []
+        # Try to set the CRS from the .prj file if it exists
+        self.crs = None
+        try:
+            self.crs = ccrs.Projection(
+                CRS.from_wkt(Path(filename).with_suffix('.prj').read_text()))
+        except FileNotFoundError:
+            pass
+        with fiona.open(filename, **kwargs) as f:
             if bbox is not None:
                 assert len(bbox) == 4
                 features = f.filter(bbox=bbox)
@@ -226,9 +255,9 @@ class FionaReader:
         This interface is useful for accessing the geometries of the
         shapefile where knowledge of the associated metadata is desired.
         In the case where further metadata is needed use the
-        :meth:`~Reader.records`
+        :meth:`~cartopy.io.shapereader.FionaReader.records`
         interface instead, extracting the geometry from the record with the
-        :meth:`~Record.geometry` method.
+        :meth:`~cartopy.io.shapereader.FionaRecord.geometry` method.
 
         """
         for item in self._data:
@@ -236,7 +265,7 @@ class FionaReader:
 
     def records(self):
         """
-        Returns an iterator of :class:`~Record` instances.
+        Returns an iterator of :class:`~FionaRecord` instances.
 
         """
         for item in self._data:
@@ -245,10 +274,19 @@ class FionaReader:
                                item.items() if key != 'geometry'})
 
 
-if _HAS_FIONA:
-    Reader = FionaReader
-else:
-    Reader = BasicReader
+Reader = FionaReader if _HAS_FIONA else BasicReader
+"""
+Alias of the default available shapereader interface.
+
+Will either be :class:`~cartopy.io.shapereader.FionaReader` (if fiona
+installed) or :class:`~cartopy.io.shapereader.BasicReader`
+(based on PyShp). Note that FionaReader has greater speed and additional
+functionality, including attempting to auto-detect source encoding and
+support for different format drivers. Both libraries support the 'encoding'
+and 'bbox' keyword arguments. If specific functionality is needed,
+BasicReader and FionaReader instances can also be created directly.
+
+"""
 
 
 def natural_earth(resolution='110m', category='physical', name='coastline'):
@@ -258,8 +296,8 @@ def natural_earth(resolution='110m', category='physical', name='coastline'):
 
     To identify valid components for this function, either browse
     NaturalEarthData.com, or if you know what you are looking for, go to
-    https://github.com/nvkelso/natural-earth-vector/tree/master/zips to
-    see the actual files which will be downloaded.
+    https://github.com/nvkelso/natural-earth-vector/ to see the actual
+    files which will be downloaded.
 
     Note
     ----
@@ -294,11 +332,10 @@ class NEShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'resolution', 'category', 'name')
 
-    # Define the NaturalEarth URL template. The natural earth website
-    # returns a 302 status if accessing directly, so we use the naciscdn
-    # URL directly.
-    _NE_URL_TEMPLATE = ('https://naciscdn.org/naturalearth/{resolution}'
-                        '/{category}/ne_{resolution}_{name}.zip')
+    # Define the NaturalEarth URL template. Shapefiles are hosted on AWS since
+    # 2021: https://github.com/nvkelso/natural-earth-vector/issues/445
+    _NE_URL_TEMPLATE = ('https://naturalearth.s3.amazonaws.com/'
+                        '{resolution}_{category}/ne_{resolution}_{name}.zip')
 
     def __init__(self,
                  url_template=_NE_URL_TEMPLATE,
@@ -316,7 +353,7 @@ class NEShpDownloader(Downloader):
         natural earth zip file.
 
         """
-        for ext in ['.shp', '.dbf', '.shx']:
+        for ext in ['.shp', '.dbf', '.shx', '.prj', '.cpg']:
             yield ('ne_{resolution}_{name}'
                    '{extension}'.format(extension=ext, **format_dict))
 
@@ -328,9 +365,8 @@ class NEShpDownloader(Downloader):
         """
         from zipfile import ZipFile
 
-        target_dir = os.path.dirname(target_path)
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
+        target_dir = Path(target_path).parent
+        target_dir.mkdir(parents=True, exist_ok=True)
 
         url = self.url(format_dict)
 
@@ -339,11 +375,18 @@ class NEShpDownloader(Downloader):
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
 
         for member_path in self.zip_file_contents(format_dict):
-            ext = os.path.splitext(member_path)[1]
-            target = os.path.splitext(target_path)[0] + ext
-            member = zfh.getinfo(member_path.replace(os.sep, '/'))
-            with open(target, 'wb') as fh:
-                fh.write(zfh.open(member).read())
+            try:
+                member = zfh.getinfo(member_path.replace("\\", "/"))
+            except KeyError:
+                # These extensions are required for shapefiles, so raise
+                # if they are missing, continue on otherwise as the other
+                # extensions are optional
+                if member_path.endswith(('.shp', '.shx', '.dbf')):
+                    raise
+                continue
+            target_path.with_suffix(Path(member_path).suffix).write_bytes(
+                zfh.open(member).read()
+            )
 
         shapefile_online.close()
         zfh.close()
@@ -367,9 +410,10 @@ ne_{resolution}_{name}.shp
         """
         default_spec = ('shapefiles', 'natural_earth', '{category}',
                         'ne_{resolution}_{name}.shp')
-        ne_path_template = os.path.join('{config[data_dir]}', *default_spec)
-        pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
-                                         *default_spec)
+        ne_path_template = str(
+            Path('{config[data_dir]}').joinpath(*default_spec))
+        pre_path_template = str(
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
         return NEShpDownloader(target_path_template=ne_path_template,
                                pre_downloaded_path_template=pre_path_template)
 
@@ -408,9 +452,12 @@ class GSHHSShpDownloader(Downloader):
     """
     FORMAT_KEYS = ('config', 'scale', 'level')
 
-    _GSHHS_URL_TEMPLATE = ('https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-                           'gshhs/oldversions/version2.2.0/'
-                           'GSHHS_shp_2.2.0.zip')
+    gshhs_version = '2.3.7'
+
+    _GSHHS_URL_TEMPLATE = (
+        'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
+        f'gshhs/latest/gshhg-shp-{gshhs_version}.zip'
+    )
 
     def __init__(self,
                  url_template=_GSHHS_URL_TEMPLATE,
@@ -426,37 +473,62 @@ class GSHHSShpDownloader(Downloader):
 
         """
         for ext in ['.shp', '.dbf', '.shx']:
-            yield (os.path.join('GSHHS_shp', '{scale}',
-                                'GSHHS_{scale}_L{level}{extension}'
-                                ).format(extension=ext, **format_dict))
+            p = Path('GSHHS_shp', '{scale}',
+                     'GSHHS_{scale}_L{level}{extension}')
+            yield str(p).format(extension=ext, **format_dict)
 
     def acquire_all_resources(self, format_dict):
         from zipfile import ZipFile
 
         # Download archive.
         url = self.url(format_dict)
-        shapefile_online = self._urlopen(url)
+        try:
+            shapefile_online = self._urlopen(url)
+        # error handling:
+        except HTTPError:
+            try:
+                """
+                case if GSHHS has had an update
+                without changing the naming convention
+                """
+                url = (
+                    f'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
+                    f'gshhs/oldversions/version{self.gshhs_version}/'
+                    f'gshhg-shp-{self.gshhs_version}.zip'
+                )
+                shapefile_online = self._urlopen(url)
+            except HTTPError:
+                """
+                case if GSHHS has had an update
+                with changing the naming convention
+                """
+                url = (
+                    'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
+                    'gshhs/oldversions/version2.3.6/'
+                    'gshhg-shp-2.3.6.zip'
+                )
+                shapefile_online = self._urlopen(url)
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 
         # Iterate through all scales and levels and extract relevant files.
         modified_format_dict = dict(format_dict)
         scales = ('c', 'l', 'i', 'h', 'f')
-        levels = (1, 2, 3, 4)
+        levels = (1, 2, 3, 4, 5, 6)
         for scale, level in itertools.product(scales, levels):
+            # the combination c4 does not occur for some reason
+            if scale == "c" and level == 4:
+                continue
             modified_format_dict.update({'scale': scale, 'level': level})
             target_path = self.target_path(modified_format_dict)
-            target_dir = os.path.dirname(target_path)
-            if not os.path.isdir(target_dir):
-                os.makedirs(target_dir)
+            target_dir = target_path.parent
+            target_dir.mkdir(parents=True, exist_ok=True)
 
             for member_path in self.zip_file_contents(modified_format_dict):
-                ext = os.path.splitext(member_path)[1]
-                target = os.path.splitext(target_path)[0] + ext
-                member = zfh.getinfo(member_path.replace(os.sep, '/'))
-                with open(target, 'wb') as fh:
-                    fh.write(zfh.open(member).read())
-
+                member = zfh.getinfo(member_path.replace('\\', '/'))
+                target_path.with_suffix(Path(member_path).suffix).write_bytes(
+                    zfh.open(member).read()
+                )
         zfh.close()
 
     def acquire_resource(self, target_path, format_dict):
@@ -471,18 +543,17 @@ class GSHHSShpDownloader(Downloader):
             exist in the ``cartopy.config['repo_data_dir']`` directory.
 
         """
-        repo_fname_pattern = os.path.join(config['repo_data_dir'],
-                                          'shapefiles', 'gshhs', '{scale}',
-                                          'GSHHS_{scale}_L?.shp')
+        repo_fname_pattern = str(Path('shapefiles') / 'gshhs'
+                                 / '{scale}' / 'GSHHS_{scale}_L?.shp')
         repo_fname_pattern = repo_fname_pattern.format(**format_dict)
-        repo_fnames = glob.glob(repo_fname_pattern)
+        repo_fnames = list(config['repo_data_dir'].glob(repo_fname_pattern))
         if repo_fnames:
             assert len(repo_fnames) == 1, '>1 repo files found for GSHHS'
             return repo_fnames[0]
         self.acquire_all_resources(format_dict)
-        if not os.path.exists(target_path):
+        if not target_path.exists():
             raise RuntimeError('Failed to download and extract GSHHS '
-                               'shapefile to {!r}.'.format(target_path))
+                               f'shapefile to {target_path!r}.')
         return target_path
 
     @staticmethod
@@ -504,10 +575,10 @@ GSHHS_{scale}_L{level}.shp
         """
         default_spec = ('shapefiles', 'gshhs', '{scale}',
                         'GSHHS_{scale}_L{level}.shp')
-        gshhs_path_template = os.path.join('{config[data_dir]}',
-                                           *default_spec)
-        pre_path_tmplt = os.path.join('{config[pre_existing_data_dir]}',
-                                      *default_spec)
+        gshhs_path_template = str(
+            Path('{config[data_dir]}').joinpath(*default_spec))
+        pre_path_tmplt = str(
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
         return GSHHSShpDownloader(target_path_template=gshhs_path_template,
                                   pre_downloaded_path_template=pre_path_tmplt)
 

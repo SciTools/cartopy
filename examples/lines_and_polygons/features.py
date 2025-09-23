@@ -6,9 +6,10 @@ A demonstration of some of the built-in Natural Earth features found
 in cartopy.
 
 """
+import matplotlib.pyplot as plt
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-import matplotlib.pyplot as plt
 
 
 def main():

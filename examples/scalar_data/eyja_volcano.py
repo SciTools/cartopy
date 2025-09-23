@@ -3,7 +3,7 @@ Map tile acquisition
 --------------------
 
 Demonstrates cartopy's ability to draw map tiles which are downloaded on
-demand from the Stamen tile server. Internally these tiles are then combined
+demand from the Google tile server. Internally these tiles are then combined
 into a single image and displayed in the cartopy GeoAxes.
 
 """
@@ -15,19 +15,19 @@ import cartopy.io.img_tiles as cimgt
 
 
 def main():
-    # Create a Stamen terrain background instance.
-    stamen_terrain = cimgt.Stamen('terrain-background')
+    # Create a background image tile.
+    google_terrain = cimgt.GoogleTiles(style="satellite")
 
     fig = plt.figure()
 
     # Create a GeoAxes in the tile's projection.
-    ax = fig.add_subplot(1, 1, 1, projection=stamen_terrain.crs)
+    ax = fig.add_subplot(1, 1, 1, projection=google_terrain.crs)
 
     # Limit the extent of the map to a small longitude/latitude range.
     ax.set_extent([-22, -15, 63, 65], crs=ccrs.Geodetic())
 
-    # Add the Stamen data at zoom level 8.
-    ax.add_image(stamen_terrain, 8)
+    # Add the tile data at zoom level 8.
+    ax.add_image(google_terrain, 8)
 
     # Add a marker for the Eyjafjallajökull volcano.
     ax.plot(-19.613333, 63.62, marker='o', color='red', markersize=12,

@@ -1,11 +1,12 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
+
+import pytest
 
 import cartopy.feature as cfeature
-import pytest
+
 
 small_extent = (-6, -8, 56, 59)
 medium_extent = (-20, 20, 20, 60)

@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
 The Shuttle Radar Topography Mission (SRTM) is an international research
@@ -12,17 +11,20 @@ database of Earth prior to the release of the ASTER GDEM in 2009.
 
    - Wikipedia (August 2012)
 
+The SRTM data can be accessed through the :mod:`cartopy.io.srtm` module
+using classes and functions defined below.
+
 """
 
 import io
-import os
+from pathlib import Path
 import warnings
 
 import numpy as np
 
 from cartopy import config
 import cartopy.crs as ccrs
-from cartopy.io import fh_getter, Downloader, RasterSource, LocatedImage
+from cartopy.io import Downloader, LocatedImage, RasterSource, fh_getter
 
 
 class _SRTMSource(RasterSource):
@@ -31,6 +33,7 @@ class _SRTMSource(RasterSource):
     interface <raster-source-interface>`.
 
     """
+
     def __init__(self, resolution, downloader, max_nx, max_ny):
         """
         Parameters
@@ -57,7 +60,7 @@ class _SRTMSource(RasterSource):
             self._shape = (3601, 3601)
         else:
             raise ValueError(
-                'Resolution is an unexpected value ({}).'.format(resolution))
+                f'Resolution is an unexpected value ({resolution}).')
         self._resolution = resolution
 
         #: The CRS of the underlying SRTM data.
@@ -69,7 +72,7 @@ class _SRTMSource(RasterSource):
 
         if self.downloader is None:
             self.downloader = Downloader.from_config(
-                ('SRTM', 'SRTM' + str(resolution)))
+                ('SRTM', f'SRTM{resolution}'))
 
         #: A tuple of (max_x_tiles, max_y_tiles).
         self._max_tiles = (max_nx, max_ny)
@@ -83,9 +86,8 @@ class _SRTMSource(RasterSource):
 
         """
         if not self.validate_projection(projection):
-            raise ValueError(
-                'Unsupported projection for the SRTM{} source.'.format(
-                    self._resolution))
+            raise ValueError(f'Unsupported projection for the '
+                             f'SRTM{self._resolution} source.')
 
         min_x, max_x, min_y, max_y = extent
         min_x, min_y = np.floor([min_x, min_y])
@@ -94,15 +96,13 @@ class _SRTMSource(RasterSource):
         skip = False
         if nx > self._max_tiles[0]:
             warnings.warn(
-                'Required SRTM{} tile count ({}) exceeds maximum ({}). '
-                'Increase max_nx limit.'.format(self._resolution, nx,
-                                                self._max_tiles[0]))
+                f'Required SRTM{self._resolution} tile count ({nx}) exceeds '
+                f'maximum ({self._max_tiles[0]}). Increase max_nx limit.')
             skip = True
         if ny > self._max_tiles[1]:
             warnings.warn(
-                'Required SRTM{} tile count ({}) exceeds maximum ({}). '
-                'Increase max_ny limit.'.format(self._resolution, ny,
-                                                self._max_tiles[1]))
+                f'Required SRTM{self._resolution} tile count ({ny}) exceeds '
+                f'maximum ({self._max_tiles[1]}). Increase max_ny limit.')
             skip = True
         if skip:
             return []
@@ -120,11 +120,11 @@ class _SRTMSource(RasterSource):
         if int(lon) != lon or int(lat) != lat:
             raise ValueError('Integer longitude/latitude values required.')
 
-        x = '%s%03d' % ('E' if lon >= 0 else 'W', abs(int(lon)))
-        y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
+        x = f"{'E' if lon >= 0 else 'W'}{abs(int(lon)):03d}"
+        y = f"{'N' if lat >= 0 else 'S'}{abs(int(lat)):02d}"
 
         srtm_downloader = Downloader.from_config(
-            ('SRTM', 'SRTM' + str(self._resolution)))
+            ('SRTM', f'SRTM{self._resolution}'))
         params = {'config': config, 'resolution': self._resolution,
                   'x': x, 'y': y}
 
@@ -175,6 +175,7 @@ class SRTM3Source(_SRTMSource):
     interface <raster-source-interface>`.
 
     """
+
     def __init__(self, downloader=None, max_nx=3, max_ny=3):
         """
         Parameters
@@ -202,6 +203,7 @@ class SRTM1Source(_SRTMSource):
     interface <raster-source-interface>`.
 
     """
+
     def __init__(self, downloader=None, max_nx=3, max_ny=3):
         """
         Parameters
@@ -223,18 +225,6 @@ class SRTM1Source(_SRTMSource):
                          max_nx=max_nx, max_ny=max_ny)
 
 
-def srtm(lon, lat):
-    """
-    Return (elevation, crs, extent) for the given longitude latitude.
-    Elevation is in meters.
-    """
-    warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    return SRTM3Source().single_tile(lon, lat)
-
-
 def add_shading(elevation, azimuth, altitude):
     """Add shading to SRTM elevation data, using azimuth and altitude
     of the sun.
@@ -253,62 +243,13 @@ def add_shading(elevation, azimuth, altitude):
     azimuth = np.deg2rad(azimuth)
     altitude = np.deg2rad(altitude)
     x, y = np.gradient(elevation)
-    slope = np.pi/2. - np.arctan(np.sqrt(x*x + y*y))
+    slope = np.pi / 2 - np.arctan(np.hypot(x, y))
     # -x here because of pixel orders in the SRTM tile
     aspect = np.arctan2(-x, y)
-    shaded = np.sin(altitude) * np.sin(slope)\
-        + np.cos(altitude) * np.cos(slope)\
-        * np.cos((azimuth - np.pi/2.) - aspect)
+    shaded = np.sin(altitude) * np.sin(slope) \
+        + np.cos(altitude) * np.cos(slope) \
+        * np.cos((azimuth - np.pi / 2) - aspect)
     return shaded
-
-
-def fill_gaps(elevation, max_distance=10):
-    """Fill gaps in SRTM elevation data for which the distance from
-    missing pixel to nearest existing one is smaller than `max_distance`.
-
-    This function requires osgeo/gdal to work.
-
-    Parameters
-    ----------
-    elevation
-        SRTM elevation data (in meters)
-    max_distance
-        Maximal distance (in pixels) between a missing point
-        and the nearest valid one.
-
-    Returns
-    -------
-    elevation
-        SRTM elevation data with filled gaps.
-
-    """
-    warnings.warn("The fill_gaps function has been deprecated. "
-                  "See the \"What's new\" section for v0.14.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    # Lazily import osgeo - it is only an optional dependency for cartopy.
-    from osgeo import gdal
-    from osgeo import gdal_array
-
-    src_ds = gdal_array.OpenArray(elevation)
-    srcband = src_ds.GetRasterBand(1)
-    dstband = srcband
-    maskband = srcband
-    smoothing_iterations = 0
-    options = []
-    gdal.FillNodata(dstband, maskband,
-                    max_distance, smoothing_iterations, options,
-                    callback=None)
-    elevation = dstband.ReadAsArray()
-    return elevation
-
-
-def srtm_composite(lon_min, lat_min, nx, ny):
-    warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    return SRTM3Source().combined(lon_min, lat_min, nx, ny)
 
 
 def read_SRTM(fh):
@@ -339,7 +280,7 @@ def read_SRTM(fh):
     if fname.endswith('.zip'):
         from zipfile import ZipFile
         zfh = ZipFile(fh, 'rb')
-        fh = zfh.open(os.path.basename(fname[:-4]), 'r')
+        fh = zfh.open(Path(fname).stem, 'r')
 
     elev = np.fromfile(fh, dtype=np.dtype('>i2'))
     if elev.size == 12967201:
@@ -348,9 +289,9 @@ def read_SRTM(fh):
         elev.shape = (1201, 1201)
     else:
         raise ValueError(
-            'Shape of SRTM data ({}) is unexpected.'.format(elev.size))
+            f'Shape of SRTM data ({elev.size}) is unexpected.')
 
-    fname = os.path.basename(fname)
+    fname = Path(fname).name
     y_dir, y, x_dir, x = fname[0], int(fname[1:3]), fname[3], int(fname[4:7])
 
     if y_dir == 'S':
@@ -366,21 +307,6 @@ read_SRTM3 = read_SRTM
 read_SRTM1 = read_SRTM
 
 
-def SRTM3_retrieve(lon, lat):
-    """
-    Return the path of a .hgt file for the given SRTM location.
-
-    If no such .hgt file exists (because it is over the ocean)
-    None will be returned.
-
-    """
-    warnings.warn("This method has been deprecated. "
-                  "See the \"What's new\" section for v0.12.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    return SRTM3Source().srtm_fname(lon, lat)
-
-
 class SRTMDownloader(Downloader):
     """
     Provide a SRTM download mechanism.
@@ -390,14 +316,14 @@ class SRTMDownloader(Downloader):
 
     _SRTM_BASE_URL = ('https://e4ftl01.cr.usgs.gov/MEASURES/'
                       'SRTMGL{resolution}.003/2000.02.11/')
-    _SRTM_LOOKUP_CACHE = os.path.join(os.path.dirname(__file__),
-                                      'srtm.npz')
+    _SRTM_LOOKUP_CACHE = Path(__file__).parent / 'srtm.npz'
     _SRTM_LOOKUP_MASK = np.load(_SRTM_LOOKUP_CACHE)['mask']
     """
     The SRTM lookup mask determines whether keys such as 'N43E043' are
     available to download.
 
     """
+
     def __init__(self,
                  target_path_template,
                  pre_downloaded_path_template='',
@@ -437,9 +363,8 @@ class SRTMDownloader(Downloader):
     def acquire_resource(self, target_path, format_dict):
         from zipfile import ZipFile
 
-        target_dir = os.path.dirname(target_path)
-        if not os.path.isdir(target_dir):
-            os.makedirs(target_dir)
+        target_dir = Path(target_path).parent
+        target_dir.mkdir(parents=True, exist_ok=True)
 
         url = self.url(format_dict)
 
@@ -448,8 +373,7 @@ class SRTMDownloader(Downloader):
 
         zip_member_path = '{y}{x}.hgt'.format(**format_dict)
         member = zfh.getinfo(zip_member_path)
-        with open(target_path, 'wb') as fh:
-            fh.write(zfh.open(member).read())
+        target_path.write_bytes(zfh.open(member).read())
 
         srtm_online.close()
         zfh.close()
@@ -482,10 +406,9 @@ class SRTMDownloader(Downloader):
             with urlopen(url) as f:
                 html = f.read()
         else:
-            with open(filename) as f:
-                html = f.read()
+            html = Path(filename).read_text()
 
-        mask = np.zeros((360, 181), dtype=np.bool)
+        mask = np.zeros((360, 181), dtype=bool)
 
         soup = BeautifulSoup(html)
 
@@ -516,10 +439,10 @@ class SRTMDownloader(Downloader):
 
         """
         default_spec = ('SRTM', 'SRTMGL{resolution}', '{y}{x}.hgt')
-        target_path_template = os.path.join('{config[data_dir]}',
-                                            *default_spec)
-        pre_path_template = os.path.join('{config[pre_existing_data_dir]}',
-                                         *default_spec)
+        target_path_template = str(
+            Path('{config[data_dir]}').joinpath(*default_spec))
+        pre_path_template = str(
+            Path('{config[pre_existing_data_dir]}').joinpath(*default_spec))
         return cls(target_path_template=target_path_template,
                    pre_downloaded_path_template=pre_path_template)
 

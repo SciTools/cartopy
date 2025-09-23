@@ -1,0 +1,37 @@
+# To set up a development environment using conda, run:
+#
+#   conda env create -f environment.yml
+#   conda activate cartopy-dev
+#   pip install -e .
+#
+name: cartopy-dev
+channels:
+  - conda-forge
+dependencies:
+  - cython>=0.29.28
+  - numpy>=1.23
+  - shapely>=2.0
+  - pyshp>=2.3
+  - pyproj>=3.3.1
+  - packaging>=21
+  # The testing label has the proper version of freetype included
+  - conda-forge/label/testing::matplotlib-base>=3.6
+
+  # OWS
+  - owslib>=0.27
+  - pillow>=9.1
+  # Plotting
+  - scipy>=1.9
+  # Testing
+  - pytest
+  - pytest-mpl
+  - pytest-xdist
+  # Documentation
+  - pydata-sphinx-theme
+  - sphinx
+  - sphinx-gallery
+  # Extras
+  - pre-commit
+  - pykdtree
+  - ruff
+  - setuptools_scm

@@ -1,81 +1,39 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 #
 # cython: embedsignature=True
 
 """
-This module pulls together proj, GEOS and ``_crs.pyx`` to implement a function
+Trace pulls together proj, GEOS and ``_crs.pyx`` to implement a function
 to project a `~shapely.geometry.LinearRing` / `~shapely.geometry.LineString`.
 In general, this should never be called manually, instead leaving the
 processing to be done by the :class:`cartopy.crs.Projection` subclasses.
 """
 from __future__ import print_function
 
+from functools import lru_cache
+
 cimport cython
-from libc.math cimport HUGE_VAL, sqrt
-from numpy.math cimport isfinite, isnan
-from libc.stdint cimport uintptr_t as ptr
+from libc.math cimport HUGE_VAL, sqrt, isfinite, isnan
 from libcpp cimport bool
 from libcpp.list cimport list
-from libcpp.vector cimport vector
 
 cdef bool DEBUG = False
 
-cdef extern from "geos_c.h":
-    ctypedef void *GEOSContextHandle_t
-    ctypedef struct GEOSGeometry:
-        pass
-    ctypedef struct GEOSCoordSequence
-    ctypedef struct GEOSPreparedGeometry
-    GEOSCoordSequence *GEOSCoordSeq_create_r(GEOSContextHandle_t, unsigned int, unsigned int) nogil
-    GEOSGeometry *GEOSGeom_createPoint_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
-    GEOSGeometry *GEOSGeom_createLineString_r(GEOSContextHandle_t, GEOSCoordSequence *) nogil
-    GEOSGeometry *GEOSGeom_createCollection_r(GEOSContextHandle_t, int, GEOSGeometry **, unsigned int) nogil
-    GEOSGeometry *GEOSGeom_createEmptyCollection_r(GEOSContextHandle_t, int) nogil
-    void GEOSGeom_destroy_r(GEOSContextHandle_t, GEOSGeometry *) nogil
-    GEOSCoordSequence *GEOSGeom_getCoordSeq_r(GEOSContextHandle_t, GEOSGeometry *) nogil
-    int GEOSCoordSeq_getSize_r(GEOSContextHandle_t handle, const GEOSCoordSequence* s, unsigned int *size) nogil
-    int GEOSCoordSeq_getX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
-    int GEOSCoordSeq_getY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double *) nogil
-    int GEOSCoordSeq_setX_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
-    int GEOSCoordSeq_setY_r(GEOSContextHandle_t, GEOSCoordSequence *, int, double) nogil
-    const GEOSPreparedGeometry *GEOSPrepare_r(GEOSContextHandle_t handle, const GEOSGeometry* g) nogil
-    char GEOSPreparedCovers_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
-    char GEOSPreparedDisjoint_r(GEOSContextHandle_t, const GEOSPreparedGeometry*, const GEOSGeometry*) nogil
-    void GEOSPreparedGeom_destroy_r(GEOSContextHandle_t handle, const GEOSPreparedGeometry* g) nogil
-    cdef int GEOS_MULTILINESTRING
+import re
+import warnings
 
-from cartopy._crs cimport CRS
-from cartopy._crs import PROJ4_VERSION
-from ._proj4 cimport (projPJ, projLP, pj_get_spheroid_defn, pj_transform,
-                      pj_strerrno, DEG_TO_RAD)
-from .geodesic._geodesic cimport (geod_geodesic, geod_geodesicline,
-                                  geod_init, geod_geninverse,
-                                  geod_lineinit, geod_genposition,
-                                  GEOD_ARCMODE, GEOD_LATITUDE, GEOD_LONGITUDE)
-
-
+import numpy as np
+import shapely
 import shapely.geometry as sgeom
-from shapely.geos import lgeos
+import shapely.prepared as sprep
+from pyproj import Geod, Transformer, proj_version_str
+from pyproj.exceptions import ProjError
+import shapely.geometry as sgeom
 
-
-cdef GEOSContextHandle_t get_geos_context_handle():
-    cdef ptr handle = lgeos.geos_handle
-    return <GEOSContextHandle_t>handle
-
-
-cdef GEOSGeometry *geos_from_shapely(shapely_geom) except *:
-    """Get the GEOS pointer from the given shapely geometry."""
-    cdef ptr geos_geom = shapely_geom._geom
-    return <GEOSGeometry *>geos_geom
-
-
-cdef shapely_from_geos(GEOSGeometry *geom):
-    """Turn the given GEOS geometry pointer into a shapely geometry."""
-    return sgeom.base.geom_factory(<ptr>geom)
+import cartopy.crs as ccrs
 
 
 ctypedef struct Point:
@@ -111,8 +69,9 @@ cdef class LineAccumulator:
         if self.lines.back().empty():
             self.add_point(point)
 
-    cdef GEOSGeometry *as_geom(self, GEOSContextHandle_t handle):
+    cdef object as_geom(self):
         from cython.operator cimport dereference, preincrement
+
         # self.lines.remove_if(degenerate_line) is not available in Cython.
         cdef list[Line].iterator it = self.lines.begin()
         while it != self.lines.end():
@@ -133,24 +92,12 @@ cdef class LineAccumulator:
 
         cdef Line ilines
         cdef Point ipoints
-        cdef vector[GEOSGeometry *] geoms
-        cdef int i
-        cdef GEOSCoordSequence *coords
+        geoms = []
         for ilines in self.lines:
-            coords = GEOSCoordSeq_create_r(handle, ilines.size(), 2)
-            for i, ipoints in enumerate(ilines):
-                GEOSCoordSeq_setX_r(handle, coords, i, ipoints.x)
-                GEOSCoordSeq_setY_r(handle, coords, i, ipoints.y)
+            coords = [(ipoints.x, ipoints.y) for ipoints in ilines]
+            geoms.append(sgeom.LineString(coords))
 
-            geoms.push_back(GEOSGeom_createLineString_r(handle, coords))
-
-        cdef GEOSGeometry *geom
-        if geoms.empty():
-            geom = GEOSGeom_createEmptyCollection_r(handle,
-                                                    GEOS_MULTILINESTRING)
-        else:
-            geom = GEOSGeom_createCollection_r(handle, GEOS_MULTILINESTRING,
-                                               &geoms[0], geoms.size())
+        geom = sgeom.MultiLineString(geoms)
         return geom
 
     cdef size_t size(self):
@@ -160,112 +107,132 @@ cdef class LineAccumulator:
 cdef class Interpolator:
     cdef Point start
     cdef Point end
-    cdef projPJ src_proj
-    cdef projPJ dest_proj
+    cdef readonly transformer
     cdef double src_scale
     cdef double dest_scale
+    cdef bint to_180
 
     def __cinit__(self):
         self.src_scale = 1
         self.dest_scale = 1
+        self.to_180 = False
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
-        self.src_proj = src_proj
-        self.dest_proj = dest_proj
+    cdef void init(self, src_crs, dest_crs) except *:
+        self.transformer = Transformer.from_crs(src_crs, dest_crs, always_xy=True)
+        self.to_180 = (
+            self.transformer.name == "noop" and
+            src_crs.__class__.__name__ in ("PlateCarree", "RotatedPole")
+        )
 
     cdef void set_line(self, const Point &start, const Point &end):
         self.start = start
         self.end = end
 
-    cdef Point interpolate(self, double t):
-        raise NotImplementedError
+    cdef Point project(self, const Point &src_xy) except *:
+        cdef Point dest_xy
 
-    cdef Point project(self, const Point &point):
+        try:
+            xx, yy = self.transformer.transform(
+                src_xy.x * self.src_scale,
+                src_xy.y * self.src_scale,
+                errcheck=True
+            )
+        except ProjError as err:
+            msg = str(err).lower()
+            if (
+                "latitude" in msg or
+                "longitude" in msg or
+                "outside of projection domain" in msg or
+                "tolerance condition error" in msg
+            ):
+                xx = HUGE_VAL
+                yy = HUGE_VAL
+            else:
+                raise
+
+        if self.to_180 and (xx > 180 or xx < -180) and xx != HUGE_VAL:
+            xx = (((xx + 180) % 360) - 180)
+
+        dest_xy.x = xx * self.dest_scale
+        dest_xy.y = yy * self.dest_scale
+        return dest_xy
+
+    cdef double[:, :] project_points(self, double[:, :] src_xy) except *:
+        # Used for fallback to single point updates
+        cdef Point xy
+        # Make a temporary copy so we don't update the incoming memory view
+        new_src_xy = np.asarray(src_xy)*self.src_scale
+        try:
+            xx, yy = self.transformer.transform(
+                new_src_xy[:, 0],
+                new_src_xy[:, 1],
+                errcheck=True
+            )
+        except ProjError as err:
+            msg = str(err).lower()
+            if (
+                "latitude" in msg or
+                "longitude" in msg or
+                "outside of projection domain" in msg or
+                "tolerance condition error" in msg
+            ):
+                # Go back to trying to project a single point at a time
+                xx = np.empty(shape=len(src_xy))
+                yy = np.empty(shape=len(src_xy))
+                for i in range(len(src_xy)):
+                    # Update the point object's x/y coords
+                    xy.x = src_xy[i, 0]
+                    xy.y = src_xy[i, 1]
+                    xy = self.project(xy)
+                    xx[i] = xy.x
+                    yy[i] = xy.y
+            else:
+                raise
+
+        if self.to_180:
+            # Get the places where we should wrap
+            wrap_locs = (xx > 180) | (xx < -180) & (xx != HUGE_VAL)
+            # Do the wrap at those locations
+            xx[wrap_locs] = (((xx[wrap_locs] + 180) % 360) - 180)
+
+        # Destination xy [ncoords, 2]
+        return np.stack([xx, yy], axis=-1) * self.dest_scale
+
+    cdef Point interpolate(self, double t) except *:
         raise NotImplementedError
 
 
 cdef class CartesianInterpolator(Interpolator):
-    cdef Point interpolate(self, double t):
+    cdef Point interpolate(self, double t) except *:
         cdef Point xy
         xy.x = self.start.x + (self.end.x - self.start.x) * t
         xy.y = self.start.y + (self.end.y - self.start.y) * t
         return self.project(xy)
 
-    cdef Point project(self, const Point &src_xy):
-        cdef Point dest_xy
-        cdef projLP xy
-
-        xy.u = src_xy.x * self.src_scale
-        xy.v = src_xy.y * self.src_scale
-
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &xy.u, &xy.v, NULL)
-        if status in (-14, -20):
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            xy.u = xy.v = HUGE_VAL
-        elif status != 0:
-            raise Exception('pj_transform failed: %d\n%s' % (
-                status,
-                pj_strerrno(status)))
-
-        dest_xy.x = xy.u * self.dest_scale
-        dest_xy.y = xy.v * self.dest_scale
-        return dest_xy
-
 
 cdef class SphericalInterpolator(Interpolator):
-    cdef geod_geodesic geod
-    cdef geod_geodesicline geod_line
-    cdef double a13
+    cdef object geod
+    cdef double azim
+    cdef double s12
 
-    cdef void init(self, projPJ src_proj, projPJ dest_proj):
-        self.src_proj = src_proj
-        self.dest_proj = dest_proj
+    cdef void init(self, src_crs, dest_crs) except *:
+        self.transformer = Transformer.from_crs(src_crs, dest_crs, always_xy=True)
 
-        cdef double major_axis
-        cdef double eccentricity_squared
-        pj_get_spheroid_defn(self.src_proj, &major_axis, &eccentricity_squared)
-        geod_init(&self.geod, major_axis, 1 - sqrt(1 - eccentricity_squared))
+        cdef double major_axis = src_crs.ellipsoid.semi_major_metre
+        cdef double flattening = 0
+        if src_crs.ellipsoid.inverse_flattening > 0:
+            flattening = 1 / src_crs.ellipsoid.inverse_flattening
+        self.geod = Geod(a=major_axis, f=flattening)
 
     cdef void set_line(self, const Point &start, const Point &end):
-        cdef double azi1
-        self.a13 = geod_geninverse(&self.geod,
-                                   start.y, start.x, end.y, end.x,
-                                   NULL, &azi1, NULL, NULL, NULL, NULL, NULL)
-        geod_lineinit(&self.geod_line, &self.geod, start.y, start.x, azi1,
-                      GEOD_LATITUDE | GEOD_LONGITUDE);
+        Interpolator.set_line(self, start, end)
+        self.azim, _, self.s12 = self.geod.inv(start.x, start.y, end.x, end.y)
 
-    cdef Point interpolate(self, double t):
+    cdef Point interpolate(self, double t) except *:
         cdef Point lonlat
 
-        geod_genposition(&self.geod_line, GEOD_ARCMODE, self.a13 * t,
-                         &lonlat.y, &lonlat.x, NULL, NULL, NULL, NULL, NULL,
-                         NULL)
-
+        lonlat.x, lonlat.y, _ = self.geod.fwd(self.start.x, self.start.y, self.azim, self.s12 * t)
         return self.project(lonlat)
-
-    cdef Point project(self, const Point &lonlat):
-        cdef Point xy
-        cdef projLP dest
-
-        dest.u = (lonlat.x * DEG_TO_RAD) * self.src_scale
-        dest.v = (lonlat.y * DEG_TO_RAD) * self.src_scale
-
-        cdef int status = pj_transform(self.src_proj, self.dest_proj,
-                                       1, 1, &dest.u, &dest.v, NULL)
-        if status in (-14, -20):
-            # -14 => "latitude or longitude exceeded limits"
-            # -20 => "tolerance condition error"
-            dest.u = dest.v = HUGE_VAL
-        elif status != 0:
-            raise Exception('pj_transform failed: %d\n%s' % (
-                status,
-                pj_strerrno(status)))
-
-        xy.x = dest.u * self.dest_scale
-        xy.y = dest.v * self.dest_scale
-        return xy
 
 
 cdef enum State:
@@ -274,22 +241,19 @@ cdef enum State:
     POINT_NAN
 
 
-cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
-                     GEOSContextHandle_t handle):
+cdef State get_state(const Point &point, object gp_domain, bool geom_fully_inside=False):
     cdef State state
-    cdef GEOSCoordSequence *coords
-    cdef GEOSGeometry *g_point
-
+    if geom_fully_inside:
+        # Fast-path return because the geometry is fully inside
+        return POINT_IN
     if isfinite(point.x) and isfinite(point.y):
-        # TODO: Avoid create-destroy
-        coords = GEOSCoordSeq_create_r(handle, 1, 2)
-        GEOSCoordSeq_setX_r(handle, coords, 0, point.x)
-        GEOSCoordSeq_setY_r(handle, coords, 0, point.y)
-        g_point = GEOSGeom_createPoint_r(handle, coords)
-        state = (POINT_IN
-                 if GEOSPreparedCovers_r(handle, gp_domain, g_point)
-                 else POINT_OUT)
-        GEOSGeom_destroy_r(handle, g_point)
+        if shapely.__version__ >= "2":
+            # Shapely 2.0 doesn't need to create/destroy a point
+            state = POINT_IN if shapely.intersects_xy(gp_domain.context, point.x, point.y) else POINT_OUT
+        else:
+            g_point = sgeom.Point((point.x, point.y))
+            state = POINT_IN if gp_domain.covers(g_point) else POINT_OUT
+            del g_point
     else:
         state = POINT_NAN
     return state
@@ -299,9 +263,9 @@ cdef State get_state(const Point &point, const GEOSPreparedGeometry *gp_domain,
 cdef bool straightAndDomain(double t_start, const Point &p_start,
                             double t_end, const Point &p_end,
                             Interpolator interpolator, double threshold,
-                            GEOSContextHandle_t handle,
-                            const GEOSPreparedGeometry *gp_domain,
-                            bool inside):
+                            object gp_domain,
+                            bool inside,
+                            bool geom_fully_inside=False) except *:
     """
     Return whether the given line segment is suitable as an
     approximation of the projection of the source line.
@@ -312,9 +276,9 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
     p_start: Projected end point.
     interpolator: Interpolator for current source line.
     threshold: Lateral tolerance in target projection coordinates.
-    handle: Thread-local context handle for GEOS.
     gp_domain: Prepared polygon of target map domain.
     inside: Whether the start point is within the map domain.
+    geom_fully_inside: Whether all points are within the map domain.
 
     """
     # Straight and in-domain (de9im[7] == 'F')
@@ -327,8 +291,6 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
     cdef double along
     cdef double separation
     cdef double hypot
-    cdef GEOSCoordSequence *coords
-    cdef GEOSGeometry *g_segment
 
     # This could be optimised out of the loop.
     if not (isfinite(p_start.x) and isfinite(p_start.y)):
@@ -341,9 +303,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
         p_mid = interpolator.interpolate(t_mid)
 
         # Determine the closest point on the segment to the midpoint, in
-        # normalized coordinates. We could use GEOSProjectNormalized_r
-        # here, but since it's a single line segment, it's much easier to
-        # just do the math ourselves:
+        # normalized coordinates.
         #     ○̩ (x1, y1) (assume that this is not necessarily vertical)
         #     │
         #     │   D
@@ -403,32 +363,29 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
                     hypot = mid_dx*mid_dx + mid_dy*mid_dy
                     valid = ((separation * separation) / hypot) < 0.04
 
-        if valid:
+        if valid and not geom_fully_inside:
             # TODO: Re-use geometries, instead of create-destroy!
 
             # Create a LineString for the current end-point.
-            coords = GEOSCoordSeq_create_r(handle, 2, 2)
-            GEOSCoordSeq_setX_r(handle, coords, 0, p_start.x)
-            GEOSCoordSeq_setY_r(handle, coords, 0, p_start.y)
-            GEOSCoordSeq_setX_r(handle, coords, 1, p_end.x)
-            GEOSCoordSeq_setY_r(handle, coords, 1, p_end.y)
-            g_segment = GEOSGeom_createLineString_r(handle, coords)
+            g_segment = sgeom.LineString([
+                (p_start.x, p_start.y),
+                (p_end.x, p_end.y)])
 
             if inside:
-                valid = GEOSPreparedCovers_r(handle, gp_domain, g_segment)
+                valid = gp_domain.covers(g_segment)
             else:
-                valid = GEOSPreparedDisjoint_r(handle, gp_domain, g_segment)
+                valid = gp_domain.disjoint(g_segment)
 
-            GEOSGeom_destroy_r(handle, g_segment)
+            del g_segment
 
     return valid
 
 
 cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
-                 GEOSContextHandle_t handle,
-                 const GEOSPreparedGeometry *gp_domain, const State &state,
+                 object gp_domain, const State &state,
                  Interpolator interpolator, double threshold,
-                 double &t_min, Point &p_min, double &t_max, Point &p_max):
+                 double &t_min, Point &p_min, double &t_max, Point &p_max,
+                 bool geom_fully_inside=False) except *:
     cdef double t_current
     cdef Point p_current
     cdef bool valid
@@ -454,13 +411,13 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
             # Straight and entirely-inside-domain
             valid = straightAndDomain(t_start, p_start, t_current, p_current,
                                       interpolator, threshold,
-                                      handle, gp_domain, True)
+                                      gp_domain, True, geom_fully_inside=geom_fully_inside)
 
         elif state == POINT_OUT:
             # Straight and entirely-outside-domain
             valid = straightAndDomain(t_start, p_start, t_current, p_current,
                                       interpolator, threshold,
-                                      handle, gp_domain, False)
+                                      gp_domain, False, geom_fully_inside=geom_fully_inside)
         else:
             valid = not isfinite(p_current.x) or not isfinite(p_current.y)
 
@@ -478,35 +435,34 @@ cdef void bisect(double t_start, const Point &p_start, const Point &p_end,
         p_current = interpolator.interpolate(t_current)
 
 
-cdef void _project_segment(GEOSContextHandle_t handle,
-                           const GEOSCoordSequence *src_coords,
-                           unsigned int src_idx_from, unsigned int src_idx_to,
+cdef void _project_segment(double[:] src_from, double[:] src_to,
+                           double[:] dest_from, double[:] dest_to,
                            Interpolator interpolator,
-                           const GEOSPreparedGeometry *gp_domain,
-                           double threshold, LineAccumulator lines):
+                           object gp_domain,
+                           double threshold, LineAccumulator lines,
+                           bool geom_fully_inside=False) except *:
     cdef Point p_current, p_min, p_max, p_end
-    cdef double t_current, t_min, t_max
+    cdef double t_current, t_min=0, t_max=1
     cdef State state
 
-    GEOSCoordSeq_getX_r(handle, src_coords, src_idx_from, &p_current.x)
-    GEOSCoordSeq_getY_r(handle, src_coords, src_idx_from, &p_current.y)
-    GEOSCoordSeq_getX_r(handle, src_coords, src_idx_to, &p_end.x)
-    GEOSCoordSeq_getY_r(handle, src_coords, src_idx_to, &p_end.y)
+    p_current.x, p_current.y = src_from
+    p_end.x, p_end.y = src_to
     if DEBUG:
         print("Setting line:")
         print("   ", p_current.x, ", ", p_current.y)
         print("   ", p_end.x, ", ", p_end.y)
 
     interpolator.set_line(p_current, p_end)
-    p_current = interpolator.project(p_current)
-    p_end = interpolator.project(p_end)
+    # Now update the current/end with the destination (projected) coords
+    p_current.x, p_current.y = dest_from
+    p_end.x, p_end.y = dest_to
     if DEBUG:
         print("Projected as:")
         print("   ", p_current.x, ", ", p_current.y)
         print("   ", p_end.x, ", ", p_end.y)
 
     t_current = 0.0
-    state = get_state(p_current, gp_domain, handle)
+    state = get_state(p_current, gp_domain, geom_fully_inside)
 
     cdef size_t old_lines_size = lines.size()
     while t_current < 1.0 and (lines.size() - old_lines_size) < 100:
@@ -522,9 +478,9 @@ cdef void _project_segment(GEOSContextHandle_t handle,
             print("   ", p_current.x, ", ", p_current.y)
             print("   ", p_end.x, ", ", p_end.y)
 
-        bisect(t_current, p_current, p_end, handle, gp_domain, state,
+        bisect(t_current, p_current, p_end, gp_domain, state,
                interpolator, threshold,
-               t_min, p_min, t_max, p_max)
+               t_min, p_min, t_max, p_max, geom_fully_inside=geom_fully_inside)
         if DEBUG:
             print("   => ", t_min, "to", t_max)
             print("   => (", p_min.x, ", ", p_min.y, ") to (",
@@ -539,7 +495,7 @@ cdef void _project_segment(GEOSContextHandle_t handle,
             else:
                 t_current = t_max
                 p_current = p_max
-                state = get_state(p_current, gp_domain, handle)
+                state = get_state(p_current, gp_domain, geom_fully_inside)
                 if state == POINT_IN:
                     lines.new_line()
 
@@ -550,19 +506,20 @@ cdef void _project_segment(GEOSContextHandle_t handle,
             else:
                 t_current = t_max
                 p_current = p_max
-                state = get_state(p_current, gp_domain, handle)
+                state = get_state(p_current, gp_domain, geom_fully_inside)
                 if state == POINT_IN:
                     lines.new_line()
 
         else:
             t_current = t_max
             p_current = p_max
-            state = get_state(p_current, gp_domain, handle)
+            state = get_state(p_current, gp_domain, geom_fully_inside)
             if state == POINT_IN:
                 lines.new_line()
 
 
-cdef _interpolator(CRS src_crs, CRS dest_projection):
+@lru_cache(maxsize=4)
+def _interpolator(src_crs, dest_projection):
     # Get an Interpolator from the given CRS and projection.
     # Callers must hold a reference to these systems for the lifetime
     # of the interpolator. If they get garbage-collected while interpolator
@@ -573,23 +530,11 @@ cdef _interpolator(CRS src_crs, CRS dest_projection):
         interpolator = SphericalInterpolator()
     else:
         interpolator = CartesianInterpolator()
-    interpolator.init(src_crs.proj4, (<CRS>dest_projection).proj4)
-    if (6, 1, 1) <= PROJ4_VERSION < (6, 3, 0):
-        # Workaround bug in Proj 6.1.1+ with +to_meter on +proj=ob_tran.
-        # See https://github.com/OSGeo/proj#1782.
-        lonlat = ('latlon', 'latlong', 'lonlat', 'longlat')
-        if (src_crs.proj4_params.get('proj', '') == 'ob_tran' and
-                src_crs.proj4_params.get('o_proj', '') in lonlat and
-                'to_meter' in src_crs.proj4_params):
-            interpolator.src_scale = src_crs.proj4_params['to_meter']
-        if (dest_projection.proj4_params.get('proj', '') == 'ob_tran' and
-                dest_projection.proj4_params.get('o_proj', '') in lonlat and
-                'to_meter' in dest_projection.proj4_params):
-            interpolator.dest_scale = 1 / dest_projection.proj4_params['to_meter']
+    interpolator.init(src_crs, dest_projection)
     return interpolator
 
 
-def project_linear(geometry not None, CRS src_crs not None,
+def project_linear(geometry not None, src_crs not None,
                    dest_projection not None):
     """
     Project a geometry from one projection to another.
@@ -612,36 +557,46 @@ def project_linear(geometry not None, CRS src_crs not None,
     """
     cdef:
         double threshold = dest_projection.threshold
-        GEOSContextHandle_t handle = get_geos_context_handle()
-        GEOSGeometry *g_linear = geos_from_shapely(geometry)
         Interpolator interpolator
-        GEOSGeometry *g_domain
-        const GEOSCoordSequence *src_coords
+        object g_domain
+        double[:, :] src_coords, dest_coords
         unsigned int src_size, src_idx
-        const GEOSPreparedGeometry *gp_domain
+        object gp_domain
         LineAccumulator lines
-        GEOSGeometry *g_multi_line_string
 
-    g_domain = geos_from_shapely(dest_projection.domain)
+    g_domain = dest_projection.domain
 
     interpolator = _interpolator(src_crs, dest_projection)
 
-    src_coords = GEOSGeom_getCoordSeq_r(handle, g_linear)
-    gp_domain = GEOSPrepare_r(handle, g_domain)
+    src_coords = np.asarray(geometry.coords)
+    dest_coords = interpolator.project_points(src_coords)
+    gp_domain = sprep.prep(g_domain)
 
-    GEOSCoordSeq_getSize_r(handle, src_coords, &src_size)  # check exceptions
+    src_size = len(src_coords)  # check exceptions
+
+    # Test the entire geometry to see if there are any domain crossings
+    # If there are none, then we can skip expensive domain checks later
+    # TODO: Handle projections other than rectangular
+    cdef bool geom_fully_inside = False
+    if isinstance(dest_projection, (ccrs._RectangularProjection, ccrs._WarpedRectangularProjection)):
+        dest_line = sgeom.LineString([(x[0], x[1]) for x in dest_coords])
+        if dest_line.is_valid:
+            # We can only check for covers with valid geometries
+            # some have nans/infs at this point still
+            geom_fully_inside = gp_domain.covers(dest_line)
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
-        _project_segment(handle, src_coords, src_idx - 1, src_idx,
-                         interpolator, gp_domain, threshold, lines);
+        _project_segment(src_coords[src_idx - 1, :2], src_coords[src_idx, :2],
+                         dest_coords[src_idx - 1, :2], dest_coords[src_idx, :2],
+                         interpolator, gp_domain, threshold, lines,
+                         geom_fully_inside=geom_fully_inside);
 
-    GEOSPreparedGeom_destroy_r(handle, gp_domain)
+    del gp_domain
 
-    g_multi_line_string = lines.as_geom(handle)
+    multi_line_string = lines.as_geom()
 
     del lines, interpolator
-    multi_line_string = shapely_from_geos(g_multi_line_string)
     return multi_line_string
 
 
@@ -650,19 +605,16 @@ class _Testing:
     def straight_and_within(Point l_start, Point l_end,
                             double t_start, double t_end,
                             Interpolator interpolator, double threshold,
-                            domain):
+                            object domain):
         # This function is for testing/demonstration only.
         # It is not careful about freeing resources, and it short-circuits
         # optimisations that are made in the real algorithm (in exchange for
         # a convenient signature).
 
-        cdef GEOSContextHandle_t handle = get_geos_context_handle()
+        cdef object gp_domain
+        gp_domain = sprep.prep(domain)
 
-        cdef GEOSGeometry *g_domain = geos_from_shapely(domain)
-        cdef const GEOSPreparedGeometry *gp_domain
-        gp_domain = GEOSPrepare_r(handle, g_domain)
-        
-        state = get_state(interpolator.project(l_start), gp_domain, handle)
+        state = get_state(interpolator.project(l_start), gp_domain)
         cdef bool p_start_inside_domain = state == POINT_IN
 
         # l_end and l_start should be un-projected.
@@ -674,9 +626,9 @@ class _Testing:
         valid = straightAndDomain(
             t_start, p0, t_end, p1,
             interpolator, threshold,
-            handle, gp_domain, p_start_inside_domain)
+            gp_domain, p_start_inside_domain)
 
-        GEOSPreparedGeom_destroy_r(handle, gp_domain)
+        del gp_domain
         return valid
 
     @staticmethod

@@ -3,7 +3,7 @@
 Using the cartopy shapereader
 =============================
 
-Cartopy provides an object oriented shapefile reader based on top of the 
+Cartopy provides an object oriented shapefile reader based on top of the
 `pyshp`_ module to provide easy, programmatic, access to standard vector datasets.
 
 Cartopy's wrapping of pyshp has the benefit of being pure python, and is therefore
@@ -14,19 +14,9 @@ easy to install and extremely portable. However, for heavy duty shapefile I/O `F
 .. _Fiona: https://fiona.readthedocs.io/
 .. _GeoPandas: http://geopandas.org/
 
-
-
+Detailed API for the shapereader functionality can be found in the :ref:`documentation <api.io.shapereader>`
 
 .. currentmodule:: cartopy.io.shapereader
-
-.. autoclass:: Reader
-    :members:
-    :undoc-members:
-
-.. autoclass:: Record
-    :members:
-    :undoc-members:
-
 
 Helper functions for shapefile acquisition
 -------------------------------------------
@@ -36,12 +26,8 @@ Cartopy provides an interface for access to frequently used data such as the
 the `NaturalEarthData <https://www.naturalearthdata.com/>`_ website.
 These interfaces allow the user to define the data programmatically, and if the data does not exist
 on disk, it will be retrieved from the appropriate source (normally by
-downloading the data from the internet). Currently the interfaces available are:
-
-
-.. autofunction:: natural_earth
-
-.. autofunction:: gshhs
+downloading the data from the internet). Currently the interfaces available are
+:func:`natural_earth` and :func:`gshhs`.
 
 
 Using the shapereader
@@ -134,7 +120,7 @@ Which we can print with
 
         Democratic Republic of the Congo, Egypt, Ethiopia, Nigeria
 
- * **SHP.2**: Using the countries shapefile, find the most populated country grouped 
+ * **SHP.2**: Using the countries shapefile, find the most populated country grouped
    by the first letter of the "name_long".
 
    Hint: :func:`itertools.groupby` can help with the grouping.
@@ -188,4 +174,3 @@ Which we can print with
             W Western Sahara
             Y Yemen
             Z Zimbabwe
-

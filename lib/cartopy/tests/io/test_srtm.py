@@ -1,10 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-
-import warnings
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -12,7 +9,6 @@ import pytest
 
 import cartopy.crs as ccrs
 import cartopy.io.srtm
-
 from .test_downloaders import download_to_temp  # noqa: F401 (used as fixture)
 
 
@@ -33,11 +29,13 @@ def srtm_login_or_skip(monkeypatch):
     except KeyError:
         pytest.skip('SRTM_PASSWORD environment variable is unset.')
 
-    from urllib.request import (HTTPBasicAuthHandler,
-                                HTTPCookieProcessor,
-                                HTTPPasswordMgrWithDefaultRealm,
-                                build_opener)
     from http.cookiejar import CookieJar
+    from urllib.request import (
+        HTTPBasicAuthHandler,
+        HTTPCookieProcessor,
+        HTTPPasswordMgrWithDefaultRealm,
+        build_opener,
+    )
 
     password_manager = HTTPPasswordMgrWithDefaultRealm()
     password_manager.add_password(
@@ -65,10 +63,8 @@ class TestRetrieve:
     def test_srtm_retrieve(self, Source, read_SRTM, max_, min_, pt,
                            download_to_temp):  # noqa: F811
         # test that the download mechanism for SRTM works
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(cartopy.io.DownloadWarning):
             r = Source().srtm_fname(-4, 50)
-            assert len(w) == 1
-            assert issubclass(w[0].category, cartopy.io.DownloadWarning)
 
         assert r.startswith(str(download_to_temp)), \
             'File not downloaded to tmp dir'

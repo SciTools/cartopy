@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Rotated Geodetic coordinate system.
 
@@ -12,7 +11,7 @@ import cartopy.crs as ccrs
 from .helpers import check_proj_params
 
 
-common_other_args = {'o_proj=latlon', 'to_meter=0.0174532925199433'}
+common_other_args = {'o_proj=latlon', 'to_meter=111319.4907932736'}
 
 
 def test_default():

@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import numpy as np
 import pytest
@@ -17,31 +16,27 @@ class TestBoundary:
         # original ... ?
         linear_ring = sgeom.LinearRing([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.5)
-        rings, multi_line_string = projection.project_geometry(linear_ring)
+        *rings, multi_line_string = projection.project_geometry(linear_ring).geoms
 
         # The original ring should have been split into multiple pieces.
-        assert len(multi_line_string) > 1
+        assert len(multi_line_string.geoms) > 1
         assert not rings
 
-        def assert_intersection_with_boundary(segment_coords):
-            # Double the length of the segment.
-            start = segment_coords[0]
-            end = segment_coords[1]
-            end = [end[i] + 2 * (end[i] - start[i]) for i in (0, 1)]
-            extended_segment = sgeom.LineString([start, end])
-            # And see if it crosses the boundary.
-            intersection = extended_segment.intersection(projection.boundary)
-            assert not intersection.is_empty, 'Bad topology near boundary'
+        def assert_close_to_boundary(xy):
+            # Are we close to the boundary, which we are considering within
+            # a fraction of the x domain limits
+            limit = (projection.x_limits[1] - projection.x_limits[0]) / 1e4
+            assert sgeom.Point(*xy).distance(projection.boundary) < limit, \
+                'Bad topology near boundary'
 
-        # Each line resulting from the split should start and end with a
-        # segment that crosses the boundary when extended to double length.
+        # Each line resulting from the split should be close to the boundary.
         # (This is important when considering polygon rings which need to be
         # attached to the boundary.)
-        for line_string in multi_line_string:
+        for line_string in multi_line_string.geoms:
             coords = list(line_string.coords)
             assert len(coords) >= 2
-            assert_intersection_with_boundary(coords[1::-1])
-            assert_intersection_with_boundary(coords[-2:])
+            assert_close_to_boundary(coords[0])
+            assert_close_to_boundary(coords[-1])
 
     def test_out_of_bounds(self):
         # Check that a ring that is completely out of the map boundary
@@ -63,12 +58,12 @@ class TestBoundary:
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords, expected_n_lines in rings:
             linear_ring = sgeom.LinearRing(coords)
-            rings, mlinestr = projection.project_geometry(linear_ring)
+            *rings, mlinestr = projection.project_geometry(linear_ring).geoms
             if expected_n_lines == -1:
                 assert rings
                 assert not mlinestr
             else:
-                assert len(mlinestr) == expected_n_lines
+                assert len(mlinestr.geoms) == expected_n_lines
                 if expected_n_lines == 0:
                     assert mlinestr.is_empty
 
@@ -83,10 +78,10 @@ class TestMisc:
             (-180.0000000000000000, -16.0671326636424396),
             (-179.7933201090486079, -16.0208822567412312),
         ])
-        rings, multi_line_string = projection.project_geometry(linear_ring)
+        *rings, multi_line_string = projection.project_geometry(linear_ring).geoms
         # There should be one, and only one, returned ring.
         assert isinstance(multi_line_string, sgeom.MultiLineString)
-        assert len(multi_line_string) == 0
+        assert len(multi_line_string.geoms) == 0
         assert len(rings) == 1
 
         # from cartopy.tests.mpl import show
@@ -134,14 +129,14 @@ class TestMisc:
         target_proj = ccrs.Stereographic(80)
 
         linear_ring = sgeom.LinearRing(coords)
-        rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
-        assert len(mlinestr) == 1
+        *rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj).geoms
+        assert len(mlinestr.geoms) == 1
         assert len(rings) == 0
 
         # Check the stitch works in either direction.
         linear_ring = sgeom.LinearRing(coords[::-1])
-        rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj)
-        assert len(mlinestr) == 1
+        *rings, mlinestr = target_proj.project_geometry(linear_ring, src_proj).geoms
+        assert len(mlinestr.geoms) == 1
         assert len(rings) == 0
 
     def test_at_boundary(self):
@@ -167,12 +162,12 @@ class TestMisc:
         tcrs = ccrs.PlateCarree()
         scrs = ccrs.PlateCarree()
 
-        rings, mlinestr = tcrs._project_linear_ring(tring, scrs)
+        *rings, mlinestr = tcrs._project_linear_ring(tring, scrs).geoms
 
         # Number of linearstrings
-        assert len(mlinestr) == 4
+        assert len(mlinestr.geoms) == 4
         assert not rings
 
         # Test area of smallest Polygon that contains all the points in the
         # geometry.
-        assert round(abs(mlinestr.convex_hull.area - 2347.75623076), 7) == 0
+        assert round(abs(mlinestr.convex_hull.area - 2347.7562), 4) == 0

@@ -1,0 +1,32 @@
+Version 0.5 (December 7, 2012)
+==============================
+
+This document explains the new/changed features of cartopy in version 0.5.
+
+Release 0.5 of cartopy continues the work to expand the feature-set of
+cartopy to encompass common operations, and provide performance
+improvements.
+
+
+Features
+--------
+
+A summary of the main features added with version 0.5:
+
+* An improved feature API to support future expansion and
+  sophistication, and a wider range of pre-defined Natural Earth
+  datasets.
+
+* A new features API is now available, see :doc:`../tutorials/using_the_shapereader`.
+
+  .. figure:: ../gallery/lines_and_polygons/images/sphx_glr_features_001.png
+    :target: ../gallery/lines_and_polygons/features.html
+    :align: center
+    :scale: 70
+
+
+Deprecations
+------------
+* The method ``Axes.natural_earth_shp()`` has been replaced by the
+  method :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_feature()` and the :mod:`cartopy.feature`
+  module.

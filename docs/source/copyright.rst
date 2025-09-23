@@ -7,30 +7,16 @@ Cartopy copyright, licensing and contributors
 Cartopy code
 ------------
 
-All Cartopy source code, unless explicitly stated, is |copy| ``British Crown
-copyright, 2016`` and is licensed under the **GNU Lesser General Public
-License** as published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version. You should find all source
-files with the following header:
+All Cartopy source code, unless explicitly stated, is ``Copyright Crown and
+Cartopy contributors`` and is licensed under the **BSD 3-Clause License**.
+You should find all source files with the following header:
 
 .. admonition:: Code License
 
-    |copy| British Crown Copyright 2011 - 2016, Met Office
-
-    This file is part of cartopy.
-
-    Cartopy is free software: you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the
-    Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    Cartopy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License
-    along with cartopy.  If not, see `<https://www.gnu.org/licenses/>`_.
+    # Copyright Crown and Cartopy Contributors
+    #
+    # This file is part of Cartopy and is released under the BSD 3-Clause license.
+    # See LICENSE in the root of the repository for full licensing details.
 
 
 Cartopy documentation and examples
@@ -51,4 +37,3 @@ repository are licensed under the UK's Open Government Licence:
 
     Any email enquiries regarding the use and re-use of this information
     resource should be sent to: psi@nationalarchives.gsi.gov.uk.
-

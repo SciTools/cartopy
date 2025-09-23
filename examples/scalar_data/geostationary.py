@@ -14,8 +14,9 @@ cartopy into a global Miller map.
 from io import BytesIO
 from urllib.request import urlopen
 
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+
+import cartopy.crs as ccrs
 
 
 def geos_image():

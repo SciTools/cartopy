@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Define the SlippyImageArtist class, which interfaces with
 :class:`cartopy.io.RasterSource` instances at draw time, for interactive
@@ -10,8 +9,8 @@ dragging and zooming of raster data.
 
 """
 
-from matplotlib.image import AxesImage
 import matplotlib.artist
+from matplotlib.image import AxesImage
 
 
 class SlippyImageArtist(AxesImage):
@@ -24,11 +23,11 @@ class SlippyImageArtist(AxesImage):
     Kwargs are passed to the AxesImage constructor.
 
     """
+
     def __init__(self, ax, raster_source, **kwargs):
         self.raster_source = raster_source
-        if matplotlib.__version__ >= '3':
-            # This artist fills the Axes, so should not influence layout.
-            kwargs.setdefault('in_layout', False)
+        # This artist fills the Axes, so should not influence layout.
+        kwargs.setdefault('in_layout', False)
         super().__init__(ax, **kwargs)
         self.cache = []
 

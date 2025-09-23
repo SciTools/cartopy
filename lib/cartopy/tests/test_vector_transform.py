@@ -1,14 +1,21 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import numpy as np
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
 
-import cartopy.vector_transform as vec_trans
+
+try:
+    import scipy  # noqa: F401
+except ImportError:
+    pytest.skip("scipy is required for vector transforms", allow_module_level=True)
+
+
 import cartopy.crs as ccrs
+import cartopy.vector_transform as vec_trans
 
 
 def _sample_plate_carree_coordinates():
@@ -143,10 +150,10 @@ class Test_vector_scalar_to_grid:
         expected_y_grid = np.array([[5., 5., 5., 5., 5.],
                                     [7.5, 7.5, 7.5, 7.5, 7.5],
                                     [10., 10., 10., 10., 10]])
-        expected_u_grid = np.array([[np.nan, np.nan, 3, np.nan, np.nan],
+        expected_u_grid = np.array([[np.nan, np.nan, np.nan, np.nan, np.nan],
                                     [np.nan, 2.3838, 3.5025, 2.6152, np.nan],
                                     [2, 3.0043, 4, 2.9022, 2]])
-        expected_v_grid = np.array([[np.nan, np.nan, 0.3, np.nan, np.nan],
+        expected_v_grid = np.array([[np.nan, np.nan, np.nan, np.nan, np.nan],
                                     [np.nan, 2.6527, 2.1904, 2.4192, np.nan],
                                     [5.5, 4.6483, 4, 4.47, 5.5]])
 
@@ -184,6 +191,38 @@ class Test_vector_scalar_to_grid:
             vec_trans.vector_scalar_to_grid(src_crs, target_crs, (5, 3),
                                             self.x, self.y,
                                             self.u, self.v, self.s)
+
+        assert_array_equal(x_grid, expected_x_grid)
+        assert_array_equal(y_grid, expected_y_grid)
+        assert_array_almost_equal(u_grid, expected_u_grid)
+        assert_array_almost_equal(v_grid, expected_v_grid)
+        assert_array_almost_equal(s_grid, expected_s_grid)
+
+    def test_with_scalar_field_non_ndarray_data(self):
+        # Transform and regrid vector (with no projection transform) with an
+        # additional scalar field which is not a ndarray.
+        expected_x_grid = np.array([[-10., -5., 0., 5., 10.],
+                                    [-10., -5., 0., 5., 10.],
+                                    [-10., -5., 0., 5., 10.]])
+        expected_y_grid = np.array([[5., 5., 5., 5., 5.],
+                                    [7.5, 7.5, 7.5, 7.5, 7.5],
+                                    [10., 10., 10., 10., 10]])
+        expected_u_grid = np.array([[np.nan, 2., 3., 2., np.nan],
+                                    [np.nan, 2.5, 3.5, 2.5, np.nan],
+                                    [2., 3., 4., 3., 2.]])
+        expected_v_grid = np.array([[np.nan, .8, .3, .8, np.nan],
+                                    [np.nan, 2.675, 2.15, 2.675, np.nan],
+                                    [5.5, 4.75, 4., 4.75, 5.5]])
+        expected_s_grid = np.array([[np.nan, 2., 3., 2., np.nan],
+                                    [np.nan, 2.5, 3.5, 2.5, np.nan],
+                                    [2., 3., 4., 3., 2.]])
+
+        src_crs = target_crs = ccrs.PlateCarree()
+        x_grid, y_grid, u_grid, v_grid, s_grid = \
+            vec_trans.vector_scalar_to_grid(src_crs, target_crs, (5, 3),
+                                            list(self.x), list(self.y),
+                                            list(self.u), list(self.v),
+                                            list(self.s))
 
         assert_array_equal(x_grid, expected_x_grid)
         assert_array_equal(y_grid, expected_y_grid)

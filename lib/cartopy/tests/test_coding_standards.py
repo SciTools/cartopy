@@ -1,11 +1,11 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 from fnmatch import fnmatch
 import os
+from pathlib import Path
 import re
 import subprocess
 
@@ -19,11 +19,10 @@ SHEBANG_PATTERN = r'((\#\!.*|\/\*)\n)?'
 
 
 LICENSE_TEMPLATE = """
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """.strip()
 LICENSE_RE_PATTERN = re.escape(LICENSE_TEMPLATE)
 LICENSE_RE = re.compile(SHEBANG_PATTERN + LICENSE_RE_PATTERN, re.MULTILINE)
@@ -31,9 +30,9 @@ LICENSE_RE = re.compile(SHEBANG_PATTERN + LICENSE_RE_PATTERN, re.MULTILINE)
 
 # Guess cartopy repo directory of cartopy - realpath is used to mitigate
 # against Python finding the cartopy package via a symlink.
-CARTOPY_DIR = os.path.realpath(os.path.dirname(cartopy.__file__))
-REPO_DIR = os.getenv('CARTOPY_GIT_DIR',
-                     os.path.dirname(os.path.dirname(CARTOPY_DIR)))
+CARTOPY_DIR = Path(cartopy.__file__).parent.resolve()
+REPO_DIR = Path(os.getenv('CARTOPY_GIT_DIR',
+                          CARTOPY_DIR.parent.parent))
 
 
 class TestLicenseHeaders:
@@ -50,8 +49,8 @@ class TestLicenseHeaders:
 
         """
         # Check the ".git" folder exists at the repo dir.
-        if not os.path.isdir(os.path.join(REPO_DIR, '.git')):
-            raise ValueError('{} is not a git repository.'.format(REPO_DIR))
+        if not (REPO_DIR / '.git').is_dir():
+            raise ValueError(f'{REPO_DIR} is not a git repository.')
 
         output = subprocess.check_output(['git', 'ls-tree', '-z', '-r',
                                           '--name-only', 'HEAD'],
@@ -75,22 +74,21 @@ class TestLicenseHeaders:
         except ValueError as e:
             # Caught the case where this is not a git repo.
             return pytest.skip('cartopy installation did not look like a git '
-                               'repo: ' + str(e))
+                               f'repo: {e}')
 
         failed = []
         for fname in sorted(tracked_files):
-            full_fname = os.path.join(REPO_DIR, fname)
-            root, ext = os.path.splitext(full_fname)
+            full_fname = REPO_DIR / fname
+            ext = full_fname.suffix
             if ext in ('.py', '.pyx', '.c', '.cpp', '.h') and \
-                    os.path.isfile(full_fname) and \
+                    full_fname.is_file() and \
                     not any(fnmatch(fname, pat) for pat in exclude_patterns):
 
-                if os.path.getsize(full_fname) == 0:
+                if full_fname.stat().st_size == 0:
                     # Allow completely empty files (e.g. ``__init__.py``)
                     continue
 
-                with open(full_fname, encoding='utf-8') as fh:
-                    content = fh.read()
+                content = full_fname.read_text(encoding="utf-8")
 
                 if not bool(LICENSE_RE.match(content)):
                     failed.append(full_fname)

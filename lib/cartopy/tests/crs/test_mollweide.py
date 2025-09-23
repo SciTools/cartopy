@@ -1,15 +1,14 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Mollweide coordinate system.
 
 """
 
 import numpy as np
-from numpy.testing import assert_almost_equal
+from numpy.testing import assert_allclose
 import pytest
 
 import cartopy.crs as ccrs
@@ -21,10 +20,10 @@ def test_default():
     other_args = {'a=6378137.0', 'lon_0=0'}
     check_proj_params('moll', moll, other_args)
 
-    assert_almost_equal(np.array(moll.x_limits),
-                        [-18040095.6961473, 18040095.6961473])
-    assert_almost_equal(np.array(moll.y_limits),
-                        [-9020047.8480736, 9020047.8480736])
+    assert_allclose(np.array(moll.x_limits),
+                    [-18040095.6961473, 18040095.6961473])
+    assert_allclose(np.array(moll.y_limits),
+                    [-9020047.8480736, 9020047.8480736])
 
 
 def test_sphere_globe():
@@ -33,8 +32,8 @@ def test_sphere_globe():
     other_args = {'a=1000', 'lon_0=0'}
     check_proj_params('moll', moll, other_args)
 
-    assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
-    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+    assert_allclose(moll.x_limits, [-2828.4271247, 2828.4271247])
+    assert_allclose(moll.y_limits, [-1414.2135624, 1414.2135624])
 
 
 def test_ellipse_globe():
@@ -48,8 +47,8 @@ def test_ellipse_globe():
     check_proj_params('moll', moll, other_args)
 
     # Limits are the same as default since ellipses are not supported.
-    assert_almost_equal(moll.x_limits, [-18040095.6961473, 18040095.6961473])
-    assert_almost_equal(moll.y_limits, [-9020047.8480736, 9020047.8480736])
+    assert_allclose(moll.x_limits, [-18040095.6961473, 18040095.6961473])
+    assert_allclose(moll.y_limits, [-9020047.8480736, 9020047.8480736])
 
 
 def test_eccentric_globe():
@@ -64,8 +63,8 @@ def test_eccentric_globe():
     check_proj_params('moll', moll, other_args)
 
     # Limits are the same as spheres since ellipses are not supported.
-    assert_almost_equal(moll.x_limits, [-2828.4271247, 2828.4271247])
-    assert_almost_equal(moll.y_limits, [-1414.2135624, 1414.2135624])
+    assert_allclose(moll.x_limits, [-2828.4271247, 2828.4271247])
+    assert_allclose(moll.y_limits, [-1414.2135624, 1414.2135624])
 
 
 def test_offset():
@@ -80,14 +79,13 @@ def test_offset():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     moll = ccrs.Mollweide(central_longitude=lon)
-    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params('moll', moll, other_args)
 
-    assert_almost_equal(np.array(moll.x_limits),
-                        [-18040095.6961473, 18040095.6961473],
-                        decimal=5)
-    assert_almost_equal(np.array(moll.y_limits),
-                        [-9020047.8480736, 9020047.8480736])
+    assert_allclose(np.array(moll.x_limits),
+                    [-18040095.6961473, 18040095.6961473])
+    assert_allclose(np.array(moll.y_limits),
+                    [-9020047.8480736, 9020047.8480736])
 
 
 def test_grid():
@@ -100,10 +98,8 @@ def test_grid():
     other_args = {'a=0.7071067811865476', 'b=0.7071067811865476', 'lon_0=0'}
     check_proj_params('moll', moll, other_args)
 
-    assert_almost_equal(np.array(moll.x_limits),
-                        [-2, 2])
-    assert_almost_equal(np.array(moll.y_limits),
-                        [-1, 1])
+    assert_allclose(np.array(moll.x_limits), [-2, 2])
+    assert_allclose(np.array(moll.y_limits), [-1, 1])
 
     lats = np.arange(0, 91, 5)[::-1]
     lons = np.full_like(lats, 90)
@@ -114,14 +110,14 @@ def test_grid():
         0.75894, 0.80591, 0.84739, 0.88362, 0.91477, 0.94096, 0.96229, 0.97882,
         0.99060, 0.99765, 1.00000,
     ])
-    assert_almost_equal(result[:, 0], expected_x, decimal=5)
+    assert_allclose(result[:, 0], expected_x, atol=1e-5)
 
     expected_y = np.array([
         1.00000, 0.97837, 0.94539, 0.90606, 0.86191, 0.81382, 0.76239, 0.70804,
         0.65116, 0.59204, 0.53097, 0.46820, 0.40397, 0.33850, 0.27201, 0.20472,
         0.13681, 0.06851, 0.00000,
     ])
-    assert_almost_equal(result[:, 1], expected_y, decimal=5)
+    assert_allclose(result[:, 1], expected_y, atol=1e-5)
 
 
 def test_sphere_transform():
@@ -135,14 +131,13 @@ def test_sphere_transform():
     other_args = {'a=1.0', 'b=1.0', 'lon_0=-90.0'}
     check_proj_params('moll', moll, other_args)
 
-    assert_almost_equal(np.array(moll.x_limits),
-                        [-2.8284271247461903, 2.8284271247461903],
-                        decimal=2)
-    assert_almost_equal(np.array(moll.y_limits),
-                        [-1.4142135623730951, 1.4142135623730951])
+    assert_allclose(np.array(moll.x_limits),
+                    [-2.8284271247461903, 2.8284271247461903])
+    assert_allclose(np.array(moll.y_limits),
+                    [-1.4142135623730951, 1.4142135623730951])
 
     result = moll.transform_point(-75.0, -50.0, geodetic)
-    assert_almost_equal(result, [0.1788845, -0.9208758])
+    assert_allclose(result, [0.1788845, -0.9208758])
 
     inverse_result = geodetic.transform_point(result[0], result[1], moll)
-    assert_almost_equal(inverse_result, [-75.0, -50.0])
+    assert_allclose(inverse_result, [-75.0, -50.0])

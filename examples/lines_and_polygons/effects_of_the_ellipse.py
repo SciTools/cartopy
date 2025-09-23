@@ -14,15 +14,16 @@ that they are both referenced to the WGS84 ellipse and compare how the
 coastlines are shifted as a result of referencing the incorrect ellipse.
 
 """
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-from cartopy.io.img_tiles import Stamen
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D as Line
 from matplotlib.patheffects import Stroke
+import matplotlib.pyplot as plt
 import numpy as np
 import shapely.geometry as sgeom
 from shapely.ops import transform as geom_transform
+
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+from cartopy.io.img_tiles import GoogleTiles
 
 
 def transform_fn_factory(target_crs, source_crs):
@@ -46,10 +47,8 @@ def transform_fn_factory(target_crs, source_crs):
 
 def main():
     # Define the two coordinate systems with different ellipses.
-    wgs84 = ccrs.PlateCarree(globe=ccrs.Globe(datum='WGS84',
-                                              ellipse='WGS84'))
-    sphere = ccrs.PlateCarree(globe=ccrs.Globe(datum='WGS84',
-                                               ellipse='sphere'))
+    wgs84 = ccrs.PlateCarree(globe=ccrs.Globe(ellipse='WGS84'))
+    sphere = ccrs.PlateCarree(globe=ccrs.Globe(ellipse='sphere'))
 
     # Define the coordinate system of the data we have from Natural Earth and
     # acquire the 1:10m physical coastline shapefile.
@@ -58,8 +57,8 @@ def main():
                                            name='coastline',
                                            scale='10m')
 
-    # Create a Stamen map tiler instance, and use its CRS for the GeoAxes.
-    tiler = Stamen('terrain-background')
+    # Create an image tiler instance, and use its CRS for the GeoAxes.
+    tiler = GoogleTiles(style="satellite")
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=tiler.crs)
     ax.set_title('The effect of incorrectly referencing the Solomon Islands')
@@ -70,7 +69,7 @@ def main():
     ax.set_extent(extent, geodetic)
     geoms = list(dataset.intersecting_geometries(extent))
 
-    # Add the Stamen aerial imagery at zoom level 7.
+    # Add the aerial imagery at zoom level 7.
     ax.add_image(tiler, 7)
 
     # Transform the geodetic coordinates of the coastlines into the two

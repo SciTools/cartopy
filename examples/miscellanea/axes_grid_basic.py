@@ -2,19 +2,22 @@
 Using Cartopy and AxesGrid toolkit
 ----------------------------------
 
-This example demonstrates how to use cartopy `GeoAxes` with
-`AxesGrid` from the `mpl_toolkits.axes_grid1`.
-The script constructs an `axes_class` kwarg with Plate Carree projection
-and passes it to the `AxesGrid` instance. The `AxesGrid` built-in
-labelling is switched off, and instead a standard procedure
-of creating grid lines is used. Then some fake data is plotted.
+This example demonstrates how to use cartopy `~cartopy.mpl.geoaxes.GeoAxes`
+with `~mpl_toolkits.axes_grid1.axes_grid.AxesGrid` from the
+:mod:`mpl_toolkits.axes_grid1`. The script constructs an ``axes_class`` kwarg
+with Plate Carree projection and passes it to the
+`~mpl_toolkits.axes_grid1.axes_grid.AxesGrid` instance. The
+`~mpl_toolkits.axes_grid1.axes_grid.AxesGrid` built-in tick labelling
+is not used, and instead a standard procedure of creating grid lines is used.
+Then some fake data is plotted.
 """
-import cartopy.crs as ccrs
-from cartopy.mpl.geoaxes import GeoAxes
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import AxesGrid
 import numpy as np
+
+import cartopy.crs as ccrs
+from cartopy.mpl.geoaxes import GeoAxes
+from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 
 def sample_data_3d(shape):
@@ -41,7 +44,7 @@ def sample_data_3d(shape):
 def main():
     projection = ccrs.PlateCarree()
     axes_class = (GeoAxes,
-                  dict(map_projection=projection))
+                  dict(projection=projection))
 
     lons, lats, times, data = sample_data_3d((6, 73, 145))
 
@@ -53,7 +56,7 @@ def main():
                     cbar_mode='single',
                     cbar_pad=0.2,
                     cbar_size='3%',
-                    label_mode='')  # note the empty label_mode
+                    label_mode='keep')
 
     for i, ax in enumerate(axgr):
         ax.coastlines()

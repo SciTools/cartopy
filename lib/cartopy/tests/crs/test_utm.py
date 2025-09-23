@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the UTM coordinate system.
 
@@ -20,7 +19,7 @@ from .helpers import check_proj_params
 def test_default(south):
     zone = 1  # Limits are fixed, so don't bother checking other zones.
     utm = ccrs.UTM(zone, southern_hemisphere=south)
-    other_args = {'ellps=WGS84', 'units=m', 'zone={}'.format(zone)}
+    other_args = {'ellps=WGS84', 'units=m', f'zone={zone}'}
     if south:
         other_args |= {'south'}
     check_proj_params('utm', utm, other_args)
@@ -28,7 +27,7 @@ def test_default(south):
     assert_almost_equal(np.array(utm.x_limits),
                         [-250000, 1250000])
     assert_almost_equal(np.array(utm.y_limits),
-                        [-10000000,  25000000])
+                        [-10000000, 25000000])
 
 
 def test_ellipsoid_transform():
@@ -43,7 +42,7 @@ def test_ellipsoid_transform():
     assert_almost_equal(np.array(utm.x_limits),
                         [-250000, 1250000])
     assert_almost_equal(np.array(utm.y_limits),
-                        [-10000000,  25000000])
+                        [-10000000, 25000000])
 
     result = utm.transform_point(-73.5, 40.5, geodetic)
     assert_almost_equal(result, np.array([127106.5 + 500000, 4484124.4]),

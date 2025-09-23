@@ -1,0 +1,54 @@
+Version 0.14 (March 24, 2016)
+=============================
+
+Features
+--------
+
+* Zachary Tessler and Raj Kesavan added the :class:`cartopy.crs.Sinusoidal` projection,
+  allowing MODIS data to be visualised in its native projection. Additionally, a
+  prepared :data:`cartopy.crs.Sinusoidal.MODIS` projection has been made available for
+  convenience.
+
+* Joseph Hogg and Daniel Atton Beckmann added the :class:`cartopy.geodesic.Geodesic`
+  class which wraps the proj.4 geodesic library. This allows users to solve the direct and
+  inverse geodesic problems (calculating distances between points etc). It also contains a
+  convenience function that returns geodetic circles. This is used by
+  :meth:`cartopy.mpl.geoaxes.GeoAxes.tissot` which draws Tissot's indicatrices on the axes.
+
+  .. figure:: ../gallery/lines_and_polygons/images/sphx_glr_tissot_001.png
+     :target: ../gallery/lines_and_polygons/tissot.html
+     :align: center
+     :scale: 70
+
+* The SRTM3 data source has been changed to the `LP DAAC Data Pool
+  <https://lpdaac.usgs.gov/data_access/data_pool>`_. The Data Pool is more
+  consistent, fixing several missing tiles, and the data is void-filled.
+  Consequently, the ``cartopy.srtm.fill_gaps`` function has been deprecated
+  as it has no purpose within the STRM context. The
+  SRTM example has also been updated to skip the void-filling step.
+  Additionally, this data source provides SRTM at a higher resolution of
+  1 arc-second, which may be accessed via :class:`cartopy.io.srtm.SRTM1Source`.
+
+* All downloaders will use secure connections where available. Not
+  every service supports this method, and so those will use non-secured
+  HTTP connections instead. (See :pull:`736` for full details.)
+
+* Cartopy now supports, and is tested against, Matplotlib 1.3 and 1.5 as well as
+  NumPy 1.7, 1.8 and 1.10.
+
+* Daniel Eriksson added a new example to the gallery:
+
+  .. figure:: ../gallery/scalar_data/images/sphx_glr_aurora_forecast_001.png
+     :target: ../gallery/scalar_data/aurora_forecast.html
+     :align: center
+     :scale: 70
+
+
+Deprecations
+------------
+* ``cartopy.crs.GOOGLE_MERCATOR`` has been moved to :data:`cartopy.crs.Mercator.GOOGLE`.
+
+
+Incompatible changes
+--------------------
+* :meth:`cartopy.crs.CRS.transform_point` now issues NaNs when invalid transforms are identified.

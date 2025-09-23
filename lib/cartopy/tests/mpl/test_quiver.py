@@ -1,20 +1,19 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 from unittest import mock
 
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.testing.decorators import cleanup
+import numpy as np
 import pytest
 
 import cartopy.crs as ccrs
 
 
 # Note, other tests for quiver exist in test_mpl_integration.
+
 
 class TestQuiverShapes:
     def setup_method(self):
@@ -28,26 +27,24 @@ class TestQuiverShapes:
         self.fig = plt.figure()
         self.ax = plt.axes(projection=self.pc)
 
-    @cleanup
     def test_quiver_transform_xyuv_1d(self):
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
             self.ax.quiver(self.x2d.ravel(), self.y2d.ravel(),
                            self.u.ravel(), self.v.ravel(), transform=self.rp)
         args, kwargs = patch.call_args
-        assert len(args) == 5
+        assert len(args) == 4
         assert sorted(kwargs.keys()) == ['transform']
-        shapes = [arg.shape for arg in args[1:]]
+        shapes = [arg.shape for arg in args]
         # Assert that all the shapes have been broadcast.
         assert shapes == [(70, )] * 4
 
-    @cleanup
     def test_quiver_transform_xy_1d_uv_2d(self):
         with mock.patch('matplotlib.axes.Axes.quiver') as patch:
             self.ax.quiver(self.x, self.y, self.u, self.v, transform=self.rp)
         args, kwargs = patch.call_args
-        assert len(args) == 5
+        assert len(args) == 4
         assert sorted(kwargs.keys()) == ['transform']
-        shapes = [arg.shape for arg in args[1:]]
+        shapes = [arg.shape for arg in args]
         # Assert that all the shapes have been broadcast.
         assert shapes == [(7, 10)] * 4
 

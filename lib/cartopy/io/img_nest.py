@@ -1,13 +1,15 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
+"""
+Provides an interface for representing images.
+
+"""
 
 import collections
-import glob
-import os.path
+from pathlib import Path
 
 import numpy as np
 from PIL import Image
@@ -81,9 +83,9 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         Determine potential world filename combinations, without checking
         their existence.
 
-        For example, a '*.tif' file may have one of the following
-        popular conventions for world file extensions '*.tifw',
-        '*.tfw', '*.TIFW' or '*.TFW'.
+        For example, a ``'*.tif'`` file may have one of the following
+        popular conventions for world file extensions ``'*.tifw'``,
+        ``'*.tfw'``, ``'*.TIFW'`` or ``'*.TFW'``.
 
         Given the possible world file extensions, the upper case basename
         combinations are also generated. For example, the file 'map.tif'
@@ -113,34 +115,19 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         '/path/to/img/with_no_extension.w'
 
         """
-        froot, fext = os.path.splitext(fname)
+        path = Path(fname)
+        fext = path.suffix[1::].lower()
         # If there was no extension to the filename.
-        if froot == fname:
-            result = ['{}.{}'.format(fname, 'w'),
-                      '{}.{}'.format(fname, 'W')]
+        if len(fext) < 3:
+            result = [path.with_suffix('.w'), path.with_suffix('.W')]
         else:
-            fext = fext[1::].lower()
-            if len(fext) < 3:
-                result = ['{}.{}'.format(fname, 'w'),
-                          '{}.{}'.format(fname, 'W')]
-            else:
-                fext_types = [fext + 'w', fext[0] + fext[-1] + 'w']
-                fext_types.extend([ext.upper() for ext in fext_types])
-                result = ['{}.{}'.format(froot, ext) for ext in fext_types]
+            fext_types = [f'.{fext}w', f'.{fext[0]}{fext[-1]}w']
+            fext_types.extend([ext.upper() for ext in fext_types])
+            result = [path.with_suffix(ext) for ext in fext_types]
 
-        def _convert_basename(name):
-            dirname, basename = os.path.split(name)
-            base, ext = os.path.splitext(basename)
-            if base == base.upper():
-                result = base.lower() + ext
-            else:
-                result = base.upper() + ext
-            if dirname:
-                result = os.path.join(dirname, result)
-            return result
-
-        result += [_convert_basename(r) for r in result]
-        return result
+        result += [p.with_name(p.stem.swapcase() + p.suffix) for p in result]
+        # return string paths rather than Path objects
+        return [str(r) for r in result]
 
     def __array__(self):
         return np.array(Image.open(self.filename))
@@ -178,12 +165,12 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
                              'supported.')
         ul_corner = (float(lines[4]), float(lines[5]))
 
-        min_x, max_x = (ul_corner[0] - pix_size[0]/2.,
-                        ul_corner[0] + pix_size[0]*im_shape[0] -
-                        pix_size[0]/2.)
-        min_y, max_y = (ul_corner[1] - pix_size[1]/2.,
-                        ul_corner[1] + pix_size[1]*im_shape[1] -
-                        pix_size[1]/2.)
+        min_x, max_x = (ul_corner[0] - pix_size[0] / 2.,
+                        ul_corner[0] + pix_size[0] * im_shape[0] -
+                        pix_size[0] / 2.)
+        min_y, max_y = (ul_corner[1] - pix_size[1] / 2.,
+                        ul_corner[1] + pix_size[1] * im_shape[1] -
+                        pix_size[1] / 2.)
         return (min_x, max_x, min_y, max_y), pix_size
 
 
@@ -221,7 +208,7 @@ class ImageCollection:
             The directory path to search for image files.
         glob_pattern: optional
             The image filename glob pattern to search with.
-            Defaults to '*.tif'.
+            Defaults to ``'*.tif'``.
         img_class: optional
             The class used to construct each image in the Collection.
 
@@ -230,18 +217,18 @@ class ImageCollection:
             Does not recursively search sub-directories.
 
         """
-        imgs = glob.glob(os.path.join(directory, glob_pattern))
+        imgs = Path(directory).glob(glob_pattern)
 
         for img in imgs:
-            dirname, fname = os.path.split(img)
+            dirname, fname = img.parent, img.name
             worlds = img_class.world_files(fname)
             for fworld in worlds:
-                fworld = os.path.join(dirname, fworld)
-                if os.path.exists(fworld):
+                fworld = dirname / fworld
+                if fworld.exists():
                     break
             else:
-                msg = 'Image file {!r} has no associated world file'
-                raise ValueError(msg.format(img))
+                raise ValueError(
+                    f'Image file {img!r} has no associated world file')
 
             self.images.append(img_class.from_world_file(img, fworld))
 
@@ -354,8 +341,8 @@ class NestedImageCollection:
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
-            msg = '{!r} is not one of the possible collections.'
-            raise ValueError(msg.format(target_z))
+            raise ValueError(
+                f'{target_z!r} is not one of the possible collections.')
 
         tiles = []
         for tile in self.find_images(target_domain, target_z):
@@ -408,8 +395,8 @@ class NestedImageCollection:
         # XXX Copied from cartopy.io.img_tiles
         if target_z not in self._collections_by_name:
             # TODO: Handle integer depths also?
-            msg = '{!r} is not one of the possible collections.'
-            raise ValueError(msg.format(target_z))
+            raise ValueError(
+                f'{target_z!r} is not one of the possible collections.')
 
         if start_tiles is None:
             start_tiles = ((self._collections[0].name, img)
@@ -513,7 +500,8 @@ class NestedImageCollection:
         name_dir_pairs
             A list of image collection name and directory path pairs.
         glob_pattern: optional
-            The image collection filename glob pattern. Defaults to '*.tif'.
+            The image collection filename glob pattern. Defaults
+            to ``'*.tif'``.
         img_class: optional
             The class of images created in the image collection.
 

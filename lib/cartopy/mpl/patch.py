@@ -1,23 +1,24 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
-Provide shapely geometry <-> matplotlib path support.
+Extra functionality that is primarily intended for developers, providing support for
+transforming between Shapely geometries and Matplotlib paths.
 
-See also `Shapely Geometric Objects <see_also_shapely>`_
-and `Matplotlib Path API <https://matplotlib.org/api/path_api.html>`_.
-
-.. see_also_shapely:
-   https://shapely.readthedocs.io/en/latest/manual.html#geometric-objects
+See also `Shapely Geometric Objects
+<https://shapely.readthedocs.io/en/latest/manual.html#geometric-objects>`_
+and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 
 """
 
-import numpy as np
-import matplotlib
+import warnings
+
 from matplotlib.path import Path
+import numpy as np
 import shapely.geometry as sgeom
+
+import cartopy.mpl.path as cpath
 
 
 def geos_to_path(shape):
@@ -25,13 +26,16 @@ def geos_to_path(shape):
     Create a list of :class:`matplotlib.path.Path` objects that describe
     a shape.
 
+    .. deprecated:: 0.25
+       Use `cartopy.mpl.path.shapely_to_path` instead.
+
     Parameters
     ----------
     shape
         A list, tuple or single instance of any of the following
         types: :class:`shapely.geometry.point.Point`,
         :class:`shapely.geometry.linestring.LineString`,
-        :class:`shapely.geometry.linestring.LinearRing`,
+        :class:`shapely.geometry.polygon.LinearRing`,
         :class:`shapely.geometry.polygon.Polygon`,
         :class:`shapely.geometry.multipoint.MultiPoint`,
         :class:`shapely.geometry.multipolygon.MultiPolygon`,
@@ -45,6 +49,9 @@ def geos_to_path(shape):
         A list of :class:`matplotlib.path.Path` objects.
 
     """
+    warnings.warn("geos_to_path is deprecated and will be removed in a future release."
+                  "  Use cartopy.mpl.path.shapely_to_path instead.",
+                  DeprecationWarning, stacklevel=2)
     if isinstance(shape, (list, tuple)):
         paths = []
         for shp in shape:
@@ -79,13 +86,15 @@ def geos_to_path(shape):
         vertices, codes = shape._as_mpl_path()
         return [Path(vertices, codes)]
     else:
-        raise ValueError('Unsupported shape type {}.'.format(type(shape)))
+        raise ValueError(f'Unsupported shape type {type(shape)}.')
 
 
 def path_segments(path, **kwargs):
     """
     Create an array of vertices and a corresponding array of codes from a
     :class:`matplotlib.path.Path`.
+
+    .. deprecated:: 0.25
 
     Parameters
     ----------
@@ -95,7 +104,7 @@ def path_segments(path, **kwargs):
     Other Parameters
     ----------------
     kwargs
-        See :func:`matplotlib.path.iter_segments` for details of the keyword
+        See `matplotlib.path.Path.iter_segments` for details of the keyword
         arguments.
 
     Returns
@@ -107,14 +116,19 @@ def path_segments(path, **kwargs):
         codes and their meanings.
 
     """
-    pth = path.cleaned(**kwargs)
-    return pth.vertices[:-1, :], pth.codes[:-1]
+    warnings.warn(
+        "path_segments is deprecated and will be removed in a future release.",
+        DeprecationWarning, stacklevel=2)
+    return cpath._path_segments(path, **kwargs)
 
 
 def path_to_geos(path, force_ccw=False):
     """
     Create a list of Shapely geometric objects from a
     :class:`matplotlib.path.Path`.
+
+    .. deprecated:: 0.25
+       Use `cartopy.mpl.path.path_to_shapely` instead.
 
     Parameters
     ----------
@@ -135,8 +149,11 @@ def path_to_geos(path, force_ccw=False):
         :class:`shapely.geometry.multilinestring.MultiLineString`.
 
     """
+    warnings.warn("path_to_geos is deprecated and will be removed in a future release."
+                  "  Use cartopy.mpl.path.path_to_shapely instead.",
+                  DeprecationWarning, stacklevel=2)
     # Convert path into numpy array of vertices (and associated codes)
-    path_verts, path_codes = path_segments(path, curves=False)
+    path_verts, path_codes = cpath._path_segments(path, curves=False)
 
     # Split into subarrays such that each subarray consists of connected
     # line segments based on the start of each one being marked by a
@@ -165,24 +182,24 @@ def path_to_geos(path, force_ccw=False):
             geom = sgeom.Point(path_verts[0, :])
         elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:
             geom = sgeom.Polygon(path_verts[:-1, :])
-        elif (matplotlib.__version__ < '2.2.0' and
-                # XXX A path can be given which does not end with close poly,
-                # in that situation, we have to guess?
-                path_verts.shape[0] > 3 and verts_same_as_first[-1]):
-            geom = sgeom.Polygon(path_verts)
         else:
             geom = sgeom.LineString(path_verts)
 
         # If geom is a Polygon and is contained within the last geom in
-        # collection, add it to its list of internal polygons, otherwise
-        # simply append it as a new external geom.
+        # collection, it usually needs to be an interior to that geom (e.g. a
+        # lake within a land mass).  Sometimes there is a further geom within
+        # this interior (e.g. an island in a lake, or some instances of
+        # contours).  This needs to be a new external geom in the collection.
         if geom.is_empty:
             pass
         elif (len(collection) > 0 and
                 isinstance(collection[-1][0], sgeom.Polygon) and
                 isinstance(geom, sgeom.Polygon) and
                 collection[-1][0].contains(geom.exterior)):
-            collection[-1][1].append(geom.exterior)
+            if any(internal.contains(geom) for internal in collection[-1][1]):
+                collection.append((geom, []))
+            else:
+                collection[-1][1].append(geom)
         elif isinstance(geom, sgeom.Point):
             other_result_geoms.append(geom)
         else:
@@ -194,8 +211,8 @@ def path_to_geos(path, force_ccw=False):
     geom_collection = []
     for external_geom, internal_polys in collection:
         if internal_polys:
-            # XXX worry about islands within lakes
-            geom = sgeom.Polygon(external_geom.exterior, internal_polys)
+            exteriors = [geom.exterior for geom in internal_polys]
+            geom = sgeom.Polygon(external_geom.exterior, exteriors)
         else:
             geom = external_geom
 
@@ -214,7 +231,7 @@ def path_to_geos(path, force_ccw=False):
 
     # Remove any zero area Polygons
     def not_zero_poly(geom):
-        return ((isinstance(geom, sgeom.Polygon) and not geom._is_empty and
+        return ((isinstance(geom, sgeom.Polygon) and not geom.is_empty and
                  geom.area != 0) or
                 not isinstance(geom, sgeom.Polygon))
 

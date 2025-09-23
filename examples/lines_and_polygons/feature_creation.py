@@ -13,10 +13,11 @@ In this instance however, it would be possible to make use of the
 pre-defined :data:`cartopy.feature.STATES` constant.
 
 """
+from matplotlib.offsetbox import AnchoredText
 import matplotlib.pyplot as plt
+
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
-from matplotlib.offsetbox import AnchoredText
 
 
 def main():
@@ -27,7 +28,7 @@ def main():
     # Put a background image on for nice sea rendering.
     ax.stock_img()
 
-    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth
+    # Create a feature for States/Admin 1 regions at 1:50m from Natural Earth.
     states_provinces = cfeature.NaturalEarthFeature(
         category='cultural',
         name='admin_1_states_provinces_lines',
@@ -37,14 +38,15 @@ def main():
     SOURCE = 'Natural Earth'
     LICENSE = 'public domain'
 
-    ax.add_feature(cfeature.LAND)
-    ax.add_feature(cfeature.COASTLINE)
+    # Add our states feature.
     ax.add_feature(states_provinces, edgecolor='gray')
+    # Add land feature, overriding the default negative zorder so it shows
+    # above the background image.
+    ax.add_feature(cfeature.LAND, zorder=1, edgecolor='k')
 
     # Add a text annotation for the license information to the
     # the bottom right corner.
-    text = AnchoredText('\u00A9 {}; license: {}'
-                        ''.format(SOURCE, LICENSE),
+    text = AnchoredText(f'\u00A9 {SOURCE}; license: {LICENSE}',
                         loc=4, prop={'size': 12}, frameon=True)
     ax.add_artist(text)
 

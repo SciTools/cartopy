@@ -1,14 +1,14 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import itertools
 import time
 
 import numpy as np
 import pytest
+import shapely
 import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
@@ -33,8 +33,8 @@ class TestLineString:
                 expected = 0
             else:
                 expected = 1
-            assert len(multi_line_string) == expected, \
-                'Unexpected line when working from {} to {}'.format(start, end)
+            assert len(multi_line_string.geoms) == expected, \
+                f'Unexpected line when working from {start} to {end}'
 
     def test_simple_fragment_count(self):
         projection = ccrs.PlateCarree()
@@ -51,7 +51,7 @@ class TestLineString:
             multi_line_string = projection.project_geometry(line_string)
             # from cartopy.tests.mpl import show
             # show(projection, multi_line_string)
-            assert len(multi_line_string) == pieces
+            assert len(multi_line_string.geoms) == pieces
 
     def test_split(self):
         projection = ccrs.Robinson(170.5)
@@ -59,7 +59,7 @@ class TestLineString:
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
-        assert len(multi_line_string) == 2
+        assert len(multi_line_string.geoms) == 2
 
     def test_out_of_domain_efficiency(self):
         # Check we're efficiently dealing with lines that project
@@ -73,6 +73,15 @@ class TestLineString:
         cutoff_time = time.time() + 1
         tgt_proj.project_geometry(line_string, src_proj)
         assert time.time() < cutoff_time, 'Projection took too long'
+
+    @pytest.mark.skipif(shapely.__version__ < "2",
+                        reason="Shapely <2 has an incorrect geom_type ")
+    def test_multi_linestring_return_type(self):
+        # Check that the return type of project_geometry is a MultiLineString
+        # and not an empty list
+        multi_line_string = ccrs.Mercator().project_geometry(
+            sgeom.MultiLineString(), ccrs.PlateCarree())
+        assert isinstance(multi_line_string, sgeom.MultiLineString)
 
 
 class FakeProjection(ccrs.PlateCarree):
@@ -103,80 +112,80 @@ class TestBisect:
         projection = FakeProjection()
         line_string = sgeom.LineString([(10, 0), (10, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_interior_repeated_point(self):
         projection = FakeProjection()
         line_string = sgeom.LineString([(0, 0), (10, 0), (10, 0), (20, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 4
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 4
 
     def test_circular_repeated_point(self):
         projection = FakeProjection()
         line_string = sgeom.LineString([(0, 0), (360, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_short(self):
         projection = FakeProjection()
         line_string = sgeom.LineString([(0, 0), (1e-12, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_empty(self):
         projection = FakeProjection(right_offset=10)
         line_string = sgeom.LineString([(175, 0), (175, 10)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 0
+        assert len(multi_line_string.geoms) == 0
 
     def test_simple_run_in(self):
         projection = FakeProjection(right_offset=10)
         line_string = sgeom.LineString([(160, 0), (175, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_simple_wrap(self):
         projection = FakeProjection()
         line_string = sgeom.LineString([(160, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 2
-        assert len(multi_line_string[0].coords) == 2
-        assert len(multi_line_string[1].coords) == 2
+        assert len(multi_line_string.geoms) == 2
+        assert len(multi_line_string.geoms[0].coords) == 2
+        assert len(multi_line_string.geoms[1].coords) == 2
 
     def test_simple_run_out(self):
         projection = FakeProjection(left_offset=10)
         line_string = sgeom.LineString([(-175, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_point_on_boundary(self):
         projection = FakeProjection()
         line_string = sgeom.LineString([(180, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
         # Add a small offset to the left-hand boundary to make things
         # even more pathological.
         projection = FakeProjection(left_offset=5)
         line_string = sgeom.LineString([(180, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_nan_start(self):
         projection = ccrs.TransverseMercator(central_longitude=-90,
                                              approx=False)
         line_string = sgeom.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        for line_string in multi_line_string:
+        assert len(multi_line_string.geoms) == 1
+        for line_string in multi_line_string.geoms:
             for coord in line_string.coords:
                 assert not any(np.isnan(coord)), \
                     'Unexpected NaN in projected coords.'
@@ -188,11 +197,20 @@ class TestBisect:
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
-        assert len(multi_line_string) == 1
-        for line_string in multi_line_string:
+        assert len(multi_line_string.geoms) == 1
+        for line_string in multi_line_string.geoms:
             for coord in line_string.coords:
                 assert not any(np.isnan(coord)), \
                     'Unexpected NaN in projected coords.'
+
+    def test_nan_rectangular(self):
+        # Make sure rectangular projections can handle invalid geometries
+        projection = ccrs.Robinson()
+        line_string = sgeom.LineString([(0, 0), (1, 1), (np.nan, np.nan),
+                                        (2, 2), (3, 3)])
+        multi_line_string = projection.project_geometry(line_string,
+                                                        ccrs.PlateCarree())
+        assert len(multi_line_string.geoms) == 2
 
 
 class TestMisc:
@@ -203,7 +221,7 @@ class TestMisc:
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
-        for line_string in multi_line_string:
+        for line_string in multi_line_string.geoms:
             for coord in line_string.coords:
                 assert not any(np.isnan(coord)), \
                     'Unexpected NaN in projected coords.'
@@ -213,8 +231,8 @@ class TestMisc:
                                       pole_latitude=37.5)
         line_string = sgeom.LineString([(0, 0), (1e-14, 0)])
         multi_line_string = projection.project_geometry(line_string)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string[0].coords) == 2
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_global_boundary(self):
         linear_ring = sgeom.LineString([(-180, -180), (-180, 180),
@@ -222,11 +240,11 @@ class TestMisc:
         pc = ccrs.PlateCarree()
         merc = ccrs.Mercator()
         multi_line_string = pc.project_geometry(linear_ring, merc)
-        assert len(multi_line_string) > 0
+        assert len(multi_line_string.geoms) > 0
 
         # check the identity transform
         multi_line_string = merc.project_geometry(linear_ring, merc)
-        assert len(multi_line_string) > 0
+        assert len(multi_line_string.geoms) > 0
 
 
 class TestSymmetry:
@@ -244,9 +262,9 @@ class TestSymmetry:
 
         # Make sure that they generated the same points.
         # (Although obviously they will be in the opposite order!)
-        assert len(multi_line_string) == 1
-        assert len(multi_line_string2) == 1
-        coords = multi_line_string[0].coords
-        coords2 = multi_line_string2[0].coords
+        assert len(multi_line_string.geoms) == 1
+        assert len(multi_line_string2.geoms) == 1
+        coords = multi_line_string.geoms[0].coords
+        coords2 = multi_line_string2.geoms[0].coords
         np.testing.assert_allclose(coords, coords2[::-1],
                                    err_msg='Asymmetric curve generation')

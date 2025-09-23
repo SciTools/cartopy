@@ -1,13 +1,16 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 import warnings
 
 import matplotlib.path as mpath
 import numpy as np
+
+
+warnings.warn('The clip_path module is deprecated and will be removed '
+              'in a future release with no replacement.',
+              DeprecationWarning, stacklevel=2)
 
 
 def intersection_point(p0, p1, p2, p3):
@@ -36,23 +39,6 @@ def intersection_point(p0, p1, p2, p3):
          y_4 - y_3 * x_4)) / div
 
     return x, y
-
-
-# Provide a clip_path function which clips the given path to the given Bbox.
-# There is inbuilt mpl functionality with v1.2.1 and beyond, but we provide
-# a shim here for older mpl versions.
-def clip_path(subject, clip_bbox):
-    """
-    Clip the given path to the given bounding box.
-
-    """
-    warnings.warn("This method has been deprecated. "
-                  "You can replace ``clip_path(subject, clip_bbox)`` by "
-                  "``subject.clip_to_bbox(clip_bbox)``. "
-                  "See the \"What's new\" section for v0.17.",
-                  DeprecationWarning,
-                  stacklevel=2)
-    return subject.clip_to_bbox(clip_bbox)
 
 
 def lines_intersect(p0, p1, p2, p3):

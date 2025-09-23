@@ -1,36 +1,22 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import matplotlib.pyplot as plt
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.tests.mpl import ImageTesting
+from cartopy.mpl import _MPL_38
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
 
 
-class ExampleImageTesting(ImageTesting):
-    """Subclasses ImageTesting to nullify the plt.show commands."""
-    def __call__(self, test_func):
-        fn = ImageTesting.__call__(self, test_func)
-
-        def new_fn(*args, **kwargs):
-            try:
-                show = plt.show
-                plt.show = lambda *args, **kwargs: None
-                r = fn(*args, **kwargs)
-            finally:
-                plt.show = show
-            return r
-
-        new_fn.__name__ = fn.__name__
-        return new_fn
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
 
 
 @pytest.mark.natural_earth
-@ExampleImageTesting(['global_map'])
+@pytest.mark.mpl_image_compare(filename='global_map.png')
 def test_global_map():
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
@@ -46,9 +32,12 @@ def test_global_map():
     ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.PlateCarree())
     ax.plot([-0.08, 132], [51.53, 43.17], transform=ccrs.Geodetic())
 
+    return fig
+
 
 @pytest.mark.natural_earth
-@ExampleImageTesting(['contour_label'], tolerance=0)
+@pytest.mark.mpl_image_compare(
+    filename='contour_label.png', tolerance=3.9 if _MPL_38 else 0.5)
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
     fig = plt.figure()
@@ -85,3 +74,5 @@ def test_contour_label():
         inline=True,  # Cut the line where the label will be placed.
         fmt=' {:.0f} '.format,  # Labes as integers, with some extra space.
     )
+
+    return fig

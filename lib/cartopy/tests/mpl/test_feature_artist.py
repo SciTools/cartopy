@@ -1,21 +1,19 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
-from unittest import mock
 
+import matplotlib.colors as mcolors
+import matplotlib.path as mpath
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 import shapely.geometry as sgeom
-from matplotlib.transforms import IdentityTransform
 
 import cartopy.crs as ccrs
-import cartopy.mpl.geoaxes as geoaxes
 from cartopy.feature import ShapelyFeature
 from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
-from cartopy.mpl import style
 
 
 @pytest.mark.parametrize("source, expected", [
@@ -34,28 +32,26 @@ def test_freeze(source, expected):
 
 @pytest.fixture
 def feature():
-    unit_circle = sgeom.Point(0, 0).buffer(0.5)
-    unit_square = unit_circle.envelope
-    geoms = [unit_circle, unit_square]
+    circle1 = sgeom.Point(0, 0).buffer(1)
+    circle2 = sgeom.Point(0, 0).buffer(10)
+    square = sgeom.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
+    geoms = [circle1, circle2, square]
     feature = ShapelyFeature(geoms, ccrs.PlateCarree())
     return feature
 
 
-def mocked_axes(extent, projection=ccrs.PlateCarree()):
-    return mock.MagicMock(
-        get_extent=mock.Mock(return_value=extent),
-        projection=projection,
-        spec=geoaxes.GeoAxes,
-        transData=IdentityTransform(),
-        patch=mock.sentinel.patch,
-        figure=mock.sentinel.figure)
+def robinson_map():
+    """
+    Set up a common map for the image tests.  The extent is chosen to include
+    only the square geometry from `feature`.  This means that we can check that
+    `array` or a list of facecolors remains 1-to-1 with the list of geometries.
+    """
+    prj_crs = ccrs.Robinson()
+    fig, ax = plt.subplots(subplot_kw={'projection':prj_crs})
+    ax.set_extent([20, 180, -90, 90])
+    ax.coastlines()
 
-
-def style_from_call(call):
-    args, kwargs = call
-    # Drop the transform keyword.
-    kwargs.pop('transform')
-    return kwargs
+    return fig, ax
 
 
 def cached_paths(geom, target_projection):
@@ -65,59 +61,88 @@ def cached_paths(geom, target_projection):
     return geom_cache.get(target_projection, None)
 
 
-@mock.patch('matplotlib.collections.PathCollection')
-def test_feature_artist_draw(path_collection_cls, feature):
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='feature_artist.png')
+def test_feature_artist_draw(feature):
+    fig, ax = robinson_map()
+    ax.add_feature(feature, facecolor='blue')
+
+    return fig
+
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='feature_artist.png')
+def test_feature_artist_draw_facecolor_list(feature):
+    fig, ax = robinson_map()
+    ax.add_feature(feature, facecolor=['red', 'green', 'blue'])
+
+    return fig
+
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='feature_artist.png')
+def test_feature_artist_draw_cmap(feature):
+    fig, ax = robinson_map()
+
+    cmap = mcolors.ListedColormap(['red', 'gray', 'blue'])
+    ax.add_feature(feature, cmap=cmap, array=[0, 0, 1])
+
+    return fig
+
+
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='feature_artist.png')
+def test_feature_artist_draw_styled_feature(feature):
     geoms = list(feature.geometries())
+    styled_feature = ShapelyFeature(geoms, crs=ccrs.PlateCarree(), facecolor='blue')
 
-    fa = FeatureArtist(feature, facecolor='red')
-    prj_crs = ccrs.Robinson()
-    fa.axes = mocked_axes(extent=[-10, 10, -10, 10], projection=prj_crs)
-    fa.draw(mock.sentinel.renderer)
+    fig, ax = robinson_map()
+    ax.add_feature(styled_feature)
 
-    transform = prj_crs._as_mpl_transform(fa.axes)
-    expected_paths = (cached_paths(geoms[0], prj_crs) +
-                      cached_paths(geoms[1], prj_crs), )
-    expected_style = {'facecolor': 'red'}
-
-    args, kwargs = path_collection_cls.call_args_list[0]
-    assert transform == kwargs.pop('transform', None)
-    assert kwargs == expected_style
-    assert args == expected_paths
-
-    path_collection_cls().set_clip_path.assert_called_once_with(fa.axes.patch)
-    path_collection_cls().set_figure.assert_called_once_with(fa.axes.figure)
-    path_collection_cls().draw(mock.sentinel.renderer)
+    return fig
 
 
-@mock.patch('matplotlib.collections.PathCollection')
-def test_feature_artist_draw_styler(path_collection_cls, feature):
+@pytest.mark.natural_earth
+@pytest.mark.mpl_image_compare(filename='feature_artist.png')
+def test_feature_artist_draw_styler(feature):
     geoms = list(feature.geometries())
-    style1 = {'facecolor': 'blue', 'edgecolor': 'white'}
-    style2 = {'color': 'black', 'linewidth': 1}
-    style2_finalized = style.finalize(style.merge(style2))
 
     def styler(geom):
-        if geom == geoms[0]:
-            return style1
+        if geom == geoms[1]:
+            return {'facecolor': 'red'}
         else:
-            return style2
+            return {'facecolor':'blue'}
 
-    fa = FeatureArtist(feature, styler=styler, linewidth=2)
-    extent = [-10, 10, -10, 10]
-    prj_crs = ccrs.Robinson()
-    fa.axes = mocked_axes(extent, projection=prj_crs)
-    fa.draw(mock.sentinel.renderer)
+    fig, ax = robinson_map()
+    ax.add_feature(feature, facecolor='grey', styler=styler)
 
-    transform = prj_crs._as_mpl_transform(fa.axes)
+    return fig
 
-    calls = [{'paths': (cached_paths(geoms[0], prj_crs), ),
-              'style': dict(linewidth=2, **style1)},
-             {'paths': (cached_paths(geoms[1], prj_crs), ),
-              'style': style2_finalized}]
 
-    assert path_collection_cls.call_count == 2
-    for expected_call, (actual_args, actual_kwargs) in \
-            zip(calls, path_collection_cls.call_args_list):
-        assert expected_call['paths'] == actual_args
-        assert transform == actual_kwargs.pop('transform')
-        assert expected_call['style'] == actual_kwargs
+def test_feature_artist_geom_single_path(feature):
+    plot_crs = ccrs.PlateCarree(central_longitude=180)
+    fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
+    ax.add_feature(feature)
+
+    fig.draw_without_rendering()
+
+    # Circles get split into two geometries across the dateline, but should still be
+    # plotted as one compound path to ensure style consistency.
+    for geom in feature.geometries():
+        assert isinstance(cached_paths(geom, plot_crs), mpath.Path)
+
+
+@pytest.mark.parametrize('autolim', [False, True])
+def test_feature_artist_autolim(autolim):
+    plot_crs = ccrs.PlateCarree(central_longitude=180)
+    fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
+
+    square = sgeom.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
+    ax.add_geometries([square], crs=ccrs.PlateCarree(), autolim=autolim)
+
+    if autolim:
+        expected = [-150, 0, 20, 20]  # Fit to square projected 180 degrees
+    else:
+        expected = [-180, -90, 360, 180]  # Leave at default of whole globe
+
+    np.testing.assert_allclose(ax.dataLim.bounds, expected)

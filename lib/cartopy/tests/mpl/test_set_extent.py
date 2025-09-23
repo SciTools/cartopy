@@ -1,10 +1,8 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
-from matplotlib.testing.decorators import cleanup
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
@@ -12,7 +10,6 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 import cartopy.crs as ccrs
 
 
-@cleanup
 def test_extents():
     # tests that one can set the extents of a map in a variety of coordinate
     # systems, for a variety of projection
@@ -48,7 +45,6 @@ def test_extents():
                               )
 
 
-@cleanup
 def test_get_extent():
     # tests that getting the extents of a map produces something reasonable.
     uk = [-12.5, 4, 49, 60]
@@ -68,7 +64,6 @@ def test_get_extent():
     assert_array_almost_equal(ax.get_extent(uk_crs), uk, decimal=1)
 
 
-@cleanup
 def test_domain_extents():
     # Setting the extent to global or the domain limits.
     ax = plt.axes(projection=ccrs.PlateCarree())
@@ -94,7 +89,6 @@ def test_update_lim():
     ax.update_datalim([(-10, -10), (-5, -5)])
     assert_array_almost_equal(ax.dataLim.get_points(),
                               np.array([[-10., -10.], [-5., -5.]]))
-    plt.close()
 
 
 def test_limits_contour():
@@ -105,15 +99,14 @@ def test_limits_contour():
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.contourf(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.contourf(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.contour(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.contour(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
 
 def test_limits_pcolor():
@@ -124,15 +117,14 @@ def test_limits_pcolor():
 
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.pcolor(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.pcolor(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
+    plt.figure()
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
-    plt.pcolormesh(xs, ys, data, transform=ccrs.PlateCarree(180))
+    ax.pcolormesh(xs, ys, data, transform=ccrs.PlateCarree(180))
     assert_array_almost_equal(ax.dataLim, resulting_extent)
-    plt.close()
 
 
 def test_view_lim_autoscaling():
@@ -140,7 +132,7 @@ def test_view_lim_autoscaling():
     y = np.linspace(0.03739792, 0.33029076)
     x, y = np.meshgrid(x, y)
     ax = plt.axes(projection=ccrs.RotatedPole(37.5, 357.5))
-    plt.scatter(x, y, x * y, transform=ccrs.PlateCarree())
+    ax.scatter(x, y, x * y, transform=ccrs.PlateCarree())
 
     expected = np.array([[86.12433701, 52.51570463],
                          [86.69696603, 52.86372057]])
@@ -154,16 +146,14 @@ def test_view_lim_autoscaling():
     expected_non_tight = np.array([[86, 52.45], [86.8, 52.9]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected_non_tight, decimal=1)
-    plt.close()
 
 
-def test_view_lim_default_global(tmpdir):
+def test_view_lim_default_global(tmp_path):
     ax = plt.axes(projection=ccrs.PlateCarree())
     # The view lim should be the default unit bbox until it is drawn.
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               [[0, 0], [1, 1]])
-    plt.savefig(str(tmpdir.join('view_lim_default_global.png')))
+    plt.savefig(tmp_path / 'view_lim_default_global.png')
     expected = np.array([[-180, -90], [180, 90]])
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected)
-    plt.close()

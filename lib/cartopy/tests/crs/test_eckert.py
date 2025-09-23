@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Eckert family of coordinate systems.
 
@@ -126,7 +125,7 @@ def test_offset(name, proj):
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(name, proj, lim, lon):
     eck = proj(central_longitude=lon)
-    other_args = {'a=6378137.0', 'lon_0={}'.format(lon)}
+    other_args = {'a=6378137.0', f'lon_0={lon}'}
     check_proj_params(name, eck, other_args)
 
     assert_almost_equal(eck.x_limits, [-lim, lim], decimal=5)
@@ -160,7 +159,7 @@ def test_eckert_grid(name, proj, radius, expected_x, expected_y):
     eck = proj(globe=globe)
     geodetic = eck.as_geodetic()
 
-    other_args = {'a={}'.format(radius), 'lon_0=0'}
+    other_args = {f'a={radius}', 'lon_0=0'}
     check_proj_params(name, eck, other_args)
 
     assert_almost_equal(eck.x_limits, [-2, 2], decimal=5)

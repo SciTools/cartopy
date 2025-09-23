@@ -1,12 +1,12 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""This module contains tools for handling tick marks in cartopy."""
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Tools for handling tick marks in cartopy."""
 
-import numpy as np
+import matplotlib as mpl
 from matplotlib.ticker import Formatter, MaxNLocator
+import numpy as np
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -18,14 +18,11 @@ class _PlateCarreeFormatter(Formatter):
     rectangular projection (e.g. Plate Carree, Mercator).
 
     """
-
-    _target_projection = ccrs.PlateCarree()
-
-    def __init__(self, direction_label=True, degree_symbol='\u00B0',
+    def __init__(self, direction_label=True, degree_symbol='°',
                  number_format='g', transform_precision=1e-8, dms=False,
-                 minute_symbol="'", second_symbol="''",
+                 minute_symbol='′', second_symbol='″',
                  seconds_number_format='g',
-                 auto_hide=True):
+                 auto_hide=True, decimal_point=None, cardinal_labels=None):
         """
         Base class for simpler implementation of specialised formatters
         for latitude and longitude axes.
@@ -43,21 +40,22 @@ class _PlateCarreeFormatter(Formatter):
         self._auto_hide_degrees = False
         self._auto_hide_minutes = False
         self._precision = 5  # locator precision
+        if (decimal_point is None and
+                mpl.rcParams['axes.formatter.use_locale']):
+            import locale
+            decimal_point = locale.localeconv()["decimal_point"]
+        if cardinal_labels is None:
+            cardinal_labels = {}
+        self._cardinal_labels = cardinal_labels
+        self._decimal_point = decimal_point
+        self._source_projection = None
+        self._target_projection = None
 
     def __call__(self, value, pos=None):
-        if self.axis is not None and isinstance(self.axis.axes, GeoAxes):
-
-            # We want to produce labels for values in the familiar Plate Carree
-            # projection, so convert the tick values from their own projection
-            # before formatting them.
-            source = self.axis.axes.projection
-            if not isinstance(source, (ccrs._RectangularProjection,
-                                       ccrs.Mercator)):
-                raise TypeError("This formatter cannot be used with "
-                                "non-rectangular projections.")
+        if self._source_projection is not None:
             projected_value = self._apply_transform(value,
                                                     self._target_projection,
-                                                    source)
+                                                    self._source_projection)
 
             # Round the transformed value using a given precision for display
             # purposes. Transforms can introduce minor rounding errors that
@@ -128,6 +126,24 @@ class _PlateCarreeFormatter(Formatter):
         secs = np.round((y - mins) * 60, self._precision - 3)
         return x, degs, mins, secs
 
+    def set_axis(self, axis):
+        super().set_axis(axis)
+
+        # Set the source and target projections for the formatter
+        # setting them to None if we aren't interacting with a GeoAxes
+        if self.axis is None or not isinstance(self.axis.axes, GeoAxes):
+            self._source_projection = None
+            self._target_projection = None
+            return
+
+        self._source_projection = self.axis.axes.projection
+        if not isinstance(self._source_projection, (ccrs._RectangularProjection,
+                                                    ccrs.Mercator)):
+            raise TypeError("This formatter cannot be used with "
+                            "non-rectangular projections.")
+        # The transforms need to use the same globe
+        self._target_projection = ccrs.PlateCarree(globe=self._source_projection.globe)
+
     def set_locs(self, locs):
         Formatter.set_locs(self, locs)
         if not self._auto_hide:
@@ -158,23 +174,18 @@ class _PlateCarreeFormatter(Formatter):
             number_format = 'd'
         else:
             number_format = self._degrees_number_format
-        return '{value:{number_format}}{symbol}'.format(
-            value=abs(deg),
-            number_format=number_format,
-            symbol=self._degree_symbol)
+        value = f"{abs(deg):{number_format}}{self._degree_symbol}"
+        if self._decimal_point is not None:
+            value = value.replace(".", self._decimal_point)
+        return value
 
     def _format_minutes(self, mn):
         """Format minutes as an integer"""
-        return '{value:d}{symbol}'.format(
-            value=int(mn),
-            symbol=self._minute_symbol)
+        return f'{int(mn):d}{self._minute_symbol}'
 
     def _format_seconds(self, sec):
         """Format seconds as an float"""
-        return '{value:{fmt}}{symbol}'.format(
-            value=sec,
-            fmt=self._seconds_num_format,
-            symbol=self._second_symbol)
+        return f'{sec:{self._seconds_num_format}}{self._second_symbol}'
 
     def _apply_transform(self, value, target_proj, source_crs):
         """
@@ -201,10 +212,11 @@ class LatitudeFormatter(_PlateCarreeFormatter):
     """Tick formatter for latitude axes."""
 
     def __init__(self, direction_label=True,
-                 degree_symbol='\u00B0', number_format='g',
+                 degree_symbol='°', number_format='g',
                  transform_precision=1e-8, dms=False,
-                 minute_symbol="'", second_symbol="''",
+                 minute_symbol='′', second_symbol='″',
                  seconds_number_format='g', auto_hide=True,
+                 decimal_point=None, cardinal_labels=None
                  ):
         """
         Tick formatter for latitudes.
@@ -221,10 +233,9 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             labels will not be drawn. Defaults to *True* (draw direction
             labels).
         degree_symbol: optional
-            The character(s) used to represent the degree symbol in the
-            tick labels. Defaults to u'\u00B0' which is the unicode
-            degree symbol. Can be an empty string if no degree symbol is
-            desired.
+            The character(s) used to represent the degree symbol in the tick
+            labels. Defaults to '°'. Can be an empty string if no degree symbol
+            is desired.
         number_format: optional
             Format string to represent the longitude values when `dms`
             is set to False. Defaults to 'g'.
@@ -234,7 +245,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
         dms: bool, optional
-            Wether or not formatting as degrees-minutes-seconds and not
+            Whether or not formatting as degrees-minutes-seconds and not
             as decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.
@@ -245,6 +256,13 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             values. Defaults to 'g'.
         auto_hide: bool, optional
             Auto-hide degrees or minutes when redundant.
+        decimal_point: bool, optional
+            Decimal point character. If not provided and
+            ``mpl.rcParams['axes.formatter.use_locale'] == True``,
+            the locale decimal point is used.
+        cardinal_labels: dict, optional
+            A dictionary with "south" and/or "north" keys to replace south and
+            north cardinal labels, which defaults to "S" and "N".
 
         Note
         ----
@@ -290,6 +308,8 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
+            decimal_point=decimal_point,
+            cardinal_labels=cardinal_labels
         )
 
     def _apply_transform(self, value, target_proj, source_crs):
@@ -298,9 +318,9 @@ class LatitudeFormatter(_PlateCarreeFormatter):
     def _hemisphere(self, value, value_source_crs):
 
         if value > 0:
-            hemisphere = 'N'
+            hemisphere = self._cardinal_labels.get('north', 'N')
         elif value < 0:
-            hemisphere = 'S'
+            hemisphere = self._cardinal_labels.get('south', 'S')
         else:
             hemisphere = ''
         return hemisphere
@@ -313,14 +333,16 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  direction_label=True,
                  zero_direction_label=False,
                  dateline_direction_label=False,
-                 degree_symbol='\u00B0',
+                 degree_symbol='°',
                  number_format='g',
                  transform_precision=1e-8,
                  dms=False,
-                 minute_symbol="'",
-                 second_symbol="''",
+                 minute_symbol='′',
+                 second_symbol='″',
                  seconds_number_format='g',
                  auto_hide=True,
+                 decimal_point=None,
+                 cardinal_labels=None
                  ):
         """
         Create a formatter for longitudes.
@@ -346,8 +368,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             labels will not be drawn. Defaults to *False* (no direction
             labels).
         degree_symbol: optional
-            The symbol used to represent degrees. Defaults to u'\u00B0'
-            which is the unicode degree symbol.
+            The symbol used to represent degrees. Defaults to '°'.
         number_format: optional
             Format string to represent the latitude values when `dms`
             is set to False. Defaults to 'g'.
@@ -357,7 +378,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
         dms: bool, optional
-            Wether or not formatting as degrees-minutes-seconds and not
+            Whether or not formatting as degrees-minutes-seconds and not
             as decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.
@@ -368,6 +389,13 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             values. Defaults to 'g'.
         auto_hide: bool, optional
             Auto-hide degrees or minutes when redundant.
+        decimal_point: bool, optional
+            Decimal point character. If not provided and
+            ``mpl.rcParams['axes.formatter.use_locale'] == True``,
+            the locale decimal point is used.
+        cardinal_labels: dict, optional
+            A dictionary with "west" and/or "east" keys to replace west and
+            east cardinal labels, which defaults to "W" and "E".
 
         Note
         ----
@@ -414,6 +442,8 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             second_symbol=second_symbol,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
+            decimal_point=decimal_point,
+            cardinal_labels=cardinal_labels
         )
         self._zero_direction_labels = zero_direction_label
         self._dateline_direction_labels = dateline_direction_label
@@ -452,18 +482,18 @@ class LongitudeFormatter(_PlateCarreeFormatter):
         value = self._fix_lons(value)
         # Perform basic hemisphere detection.
         if value < 0:
-            hemisphere = 'W'
+            hemisphere = self._cardinal_labels.get('west', 'W')
         elif value > 0:
-            hemisphere = 'E'
+            hemisphere = self._cardinal_labels.get('east', 'E')
         else:
             hemisphere = ''
         # Correct for user preferences:
         if value == 0 and self._zero_direction_labels:
             # Use the original tick value to determine the hemisphere.
             if value_source_crs < 0:
-                hemisphere = 'E'
+                hemisphere = self._cardinal_labels.get('east', 'E')
             else:
-                hemisphere = 'W'
+                hemisphere = self._cardinal_labels.get('west', 'W')
         if value in (-180, 180) and not self._dateline_direction_labels:
             hemisphere = ''
         return hemisphere
@@ -479,8 +509,8 @@ class LongitudeLocator(MaxNLocator):
         Allow the locator to stop on minutes and seconds (False by default)
     """
 
-    default_params = MaxNLocator.default_params.copy()
-    default_params.update(nbins=8, dms=False)
+    def __init__(self, nbins=8, *, dms=False, **kwargs):
+        super().__init__(nbins=nbins, dms=dms, **kwargs)
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""

@@ -1,0 +1,38 @@
+# Reference:
+#   - https://github.com/actions/checkout
+
+name: ci-manifest
+
+on:
+  pull_request:
+    branches:
+      - "*"
+
+  push:
+    branches-ignore:
+      - "dependabot/*"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  manifest:
+    name: "check-manifest"
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: "check-manifest"
+        run: |
+          pipx run check-manifest

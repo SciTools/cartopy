@@ -1,25 +1,24 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
 This module defines the :class:`FeatureArtist` class, for drawing
-:class:`Feature` instances with matplotlib.
+:class:`Feature` instances through an extension of the Matplotlib Artist interfaces.
 
 """
 
-from collections import OrderedDict
 import warnings
 import weakref
 
-import numpy as np
 import matplotlib.artist
 import matplotlib.collections
+import numpy as np
 
-import cartopy.mpl.patch as cpatch
-from .style import merge as style_merge, finalize as style_finalize
+import cartopy.feature as cfeature
+from cartopy.mpl import _MPL_38
+import cartopy.mpl.path as cpath
 
 
 class _GeomKey:
@@ -32,6 +31,7 @@ class _GeomKey:
     A workaround for Shapely polygons no longer being hashable as of 1.5.13.
 
     """
+
     def __init__(self, geom):
         self._id = id(geom)
 
@@ -57,9 +57,9 @@ def _freeze(obj):
     return obj
 
 
-class FeatureArtist(matplotlib.artist.Artist):
+class FeatureArtist(matplotlib.collections.Collection):
     """
-    A subclass of :class:`~matplotlib.artist.Artist` capable of
+    A subclass of :class:`~matplotlib.collections.Collection` capable of
     drawing a :class:`cartopy.feature.Feature`.
 
     """
@@ -89,7 +89,7 @@ class FeatureArtist(matplotlib.artist.Artist):
         feature
             An instance of :class:`cartopy.feature.Feature` to draw.
         styler
-            A callable that given a gemometry, returns matplotlib styling
+            A callable that given a geometry, returns matplotlib styling
             parameters.
 
         Other Parameters
@@ -101,8 +101,6 @@ class FeatureArtist(matplotlib.artist.Artist):
         """
         super().__init__()
 
-        if kwargs is None:
-            kwargs = {}
         self._styler = kwargs.pop('styler', None)
         self._kwargs = dict(kwargs)
 
@@ -112,35 +110,47 @@ class FeatureArtist(matplotlib.artist.Artist):
             color = self._kwargs.pop('color')
             self._kwargs['facecolor'] = self._kwargs['edgecolor'] = color
 
-        # Set default zorder so that features are drawn before
-        # lines e.g. contours but after images.
+        # Paths are worked out at draw, but add_collection fails if paths is
+        # left to the default of None.
+        self.set_paths([])
+
+        # Set default zorder so that features are drawn under
+        # lines e.g. contours but over images and filled patches.
         # Note that the zorder of Patch, PatchCollection and PathCollection
-        # are all 1 by default. Assuming equal zorder drawing takes place in
-        # the following order: collections, patches, lines (default zorder=2),
-        # text (default zorder=3), then other artists e.g. FeatureArtist.
-        if self._kwargs.get('zorder') is not None:
-            self.set_zorder(self._kwargs['zorder'])
-        elif feature.kwargs.get('zorder') is not None:
-            self.set_zorder(feature.kwargs['zorder'])
-        else:
-            # The class attribute matplotlib.collections.PathCollection.zorder
-            # was removed after mpl v1.2.0, so the hard-coded value of 1 is
-            # used instead.
-            self.set_zorder(1)
+        # are all 1 by default. Assuming default zorder, drawing takes place in
+        # the following order: collections, patches, FeatureArtist, lines,
+        # text.
+        self.set_zorder(1.5)
+
+        # Update drawing styles from the feature and **kwargs.
+        self.set(**feature.kwargs)
+        self.set(**self._kwargs)
 
         self._feature = feature
 
-    @matplotlib.artist.allow_rasterization
-    def draw(self, renderer, *args, **kwargs):
+    def set_facecolor(self, c):
         """
-        Draw the geometries of the feature that intersect with the extent of
-        the :class:`cartopy.mpl.GeoAxes` instance to which this
-        object has been added.
-
+        Set the facecolor(s) of the `.FeatureArtist`.  If set to 'never' then
+        subsequent calls will have no effect.  Otherwise works the same as
+        `matplotlib.collections.Collection.set_facecolor`.
         """
-        if not self.get_visible():
-            return
+        if isinstance(c, str) and c == 'never':
+            self._never_fc = True
+            super().set_facecolor('none')
 
+        elif (getattr(self, '_never_fc', False) and
+                (not isinstance(c, str) or c != 'none')):
+            warnings.warn('facecolor will have no effect as it has been '
+                          'defined as "never".')
+        else:
+            super().set_facecolor(c)
+
+    if not _MPL_38:
+        # set_paths does not yet exist on Collection.
+        def set_paths(self, paths):
+            self._paths = paths
+
+    def _get_geoms_paths(self):
         ax = self.axes
         feature_crs = self._feature.crs
 
@@ -150,19 +160,20 @@ class FeatureArtist(matplotlib.artist.Artist):
             extent = ax.get_extent(feature_crs)
         except ValueError:
             warnings.warn('Unable to determine extent. Defaulting to global.')
-        geoms = self._feature.intersecting_geometries(extent)
 
-        # Combine all the keyword args in priority order.
-        prepared_kwargs = style_merge(self._feature.kwargs,
-                                      self._kwargs,
-                                      kwargs)
-
-        # Freeze the kwargs so that we can use them as a dict key. We will
-        # need to unfreeze this with dict(frozen) before passing to mpl.
-        prepared_kwargs = _freeze(prepared_kwargs)
+        if isinstance(self._feature, cfeature.ShapelyFeature):
+            # User passed a specific list of geometries.  If they also passed
+            # `array` or a list of facecolors then we should keep the colours
+            # consistent after pan/zoom.  Do this by creating a Path for every
+            # geometry regardless of whether they are currently in view.
+            geoms = self._feature.geometries()
+        else:
+            # For efficiency on local maps with high resolution features (e.g
+            # from Natural Earth), only create paths for geometries that are
+            # in view.
+            geoms = self._feature.intersecting_geometries(extent)
 
         # Project (if necessary) and convert geometries to matplotlib paths.
-        stylised_paths = OrderedDict()
         key = ax.projection
         for geom in geoms:
             # As Shapely geometries cannot be relied upon to be
@@ -181,39 +192,64 @@ class FeatureArtist(matplotlib.artist.Artist):
                 geom_key, geom)
             mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
                 geom_key, {})
-            geom_paths = mapping.get(key)
-            if geom_paths is None:
+            geom_path = mapping.get(key)
+            if geom_path is None:
                 if ax.projection != feature_crs:
                     projected_geom = ax.projection.project_geometry(
                         geom, feature_crs)
                 else:
                     projected_geom = geom
-                geom_paths = cpatch.geos_to_path(projected_geom)
-                mapping[key] = geom_paths
 
-            if not self._styler:
-                style = prepared_kwargs
+                geom_path = cpath.shapely_to_path(projected_geom)
+                mapping[key] = geom_path
+
+            yield geom, geom_path
+
+    def get_paths(self):
+        paths = super().get_paths()
+        if paths:
+            # When we are drawing, there is an explicit list of paths set.
+            # Return these for the renderer.
+            return paths
+
+        # When not drawing, the path list is empty.  Find all the relevant paths for
+        # the current axes extent.
+        return [path for _, path in self._get_geoms_paths()]
+
+    @matplotlib.artist.allow_rasterization
+    def draw(self, renderer):
+        """
+        Draw the geometries of the feature that intersect with the extent of
+        the :class:`cartopy.mpl.geoaxes.GeoAxes` instance to which this
+        object has been added.
+
+        """
+        if not self.get_visible():
+            return
+
+        stylised_paths = {}
+        # Make an empty placeholder style dictionary for when styler is not
+        # used.  Freeze it so that we can use it as a dict key.  We will need
+        # to unfreeze all style dicts with dict(frozen) before passing to mpl.
+        no_style = _freeze({})
+        for geom, geom_path in self._get_geoms_paths():
+            if self._styler is None:
+                stylised_paths.setdefault(no_style, []).append(geom_path)
             else:
-                # Unfreeze, then add the computed style, and then re-freeze.
-                style = style_merge(dict(prepared_kwargs), self._styler(geom))
-                style = _freeze(style)
+                style = _freeze(self._styler(geom))
+                stylised_paths.setdefault(style, []).append(geom_path)
 
-            stylised_paths.setdefault(style, []).extend(geom_paths)
+        self.set_clip_path(self.axes.patch)
 
-        transform = ax.projection._as_mpl_transform(ax)
-
-        # Draw one PathCollection per style. We could instead pass an array
-        # of style items through to a single PathCollection, but that
-        # complexity does not yet justify the effort.
+        # Draw each style individually.  Note that there will only be multiple
+        # styles if styler was used.
         for style, paths in stylised_paths.items():
-            style = style_finalize(dict(style))
-            # Build path collection and draw it.
-            c = matplotlib.collections.PathCollection(paths,
-                                                      transform=transform,
-                                                      **style)
-            c.set_clip_path(ax.patch)
-            c.set_figure(ax.figure)
-            c.draw(renderer)
+            style = dict(style)
 
-        # n.b. matplotlib.collection.Collection.draw returns None
-        return None
+            # Temporarily replace properties.
+            orig_style = {k: getattr(self, f"get_{k}")() for k in style}
+            self.set(paths=paths, **style)
+
+            super().draw(renderer)
+
+            self.set(paths=[], **orig_style)

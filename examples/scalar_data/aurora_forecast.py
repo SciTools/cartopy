@@ -8,19 +8,20 @@ Lagrangian point of the Sun-Earth system. This data is fed into the
 OVATION-Prime model to forecast the probability of visible aurora at
 various locations on Earth. Every five minutes a new forecast is
 published for the coming 30 minutes. The data is provided as a
-1024 by 512 grid of probabilities in percent of visible aurora. The
-data spaced equally in degrees from -180 to 180 and -90 to 90.
+360 by 181 grid of probabilities in percent of visible aurora. The
+data spaced equally in degrees from 0 to 359 and -90 to 90.
 
 """
 from datetime import datetime
-from io import StringIO
+import json
 from urllib.request import urlopen
 
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.pyplot as plt
 import numpy as np
+
 import cartopy.crs as ccrs
 from cartopy.feature.nightshade import Nightshade
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 
 
 def aurora_forecast():
@@ -44,21 +45,23 @@ def aurora_forecast():
     """
 
     # GitHub gist to download the example data from
-    url = ('https://gist.githubusercontent.com/belteshassar/'
-           'c7ea9e02a3e3934a9ddc/raw/aurora-nowcast-map.txt')
+    url = ('https://gist.githubusercontent.com/lgolston/594c030876c0614d3'
+           '6d13d03e4f115b6/raw/342ff751419204594180e88d69b3986dbd4fea4a/'
+           'ovation_aurora_latest.json')
     # To plot the current forecast instead, uncomment the following line
-    # url = 'https://services.swpc.noaa.gov/text/aurora-nowcast-map.txt'
+    # url = 'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json'
 
-    response_text = StringIO(urlopen(url).read().decode('utf-8'))
-    img = np.loadtxt(response_text)
-    # Read forecast date and time
-    response_text.seek(0)
-    for line in response_text:
-        if line.startswith('Product Valid At:', 2):
-            dt = datetime.strptime(line[-17:-1], '%Y-%m-%d %H:%M')
+    # load data (JSON format)
+    response = urlopen(url)
+    aurora = json.loads(response.read().decode('utf-8'))
+    # parse timestamp
+    dt = datetime.strptime(aurora['Forecast Time'], '%Y-%m-%dT%H:%M:%SZ')
+    # convert lists of [lon, lat, value] to 2D array of probability values
+    aurora_data = np.array(aurora['coordinates'])
+    img = np.reshape(aurora_data[:, 2], (181, 360), order='F')
 
     img_proj = ccrs.PlateCarree()
-    img_extent = (-180, 180, -90, 90)
+    img_extent = (0, 359, -90, 90)
     return img, img_proj, img_extent, 'lower', dt
 
 

@@ -1,8 +1,7 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tests for the Equal Earth coordinate system.
 
@@ -14,10 +13,6 @@ import pytest
 
 import cartopy.crs as ccrs
 from .helpers import check_proj_params
-
-
-pytestmark = pytest.mark.skipif(ccrs.PROJ4_VERSION < (5, 2, 0),
-                                reason='Proj is too old.')
 
 
 def test_default():
@@ -62,7 +57,7 @@ def test_eccentric_globe():
 @pytest.mark.parametrize('lon', [-10.0, 10.0])
 def test_central_longitude(lon):
     eqearth = ccrs.EqualEarth(central_longitude=lon)
-    other_args = {'ellps=WGS84', 'lon_0={}'.format(lon)}
+    other_args = {'ellps=WGS84', f'lon_0={lon}'}
     check_proj_params('eqearth', eqearth, other_args)
 
     assert_almost_equal(eqearth.x_limits,

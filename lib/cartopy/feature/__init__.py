@@ -1,12 +1,16 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
 
 """
-This module defines :class:`Feature` instances, for use with
-ax.add_feature().
+This module defines a :class:`Feature` interface, which can be used and
+extended to add various "features" to geoaxes using ax.add_feature(), such as
+Shapely objects and Natural Earth Imagery.
+
+The default zorder for Cartopy features is defined in defined in
+:class:`~cartopy.mpl.feature_artist.FeatureArtist` as 1.5, which puts them
+above images and patches, but below lines and text.
 
 """
 
@@ -15,8 +19,8 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import shapely.geometry as sgeom
 
-import cartopy.io.shapereader as shapereader
 import cartopy.crs
+import cartopy.io.shapereader as shapereader
 
 
 COLORS = {'land': np.array((240, 240, 220)) / 256.,
@@ -100,7 +104,9 @@ class Feature(metaclass=ABCMeta):
         geometries for this dataset.
 
         """
-        if extent is not None:
+        # shapely 2.0 returns tuple of NaNs instead of None for empty geometry
+        # -> check for both
+        if extent is not None and not np.isnan(extent[0]):
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
             return (geom for geom in self.geometries() if
@@ -113,6 +119,7 @@ class Scaler:
     """
     General object for handling the scale of the geometries used in a Feature.
     """
+
     def __init__(self, scale):
         self._scale = scale
 
@@ -140,6 +147,7 @@ class AdaptiveScaler(Scaler):
     """
     Automatically select scale of geometries based on extent of plotted axes.
     """
+
     def __init__(self, default_scale, limits):
         """
         Parameters
@@ -198,6 +206,7 @@ class ShapelyFeature(Feature):
     shapely geometries.
 
     """
+
     def __init__(self, geometries, crs, **kwargs):
         """
         Parameters
@@ -214,6 +223,8 @@ class ShapelyFeature(Feature):
 
         """
         super().__init__(crs, **kwargs)
+        if isinstance(geometries, sgeom.base.BaseGeometry):
+            geometries = [geometries]
         self._geoms = tuple(geometries)
 
     def geometries(self):
@@ -227,6 +238,7 @@ class NaturalEarthFeature(Feature):
     See https://www.naturalearthdata.com/
 
     """
+
     def __init__(self, category, name, scale, **kwargs):
         """
         Parameters
@@ -265,7 +277,7 @@ class NaturalEarthFeature(Feature):
     def _validate_scale(self):
         if self.scale not in ('110m', '50m', '10m'):
             raise ValueError(
-                '{} is not a valid Natural Earth scale. '.format(self.scale) +
+                f'{self.scale!r} is not a valid Natural Earth scale. '
                 'Valid scales are "110m", "50m", and "10m".'
             )
 
@@ -279,7 +291,10 @@ class NaturalEarthFeature(Feature):
             path = shapereader.natural_earth(resolution=self.scale,
                                              category=self.category,
                                              name=self.name)
-            geometries = tuple(shapereader.Reader(path).geometries())
+            reader = shapereader.Reader(path)
+            if reader.crs is not None:
+                self._crs = reader.crs
+            geometries = tuple(reader.geometries())
             _NATURAL_EARTH_GEOM_CACHE[key] = geometries
         else:
             geometries = _NATURAL_EARTH_GEOM_CACHE[key]
@@ -324,7 +339,7 @@ class GSHHSFeature(Feature):
         The dataset scale. One of 'auto', 'coarse', 'low', 'intermediate',
         'high, or 'full' (default is 'auto').
     levels
-        A list of integers 1-4 corresponding to the desired GSHHS feature
+        A list of integers 1-6 corresponding to the desired GSHHS feature
         levels to draw (default is [1] which corresponds to coastlines).
 
     Other Parameters
@@ -345,21 +360,21 @@ class GSHHSFeature(Feature):
     instantiating multiple GSHHS artists, by reducing repeated file IO.
 
     """
+
     def __init__(self, scale='auto', levels=None, **kwargs):
         super().__init__(cartopy.crs.PlateCarree(), **kwargs)
 
         if scale not in ('auto', 'a', 'coarse', 'c', 'low', 'l',
                          'intermediate', 'i', 'high', 'h', 'full', 'f'):
-            raise ValueError("Unknown GSHHS scale '{}'.".format(scale))
+            raise ValueError(f"Unknown GSHHS scale {scale!r}.")
         self._scale = scale
 
         if levels is None:
             levels = [1]
         self._levels = set(levels)
-        unknown_levels = self._levels.difference([1, 2, 3, 4])
+        unknown_levels = self._levels.difference([1, 2, 3, 4, 5, 6])
         if unknown_levels:
-            raise ValueError("Unknown GSHHS levels "
-                             "'{}'.".format(unknown_levels))
+            raise ValueError(f"Unknown GSHHS levels {unknown_levels!r}.")
 
         # Default kwargs
         self._kwargs.setdefault('edgecolor', 'black')
@@ -410,7 +425,10 @@ class GSHHSFeature(Feature):
                 # Load GSHHS geometries from appropriate shape file.
                 # TODO selective load based on bbox of each geom in file.
                 path = shapereader.gshhs(scale, level)
-                geoms = tuple(shapereader.Reader(path).geometries())
+                reader = shapereader.Reader(path)
+                if reader.crs is not None:
+                    self._crs = reader.crs
+                geoms = tuple(reader.geometries())
                 GSHHSFeature._geometries_cache[(scale, level)] = geoms
             for geom in geoms:
                 if extent is None or extent_geom.intersects(geom):
@@ -425,6 +443,7 @@ class WFSFeature(Feature):
     This feature requires additional dependencies. If installed via pip,
     try ``pip install cartopy[ows]``.
     """
+
     def __init__(self, wfs, features, **kwargs):
         """
         Parameters
@@ -470,8 +489,8 @@ class WFSFeature(Feature):
 
 auto_scaler = AdaptiveScaler('110m', (('50m', 50), ('10m', 15)))
 """AdaptiveScaler for NaturalEarthFeature. Default scale is '110m'.
-'110m' is used above 50 degrees, '50m' for 50-15 degrees and '10m' below 15
-degrees."""
+'110m' is used when both latitudes and longitudes span more than 50 degrees,
+'50m' for 50-15 degrees and '10m' below 15 degrees."""
 
 
 BORDERS = NaturalEarthFeature(
@@ -494,19 +513,19 @@ COASTLINE = NaturalEarthFeature(
 
 LAKES = NaturalEarthFeature(
     'physical', 'lakes', auto_scaler,
-    edgecolor='face', facecolor=COLORS['water'])
+    edgecolor='none', facecolor=COLORS['water'])
 """Automatically scaled natural and artificial lakes."""
 
 
 LAND = NaturalEarthFeature(
     'physical', 'land', auto_scaler,
-    edgecolor='face', facecolor=COLORS['land'], zorder=-1)
+    edgecolor='none', facecolor=COLORS['land'], zorder=-1)
 """Automatically scaled land polygons, including major islands."""
 
 
 OCEAN = NaturalEarthFeature(
     'physical', 'ocean', auto_scaler,
-    edgecolor='face', facecolor=COLORS['water'], zorder=-1)
+    edgecolor='none', facecolor=COLORS['water'], zorder=-1)
 """Automatically scaled ocean polygons."""
 
 

@@ -13,10 +13,11 @@ matching eccentricity.
 from io import BytesIO
 from urllib.request import urlopen
 
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
+
+import cartopy.crs as ccrs
 
 
 def vesta_image():
@@ -36,7 +37,7 @@ def vesta_image():
         the ``img_proj`` coordinate system.
 
     """
-    url = 'https://www.nasa.gov/sites/default/files/pia17037.jpg'
+    url = 'https://photojournal.jpl.nasa.gov/jpeg/PIA17037.jpg'
     img_handle = BytesIO(urlopen(url).read())
     raw_image = Image.open(img_handle)
     # The image is extremely high-resolution, which takes a long time to
@@ -50,8 +51,8 @@ def vesta_image():
     img_globe = ccrs.Globe(semimajor_axis=285000., semiminor_axis=229000.,
                            ellipse=None)
     img_proj = ccrs.PlateCarree(globe=img_globe)
-    img_extent = (-895353.906273091, 895353.906273091,
-                  447676.9531365455, -447676.9531365455)
+    img_extent = (-180, 180,
+                  -90, 90)
     return img, img_globe, img_proj, img_extent
 
 

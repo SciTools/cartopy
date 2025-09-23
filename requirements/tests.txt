@@ -1,2 +1,0 @@
-flufl.lock
-pytest>=3.0.0

@@ -6,14 +6,15 @@ A demonstration of the power of Matplotlib combined with cartopy's Azimuthal
 Equidistant projection to reproduce the UN flag.
 
 """
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import matplotlib.pyplot as plt
 from matplotlib.patches import PathPatch
 import matplotlib.path
+import matplotlib.pyplot as plt
 import matplotlib.ticker
-from matplotlib.transforms import BboxTransform, Bbox
+from matplotlib.transforms import Bbox, BboxTransform
 import numpy as np
+
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 
 # When drawing the flag, we can either use white filled land, or be a little

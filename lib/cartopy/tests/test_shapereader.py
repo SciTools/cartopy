@@ -1,26 +1,31 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-
-import os.path
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
+from pathlib import Path
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pytest
+import shapely.geometry as sgeom
 
 import cartopy.io.shapereader as shp
 
 
 class TestLakes:
-    def setup_class(self):
-        LAKES_PATH = os.path.join(os.path.dirname(__file__),
-                                  'lakes_shapefile', 'ne_110m_lakes.shp')
-        self.reader = shp.Reader(LAKES_PATH)
+    @pytest.fixture(autouse=True, params=[0, 1])
+    def setup_class(self, request):
+        LAKES_PATH = (Path(__file__).parent / 'lakes_shapefile'
+                      / 'ne_110m_lakes.shp')
+        # run tests with both available Readers
+        if request.param == 0:
+            self.reader = shp.BasicReader(LAKES_PATH)
+        elif not shp._HAS_FIONA:
+            pytest.skip("Fiona library not available")
+        else:
+            self.reader = shp.FionaReader(LAKES_PATH)
         names = [record.attributes['name'] for record in self.reader.records()]
         # Choose a nice small lake
-        print([name for name in names if 'Nicaragua' in name])
         self.lake_name = 'Lago de\rNicaragua'
         self.lake_index = names.index(self.lake_name)
         self.test_lake_geometry = \
@@ -29,9 +34,11 @@ class TestLakes:
 
     def test_geometry(self):
         lake_geometry = self.test_lake_geometry
-        assert lake_geometry.type == 'Polygon'
+        assert lake_geometry.geom_type == 'Polygon'
 
-        polygon = lake_geometry
+        # force an orientation due to potential reader differences
+        # with pyshp 2.2.0 forcing a specific orientation.
+        polygon = sgeom.polygon.orient(lake_geometry, -1)
 
         expected = np.array([(-84.85548682324658, 11.147898667846633),
                              (-85.29013729525353, 11.176165676310276),
@@ -55,18 +62,23 @@ class TestLakes:
         assert actual == expected
         assert lake_record.geometry == self.test_lake_geometry
 
-    @pytest.mark.skipif(shp._HAS_FIONA,
-                        reason="Fiona reader doesn't support lazy loading.")
+    def test_no_included_projection_file(self):
+        # No .prj file included with the lakes shapefile
+        assert self.reader.crs is None
+
     def test_bounds(self):
-        # tests that a file which has a record with a bbox can
-        # use the bbox without first creating the geometry
-        record = next(self.reader.records())
-        assert not record._geometry, \
-            'The geometry was loaded before it was needed.'
-        assert len(record._bounds) == 4
-        assert record._bounds == record.bounds
-        assert not record._geometry, \
-            'The geometry was loaded in order to create the bounds.'
+        if isinstance(self.reader, shp.BasicReader):
+            # tests that a file which has a record with a bbox can
+            # use the bbox without first creating the geometry
+            record = next(self.reader.records())
+            assert not record._geometry, \
+                'The geometry was loaded before it was needed.'
+            assert len(record._bounds) == 4
+            assert record._bounds == record.bounds
+            assert not record._geometry, \
+                'The geometry was loaded in order to create the bounds.'
+        else:
+            pytest.skip("Fiona reader doesn't support lazy loading")
 
 
 @pytest.mark.filterwarnings("ignore:Downloading")
@@ -87,7 +99,7 @@ class TestRivers:
 
     def test_geometry(self):
         geometry = self.test_river_geometry
-        assert geometry.type == 'LineString'
+        assert geometry.geom_type == 'LineString'
 
         linestring = geometry
         coords = linestring.coords
@@ -112,3 +124,15 @@ class TestRivers:
             if key in expected_attributes:
                 assert value == expected_attributes[key]
         assert river_record.geometry == self.test_river_geometry
+
+    def test_included_projection_file(self):
+        # This shapefile includes a .prj definition
+        wkt = ('GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",'
+            'ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],'
+            'ID["EPSG",6326]],PRIMEM["Greenwich",0,'
+            'ANGLEUNIT["Degree",0.0174532925199433]],CS[ellipsoidal,2],'
+            'AXIS["longitude",east,ORDER[1],'
+            'ANGLEUNIT["Degree",0.0174532925199433]],'
+            'AXIS["latitude",north,ORDER[2],'
+            'ANGLEUNIT["Degree",0.0174532925199433]]]')
+        assert self.reader.crs.to_wkt() == wkt

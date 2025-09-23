@@ -1,0 +1,42 @@
+Version 0.15 (February 1, 2017)
+===============================
+
+Features
+--------
+
+* The :class:`cartopy.crs.Mercator` class now allows a ``latitude_true_scale``
+  to be specified.
+
+* A ``tiles`` url can now be passed directly to the
+  :class:`cartopy.io.img_tiles.GoogleTiles` class.
+
+* The :meth:`~cartopy.mpl.geoaxes.GeoAxes.background_img` method has been
+  added. This allows users to add a background image to the map, from a
+  selection of pre-prepared images held in a directory specified by the
+  CARTOPY_USER_BACKGROUNDS environment variable.
+
+* The Web Map Tile Service (WMTS) interface has been extended so that WMTS
+  layers can be added to GeoAxes in different projections.
+
+* The :class:`~cartopy.crs.NearsidePerspective` projection has been added.
+
+* Optional keyword arguments can now be supplied to the
+  :meth:`~cartopy.mpl.geoaxes.GeoAxes.add_wmts` method, which will be passed to
+  the OGC WMTS ``gettile`` method.
+
+* New additions to the gallery:
+
+.. figure:: ../gallery/miscellanea/images/sphx_glr_axes_grid_basic_001.png
+   :target: ../gallery/miscellanea/axes_grid_basic.html
+   :align: center
+   :scale: 70
+
+.. figure:: ../gallery/web_services/images/sphx_glr_reprojected_wmts_001.png
+   :target: ../gallery/web_services/reprojected_wmts.html
+   :align: center
+   :scale: 70
+
+.. figure:: ../gallery/web_services/images/sphx_glr_wmts_time_001.png
+   :target: ../gallery/web_services/wmts_time.html
+   :align: center
+   :scale: 70

@@ -1,12 +1,13 @@
-# Copyright Cartopy Contributors
+# Copyright Crown and Cartopy Contributors
 #
-# This file is part of Cartopy and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Cartopy and is released under the BSD 3-clause license.
+# See LICENSE in the root of the repository for full licensing details.
+
+import io
+
+import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
-import io
 
 
 # No need for anything other than the agg backend, and we don't want
@@ -31,6 +32,6 @@ def time_second_figure():
     # Successive figures with Axes of the same projection
     # could have various caching mechanisms in place.
     # At the time of writing, there is no
-    # noticable performance speedup during the second figure :(
+    # noticeable performance speedup during the second figure :(
     create_pc_png()
     create_pc_png()
