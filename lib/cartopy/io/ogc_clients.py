@@ -360,12 +360,8 @@ class WMTSRasterSource(RasterSource):
 
     """
 
-<<<<<<< HEAD
     def __init__(self, wmts, layer_name, max_tm_identifier=None,
-                 gettile_extra_kwargs=None):
-=======
-    def __init__(self, wmts, layer_name, gettile_extra_kwargs=None, cache=False):
->>>>>>> 75c87cd3586afb206eb4aac1d524d314ca21c538
+                 gettile_extra_kwargs=None, cache=False):
         """
         Parameters
         ----------
