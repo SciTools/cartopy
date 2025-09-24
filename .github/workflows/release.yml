@@ -77,7 +77,7 @@ jobs:
           - os: ubuntu-latest
             cibw_archs: "x86_64"
           - os: windows-latest
-            cibw_archs: "auto64"
+            cibw_archs: "auto"
           - os: macos-latest
             cibw_archs: "x86_64"
           - os: macos-latest
@@ -98,8 +98,7 @@ jobs:
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
         env:
-          # Skip 32 bit builds and musllinux due to lack of numpy wheels
-          CIBW_SKIP: "*-win32 *_i686 *-musllinux* cp3*t-*"
+          CIBW_SKIP: "*_i686 cp3*t-*"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
       - uses: actions/upload-artifact@v5
