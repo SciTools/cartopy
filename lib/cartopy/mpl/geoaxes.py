@@ -1293,7 +1293,21 @@ class GeoAxes(matplotlib.axes.Axes):
                 raise ValueError('Expected a projection subclass. Cannot '
                                  f'handle a {type(transform)} in imshow.')
 
-            target_extent = self.get_extent(self.projection)
+            # |target_extent| is the area the image will cover in
+            # target projection coordinates. This affects the
+            # resolution of the rescaled image.
+            if extent is None:
+                # This assumes it will cover the current visible area.
+                target_extent = self.get_extent(self.projection)
+            else:
+                box = sgeom.box(extent[0], extent[2], extent[1], extent[3])
+                target_geometry = transform.project_geometry(box,
+                                                             self.projection)
+                target_extent = (target_geometry.bounds[0],
+                                 target_geometry.bounds[2],
+                                 target_geometry.bounds[1],
+                                 target_geometry.bounds[3])
+
             regrid_shape = kwargs.pop('regrid_shape', 750)
             regrid_shape = self._regrid_shape_aspect(regrid_shape,
                                                      target_extent)
