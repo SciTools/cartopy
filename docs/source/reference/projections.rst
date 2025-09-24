@@ -520,6 +520,38 @@ Spilhaus
     ax.gridlines()
 
 
+HEALPix
+-------
+
+.. autoclass:: cartopy.crs.HEALPix
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(6, 3))
+    ax = plt.axes(projection=ccrs.HEALPix())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
+RHEALPix
+--------
+
+.. autoclass:: cartopy.crs.RHEALPix
+
+.. plot::
+
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+
+    plt.figure(figsize=(4, 3))
+    ax = plt.axes(projection=ccrs.RHEALPix())
+    ax.coastlines(resolution='110m')
+    ax.gridlines()
+
+
 Aitoff
 ------
 
