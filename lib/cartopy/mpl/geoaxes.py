@@ -2260,7 +2260,7 @@ class GeoAxes(matplotlib.axes.Axes):
         from cartopy.io.ogc_clients import WMTSRasterSource
         wmts = WMTSRasterSource(wmts, layer_name,
                                 max_tm_identifier=max_tm_identifier,
-                                gettile_extra_kwargs=wmts_kwargs, 
+                                gettile_extra_kwargs=wmts_kwargs,
                                 cache=cache)
 
         return self.add_raster(wmts, **kwargs)
