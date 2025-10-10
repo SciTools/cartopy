@@ -121,6 +121,7 @@ class Globe:
             ['rf', self.inverse_flattening],
             ['towgs84', self.towgs84],
             ['nadgrids', self.nadgrids]
+            
         )
         return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
@@ -154,10 +155,12 @@ class CRS(_CRS):
         self.input = (proj4_params, globe)
 
         # for compatibility with pyproj.CRS and rasterio.crs.CRS
+        print(proj4_params)
         try:
             proj4_params = proj4_params.to_wkt()
         except AttributeError:
             pass
+        print(proj4_params)
         # handle PROJ JSON
         if (
             isinstance(proj4_params, dict) and
@@ -199,7 +202,8 @@ class CRS(_CRS):
                         init_items.append(f'+{k}={v}')
                 else:
                     init_items.append(f'+{k}')
-            self.proj4_init = ' '.join(init_items) + ' +no_defs'
+            # The addition of +over here doesn't seem to be necessary, why?
+            self.proj4_init = ' '.join(init_items) + ' +over +no_defs'
         super().__init__(self.proj4_init)
 
     def __eq__(self, other):
@@ -419,8 +423,95 @@ class CRS(_CRS):
                     self.is_geodetic()):
                 # convert from [0,360] to [-180,180]
                 x = np.array(x, copy=True)
-                to_180 = (x > 180) | (x < -180)
-                x[to_180] = (((x[to_180] + 180) % 360) - 180)
+                # to_180 = (x > 180) | (x < -180)
+                # x[to_180] = (((x[to_180] + 180) % 360) - 180)
+            try:
+                result[:, 0], result[:, 1], result[:, 2] = \
+                    _safe_pj_transform(src_crs, self, x, y, z, trap=trap)
+            except ProjError as err:
+                msg = str(err).lower()
+                if (
+                    "latitude" in msg or
+                    "longitude" in msg or
+                    "outside of projection domain" in msg or
+                    "tolerance condition error" in msg
+                ):
+                    result[:] = np.nan
+                else:
+                    raise
+
+            if not trap:
+                result[np.isinf(result)] = np.nan
+
+        if len(result_shape) > 2:
+            return result.reshape(result_shape)
+
+        return result
+
+    def transform_points_m(self, src_crs, x, y, z=None, trap=False):
+        """
+        transform_points(src_crs, x, y[, z])
+
+        Transform the given coordinates, in the given source
+        coordinate system (``src_crs``), to this coordinate system.
+
+        Parameters
+        ----------
+        src_crs
+            instance of :class:`CRS` that represents the
+            coordinate system of ``x``, ``y`` and ``z``.
+        x
+            the x coordinates (array), in ``src_crs`` coordinates,
+            to transform.  May be 1 or 2 dimensional.
+        y
+            the y coordinates (array), in ``src_crs`` coordinates,
+            to transform.  Its shape must match that of x.
+        z: optional
+            the z coordinates (array), in ``src_crs`` coordinates, to
+            transform.  Defaults to None.
+            If supplied, its shape must match that of x.
+        trap
+            Whether proj errors for "latitude or longitude exceeded limits" and
+            "tolerance condition error" should be trapped.
+
+        Returns
+        -------
+            Array of shape ``x.shape + (3, )`` in this coordinate system.
+
+        """
+        result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
+
+        if z is None:
+            if x.ndim > 2 or y.ndim > 2:
+                raise ValueError('x and y arrays must be 1 or 2 dimensional')
+            elif x.ndim != 1 or y.ndim != 1:
+                x, y = x.flatten(), y.flatten()
+
+            if x.shape[0] != y.shape[0]:
+                raise ValueError('x and y arrays must have the same length')
+        else:
+            if x.ndim > 2 or y.ndim > 2 or z.ndim > 2:
+                raise ValueError('x, y and z arrays must be 1 or 2 '
+                                 'dimensional')
+            elif x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
+                x, y, z = x.flatten(), y.flatten(), z.flatten()
+
+            if not x.shape[0] == y.shape[0] == z.shape[0]:
+                raise ValueError('x, y, and z arrays must have the same '
+                                 'length')
+
+        npts = x.shape[0]
+
+        result = np.empty([npts, 3], dtype=np.double)
+        if npts:
+            if self == src_crs and (
+                    isinstance(src_crs, _CylindricalProjection) or
+                    self.is_geodetic()):
+                # don't convert from [0,360] to [-180,180] /maltron
+                # What is the copy for, isn't x already an np.array? /maltron
+                x = np.array(x, copy=True)
+                # to_180 = (x > 180) | (x < -180)
+                # x[to_180] = (((x[to_180] + 180) % 360) - 180)
             try:
                 result[:, 0], result[:, 1], result[:, 2] = \
                     _safe_pj_transform(src_crs, self, x, y, z, trap=trap)
@@ -1346,6 +1437,96 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
     coords += ([easting], [northing])
     return coords
 
+class maltron(_CylindricalProjection):
+    def __init__(self, central_longitude=0.0, globe=None):
+        globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
+        proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude),
+                        ('to_meter', math.radians(1) * (
+                            globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
+                        ('vto_meter', 1)]
+        x_max = 480
+        y_max = 90
+        # Set the threshold around 0.5 if the x max is 180.
+        self.threshold = x_max / 360
+        super().__init__(proj4_params, x_max, y_max, globe=globe)
+
+    def _bbox_and_offset(self, other_plate_carree):
+        """
+        Return a pair of (xmin, xmax) pairs and an offset which can be used
+        for identification of whether data in ``other_plate_carree`` needs
+        to be transformed to wrap appropriately.
+
+        >>> import cartopy.crs as ccrs
+        >>> src = ccrs.PlateCarree(central_longitude=10)
+        >>> bboxes, offset = ccrs.PlateCarree()._bbox_and_offset(src)
+        >>> print(bboxes)
+        [[-180, -170.0], [-170.0, 180]]
+        >>> print(offset)
+        10.0
+
+        The returned values are longitudes in ``other_plate_carree``'s
+        coordinate system.
+
+        Warning
+        -------
+            The two CRSs must be identical in every way, other than their
+            central longitudes. No checking of this is done.
+
+        """
+        self_lon_0 = self.proj4_params['lon_0']
+        other_lon_0 = other_plate_carree.proj4_params['lon_0']
+
+        lon_0_offset = other_lon_0 - self_lon_0
+
+        lon_lower_bound_0 = self.x_limits[0]
+        lon_lower_bound_1 = (other_plate_carree.x_limits[0] + lon_0_offset)
+
+        if lon_lower_bound_1 < self.x_limits[0]:
+            lon_lower_bound_1 += np.diff(self.x_limits)[0]
+
+        lon_lower_bound_0, lon_lower_bound_1 = sorted(
+            [lon_lower_bound_0, lon_lower_bound_1])
+
+        bbox = [[lon_lower_bound_0, lon_lower_bound_1],
+                [lon_lower_bound_1, lon_lower_bound_0]]
+
+        bbox[1][1] += self.x_limits[1] - self.x_limits[0]
+
+        return bbox, lon_0_offset
+
+    def quick_vertices_transform(self, vertices, src_crs):
+        return_value = super().quick_vertices_transform(vertices, src_crs)
+
+        # Optimise the PlateCarree -> PlateCarree case where no
+        # wrapping or interpolation needs to take place.
+        if return_value is None and isinstance(src_crs, PlateCarree):
+            self_params = self.proj4_params.copy()
+            src_params = src_crs.proj4_params.copy()
+            self_params.pop('lon_0'), src_params.pop('lon_0')
+
+            xs, ys = vertices[:, 0], vertices[:, 1]
+
+            potential = (self_params == src_params and
+                         self.y_limits[0] <= ys.min() and
+                         self.y_limits[1] >= ys.max())
+            if potential:
+                mod = np.diff(src_crs.x_limits)[0]
+                bboxes, proj_offset = self._bbox_and_offset(src_crs)
+                x_lim = xs.min(), xs.max()
+                for poly in bboxes:
+                    # Arbitrarily choose the number of moduli to look
+                    # above and below the -180->180 range. If data is beyond
+                    # this range, we're not going to transform it quickly.
+                    for i in [-1, 0, 1, 2]:
+                        offset = mod * i - proj_offset
+                        if ((poly[0] + offset) <= x_lim[0] and
+                                (poly[1] + offset) >= x_lim[1]):
+                            return_value = vertices + [[-offset, 0]]
+                            break
+                    if return_value is not None:
+                        break
+
+        return return_value
 
 class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0, globe=None):
