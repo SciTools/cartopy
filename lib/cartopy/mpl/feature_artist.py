@@ -189,40 +189,42 @@ class FeatureArtist(matplotlib.collections.Collection):
             # The geom-key is also used to access the WeakKeyDictionary
             # cache of transformed geometries. So when the geom-key is
             # garbage collected so are the transformed geometries.
-            # breakpoint()
             geom_key = _GeomKey(geom)
-            # Create a translated geom to go beyond 360 degrees /maltron
-            geom2 = saffinity.translate(geom, xoff=360, yoff=0)
-            geom_key2 = _GeomKey(geom2)
-            # FeatureArtist._geom_key_to_geometry_cache.setdefault(
-            #     geom_key, geom)
-            # FeatureArtist._geom_key_to_geometry_cache.setdefault(
-            #     geom_key2, geom2)
+            FeatureArtist._geom_key_to_geometry_cache.setdefault(
+                geom_key, geom)
             mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
                 geom_key, {})
-            mapping2 = FeatureArtist._geom_key_to_path_cache.setdefault(
-                geom_key2, {})
 
             geom_path = mapping.get(key)
-            geom_path2 = mapping2.get(key)
-            #breakpoint()
+
             if geom_path is None:
                 if ax.projection != feature_crs:
                     projected_geom = ax.projection.project_geometry(
                         geom, feature_crs)
+                else:
+                    projected_geom = geom
+                geom_path = cpath.shapely_to_path(projected_geom)
+                mapping[key] = geom_path
+            yield geom, geom_path
+
+            # Create a translated geom to go beyond 360 degrees /maltron
+            geom2 = saffinity.translate(geom, xoff=360, yoff=0)
+            geom_key2 = _GeomKey(geom2)
+            FeatureArtist._geom_key_to_geometry_cache.setdefault(
+                geom_key2, geom2)
+            mapping2 = FeatureArtist._geom_key_to_path_cache.setdefault(
+                geom_key2, {})
+
+            geom_path2 = mapping2.get(key)
+
+            if geom_path2 is None:
+                if ax.projection != feature_crs:
                     projected_geom2 = ax.projection.project_geometry(
                         geom2, feature_crs)
                 else:
-                    projected_geom = geom
                     projected_geom2 = geom2
-
-                geom_path = cpath.shapely_to_path(projected_geom)
-                mapping[key] = geom_path
                 geom_path2 = cpath.shapely_to_path(projected_geom2)
                 mapping2[key] = geom_path2
-           
-            #breakpoint()
-            yield geom, geom_path
             yield geom2, geom_path2
 
 
@@ -261,7 +263,7 @@ class FeatureArtist(matplotlib.collections.Collection):
             else:
                 style = _freeze(self._styler(geom))
                 stylised_paths.setdefault(style, []).append(geom_path)
-        # breakpoint()
+
         self.set_clip_path(self.axes.patch)
 
         # Draw each style individually.  Note that there will only be multiple
