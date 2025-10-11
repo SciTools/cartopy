@@ -16,7 +16,6 @@ from matplotlib.path import Path
 import numpy as np
 import shapely.geometry as sgeom
 
-
 from cartopy.mpl import _MPL_38
 
 

@@ -448,93 +448,6 @@ class CRS(_CRS):
 
         return result
 
-    def transform_points_m(self, src_crs, x, y, z=None, trap=False):
-        """
-        transform_points(src_crs, x, y[, z])
-
-        Transform the given coordinates, in the given source
-        coordinate system (``src_crs``), to this coordinate system.
-
-        Parameters
-        ----------
-        src_crs
-            instance of :class:`CRS` that represents the
-            coordinate system of ``x``, ``y`` and ``z``.
-        x
-            the x coordinates (array), in ``src_crs`` coordinates,
-            to transform.  May be 1 or 2 dimensional.
-        y
-            the y coordinates (array), in ``src_crs`` coordinates,
-            to transform.  Its shape must match that of x.
-        z: optional
-            the z coordinates (array), in ``src_crs`` coordinates, to
-            transform.  Defaults to None.
-            If supplied, its shape must match that of x.
-        trap
-            Whether proj errors for "latitude or longitude exceeded limits" and
-            "tolerance condition error" should be trapped.
-
-        Returns
-        -------
-            Array of shape ``x.shape + (3, )`` in this coordinate system.
-
-        """
-        result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
-
-        if z is None:
-            if x.ndim > 2 or y.ndim > 2:
-                raise ValueError('x and y arrays must be 1 or 2 dimensional')
-            elif x.ndim != 1 or y.ndim != 1:
-                x, y = x.flatten(), y.flatten()
-
-            if x.shape[0] != y.shape[0]:
-                raise ValueError('x and y arrays must have the same length')
-        else:
-            if x.ndim > 2 or y.ndim > 2 or z.ndim > 2:
-                raise ValueError('x, y and z arrays must be 1 or 2 '
-                                 'dimensional')
-            elif x.ndim != 1 or y.ndim != 1 or z.ndim != 1:
-                x, y, z = x.flatten(), y.flatten(), z.flatten()
-
-            if not x.shape[0] == y.shape[0] == z.shape[0]:
-                raise ValueError('x, y, and z arrays must have the same '
-                                 'length')
-
-        npts = x.shape[0]
-
-        result = np.empty([npts, 3], dtype=np.double)
-        if npts:
-            if self == src_crs and (
-                    isinstance(src_crs, _CylindricalProjection) or
-                    self.is_geodetic()):
-                # don't convert from [0,360] to [-180,180] /maltron
-                # What is the copy for, isn't x already an np.array? /maltron
-                x = np.array(x, copy=True)
-                # to_180 = (x > 180) | (x < -180)
-                # x[to_180] = (((x[to_180] + 180) % 360) - 180)
-            try:
-                result[:, 0], result[:, 1], result[:, 2] = \
-                    _safe_pj_transform(src_crs, self, x, y, z, trap=trap)
-            except ProjError as err:
-                msg = str(err).lower()
-                if (
-                    "latitude" in msg or
-                    "longitude" in msg or
-                    "outside of projection domain" in msg or
-                    "tolerance condition error" in msg
-                ):
-                    result[:] = np.nan
-                else:
-                    raise
-
-            if not trap:
-                result[np.isinf(result)] = np.nan
-
-        if len(result_shape) > 2:
-            return result.reshape(result_shape)
-
-        return result
-
     def transform_vectors(self, src_proj, x, y, u, v):
         """
         transform_vectors(src_proj, x, y, u, v)
@@ -1450,11 +1363,6 @@ class PlateCarree(_CylindricalProjection):
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
         self.threshold = x_max / 360
-
-        # x_max = 180
-        # y_max = 90
-        # # Set the threshold around 0.5 if the x max is 180.
-        # self.threshold = x_max / 360
         super().__init__(proj4_params, x_max, y_max, globe=globe)
 
     def _bbox_and_offset(self, other_plate_carree):
