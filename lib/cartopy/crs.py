@@ -121,7 +121,6 @@ class Globe:
             ['rf', self.inverse_flattening],
             ['towgs84', self.towgs84],
             ['nadgrids', self.nadgrids]
-            
         )
         return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
@@ -136,7 +135,7 @@ class CRS(_CRS):
     #: Whether this projection can handle ellipses.
     _handles_ellipses = True
 
-    def __init__(self, proj4_params, globe=None):
+    def __init__(self, proj4_params, globe=None, over=False):
         """
         Parameters
         ----------
@@ -152,15 +151,16 @@ class CRS(_CRS):
             See :class:`~cartopy.crs.Globe` for details.
 
         """
+        if over is True:
+            proj4_params.append(("over", None))
+
         self.input = (proj4_params, globe)
 
         # for compatibility with pyproj.CRS and rasterio.crs.CRS
-        print(proj4_params)
         try:
             proj4_params = proj4_params.to_wkt()
         except AttributeError:
             pass
-        print(proj4_params)
         # handle PROJ JSON
         if (
             isinstance(proj4_params, dict) and
@@ -203,7 +203,7 @@ class CRS(_CRS):
                 else:
                     init_items.append(f'+{k}')
             # The addition of +over here doesn't seem to be necessary, why?
-            self.proj4_init = ' '.join(init_items) + ' +over +no_defs'
+            self.proj4_init = ' '.join(init_items) + ' +no_defs'
         super().__init__(self.proj4_init)
 
     def __eq__(self, other):
@@ -1310,10 +1310,10 @@ class _RectangularProjection(Projection, metaclass=ABCMeta):
     """
     _wrappable = True
 
-    def __init__(self, proj4_params, half_width, half_height, globe=None):
+    def __init__(self, proj4_params, half_width, half_height, globe=None, over=False):
         self._half_width = half_width
         self._half_height = half_height
-        super().__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe, over=over)
 
     @property
     def boundary(self):
@@ -1353,7 +1353,7 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 
 
 class PlateCarree(_CylindricalProjection):
-    def __init__(self, central_longitude=0.0, globe=None):
+    def __init__(self, central_longitude=0.0, globe=None, over=False):
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude),
                         ('to_meter', math.radians(1) * (
@@ -1363,7 +1363,7 @@ class PlateCarree(_CylindricalProjection):
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
         self.threshold = x_max / 360
-        super().__init__(proj4_params, x_max, y_max, globe=globe)
+        super().__init__(proj4_params, x_max, y_max, globe=globe, over=over)
 
     def _bbox_and_offset(self, other_plate_carree):
         """
