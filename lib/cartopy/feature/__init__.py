@@ -258,7 +258,8 @@ class NaturalEarthFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        super().__init__(cartopy.crs.PlateCarree(), **kwargs)
+        # Set over to True for all cases /maltron
+        super().__init__(cartopy.crs.PlateCarree(over=True), **kwargs) 
         self.category = category
         self.name = name
 

@@ -151,9 +151,14 @@ class CRS(_CRS):
             See :class:`~cartopy.crs.Globe` for details.
 
         """
-        if over is True:
-            proj4_params.append(("over", None))
 
+        if over is True:
+            if isinstance(proj4_params, list):
+                proj4_params.append(("over", None))
+            elif isinstance(proj4_params, str):
+                proj4_params+" +over"
+            else:
+                print("Error: proj4_params neither str nor list")
         self.input = (proj4_params, globe)
 
         # for compatibility with pyproj.CRS and rasterio.crs.CRS
