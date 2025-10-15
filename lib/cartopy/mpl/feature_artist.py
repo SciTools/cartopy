@@ -183,19 +183,26 @@ class FeatureArtist(matplotlib.collections.Collection):
             geoms = feature.geometries()
             extent_geom = sgeom.box(extent[0], extent[2],
                                     extent[1], extent[3])
-            # I've used a generator here, but it may be better to redo
-            # this where the saffinity.translate() method is only run once.
+            # I've used a generator here, but it would be better to rewrite
+            # this so the saffinity.translate() method is only run once.
             return (saffinity.translate(geom, xoff=xoffset, yoff=0)
                     for geom in geoms
-                    if extent_geom.intersects(saffinity.translate(geom, xoff=xoffset, yoff=0)))
+                    if extent_geom.intersects(
+                            saffinity.translate(geom, xoff=xoffset, yoff=0)
+                    )
+            )
 
         if extent[1]-extent[0] > 360:
             if extent[0] < -180:
-                geoms_left = extend_geoms(self._feature, extent, xoffset=-360)
-                geoms = chain.from_iterable([geoms_left, geoms])
+                for offset in np.arange(-360, extent[0]-360, -360):
+                    geoms_left = extend_geoms(self._feature, extent, xoffset=offset)
+                    geoms = chain.from_iterable([geoms_left, geoms])
+                    
             if extent[1] > 180:
-                geoms_right = extend_geoms(self._feature, extent, xoffset=360)
-                geoms = chain.from_iterable([geoms, geoms_right])
+                for offset in np.arange(360, extent[1]+360, 360):
+                    geoms_right = extend_geoms(self._feature, extent, xoffset=offset)
+                    geoms = chain.from_iterable([geoms, geoms_right])
+
 
         # Project (if necessary) and convert geometries to matplotlib paths.
         key = ax.projection

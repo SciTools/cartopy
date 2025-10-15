@@ -1364,7 +1364,7 @@ class PlateCarree(_CylindricalProjection):
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
                         ('vto_meter', 1)]
-        x_max = 480
+        x_max = 572.95 # Maximum allowed value in pyproj
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
         self.threshold = x_max / 360
