@@ -582,7 +582,7 @@ class Geodetic(CRS):
 
     """
 
-    def __init__(self, globe=None):
+    def __init__(self, globe=None, over=False):
         """
         Parameters
         ----------
@@ -592,7 +592,7 @@ class Geodetic(CRS):
         """
         proj4_params = [('proj', 'lonlat')]
         globe = globe or Globe(datum='WGS84')
-        super().__init__(proj4_params, globe)
+        super().__init__(proj4_params, globe, over=over)
 
     # XXX Implement fwd such as Basemap's Geod.
     # Would be used in the tissot example.
@@ -708,7 +708,7 @@ class Projection(CRS, metaclass=ABCMeta):
         elif self.is_geographic:
             # If the projection is geographic without an area of use, assume
             # the bounds are the full globe.
-            # self.bounds = (-180, 360, -90, 90) # necessary? not tried yet /maltron
+            #self.bounds = (-572.95, 360, -90, 90) # necessary? not tried yet /maltron
             self.bounds = (-180, 180, -90, 90)
 
     @property
@@ -1364,7 +1364,8 @@ class PlateCarree(_CylindricalProjection):
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
                         ('vto_meter', 1)]
-        x_max = 572.95 # Maximum allowed value in pyproj
+        # x_max = 572.95 # Maximum allowed value in pyproj
+        x_max = 539 # Maximum which works with tissot()
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
         self.threshold = x_max / 360
