@@ -34,6 +34,8 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
+import shapely.affinity as saffinity
+from itertools import chain
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -608,12 +610,72 @@ class GeoAxes(matplotlib.axes.Axes):
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
         feature = cartopy.feature.COASTLINE
-
         # The coastline feature is automatically scaled by default, but for
         # anything else, including custom scaler instances, create a new
         # feature which derives from the default one.
         if resolution != 'auto':
             feature = feature.with_scale(resolution)
+
+        return self.add_feature(feature, **kwargs)
+
+    def coastlines_ext(self, resolution='auto', color='black', **kwargs):
+        """
+        Add coastal **outlines** to the current axes from the Natural Earth
+        "coastline" shapefile collection.
+
+        Parameters
+        ----------
+        resolution : str or :class:`cartopy.feature.Scaler`, optional
+            A named resolution to use from the Natural Earth
+            dataset. Currently can be one of "auto" (default), "110m", "50m",
+            and "10m", or a Scaler object.  If "auto" is selected, the
+            resolution is defined by `~cartopy.feature.auto_scaler`.
+
+        """
+        kwargs['edgecolor'] = color
+        kwargs['facecolor'] = 'none'
+        feature = cartopy.feature.COASTLINE
+        # The coastline feature is automatically scaled by default, but for
+        # anything else, including custom scaler instances, create a new
+        # feature which derives from the default one.
+        if resolution != 'auto':
+            feature = feature.with_scale(resolution)
+
+        extent = self.get_extent()
+        print("GeoAxes", extent)
+        def extend_geoms(feature, extent, xoffset=360):
+            geoms = feature.geometries()
+            extent_geom = sgeom.box(extent[0], extent[2],
+                                    extent[1], extent[3])
+            # I've used a generator here, but it would be better to rewrite
+            # this so the saffinity.translate() method is only run once.
+            new_geoms = []
+            for geom in geoms:
+                geom_ext = saffinity.translate(geom, xoff=xoffset, yoff=0)
+                if extent_geom.intersects(geom_ext):
+                    new_geoms.append(geom_ext)
+            return new_geoms
+
+        geoms_left = []
+        geoms_right = []
+        if extent[1]-extent[0] > 360:
+            if extent[0] < -180:
+                for offset in np.arange(-360, extent[0]-360, -360):
+                    geoms_left += extend_geoms(feature, extent, xoffset=offset)
+
+            if extent[1] > 180:
+                for offset in np.arange(360, extent[1]+360, 360):
+                    geoms_right += extend_geoms(feature, extent, xoffset=offset)
+
+        geoms = []
+        for geom in feature.geometries():
+            geoms.append(geom)
+
+        def return_gen():
+            for geom in iter(geoms_left + geoms + geoms_right):
+                yield geom
+
+        feature.geometries = return_gen
 
         return self.add_feature(feature, **kwargs)
 
@@ -668,6 +730,76 @@ class GeoAxes(matplotlib.axes.Axes):
             geoms.append(sgeom.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
+                                                 **kwargs)
+        return self.add_feature(feature)
+
+    def tissot_ext(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
+        """
+        Add Tissot's indicatrices to the axes.
+
+        Parameters
+        ----------
+        rad_km
+            The radius in km of the circles to be drawn.
+        lons
+            A numpy.ndarray, list or tuple of longitude values that
+            locate the centre of each circle. Specifying more than one
+            dimension allows individual points to be drawn whereas a
+            1D array produces a grid of points.
+        lats
+            A numpy.ndarray, list or tuple of latitude values that
+            that locate the centre of each circle. See lons.
+        n_samples
+            Integer number of points sampled around the circumference of
+            each circle.
+
+
+        ``**kwargs`` are passed through to
+        :class:`cartopy.feature.ShapelyFeature`.
+
+        """
+        from cartopy import geodesic
+
+        geod = geodesic.Geodesic()
+        geoms = []
+
+        if lons is None:
+            lons = np.linspace(-180, 180, 6, endpoint=False)
+        else:
+            lons = np.asarray(lons)
+        if lats is None:
+            lats = np.linspace(-80, 80, 6)
+        else:
+            lats = np.asarray(lats)
+
+        if lons.ndim == 1 or lats.ndim == 1:
+            lons, lats = np.meshgrid(lons, lats)
+        lons, lats = lons.flatten(), lats.flatten()
+
+        if lons.shape != lats.shape:
+            raise ValueError('lons and lats must have the same shape.')
+
+        for lon, lat in zip(lons, lats):
+            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
+            # shift circle to where it should be
+            centre = circle[0,0]
+            circle[:,0] = circle[:,0] + lon - centre
+            # Does circle cross from -180 to 180?
+            zerocircle = geod.circle(0, lat, rad_km * 1e3, n_samples=n_samples)
+            zerocircle[:,0] = zerocircle[:,0] - 180
+            circlediff = circle - zerocircle
+
+            if circlediff.max() == 360:
+                # If so then correct it
+                sign = np.sign(lon)
+                same_sign = np.sign(circle[:,0]) == sign
+                for ind, element in enumerate(same_sign):
+                    if element == False:
+                        circle[ind,0] += sign*360
+
+            geoms.append(sgeom.Polygon(circle))
+
+        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.PlateCarree(over=True),
                                                  **kwargs)
         return self.add_feature(feature)
 
