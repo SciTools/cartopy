@@ -20,10 +20,6 @@ import cartopy.feature as cfeature
 from cartopy.mpl import _MPL_38
 import cartopy.mpl.path as cpath
 
-import shapely.affinity as saffinity
-import shapely.geometry as sgeom
-
-from itertools import chain
 
 class _GeomKey:
     """
@@ -165,7 +161,6 @@ class FeatureArtist(matplotlib.collections.Collection):
         except ValueError:
             warnings.warn('Unable to determine extent. Defaulting to global.')
 
-        print(extent)
         if isinstance(self._feature, cfeature.ShapelyFeature):
             # User passed a specific list of geometries.  If they also passed
             # `array` or a list of facecolors then we should keep the colours
@@ -177,32 +172,6 @@ class FeatureArtist(matplotlib.collections.Collection):
             # from Natural Earth), only create paths for geometries that are
             # in view.
             geoms = self._feature.intersecting_geometries(extent)
-
-        # Extend geometries beyond [-180, +180] if necessary /maltron
-        def extend_geoms(feature, extent, xoffset=360):
-            geoms = feature.geometries()
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
-            # I've used a generator here, but it would be better to rewrite
-            # this so the saffinity.translate() method is only run once.
-            return (saffinity.translate(geom, xoff=xoffset, yoff=0)
-                    for geom in geoms
-                    if extent_geom.intersects(
-                            saffinity.translate(geom, xoff=xoffset, yoff=0)
-                    )
-            )
-
-        if extent[1]-extent[0] > 360:
-            if extent[0] < -180:
-                for offset in np.arange(-360, extent[0]-360, -360):
-                    geoms_left = extend_geoms(self._feature, extent, xoffset=offset)
-                    geoms = chain.from_iterable([geoms_left, geoms])
-                    
-            if extent[1] > 180:
-                for offset in np.arange(360, extent[1]+360, 360):
-                    geoms_right = extend_geoms(self._feature, extent, xoffset=offset)
-                    geoms = chain.from_iterable([geoms, geoms_right])
-
 
         # Project (if necessary) and convert geometries to matplotlib paths.
         key = ax.projection
@@ -235,7 +204,6 @@ class FeatureArtist(matplotlib.collections.Collection):
                 mapping[key] = geom_path
 
             yield geom, geom_path
-
 
     def get_paths(self):
         paths = super().get_paths()
