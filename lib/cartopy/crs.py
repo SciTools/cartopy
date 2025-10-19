@@ -152,6 +152,7 @@ class CRS(_CRS):
 
         """
 
+        self.over = over
         if over is True:
             if isinstance(proj4_params, list):
                 proj4_params.append(("over", None))
@@ -207,7 +208,6 @@ class CRS(_CRS):
                         init_items.append(f'+{k}={v}')
                 else:
                     init_items.append(f'+{k}')
-            # The addition of +over here doesn't seem to be necessary, why?
             self.proj4_init = ' '.join(init_items) + ' +no_defs'
         super().__init__(self.proj4_init)
 
@@ -428,8 +428,9 @@ class CRS(_CRS):
                     self.is_geodetic()):
                 # convert from [0,360] to [-180,180]
                 x = np.array(x, copy=True)
-                # to_180 = (x > 180) | (x < -180)
-                # x[to_180] = (((x[to_180] + 180) % 360) - 180)
+                if self.over is False:
+                    to_180 = (x > 180) | (x < -180)
+                    x[to_180] = (((x[to_180] + 180) % 360) - 180)
             try:
                 result[:, 0], result[:, 1], result[:, 2] = \
                     _safe_pj_transform(src_crs, self, x, y, z, trap=trap)
@@ -1364,11 +1365,13 @@ class PlateCarree(_CylindricalProjection):
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
                         ('vto_meter', 1)]
-        # x_max = 572.95 # Maximum allowed value in pyproj
-        x_max = 539 # Maximum which works with tissot()
+        if over is True:
+            x_max = 572.95 # Maximum allowed value in pyproj with +over
+        else:
+            x_max = 180
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
-        self.threshold = x_max / 360
+        self.threshold = 0.5
         super().__init__(proj4_params, x_max, y_max, globe=globe, over=over)
 
     def _bbox_and_offset(self, other_plate_carree):
