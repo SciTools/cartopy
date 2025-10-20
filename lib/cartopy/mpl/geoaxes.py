@@ -1137,6 +1137,14 @@ class GeoAxes(matplotlib.axes.Axes):
             extent is used.
 
         """
+        over = False
+        try:
+            lonmin, lonmax, latmin, latmax = extent
+            if lonmax - lonmin > 360:
+                over = True
+        except Exception:
+            pass
+
         # read in the user's background image directory:
         if len(_USER_BG_IMGS) == 0:
             self.read_user_background_images()
@@ -1168,7 +1176,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # now get the projection from the metadata:
         if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
             # currently only PlateCarree is defined:
-            source_proj = ccrs.PlateCarree()
+            source_proj = ccrs.PlateCarree(over=over)
         else:
             raise NotImplementedError('Background image projection undefined')
 
@@ -1177,6 +1185,9 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(img, origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90])
+        #if lonmax - lonmin > 360:
+            # extend image beyond 360 degrees
+
         else:
             # return only a subset of the image:
             # set up coordinate arrays:
