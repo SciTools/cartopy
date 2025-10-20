@@ -634,48 +634,18 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
-        feature = cartopy.feature.COASTLINE
+
+        extent = self.get_extent()
+        feature = cartopy.feature.NaturalEarthFeature_ext(
+            'physical', 'coastline', cartopy.feature.auto_scaler, extent=extent,
+            edgecolor='black', facecolor='never')
+        """Automatically scaled coastline, including major islands."""
+
         # The coastline feature is automatically scaled by default, but for
         # anything else, including custom scaler instances, create a new
         # feature which derives from the default one.
         if resolution != 'auto':
             feature = feature.with_scale(resolution)
-
-        extent = self.get_extent()
-        print("GeoAxes", extent)
-        def extend_geoms(feature, extent, xoffset=360):
-            geoms = feature.geometries()
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
-            # I've used a generator here, but it would be better to rewrite
-            # this so the saffinity.translate() method is only run once.
-            new_geoms = []
-            for geom in geoms:
-                geom_ext = saffinity.translate(geom, xoff=xoffset, yoff=0)
-                if extent_geom.intersects(geom_ext):
-                    new_geoms.append(geom_ext)
-            return new_geoms
-
-        geoms_left = []
-        geoms_right = []
-        if extent[1]-extent[0] > 360:
-            if extent[0] < -180:
-                for offset in np.arange(-360, extent[0]-360, -360):
-                    geoms_left += extend_geoms(feature, extent, xoffset=offset)
-
-            if extent[1] > 180:
-                for offset in np.arange(360, extent[1]+360, 360):
-                    geoms_right += extend_geoms(feature, extent, xoffset=offset)
-
-        geoms = []
-        for geom in feature.geometries():
-            geoms.append(geom)
-
-        def return_gen():
-            for geom in iter(geoms_left + geoms + geoms_right):
-                yield geom
-
-        feature.geometries = return_gen
 
         return self.add_feature(feature, **kwargs)
 

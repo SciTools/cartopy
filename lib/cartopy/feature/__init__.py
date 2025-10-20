@@ -18,6 +18,8 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import shapely.geometry as sgeom
+import shapely.affinity as saffinity
+from itertools import chain
 
 import cartopy.crs
 import cartopy.io.shapereader as shapereader
@@ -258,8 +260,7 @@ class NaturalEarthFeature(Feature):
             Keyword arguments to be used when drawing this feature.
 
         """
-        # Set over to True for all cases /maltron
-        super().__init__(cartopy.crs.PlateCarree(over=True), **kwargs) 
+        super().__init__(cartopy.crs.PlateCarree(), **kwargs) 
         self.category = category
         self.name = name
 
@@ -282,11 +283,12 @@ class NaturalEarthFeature(Feature):
                 'Valid scales are "110m", "50m", and "10m".'
             )
 
-    def geometries(self):
+    def geometries(self, extent):
         """
         Returns an iterator of (shapely) geometries for this feature.
 
         """
+
         key = (self.name, self.category, self.scale)
         if key not in _NATURAL_EARTH_GEOM_CACHE:
             path = shapereader.natural_earth(resolution=self.scale,
@@ -327,7 +329,87 @@ class NaturalEarthFeature(Feature):
         return NaturalEarthFeature(self.category, self.name, new_scale,
                                    **self.kwargs)
 
+class NaturalEarthFeature_ext(NaturalEarthFeature):
+    def __init__(self, category, name, scale, extent=None, **kwargs):
+        """
+        Parameters
+        ----------
+        category
+            The category of the dataset, i.e. either 'cultural' or 'physical'.
+        name
+            The name of the dataset, e.g. 'admin_0_boundary_lines_land'.
+        scale
+            The dataset scale, i.e. one of '10m', '50m', or '110m',
+            or Scaler object. Dataset scales correspond to 1:10,000,000,
+            1:50,000,000, and 1:110,000,000 respectively.
 
+        Other Parameters
+        ----------------
+        **kwargs
+            Keyword arguments to be used when drawing this feature.
+
+        """
+
+        # Set over to True for all cases /maltron
+        super(NaturalEarthFeature, self).__init__(cartopy.crs.PlateCarree(over=True), **kwargs) 
+        self.category = category
+        self.name = name
+
+        # Cast the given scale to a (constant) Scaler if a string is passed.
+        if isinstance(scale, str):
+            scale = Scaler(scale)
+
+        self.scaler = scale
+        # Make sure this is a valid resolution
+        self._validate_scale()
+        self.extent = extent
+
+    def geometries(self):
+        """
+        Returns an iterator of (shapely) geometries for this feature.
+
+        """
+        key = (self.name, self.category, self.scale)
+        if key not in _NATURAL_EARTH_GEOM_CACHE:
+            path = shapereader.natural_earth(resolution=self.scale,
+                                             category=self.category,
+                                             name=self.name)
+            reader = shapereader.Reader(path)
+            if reader.crs is not None:
+                self._crs = reader.crs
+            geometries = tuple(reader.geometries())
+            _NATURAL_EARTH_GEOM_CACHE[key] = geometries
+        else:
+            geometries = _NATURAL_EARTH_GEOM_CACHE[key]
+
+        if self.extent is not None:
+            if self.extent[1] - self.extent[0] > 360:
+                def extend_geoms(geoms, extent, xoffset=360):
+                    extent_geom = sgeom.box(extent[0], extent[2],
+                                            extent[1], extent[3])
+                    new_geoms = []
+                    for geom in geoms:
+                        geom_ext = saffinity.translate(geom, xoff=xoffset, yoff=0)
+                        if extent_geom.intersects(geom_ext):
+                            new_geoms.append(geom_ext)
+                    return new_geoms
+
+                geoms_left = []
+                geoms_right = []
+                if self.extent[1]-self.extent[0] > 360:
+                    if self.extent[0] < -180:
+                        for offset in np.arange(-360, self.extent[0]-360, -360):
+                            geoms_left += extend_geoms(geometries, self.extent, xoffset=offset)
+
+                    if self.extent[1] > 180:
+                        for offset in np.arange(360, self.extent[1]+360, 360):
+                            geoms_right += extend_geoms(geometries, self.extent, xoffset=offset)
+
+                geometries = tuple(geoms_left) + geometries + tuple(geoms_right)
+
+        return iter(geometries)
+
+    
 class GSHHSFeature(Feature):
     """
     An interface to the GSHHS dataset.
