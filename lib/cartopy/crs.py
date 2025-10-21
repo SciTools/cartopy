@@ -709,8 +709,9 @@ class Projection(CRS, metaclass=ABCMeta):
         elif self.is_geographic:
             # If the projection is geographic without an area of use, assume
             # the bounds are the full globe.
-            #self.bounds = (-572.95, 360, -90, 90) # necessary? not tried yet /maltron
-            self.bounds = (-180, 180, -90, 90)
+            self.bounds = (-572.95, 572.95, -90, 90) # necessary once a feature crs
+                                                     # has been loaded /maltron
+            #self.bounds = (-180, 180, -90, 90)
 
     @property
     def boundary(self):
