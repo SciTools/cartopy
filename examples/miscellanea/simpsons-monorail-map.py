@@ -1,3 +1,21 @@
+"""
+Recreation of the Monorail Map from The Simpsons
+------------------------------------------------
+
+This example demonstrates how to create a minimal outline map of a
+defined area of land such as a continent, with optional labels at
+specified locations within the region, in the form of a recreation of the
+Monorail Map from The Simpsons with humorously oversized labelling (to
+imitate handwriting/scribbles) and sparsity of marked locations
+(which are all fictional).
+
+Specifically, it aims to recreate to best likeness using Cartopy
+the map of pre-Springfield Lyle Lanley Monorail locations from the
+iconic episode 'Marge vs. the Monorail' (1993) of the TV Series, as
+taken in likeness from the screen grab available at:
+https://simpsons.fandom.com/wiki/Brockway.
+
+"""
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
 
@@ -71,7 +89,7 @@ def main():
             loc_coords[1] + rel_text_pos[1],
         )
         # Text in uppercase, very bold handwriting-like font, as per the
-        # screengrab
+        # screen grab of the map from the show
         ax.text(
             *text_loc_coords,
             loc_name.upper(),
