@@ -1,13 +1,8 @@
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
 
-import shapely.geometry as sgeom
-
-import cartopy
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
-import cartopy.feature as cfeature
 
 
 # Define choices for projection and locations to plot
@@ -28,8 +23,7 @@ def main():
     #     intended, need to keep 'figsize' and 'dpi' (4:3 ratio) as below.
     fig, ax = plt.subplots(figsize=(9, 7.5), dpi=125, facecolor="white")
     ax.set_facecolor("#AFCBBD")
-    ax = fig.add_subplot(
-        111, projection=ccrs.LambertConformal(), frameon=False)
+    ax = fig.add_subplot(111, projection=ccrs.LambertConformal(), frameon=False)
     plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])  # no axes or labels
     ax.set_extent([-120, -72.5, 20, 50], crs=ccrs.Geodetic())  # center on USA
 
@@ -39,7 +33,8 @@ def main():
     )
     countries = shpreader.Reader(shpfilename).records()
     usa_border = [
-        country.geometry for country in countries
+        country.geometry
+        for country in countries
         if (country.attributes["NAME"] == "United States of America")
     ]
     ax.add_geometries(
@@ -89,7 +84,6 @@ def main():
             rotation=text_rot,  # slightly wonky text for handwritten effect
         )
 
-
     leg_text = (
         "Pre-Springfield Lanley\nMonorail locations in TV's\nThe Simpsons\n"
         "(recreation of map at\nsimpsons.fandom.com/\nwiki/Brockway)"
@@ -97,9 +91,14 @@ def main():
 
     # Add the 'compass' legend
     ax.text(
-        0.14, 0.10, leg_text, transform=ax.transAxes, fontsize=11,
+        0.14,
+        0.10,
+        leg_text,
+        transform=ax.transAxes,
+        fontsize=11,
         horizontalalignment="center",
-        verticalalignment="center", style="italic",
+        verticalalignment="center",
+        style="italic",
         bbox=dict(facecolor="#A5B5CE"),
     )
 
