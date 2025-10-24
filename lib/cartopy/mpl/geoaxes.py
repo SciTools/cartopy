@@ -1086,14 +1086,38 @@ class GeoAxes(matplotlib.axes.Axes):
         (e.g., alpha) will be passed to :func:`GeoAxes.imshow`.
 
         """
+
+        extent = self.get_extent()
         if name == 'ne_shaded':
-            source_proj = ccrs.PlateCarree()
+            source_proj = ccrs.PlateCarree(over=True)
             fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
                      / '50-natural-earth-1-downsampled.png')
+            image = imread(fname)
 
-            return self.imshow(imread(fname), origin='upper',
+            # Assume image spans 360 degrees
+            factor = image.shape[1]/360
+            negext = extent[0] - -180
+            posext = extent[1] - 180
+
+            new_image = image
+            for offset in np.arange(-360, negext, -360):
+                new_image = np.concatenate(
+                    (image, new_image), axis=1
+                )
+
+            for offset in np.arange(360, posext, 360):
+                new_image = np.concatenate(
+                    (new_image, image), axis=1
+                )
+
+            leftmost = image[:,int(np.mod(negext, -360)*factor):,:]
+            rightmost = image[:,:int(np.mod(posext, 360)*factor),:]
+            new_image = np.concatenate((leftmost, new_image, rightmost),
+                                       axis=1)
+
+            return self.imshow(new_image, origin='upper',
                                transform=source_proj,
-                               extent=[-180, 180, -90, 90],
+                               extent=extent,
                                **kwargs)
         else:
             raise ValueError(f'Unknown stock image {name!r}.')

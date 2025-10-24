@@ -351,7 +351,7 @@ class NaturalEarthFeature_ext(NaturalEarthFeature):
         """
 
         # Set over to True for all cases /maltron
-        super(NaturalEarthFeature, self).__init__(cartopy.crs.PlateCarree(over=True), **kwargs) 
+        super(NaturalEarthFeature, self).__init__(cartopy.crs.PlateCarree(over=True), **kwargs)
         self.category = category
         self.name = name
 
@@ -409,7 +409,6 @@ class NaturalEarthFeature_ext(NaturalEarthFeature):
 
         return iter(geometries)
 
-    
 class GSHHSFeature(Feature):
     """
     An interface to the GSHHS dataset.
