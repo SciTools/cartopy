@@ -66,6 +66,12 @@ def _safe_pj_transform(src_crs, tgt_crs, x, y, z=None, trap=True):
         return transformer.transform(x, y, z, errcheck=trap)
 
 
+def _ensure_tuple(value):
+    if np.isscalar(value):
+        return (value,)
+    return tuple(value)
+
+
 class Globe:
     """
     Define an ellipsoid and, optionally, how to relate it to the real world.
@@ -126,6 +132,9 @@ class Globe:
 
     @classmethod
     def from_cf(cls, **cf_params):
+        if cf_params.get('inverse_flattening') == 0:
+            cf_params['reference_ellipsoid_name'] = 'sphere'
+            cf_params.pop('inverse_flattening', None)
         return cls(
             datum=cf_params.get('horizontal_datum_name'),
             ellipse=cf_params.get('reference_ellipsoid_name', 'WGS84'),
@@ -1525,6 +1534,18 @@ class TransverseMercator(Projection):
     def y_limits(self):
         return (-1e7, 1e7)
 
+    @classmethod
+    def from_cf(cls,  **cf_params):
+        globe = Globe.from_cf(**cf_params)
+        return cls(
+            globe=globe,
+            scale_factor=cf_params['scale_factor_at_central_meridian'],
+            central_longitude=cf_params['longitude_of_central_meridian'],
+            central_latitude=cf_params['latitude_of_projection_origin'],
+            false_easting=cf_params.get('false_easting', 0),
+            false_northing=cf_params.get('false_northing', 0)
+        )
+
 
 class OSGB(TransverseMercator):
     def __init__(self, approx=False):
@@ -1797,7 +1818,7 @@ class LambertCylindrical(_RectangularProjection):
                 'factor different than 1 are not supported in cartopy.'
             )
         return cls(
-            central_longitude=cf_params['longitude_of_projection_origin'],
+            central_longitude=cf_params['longitude_of_central_meridian'],
             globe=globe
         )
 
@@ -1895,8 +1916,8 @@ class LambertConformal(Projection):
     def from_cf(cls, **cf_params):
         globe = Globe.from_cf(**cf_params)
         return cls(
-            standard_parallels=cf_params['standard_parallel'],
-            central_longitude=cf_params['longitude_of_projection_origin'],
+            standard_parallels=_ensure_tuple(cf_params['standard_parallel']),
+            central_longitude=cf_params['longitude_of_central_meridian'],
             central_latitude=cf_params['latitude_of_projection_origin'],
             false_easting=cf_params.get('false_easting', 0),
             false_northing=cf_params.get('false_northing', 0),
@@ -3111,7 +3132,7 @@ class AlbersEqualArea(Projection):
     def from_cf(cls, **cf_params):
         globe = Globe.from_cf(**cf_params)
         return cls(
-            standard_parallels=cf_params['standard_parallels'],
+            standard_parallels=_ensure_tuple(cf_params['standard_parallel']),
             central_longitude=cf_params['longitude_of_central_meridian'],
             central_latitude=cf_params['latitude_of_projection_origin'],
             false_easting=cf_params.get('false_easting', 0),
@@ -3564,7 +3585,7 @@ _cf_mapping = {
     'rotated_latitude_longitude': RotatedPole,
     'sinusoidal': Sinusoidal,
     'stereographic': Stereographic,
-    'tranverse_mercator': TransverseMercator,
+    'transverse_mercator': TransverseMercator,
     'vertical_perspective': NearsidePerspective
 }
 
