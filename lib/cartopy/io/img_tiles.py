@@ -505,7 +505,8 @@ class MapboxStyleTiles(GoogleWTS):
 
     """
 
-    def __init__(self, access_token, username, map_id, cache=False):
+    def __init__(self, access_token, username, map_id,
+                 desired_tile_form='RGB', cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
 
@@ -523,12 +524,15 @@ class MapboxStyleTiles(GoogleWTS):
             tiles will be retrieved through this process. Note that this style
             may be private and if your access token does not have permissions
             to view this style, then map tile retrieval will fail.
+        desired_tile_form: optional
+            The desired tile format. Use 'RGBA' if desired style includes
+            transparency.
 
         """
         self.access_token = access_token
         self.username = username
         self.map_id = map_id
-        super().__init__(cache=cache)
+        super().__init__(cache=cache, desired_tile_form=desired_tile_form)
 
     def _image_url(self, tile):
         x, y, z = tile

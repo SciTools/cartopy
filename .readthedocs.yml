@@ -1,0 +1,27 @@
+version: 2
+
+build:
+    os: "ubuntu-22.04"
+    tools:
+        python: "mambaforge-23.11"
+    jobs:
+        # Sometimes RTD only fetches a commit and not a tag.
+        # https://github.com/readthedocs/readthedocs.org/issues/10715
+        post_checkout:
+            - git fetch --tags
+        # Avoid a dirty index:
+        # https://docs.readthedocs.com/platform/latest/build-customization.html#avoid-having-a-dirty-git-index
+        pre_install:
+            - git update-index --assume-unchanged environment.yml docs/source/conf.py
+
+conda:
+    environment: environment.yml
+
+sphinx:
+    configuration: docs/source/conf.py
+    fail_on_warning: false
+
+python:
+    install:
+        - method: pip
+          path: .

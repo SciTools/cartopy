@@ -66,7 +66,7 @@ test = ["pytest>=5.1.2", "pytest-mpl>=0.11", "pytest-xdist", "pytest-cov", "cove
 cartopy_feature_download = "cartopy.feature.download.__main__:main"
 
 [project.urls]
-documentation='https://scitools.org.uk/cartopy/docs/latest/'
+documentation='https://cartopy.readthedocs.io/stable/'
 homepage='https://github.com/SciTools/cartopy'
 
 [tool.setuptools.packages.find]
@@ -98,7 +98,10 @@ testpaths = ["lib"]
 python_files = ["test_*.py"]
 
 [tool.ruff]
-lint.select = ["E", "F", "I", "W"]
+lint.select = ["E", "F", "I", "UP", "W"]
+lint.ignore = [
+    "UP038",  # deprecated rule that should be ignored
+]
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true

@@ -120,8 +120,8 @@ class _SRTMSource(RasterSource):
         if int(lon) != lon or int(lat) != lat:
             raise ValueError('Integer longitude/latitude values required.')
 
-        x = '%s%03d' % ('E' if lon >= 0 else 'W', abs(int(lon)))
-        y = '%s%02d' % ('N' if lat >= 0 else 'S', abs(int(lat)))
+        x = f"{'E' if lon >= 0 else 'W'}{abs(int(lon)):03d}"
+        y = f"{'N' if lat >= 0 else 'S'}{abs(int(lat)):02d}"
 
         srtm_downloader = Downloader.from_config(
             ('SRTM', f'SRTM{self._resolution}'))

@@ -37,12 +37,12 @@ jobs:
       SDIST_NAME: ${{ steps.sdist.outputs.SDIST_NAME }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # We need the full history to generate the proper version number
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Install Python
         with:
           python-version: '3.11'
@@ -76,7 +76,7 @@ jobs:
         include:
           - os: ubuntu-latest
             cibw_archs: "x86_64"
-          - os: windows-2019
+          - os: windows-latest
             cibw_archs: "auto64"
           - os: macos-latest
             cibw_archs: "x86_64"
@@ -88,13 +88,13 @@ jobs:
 
     steps:
       - name: Download sdist
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: cibw-sdist
           path: dist
 
       - name: Build wheels for CPython
-        uses: pypa/cibuildwheel@95d2f3a92fbf80abe066b09418bbf128a8923df2 # v3.0.1
+        uses: pypa/cibuildwheel@7c619efba910c04005a835b110b057fc28fd6e93 # v3.2.0
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
         env:
@@ -123,11 +123,11 @@ jobs:
 
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: cibw-*
           path: dist
           merge-multiple: true
 
       - name: Publish Package
-        uses: pypa/gh-action-pypi-publish@v1.12.4
+        uses: pypa/gh-action-pypi-publish@v1.13.0
