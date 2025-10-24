@@ -1730,12 +1730,20 @@ GOOGLE_MERCATOR = Mercator.GOOGLE
 
 
 class LambertCylindrical(_RectangularProjection):
-    def __init__(self, central_longitude=0.0, globe=None):
+    def __init__(self, central_longitude=0.0, globe=None,
+                 latitude_true_scale=0.0):
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'cea'), ('lon_0', central_longitude),
+                        ('lat_ts', latitude_true_scale),
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
-        super().__init__(proj4_params, 180, math.degrees(1), globe=globe)
+        stretch_factor = np.cos(np.deg2rad(latitude_true_scale)) ** 2
+        super().__init__(
+            proj4_params,
+            180 * np.sqrt(stretch_factor),
+            math.degrees(1) / np.sqrt(stretch_factor),
+            globe=globe,
+        )
 
 
 class LambertConformal(Projection):
