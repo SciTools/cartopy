@@ -750,22 +750,12 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError('lons and lats must have the same shape.')
 
         for lon, lat in zip(lons, lats):
-            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
+            # No pretending here, the circle will be the same no matter
+            # the longitude, so create every circle at 180 for convenience.
+            circle = geod.circle(180, lat, rad_km * 1e3, n_samples=n_samples)
+            circle[:,0] = (circle[:,0] % 360) -180 + lon
             # shift circle to where it should be
             centre = circle[0,0]
-            circle[:,0] = circle[:,0] + lon - centre
-            # Does circle cross from -180 to 180?
-            zerocircle = geod.circle(0, lat, rad_km * 1e3, n_samples=n_samples)
-            zerocircle[:,0] = zerocircle[:,0] - 180
-            circlediff = circle - zerocircle
-
-            if circlediff.max() == 360:
-                # If so then correct it
-                sign = np.sign(lon)
-                same_sign = np.sign(circle[:,0]) == sign
-                for ind, element in enumerate(same_sign):
-                    if element == False:
-                        circle[ind,0] += sign*360
 
             geoms.append(sgeom.Polygon(circle))
 
