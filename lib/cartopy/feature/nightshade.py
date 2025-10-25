@@ -14,7 +14,7 @@ from . import ShapelyFeature
 
 class Nightshade(ShapelyFeature):
     def __init__(self, date=None, delta=0.1, refraction=-0.83,
-                 color="k", alpha=0.5, **kwargs):
+                 color="k", alpha=0.5, over=False, **kwargs):
         """
         Shade the darkside of the Earth, accounting for refraction.
 
@@ -58,7 +58,8 @@ class Nightshade(ShapelyFeature):
 
         rotated_pole = ccrs.RotatedPole(pole_latitude=pole_lat,
                                         pole_longitude=pole_lon,
-                                        central_rotated_longitude=central_lon)
+                                        central_rotated_longitude=central_lon,
+                                        over=False)
 
         npts = int(180 / delta)
         x = np.empty(npts * 2)
@@ -94,8 +95,37 @@ class Nightshade(ShapelyFeature):
         kwargs.setdefault('alpha', alpha)
 
         geom = sgeom.Polygon(np.column_stack((x, y)))
-        return super().__init__(
-            [geom], rotated_pole, **kwargs)
+
+        if over == True:
+            # Assume a cylindrical projection for this case
+            # and perform reprojection here
+            projected_geom = ccrs.PlateCarree(over=False).project_geometry(
+                geom, rotated_pole)
+            bounds = projected_geom.bounds
+
+            pxs = []
+            pys = []
+            # Once projected, the result is a MultiPolygon
+            for item in range(0, len(projected_geom.geoms)):
+                pxl, pyl = np.array(projected_geom.geoms._get_geom_item(item).boundary.coords.xy)
+                pxs.append(pxl)
+                pys.append(pyl)
+
+            px = np.concatenate(pxs)
+            py = np.concatenate(pys)
+            geoms = []
+            # We don't know the axes extent, so just go bigger than max lon.
+            # It will get cropped to the required extent in FeatureArtist.
+            for offset in np.arange(-720, 720+1, 360):
+                geoms.append(sgeom.Polygon(np.column_stack((px + offset, py))))
+
+            geom = sgeom.MultiPolygon(geoms)
+
+            return super().__init__(
+                [geom], ccrs.PlateCarree(over=True), **kwargs)
+        else:
+            return super().__init__(
+                [geom], rotated_pole, **kwargs)
 
 
 def _julian_day(date):
