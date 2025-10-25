@@ -1982,7 +1982,7 @@ class RotatedPole(_CylindricalProjection):
     """
 
     def __init__(self, pole_longitude=0.0, pole_latitude=90.0,
-                 central_rotated_longitude=0.0, globe=None):
+                 central_rotated_longitude=0.0, globe=None, over=False):
         """
         Parameters
         ----------
@@ -1997,6 +1997,13 @@ class RotatedPole(_CylindricalProjection):
             datum.
 
         """
+
+        if over is True:
+            x_max = 572.95 # Maximum allowed value in pyproj with +over
+        else:
+            x_max = 180
+        y_max = 90
+
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
                         ('o_lon_p', central_rotated_longitude),
@@ -2004,7 +2011,7 @@ class RotatedPole(_CylindricalProjection):
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
-        super().__init__(proj4_params, 180, 90, globe=globe)
+        super().__init__(proj4_params, x_max, y_max, globe=globe, over=over)
 
 
 class Gnomonic(Projection):
