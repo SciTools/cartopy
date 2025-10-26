@@ -1100,7 +1100,7 @@ class GeoAxes(matplotlib.axes.Axes):
                     (new_image, image), axis=1
                 )
 
-            leftmost = image[:,int(np.mod(negext, -360)*factor):,:]
+            leftmost = image[:,int((360+np.mod(negext, -360))*factor):,:]
             rightmost = image[:,:int(np.mod(posext, 360)*factor),:]
             new_image = np.concatenate((leftmost, new_image, rightmost),
                                        axis=1)
