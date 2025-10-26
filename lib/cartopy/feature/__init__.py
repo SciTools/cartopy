@@ -283,7 +283,7 @@ class NaturalEarthFeature(Feature):
                 'Valid scales are "110m", "50m", and "10m".'
             )
 
-    def geometries(self, extent):
+    def geometries(self):
         """
         Returns an iterator of (shapely) geometries for this feature.
 
