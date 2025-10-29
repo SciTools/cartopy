@@ -37,7 +37,7 @@ def vesta_image():
         the ``img_proj`` coordinate system.
 
     """
-    url = 'https://photojournal.jpl.nasa.gov/jpeg/PIA17037.jpg'
+    url = 'https://assets.science.nasa.gov/content/dam/science/psd/photojournal/pia/pia17/pia17037/PIA17037.jpg'
     img_handle = BytesIO(urlopen(url).read())
     raw_image = Image.open(img_handle)
     # The image is extremely high-resolution, which takes a long time to
