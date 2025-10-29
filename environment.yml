@@ -29,6 +29,7 @@ dependencies:
   # Documentation
   - pydata-sphinx-theme
   - sphinx
+  - sphinx-copybutton
   - sphinx-gallery
   # Extras
   - pre-commit

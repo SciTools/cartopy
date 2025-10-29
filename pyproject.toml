@@ -55,7 +55,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-doc = ["pydata-sphinx-theme", "sphinx", "sphinx-gallery"]
+doc = ["pydata-sphinx-theme", "sphinx", "sphinx-copybutton", "sphinx-gallery"]
 speedups = ["pykdtree", "fiona"]
 ows = ["OWSLib>=0.27.0", "pillow>=9.1"]
 plotting = ["pillow>=9.1", "scipy>=1.9"]
