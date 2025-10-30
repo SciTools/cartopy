@@ -1254,18 +1254,19 @@ class Projection(CRS, metaclass=ABCMeta):
 
             box = sgeom.box(x3, y3, x4, y4, ccw=is_ccw)
 
-            # Invert the polygons
-            multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
-            polygon = box.difference(multi_poly)
+            if interior_polys:
+                # Invert any valid interior polygons
+                multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
+                polygon = box.difference(multi_poly)
 
-            # Intersect the inverted polygon with the boundary
-            polygon = boundary_poly.intersection(polygon)
+                # Intersect the inverted polygon with the boundary
+                polygon = boundary_poly.intersection(polygon)
 
-            if not polygon.is_empty:
-                if isinstance(polygon, sgeom.MultiPolygon):
-                    polygon_bits.extend(polygon.geoms)
-                else:
-                    polygon_bits.append(polygon)
+                if not polygon.is_empty:
+                    if isinstance(polygon, sgeom.MultiPolygon):
+                        polygon_bits.extend(polygon.geoms)
+                    else:
+                        polygon_bits.append(polygon)
 
         return sgeom.MultiPolygon(polygon_bits)
 
