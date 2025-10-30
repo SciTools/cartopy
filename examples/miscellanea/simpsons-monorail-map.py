@@ -124,7 +124,6 @@ def main():
     fig.tight_layout()
     fig.subplots_adjust(left=0.035, bottom=0.035, right=0.965, top=0.965)
     plt.show()
-    fig.savefig("monorail_map.png")
 
 
 if __name__ == "__main__":
