@@ -524,6 +524,7 @@ class ThunderforestTiles(GoogleWTS):
         self.style = style
 
     def _image_url(self, tile):
+        # See https://www.thunderforest.com/docs/map-tiles-api/
         x, y, z = tile
         return ("https://tile.thunderforest.com/"
                 f"{self.style}/{z}/{x}/{y}{self.resolution}.{self.extension}"
