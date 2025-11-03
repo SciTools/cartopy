@@ -22,6 +22,7 @@ from matplotlib.transforms import offset_copy
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
+from matplotlib.patches import Rectangle
 
 
 # Define choices for projection and locations to plot
@@ -37,10 +38,16 @@ LOCATIONS_TO_PLOT = {
 
 
 def main():
-    # Set up a plot with a thin light blue/white border to make the map inside
-    #     Note: for proportions of land mass, font size and border to be as
-    #     intended, need to keep 'figsize' and 'dpi' (4:3 ratio) as below.
-    fig = plt.figure(figsize=(9, 7.5), dpi=125, facecolor="#AFCBBD")
+    # Set up a plot with a light blue background and a white overall border.
+    # For proportions of land mass, font size and border to be as
+    # intended, need to keep 'figsize' and 'dpi' (4:3 ratio) as below.
+    fig = plt.figure(
+        figsize=(9, 7.5),
+        dpi=125,
+        facecolor="#AFCBBD",
+        edgecolor="white",  # sets up white border without need for another axes
+        linewidth=30,  # makes the border thicker as per original map
+    )
     map_ax = fig.add_axes(
         [0.035, 0.035, 0.93, 0.93], projection=ccrs.LambertConformal(), frameon=False
     )
@@ -66,10 +73,8 @@ def main():
         edgecolor="black",
     )
 
-    # From/see example:
-    # https://scitools.org.uk/cartopy/docs/latest/gallery/
-    # scalar_data/eyja_volcano.html
-    # Now add the location labels
+    # Now add the location labels. The general approach is that covered in
+    # the 'Map tile acquisition' Catopy example, including the comment below.
     #
     # Use the cartopy interface to create a matplotlib transform object
     # for the Geodetic coordinate system. We will use this along with
@@ -111,10 +116,10 @@ def main():
         "(recreation of map at\nsimpsons.fandom.com/\nwiki/Brockway)"
     )
 
-    # Add the 'compass' legend
+    # Add the bottom left 'compass' legend in spirit of the original map.
     map_ax.text(
         0.14,
-        0.10,
+        0.0,
         leg_text,
         transform=map_ax.transAxes,
         fontsize=11,
