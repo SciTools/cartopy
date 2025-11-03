@@ -16,6 +16,7 @@ taken in likeness from the screen grab available at:
 https://simpsons.fandom.com/wiki/Brockway.
 
 """
+
 import matplotlib.pyplot as plt
 from matplotlib.transforms import offset_copy
 
@@ -39,11 +40,14 @@ def main():
     # Set up a plot with a thin light blue/white border to make the map inside
     #     Note: for proportions of land mass, font size and border to be as
     #     intended, need to keep 'figsize' and 'dpi' (4:3 ratio) as below.
-    fig, ax = plt.subplots(figsize=(9, 7.5), dpi=125, facecolor="white")
-    ax.set_facecolor("#AFCBBD")
-    ax = fig.add_subplot(111, projection=ccrs.LambertConformal(), frameon=False)
-    plt.setp(plt.gcf().get_axes(), xticks=[], yticks=[])  # no axes or labels
-    ax.set_extent([-120, -72.5, 20, 50], crs=ccrs.Geodetic())  # center on USA
+    fig = plt.figure(figsize=(9, 7.5), dpi=125, facecolor="#AFCBBD")
+    map_ax = fig.add_axes(
+        [0.035, 0.035, 0.93, 0.93], projection=ccrs.LambertConformal(), frameon=False
+    )
+
+    # Remove all axes ticks and labelling and center on location of USA
+    plt.setp(map_ax, xticks=[], yticks=[])
+    map_ax.set_extent([-120, -72.5, 20, 50], crs=ccrs.Geodetic())
 
     # Plot only the USA landmass, in a fawn colour with a thin black border
     shpfilename = shpreader.natural_earth(
@@ -55,7 +59,7 @@ def main():
         for country in countries
         if (country.attributes["NAME"] == "United States of America")
     ]
-    ax.add_geometries(
+    map_ax.add_geometries(
         usa_border,
         GEOM_PROJ,
         facecolor="#C39B6A",
@@ -71,11 +75,11 @@ def main():
     # for the Geodetic coordinate system. We will use this along with
     # matplotlib's offset_copy function to define a coordinate system which
     # translates the text by 25 pixels to the left.
-    geodetic_transform = GEOM_PROJ._as_mpl_transform(ax)
+    geodetic_transform = GEOM_PROJ._as_mpl_transform(map_ax)
     text_transform = offset_copy(geodetic_transform, units="dots", x=-25)
     for loc_name, loc_details in LOCATIONS_TO_PLOT.items():
         loc_coords, rel_text_pos, text_rot = loc_details
-        ax.plot(
+        map_ax.plot(
             *loc_coords,
             marker="o",
             color="black",
@@ -90,7 +94,7 @@ def main():
         )
         # Text in uppercase, very bold handwriting-like font, as per the
         # screen grab of the map from the show
-        ax.text(
+        map_ax.text(
             *text_loc_coords,
             loc_name.upper(),
             verticalalignment="center",
@@ -108,11 +112,11 @@ def main():
     )
 
     # Add the 'compass' legend
-    ax.text(
+    map_ax.text(
         0.14,
         0.10,
         leg_text,
-        transform=ax.transAxes,
+        transform=map_ax.transAxes,
         fontsize=11,
         horizontalalignment="center",
         verticalalignment="center",
@@ -120,9 +124,6 @@ def main():
         bbox=dict(facecolor="#A5B5CE"),
     )
 
-    # Make border symmetrical since default 'rc' file has asymmetric side pad
-    fig.tight_layout()
-    fig.subplots_adjust(left=0.035, bottom=0.035, right=0.965, top=0.965)
     plt.show()
 
 
