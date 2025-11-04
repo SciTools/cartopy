@@ -149,6 +149,12 @@ class CRS(_CRS):
         globe: :class:`~cartopy.crs.Globe` instance, optional
             If omitted, the default Globe instance will be created.
             See :class:`~cartopy.crs.Globe` for details.
+        over: boolean, optional.  Defaults to False.
+            If True, adds the +over parameter to the PROJ string,
+            and enables longitudes to be extended beyond 360
+            degrees.  This only makes sense with cylindrical
+            projections, and enables more than one rotation of
+            the globe to be visualised.
 
         """
 
@@ -1644,7 +1650,8 @@ class Mercator(Projection):
     def __init__(self, central_longitude=0.0,
                  min_latitude=-80.0, max_latitude=84.0,
                  globe=None, latitude_true_scale=None,
-                 false_easting=0.0, false_northing=0.0, scale_factor=None):
+                 false_easting=0.0, false_northing=0.0, scale_factor=None,
+                 over=False):
         """
         Parameters
         ----------
@@ -1666,6 +1673,8 @@ class Mercator(Projection):
             Y offset from the planar origin in metres. Defaults to 0.
         scale_factor: optional
             Scale factor at natural origin. Defaults to unused.
+        over: optional
+            Extend map beyond 360 degrees. Defaults to False.
 
         Notes
         -----
@@ -1690,13 +1699,16 @@ class Mercator(Projection):
             else:
                 proj4_params.append(('k_0', scale_factor))
 
-        super().__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe, over=over)
 
         # Need to have x/y limits defined for the initial hash which
         # gets used within transform_points for caching
         self._x_limits = self._y_limits = None
         # Calculate limits.
-        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        if over is False:
+            minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        else:
+            minlon, maxlon = -572.95, 572.95
         limits = self.transform_points(self.as_geodetic(),
                                        np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))
