@@ -636,6 +636,15 @@ class GeoAxes(matplotlib.axes.Axes):
         kwargs['facecolor'] = 'none'
 
         extent = self.get_extent()
+        target_proj = ccrs.PlateCarree(over=True)
+        source_proj = self.projection
+        extent = self.get_extent()
+        lon0, lat0 = target_proj.transform_point(extent[0],
+                                                 extent[2], source_proj)
+        lon1, lat1 = target_proj.transform_point(extent[1],
+                                                 extent[3], source_proj)
+        extent = [lon0, lon1, lat0, lat1]
+
         feature = cartopy.feature.NaturalEarthFeature_ext(
             'physical', 'coastline', cartopy.feature.auto_scaler, extent=extent,
             edgecolor='black', facecolor='never')
@@ -1077,36 +1086,48 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
 
-        extent = self.get_extent()
         if name == 'ne_shaded':
-            source_proj = ccrs.PlateCarree(over=True)
+            target_proj = ccrs.PlateCarree(over=True)
+            source_proj = self.projection
+            extent = self.get_extent()
+            lon0, lat0 = target_proj.transform_point(extent[0],
+                                                     extent[2], source_proj)
+            lon1, lat1 = target_proj.transform_point(extent[1],
+                                                     extent[3], source_proj)
+
             fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
                      / '50-natural-earth-1-downsampled.png')
             image = imread(fname)
 
-            # Assume image spans 360 degrees
-            factor = image.shape[1]/360
-            negext = extent[0] - -180
-            posext = extent[1] - 180
+            if lon1 - lon0 > 360:
+                factor = image.shape[1]/360
+                negext = np.min([lon0 - -180, 0])
+                posext = np.max([0, lon1 - 180])
 
-            new_image = image
-            for offset in np.arange(-360, negext, -360):
-                new_image = np.concatenate(
-                    (image, new_image), axis=1
-                )
+                new_image = image
 
-            for offset in np.arange(360, posext, 360):
-                new_image = np.concatenate(
-                    (new_image, image), axis=1
-                )
+                for offset in np.arange(-360, negext, -360):
+                    new_image = np.concatenate(
+                        (image, new_image), axis=1
+                    )
+                for offset in np.arange(360, posext, 360):
+                    new_image = np.concatenate(
+                        (new_image, image), axis=1
+                    )
 
-            leftmost = image[:,int((360+np.mod(negext, -360))*factor):,:]
-            rightmost = image[:,:int(np.mod(posext, 360)*factor),:]
-            new_image = np.concatenate((leftmost, new_image, rightmost),
-                                       axis=1)
+                leftmost = image[:,int((360+np.mod(negext, -360))*factor):,:]
+                rightmost = image[:,:int(np.mod(posext, 360)*factor),:]
+                new_image = np.concatenate((leftmost, new_image, rightmost),
+                                           axis=1)
+                # Only longitudinal extent is different because we have
+                # modified the image only on this axis
+                extent = [lon0, lon1, -90, 90]
+            else:
+                new_image = image
+                extent = [-180, 180, -90, 90]
 
             return self.imshow(new_image, origin='upper',
-                               transform=source_proj,
+                               transform=target_proj,
                                extent=extent,
                                **kwargs)
         else:
