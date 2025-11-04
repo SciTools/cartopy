@@ -52,8 +52,7 @@ def main():
         [0.035, 0.035, 0.93, 0.93], projection=ccrs.LambertConformal(), frameon=False
     )
 
-    # Remove all axes ticks and labelling and center on location of USA
-    map_ax.set(xticks=[], yticks=[])
+    # Center on location of USA with a bit of space on all sides to pad
     map_ax.set_extent([-120, -72.5, 20, 50], crs=ccrs.Geodetic())
 
     # Plot only the USA landmass, in a fawn colour with a thin black border
