@@ -116,6 +116,24 @@ class Test_LambertConformal_standard_parallels:
                                   decimal=0)
 
 
+def test_longitude_extent():
+    """Test that longitude_extent parameter controls map boundary extent."""
+    # Default behavior (180 degrees)
+    crs_default = ccrs.LambertConformal()
+    
+    # Reduced extent (90 degrees)
+    crs_narrow = ccrs.LambertConformal(longitude_extent=90)
+    
+    # The narrow projection should have smaller x_limits
+    default_x_range = crs_default.x_limits[1] - crs_default.x_limits[0]
+    narrow_x_range = crs_narrow.x_limits[1] - crs_narrow.x_limits[0]
+    
+    # With longitude_extent=90 vs 180, the range should be noticeably smaller
+    assert narrow_x_range < default_x_range
+    # Verify it's meaningfully narrower (not just a rounding difference)
+    assert narrow_x_range < default_x_range * 0.9
+
+
 class TestLambertZoneII:
     def setup_class(self):
         self.point_a = (1.4868268900254693, 48.13277955695077)
