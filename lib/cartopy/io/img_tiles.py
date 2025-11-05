@@ -252,6 +252,13 @@ class GoogleTiles(GoogleWTS):
             Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/\
 World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
 
+        Notes
+        -----
+        Currently, the ``GoogleWTS`` class does not use ``style`` when
+        determining the local file path in the cache. Therefore, if a tile
+        already exists for the same ``(x, y, z)`` then it will be blindly used
+        even if the style is not what was asked for. You may need to manage
+        multiple cache paths to work around this issue.
         """
         styles = ["street", "satellite", "terrain", "only_streets"]
         style = style.lower()
@@ -356,6 +363,14 @@ class StadiaMapsTiles(GoogleWTS):
     cache : bool or str, optional
         If True, the default cache directory is used. If False, no cache is
         used. If a string, the string is used as the path to the cache.
+
+    Notes
+    -----
+    Currently, the ``GoogleWTS`` class does not use either ``resolution`` or
+    ``style`` when determining the local file path in the cache. Therefore, if a
+    tile already exists for the same ``(x, y, z)`` then it will be blindly used
+    even if the resolution or style is not what was asked for. You may need to
+    manage multiple cache paths to work around this issue.
     """
 
     def __init__(self,
@@ -398,6 +413,14 @@ class Stamen(GoogleWTS):
 
     Please see the attribution notice at http://maps.stamen.com on how to
     attribute this imagery.
+
+    Notes
+    -----
+    Currently, the ``GoogleWTS`` class does not use ``style`` when determining
+    the local file path in the cache. Therefore, if a tile already exists for
+    the same ``(x, y, z)`` then it will be blindly used even if the style is not
+    what was asked for. You may need to manage multiple cache paths to work
+    around this issue.
 
     References
     ----------
@@ -451,6 +474,61 @@ class Stamen(GoogleWTS):
         x, y, z = tile
         return 'http://tile.stamen.com/' + \
             f'{self.style}/{z}/{x}/{y}.{self.extension}'
+
+
+class ThunderforestTiles(GoogleWTS):
+    """
+    Retrieves tiles from https://www.thunderforest.com.
+
+    For a full reference on the styles available please see
+    https://www.thunderforest.com/maps/.
+
+    Parameters
+    ----------
+    apikey : str, required
+        The authentication key provided by Thunderforest to query their APIs
+    style : str, optional
+        Name of the desired style. Defaults to "landscape". See
+        https://www.thunderforest.com/maps/ for a full list of styles.
+    resolution : str, optional
+        Resolution of the images to return. Defaults to an empty string,
+        standard resolution (256x256). You can also specify "@2x" for high
+        resolution (512x512) tiles.
+    cache : bool or str, optional
+        If True, the default cache directory is used. If False, no cache is
+        used. If a string, the string is used as the path to the cache.
+
+    Notes
+    -----
+    Currently, the ``GoogleWTS`` class does not use either ``resolution`` or
+    ``style`` when determining the local file path in the cache. Therefore, if a
+    tile already exists for the same ``(x, y, z)`` then it will be blindly used
+    even if the resolution or style is not what was asked for. You may need to
+    manage multiple cache paths to work around this issue.
+    """
+
+    def __init__(self,
+                    apikey,
+                    style="landscape",
+                    resolution="",
+                    cache=False):
+        super().__init__(cache=cache, desired_tile_form="RGBA")
+        self.apikey = apikey
+        self.resolution = resolution
+        self.extension = "png"
+
+        if style not in ("atlas", "cycle", "landscape", "mobile-atlas",
+                         "neighbourhood", "outdoors", "pioneer", "spinal-map",
+                         "transport", "transport-dark"):
+            raise ValueError(f'Invalid style {style}')
+        self.style = style
+
+    def _image_url(self, tile):
+        # See https://www.thunderforest.com/docs/map-tiles-api/
+        x, y, z = tile
+        return ("https://tile.thunderforest.com/"
+                f"{self.style}/{z}/{x}/{y}{self.resolution}.{self.extension}"
+                f"?apikey={self.apikey}")
 
 
 class MapboxTiles(GoogleWTS):
@@ -663,6 +741,14 @@ class OrdnanceSurvey(GoogleWTS):
             - https://apidocs.os.uk/docs/map-styles
         desired_tile_form: optional
             Defaults to 'RGB'.
+
+        Notes
+        -----
+        Currently, the ``GoogleWTS`` class does not use ``layer`` when
+        determining the local file path in the cache. Therefore, if a tile
+        already exists for the same ``(x, y, z)`` then it will be blindly used
+        even if the layer is not what was asked for. You may need to manage
+        multiple cache paths to work around this issue.
         """
         super().__init__(desired_tile_form=desired_tile_form,
                          cache=cache)
