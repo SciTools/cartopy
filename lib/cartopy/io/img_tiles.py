@@ -251,14 +251,6 @@ class GoogleTiles(GoogleWTS):
             URL pointing to a tile source and containing {x}, {y}, and {z}.
             Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/\
 World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
-
-        Notes
-        -----
-        Currently, the ``GoogleWTS`` class does not use ``style`` when
-        determining the local file path in the cache. Therefore, if a tile
-        already exists for the same ``(x, y, z)`` then it will be blindly used
-        even if the style is not what was asked for. You may need to manage
-        multiple cache paths to work around this issue.
         """
         styles = ["street", "satellite", "terrain", "only_streets"]
         style = style.lower()
@@ -363,14 +355,6 @@ class StadiaMapsTiles(GoogleWTS):
     cache : bool or str, optional
         If True, the default cache directory is used. If False, no cache is
         used. If a string, the string is used as the path to the cache.
-
-    Notes
-    -----
-    Currently, the ``GoogleWTS`` class does not use either ``resolution`` or
-    ``style`` when determining the local file path in the cache. Therefore, if a
-    tile already exists for the same ``(x, y, z)`` then it will be blindly used
-    even if the resolution or style is not what was asked for. You may need to
-    manage multiple cache paths to work around this issue.
     """
 
     def __init__(self,
@@ -413,14 +397,6 @@ class Stamen(GoogleWTS):
 
     Please see the attribution notice at http://maps.stamen.com on how to
     attribute this imagery.
-
-    Notes
-    -----
-    Currently, the ``GoogleWTS`` class does not use ``style`` when determining
-    the local file path in the cache. Therefore, if a tile already exists for
-    the same ``(x, y, z)`` then it will be blindly used even if the style is not
-    what was asked for. You may need to manage multiple cache paths to work
-    around this issue.
 
     References
     ----------
@@ -497,14 +473,6 @@ class ThunderforestTiles(GoogleWTS):
     cache : bool or str, optional
         If True, the default cache directory is used. If False, no cache is
         used. If a string, the string is used as the path to the cache.
-
-    Notes
-    -----
-    Currently, the ``GoogleWTS`` class does not use either ``resolution`` or
-    ``style`` when determining the local file path in the cache. Therefore, if a
-    tile already exists for the same ``(x, y, z)`` then it will be blindly used
-    even if the resolution or style is not what was asked for. You may need to
-    manage multiple cache paths to work around this issue.
     """
 
     def __init__(self,
@@ -741,14 +709,6 @@ class OrdnanceSurvey(GoogleWTS):
             - https://apidocs.os.uk/docs/map-styles
         desired_tile_form: optional
             Defaults to 'RGB'.
-
-        Notes
-        -----
-        Currently, the ``GoogleWTS`` class does not use ``layer`` when
-        determining the local file path in the cache. Therefore, if a tile
-        already exists for the same ``(x, y, z)`` then it will be blindly used
-        even if the layer is not what was asked for. You may need to manage
-        multiple cache paths to work around this issue.
         """
         super().__init__(desired_tile_form=desired_tile_form,
                          cache=cache)
