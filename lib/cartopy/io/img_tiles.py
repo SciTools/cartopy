@@ -47,11 +47,18 @@ class GoogleWTS(metaclass=ABCMeta):
     _MAX_THREADS = 24
 
     def __init__(self, desired_tile_form='RGB',
-                 user_agent=f'CartoPy/{cartopy.__version__}', cache=False):
+                 user_agent=f'CartoPy/{cartopy.__version__}',
+                 resolution="", layer=None, style=None, cache=False):
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
         self.user_agent = user_agent
+        self.resolution = resolution
+        self.layer = layer
+        self.style = style
+        # resolution - ???
+        # style - "GoogleTiles" "StadiaMapsTiles" "Stamen" "ThunderforestTiles"
+        # layer - "OrdnanceSurvey"
         # some providers like osm need a user_agent in the request issue #1341
         # osm may reject requests if there are too many of them, in which case
         # a change of user_agent may fix the issue.
@@ -100,8 +107,16 @@ class GoogleWTS(metaclass=ABCMeta):
 
     @property
     def _cache_dir(self):
-        """Return the name of the cache directory"""
-        return self.cache_path / self.__class__.__name__
+        """Return the name of the cache directory for this specific provider,
+        resolution, layer and style combination"""
+        cache_dir = self.cache_path / self.__class__.__name__
+        if self.resolution:
+            cache_dir /= Path(self.resolution)
+        if self.layer:
+            cache_dir /= Path(self.layer)
+        if self.style:
+            cache_dir /= Path(self.style)
+        return cache_dir
 
     def _load_cache(self):
         """Load the cache"""
@@ -269,7 +284,7 @@ World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
                 f"The {self.style!r} style requires pillow with jpeg decoding "
                 "support.")
         return super().__init__(desired_tile_form=desired_tile_form,
-                                cache=cache)
+                                style=style, cache=cache)
 
     def _image_url(self, tile):
         style_dict = {
@@ -362,7 +377,8 @@ class StadiaMapsTiles(GoogleWTS):
                  style="alidade_smooth",
                  resolution="",
                  cache=False):
-        super().__init__(cache=cache, desired_tile_form="RGBA")
+        super().__init__(desired_tile_form="RGBA",
+                         resolution=resolution, style=style, cache=cache)
         self.apikey = apikey
         self.style = style
         self.resolution = resolution
@@ -442,7 +458,7 @@ class Stamen(GoogleWTS):
                 desired_tile_form = 'RGBA'
 
         super().__init__(desired_tile_form=desired_tile_form,
-                         cache=cache)
+                         style=style, cache=cache)
         self.style = style
         self.extension = layer_info['extension']
 
@@ -480,7 +496,8 @@ class ThunderforestTiles(GoogleWTS):
                     style="landscape",
                     resolution="",
                     cache=False):
-        super().__init__(cache=cache, desired_tile_form="RGBA")
+        super().__init__(desired_tile_form="RGBA",
+                         resolution=resolution, style=style, cache=cache)
         self.apikey = apikey
         self.resolution = resolution
         self.extension = "png"
@@ -507,7 +524,7 @@ class MapboxTiles(GoogleWTS):
 
     """
 
-    def __init__(self, access_token, map_id, cache=False):
+    def __init__(self, access_token, style, cache=False):
         """
         Set up a new Mapbox tiles instance.
 
@@ -518,7 +535,7 @@ class MapboxTiles(GoogleWTS):
         ----------
         access_token : str
             A valid Mapbox API access token.
-        map_id : str
+        style : str
             An ID for a publicly accessible map (provided by Mapbox).
             This is the map whose tiles will be retrieved through this process
             and is specified through the Mapbox Styles API
@@ -526,18 +543,18 @@ class MapboxTiles(GoogleWTS):
 
             Examples::
 
-                map_id='streets-v11'
-                map_id='outdoors-v11'
-                map_id='satellite-v9'
+                style='streets-v11'
+                style='outdoors-v11'
+                style='satellite-v9'
         """
         self.access_token = access_token
-        self.map_id = map_id
-        super().__init__(cache=cache)
+        self.style = style
+        super().__init__(style=style, cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
 
-        return (f'https://api.mapbox.com/styles/v1/mapbox/{self.map_id}/tiles'
+        return (f'https://api.mapbox.com/styles/v1/mapbox/{self.style}/tiles'
                 f'/{z}/{x}/{y}?access_token={self.access_token}')
 
 
@@ -551,7 +568,7 @@ class MapboxStyleTiles(GoogleWTS):
 
     """
 
-    def __init__(self, access_token, username, map_id,
+    def __init__(self, access_token, username, style,
                  desired_tile_form='RGB', cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
@@ -565,7 +582,7 @@ class MapboxStyleTiles(GoogleWTS):
             A valid Mapbox API access token.
         username
             The username for the Mapbox user who defined the Mapbox style.
-        map_id
+        style
             A map ID for a map defined by a Mapbox style. This is the map whose
             tiles will be retrieved through this process. Note that this style
             may be private and if your access token does not have permissions
@@ -577,13 +594,14 @@ class MapboxStyleTiles(GoogleWTS):
         """
         self.access_token = access_token
         self.username = username
-        self.map_id = map_id
-        super().__init__(cache=cache, desired_tile_form=desired_tile_form)
+        self.style = style
+        super().__init__(desired_tile_form=desired_tile_form,
+                         style=style, cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
         return (f'https://api.mapbox.com/styles/v1/{self.username}'
-                f'/{self.map_id}/tiles/256/{z}/{x}/{y}'
+                f'/{self.style}/tiles/256/{z}/{x}/{y}'
                 f'?access_token={self.access_token}')
 
 
@@ -711,7 +729,7 @@ class OrdnanceSurvey(GoogleWTS):
             Defaults to 'RGB'.
         """
         super().__init__(desired_tile_form=desired_tile_form,
-                         cache=cache)
+                         layer=layer, cache=cache)
         self.apikey = apikey
 
         if layer not in ("Road_3857", "Outdoor_3857", "Light_3857",
@@ -822,7 +840,7 @@ class AzureMapsTiles(GoogleWTS):
 
 class LINZMapsTiles(GoogleWTS):
 
-    def __init__(self, apikey, layer_id, api_version="v4",
+    def __init__(self, apikey, layer, api_version="v4",
                  desired_tile_form='RGB', cache=False):
         """
         Set up a new instance to retrieve tiles from The LINZ
@@ -836,16 +854,17 @@ class LINZMapsTiles(GoogleWTS):
         ----------
         apikey
             A valid LINZ API key specific for every users.
-        layer_id
+        layer
             A layer ID for a map. See the "Technical Details" lower down the
             "About" tab for each layer displayed in the LINZ data service.
         api_version
             API version to use. Defaults to v4 for now.
 
         """
-        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
+        super().__init__(desired_tile_form=desired_tile_form,
+                         layer=layer, cache=cache)
         self.apikey = apikey
-        self.layer_id = layer_id
+        self.layer = layer
         self.api_version = api_version
 
     def _image_url(self, tile):
@@ -853,4 +872,4 @@ class LINZMapsTiles(GoogleWTS):
         return (
             f'https://tiles-a.koordinates.com/services;'
             f'key={self.apikey}/tiles/{self.api_version}/'
-            f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png')
+            f'layer={self.layer}/EPSG:3857/{z}/{x}/{y}.png')
