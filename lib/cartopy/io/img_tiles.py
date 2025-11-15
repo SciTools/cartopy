@@ -125,6 +125,13 @@ class GoogleWTS(metaclass=ABCMeta):
         # Recursively drill down to the images at the target zoom.
         x0, x1, y0, y1 = self._tileextent(start_tile)
         domain = sgeom.box(x0, y0, x1, y1)
+
+        if hasattr(target_domain, 'geoms') and len(target_domain.geoms) > 1:
+            # For MultiPolygon, create a unified coverage area that includes
+            # the space between disconnected parts. This ensures tiles spanning
+            # across dateline discontinuities are included.
+            target_domain = sgeom.box(*target_domain.bounds)
+
         if domain.intersects(target_domain):
             if start_tile[2] == target_z:
                 yield start_tile
