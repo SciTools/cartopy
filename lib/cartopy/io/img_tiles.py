@@ -300,7 +300,7 @@ class GoogleTiles(GoogleWTS):
             raise ValueError(
                 f"The {self.style!r} style requires pillow with jpeg decoding "
                 "support.")
-        return super().__init__(style=style)
+        super().__init__(style=style)
 
     def _image_url(self, tile):
         style_dict = {
@@ -822,6 +822,7 @@ class AzureMapsTiles(GoogleWTS):
         self.subscription_key = subscription_key
         self.tileset_id = tileset_id
         self.api_version = api_version
+        super().__init__()
 
     def _image_url(self, tile):
         x, y, z = tile
