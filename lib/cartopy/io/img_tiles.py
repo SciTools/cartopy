@@ -310,7 +310,8 @@ class GoogleTiles(GoogleWTS):
             raise ValueError(
                 f"The {style!r} style requires pillow with jpeg decoding "
                 "support.")
-        super().__init__(style=style, desired_tile_form=desired_tile_form, cache=cache)
+        super().__init__(style=style,
+                         desired_tile_form=desired_tile_form, cache=cache)
 
     def _image_url(self, tile):
         style_dict = {
@@ -631,7 +632,8 @@ class MapboxStyleTiles(GoogleWTS):
 
         self.access_token = access_token
         self.username = username
-        super().__init__(style=map_id, desired_tile_form=desired_tile_form, cache=cache)
+        super().__init__(style=map_id,
+                         desired_tile_form=desired_tile_form, cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -778,7 +780,8 @@ class OrdnanceSurvey(GoogleWTS):
         elif layer in ("Road", "Outdoor", "Light"):
             layer += "_3857"
 
-        super().__init__(layer=layer, desired_tile_form=desired_tile_form, cache=cache)
+        super().__init__(layer=layer,
+                         desired_tile_form=desired_tile_form, cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -925,7 +928,8 @@ class LINZMapsTiles(GoogleWTS):
             path is used instead of the default one. If it is set to ``False``,
             the tiles are downloaded each time.
         """
-        super().__init__(layer=layer_id, desired_tile_form=desired_tile_form, cache=cache)
+        super().__init__(layer=layer_id,
+                         desired_tile_form=desired_tile_form, cache=cache)
         self.apikey = apikey
         self.api_version = api_version
 
