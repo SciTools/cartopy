@@ -836,7 +836,7 @@ class LINZMapsTiles(GoogleWTS):
 
     def __init__(self,
                  apikey,
-                 layer,
+                 layer_id,
                  api_version="v4"):
         """
         Set up a new instance to retrieve tiles from The LINZ
@@ -850,16 +850,16 @@ class LINZMapsTiles(GoogleWTS):
         ----------
         apikey
             A valid LINZ API key specific for every users.
-        layer
+        layer_id
             A layer ID for a map. See the "Technical Details" lower down the
             "About" tab for each layer displayed in the LINZ data service.
         api_version
             API version to use. Defaults to v4 for now.
 
         """
-        super().__init__(layer=layer)
+        super().__init__(layer=layer_id)
         self.apikey = apikey
-        self.layer = layer
+        self.layer = layer_id
         self.api_version = api_version
 
     def _image_url(self, tile):
