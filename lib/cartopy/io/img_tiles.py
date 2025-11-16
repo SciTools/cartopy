@@ -127,11 +127,11 @@ class GoogleWTS(metaclass=ABCMeta):
 
         cache_dir = self.cache_path / self.__class__.__name__
         if self.layer:
-            cache_dir /= Path(self.layer)
+            cache_dir /= self.layer
         if self.style:
-            cache_dir /= Path(self.style)
+            cache_dir /= self.style
         if self.resolution:
-            cache_dir /= Path(self.resolution)
+            cache_dir /= self.resolution
         return cache_dir
 
     def _load_cache(self):
