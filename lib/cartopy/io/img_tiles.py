@@ -34,9 +34,13 @@ import cartopy.crs as ccrs
 class GoogleWTS(metaclass=ABCMeta):
     _MAX_THREADS = 24
 
-    def __init__(self, desired_tile_form='RGB',
+    def __init__(self,
+                 desired_tile_form='RGB',
                  user_agent=f'CartoPy/{cartopy.__version__}',
-                 resolution="", layer=None, style=None, cache=False):
+                 cache=False,
+                 resolution="",
+                 layer=None,
+                 style=None):
         """
         Implement web tile retrieval using the Google WTS coordinate system.
 
@@ -265,28 +269,19 @@ class GoogleWTS(metaclass=ABCMeta):
 
 
 class GoogleTiles(GoogleWTS):
-    def __init__(self, desired_tile_form='RGB', style="street",
+    def __init__(self,
+                 style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
-                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
-                 cache=False):
+                      '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G')):
         """
         Parameters
         ----------
-        desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
         style : str, optional
             The style for the Google Maps tiles.  One of 'street',
             'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
         url : str, optional
             URL pointing to a tile source and containing {x}, {y}, and {z}.
             Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
-        cache : bool or pathlib.Path or str, optional
-            To allow offline user, as well as not spam tile providers, Cartopy
-            may create a local cache of previously fetched tiles. The default
-            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
-            the default path is used. If it is set to a custom path, then this
-            path is used instead of the default one. If it is set to ``False``,
-            the tiles are downloaded each time.
         """
 
         styles = ["street", "satellite", "terrain", "only_streets"]
@@ -305,8 +300,7 @@ class GoogleTiles(GoogleWTS):
             raise ValueError(
                 f"The {self.style!r} style requires pillow with jpeg decoding "
                 "support.")
-        return super().__init__(desired_tile_form=desired_tile_form,
-                                style=style, cache=cache)
+        return super().__init__(style=style)
 
     def _image_url(self, tile):
         style_dict = {
@@ -360,8 +354,7 @@ class StadiaMapsTiles(GoogleWTS):
     def __init__(self,
                  apikey,
                  style="alidade_smooth",
-                 resolution="",
-                 cache=False):
+                 resolution=""):
         """Retrieves tiles from stadiamaps.com.
 
         For a full reference on the styles available please see
@@ -393,13 +386,10 @@ class StadiaMapsTiles(GoogleWTS):
             Resolution of the images to return. Defaults to an empty string,
             standard resolution (256x256). You can also specify "@2x" for high
             resolution (512x512) tiles.
-        cache : bool or str, optional
-            If True, the default cache directory is used. If False, no cache is
-            used. If a string, the string is used as the path to the cache.
         """
 
         super().__init__(desired_tile_form="RGBA",
-                         resolution=resolution, style=style, cache=cache)
+                         resolution=resolution, style=style)
         self.apikey = apikey
         self.style = style
         self.resolution = resolution
@@ -417,8 +407,9 @@ class StadiaMapsTiles(GoogleWTS):
 
 
 class Stamen(GoogleWTS):
-    def __init__(self, style='toner',
-                 desired_tile_form=None, cache=False):
+    def __init__(self,
+                 style='toner',
+                 desired_tile_form=None):
         """Retrieves tiles from maps.stamen.com. Styles include
         ``terrain-background``, ``terrain``, ``toner`` and ``watercolor``.
 
@@ -477,7 +468,7 @@ class Stamen(GoogleWTS):
                 desired_tile_form = 'RGBA'
 
         super().__init__(desired_tile_form=desired_tile_form,
-                         style=style, cache=cache)
+                         style=style)
         self.style = style
         self.extension = layer_info['extension']
 
@@ -489,10 +480,9 @@ class Stamen(GoogleWTS):
 
 class ThunderforestTiles(GoogleWTS):
     def __init__(self,
-                    apikey,
-                    style="landscape",
-                    resolution="",
-                    cache=False):
+                 apikey,
+                 style="landscape",
+                 resolution=""):
         """Retrieves tiles from https://www.thunderforest.com.
 
         For a full reference on the styles available please see
@@ -509,13 +499,10 @@ class ThunderforestTiles(GoogleWTS):
             Resolution of the images to return. Defaults to an empty string,
             standard resolution (256x256). You can also specify "@2x" for high
             resolution (512x512) tiles.
-        cache : bool or str, optional
-            If True, the default cache directory is used. If False, no cache is
-            used. If a string, the string is used as the path to the cache.
         """
 
         super().__init__(desired_tile_form="RGBA",
-                         resolution=resolution, style=style, cache=cache)
+                         resolution=resolution, style=style)
         self.apikey = apikey
         self.resolution = resolution
         self.extension = "png"
@@ -535,7 +522,9 @@ class ThunderforestTiles(GoogleWTS):
 
 
 class MapboxTiles(GoogleWTS):
-    def __init__(self, access_token, style, cache=False):
+    def __init__(self,
+                 access_token,
+                 style):
         """
         Set up a new Mapbox tiles instance.
 
@@ -563,7 +552,7 @@ class MapboxTiles(GoogleWTS):
 
         self.access_token = access_token
         self.style = style
-        super().__init__(style=style, cache=cache)
+        super().__init__(style=style)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -573,8 +562,10 @@ class MapboxTiles(GoogleWTS):
 
 
 class MapboxStyleTiles(GoogleWTS):
-    def __init__(self, access_token, username, style,
-                 desired_tile_form='RGB', cache=False):
+    def __init__(self,
+                 access_token,
+                 username,
+                 style):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
 
@@ -597,17 +588,12 @@ class MapboxStyleTiles(GoogleWTS):
             tiles will be retrieved through this process. Note that this style
             may be private and if your access token does not have permissions
             to view this style, then map tile retrieval will fail.
-        desired_tile_form: optional
-            The desired tile format. Use 'RGBA' if desired style includes
-            transparency.
-
         """
 
         self.access_token = access_token
         self.username = username
         self.style = style
-        super().__init__(desired_tile_form=desired_tile_form,
-                         style=style, cache=cache)
+        super().__init__(style=style)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -721,9 +707,7 @@ class OrdnanceSurvey(GoogleWTS):
 
     def __init__(self,
                  apikey,
-                 layer='Road_3857',
-                 desired_tile_form='RGB',
-                 cache=False):
+                 layer='Road_3857'):
         """
         Parameters
         ----------
@@ -736,11 +720,8 @@ class OrdnanceSurvey(GoogleWTS):
 
             - https://apidocs.os.uk/docs/layer-information
             - https://apidocs.os.uk/docs/map-styles
-        desired_tile_form: optional
-            Defaults to 'RGB'.
         """
-        super().__init__(desired_tile_form=desired_tile_form,
-                         layer=layer, cache=cache)
+        super().__init__(layer=layer)
         self.apikey = apikey
 
         if layer not in ("Road_3857", "Outdoor_3857", "Light_3857",
@@ -815,8 +796,10 @@ def _merge_tiles(tiles):
 
 class AzureMapsTiles(GoogleWTS):
 
-    def __init__(self, subscription_key, tileset_id="microsoft.imagery",
-                 api_version="2.0", desired_tile_form='RGB', cache=False):
+    def __init__(self,
+                 subscription_key,
+                 tileset_id="microsoft.imagery",
+                 api_version="2.0"):
         """
         Set up a new instance to retrieve tiles from Azure Maps.
 
@@ -836,7 +819,6 @@ class AzureMapsTiles(GoogleWTS):
             API version to use. Defaults to 2.0 as recommended by Microsoft.
 
         """  # noqa: E501
-        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
         self.subscription_key = subscription_key
         self.tileset_id = tileset_id
         self.api_version = api_version
@@ -851,8 +833,10 @@ class AzureMapsTiles(GoogleWTS):
 
 class LINZMapsTiles(GoogleWTS):
 
-    def __init__(self, apikey, layer, api_version="v4",
-                 desired_tile_form='RGB', cache=False):
+    def __init__(self,
+                 apikey,
+                 layer,
+                 api_version="v4"):
         """
         Set up a new instance to retrieve tiles from The LINZ
         aka. Land Information New Zealand
@@ -872,8 +856,7 @@ class LINZMapsTiles(GoogleWTS):
             API version to use. Defaults to v4 for now.
 
         """
-        super().__init__(desired_tile_form=desired_tile_form,
-                         layer=layer, cache=cache)
+        super().__init__(layer=layer)
         self.apikey = apikey
         self.layer = layer
         self.api_version = api_version
