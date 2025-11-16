@@ -497,7 +497,7 @@ class ThunderforestTiles(GoogleWTS):
             resolution (512x512) tiles.
         """
 
-        super().__init__(desired_tile_form="RGBA",
+        super().__init__(desired_tile_form="RGB",
                          resolution=resolution, style=style)
         self.apikey = apikey
         self.extension = "png"
