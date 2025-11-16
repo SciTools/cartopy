@@ -518,7 +518,7 @@ class ThunderforestTiles(GoogleWTS):
 class MapboxTiles(GoogleWTS):
     def __init__(self,
                  access_token,
-                 style):
+                 map_id):
         """
         Set up a new Mapbox tiles instance.
 
@@ -531,7 +531,7 @@ class MapboxTiles(GoogleWTS):
         ----------
         access_token : str
             A valid Mapbox API access token.
-        style : str
+        map_id : str
             An ID for a publicly accessible map (provided by Mapbox).
             This is the map whose tiles will be retrieved through this process
             and is specified through the Mapbox Styles API
@@ -539,13 +539,13 @@ class MapboxTiles(GoogleWTS):
 
             Examples::
 
-                style='streets-v11'
-                style='outdoors-v11'
-                style='satellite-v9'
+                map_id='streets-v11'
+                map_id='outdoors-v11'
+                map_id='satellite-v9'
         """
 
         self.access_token = access_token
-        super().__init__(style=style)
+        super().__init__(style=map_id)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -558,7 +558,7 @@ class MapboxStyleTiles(GoogleWTS):
     def __init__(self,
                  access_token,
                  username,
-                 style):
+                 map_id):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
 
@@ -576,7 +576,7 @@ class MapboxStyleTiles(GoogleWTS):
             A valid Mapbox API access token.
         username
             The username for the Mapbox user who defined the Mapbox style.
-        style
+        map_id
             A map ID for a map defined by a Mapbox style. This is the map whose
             tiles will be retrieved through this process. Note that this style
             may be private and if your access token does not have permissions
@@ -585,7 +585,7 @@ class MapboxStyleTiles(GoogleWTS):
 
         self.access_token = access_token
         self.username = username
-        super().__init__(style=style)
+        super().__init__(style=map_id)
 
     def _image_url(self, tile):
         x, y, z = tile
