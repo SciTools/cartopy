@@ -181,7 +181,7 @@ class GoogleWTS(metaclass=ABCMeta):
     _subtiles = subtiles
 
     def tile_bbox(self, x, y, z, y0_at_north_pole=True):
-        """Return the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
+        """The ``(x0, x1), (y0, y1)`` bounding box for the given tile position.
         tile position.
 
         Parameters
