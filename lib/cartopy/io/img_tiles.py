@@ -290,15 +290,14 @@ class GoogleTiles(GoogleWTS):
         if style not in styles:
             raise ValueError(
                 f"Invalid style {style!r}. Valid styles: {', '.join(styles)}")
-        self.style = style
 
         # The 'satellite' and 'terrain' styles require pillow with a jpeg
         # decoder.
-        if self.style in ["satellite", "terrain"] and \
+        if style in ["satellite", "terrain"] and \
                 not hasattr(Image.core, "jpeg_decoder") or \
                 not Image.core.jpeg_decoder:
             raise ValueError(
-                f"The {self.style!r} style requires pillow with jpeg decoding "
+                f"The {style!r} style requires pillow with jpeg decoding "
                 "support.")
         super().__init__(style=style)
 
@@ -391,8 +390,6 @@ class StadiaMapsTiles(GoogleWTS):
         super().__init__(desired_tile_form="RGBA",
                          resolution=resolution, style=style)
         self.apikey = apikey
-        self.style = style
-        self.resolution = resolution
         if style == "stamen_watercolor":
             # Known style that has the jpg extension
             self.extension = "jpg"
@@ -469,7 +466,6 @@ class Stamen(GoogleWTS):
 
         super().__init__(desired_tile_form=desired_tile_form,
                          style=style)
-        self.style = style
         self.extension = layer_info['extension']
 
     def _image_url(self, tile):
@@ -504,14 +500,12 @@ class ThunderforestTiles(GoogleWTS):
         super().__init__(desired_tile_form="RGBA",
                          resolution=resolution, style=style)
         self.apikey = apikey
-        self.resolution = resolution
         self.extension = "png"
 
         if style not in ("atlas", "cycle", "landscape", "mobile-atlas",
                          "neighbourhood", "outdoors", "pioneer", "spinal-map",
                          "transport", "transport-dark"):
             raise ValueError(f'Invalid style {style}')
-        self.style = style
 
     def _image_url(self, tile):
         # See https://www.thunderforest.com/docs/map-tiles-api/
@@ -551,7 +545,6 @@ class MapboxTiles(GoogleWTS):
         """
 
         self.access_token = access_token
-        self.style = style
         super().__init__(style=style)
 
     def _image_url(self, tile):
@@ -592,7 +585,6 @@ class MapboxStyleTiles(GoogleWTS):
 
         self.access_token = access_token
         self.username = username
-        self.style = style
         super().__init__(style=style)
 
     def _image_url(self, tile):
@@ -721,7 +713,6 @@ class OrdnanceSurvey(GoogleWTS):
             - https://apidocs.os.uk/docs/layer-information
             - https://apidocs.os.uk/docs/map-styles
         """
-        super().__init__(layer=layer)
         self.apikey = apikey
 
         if layer not in ("Road_3857", "Outdoor_3857", "Light_3857",
@@ -730,7 +721,7 @@ class OrdnanceSurvey(GoogleWTS):
         elif layer in ("Road", "Outdoor", "Light"):
             layer += "_3857"
 
-        self.layer = layer
+        super().__init__(layer=layer)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -859,7 +850,6 @@ class LINZMapsTiles(GoogleWTS):
         """
         super().__init__(layer=layer_id)
         self.apikey = apikey
-        self.layer = layer_id
         self.api_version = api_version
 
     def _image_url(self, tile):
