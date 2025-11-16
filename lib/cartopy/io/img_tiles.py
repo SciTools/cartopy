@@ -58,8 +58,8 @@ class GoogleWTS(metaclass=ABCMeta):
             Some providers (like Google, Mapbox, Stadia, Stamen and
             Thunderforest) offer tiles in different styles.
         cache : bool or pathlib.Path or str, optional
-            To allow offline user, as well as not spam tile providers, Cartopy
-            may create a local cache of previously fetched tiles. The default
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
             path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
             the default path is used. If it is set to a custom path, then this
             path is used instead of the default one. If it is set to ``False``,
