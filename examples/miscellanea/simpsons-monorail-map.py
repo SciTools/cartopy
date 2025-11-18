@@ -112,7 +112,7 @@ def main():
     # Add the bottom left 'compass' legend in spirit of the original map.
     map_ax.text(
         0.14,
-        0.0,
+        0.10,
         leg_text,
         transform=map_ax.transAxes,
         fontsize=11,
