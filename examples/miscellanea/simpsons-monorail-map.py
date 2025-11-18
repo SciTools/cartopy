@@ -72,15 +72,7 @@ def main():
         edgecolor="black",
     )
 
-    # Now add the location labels. The general approach is that covered in
-    # the 'Map tile acquisition' Catopy example, including the comment below.
-    #
-    # Use the cartopy interface to create a matplotlib transform object
-    # for the Geodetic coordinate system. We will use this along with
-    # matplotlib's offset_copy function to define a coordinate system which
-    # translates the text by 25 pixels to the left.
-    geodetic_transform = GEOM_PROJ._as_mpl_transform(map_ax)
-    text_transform = offset_copy(geodetic_transform, units="dots", x=-25)
+    # Now add the location labels one by one
     for loc_name, loc_details in LOCATIONS_TO_PLOT.items():
         loc_coords, rel_text_pos, text_rot = loc_details
         map_ax.plot(
@@ -98,12 +90,14 @@ def main():
         )
         # Text in uppercase, very bold handwriting-like font, as per the
         # screen grab of the map from the show
-        map_ax.text(
-            *text_loc_coords,
+        map_ax.annotate(
             loc_name.upper(),
+            xy=text_loc_coords,
+            transform=ccrs.Geodetic(),
+            xytext=(-25, 0),  # shift text closer to point as per reference
+            textcoords="offset pixels",
             verticalalignment="center",
             horizontalalignment="left",
-            transform=text_transform,
             fontname="Charcoal",  # ensure you have this font available
             fontweight="black",
             fontsize=28,
