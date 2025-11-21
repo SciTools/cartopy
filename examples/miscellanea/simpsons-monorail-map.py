@@ -18,11 +18,9 @@ https://simpsons.fandom.com/wiki/Brockway.
 """
 
 import matplotlib.pyplot as plt
-from matplotlib.transforms import offset_copy
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
-from matplotlib.patches import Rectangle
 
 
 # Define choices for projection and locations to plot
