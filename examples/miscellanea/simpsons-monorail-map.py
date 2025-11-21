@@ -25,9 +25,11 @@ import cartopy.io.shapereader as shpreader
 
 # Define choices for projection and locations to plot
 GEOM_PROJ = ccrs.PlateCarree()
-# Not real places, so locations pulled from location on map in still image
-# First value 2-tuple is the dot placemap location, second is where to write
-# the text label relative to that dot, to best match the map from the show.
+# Not real places, so locations pulled from location on map in still image.
+# The items in order correspond to:
+# * an x-y 2-tuple for where to plot the location dot on the map
+# * an x-y 2-tuple for where to write the text label relative to the dot above
+# * an integer for how much to rotate the text to best match the map text.
 LOCATIONS_TO_PLOT = {
     "Ogdenville": [(-111.8, 35.5), (1.5, -2.2), -6],
     "North\nHaverbrook": [(-99.0, 43.5), (2.8, -0.5), -1],
