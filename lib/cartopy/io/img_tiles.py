@@ -900,15 +900,23 @@ class AzureMapsTiles(GoogleWTS):
             the tiles are downloaded each time.
         """  # noqa: E501
         self.subscription_key = subscription_key
-        self.tileset_id = tileset_id
         self.api_version = api_version
-        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
+        super().__init__(style=tileset_id,
+                         desired_tile_form=desired_tile_form, cache=cache)
+
+    @property
+    def tileset_id(self):
+        return self.style
+
+    @property.setter
+    def tileset_id(self, val):
+        self.style = val
 
     def _image_url(self, tile):
         x, y, z = tile
         return (
             f'https://atlas.microsoft.com/map/tile?'
-            f'api-version={self.api_version}&tilesetId={self.tileset_id}&'
+            f'api-version={self.api_version}&tilesetId={self.style}&'
             f'x={x}&y={y}&zoom={z}&subscription-key={self.subscription_key}')
 
 
