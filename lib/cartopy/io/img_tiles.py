@@ -127,8 +127,10 @@ class GoogleWTS(metaclass=ABCMeta):
 
     @property
     def _cache_dir(self):
-        """Return the name of the cache directory for this specific provider,
-        resolution, layer and style combination"""
+        """Return the name of the cache directory.
+        
+        Includes the specific provider, layer, style, and resolution combination in the path.
+        """
 
         cache_dir = self.cache_path / self.__class__.__name__
         if self.layer:
