@@ -591,7 +591,7 @@ class MapboxTiles(GoogleWTS):
     def map_id(self):
         return self.style
 
-    @property.setter
+    @map_id.setter
     def map_id(self, val):
         self.style = val
 
@@ -651,7 +651,7 @@ class MapboxStyleTiles(GoogleWTS):
     def map_id(self):
         return self.style
 
-    @property.setter
+    @map_id.setter
     def map_id(self, val):
         self.style = val
 
@@ -909,7 +909,7 @@ class AzureMapsTiles(GoogleWTS):
     def tileset_id(self):
         return self.style
 
-    @property.setter
+    @tileset_id.setter
     def tileset_id(self, val):
         self.style = val
 
@@ -965,7 +965,7 @@ class LINZMapsTiles(GoogleWTS):
     def layer_id(self):
         return self.layer
 
-    @property.setter
+    @layer_id.setter
     def layer_id(self, val):
         self.layer = val
 
