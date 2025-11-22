@@ -38,9 +38,10 @@ class GoogleWTS(metaclass=ABCMeta):
                  desired_tile_form='RGB',
                  user_agent=f'CartoPy/{cartopy.__version__}',
                  cache=False,
-                 resolution="",
+                 *,
                  layer=None,
-                 style=None):
+                 style=None
+                 resolution="",):
         """
         Implement web tile retrieval using the Google WTS coordinate system.
 
