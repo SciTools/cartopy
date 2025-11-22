@@ -41,7 +41,7 @@ class GoogleWTS(metaclass=ABCMeta):
                  *,
                  layer=None,
                  style=None
-                 resolution="",):
+                 resolution=""):
         """
         Implement web tile retrieval using the Google WTS coordinate system.
 
@@ -53,15 +53,6 @@ class GoogleWTS(metaclass=ABCMeta):
             Some providers (like OSM) need a "user_agent" in the request (see
             Issue #1341). OSM may reject requests if there are too many of them,
             in which case a change of ``user_agent`` may fix the issue.
-        resolution : str, optional
-            Some providers (like Stadia and Thunderforest) offer tiles at
-            different resolutions.
-        layer : str, optional
-            Some providers (like LINZ and Ordnance Survey) offer tiles of
-            different layers.
-        style : str, optional
-            Some providers (like Google, Mapbox, Stadia, Stamen and
-            Thunderforest) offer tiles in different styles.
         cache : bool or pathlib.Path or str, optional
             To allow offline use, as well as not spam tile providers, Cartopy
             can create a local cache of previously fetched tiles. The default
@@ -69,6 +60,15 @@ class GoogleWTS(metaclass=ABCMeta):
             the default path is used. If it is set to a custom path, then this
             path is used instead of the default one. If it is set to ``False``,
             the tiles are downloaded each time.
+        layer : str, optional
+            Some providers (like LINZ and Ordnance Survey) offer tiles of
+            different layers.
+        style : str, optional
+            Some providers (like Google, Mapbox, Stadia, Stamen and
+            Thunderforest) offer tiles in different styles.
+        resolution : str, optional
+            Some providers (like Stadia and Thunderforest) offer tiles at
+            different resolutions.
 
         Notes
         -----
@@ -79,9 +79,9 @@ class GoogleWTS(metaclass=ABCMeta):
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
         self.user_agent = user_agent
-        self.resolution = resolution
         self.layer = layer
         self.style = style
+        self.resolution = resolution
 
         # Enable a cache mechanism when cache is equal to True or to a path.
         self._default_cache = False
