@@ -128,7 +128,7 @@ class GoogleWTS(metaclass=ABCMeta):
     @property
     def _cache_dir(self):
         """Return the name of the cache directory.
-        
+
         Includes the specific provider, layer, style, and resolution combination in the path.
         """
 
@@ -586,6 +586,14 @@ class MapboxTiles(GoogleWTS):
         self.access_token = access_token
         super().__init__(style=map_id, cache=cache)
 
+    @property
+    def map_id(self):
+        return self.style
+
+    @property.setter
+    def map_id(self, val):
+        self.style = val
+
     def _image_url(self, tile):
         x, y, z = tile
 
@@ -637,6 +645,14 @@ class MapboxStyleTiles(GoogleWTS):
         self.username = username
         super().__init__(style=map_id,
                          desired_tile_form=desired_tile_form, cache=cache)
+
+    @property
+    def map_id(self):
+        return self.style
+
+    @property.setter
+    def map_id(self, val):
+        self.style = val
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -935,6 +951,14 @@ class LINZMapsTiles(GoogleWTS):
                          desired_tile_form=desired_tile_form, cache=cache)
         self.apikey = apikey
         self.api_version = api_version
+
+    @property
+    def layer_id(self):
+        return self.layer
+
+    @property.setter
+    def layer_id(self, val):
+        self.layer = val
 
     def _image_url(self, tile):
         x, y, z = tile
