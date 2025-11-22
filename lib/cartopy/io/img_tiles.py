@@ -129,7 +129,8 @@ class GoogleWTS(metaclass=ABCMeta):
     def _cache_dir(self):
         """Return the name of the cache directory.
 
-        Includes the specific provider, layer, style, and resolution combination in the path.
+        Includes the specific provider, layer, style, and resolution combination
+        in the path.
         """
 
         cache_dir = self.cache_path / self.__class__.__name__
