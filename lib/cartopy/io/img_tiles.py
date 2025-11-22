@@ -40,7 +40,7 @@ class GoogleWTS(metaclass=ABCMeta):
                  cache=False,
                  *,
                  layer=None,
-                 style=None
+                 style=None,
                  resolution=""):
         """
         Implement web tile retrieval using the Google WTS coordinate system.
