@@ -32,29 +32,56 @@ import cartopy.crs as ccrs
 
 
 class GoogleWTS(metaclass=ABCMeta):
-    """
-    Implement web tile retrieval using the Google WTS coordinate system.
-
-    A "tile" in this class refers to the coordinates (x, y, z).
-
-    The tiles can be saved to a cache directory using the cache parameter, so
-    they are downloaded only once. If it is set to True, the default path
-    stored in the cartopy.config dictionary is used. If it is set to a custom
-    path, this path is used instead of the default one. If it is set to False
-    (the default behavior), the tiles are downloaded each time.
-
-    """
     _MAX_THREADS = 24
 
-    def __init__(self, desired_tile_form='RGB',
-                 user_agent=f'CartoPy/{cartopy.__version__}', cache=False):
+    def __init__(self,
+                 desired_tile_form='RGB',
+                 user_agent=f'CartoPy/{cartopy.__version__}',
+                 cache=False,
+                 *,
+                 layer=None,
+                 style=None,
+                 resolution=""):
+        """
+        Implement web tile retrieval using the Google WTS coordinate system.
+
+        Parameters
+        ----------
+        desired_tile_form : str, optional
+            The desired format of the tile (defaults to "RGB").
+        user_agent : str, optional
+            Some providers (like OSM) need a "user_agent" in the request (see
+            Issue #1341). OSM may reject requests if there are too many of them,
+            in which case a change of ``user_agent`` may fix the issue.
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
+        layer : str, optional
+            Some providers (like LINZ and Ordnance Survey) offer tiles of
+            different layers.
+        style : str, optional
+            Some providers (like Google, Mapbox, Stadia, Stamen and
+            Thunderforest) offer tiles in different styles.
+        resolution : str, optional
+            Some providers (like Stadia and Thunderforest) offer tiles at
+            different resolutions.
+
+        Notes
+        -----
+        A "tile" in this class refers to the coordinates (x, y, z).
+        """
+
         self.imgs = []
         self.crs = ccrs.Mercator.GOOGLE
         self.desired_tile_form = desired_tile_form
         self.user_agent = user_agent
-        # some providers like osm need a user_agent in the request issue #1341
-        # osm may reject requests if there are too many of them, in which case
-        # a change of user_agent may fix the issue.
+        self.layer = layer
+        self.style = style
+        self.resolution = resolution
 
         # Enable a cache mechanism when cache is equal to True or to a path.
         self._default_cache = False
@@ -100,11 +127,24 @@ class GoogleWTS(metaclass=ABCMeta):
 
     @property
     def _cache_dir(self):
-        """Return the name of the cache directory"""
-        return self.cache_path / self.__class__.__name__
+        """Return the name of the cache directory.
+
+        Includes the specific provider, layer, style, and resolution combination
+        in the path.
+        """
+
+        cache_dir = self.cache_path / self.__class__.__name__
+        if self.layer:
+            cache_dir /= self.layer
+        if self.style:
+            cache_dir /= self.style
+        if self.resolution:
+            cache_dir /= self.resolution
+        return cache_dir
 
     def _load_cache(self):
         """Load the cache"""
+
         if self.cache_path is not None:
             cache_dir = self._cache_dir
             if not cache_dir.exists():
@@ -145,27 +185,23 @@ class GoogleWTS(metaclass=ABCMeta):
     _subtiles = subtiles
 
     def tile_bbox(self, x, y, z, y0_at_north_pole=True):
-        """
-        Return the ``(x0, x1), (y0, y1)`` bounding box for the given x, y, z
-        tile position.
+        """The ``(x0, x1), (y0, y1)`` bounding box for the given tile position.
 
         Parameters
         ----------
-        x
+        x : int
             The x tile coordinate in the Google tile numbering system.
-        y
+        y : int
             The y tile coordinate in the Google tile numbering system.
-        z
+        z : int
             The z tile coordinate in the Google tile numbering system.
-
-        y0_at_north_pole: optional
+        y0_at_north_pole : bool, optional
             Boolean representing whether the numbering of the y coordinate
             starts at the north pole (as is the convention for Google tiles)
             or not (in which case it will start at the south pole, as is the
             convention for TMS). Defaults to True.
-
-
         """
+
         n = 2 ** z
         assert 0 <= x <= (n - 1), \
             f"Tile's x index is out of range. Upper limit {n}. Got {x}"
@@ -191,6 +227,7 @@ class GoogleWTS(metaclass=ABCMeta):
 
     def tileextent(self, x_y_z):
         """Return extent tuple ``(x0,x1,y0,y1)`` in Mercator coordinates."""
+
         x, y, z = x_y_z
         x_lim, y_lim = self.tile_bbox(x, y, z, y0_at_north_pole=True)
         return tuple(x_lim) + tuple(y_lim)
@@ -235,49 +272,49 @@ class GoogleWTS(metaclass=ABCMeta):
 
 
 class GoogleTiles(GoogleWTS):
-    def __init__(self, desired_tile_form='RGB', style="street",
+    def __init__(self,
+                 desired_tile_form='RGB',
+                 style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
                       '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
                  cache=False):
         """
         Parameters
         ----------
-        desired_tile_form: optional
-            Defaults to 'RGB'.
-        style: optional
+        desired_tile_form : str, optional
+            The desired format of the tile (defaults to "RGB").
+        style : str, optional
             The style for the Google Maps tiles.  One of 'street',
             'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
-        url: optional
+        url : str, optional
             URL pointing to a tile source and containing {x}, {y}, and {z}.
-            Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/\
-World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
-
-        Notes
-        -----
-        Currently, the ``GoogleWTS`` class does not use ``style`` when
-        determining the local file path in the cache. Therefore, if a tile
-        already exists for the same ``(x, y, z)`` then it will be blindly used
-        even if the style is not what was asked for. You may need to manage
-        multiple cache paths to work around this issue.
+            Such as: ``'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}.jpg'``
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
         """
+
         styles = ["street", "satellite", "terrain", "only_streets"]
         style = style.lower()
         self.url = url
         if style not in styles:
             raise ValueError(
                 f"Invalid style {style!r}. Valid styles: {', '.join(styles)}")
-        self.style = style
 
         # The 'satellite' and 'terrain' styles require pillow with a jpeg
         # decoder.
-        if self.style in ["satellite", "terrain"] and \
+        if style in ["satellite", "terrain"] and \
                 not hasattr(Image.core, "jpeg_decoder") or \
                 not Image.core.jpeg_decoder:
             raise ValueError(
-                f"The {self.style!r} style requires pillow with jpeg decoding "
+                f"The {style!r} style requires pillow with jpeg decoding "
                 "support.")
-        return super().__init__(desired_tile_form=desired_tile_form,
-                                cache=cache)
+        super().__init__(style=style,
+                         desired_tile_form=desired_tile_form, cache=cache)
 
     def _image_url(self, tile):
         style_dict = {
@@ -328,60 +365,54 @@ class OSM(GoogleWTS):
 
 
 class StadiaMapsTiles(GoogleWTS):
-    """
-    Retrieves tiles from stadiamaps.com.
-
-    For a full reference on the styles available please see
-    https://docs.stadiamaps.com/themes/. A few of the specific styles
-    that are made available are ``alidade_smooth``, ``stamen_terrain`` and
-    ``osm_bright``.
-
-    Using the Stadia Maps API requires including an attribution. Please see
-    https://docs.stadiamaps.com/attribution/ for details.
-
-    For most styles that means including the following attribution:
-
-    `© Stadia Maps <https://www.stadiamaps.com/>`_
-    `© OpenMapTiles <https://openmaptiles.org/>`_
-    `© OpenStreetMap contributors <https://www.openstreetmap.org/about/>`_
-
-    with Stamen styles *additionally* requiring the following attribution:
-
-    `© Stamen Design <https://stamen.com/>`_
-
-    Parameters
-    ----------
-    apikey : str, required
-        The authentication key provided by Stadia Maps to query their APIs
-    style : str, optional
-        Name of the desired style. Defaults to ``alidade_smooth``.
-        See https://docs.stadiamaps.com/themes/ for a full list of styles.
-    resolution : str, optional
-        Resolution of the images to return. Defaults to an empty string,
-        standard resolution (256x256). You can also specify "@2x" for high
-        resolution (512x512) tiles.
-    cache : bool or str, optional
-        If True, the default cache directory is used. If False, no cache is
-        used. If a string, the string is used as the path to the cache.
-
-    Notes
-    -----
-    Currently, the ``GoogleWTS`` class does not use either ``resolution`` or
-    ``style`` when determining the local file path in the cache. Therefore, if a
-    tile already exists for the same ``(x, y, z)`` then it will be blindly used
-    even if the resolution or style is not what was asked for. You may need to
-    manage multiple cache paths to work around this issue.
-    """
-
     def __init__(self,
                  apikey,
                  style="alidade_smooth",
                  resolution="",
                  cache=False):
-        super().__init__(cache=cache, desired_tile_form="RGBA")
+        """Retrieves tiles from stadiamaps.com.
+
+        For a full reference on the styles available please see
+        https://docs.stadiamaps.com/themes/. A few of the specific styles that
+        are made available are ``alidade_smooth``, ``stamen_terrain`` and
+        ``osm_bright``.
+
+        Using the Stadia Maps API requires including an attribution. Please see
+        https://docs.stadiamaps.com/attribution/ for details.
+
+        For most styles that means including the following attribution:
+
+        `© Stadia Maps <https://www.stadiamaps.com/>`_
+        `© OpenMapTiles <https://openmaptiles.org/>`_
+        `© OpenStreetMap contributors <https://www.openstreetmap.org/about/>`_
+
+        with Stamen styles *additionally* requiring the following attribution:
+
+        `© Stamen Design <https://stamen.com/>`_
+
+        Parameters
+        ----------
+        apikey : str, required
+            The authentication key provided by Stadia Maps to query their APIs
+        style : str, optional
+            Name of the desired style. Defaults to ``alidade_smooth``.
+            See https://docs.stadiamaps.com/themes/ for a full list of styles.
+        resolution : str, optional
+            Resolution of the images to return. Defaults to an empty string,
+            standard resolution (256x256). You can also specify "@2x" for high
+            resolution (512x512) tiles.
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
+        """
+
+        super().__init__(desired_tile_form="RGBA", cache=cache,
+                         resolution=resolution, style=style)
         self.apikey = apikey
-        self.style = style
-        self.resolution = resolution
         if style == "stamen_watercolor":
             # Known style that has the jpg extension
             self.extension = "jpg"
@@ -396,44 +427,36 @@ class StadiaMapsTiles(GoogleWTS):
 
 
 class Stamen(GoogleWTS):
-    """
-    Retrieves tiles from maps.stamen.com. Styles include
-    ``terrain-background``, ``terrain``, ``toner`` and ``watercolor``.
+    def __init__(self,
+                 style='toner',
+                 desired_tile_form=None,
+                 cache=False):
+        """Retrieves tiles from maps.stamen.com. Styles include
+        ``terrain-background``, ``terrain``, ``toner`` and ``watercolor``.
 
-    For a full reference on the styles available please see
-    http://maps.stamen.com. Of particular note are the sub-styles
-    that are made available (e.g. ``terrain`` and ``terrain-background``).
-    To determine the name of the particular [sub-]style you want,
-    follow the link on http://maps.stamen.com to your desired style and
-    observe the style name in the URL. Your style name will be in the
-    form of: ``http://maps.stamen.com/{STYLE_NAME}/#9/37/-122``.
+        For a full reference on the styles available please see
+        http://maps.stamen.com. Of particular note are the sub-styles
+        that are made available (e.g. ``terrain`` and ``terrain-background``).
+        To determine the name of the particular [sub-]style you want,
+        follow the link on http://maps.stamen.com to your desired style and
+        observe the style name in the URL. Your style name will be in the
+        form of: ``http://maps.stamen.com/{STYLE_NAME}/#9/37/-122``.
 
-    Except otherwise noted, the Stamen map tile sets are copyright Stamen
-    Design, under a Creative Commons Attribution (CC BY 3.0) license.
+        Except otherwise noted, the Stamen map tile sets are copyright Stamen
+        Design, under a Creative Commons Attribution (CC BY 3.0) license.
 
-    Please see the attribution notice at http://maps.stamen.com on how to
-    attribute this imagery.
+        Please see the attribution notice at http://maps.stamen.com on how to
+        attribute this imagery.
 
-    Notes
-    -----
-    Currently, the ``GoogleWTS`` class does not use ``style`` when determining
-    the local file path in the cache. Therefore, if a tile already exists for
-    the same ``(x, y, z)`` then it will be blindly used even if the style is not
-    what was asked for. You may need to manage multiple cache paths to work
-    around this issue.
+        References
+        ----------
 
-    References
-    ----------
+        * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
+        * http://maps.stamen.com/
+        * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
+        * https://github.com/migurski/DEM-Tools
+        """
 
-     * http://mike.teczno.com/notes/osm-us-terrain-layer/background.html
-     * http://maps.stamen.com/
-     * https://wiki.openstreetmap.org/wiki/List_of_OSM_based_Services
-     * https://github.com/migurski/DEM-Tools
-
-    """
-
-    def __init__(self, style='toner',
-                 desired_tile_form=None, cache=False):
         warnings.warn("The Stamen styles are no longer served by Stamen and "
                       "are now served by Stadia Maps. Please use the "
                       "StadiaMapsTiles class instead.")
@@ -465,9 +488,8 @@ class Stamen(GoogleWTS):
             else:
                 desired_tile_form = 'RGBA'
 
-        super().__init__(desired_tile_form=desired_tile_form,
-                         cache=cache)
-        self.style = style
+        super().__init__(desired_tile_form=desired_tile_form, cache=cache,
+                         style=style)
         self.extension = layer_info['extension']
 
     def _image_url(self, tile):
@@ -477,51 +499,44 @@ class Stamen(GoogleWTS):
 
 
 class ThunderforestTiles(GoogleWTS):
-    """
-    Retrieves tiles from https://www.thunderforest.com.
-
-    For a full reference on the styles available please see
-    https://www.thunderforest.com/maps/.
-
-    Parameters
-    ----------
-    apikey : str, required
-        The authentication key provided by Thunderforest to query their APIs
-    style : str, optional
-        Name of the desired style. Defaults to "landscape". See
-        https://www.thunderforest.com/maps/ for a full list of styles.
-    resolution : str, optional
-        Resolution of the images to return. Defaults to an empty string,
-        standard resolution (256x256). You can also specify "@2x" for high
-        resolution (512x512) tiles.
-    cache : bool or str, optional
-        If True, the default cache directory is used. If False, no cache is
-        used. If a string, the string is used as the path to the cache.
-
-    Notes
-    -----
-    Currently, the ``GoogleWTS`` class does not use either ``resolution`` or
-    ``style`` when determining the local file path in the cache. Therefore, if a
-    tile already exists for the same ``(x, y, z)`` then it will be blindly used
-    even if the resolution or style is not what was asked for. You may need to
-    manage multiple cache paths to work around this issue.
-    """
-
     def __init__(self,
-                    apikey,
-                    style="landscape",
-                    resolution="",
-                    cache=False):
-        super().__init__(cache=cache, desired_tile_form="RGBA")
+                 apikey,
+                 style="landscape",
+                 resolution="",
+                 cache=False):
+        """Retrieves tiles from https://www.thunderforest.com.
+
+        For a full reference on the styles available please see
+        https://www.thunderforest.com/maps/.
+
+        Parameters
+        ----------
+        apikey : str, required
+            The authentication key provided by Thunderforest to query their APIs
+        style : str, optional
+            Name of the desired style. Defaults to "landscape". See
+            https://www.thunderforest.com/maps/ for a full list of styles.
+        resolution : str, optional
+            Resolution of the images to return. Defaults to an empty string,
+            standard resolution (256x256). You can also specify "@2x" for high
+            resolution (512x512) tiles.
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
+        """
+
+        super().__init__(resolution=resolution, style=style, cache=cache)
         self.apikey = apikey
-        self.resolution = resolution
         self.extension = "png"
 
         if style not in ("atlas", "cycle", "landscape", "mobile-atlas",
                          "neighbourhood", "outdoors", "pioneer", "spinal-map",
                          "transport", "transport-dark"):
             raise ValueError(f'Invalid style {style}')
-        self.style = style
 
     def _image_url(self, tile):
         # See https://www.thunderforest.com/docs/map-tiles-api/
@@ -532,19 +547,17 @@ class ThunderforestTiles(GoogleWTS):
 
 
 class MapboxTiles(GoogleWTS):
-    """
-    Implement web tile retrieval from Mapbox.
-
-    For terms of service, see https://www.mapbox.com/tos/.
-
-    """
-
-    def __init__(self, access_token, map_id, cache=False):
+    def __init__(self,
+                 access_token,
+                 map_id,
+                 cache=False):
         """
         Set up a new Mapbox tiles instance.
 
         Access to Mapbox web services requires an access token and a map ID.
         See https://www.mapbox.com/api-documentation/ for details.
+
+        For terms of service, see https://www.mapbox.com/tos/.
 
         Parameters
         ----------
@@ -561,35 +574,50 @@ class MapboxTiles(GoogleWTS):
                 map_id='streets-v11'
                 map_id='outdoors-v11'
                 map_id='satellite-v9'
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
         """
+
         self.access_token = access_token
-        self.map_id = map_id
-        super().__init__(cache=cache)
+        super().__init__(style=map_id, cache=cache)
+
+    @property
+    def map_id(self):
+        return self.style
+
+    @map_id.setter
+    def map_id(self, val):
+        self.style = val
 
     def _image_url(self, tile):
         x, y, z = tile
 
-        return (f'https://api.mapbox.com/styles/v1/mapbox/{self.map_id}/tiles'
+        return (f'https://api.mapbox.com/styles/v1/mapbox/{self.style}/tiles'
                 f'/{z}/{x}/{y}?access_token={self.access_token}')
 
 
 class MapboxStyleTiles(GoogleWTS):
-    """
-    Implement web tile retrieval from a user-defined Mapbox style. For more
-    details on Mapbox styles, see
-    https://www.mapbox.com/studio-manual/overview/map-styling/.
-
-    For terms of service, see https://www.mapbox.com/tos/.
-
-    """
-
-    def __init__(self, access_token, username, map_id,
-                 desired_tile_form='RGB', cache=False):
+    def __init__(self,
+                 access_token,
+                 username,
+                 map_id,
+                 desired_tile_form='RGB',
+                 cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
 
         Access to Mapbox web services requires an access token and a map ID.
         See https://www.mapbox.com/api-documentation/ for details.
+
+        For more details on Mapbox styles, see
+        https://www.mapbox.com/studio-manual/overview/map-styling/.
+
+        For terms of service, see https://www.mapbox.com/tos/.
 
         Parameters
         ----------
@@ -602,20 +630,34 @@ class MapboxStyleTiles(GoogleWTS):
             tiles will be retrieved through this process. Note that this style
             may be private and if your access token does not have permissions
             to view this style, then map tile retrieval will fail.
-        desired_tile_form: optional
-            The desired tile format. Use 'RGBA' if desired style includes
-            transparency.
-
+        desired_tile_form : str, optional
+            The desired format of the tile (defaults to "RGB").
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
         """
+
         self.access_token = access_token
         self.username = username
-        self.map_id = map_id
-        super().__init__(cache=cache, desired_tile_form=desired_tile_form)
+        super().__init__(style=map_id,
+                         desired_tile_form=desired_tile_form, cache=cache)
+
+    @property
+    def map_id(self):
+        return self.style
+
+    @map_id.setter
+    def map_id(self, val):
+        self.style = val
 
     def _image_url(self, tile):
         x, y, z = tile
         return (f'https://api.mapbox.com/styles/v1/{self.username}'
-                f'/{self.map_id}/tiles/256/{z}/{x}/{y}'
+                f'/{self.style}/tiles/256/{z}/{x}/{y}'
                 f'?access_token={self.access_token}')
 
 
@@ -739,19 +781,16 @@ class OrdnanceSurvey(GoogleWTS):
 
             - https://apidocs.os.uk/docs/layer-information
             - https://apidocs.os.uk/docs/map-styles
-        desired_tile_form: optional
-            Defaults to 'RGB'.
-
-        Notes
-        -----
-        Currently, the ``GoogleWTS`` class does not use ``layer`` when
-        determining the local file path in the cache. Therefore, if a tile
-        already exists for the same ``(x, y, z)`` then it will be blindly used
-        even if the layer is not what was asked for. You may need to manage
-        multiple cache paths to work around this issue.
+        desired_tile_form : str, optional
+            The desired format of the tile (defaults to "RGB").
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
         """
-        super().__init__(desired_tile_form=desired_tile_form,
-                         cache=cache)
         self.apikey = apikey
 
         if layer not in ("Road_3857", "Outdoor_3857", "Light_3857",
@@ -760,7 +799,8 @@ class OrdnanceSurvey(GoogleWTS):
         elif layer in ("Road", "Outdoor", "Light"):
             layer += "_3857"
 
-        self.layer = layer
+        super().__init__(layer=layer,
+                         desired_tile_form=desired_tile_form, cache=cache)
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -826,8 +866,12 @@ def _merge_tiles(tiles):
 
 class AzureMapsTiles(GoogleWTS):
 
-    def __init__(self, subscription_key, tileset_id="microsoft.imagery",
-                 api_version="2.0", desired_tile_form='RGB', cache=False):
+    def __init__(self,
+                 subscription_key,
+                 tileset_id="microsoft.imagery",
+                 api_version="2.0",
+                 desired_tile_form='RGB',
+                 cache=False):
         """
         Set up a new instance to retrieve tiles from Azure Maps.
 
@@ -845,25 +889,45 @@ class AzureMapsTiles(GoogleWTS):
             for details.
         api_version
             API version to use. Defaults to 2.0 as recommended by Microsoft.
-
+        desired_tile_form : str, optional
+            The desired format of the tile (defaults to "RGB").
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
         """  # noqa: E501
-        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
         self.subscription_key = subscription_key
-        self.tileset_id = tileset_id
         self.api_version = api_version
+        super().__init__(style=tileset_id,
+                         desired_tile_form=desired_tile_form, cache=cache)
+
+    @property
+    def tileset_id(self):
+        return self.style
+
+    @tileset_id.setter
+    def tileset_id(self, val):
+        self.style = val
 
     def _image_url(self, tile):
         x, y, z = tile
         return (
             f'https://atlas.microsoft.com/map/tile?'
-            f'api-version={self.api_version}&tilesetId={self.tileset_id}&'
+            f'api-version={self.api_version}&tilesetId={self.style}&'
             f'x={x}&y={y}&zoom={z}&subscription-key={self.subscription_key}')
 
 
 class LINZMapsTiles(GoogleWTS):
 
-    def __init__(self, apikey, layer_id, api_version="v4",
-                 desired_tile_form='RGB', cache=False):
+    def __init__(self,
+                 apikey,
+                 layer_id,
+                 api_version="v4",
+                 desired_tile_form='RGB',
+                 cache=False):
         """
         Set up a new instance to retrieve tiles from The LINZ
         aka. Land Information New Zealand
@@ -881,16 +945,32 @@ class LINZMapsTiles(GoogleWTS):
             "About" tab for each layer displayed in the LINZ data service.
         api_version
             API version to use. Defaults to v4 for now.
-
+        desired_tile_form : str, optional
+            The desired format of the tile (defaults to "RGB").
+        cache : bool or pathlib.Path or str, optional
+            To allow offline use, as well as not spam tile providers, Cartopy
+            can create a local cache of previously fetched tiles. The default
+            path is ``cartopy.config["cache_dir"]``. If it is set to ``True``,
+            the default path is used. If it is set to a custom path, then this
+            path is used instead of the default one. If it is set to ``False``,
+            the tiles are downloaded each time.
         """
-        super().__init__(desired_tile_form=desired_tile_form, cache=cache)
+        super().__init__(layer=layer_id,
+                         desired_tile_form=desired_tile_form, cache=cache)
         self.apikey = apikey
-        self.layer_id = layer_id
         self.api_version = api_version
+
+    @property
+    def layer_id(self):
+        return self.layer
+
+    @layer_id.setter
+    def layer_id(self, val):
+        self.layer = val
 
     def _image_url(self, tile):
         x, y, z = tile
         return (
             f'https://tiles-a.koordinates.com/services;'
             f'key={self.apikey}/tiles/{self.api_version}/'
-            f'layer={self.layer_id}/EPSG:3857/{z}/{x}/{y}.png')
+            f'layer={self.layer}/EPSG:3857/{z}/{x}/{y}.png')
