@@ -186,7 +186,6 @@ class GoogleWTS(metaclass=ABCMeta):
 
     def tile_bbox(self, x, y, z, y0_at_north_pole=True):
         """The ``(x0, x1), (y0, y1)`` bounding box for the given tile position.
-        tile position.
 
         Parameters
         ----------
