@@ -239,7 +239,8 @@ class GoogleWTS(metaclass=ABCMeta):
         pass
 
     def get_image(self, tile):
-        from urllib.request import HTTPError, Request, URLError, urlopen
+        from urllib3 import request
+        from urllib3.exceptions import HTTPError
 
         if self.cache_path is not None:
             filename = "_".join([str(i) for i in tile]) + ".npy"
@@ -252,13 +253,13 @@ class GoogleWTS(metaclass=ABCMeta):
         else:
             url = self._image_url(tile)
             try:
-                request = Request(url, headers={"User-Agent": self.user_agent})
-                fh = urlopen(request)
-                im_data = io.BytesIO(fh.read())
-                fh.close()
+                r = request('GET', url, headers={"User-Agent": self.user_agent},
+                            preload_content=False)
+                im_data = io.BytesIO(r.read())
+                r.release_conn()
                 img = Image.open(im_data)
 
-            except (HTTPError, URLError) as err:
+            except HTTPError as err:
                 print(err)
                 img = Image.fromarray(np.full((256, 256, 3), (250, 250, 250),
                                               dtype=np.uint8))
