@@ -991,7 +991,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
             # There is no point in exposing "regrid_shape" to the user here
             # because the only available stock image is only 720 px x 360 px
-            # big.
+            # big. This argument is less obvious for the "interpolation" keyword
+            # argument, but probably still valid.
             return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90],
