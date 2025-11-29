@@ -1000,7 +1000,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False, regrid_shape=750):
+                       cache=False, interpolation='auto', regrid_shape=750):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
@@ -1036,6 +1036,9 @@ class GeoAxes(matplotlib.axes.Axes):
             Logical flag as to whether or not to cache the loaded
             images into memory. The images are stored before the
             extent is used.
+        interpolation : str, optional
+            The interpolation method used when drawing the image, see
+            :func:`matplotlib.pyplot.imshow` for further details.
         regrid_shape: int or pair of ints
             The shape of the desired image if it needs to be
             transformed.  If a single integer is given then
@@ -1088,6 +1091,7 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(img, origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90],
+                               interpolation=interpolation,
                                regrid_shape=regrid_shape)
         else:
             # return only a subset of the image:
@@ -1131,6 +1135,7 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(img_subset, origin='upper',
                                transform=source_proj,
                                extent=ret_extent,
+                               interpolation=interpolation,
                                regrid_shape=regrid_shape)
 
     def read_user_background_images(self, verify=True):
@@ -1261,6 +1266,9 @@ class GeoAxes(matplotlib.axes.Axes):
             The origin of the vertical pixels. See
             :func:`matplotlib.pyplot.imshow` for further details.
             Default is ``'upper'``. Prior to 0.18, it was ``'lower'``.
+        interpolation : str, optional
+            The interpolation method used when drawing the image, see
+            :func:`matplotlib.pyplot.imshow` for further details.
 
         """
         if 'update_datalim' in kwargs:
