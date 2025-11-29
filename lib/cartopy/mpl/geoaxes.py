@@ -989,6 +989,9 @@ class GeoAxes(matplotlib.axes.Axes):
             fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
                      / '50-natural-earth-1-downsampled.png')
 
+            # There is no point in exposing "regrid_shape" to the user here
+            # because the only available stock image is only 720 px x 360 px
+            # big.
             return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90],
