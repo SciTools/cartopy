@@ -1051,6 +1051,7 @@ class GeoAxes(matplotlib.axes.Axes):
             image being transformed into a global PlateCarree
             projection the resulting transformed image would
             have a shape of ``(750, 1500)``.
+
         """
         # read in the user's background image directory:
         if len(_USER_BG_IMGS) == 0:
