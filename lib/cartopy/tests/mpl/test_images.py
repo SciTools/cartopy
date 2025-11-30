@@ -146,8 +146,7 @@ def test_imshow_arguments():
     # in the fast-path call to super()
     with pytest.warns(UserWarning, match="ignoring regrid_shape"):
         ax.imshow(np.random.random((10, 10)), transform=ccrs.PlateCarree(),
-              extent=(-180, 180, -90, 90), regrid_shape=500,
-              interpolation="auto")
+              extent=(-180, 180, -90, 90), regrid_shape=500)
 
 
 def test_imshow_rgba():
