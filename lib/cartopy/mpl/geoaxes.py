@@ -1001,7 +1001,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False, interpolation='auto', regrid_shape=750):
+                       cache=False, interpolation=None, regrid_shape=750):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
