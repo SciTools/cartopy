@@ -410,7 +410,7 @@ def extend_lons_xr(dsx, lonmin, lonmax, lon_name="longitude"):
     Function to extend data to longitudes beyond 360 degrees in either 
     direction by duplicating data.
 
-    Version for xarray
+    Version for xarray.  Use extend_lons_np for numpy arrays.
 
     Parameters
     ----------
@@ -475,7 +475,7 @@ def extend_lons_np(lons, lats, arr, lonmin, lonmax):
     Function to extend data to longitudes beyond 360 degrees in either 
     direction by duplicating data.
 
-    Version for numpy arrays.
+    Version for numpy arrays.  Use extend_lons_xr for xarrays.
 
     Parameters
     ----------
