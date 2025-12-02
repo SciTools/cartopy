@@ -635,45 +635,6 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return self.add_feature(feature, **kwargs)
 
-    def coastlines_ext(self, resolution='auto', color='black', **kwargs):
-        """
-        Add coastal **outlines** to the current axes from the Natural Earth
-        "coastline" shapefile collection.
-
-        Parameters
-        ----------
-        resolution : str or :class:`cartopy.feature.Scaler`, optional
-            A named resolution to use from the Natural Earth
-            dataset. Currently can be one of "auto" (default), "110m", "50m",
-            and "10m", or a Scaler object.  If "auto" is selected, the
-            resolution is defined by `~cartopy.feature.auto_scaler`.
-
-        """
-        kwargs['edgecolor'] = color
-        kwargs['facecolor'] = 'none'
-
-        extent = self.get_extent()
-        target_proj = ccrs.PlateCarree(over=True)
-        source_proj = self.projection
-        extent = self.get_extent()
-        lon0, lat0 = target_proj.transform_point(extent[0],
-                                                 extent[2], source_proj)
-        lon1, lat1 = target_proj.transform_point(extent[1],
-                                                 extent[3], source_proj)
-        extent = [lon0, lon1, lat0, lat1]
-
-        feature = cartopy.feature.NaturalEarthFeature_ext(
-            'physical', 'coastline', cartopy.feature.auto_scaler, extent=extent,
-            edgecolor='black', facecolor='never')
-        """Automatically scaled coastline, including major islands."""
-
-        # The coastline feature is automatically scaled by default, but for
-        # anything else, including custom scaler instances, create a new
-        # feature which derives from the default one.
-        if resolution != 'auto':
-            feature = feature.with_scale(resolution)
-
-        return self.add_feature(feature, **kwargs)
 
     def tissot(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
         """
@@ -744,65 +705,6 @@ class GeoAxes(matplotlib.axes.Axes):
                                                          **kwargs)
         return self.add_feature(feature)
 
-    def tissot_ext(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
-        """
-        Add Tissot's indicatrices to the axes.
-
-        Parameters
-        ----------
-        rad_km
-            The radius in km of the circles to be drawn.
-        lons
-            A numpy.ndarray, list or tuple of longitude values that
-            locate the centre of each circle. Specifying more than one
-            dimension allows individual points to be drawn whereas a
-            1D array produces a grid of points.
-        lats
-            A numpy.ndarray, list or tuple of latitude values that
-            that locate the centre of each circle. See lons.
-        n_samples
-            Integer number of points sampled around the circumference of
-            each circle.
-
-
-        ``**kwargs`` are passed through to
-        :class:`cartopy.feature.ShapelyFeature`.
-
-        """
-        from cartopy import geodesic
-
-        geod = geodesic.Geodesic()
-        geoms = []
-
-        if lons is None:
-            lons = np.linspace(-180, 180, 6, endpoint=False)
-        else:
-            lons = np.asarray(lons)
-        if lats is None:
-            lats = np.linspace(-80, 80, 6)
-        else:
-            lats = np.asarray(lats)
-
-        if lons.ndim == 1 or lats.ndim == 1:
-            lons, lats = np.meshgrid(lons, lats)
-        lons, lats = lons.flatten(), lats.flatten()
-
-        if lons.shape != lats.shape:
-            raise ValueError('lons and lats must have the same shape.')
-
-        for lon, lat in zip(lons, lats):
-            # No pretending here, the circle will be the same no matter
-            # the longitude, so create every circle at 180 for convenience.
-            circle = geod.circle(180, lat, rad_km * 1e3, n_samples=n_samples)
-            circle[:,0] = (circle[:,0] % 360) -180 + lon
-            # shift circle to where it should be
-            centre = circle[0,0]
-
-            geoms.append(sgeom.Polygon(circle))
-
-        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.PlateCarree(over=True),
-                                                 **kwargs)
-        return self.add_feature(feature)
 
     def add_feature(self, feature, *, autolim=False, **kwargs):
         """
