@@ -609,7 +609,24 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
-        feature = cartopy.feature.COASTLINE
+
+        if self.projection.over is True:
+            extent = self.get_extent()
+            target_proj = ccrs.PlateCarree(over=True)
+            source_proj = self.projection
+            extent = self.get_extent()
+            lon0, lat0 = target_proj.transform_point(extent[0],
+                                                     extent[2], source_proj)
+            lon1, lat1 = target_proj.transform_point(extent[1],
+                                                     extent[3], source_proj)
+            extent = [lon0, lon1, lat0, lat1]
+
+            feature = cartopy.feature.NaturalEarthFeature_ext(
+                'physical', 'coastline', cartopy.feature.auto_scaler, extent=extent,
+                edgecolor='black', facecolor='never')
+            """Automatically scaled coastline, including major islands."""
+        else:
+            feature = cartopy.feature.COASTLINE
         # The coastline feature is automatically scaled by default, but for
         # anything else, including custom scaler instances, create a new
         # feature which derives from the default one.
@@ -704,12 +721,27 @@ class GeoAxes(matplotlib.axes.Axes):
         if lons.shape != lats.shape:
             raise ValueError('lons and lats must have the same shape.')
 
-        for lon, lat in zip(lons, lats):
-            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
-            geoms.append(sgeom.Polygon(circle))
+        if self.projection.over is True:
+            for lon, lat in zip(lons, lats):
+                # As this only applies to cylindrical projections,
+                # the circle will be the same no matter
+                # the longitude, so create every circle at 180 for convenience.
+                circle = geod.circle(180, lat, rad_km * 1e3, n_samples=n_samples)
+                circle[:,0] = (circle[:,0] % 360) -180 + lon
+                # shift circle to where it should be
+                centre = circle[0,0]
+                geoms.append(sgeom.Polygon(circle))
 
-        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
-                                                 **kwargs)
+                feature = cartopy.feature.ShapelyFeature(
+                    geoms, ccrs.PlateCarree(over=True), **kwargs)
+
+        else:
+            for lon, lat in zip(lons, lats):
+                circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
+                geoms.append(sgeom.Polygon(circle))
+
+                feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
+                                                         **kwargs)
         return self.add_feature(feature)
 
     def tissot_ext(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
