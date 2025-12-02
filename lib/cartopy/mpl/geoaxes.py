@@ -975,7 +975,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return super().set_yticks(yticks, minor=minor)
 
-    def stock_img(self, name='ne_shaded', **kwargs):
+    def stock_img(self, name='ne_shaded', regrid_shape=750, **kwargs):
         """
         Add a standard image to the map.
 
@@ -989,19 +989,16 @@ class GeoAxes(matplotlib.axes.Axes):
             fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
                      / '50-natural-earth-1-downsampled.png')
 
-            # There is no point in exposing "regrid_shape" to the user here
-            # because the only available stock image is only 720 px x 360 px
-            # big. This argument is less obvious for the "interpolation" keyword
-            # argument, but probably still valid.
             return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90],
+                               regrid_shape=regrid_shape,
                                **kwargs)
         else:
             raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False, interpolation=None, regrid_shape=750):
+                       cache=False, regrid_shape=750, **kwargs):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
@@ -1037,9 +1034,6 @@ class GeoAxes(matplotlib.axes.Axes):
             Logical flag as to whether or not to cache the loaded
             images into memory. The images are stored before the
             extent is used.
-        interpolation : str, optional
-            The interpolation method used when drawing the image, see
-            :func:`matplotlib.pyplot.imshow` for further details.
         regrid_shape: int or pair of ints
             The shape of the desired image if it needs to be
             transformed.  If a single integer is given then
@@ -1093,8 +1087,8 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(img, origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90],
-                               interpolation=interpolation,
-                               regrid_shape=regrid_shape)
+                               regrid_shape=regrid_shape,
+                               **kwargs)
         else:
             # return only a subset of the image:
             # set up coordinate arrays:
@@ -1137,8 +1131,8 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(img_subset, origin='upper',
                                transform=source_proj,
                                extent=ret_extent,
-                               interpolation=interpolation,
-                               regrid_shape=regrid_shape)
+                               regrid_shape=regrid_shape,
+                               **kwargs)
 
     def read_user_background_images(self, verify=True):
         """
@@ -1268,9 +1262,6 @@ class GeoAxes(matplotlib.axes.Axes):
             The origin of the vertical pixels. See
             :func:`matplotlib.pyplot.imshow` for further details.
             Default is ``'upper'``. Prior to 0.18, it was ``'lower'``.
-        interpolation : str, optional
-            The interpolation method used when drawing the image, see
-            :func:`matplotlib.pyplot.imshow` for further details.
 
         """
         if 'update_datalim' in kwargs:
