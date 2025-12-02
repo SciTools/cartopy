@@ -975,7 +975,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return super().set_yticks(yticks, minor=minor)
 
-    def stock_img(self, name='ne_shaded', *, regrid_shape=750, **kwargs):
+    def stock_img(self, name='ne_shaded', *, **kwargs):
         """
         Add a standard image to the map.
 
@@ -992,13 +992,12 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(imread(fname), origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90],
-                               regrid_shape=regrid_shape,
                                **kwargs)
         else:
             raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False, *, regrid_shape=750, **kwargs):
+                       cache=False, *, **kwargs):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
@@ -1034,17 +1033,6 @@ class GeoAxes(matplotlib.axes.Axes):
             Logical flag as to whether or not to cache the loaded
             images into memory. The images are stored before the
             extent is used.
-        regrid_shape: int or pair of ints
-            The shape of the desired image if it needs to be
-            transformed.  If a single integer is given then
-            that will be used as the minimum length dimension,
-            while the other dimension will be scaled up
-            according to the target extent's aspect ratio.
-            The default is for the minimum dimension of a
-            transformed image to have length 750, so for an
-            image being transformed into a global PlateCarree
-            projection the resulting transformed image would
-            have a shape of ``(750, 1500)``.
 
         """
         # read in the user's background image directory:
@@ -1087,7 +1075,6 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(img, origin='upper',
                                transform=source_proj,
                                extent=[-180, 180, -90, 90],
-                               regrid_shape=regrid_shape,
                                **kwargs)
         else:
             # return only a subset of the image:
@@ -1131,7 +1118,6 @@ class GeoAxes(matplotlib.axes.Axes):
             return self.imshow(img_subset, origin='upper',
                                transform=source_proj,
                                extent=ret_extent,
-                               regrid_shape=regrid_shape,
                                **kwargs)
 
     def read_user_background_images(self, verify=True):
