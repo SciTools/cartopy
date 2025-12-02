@@ -2012,6 +2012,7 @@ class RotatedPole(_CylindricalProjection):
         x_max = 180
         y_max = 90
 
+
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
                         ('o_lon_p', central_rotated_longitude),
@@ -2019,7 +2020,7 @@ class RotatedPole(_CylindricalProjection):
                         ('lon_0', 180 + pole_longitude),
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS))]
-        super().__init__(proj4_params, x_max, y_max, globe=globe)
+        super().__init__(proj4_params, 180, 90, globe=globe)
 
 
 class Gnomonic(Projection):
