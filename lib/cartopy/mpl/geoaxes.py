@@ -975,7 +975,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         return super().set_yticks(yticks, minor=minor)
 
-    def stock_img(self, name='ne_shaded', regrid_shape=750, **kwargs):
+    def stock_img(self, name='ne_shaded', *, regrid_shape=750, **kwargs):
         """
         Add a standard image to the map.
 
@@ -998,7 +998,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False, regrid_shape=750, **kwargs):
+                       cache=False, *, regrid_shape=750, **kwargs):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
