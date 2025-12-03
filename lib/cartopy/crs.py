@@ -715,10 +715,9 @@ class Projection(CRS, metaclass=ABCMeta):
         elif self.is_geographic:
             # If the projection is geographic without an area of use, assume
             # the bounds are the full globe.
-            self.bounds = (-572.95, 572.95, -90, 90) # necessary once a feature crs
-                                                      # has been loaded in feature
-                                                      # artist /maltron
-            #self.bounds = (-180, 180, -90, 90)
+            # So that feature_artist can handle +over, the
+            # bounds are extended beyond +/- 180 degrees.
+            self.bounds = (-572.95, 572.95, -90, 90) 
 
     @property
     def boundary(self):
