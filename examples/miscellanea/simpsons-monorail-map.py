@@ -43,7 +43,7 @@ def main():
     # For proportions of land mass, font size and border to be as
     # intended, need to keep 'figsize' and 'dpi' (4:3 ratio) as below.
     fig = plt.figure(
-        figsize=(9, 7.5),
+        figsize=(8., 6.5),
         dpi=125,
         facecolor="#AFCBBD",
         edgecolor="white",  # sets up white border without need for another axes
@@ -107,8 +107,8 @@ def main():
 
     # Add the bottom left 'compass' legend in spirit of the original map.
     map_ax.text(
-        0.14,
-        0.10,
+        0.15,
+        0.02,
         leg_text,
         transform=map_ax.transAxes,
         fontsize=11,
@@ -119,7 +119,6 @@ def main():
     )
 
     plt.show()
-    fig.savefig("monorail-dec-new.png")  # SLB: REMOVE BEFORE COMMITTING
 
 
 if __name__ == "__main__":
