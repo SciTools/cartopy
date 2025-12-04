@@ -997,7 +997,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False):
+                       cache=False, **kwargs):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
@@ -1074,7 +1074,8 @@ class GeoAxes(matplotlib.axes.Axes):
             # not specifying an extent, so return all of it:
             return self.imshow(img, origin='upper',
                                transform=source_proj,
-                               extent=[-180, 180, -90, 90])
+                               extent=[-180, 180, -90, 90],
+                               **kwargs)
         else:
             # return only a subset of the image:
             # set up coordinate arrays:
@@ -1116,7 +1117,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
             return self.imshow(img_subset, origin='upper',
                                transform=source_proj,
-                               extent=ret_extent)
+                               extent=ret_extent,
+                               **kwargs)
 
     def read_user_background_images(self, verify=True):
         """

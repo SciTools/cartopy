@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 import types
+from unittest import mock
 
 import matplotlib.colors as colors
 import matplotlib.pyplot as plt
@@ -200,6 +201,18 @@ def test_stock_img():
     return ax.figure
 
 
+def test_stock_img_kwargs():
+    # test that extra keyword arguments are passed to imshow
+    with mock.patch('cartopy.mpl.geoaxes.GeoAxes.imshow') as imshow_mock:
+        ax = plt.axes(projection=ccrs.Orthographic())
+        ax.stock_img(alpha=None, interpolation=None, resample=None,
+                     regrid_shape=750)
+        imshow_mock.assert_called_once()
+        call_kwargs = imshow_mock.call_args.kwargs
+        assert call_kwargs['regrid_shape'] == 750
+        assert call_kwargs['interpolation'] is None
+
+
 @pytest.mark.mpl_image_compare(filename='imshow_natural_earth_ortho.png')
 def test_pil_Image():
     img = Image.open(NATURAL_EARTH_IMG)
@@ -215,6 +228,19 @@ def test_background_img():
     ax = plt.axes(projection=ccrs.Orthographic())
     ax.background_img(name='ne_shaded', resolution='low')
     return ax.figure
+
+
+def test_background_img_kwargs():
+    # test that extra keyword arguments are passed to imshow
+    with mock.patch('cartopy.mpl.geoaxes.GeoAxes.imshow') as imshow_mock:
+        ax = plt.axes(projection=ccrs.Orthographic())
+        ax.background_img(name='ne_shaded', resolution='low',
+                          alpha=None, interpolation=None, resample=None,
+                          regrid_shape=750)
+        imshow_mock.assert_called_once()
+        call_kwargs = imshow_mock.call_args.kwargs
+        assert call_kwargs['regrid_shape'] == 750
+        assert call_kwargs['interpolation'] is None
 
 
 def test_alpha_2d_warp():
