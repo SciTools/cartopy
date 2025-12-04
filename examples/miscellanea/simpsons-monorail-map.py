@@ -27,13 +27,14 @@ import cartopy.io.shapereader as shpreader
 GEOM_PROJ = ccrs.PlateCarree()
 # Not real places, so locations pulled from location on map in still image.
 # The items in order correspond to:
-# * an x-y 2-tuple for where to plot the location dot on the map
+# * an x-y 2-tuple for where to plot the location dot on the map;
 # * an x-y 2-tuple for where to write the text label relative to the dot above
+#   with units of points;
 # * an integer for how much to rotate the text to best match the map text.
 LOCATIONS_TO_PLOT = {
-    "Ogdenville": [(-111.8, 35.5), (1.5, -2.2), -6],
-    "North\nHaverbrook": [(-99.0, 43.5), (2.8, -0.5), -1],
-    "Brockway": [(-80.4, 33.6), (-3.4, -1.5), 3],
+    "Ogdenville": [(-111.8, 35.5), (-10.0, -50.0), -6],
+    "North\nHaverbrook": [(-99.0, 43.5), (15.0, -15.0), -1],
+    "Brockway": [(-80.4, 33.6), (-100.0, -40.0), 3],
 }
 
 
@@ -83,18 +84,13 @@ def main():
             transform=GEOM_PROJ,
         )
 
-        # Adjust position of location name text relative to location marker
-        text_loc_coords = (
-            loc_coords[0] + rel_text_pos[0],
-            loc_coords[1] + rel_text_pos[1],
-        )
         # Text in uppercase, very bold handwriting-like font, as per the
         # screen grab of the map from the show
         map_ax.annotate(
             loc_name.upper(),
-            xy=text_loc_coords,
+            xy=loc_coords,
             transform=ccrs.Geodetic(),
-            xytext=(-25, 0),  # shift text closer to point as per reference
+            xytext=rel_text_pos,  # shift text relative to marker as in map
             textcoords="offset pixels",
             verticalalignment="center",
             horizontalalignment="left",
@@ -123,6 +119,7 @@ def main():
     )
 
     plt.show()
+    fig.savefig("monorail-dec-new.png")  # SLB: REMOVE BEFORE COMMITTING
 
 
 if __name__ == "__main__":
