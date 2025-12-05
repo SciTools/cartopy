@@ -717,7 +717,10 @@ class Projection(CRS, metaclass=ABCMeta):
             # the bounds are the full globe.
             # So that feature_artist can handle +over, the
             # bounds are extended beyond +/- 180 degrees.
-            self.bounds = (-572.95, 572.95, -90, 90) 
+            if self.over:
+                self.bounds = (-572.95, 572.95, -90, 90)
+            else:
+                self.bounds = (-180, 180, -90, 90)
 
     @property
     def boundary(self):
