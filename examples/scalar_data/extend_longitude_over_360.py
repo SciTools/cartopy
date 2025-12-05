@@ -53,7 +53,8 @@ lon = np.concat([-lon[-1::-1], lon])
 size = (nlats, nlons)
 rfield = np.random.normal(size=size) 
 rfield = np.concat((rfield, rfield), axis=1)
-feature = gaussian_filter(rfield, sigma=[nlats/12,nlons/4])[:,int(nlons/2):int(nlons*3/2)]
+feature = gaussian_filter(rfield,
+            sigma=[nlats/12,nlons/4])[:,int(nlons/2):int(nlons*3/2)]
 
 # var = speed
 var = feature
@@ -73,9 +74,15 @@ def a_transform(arr):
     return amax/2 - arr
 
 # Design a few test configurations
-mapconf1 = dict(lonmin=-180, lonmax=180, over=False, trans=ccrs.PlateCarree, proj=ccrs.Mercator, central_longitude=0)
-mapconf2 = dict(lonmin=-390, lonmax=525, over=True, trans=ccrs.PlateCarree, proj=ccrs.Mercator, central_longitude=0)
-mapconf3 = dict(lonmin=-390, lonmax=525, over=True, trans=ccrs.PlateCarree, proj=ccrs.PlateCarree, central_longitude=0)
+mapconf1 = dict(lonmin=-180, lonmax=180, over=False,
+                trans=ccrs.PlateCarree, proj=ccrs.Mercator,
+                central_longitude=0)
+mapconf2 = dict(lonmin=-390, lonmax=525, over=True,
+                trans=ccrs.PlateCarree, proj=ccrs.Mercator,
+                central_longitude=0)
+mapconf3 = dict(lonmin=-390, lonmax=525, over=True,
+                trans=ccrs.PlateCarree, proj=ccrs.PlateCarree,
+                central_longitude=0)
 
 mapconfs = [mapconf1, mapconf2, mapconf3]
 
@@ -94,16 +101,23 @@ for ind, mapconf in enumerate(mapconfs[1:2]):
 
     fig = plt.figure(figsize=(10,4), facecolor=(0,0,0,0))
     ax = plt.axes(projection=projection)
-    ax.pcolormesh(lon_ext, lat_ext, var_ext, vmin=vmin, vmax = vmax, transform=transform)
+    ax.pcolormesh(lon_ext, lat_ext, var_ext,
+                  vmin=vmin, vmax = vmax, transform=transform)
     ax.coastlines()
-    ax.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, crs=ccrs.PlateCarree(over=over))
+    ax.gridlines(draw_labels=True, dms=True,
+                 x_inline=False, y_inline=False,
+                 crs=ccrs.PlateCarree(over=over))
     ax.add_feature(Nightshade(date, alpha=0.2, delta=0.1, over=over))
     ax.plot(toulouse[1], toulouse[0], "ro", transform=ccrs.Geodetic())
     ax.plot(nyalesund[1], nyalesund[0], "ro", transform=ccrs.Geodetic())
     ax.plot(chicago[1], chicago[0], "ro", transform=ccrs.Geodetic())
     ax.plot(chicago[1]+360, chicago[0], "go", transform=ccrs.Geodetic())
     ax.stock_img()
-    ax.tissot(lons=np.arange(-590, 580,  200), lats=[-75, -60, -45, -30, -10, 20, 50, 65, 80], n_samples=40)
+    ax.tissot(
+        lons=np.arange(-590, 580,  200),
+        lats=[-75, -60, -45, -30, -10, 20, 50, 65, 80],
+        n_samples=40
+    )
 
 plt.show()
 #plt.savefig("eke_cartopy_extended_mercator.png")

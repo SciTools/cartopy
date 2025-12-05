@@ -19,7 +19,6 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 import shapely.geometry as sgeom
 import shapely.affinity as saffinity
-from itertools import chain
 
 import cartopy.crs
 import cartopy.io.shapereader as shapereader
@@ -351,7 +350,9 @@ class NaturalEarthFeature_ext(NaturalEarthFeature):
         """
 
         # Set over to True for all cases /maltron
-        super(NaturalEarthFeature, self).__init__(cartopy.crs.PlateCarree(over=True), **kwargs)
+        super(NaturalEarthFeature, self).__init__(
+            cartopy.crs.PlateCarree(over=True), **kwargs
+        )
         self.category = category
         self.name = name
 
@@ -399,11 +400,15 @@ class NaturalEarthFeature_ext(NaturalEarthFeature):
                 if self.extent[1]-self.extent[0] > 360:
                     if self.extent[0] < -180:
                         for offset in np.arange(-360, self.extent[0]-360, -360):
-                            geoms_left += extend_geoms(geometries, self.extent, xoffset=offset)
+                            geoms_left += extend_geoms(
+                                geometries, self.extent, xoffset=offset
+                            )
 
                     if self.extent[1] > 180:
                         for offset in np.arange(360, self.extent[1]+360, 360):
-                            geoms_right += extend_geoms(geometries, self.extent, xoffset=offset)
+                            geoms_right += extend_geoms(
+                                geometries, self.extent, xoffset=offset
+                            )
 
                 geometries = tuple(geoms_left) + geometries + tuple(geoms_right)
 

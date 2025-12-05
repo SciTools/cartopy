@@ -689,8 +689,6 @@ class GeoAxes(matplotlib.axes.Axes):
                 # the longitude, so create every circle at 180 for convenience.
                 circle = geod.circle(180, lat, rad_km * 1e3, n_samples=n_samples)
                 circle[:,0] = (circle[:,0] % 360) -180 + lon
-                # shift circle to where it should be
-                centre = circle[0,0]
                 geoms.append(sgeom.Polygon(circle))
 
                 feature = cartopy.feature.ShapelyFeature(
