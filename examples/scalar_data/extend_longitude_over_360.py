@@ -1,7 +1,7 @@
 """
 This script demonstrates the use of using the over parameter with
-Cartopy.  When using a cylindrical projection, setting over to True 
-engages proj's "+over" switch and enables longitudes to be extended 
+Cartopy.  When using a cylindrical projection, setting over to True
+engages proj's "+over" switch and enables longitudes to be extended
 so that a single map can show more than 360 degrees of the globe.
 
 The underlying data needs to be explicitly extended, for which the
@@ -51,7 +51,7 @@ lat = np.concat([-lat[-1::-1], lat])
 lon = np.arange(incr/2, 180, incr)
 lon = np.concat([-lon[-1::-1], lon])
 size = (nlats, nlons)
-rfield = np.random.normal(size=size) 
+rfield = np.random.normal(size=size)
 rfield = np.concat((rfield, rfield), axis=1)
 feature = gaussian_filter(rfield,
             sigma=[nlats/12,nlons/4])[:,int(nlons/2):int(nlons*3/2)]
@@ -96,8 +96,9 @@ for ind, mapconf in enumerate(mapconfs[1:2]):
     projection = proj(over=over, central_longitude=central_longitude)
     transform = trans(over=over, central_longitude=central_longitude)
     lon_ext, lat_ext, var_ext = extend_lons_np(lon, lat, var, lonmin, lonmax)
-    ## Uncomment the following line to highlight the extra data (for xarrays)
-    #var_ext = var_ext.where(np.abs(var_ext.longitude)<180, a_transform(var_ext))
+    ## Uncomment the following line to highlight the extra data (for Xarrays)
+    # var_ext = var_ext.where(
+    #     np.abs(var_ext.longitude)<180, a_transform(var_ext))
 
     fig = plt.figure(figsize=(10,4), facecolor=(0,0,0,0))
     ax = plt.axes(projection=projection)
