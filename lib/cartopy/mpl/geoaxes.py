@@ -786,7 +786,7 @@ class GeoAxes(matplotlib.axes.Axes):
         with self.hold_limits():
             if self.get_autoscale_on():
                 self.autoscale_view()
-                [x1, y1], [x2, y2] = self.viewLim.get_points()
+            [x1, y1], [x2, y2] = self.viewLim.get_points()
 
         domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
                                             [x2, y2], [x1, y2],
