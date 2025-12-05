@@ -95,18 +95,18 @@ class Nightshade(ShapelyFeature):
 
         geom = sgeom.Polygon(np.column_stack((x, y)))
 
-        if over == True:
+        if over:
             # Assume a cylindrical projection for this case
             # and perform reprojection here
             projected_geom = ccrs.PlateCarree(over=False).project_geometry(
                 geom, rotated_pole)
-            bounds = projected_geom.bounds
 
             pxs = []
             pys = []
             # Once projected, the result is a MultiPolygon
             for item in range(0, len(projected_geom.geoms)):
-                pxl, pyl = np.array(projected_geom.geoms._get_geom_item(item).boundary.coords.xy)
+                pxl, pyl = np.array(
+                    projected_geom.geoms._get_geom_item(item).boundary.coords.xy)
                 pxs.append(pxl)
                 pys.append(pyl)
 

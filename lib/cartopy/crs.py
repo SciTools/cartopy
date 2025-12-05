@@ -2011,11 +2011,6 @@ class RotatedPole(_CylindricalProjection):
             datum.
 
         """
-
-        x_max = 180
-        y_max = 90
-
-
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'ob_tran'), ('o_proj', 'latlon'),
                         ('o_lon_p', central_rotated_longitude),
