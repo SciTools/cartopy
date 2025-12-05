@@ -8,7 +8,6 @@ Utilities that are useful in conjunction with cartopy.
 """
 import numpy as np
 import numpy.ma as ma
-import xarray as xr
 
 def add_cyclic_point(data, coord=None, axis=-1):
     """
@@ -424,6 +423,8 @@ def extend_lons_xr(dsx, lonmin, lonmax, lon_name="longitude"):
         the xarray coordinate name for longitude
 
     """
+    import xarray as xr
+
     # Check reasonableness
     if lonmin >= lonmax:
         print(
