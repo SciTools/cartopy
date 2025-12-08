@@ -65,8 +65,7 @@ def test_gshhs():
 @pytest.mark.network
 @pytest.mark.skipif(not _HAS_PYKDTREE_OR_SCIPY or not _OWSLIB_AVAILABLE,
                     reason='OWSLib and at least one of pykdtree or scipy is required')
-@pytest.mark.xfail(raises=ParseError,
-                   reason="Bad XML returned from the URL")
+@pytest.mark.skip(reason='NSIDC API url has changed and tests need to be updated')
 @pytest.mark.mpl_image_compare(filename='wfs.png')
 def test_wfs():
     ax = plt.axes(projection=ccrs.OSGB(approx=True))
