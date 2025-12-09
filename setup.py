@@ -28,7 +28,7 @@ else:
 
 # Macros to enable Cython coverage
 define_macros = []
-CYTHON_COVERAGE = os.environ.get('CYTHON_COVERAGE', False)
+CYTHON_COVERAGE = os.environ.get("CYTHON_COVERAGE","").lower() in ("1", "true")
 if CYTHON_COVERAGE:
     define_macros.append(('CYTHON_TRACE_NOGIL', '1'))
 
