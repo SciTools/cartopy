@@ -28,7 +28,8 @@ else:
 
 # Macros to enable Cython coverage
 define_macros = []
-if os.environ.get('CYTHON_COVERAGE'):
+CYTHON_COVERAGE = os.environ.get('CYTHON_COVERAGE', False)
+if CYTHON_COVERAGE:
     define_macros.append(('CYTHON_TRACE_NOGIL', '1'))
 
 extensions = [
@@ -44,7 +45,7 @@ if USE_CYTHON:
     # We need to explicitly cythonize the extension in order
     # to control the Cython compiler_directives.
     from Cython.Build import cythonize
-    compiler_directives = {"profile": True, "linetrace": True}
+    compiler_directives = {"profile": CYTHON_COVERAGE, "linetrace": CYTHON_COVERAGE}
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 
 
