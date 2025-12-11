@@ -45,7 +45,7 @@ if USE_CYTHON:
     # We need to explicitly cythonize the extension in order
     # to control the Cython compiler_directives.
     from Cython.Build import cythonize
-    compiler_directives = {"profile": CYTHON_COVERAGE, "linetrace": CYTHON_COVERAGE}
+    compiler_directives = {"profile": cython_coverage, "linetrace": cython_coverage}
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 
 
