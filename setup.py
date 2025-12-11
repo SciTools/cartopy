@@ -28,8 +28,8 @@ else:
 
 # Macros to enable Cython coverage
 define_macros = []
-CYTHON_COVERAGE = os.environ.get("CYTHON_COVERAGE","").lower() in ("1", "true")
-if CYTHON_COVERAGE:
+cython_coverage = bool(os.environ.get("CYTHON_COVERAGE"))
+if cython_coverage:
     define_macros.append(('CYTHON_TRACE_NOGIL', '1'))
 
 extensions = [
