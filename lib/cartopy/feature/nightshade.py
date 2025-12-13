@@ -58,8 +58,7 @@ class Nightshade(ShapelyFeature):
 
         rotated_pole = ccrs.RotatedPole(pole_latitude=pole_lat,
                                         pole_longitude=pole_lon,
-                                        central_rotated_longitude=central_lon,
-                                        over=False)
+                                        central_rotated_longitude=central_lon)
 
         npts = int(180 / delta)
         x = np.empty(npts * 2)

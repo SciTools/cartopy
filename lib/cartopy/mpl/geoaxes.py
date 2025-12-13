@@ -852,7 +852,7 @@ class GeoAxes(matplotlib.axes.Axes):
         with self.hold_limits():
             if self.get_autoscale_on():
                 self.autoscale_view()
-            [x1, y1], [x2, y2] = self.viewLim.get_points()
+                [x1, y1], [x2, y2] = self.viewLim.get_points()
 
         domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
                                             [x2, y2], [x1, y2],
@@ -1012,9 +1012,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is not None and crs != self.projection:
             if not isinstance(crs, (ccrs._RectangularProjection,
                                     ccrs.Mercator)) or \
-                    not isinstance(self.projection,
-                                   (ccrs._RectangularProjection,
-                                    ccrs.Mercator)):
+                                    not isinstance(self.projection,
+                                                   (ccrs._RectangularProjection,
+                                                    ccrs.Mercator)):
                 raise RuntimeError('Cannot handle non-rectangular coordinate '
                                    'systems.')
             proj_xyz = self.projection.transform_points(crs,
@@ -1059,9 +1059,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is not None and crs != self.projection:
             if not isinstance(crs, (ccrs._RectangularProjection,
                                     ccrs.Mercator)) or \
-                    not isinstance(self.projection,
-                                   (ccrs._RectangularProjection,
-                                    ccrs.Mercator)):
+                                    not isinstance(self.projection,
+                                                   (ccrs._RectangularProjection,
+                                                    ccrs.Mercator)):
                 raise RuntimeError('Cannot handle non-rectangular coordinate '
                                    'systems.')
             proj_xyz = self.projection.transform_points(crs,
@@ -1085,15 +1085,14 @@ class GeoAxes(matplotlib.axes.Axes):
         (e.g., alpha) will be passed to :func:`GeoAxes.imshow`.
 
         """
-
         if name == 'ne_shaded':
             target_proj = ccrs.PlateCarree(over=True)
             source_proj = self.projection
             extent = self.get_extent()
-            lon0, lat0 = target_proj.transform_point(extent[0],
-                                                     extent[2], source_proj)
-            lon1, lat1 = target_proj.transform_point(extent[1],
-                                                     extent[3], source_proj)
+            lon0, lat0 = target_proj.transform_point(
+                extent[0], extent[2], source_proj)
+            lon1, lat1 = target_proj.transform_point(
+                extent[1],extent[3], source_proj)
 
             fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
                      / '50-natural-earth-1-downsampled.png')

@@ -406,8 +406,8 @@ def add_cyclic(data, x=None, y=None, axis=-1,
 
 
 def extend_lons_xr(dsx, lonmin, lonmax, lon_name="longitude"):
-    """ 
-    Function to extend data to longitudes beyond 360 degrees in either 
+    """
+    Function to extend data to longitudes beyond 360 degrees in either
     direction by duplicating data.
 
     Version for xarray.  Use extend_lons_np for numpy arrays.
@@ -427,7 +427,7 @@ def extend_lons_xr(dsx, lonmin, lonmax, lon_name="longitude"):
     # Check reasonableness
     if lonmin >= lonmax:
         print(
-            "lonmin must be less than lonmax, returning" 
+            "lonmin must be less than lonmax, returning"
             " original dataset unchanched"
         )
         return dsx
@@ -471,8 +471,8 @@ def extend_lons_xr(dsx, lonmin, lonmax, lon_name="longitude"):
 
 
 def extend_lons_np(lons, lats, arr, lonmin, lonmax):
-    """ 
-    Function to extend data to longitudes beyond 360 degrees in either 
+    """
+    Function to extend data to longitudes beyond 360 degrees in either
     direction by duplicating data.
 
     Version for numpy arrays.  Use extend_lons_xr for xarrays.
@@ -480,12 +480,12 @@ def extend_lons_np(lons, lats, arr, lonmin, lonmax):
     Parameters
     ----------
     lons
-        a 1-d Numpy array of longitudes 
+        a 1-d Numpy array of longitudes
     lats
         a 1-d Numpy array of latitudes
     arr
         a Numpy array of the variable to extend with dimension
-        (..., len(lons), len(lats)) 
+        (..., len(lons), len(lats))
     lonmin
         the lowest longitude desired in the extended ndarray
     lonmax
@@ -495,7 +495,7 @@ def extend_lons_np(lons, lats, arr, lonmin, lonmax):
     # Check reasonableness
     if lonmin >= lonmax:
         print(
-            "lonmin must be less than lonmax, returning" 
+            "lonmin must be less than lonmax, returning"
             " original dataset unchanched"
         )
         return lons, lats, arr
