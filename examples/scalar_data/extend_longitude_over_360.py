@@ -1,15 +1,21 @@
 """
-This script demonstrates the use of using the over parameter with
+Extending longitude beyond 360 degrees
+======================================
+
+This example demonstrates the use of the over parameter with
 Cartopy.  When using a cylindrical projection, setting over to True
 engages proj's "+over" switch and enables longitudes to be extended
-so that a single map can show more than 360 degrees of the globe.
+so that a single map can show more than 360 degrees of the globe.  This 
+can be useful for ensuring that large structures can be shown in their 
+entirety, unbroken by the edge of the map.
 
 The underlying data needs to be explicitly extended, for which the
 utility routines extend_lons_np and extend_lons_xr are included in
 cartopy.util.  This allows for the possibility of non-repeated data,
-such as an object's trajectory.
+such as an object's trajectory; a trivial example of this is shown
+by plotting Chicago twice with different coloured points.
 
-The script also shows use of Nightshade, which requires the "over"
+The script also applies Nightshade, which requires the "over"
 parameter to be set, and tissot and coastlines, which work transparently.
 
 Note that due a limitation in the underlying proj library, the longitudes
@@ -75,13 +81,13 @@ def a_transform(arr):
     return amax/2 - arr
 
 # Design a few test configurations
-mapconf1 = dict(lonmin=-180, lonmax=180, over=False,
+mapconf1 = dict(title="Standard Mercator", lonmin=-180, lonmax=180, over=False,
                 trans=ccrs.PlateCarree, proj=ccrs.Mercator,
                 central_longitude=0)
-mapconf2 = dict(lonmin=-390, lonmax=525, over=True,
+mapconf2 = dict(title="Extended Mercator", lonmin=-390, lonmax=525, over=True,
                 trans=ccrs.PlateCarree, proj=ccrs.Mercator,
                 central_longitude=0)
-mapconf3 = dict(lonmin=-390, lonmax=525, over=True,
+mapconf3 = dict(title="Extended Plate Carrée", lonmin=-390, lonmax=525, over=True,
                 trans=ccrs.PlateCarree, proj=ccrs.PlateCarree,
                 central_longitude=0)
 
@@ -96,6 +102,7 @@ for ind, mapconf in enumerate(mapconfs[1:2]):
     trans = mapconf["trans"]
     projection = proj(over=over, central_longitude=central_longitude)
     transform = trans(over=over, central_longitude=central_longitude)
+    title = mapconf["title"] + " [" + str(lonmin) + "," + str(lonmax) + "]"
     lon_ext, lat_ext, var_ext = extend_lons_np(lon, lat, var, lonmin, lonmax)
     ## Uncomment the following line to highlight the extra data (for Xarrays)
     # var_ext = var_ext.where(
@@ -113,13 +120,14 @@ for ind, mapconf in enumerate(mapconfs[1:2]):
     ax.plot(toulouse[1], toulouse[0], "ro", transform=ccrs.Geodetic())
     ax.plot(nyalesund[1], nyalesund[0], "ro", transform=ccrs.Geodetic())
     ax.plot(chicago[1], chicago[0], "ro", transform=ccrs.Geodetic())
-    ax.plot(chicago[1]+360, chicago[0], "go", transform=ccrs.Geodetic())
+    ax.plot(chicago[1]+360, chicago[0], "orange", marker="o", transform=ccrs.Geodetic())
     ax.stock_img()
     ax.tissot(
         lons=np.arange(-590, 580,  200),
         lats=[-75, -60, -45, -30, -10, 20, 50, 65, 80],
         n_samples=40
     )
+    ax.set_title(title)
 
 plt.show()
 #plt.savefig("eke_cartopy_extended_mercator.png")
