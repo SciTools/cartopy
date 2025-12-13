@@ -17,8 +17,8 @@ above images and patches, but below lines and text.
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-import shapely.geometry as sgeom
 import shapely.affinity as saffinity
+import shapely.geometry as sgeom
 
 import cartopy.crs
 import cartopy.io.shapereader as shapereader

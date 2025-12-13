@@ -34,8 +34,6 @@ import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
 import shapely.geometry as sgeom
-import shapely.affinity as saffinity
-from itertools import chain
 
 from cartopy import config
 import cartopy.crs as ccrs

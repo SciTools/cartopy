@@ -9,6 +9,7 @@ Utilities that are useful in conjunction with cartopy.
 import numpy as np
 import numpy.ma as ma
 
+
 def add_cyclic_point(data, coord=None, axis=-1):
     """
     Add a cyclic point to an array and optionally a corresponding
