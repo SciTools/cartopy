@@ -16,15 +16,16 @@ Note that due a limitation in the underlying proj library, the longitudes
 are limited to [-572.95, 572.95].
 """
 
+import datetime
+
 import matplotlib.pyplot as plt
 import numpy as np
-import datetime
-from xarray import open_dataset
 from scipy.ndimage import gaussian_filter
 
 import cartopy.crs as ccrs
 from cartopy.feature.nightshade import Nightshade
-from cartopy.util import extend_lons_xr, extend_lons_np
+from cartopy.util import extend_lons_np
+
 
 date = datetime.datetime.now()
 #date = datetime.datetime(2025, 3, 20, 9, 1, 0) # NH Spring equinox 2025
