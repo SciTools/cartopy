@@ -5,8 +5,8 @@ Extending longitude beyond 360 degrees
 This example demonstrates the use of the over parameter with
 Cartopy.  When using a cylindrical projection, setting over to True
 engages proj's "+over" switch and enables longitudes to be extended
-so that a single map can show more than 360 degrees of the globe.  This 
-can be useful for ensuring that large structures can be shown in their 
+so that a single map can show more than 360 degrees of the globe.  This
+can be useful for ensuring that large structures can be shown in their
 entirety, unbroken by the edge of the map.
 
 The underlying data needs to be explicitly extended, for which the
