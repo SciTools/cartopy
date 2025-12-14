@@ -1748,7 +1748,7 @@ class LambertConformal(Projection):
     def __init__(self, central_longitude=-96.0, central_latitude=39.0,
                  false_easting=0.0, false_northing=0.0,
                  standard_parallels=(33, 45),
-                 globe=None, cutoff=-30):
+                 globe=None, cutoff=-30, longitude_extent=180):
         """
         Parameters
         ----------
@@ -1770,6 +1770,10 @@ class LambertConformal(Projection):
             The map extends to infinity opposite the central pole
             so we must cut off the map drawing before then.
             A value of 0 will draw half the globe. Defaults to -30.
+        longitude_extent: optional
+            Maximal longitude extent of the map.
+            Limits the axes boundary from central longitude minus and plus
+            the longitude extent.
 
         """
         proj4_params = [('proj', 'lcc'),
@@ -1812,11 +1816,17 @@ class LambertConformal(Projection):
         lats[0] = lats[-1] = plat
         if plat == 90:
             # Ensure clockwise
-            lons[1:-1] = np.linspace(central_longitude + 180 - 0.001,
-                                     central_longitude - 180 + 0.001, n)
+            lons[1:-1] = np.linspace(
+                central_longitude + longitude_extent - 0.001,
+                central_longitude - longitude_extent + 0.001,
+                n
+            )
         else:
-            lons[1:-1] = np.linspace(central_longitude - 180 + 0.001,
-                                     central_longitude + 180 - 0.001, n)
+            lons[1:-1] = np.linspace(
+                central_longitude - longitude_extent + 0.001,
+                central_longitude + longitude_extent - 0.001,
+                n
+            )
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
