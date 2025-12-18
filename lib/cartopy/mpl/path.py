@@ -43,6 +43,9 @@ def _ensure_path_closed(path):
     finally:
         path.should_simplify = should_simplify
 
+    if len(polygons) == 0:
+        return Path(np.empty((0,2)))
+
     codes, vertices = [], []
     for poly in polygons:
         vertices.extend([poly[0], *poly])
