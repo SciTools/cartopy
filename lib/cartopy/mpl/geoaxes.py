@@ -607,8 +607,24 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         kwargs['edgecolor'] = color
         kwargs['facecolor'] = 'none'
-        feature = cartopy.feature.COASTLINE
 
+        if self.projection.over is True:
+            extent = self.get_extent()
+            target_proj = ccrs.PlateCarree(over=True)
+            source_proj = self.projection
+            extent = self.get_extent()
+            lon0, lat0 = target_proj.transform_point(extent[0],
+                                                     extent[2], source_proj)
+            lon1, lat1 = target_proj.transform_point(extent[1],
+                                                     extent[3], source_proj)
+            extent = [lon0, lon1, lat0, lat1]
+
+            feature = cartopy.feature.NaturalEarthFeature_ext(
+                'physical', 'coastline', cartopy.feature.auto_scaler, extent=extent,
+                edgecolor='black', facecolor='never')
+            """Automatically scaled coastline, including major islands."""
+        else:
+            feature = cartopy.feature.COASTLINE
         # The coastline feature is automatically scaled by default, but for
         # anything else, including custom scaler instances, create a new
         # feature which derives from the default one.
@@ -616,6 +632,7 @@ class GeoAxes(matplotlib.axes.Axes):
             feature = feature.with_scale(resolution)
 
         return self.add_feature(feature, **kwargs)
+
 
     def tissot(self, rad_km=500, lons=None, lats=None, n_samples=80, **kwargs):
         """
@@ -663,13 +680,27 @@ class GeoAxes(matplotlib.axes.Axes):
         if lons.shape != lats.shape:
             raise ValueError('lons and lats must have the same shape.')
 
-        for lon, lat in zip(lons, lats):
-            circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
-            geoms.append(sgeom.Polygon(circle))
+        if self.projection.over is True:
+            for lon, lat in zip(lons, lats):
+                # As this only applies to cylindrical projections,
+                # the circle will be the same no matter
+                # the longitude, so create every circle at 180 for convenience.
+                circle = geod.circle(180, lat, rad_km * 1e3, n_samples=n_samples)
+                circle[:,0] = (circle[:,0] % 360) -180 + lon
+                geoms.append(sgeom.Polygon(circle))
 
-        feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
-                                                 **kwargs)
+                feature = cartopy.feature.ShapelyFeature(
+                    geoms, ccrs.PlateCarree(over=True), **kwargs)
+
+        else:
+            for lon, lat in zip(lons, lats):
+                circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
+                geoms.append(sgeom.Polygon(circle))
+
+                feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
+                                                         **kwargs)
         return self.add_feature(feature)
+
 
     def add_feature(self, feature, *, autolim=False, **kwargs):
         """
@@ -911,9 +942,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is not None and crs != self.projection:
             if not isinstance(crs, (ccrs._RectangularProjection,
                                     ccrs.Mercator)) or \
-                    not isinstance(self.projection,
-                                   (ccrs._RectangularProjection,
-                                    ccrs.Mercator)):
+                                    not isinstance(self.projection,
+                                                   (ccrs._RectangularProjection,
+                                                    ccrs.Mercator)):
                 raise RuntimeError('Cannot handle non-rectangular coordinate '
                                    'systems.')
             proj_xyz = self.projection.transform_points(crs,
@@ -958,9 +989,9 @@ class GeoAxes(matplotlib.axes.Axes):
         if crs is not None and crs != self.projection:
             if not isinstance(crs, (ccrs._RectangularProjection,
                                     ccrs.Mercator)) or \
-                    not isinstance(self.projection,
-                                   (ccrs._RectangularProjection,
-                                    ccrs.Mercator)):
+                                    not isinstance(self.projection,
+                                                   (ccrs._RectangularProjection,
+                                                    ccrs.Mercator)):
                 raise RuntimeError('Cannot handle non-rectangular coordinate '
                                    'systems.')
             proj_xyz = self.projection.transform_points(crs,
@@ -985,13 +1016,48 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         if name == 'ne_shaded':
-            source_proj = ccrs.PlateCarree()
+            target_proj = ccrs.PlateCarree(over=True)
+            source_proj = self.projection
+            extent = self.get_extent()
+            lon0, lat0 = target_proj.transform_point(
+                extent[0], extent[2], source_proj)
+            lon1, lat1 = target_proj.transform_point(
+                extent[1],extent[3], source_proj)
+
             fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'
                      / '50-natural-earth-1-downsampled.png')
+            image = imread(fname)
 
-            return self.imshow(imread(fname), origin='upper',
-                               transform=source_proj,
-                               extent=[-180, 180, -90, 90],
+            if lon1 - lon0 > 360:
+                factor = image.shape[1]/360
+                negext = np.min([lon0 - -180, 0])
+                posext = np.max([0, lon1 - 180])
+
+                new_image = image
+
+                for offset in np.arange(-360, negext, -360):
+                    new_image = np.concatenate(
+                        (image, new_image), axis=1
+                    )
+                for offset in np.arange(360, posext, 360):
+                    new_image = np.concatenate(
+                        (new_image, image), axis=1
+                    )
+
+                leftmost = image[:,int((360+np.mod(negext, -360))*factor):,:]
+                rightmost = image[:,:int(np.mod(posext, 360)*factor),:]
+                new_image = np.concatenate((leftmost, new_image, rightmost),
+                                           axis=1)
+                # Only longitudinal extent is different because we have
+                # modified the image only on this axis
+                extent = [lon0, lon1, -90, 90]
+            else:
+                new_image = image
+                extent = [-180, 180, -90, 90]
+
+            return self.imshow(new_image, origin='upper',
+                               transform=target_proj,
+                               extent=extent,
                                **kwargs)
         else:
             raise ValueError(f'Unknown stock image {name!r}.')
@@ -1035,6 +1101,14 @@ class GeoAxes(matplotlib.axes.Axes):
             extent is used.
 
         """
+        over = False
+        try:
+            lonmin, lonmax, latmin, latmax = extent
+            if lonmax - lonmin > 360:
+                over = True
+        except Exception:
+            pass
+
         # read in the user's background image directory:
         if len(_USER_BG_IMGS) == 0:
             self.read_user_background_images()
@@ -1066,7 +1140,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # now get the projection from the metadata:
         if _USER_BG_IMGS[name]['__projection__'] == 'PlateCarree':
             # currently only PlateCarree is defined:
-            source_proj = ccrs.PlateCarree()
+            source_proj = ccrs.PlateCarree(over=over)
         else:
             raise NotImplementedError('Background image projection undefined')
 
