@@ -798,8 +798,19 @@ class GeoAxes(matplotlib.axes.Axes):
         Set the extent (x0, x1, y0, y1) of the map in the given
         coordinate system.
 
-        If no crs is given, the extents' coordinate system will be assumed
-        to be the Geodetic version of this axes' projection.
+        set_extent has a complex behavior.
+
+        1) if no CRS is given, the map projection is Plate Carree, and the
+        extent given is [-180, 180, -90, 90], the globe will be plotted.
+        2) if no CRS is given, the extent must be in longitudes and latitudes.
+        A Geodetic CRS with Globe parameters inherited from the map projection
+        will be used to transform the extent into map projection units. The
+        bounds of the transformed geometry will be set as the extents of the
+        map. Thus no CRS with a Plate Carree projection and extent = [-179,
+        179, -89, 89] will plot [-180, 180, -89, 89].
+        3) if a CRS is given it will be used to transform the extent into map
+        projection units. The bounds of the transformed geometry will be set
+        as the extent of the map.
 
         Parameters
         ----------
