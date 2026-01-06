@@ -729,6 +729,23 @@ class GeoAxes(matplotlib.axes.Axes):
 
         """
         styler = kwargs.pop('styler', None)
+
+        if not callable(styler) and 'facecolor' not in kwargs:
+            styler_kw = styler
+
+            def styler(geom):
+                styler_g = styler_kw.copy() if styler_kw else {}
+
+                if isinstance(geom, sgeom.LineString):
+                    styler_g['facecolor'] = 'none'
+                    if kwargs.get('edgecolor', 'face') == 'face':
+                        styler_g['edgecolor'] = mpl.rcParams['patch.edgecolor']
+                    else:
+                        styler_g['edgecolor'] = kwargs['edgecolor']
+                    return styler_g
+                else:
+                    return styler_kw
+
         feature = cartopy.feature.ShapelyFeature(geoms, crs, **kwargs)
         return self.add_feature(feature, styler=styler, autolim=autolim)
 
