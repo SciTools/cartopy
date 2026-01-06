@@ -138,6 +138,33 @@ def test_tile_find_images():
             [(7, 4, 4), (7, 5, 4), (8, 4, 4), (8, 5, 4)])
 
 
+def test_multipolygon_find_images():
+    # Test that _find_images handles MultiPolygon geometries correctly,
+    # particularly for orthographic projections that cross the dateline.
+    gt = cimgt.GoogleTiles()
+
+    # Create a MultiPolygon that simulates the dateline crossing scenario
+    # Two separate rectangles representing the split geometry parts
+    geom1 = sgeom.box(-20037508, -8000000, -12000000, 8000000)  # Left part
+    geom2 = sgeom.box(12000000, -8000000, 20037508, 8000000)   # Right part
+    multi_geom = sgeom.MultiPolygon([geom1, geom2])
+
+    tiles = list(gt.find_images(multi_geom, 2))
+    tile_x_coords = {tile[0] for tile in tiles}
+
+    # Should include all x coordinates from 0 to 3 for complete coverage
+    expected_x_coords = {0, 1, 2, 3}
+    assert tile_x_coords == expected_x_coords
+
+    # Request tiles for the individual pieces
+    tiles_part1 = list(gt.find_images(geom1, 2))
+    tiles_part2 = list(gt.find_images(geom2, 2))
+
+    # Combined individual parts should have fewer tiles than the MultiPolygon
+    # because the MultiPolygon includes intermediate tiles for continuity
+    assert len(tiles) > len(tiles_part1) + len(tiles_part2)
+
+
 @pytest.mark.network
 def test_image_for_domain():
     gt = cimgt.GoogleTiles()
