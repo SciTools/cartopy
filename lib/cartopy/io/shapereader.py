@@ -30,11 +30,11 @@ geometry representation of shapely:
 import io
 import itertools
 from pathlib import Path
-from urllib.error import HTTPError
 
 from pyproj import CRS
 import shapefile
 import shapely.geometry as sgeom
+from urllib3.exceptions import HTTPError
 
 from cartopy import config
 import cartopy.crs as ccrs
