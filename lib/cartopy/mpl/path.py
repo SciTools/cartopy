@@ -16,8 +16,6 @@ from matplotlib.path import Path
 import numpy as np
 import shapely.geometry as sgeom
 
-from cartopy.mpl import _MPL_38
-
 
 def _ensure_path_closed(path):
     """
@@ -125,14 +123,7 @@ def shapely_to_path(shape):
         return Path(vertices, codes)
     elif isinstance(shape, (sgeom.MultiPolygon, sgeom.GeometryCollection,
                             sgeom.MultiLineString, sgeom.MultiPoint)):
-        paths = []
-        for geom in shape.geoms:
-            path = shapely_to_path(geom)
-            if _MPL_38 or path.vertices.size > 0:
-                # make_compound_path handling for empty paths was added at
-                # https://github.com/matplotlib/matplotlib/pull/25252
-                paths.append(path)
-        return Path.make_compound_path(*paths)
+        return Path.make_compound_path(*[shapely_to_path(geom) for geom in shape.geoms])
     else:
         raise ValueError(f'Unsupported shape type {type(shape)}.')
 
