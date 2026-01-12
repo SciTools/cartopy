@@ -60,8 +60,10 @@ lon = np.concat([-lon[-1::-1], lon])
 size = (nlats, nlons)
 rfield = np.random.normal(size=size)
 rfield = np.concat((rfield, rfield), axis=1)
-feature = gaussian_filter(rfield,
-            sigma=[nlats/12,nlons/4])[:,int(nlons/2):int(nlons*3/2)]
+feature = gaussian_filter(
+    rfield,
+    sigma=[nlats/12,nlons/4],
+    mode="wrap")[:,int(nlons/2):int(nlons*3/2)]
 
 # var = speed
 var = feature
