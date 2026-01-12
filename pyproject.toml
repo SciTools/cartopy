@@ -2,7 +2,7 @@
 requires = [
     "wheel",
     "setuptools >= 77.0.3",
-    "Cython >= 0.29.24",
+    "Cython >= 3.0",
     # numpy requirement for wheel builds for distribution on PyPI - building
     # against 2.x yields wheels that are also compatible with numpy 1.x at
     # runtime.
@@ -21,7 +21,7 @@ authors = [
 ]
 description = "A Python library for cartographic visualizations with Matplotlib"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 keywords = ["cartography", "map", "transform", "projection", "pyproj", "shapely", "shapefile"]
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
@@ -36,31 +36,30 @@ classifiers = [
     'Programming Language :: C++',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Programming Language :: Python :: 3 :: Only',
     'Topic :: Scientific/Engineering',
     'Topic :: Scientific/Engineering :: GIS',
     'Topic :: Scientific/Engineering :: Visualization',
 ]
 dependencies = [
-    "numpy>=1.23",
-    "matplotlib>=3.6",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
     "shapely>=2.0",
-    "packaging>=21",
-    "pyshp>=2.3",
-    "pyproj>=3.3.1",
+    "pyshp>=2.3.1",
+    "pyproj>=3.6",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 doc = ["pydata-sphinx-theme", "sphinx", "sphinx-copybutton", "sphinx-gallery"]
 speedups = ["pykdtree", "fiona"]
-ows = ["OWSLib>=0.27.0", "pillow>=9.1"]
-plotting = ["pillow>=9.1", "scipy>=1.9"]
+ows = ["OWSLib>=0.29.0", "pillow>=9.1"]
+plotting = ["pillow>=9.1", "scipy>=1.11"]
 srtm = ["beautifulsoup4"]
-test = ["pytest>=5.1.2", "pytest-mpl>=0.11", "pytest-xdist", "pytest-cov", "coveralls"]
+test = ["pytest>=5.1.2", "pytest-mpl>=0.11", "pytest-xdist", "pytest-cov", "coveralls", "packaging>=21.0"]
 
 [project.scripts]
 cartopy_feature_download = "cartopy.feature.download.__main__:main"
