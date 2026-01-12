@@ -135,7 +135,7 @@ class CRS(_CRS):
     #: Whether this projection can handle ellipses.
     _handles_ellipses = True
 
-    def __init__(self, proj4_params, globe=None):
+    def __init__(self, proj4_params, globe=None, over=False):
         """
         Parameters
         ----------
@@ -149,8 +149,23 @@ class CRS(_CRS):
         globe: :class:`~cartopy.crs.Globe` instance, optional
             If omitted, the default Globe instance will be created.
             See :class:`~cartopy.crs.Globe` for details.
+        over: boolean, optional.  Defaults to False.
+            If True, adds the +over parameter to the PROJ string,
+            and enables longitudes to be extended beyond 360
+            degrees.  This only makes sense with cylindrical
+            projections, and enables more than one rotation of
+            the globe to be visualised.
 
         """
+
+        self.over = over
+        if over is True:
+            if isinstance(proj4_params, list):
+                proj4_params.append(("over", None))
+            elif isinstance(proj4_params, str):
+                proj4_params+" +over"
+            else:
+                print("Error: proj4_params neither str nor list")
         self.input = (proj4_params, globe)
 
         # for compatibility with pyproj.CRS and rasterio.crs.CRS
@@ -419,8 +434,9 @@ class CRS(_CRS):
                     self.is_geodetic()):
                 # convert from [0,360] to [-180,180]
                 x = np.array(x, copy=True)
-                to_180 = (x > 180) | (x < -180)
-                x[to_180] = (((x[to_180] + 180) % 360) - 180)
+                if self.over is False:
+                    to_180 = (x > 180) | (x < -180)
+                    x[to_180] = (((x[to_180] + 180) % 360) - 180)
             try:
                 result[:, 0], result[:, 1], result[:, 2] = \
                     _safe_pj_transform(src_crs, self, x, y, z, trap=trap)
@@ -573,7 +589,7 @@ class Geodetic(CRS):
 
     """
 
-    def __init__(self, globe=None):
+    def __init__(self, globe=None, over=False):
         """
         Parameters
         ----------
@@ -583,7 +599,7 @@ class Geodetic(CRS):
         """
         proj4_params = [('proj', 'lonlat')]
         globe = globe or Globe(datum='WGS84')
-        super().__init__(proj4_params, globe)
+        super().__init__(proj4_params, globe, over=over)
 
     # XXX Implement fwd such as Basemap's Geod.
     # Would be used in the tissot example.
@@ -699,7 +715,12 @@ class Projection(CRS, metaclass=ABCMeta):
         elif self.is_geographic:
             # If the projection is geographic without an area of use, assume
             # the bounds are the full globe.
-            self.bounds = (-180, 180, -90, 90)
+            # So that feature_artist can handle +over, the
+            # bounds are extended beyond +/- 180 degrees.
+            if self.over:
+                self.bounds = (-572.95, 572.95, -90, 90)
+            else:
+                self.bounds = (-180, 180, -90, 90)
 
     @property
     def boundary(self):
@@ -1305,10 +1326,10 @@ class _RectangularProjection(Projection, metaclass=ABCMeta):
     """
     _wrappable = True
 
-    def __init__(self, proj4_params, half_width, half_height, globe=None):
+    def __init__(self, proj4_params, half_width, half_height, globe=None, over=False):
         self._half_width = half_width
         self._half_height = half_height
-        super().__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe, over=over)
 
     @property
     def boundary(self):
@@ -1348,17 +1369,20 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 
 
 class PlateCarree(_CylindricalProjection):
-    def __init__(self, central_longitude=0.0, globe=None):
+    def __init__(self, central_longitude=0.0, globe=None, over=False):
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude),
                         ('to_meter', math.radians(1) * (
                             globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
                         ('vto_meter', 1)]
-        x_max = 180
+        if over is True:
+            x_max = 572.95 # Maximum allowed value in pyproj with +over
+        else:
+            x_max = 180
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
-        self.threshold = x_max / 360
-        super().__init__(proj4_params, x_max, y_max, globe=globe)
+        self.threshold = 0.5
+        super().__init__(proj4_params, x_max, y_max, globe=globe, over=over)
 
     def _bbox_and_offset(self, other_plate_carree):
         """
@@ -1628,7 +1652,8 @@ class Mercator(Projection):
     def __init__(self, central_longitude=0.0,
                  min_latitude=-80.0, max_latitude=84.0,
                  globe=None, latitude_true_scale=None,
-                 false_easting=0.0, false_northing=0.0, scale_factor=None):
+                 false_easting=0.0, false_northing=0.0, scale_factor=None,
+                 over=False):
         """
         Parameters
         ----------
@@ -1650,6 +1675,8 @@ class Mercator(Projection):
             Y offset from the planar origin in metres. Defaults to 0.
         scale_factor: optional
             Scale factor at natural origin. Defaults to unused.
+        over: optional
+            Extend map beyond 360 degrees. Defaults to False.
 
         Notes
         -----
@@ -1674,13 +1701,16 @@ class Mercator(Projection):
             else:
                 proj4_params.append(('k_0', scale_factor))
 
-        super().__init__(proj4_params, globe=globe)
+        super().__init__(proj4_params, globe=globe, over=over)
 
         # Need to have x/y limits defined for the initial hash which
         # gets used within transform_points for caching
         self._x_limits = self._y_limits = None
         # Calculate limits.
-        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        if over is False:
+            minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        else:
+            minlon, maxlon = -572.95, 572.95
         limits = self.transform_points(self.as_geodetic(),
                                        np.array([minlon, maxlon]),
                                        np.array([min_latitude, max_latitude]))

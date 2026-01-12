@@ -92,3 +92,12 @@ def test_scale_factor():
 
     assert_almost_equal(crs.boundary.bounds,
                         [-18808021, -14585266, 18808021, 17653216], decimal=0)
+
+
+def test_over():
+    crs = ccrs.Mercator(over=True)
+
+    other_args = {'ellps=WGS84', 'lon_0=0.0', 'x_0=0.0', 'y_0=0.0', 'units=m', 'over'}
+    check_proj_params('merc', crs, other_args)
+    assert_almost_equal(crs.boundary.bounds,
+                        [-63780502, -15496571, 63780502, 18764656], decimal=0)
