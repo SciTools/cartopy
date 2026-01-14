@@ -32,6 +32,7 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery
   # Extras
+  - fiona
   - pre-commit
   - pykdtree
   - ruff
