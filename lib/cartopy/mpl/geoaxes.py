@@ -16,6 +16,7 @@ plot results from source coordinates to the GeoAxes' target projection.
 import collections
 import contextlib
 import functools
+import itertools
 import json
 import os
 from pathlib import Path
@@ -29,6 +30,7 @@ import matplotlib.contour
 from matplotlib.image import imread
 import matplotlib.patches as mpatches
 import matplotlib.path as mpath
+from matplotlib.patheffects import Normal, Stroke
 import matplotlib.spines as mspines
 import matplotlib.transforms as mtransforms
 import numpy as np
@@ -1505,6 +1507,97 @@ class GeoAxes(matplotlib.axes.Axes):
             auto_update=auto_update, formatter_kwargs=formatter_kwargs)
         self.add_artist(gl)
         return gl
+
+    def zebra_frame(self, lw=3, colors= None, crs=None,
+                    zorder=None, use_ticks = False,
+                    use_extent = True, nrow=8, ncolumn=8):
+        """
+        Author: Chang Liao (changliao1025@outlook.com)
+        Automatically add zebra frame to the axes, in the given coordinate
+        system, at draw time.
+
+        Parameters
+        ----------
+        lw: optional
+            The line width of the zebra frame.
+        colors: optional
+            The colors of the zebra frame, a list of two colors.
+        crs: optional
+            The :class:`cartopy._crs.CRS` defining the coordinate system in
+            which gridlines are drawn.
+            Defaults to :class:`cartopy.crs.PlateCarree`.
+        zorder: optional
+            The zorder of the zebra frame.
+        use_ticks: optional
+            If True, the zebra frame will follow the ticks.
+        use_extent: optional
+            If True, the zebra frame will follow the map extent.
+        Returns
+        -------
+        Notes
+        -----
+        Details: https://github.com/SciTools/cartopy/issues/1830
+
+        """
+        # Alternate black and white line segments
+        if colors is None:
+            bws = itertools.cycle(["k", "w"])
+        else:
+            if len(colors) != 2:
+                raise ValueError("The colors must be a list of two colors.")
+            for color in colors:
+                if not matplotlib.colors.is_color_like(color):
+                    raise ValueError(f"{color} is not a valid color.")
+            bws = itertools.cycle(colors)
+
+        self.spines["geo"].set_visible(False)
+
+        if use_extent is True:
+            left, right, bottom, top = self.get_extent()
+            crs_map = self.projection
+            dx = right - left
+            dy = top - bottom
+            xticks = np.arange(left, right+dx/(ncolumn+1), dx/ncolumn)
+            yticks = np.arange(bottom, top+dy/(nrow+1), dy/nrow)
+        else:
+            if use_ticks is True:
+                crs_map = crs
+                xticks = sorted([*self.get_xticks()])
+                xticks = np.unique(np.array(xticks))
+                yticks = sorted([*self.get_yticks()])
+                yticks = np.unique(np.array(yticks))
+                #check ticks size
+                if len(xticks) < 2 or len(yticks) < 2:
+                    raise ValueError("The ticks must have at least two values.")
+            else:
+                #throw an error that one option must be true
+                raise ValueError("'use_extent' or 'use_ticks' must be set to True.")
+
+
+        for ticks, which in zip([xticks, yticks], ["lon", "lat"]):
+            for idx, (start, end) in enumerate(zip(ticks, ticks[1:])):
+                bw = next(bws)
+                if which == "lon":
+                    xs = [[start, end], [start, end]]
+                    ys = [[yticks[0], yticks[0]], [yticks[-1], yticks[-1]]]
+                else:
+                    xs = [[xticks[0], xticks[0]], [xticks[-1], xticks[-1]]]
+                    ys = [[start, end], [start, end]]
+                capstyle = "butt" if idx not in (0, len(ticks) - 2) else "projecting"
+                for (xx, yy) in zip(xs, ys):
+                    lw_geo = self.spines["geo"].get_linewidth()
+                    self.plot(xx, yy, color=bw,
+                              linewidth=max(0, lw - lw_geo * 2),
+                              clip_on=False,
+                              transform=crs_map, zorder=zorder,
+                              solid_capstyle=capstyle,
+                              path_effects=[
+                                  Stroke(linewidth=lw, foreground="black"),
+                                  Normal(),
+                              ],
+                              )
+
+        return
 
     def _gen_axes_patch(self):
         return _ViewClippedPathPatch(self)
