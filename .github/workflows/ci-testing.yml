@@ -53,7 +53,7 @@ jobs:
           echo "CYTHON_COVERAGE=1" >> $GITHUB_ENV
           # Also add doctest here to avoid windows runners which expect a different path separator
           echo "EXTRA_TEST_ARGS=--cov=cartopy -ra --doctest-modules" >> $GITHUB_ENV
-          pip install cython
+          pip install cython  # Required for Cython.Coverage plugin.
 
       - name: Install Nightlies
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -63,16 +63,15 @@ jobs:
 
       - name: Install Cartopy
         id: install
+        shell: bash
         run: |
-          pip install -e .[test]
+          if [ ${{ steps.minimum-packages.conclusion }} == 'skipped' ]; then
+              # Default is to install just the minimum testing requirements,
+              # but we want to get as much coverage as possible.
+              EXTRA_PACKAGES=',ows,plotting,speedups'
+          fi
+          pip install -e .[test${EXTRA_PACKAGES}]
           python -c "import cartopy; print('Version ', cartopy.__version__)"
-
-      - name: Install extras
-        # Default is to install just the minimum testing requirements,
-        # but we want to get as much coverage as possible.
-        if: steps.minimum-packages.conclusion == 'skipped'
-        run: |
-          pip install .[ows,plotting,speedups]
 
       - name: Testing
         id: test
