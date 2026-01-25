@@ -21,8 +21,8 @@ jobs:
         use-network: [true]
         include:
           - os: ubuntu-latest
-            # switch to py 3.14 when fiona wheels are available https://github.com/Toblerity/Fiona/issues/1504
-            python-version: '3.13'
+            # do not use the version we use for coverage
+            python-version: '3.12'
             use-network: false
 
     steps:
