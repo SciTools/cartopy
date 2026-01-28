@@ -38,7 +38,6 @@ import shapely.geometry as sgeom
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.feature
-from cartopy.mpl import _MPL_38
 import cartopy.mpl.contour
 import cartopy.mpl.feature_artist as feature_artist
 import cartopy.mpl.geocollection
@@ -997,7 +996,7 @@ class GeoAxes(matplotlib.axes.Axes):
             raise ValueError(f'Unknown stock image {name!r}.')
 
     def background_img(self, name='ne_shaded', resolution='low', extent=None,
-                       cache=False):
+                       cache=False, **kwargs):
         """
         Add a background image to the map, from a selection of pre-prepared
         images held in a directory specified by the CARTOPY_USER_BACKGROUNDS
@@ -1074,7 +1073,8 @@ class GeoAxes(matplotlib.axes.Axes):
             # not specifying an extent, so return all of it:
             return self.imshow(img, origin='upper',
                                transform=source_proj,
-                               extent=[-180, 180, -90, 90])
+                               extent=[-180, 180, -90, 90],
+                               **kwargs)
         else:
             # return only a subset of the image:
             # set up coordinate arrays:
@@ -1116,7 +1116,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
             return self.imshow(img_subset, origin='upper',
                                transform=source_proj,
-                               extent=ret_extent)
+                               extent=ret_extent,
+                               **kwargs)
 
     def read_user_background_images(self, verify=True):
         """
@@ -1590,21 +1591,12 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         result = super().contour(*args, **kwargs)
 
-        if not _MPL_38:
-            # We need to compute the dataLim correctly for contours.
-            bboxes = [col.get_datalim(self.transData)
-                      for col in result.collections
-                      if col.get_paths()]
-            if bboxes:
-                extent = mtransforms.Bbox.union(bboxes)
-                self.update_datalim(extent.get_points())
-        else:
-            # We need to compute the dataLim correctly for contours and set the
-            # artist's sticky edges to match.
-            datalim = result.get_datalim(self.transData)
-            self.update_datalim(datalim)
-            result.sticky_edges.x[:] = datalim.xmin, datalim.xmax
-            result.sticky_edges.y[:] = datalim.ymin, datalim.ymax
+        # We need to compute the dataLim correctly for contours and set the
+        # artist's sticky edges to match.
+        datalim = result.get_datalim(self.transData)
+        self.update_datalim(datalim)
+        result.sticky_edges.x[:] = datalim.xmin, datalim.xmax
+        result.sticky_edges.y[:] = datalim.ymin, datalim.ymax
 
         self.autoscale_view()
 
@@ -1636,21 +1628,12 @@ class GeoAxes(matplotlib.axes.Axes):
         """
         result = super().contourf(*args, **kwargs)
 
-        if not _MPL_38:
-            # We need to compute the dataLim correctly for contours.
-            bboxes = [col.get_datalim(self.transData)
-                      for col in result.collections
-                      if col.get_paths()]
-            if bboxes:
-                extent = mtransforms.Bbox.union(bboxes)
-                self.update_datalim(extent.get_points())
-        else:
-            # We need to compute the dataLim correctly for contours and set the
-            # artist's sticky edges to match.
-            datalim = result.get_datalim(self.transData)
-            self.update_datalim(datalim)
-            result.sticky_edges.x[:] = datalim.xmin, datalim.xmax
-            result.sticky_edges.y[:] = datalim.ymin, datalim.ymax
+        # We need to compute the dataLim correctly for contours and set the
+        # artist's sticky edges to match.
+        datalim = result.get_datalim(self.transData)
+        self.update_datalim(datalim)
+        result.sticky_edges.x[:] = datalim.xmin, datalim.xmax
+        result.sticky_edges.y[:] = datalim.ymin, datalim.ymax
 
         self.autoscale_view()
 
@@ -1934,36 +1917,19 @@ class GeoAxes(matplotlib.axes.Axes):
         vmax = kwargs.pop('vmax', None)
         norm = kwargs.pop('norm', None)
         cmap = kwargs.pop('cmap', None)
+
         # Plot all of the wrapped cells.
         # `pcolor` only draws polygons where the data is not
         # masked, so this will only draw a limited subset of
         # polygons that were actually wrapped.
+        pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
+                                 pcolor_data, zorder=zorder,
+                                 **kwargs)
 
-        if not _MPL_38:
-            # We will add the original data mask in later to
-            # make sure that set_array can work in future
-            # calls on the proper sized array inputs.
-            # NOTE: we don't use C.data here because C.data could
-            #       contain nan's which would be masked in the
-            #       pcolor routines, which we don't want. We will
-            #       fill in the proper data later with set_array()
-            #       calls.
-            pcolor_zeros = np.ma.array(np.zeros(C.shape), mask=pcolor_mask)
-            pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
-                                     pcolor_zeros, zorder=zorder,
-                                     **kwargs)
-
-            # The pcolor_col is now possibly shorter than the
-            # actual collection, so grab the masked cells
-            pcolor_col.set_array(pcolor_data[mask].ravel())
-        else:
-            pcolor_col = self.pcolor(coords[..., 0], coords[..., 1],
-                                     pcolor_data, zorder=zorder,
-                                     **kwargs)
-            # Currently pcolor_col.get_array() will return a compressed array
-            # and warn unless we explicitly set the 2D array.  This should be
-            # unnecessary with future matplotlib versions.
-            pcolor_col.set_array(pcolor_data)
+        # In matplotlib v3.8 and v3.9 pcolor_col.get_array() will return a
+        # compressed array and warn unless we explicitly set the 2D array.
+        # This can be removed when we support only matplotlib v3.10+.
+        pcolor_col.set_array(pcolor_data)
 
         pcolor_col.set_cmap(cmap)
         pcolor_col.set_norm(norm)

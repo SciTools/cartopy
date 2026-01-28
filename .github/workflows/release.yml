@@ -37,7 +37,7 @@ jobs:
       SDIST_NAME: ${{ steps.sdist.outputs.SDIST_NAME }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           # We need the full history to generate the proper version number
           fetch-depth: 0
@@ -61,7 +61,7 @@ jobs:
         run: twine check dist/*
 
       - name: Upload sdist result
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
@@ -77,7 +77,7 @@ jobs:
           - os: ubuntu-latest
             cibw_archs: "x86_64"
           - os: windows-latest
-            cibw_archs: "auto64"
+            cibw_archs: "auto"
           - os: macos-latest
             cibw_archs: "x86_64"
           - os: macos-latest
@@ -88,22 +88,20 @@ jobs:
 
     steps:
       - name: Download sdist
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: cibw-sdist
           path: dist
 
       - name: Build wheels for CPython
-        uses: pypa/cibuildwheel@7c619efba910c04005a835b110b057fc28fd6e93 # v3.2.0
+        uses: pypa/cibuildwheel@298ed2fb2c105540f5ed055e8a6ad78d82dd3a7e # v3.3.1
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
         env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
-          # Skip 32 bit builds and musllinux due to lack of numpy wheels
-          CIBW_SKIP: "*-win32 *_i686 *-musllinux*"
+          CIBW_SKIP: "*_i686 cp3*t-*"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ matrix.cibw_archs }}
           path: ./wheelhouse/*.whl
@@ -123,7 +121,7 @@ jobs:
 
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           pattern: cibw-*
           path: dist

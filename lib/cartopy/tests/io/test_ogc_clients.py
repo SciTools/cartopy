@@ -211,6 +211,7 @@ class TestWMTSRasterSource:
 
 @pytest.mark.network
 @pytest.mark.skipif(not _OWSLIB_AVAILABLE, reason='OWSLib is unavailable.')
+@pytest.mark.skip(reason='NSIDC API url has changed and tests need to be updated')
 class TestWFSGeometrySource:
     URI = 'https://nsidc.org/cgi-bin/atlas_south?service=WFS'
     typename = 'land_excluding_antarctica'

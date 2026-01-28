@@ -58,6 +58,7 @@ Image tiles
     QuadtreeTiles
     StadiaMapsTiles
     Stamen
+    ThunderforestTiles
 
 Open Geospatial Consortium (OGC) Clients
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -17,7 +17,6 @@ import matplotlib.collections
 import numpy as np
 
 import cartopy.feature as cfeature
-from cartopy.mpl import _MPL_38
 import cartopy.mpl.path as cpath
 
 
@@ -144,11 +143,6 @@ class FeatureArtist(matplotlib.collections.Collection):
                           'defined as "never".')
         else:
             super().set_facecolor(c)
-
-    if not _MPL_38:
-        # set_paths does not yet exist on Collection.
-        def set_paths(self, paths):
-            self._paths = paths
 
     def _get_geoms_paths(self):
         ax = self.axes

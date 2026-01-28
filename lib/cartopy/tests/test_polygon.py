@@ -508,3 +508,37 @@ class TestHoles(PolygonTests):
         source = ccrs.Geodetic()
 
         assert len(list(target.project_geometry(poly, source).geoms)) == 1
+
+    def test_small_patch_antimeridian_regression(self):
+        """
+        Test for regression where small patches near antimeridian would
+        incorrectly fill the entire globe instead of appearing as small patches.
+        """
+        # Test data from the original bug report - a tiny patch near Antarctica
+        # that crosses the antimeridian
+        coords = np.array([
+            [-180.00020734,  -63.5383884 ],
+            [-179.93611911,  -63.61745971],
+            [-179.77001049,  -63.62512738],
+            [-179.67109735,  -63.55616224],
+            [-179.74190981,  -63.49385818],
+            [-179.91362571,  -63.48807984],
+            [-180.00020734,  -63.5383884 ],
+            [-180.00020734,  -63.5383884 ],
+        ])
+
+        patch = sgeom.Polygon(coords)
+        proj = ccrs.PlateCarree()
+
+        # Project the geometry
+        projected = proj.project_geometry(patch, proj)
+
+        # The projected geometry should be small, not span the entire globe
+        bounds = projected.bounds
+        longitude_span = bounds[2] - bounds[0]  # x_max - x_min
+        latitude_span = bounds[3] - bounds[1]   # y_max - y_min
+
+        # The longitude span should be small (less than 1 degree), not ~360 degrees
+        # which would indicate the patch incorrectly fills the entire globe
+        assert longitude_span < 1.0
+        assert latitude_span < 1.0

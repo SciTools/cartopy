@@ -13,7 +13,6 @@ import pyproj
 import pytest
 
 import cartopy.crs as ccrs
-from cartopy.mpl import _MPL_38
 from cartopy.tests.conftest import requires_scipy
 
 
@@ -248,17 +247,8 @@ def test_cursor_values():
                      r.encode('ascii', 'ignore'))
 
 
-SKIP_PRE_MPL38 = pytest.mark.skipif(not _MPL_38, reason='mpl < 3.8')
 PARAMETRIZE_PCOLORMESH_WRAP = pytest.mark.parametrize(
-    'mesh_data_kind',
-    [
-        'standard',
-        pytest.param('rgb', marks=SKIP_PRE_MPL38),
-        pytest.param('rgba', marks=SKIP_PRE_MPL38),
-    ],
-    ids=['standard', 'rgb', 'rgba'],
-)
-
+    'mesh_data_kind', ['standard', 'rgb', 'rgba'])
 
 def _to_rgb(data, mesh_data_kind):
     """
@@ -363,8 +353,6 @@ def test_pcolormesh_get_array_with_mask(mesh_data_kind):
     result = c.get_array()
 
     expected = data2
-    if not _MPL_38:
-        expected = expected.ravel()
 
     np.testing.assert_array_equal(np.ma.getmask(result), np.isnan(expected))
     np.testing.assert_array_equal(
@@ -527,8 +515,6 @@ def test_pcolormesh_set_array_nowrap():
     assert not hasattr(mesh, '_wrapped_collection_fix')
 
     expected = data
-    if not _MPL_38:
-        expected = expected.ravel()
     np.testing.assert_array_equal(mesh.get_array(), expected)
 
     # For backwards compatibility, check we can set a 1D array
@@ -698,10 +684,7 @@ def test_pcolormesh_nan_wrap():
     ax = plt.axes(projection=ccrs.PlateCarree())
     mesh = ax.pcolormesh(xs, ys, data)
     pcolor = getattr(mesh, "_wrapped_collection_fix")
-    if not _MPL_38:
-        assert len(pcolor.get_paths()) == 2
-    else:
-        assert not pcolor.get_paths()
+    assert not pcolor.get_paths()
 
     # Check that we can populate the pcolor with some data.
     mesh.set_array(np.ones((2, 2)))
