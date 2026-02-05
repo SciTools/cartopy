@@ -17,11 +17,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ['3.11', '3.12', '3.13', '3.14']
         use-network: [true]
         include:
           - os: ubuntu-latest
-            python-version: '3.13'
+            # do not use the version we use for coverage
+            python-version: '3.12'
             use-network: false
 
     steps:
@@ -46,6 +47,7 @@ jobs:
       - name: Coverage packages
         id: coverage
         # only want the coverage to be run on the latest ubuntu and for code changes i.e. push and pr
+        # switch to py 3.14 when fiona wheels are available https://github.com/Toblerity/Fiona/issues/1504
         if: |
           matrix.python-version == '3.13' && matrix.os == 'ubuntu-latest' &&
           (github.event_name == 'push' || github.event_name == 'pull_request')
@@ -68,7 +70,14 @@ jobs:
           if [ ${{ steps.minimum-packages.conclusion }} == 'skipped' ]; then
               # Default is to install just the minimum testing requirements,
               # but we want to get as much coverage as possible.
-              EXTRA_PACKAGES=',ows,plotting,speedups'
+              if [ ${{ matrix.python-version }} == '3.14' ]; then
+                  # remove this if loop when fiona wheels are available for py3.14
+                  # https://github.com/Toblerity/Fiona/issues/1504
+                  EXTRA_PACKAGES=',ows,plotting'
+                  pip install pykdtree
+              else
+                  EXTRA_PACKAGES=',ows,plotting,speedups'
+              fi
           fi
           pip install -e .[test${EXTRA_PACKAGES}]
           python -c "import cartopy; print('Version ', cartopy.__version__)"
@@ -157,7 +166,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-update-conda: true
-          python-version: '3.13'
+          python-version: '3.14'
           activate-environment: cartopy-dev
           environment-file: environment.yml
 
