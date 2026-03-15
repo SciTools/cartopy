@@ -314,6 +314,11 @@ def test_transform_points_empty():
     assert_array_equal(result, np.array([], dtype=np.float64).reshape(0, 3))
 
 
+def test_project_geometry_empty_point():
+    """Test with an empty shapely point."""
+    assert ccrs.PlateCarree().project_geometry(sgeom.Point()).is_empty
+
+
 def test_transform_points_outside_domain():
     """Test CRS.transform_points with out of domain arrays."""
     # Length-1 arrays error out with a bad status code, while
