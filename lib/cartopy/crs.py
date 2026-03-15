@@ -833,6 +833,8 @@ class Projection(CRS, metaclass=ABCMeta):
         return getattr(self, method_name)(geometry, src_crs)
 
     def _project_point(self, point, src_crs):
+        if point.is_empty:
+            return point
         return sgeom.Point(*self.transform_point(point.x, point.y, src_crs))
 
     def _project_line_string(self, geometry, src_crs):
