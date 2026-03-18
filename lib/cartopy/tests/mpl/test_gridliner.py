@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pytest
-from shapely.geos import geos_version
+from shapely import geos_version
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
