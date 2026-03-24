@@ -605,3 +605,20 @@ def test_gridliner_with_globe():
     fig.draw_without_rendering()
 
     assert gl in ax.artists
+
+
+def test_gridliner_geo_labels_respect_side_visibility():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
+    ax.set_global()
+    gl = ax.gridlines(draw_labels=True)
+    gl.ylocator = mticker.FixedLocator([-60, -30, 0, 30, 60])
+
+    fig.draw_without_rendering()
+    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
+    assert labels == ['60°S', '60°S', '60°N', '60°N']
+
+    gl.right_labels = False
+    fig.draw_without_rendering()
+    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
+    assert labels == ['60°S', '60°N']

@@ -942,6 +942,15 @@ class Gridliner(matplotlib.artist.Artist):
                     # Is this kind label allowed to be drawn?
                     if not self._draw_this_label(xylabel, loc):
                         visible = False
+                    # For "geo" labels, also check against the
+                    # angle-derived side so that e.g.
+                    # right_labels=False is respected on curved
+                    # projections where labels cannot be classified
+                    # via spine geometry.
+                    elif loc == 'geo' and not getattr(
+                            self, self._get_loc_from_angle(
+                                segment_angle) + '_labels'):
+                        visible = False
 
                     elif x_inline or y_inline:
                         # Check that it does not overlap the map.
