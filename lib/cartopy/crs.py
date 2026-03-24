@@ -1192,10 +1192,38 @@ class Projection(CRS, metaclass=ABCMeta):
 
         polygon_bits = []
 
+        # Precompute the projection boundary polygon for inversion detection.
+        boundary_poly = self.domain
+
         # Turn all the exterior rings into polygon definitions,
         # "slurping up" any interior rings they contain.
         for exterior_ring in exterior_rings:
             polygon = sgeom.Polygon(exterior_ring)
+
+            # When a polygon crosses the projection cut line,
+            # _attach_lines_to_boundary can produce a ring that traces the
+            # *complement* of the intended shape while still carrying the
+            # correct CCW/CW winding flag (so it is classified as an exterior
+            # ring rather than an interior one).  The tell-tale sign is an
+            # area that exceeds half the projection domain: a genuine land or
+            # ocean polygon can never be that large.  Invert such rings back
+            # to the correct shape before continuing.
+            if polygon.area > 0.5 * boundary_poly.area:
+                corrected = boundary_poly.difference(
+                    shapely.make_valid(polygon))
+                if not corrected.is_empty:
+                    if isinstance(corrected, sgeom.MultiPolygon):
+                        for p in corrected.geoms:
+                            if not p.is_empty:
+                                polygon_bits.append(
+                                    (p.exterior.coords,
+                                     [i.coords for i in p.interiors]))
+                    elif isinstance(corrected, sgeom.Polygon):
+                        polygon_bits.append(
+                            (corrected.exterior.coords,
+                             [i.coords for i in corrected.interiors]))
+                continue
+
             prep_polygon = prep(polygon)
             holes = []
             for interior_ring in interior_rings[:]:
@@ -1213,7 +1241,6 @@ class Projection(CRS, metaclass=ABCMeta):
         # Any left over "interior" rings need "inverting" with respect
         # to the boundary.
         if interior_rings:
-            boundary_poly = self.domain
             x3, y3, x4, y4 = boundary_poly.bounds
             bx = (x4 - x3) * 0.1
             by = (y4 - y3) * 0.1
@@ -1257,11 +1284,8 @@ class Projection(CRS, metaclass=ABCMeta):
             box = sgeom.box(x3, y3, x4, y4, ccw=is_ccw)
 
             if interior_polys:
-                # Invert any valid interior polygons
                 multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
                 polygon = box.difference(multi_poly)
-
-                # Intersect the inverted polygon with the boundary
                 polygon = boundary_poly.intersection(polygon)
 
                 if not polygon.is_empty:

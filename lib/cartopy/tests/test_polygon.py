@@ -281,6 +281,39 @@ class TestMisc:
         polygons = target.project_geometry(polygon, source)
         assert isinstance(polygons, sgeom.MultiPolygon)
 
+    @pytest.mark.natural_earth
+    def test_oblique_mercator_no_inverted_land(self):
+        # Regression test for inside-out polygon artifact in ObliqueMercator.
+        # When a land polygon crosses the projection cut line,
+        # _rings_to_multi_polygon previously misidentified the winding order
+        # and returned the complement of the intended shape — a polygon
+        # covering the entire projection domain minus a small hole.
+        # These inverted polygons caused ocean areas to render as land.
+        # See https://github.com/SciTools/cartopy/issues/XXXX
+        import cartopy.feature as cfeature
+
+        projection = ccrs.ObliqueMercator(
+            central_longitude=-161.07,
+            central_latitude=54.55,
+            azimuth=90.0,
+            scale_factor=1,
+        )
+        boundary_area = sgeom.Polygon(projection.boundary).area
+        src_crs = ccrs.PlateCarree()
+
+        # The bug is only triggered with 50m (or finer) Natural Earth data.
+        # At small map extents, AdaptiveScaler selects 50m data, but the
+        # 110m dataset does not contain the affected polygons.
+        for geom in cfeature.LAND.with_scale('50m').geometries():
+            projected = projection.project_geometry(geom, src_crs)
+            if not projected.is_empty:
+                assert projected.area <= 0.5 * boundary_area, (
+                    f'project_geometry returned an inverted polygon '
+                    f'(area {projected.area:.3e} > 0.5 * boundary '
+                    f'{0.5 * boundary_area:.3e}). This is the inside-out '
+                    f'polygon artifact where a land polygon crossing the '
+                    f'projection cut line is rendered as its complement.')
+
 
 class TestQuality:
     def setup_class(self):
