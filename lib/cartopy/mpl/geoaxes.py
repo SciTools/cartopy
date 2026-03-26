@@ -459,6 +459,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # then we should autoscale the view.
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
+            self.ignore_existing_data_limits = False
 
         # apply_aspect may change the x or y data limits, so must be called
         # before the patch is updated.
@@ -564,6 +565,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         self.dataLim.intervalx = self.projection.x_limits
         self.dataLim.intervaly = self.projection.y_limits
+        self.viewLim.intervalx = self.projection.x_limits
+        self.viewLim.intervaly = self.projection.y_limits
 
     def clear(self):
         """Clear the current Axes and add boundary lines."""
@@ -747,10 +750,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _get_extent_geom(self, crs=None):
         # Perform the calculations for get_extent(), which just repackages it.
-        with self.hold_limits():
-            if self.get_autoscale_on():
-                self.autoscale_view()
-            [x1, y1], [x2, y2] = self.viewLim.get_points()
+        [x1, y1], [x2, y2] = self.viewLim.get_points()
 
         domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
                                             [x2, y2], [x1, y2],
