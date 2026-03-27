@@ -1352,10 +1352,7 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0, globe=None):
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
-        proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude),
-                        ('to_meter', math.radians(1) * (
-                            globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
-                        ('vto_meter', 1)]
+        proj4_params = [('proj', 'latlong'), ('pm', central_longitude)]
         x_max = 180
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
@@ -1385,8 +1382,8 @@ class PlateCarree(_CylindricalProjection):
             central longitudes. No checking of this is done.
 
         """
-        self_lon_0 = self.proj4_params['lon_0']
-        other_lon_0 = other_plate_carree.proj4_params['lon_0']
+        self_lon_0 = self.proj4_params['pm']
+        other_lon_0 = other_plate_carree.proj4_params['pm']
 
         lon_0_offset = other_lon_0 - self_lon_0
 
@@ -1414,7 +1411,8 @@ class PlateCarree(_CylindricalProjection):
         if return_value is None and isinstance(src_crs, PlateCarree):
             self_params = self.proj4_params.copy()
             src_params = src_crs.proj4_params.copy()
-            self_params.pop('lon_0'), src_params.pop('lon_0')
+            self_params.pop('pm')
+            src_params.pop('pm')
 
             xs, ys = vertices[:, 0], vertices[:, 1]
 
@@ -1439,6 +1437,12 @@ class PlateCarree(_CylindricalProjection):
                         break
 
         return return_value
+
+    def as_geodetic(self):
+        from pyproj import CRS as P_CRS
+        d = self.geodetic_crs.to_json_dict()
+        d['datum'].pop('prime_meridian', None)
+        return CRS(P_CRS.from_json_dict(d))
 
 
 class TransverseMercator(Projection):
