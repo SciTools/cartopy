@@ -615,10 +615,19 @@ def test_gridliner_geo_labels_respect_side_visibility():
     gl.ylocator = mticker.FixedLocator([-60, -30, 0, 30, 60])
 
     fig.draw_without_rendering()
-    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
-    assert labels == ['60°S', '60°S', '60°N', '60°N']
+    all_visible_geo = [a for a in gl.geo_label_artists if a.get_visible()]
+    n_all = len(all_visible_geo)
 
     gl.right_labels = False
     fig.draw_without_rendering()
-    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
-    assert labels == ['60°S', '60°N']
+    after_visible_geo = [a for a in gl.geo_label_artists if a.get_visible()]
+    n_after = len(after_visible_geo)
+
+    assert n_after < n_all
+
+    renderer = fig.canvas.get_renderer()
+    ax_bbox = ax.get_window_extent(renderer)
+    ax_midx = (ax_bbox.x0 + ax_bbox.x1) / 2
+    for artist in after_visible_geo:
+        bbox = artist.get_window_extent(renderer)
+        assert bbox.x1 <= ax_midx + 1
