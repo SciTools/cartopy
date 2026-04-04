@@ -57,9 +57,6 @@ class TestCRS:
                 Path(pyproj.datadir.get_user_data_dir(), grid_name).exists()
             )
             if not available:
-                import warnings
-                warnings.warn(f'{grid_name} is unavailable; '
-                              'testing OSGB at reduced precision')
                 precision = -1
 
         ll = ccrs.Geodetic()
