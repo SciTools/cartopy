@@ -30,7 +30,6 @@ geometry representation of shapely:
 import io
 import itertools
 from pathlib import Path
-from urllib.error import HTTPError
 
 from pyproj import CRS
 import shapefile
@@ -449,14 +448,22 @@ class GSHHSShpDownloader(Downloader):
     are ``scale`` (a single character indicating the resolution) and ``level``
     (a number indicating the type of feature).
 
+    Notes
+    -----
+      The GSHHS data is no longer hosted by NOAA,
+      https://www.nesdis.noaa.gov/about/documents-reports/notice-of-changes/2025-notice-of-changes/shorelinecoastline-resources
+      but is available in an archive at the following url
+      https://www.ncei.noaa.gov/data/oceans/archive/arc0234/0304143/1.1/data/0-data/GSHHS_shp/
+      for historical reference. The current source of the data downloaded by
+      Cartopy is from the University of Hawaii
+      https://www.soest.hawaii.edu/pwessel/gshhg/
     """
     FORMAT_KEYS = ('config', 'scale', 'level')
 
     gshhs_version = '2.3.7'
 
     _GSHHS_URL_TEMPLATE = (
-        'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-        f'gshhs/latest/gshhg-shp-{gshhs_version}.zip'
+        'https://www.soest.hawaii.edu/pwessel/gshhg/gshhg-shp-{gshhs_version}.zip'
     )
 
     def __init__(self,
@@ -465,6 +472,14 @@ class GSHHSShpDownloader(Downloader):
                  pre_downloaded_path_template=''):
         super().__init__(url_template, target_path_template,
                          pre_downloaded_path_template)
+
+    def url(self, format_dict):
+        """
+        The full URL for the GSHHS zip archive.
+
+        Injects ``gshhs_version`` from the class attribute as a default.
+        """
+        return super().url({'gshhs_version': self.gshhs_version} | format_dict)
 
     def zip_file_contents(self, format_dict):
         """
@@ -482,32 +497,9 @@ class GSHHSShpDownloader(Downloader):
 
         # Download archive.
         url = self.url(format_dict)
-        try:
-            shapefile_online = self._urlopen(url)
-        # error handling:
-        except HTTPError:
-            try:
-                """
-                case if GSHHS has had an update
-                without changing the naming convention
-                """
-                url = (
-                    f'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-                    f'gshhs/oldversions/version{self.gshhs_version}/'
-                    f'gshhg-shp-{self.gshhs_version}.zip'
-                )
-                shapefile_online = self._urlopen(url)
-            except HTTPError:
-                """
-                case if GSHHS has had an update
-                with changing the naming convention
-                """
-                url = (
-                    'https://www.ngdc.noaa.gov/mgg/shorelines/data/'
-                    'gshhs/oldversions/version2.3.6/'
-                    'gshhg-shp-2.3.6.zip'
-                )
-                shapefile_online = self._urlopen(url)
+
+        shapefile_online = self._urlopen(url)
+
         zfh = ZipFile(io.BytesIO(shapefile_online.read()), 'r')
         shapefile_online.close()
 
