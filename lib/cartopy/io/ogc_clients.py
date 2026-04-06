@@ -155,7 +155,7 @@ def _target_extents(extent, requested_projection, available_projection):
     # the entire output requested_projection domain, then we erode the request
     # area to avoid re-projection instabilities near the projection boundary.
     buffered_target_box = target_box.buffer(requested_projection.threshold,
-                                            resolution=1)
+                                            quad_segs=1)
     fudge_mode = buffered_target_box.contains(requested_projection.domain)
     if fudge_mode:
         target_box = requested_projection.domain.buffer(
@@ -174,7 +174,7 @@ def _target_extents(extent, requested_projection, available_projection):
             # need to re-inflate.
             radius = min(max_x - min_x, max_y - min_y) / 5.0
             radius = min(radius, available_projection.threshold * 15)
-            poly = poly.buffer(radius, resolution=1)
+            poly = poly.buffer(radius, quad_segs=1)
             # Prevent the expanded request going beyond the
             # limits of the requested_projection.
             poly = available_projection.domain.intersection(poly)

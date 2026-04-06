@@ -96,6 +96,10 @@ ignore = [
 addopts = "--mpl"
 testpaths = ["lib"]
 python_files = ["test_*.py"]
+filterwarnings = [
+    # owslib uses lxml element truth-testing which is deprecated
+    "ignore:Truth-testing of elements:FutureWarning",
+]
 
 [tool.ruff]
 lint.select = ["E", "F", "I", "UP", "W"]

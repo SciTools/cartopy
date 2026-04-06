@@ -657,7 +657,8 @@ def test_pcolormesh_wrap_gouraud_shading_failing_mask_creation():
 
     fig = plt.figure(figsize=(10, 6))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
-    ax.pcolormesh(x, y, data, transform=ccrs.PlateCarree(), shading='gouraud')
+    with pytest.warns(UserWarning, match="Handling wrapped coordinates with gouraud"):
+        ax.pcolormesh(x, y, data, transform=ccrs.PlateCarree(), shading='gouraud')
 
 
 def test_pcolormesh_diagonal_wrap():
