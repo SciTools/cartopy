@@ -148,12 +148,12 @@ def test_view_lim_autoscaling():
                               expected_non_tight, decimal=1)
 
 
-def test_view_lim_default_global(tmp_path):
+def test_view_lim_default_global():
     ax = plt.axes(projection=ccrs.PlateCarree())
-    # The view lim should be the default unit bbox until it is drawn.
-    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
-                              [[0, 0], [1, 1]])
-    plt.savefig(tmp_path / 'view_lim_default_global.png')
+    # viewLim is set to projection bounds in __clear.
     expected = np.array([[-180, -90], [180, 90]])
+    assert_array_almost_equal(ax.viewLim.frozen().get_points(),
+                              expected)
+    plt.gcf().draw_without_rendering()
     assert_array_almost_equal(ax.viewLim.frozen().get_points(),
                               expected)
