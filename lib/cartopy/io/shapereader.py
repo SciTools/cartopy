@@ -452,18 +452,21 @@ class GSHHSShpDownloader(Downloader):
     -----
       The GSHHS data is no longer hosted by NOAA,
       https://www.nesdis.noaa.gov/about/documents-reports/notice-of-changes/2025-notice-of-changes/shorelinecoastline-resources
-      but is available in an archive at the following url
+      but it is available in an archive at the following url
       https://www.ncei.noaa.gov/data/oceans/archive/arc0234/0304143/1.1/data/0-data/GSHHS_shp/
       for historical reference. The current source of the data downloaded by
       Cartopy is from the University of Hawaii
       https://www.soest.hawaii.edu/pwessel/gshhg/
+      using the GitHub mirror of the data at
+      https://github.com/GenericMappingTools/gshhg-gmt
     """
     FORMAT_KEYS = ('config', 'scale', 'level')
 
     gshhs_version = '2.3.7'
 
     _GSHHS_URL_TEMPLATE = (
-        'https://www.soest.hawaii.edu/pwessel/gshhg/gshhg-shp-{gshhs_version}.zip'
+        'https://github.com/GenericMappingTools/gshhg-gmt/releases/download/'
+        '{gshhs_version}/gshhg-shp-{gshhs_version}.zip'
     )
 
     def __init__(self,
