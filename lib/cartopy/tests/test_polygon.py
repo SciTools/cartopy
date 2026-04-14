@@ -281,6 +281,27 @@ class TestMisc:
         polygons = target.project_geometry(polygon, source)
         assert isinstance(polygons, sgeom.MultiPolygon)
 
+    def test_full_width_band_not_inverted(self):
+        # A polygon spanning exactly ±180° longitude creates a projected ring
+        # with a degenerate self-intersecting "tail" at the ±180 seam.
+        # Shapely's is_ccw is unreliable for such rings; the shoelace signed
+        # area must be used instead so the ring is classified correctly as an
+        # interior (not an exterior) ring. See GH-2483.
+        north_tropic = sgeom.Polygon(
+            [(-180, 0), (180, 0), (180, 20), (-180, 20)])
+        proj = ccrs.Orthographic(central_longitude=0.0, central_latitude=90.0)
+        result = proj.project_geometry(north_tropic, ccrs.PlateCarree())
+
+        # Convert points we expect to be inside vs out and check the
+        # containment of the result.
+        src = ccrs.PlateCarree()
+        inside_band = sgeom.Point(proj.transform_point(0, 10, src))
+        outside_band = sgeom.Point(proj.transform_point(0, 45, src))
+        assert result.contains(inside_band), \
+            '(0°E, 10°N) should be inside the projected tropical band'
+        assert not result.contains(outside_band), \
+            '(0°E, 45°N) should be outside the projected tropical band'
+
 
 class TestQuality:
     def setup_class(self):

@@ -1185,7 +1185,17 @@ class Projection(CRS, metaclass=ABCMeta):
         exterior_rings = []
         interior_rings = []
         for ring in rings:
-            if ring.is_ccw != is_ccw:
+            # Use the shoelace signed-area to determine ring orientation.
+            # ring.is_ccw is documented as unreliable for self-intersecting
+            # rings (e.g. when a projected polygon spans exactly ±180°
+            # longitude and the boundary attachment creates a degenerate
+            # "tail"). The shoelace sum dot(x[:-1], y[1:]) - dot(x[1:], y[:-1])
+            # gives twice the signed area and any self-intersecting
+            # tail contributions cancel out.
+            coords = shapely.get_coordinates(ring)
+            x, y = coords[:, 0], coords[:, 1]
+            ring_is_ccw = np.dot(x[:-1], y[1:]) > np.dot(x[1:], y[:-1])
+            if ring_is_ccw != is_ccw:
                 interior_rings.append(ring)
             else:
                 exterior_rings.append(ring)
