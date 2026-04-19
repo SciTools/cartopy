@@ -528,6 +528,8 @@ class GeoAxes(matplotlib.axes.Axes):
                 gl._draw_gridliner(renderer=renderer)
                 for label in (gl.top_label_artists +
                               gl.geo_label_artists):
+                    if not label.get_visible() or label.get_text() == "":
+                        continue
                     bb = label.get_tightbbox(renderer)
                     top = max(top, bb.ymax)
         if top < 0:
