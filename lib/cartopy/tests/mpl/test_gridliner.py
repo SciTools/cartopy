@@ -519,6 +519,25 @@ def test_gridliner_save_tight_bbox():
     fig.savefig(io.BytesIO(), bbox_inches='tight')
 
 
+def test_gridliner_ylabel_rotation_90_tight_bbox():
+    # Regression test for ylabel rotation=90 with bbox_inches=tight (gh2394).
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_extent([80, 170, -45, 30], crs=ccrs.PlateCarree())
+    gl = ax.gridlines(
+        draw_labels={"left": "y"},
+        ylabel_style={"rotation": 90},
+    )
+
+    fig.draw_without_rendering()
+    n_before = sum(1 for a in gl.label_artists if a.get_visible())
+    assert n_before > 0
+
+    fig.savefig(io.BytesIO(), bbox_inches='tight')
+    n_after = sum(1 for a in gl.label_artists if a.get_visible())
+
+    assert n_after == n_before
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
                                tolerance=grid_label_tol)
