@@ -1,0 +1,61 @@
+Version 0.26 (XXX)
+==================
+
+The documentation is now hosted on Read The Docs at the following URL:
+https://cartopy.readthedocs.io/stable/
+
+Minimum supported versions of dependencies
+
+* Python 3.11
+* Matplotlib 3.8
+* Numpy 1.26
+* Pyproj 3.6
+
+
+🎉 Features
+-----------
+
+* Ruth Comer added the `auto_lim` keyword to the `add_geometries()` and `add_features()`
+  methods so that axes extents can get automatically updated when adding new features
+  to an axes. (:pull:`2569`)
+
+* Thomas Guymer added ThunderForest tiles as another image tile provider. (:pull:`2575`)
+
+
+🐛 Bug Fixes
+------------
+
+* Greg Lucas fixed an issue with small anti-meridian crossing polygons during projection. (:pull:`2594`)
+
+* Thomas Guymer fixed an issue with potential cache name clashes based on different styles. (:pull:`2603`)
+
+* Raphael Quast fixed a bug with polygons that had no paths to return an empty path
+  rather than raising an error. (:pull:`2619`)
+
+* Greg Lucas fixed an issue when projecting a geometry with an empty point. (:pull:`2640`)
+
+
+📚 Documentation
+----------------
+
+* Sadie L. Bartholomew added an example map from The Simpson's. (:pull:`2583`)
+
+* Moritz Schreiber added a copy button to the examples. (:pull:`2592`)
+
+* Ruth Comer switched our documentation hosting to ReadTheDocs. (:pull:`2558`)
+
+
+🛠️ Maintenance
+--------------
+
+* Ruth Comer bumped the minimum required versions of dependencies. (:pull:`2623`)
+
+* Elliott Sales de Andrade fixed the CI installation of dependencies. (:pull:`2626`)
+
+* Josh Cunningham added ARM manylinux wheels to the release process. (:pull:`2628`)
+
+
+🚫 Deprecations and Removals
+----------------------------
+
+N/A
