@@ -1363,9 +1363,8 @@ class PlateCarree(_CylindricalProjection):
     def __init__(self, central_longitude=0.0, globe=None):
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'eqc'), ('lon_0', central_longitude),
-                        ('to_meter', math.radians(1) * (
-                            globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS)),
-                        ('vto_meter', 1)]
+                        ('to_meter', math.radians(1) * WGS84_SEMIMAJOR_AXIS),
+                        ('vto_meter', 1), ('R', WGS84_SEMIMAJOR_AXIS)]
         x_max = 180
         y_max = 90
         # Set the threshold around 0.5 if the x max is 180.
