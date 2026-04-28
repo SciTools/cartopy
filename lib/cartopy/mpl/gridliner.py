@@ -987,6 +987,7 @@ class Gridliner(matplotlib.artist.Artist):
                     # Updates
                     label.set_visible(visible)
                     label.path = this_path
+                    label.extents = this_path.get_extents()
                     label.xy = xylabel
                     label.loc = loc
                     self._labels.append(label)
@@ -1287,6 +1288,10 @@ class Label:
         return self.artist.get_visible()
 
     def check_overlapping(self, label):
+        # NOTE: Workaround for intersects_path() false positives on collinear edges.
+        # See https://github.com/matplotlib/matplotlib/issues/6076
+        if not self.extents.overlaps(label.extents):
+            return False
         overlapping = self.path.intersects_path(label.path)
         if overlapping:
             self.set_visible(False)
