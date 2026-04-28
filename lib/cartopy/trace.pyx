@@ -100,6 +100,38 @@ cdef class LineAccumulator:
         geom = sgeom.MultiLineString(geoms)
         return geom
 
+    cdef object as_ring_fragments(self):
+        """Return an ordered list of LineStrings
+
+        Representing projected ring fragments in ring-traversal order.
+        The caller is responsible for closing each fragment pair with a
+        boundary arc. Unlike as_geom(), this method does not attempt to join
+        the first and last fragments.
+        """
+        from cython.operator cimport dereference, preincrement
+
+        cdef list[Line].iterator it = self.lines.begin()
+        while it != self.lines.end():
+            if degenerate_line(dereference(it)):
+                it = self.lines.erase(it)
+            else:
+                preincrement(it)
+
+        cdef Line ilines
+        cdef Point ipoints
+        cdef unsigned int n, j
+        result = []
+        for ilines in self.lines:
+            n = ilines.size()
+            coords_arr = np.empty((n, 2), dtype=np.float64)
+            j = 0
+            for ipoints in ilines:
+                coords_arr[j, 0] = ipoints.x
+                coords_arr[j, 1] = ipoints.y
+                j += 1
+            result.append(sgeom.LineString(coords_arr))
+        return result
+
     cdef size_t size(self):
         return self.lines.size()
 
@@ -535,7 +567,7 @@ def _interpolator(src_crs, dest_projection):
 
 
 def project_linear(geometry not None, src_crs not None,
-                   dest_projection not None):
+                   dest_projection not None, bint is_ring=False):
     """
     Project a geometry from one projection to another.
 
@@ -547,30 +579,43 @@ def project_linear(geometry not None, src_crs not None,
         The coordinate system of the line to be projected.
     dest_projection : cartopy.crs.Projection
         The projection for the resulting projected line.
+    is_ring : bool, optional
+        Set to ``True`` when *geometry* is a closed ring.  Controls the
+        return type: ``True`` returns an ordered list of
+        `~shapely.geometry.LineString` fragments (ring-traversal order);
+        ``False`` returns a `~shapely.geometry.MultiLineString`.
+        Defaults to ``False``.
 
     Returns
     -------
-    `shapely.geometry.MultiLineString`
-        The result of projecting the given geometry from the source projection
-        into the destination projection.
+    `shapely.geometry.MultiLineString` or list of `shapely.geometry.LineString`
+        When *is_ring* is ``False``, returns a MultiLineString of projected
+        segments.
+
+        When *is_ring* is ``True``, returns an ordered list of LineString
+        fragments in ring-traversal order.  Fragment ``i`` ends on the
+        projection boundary and fragment ``(i+1) % N`` starts on the same
+        boundary; the caller is responsible for inserting the closing
+        boundary arc between them.  If the ring projects entirely inside the
+        domain with no cuts, a single-element list containing a closed
+        LineString is returned.
 
     """
     cdef:
         double threshold = dest_projection.threshold
         Interpolator interpolator
-        object g_domain
         double[:, :] src_coords, dest_coords
         unsigned int src_size, src_idx
         object gp_domain
         LineAccumulator lines
 
-    g_domain = dest_projection.domain
-
     interpolator = _interpolator(src_crs, dest_projection)
 
     src_coords = np.asarray(geometry.coords)
     dest_coords = interpolator.project_points(src_coords)
-    gp_domain = sprep.prep(g_domain)
+    # Use the cached prepared domain from the projection – avoids rebuilding the
+    # prepared geometry (sprep.prep()) on every ring projection call.
+    gp_domain = dest_projection._prepared_domain
 
     src_size = len(src_coords)  # check exceptions
 
@@ -594,10 +639,13 @@ def project_linear(geometry not None, src_crs not None,
 
     del gp_domain
 
-    multi_line_string = lines.as_geom()
+    if is_ring:
+        result = lines.as_ring_fragments()
+    else:
+        result = lines.as_geom()
 
     del lines, interpolator
-    return multi_line_string
+    return result
 
 
 class _Testing:
