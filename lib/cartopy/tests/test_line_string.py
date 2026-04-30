@@ -251,7 +251,6 @@ class TestMisc:
 
 
 class TestSymmetry:
-    @pytest.mark.xfail
     def test_curve(self):
         # Obtain a simple, curved path.
         projection = ccrs.PlateCarree()
