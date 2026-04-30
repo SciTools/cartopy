@@ -302,6 +302,157 @@ class TestMisc:
         assert not result.contains(outside_band), \
             '(0°E, 45°N) should be outside the projected tropical band'
 
+    def test_shorter_boundary_arc(self):
+        # Verify that arc_corners() picks the *shorter* boundary arc and not
+        # always the forward (CCW) one.
+        #
+        # PlateCarree ccw_boundary parameterisation with distances (d)
+        #   BL (-180,-90) d=0  -> BR (180,-90) d=360 ->
+        #   TR (180, 90)  d=540 -> TL (-180, 90)  d=900 -> BL d=1080
+        #
+        # Seg A: (180, 0) [d=450, right edge] -> (-180, 80) [d=910, left edge]
+        # Seg B: (-170, 90) [d=890, top edge] -> (180, 0)   [d=450, right edge]
+        proj = ccrs.PlateCarree()
+        mls = sgeom.MultiLineString([
+            [(180, 0), (-180, 80)],    # Seg A: right edge d=450, left edge d=910
+            [(-170, 90), (180, 0)],    # Seg B: top edge  d=890,  right edge d=450
+        ])
+        rings = proj._attach_lines_to_boundary([mls], is_ccw=True)
+        assert rings, "Expected at least one ring to be produced"
+        domain_area = proj.domain.area
+        for ring in rings:
+            ring_area = sgeom.Polygon(ring).area
+            assert ring_area < 0.5 * domain_area, (
+                f"Ring covers {ring_area / domain_area:.0%} of the domain; "
+                "expected the shorter boundary arc to be chosen."
+            )
+
+    def test_interior_segment_no_spurious_midpoint(self):
+        # A line-string whose endpoints lie entirely within the domain
+        # (not touching the boundary) shouldn't add a midpoint on the boundary
+        #
+        # ObliqueMercator along the Seattle–Tokyo route: right boundary at
+        # x ≈ 20 038 km.  We feed a 4-point open ring near x ≈ 10 000 km
+        # (firmly interior).  Both endpoints happen to project to the right
+        # boundary edge, but the actual coordinates are ~10 000 km away.
+        proj = ccrs.ObliqueMercator(
+            central_longitude=-161.07,
+            central_latitude=54.55,
+            azimuth=90.0,
+            scale_factor=1,
+        )
+        x0 = 9_950_000.0
+        x1 = 10_050_000.0
+        coords = [
+            [(x0, -50_000), (x1, -50_000), (x1, 50_000), (x0, 50_000)],
+        ]
+        mls = sgeom.MultiLineString(coords)
+        rings = proj._attach_lines_to_boundary([mls], is_ccw=True)
+
+        # The ring should just close itself and not attach to the
+        # right boundary / add any points
+        assert len(rings) == 1
+        assert rings[0] == sgeom.LinearRing(mls.geoms[0].coords)
+
+
+# Actual Singapore boundary coordinates (a subset), used by the coordinate-
+# wrapping artifact tests below.  When projected into EuroPP, pyproj wraps
+# Singapore's coordinates into EuroPP's x/y range instead of producing NaN,
+# causing cartopy.trace to emit a spurious single boundary segment.
+_SINGAPORE_RING = [
+    (103.12647545700003, 0.9278832050000574),
+    (103.16325931100005, 0.8996035830000437),
+    (103.17457116000003, 0.8821475280000755),
+    (103.16749108200003, 0.8589541690000715),
+    (103.12712649800005, 0.8344180360000450),
+    (103.08627363400007, 0.8410098330000437),
+    (102.95150800900007, 0.9246279970000728),
+    (102.95118248800003, 0.9278832050000574),
+    (102.90674889400003, 0.9688174500000741),
+    (102.89332116000003, 0.9753278670000896),
+    (102.85889733200003, 0.9876976580000587),
+    (102.84229576900003, 0.9899356140000464),
+    (102.82439212300005, 0.9954287780000755),
+    (102.81153405000003, 1.0080427100000406),
+    (102.80103600400008, 1.0219587260000935),
+    (102.79070071700005, 1.0314802100000406),
+    (102.77361087300005, 1.0354678410000702),
+    (102.71192467500003, 1.0314802100000406),
+    (102.69263756600003, 1.0258242860000450),
+    (102.67058353000004, 1.0145531270000560),
+    (102.64763431100005, 1.0062930360000450),
+    (102.62623131600003, 1.0098330750000741),
+    (102.62476647200003, 1.0219587260000935),
+    (102.63721764400003, 1.0410016950000909),
+    (102.67058353000004, 1.0755882830000587),
+    (102.68523196700005, 1.0954043640000464),
+    (102.70191491000003, 1.1377627620000794),
+    (102.71558678500003, 1.1544457050000574),
+    (102.75538170700003, 1.1679141300000424),
+    (102.80176842500003, 1.1632754580000437),
+    (102.88624108200003, 1.1332868510000935),
+    (102.96713300900007, 1.0915388040000380),
+    (103.03711998800003, 1.0445824240000547),
+    (103.07764733200003, 1.0034040390000882),
+    (103.12647545700003, 0.9278832050000574),
+]
+
+
+def test_euroPP_land_no_wrapping_artifact():
+    """Regression: Singapore (outside EuroPP) produces no flood polygon.
+
+    Singapore (lon ≈ 103°E) is far east of EuroPP's domain.  pyproj wraps its
+    projected coordinates into EuroPP's x/y range instead of producing NaN,
+    causing cartopy.trace to emit a single boundary-spanning segment.  The
+    coordinate-wrapping pre-filter in _attach_lines_to_boundary (seam-crossing
+    check) combined with the shoelace ring-orientation check in
+    _rings_to_multi_polygon ensures that no visible polygon appears for
+    Singapore in EuroPP.
+
+    Pre-fix failure mode: one polygon covering ~98 % of the domain.
+    """
+    projection = ccrs.EuroPP()
+    src_crs = ccrs.PlateCarree()
+
+    singapore = sgeom.Polygon(_SINGAPORE_RING)
+    result = projection._project_polygon(singapore, src_crs)
+
+    # Singapore is entirely outside EuroPP — no polygon should appear.
+    assert len(result.geoms) == 0, (
+        f"Expected no polygons for Singapore in EuroPP, "
+        f"got {len(result.geoms)} "
+        "(pre-fix failure mode: ~98% flood)")
+
+
+def test_euroPP_ocean_no_wrapping_artifact():
+    """Regression: polygon with a Singapore interior hole produces no artifact.
+
+    When a polygon has Singapore as an interior hole, Singapore's projected
+    segment spans ~91 % of the boundary and lies just forward of a legitimate
+    exterior segment.  Without the cross-source-ring guard in
+    _attach_lines_to_boundary the hole artifact steals that exterior segment,
+    producing an invalid combined polygon.
+
+    Pre-fix failure mode: invalid polygon (~17 % of domain area).
+    """
+    projection = ccrs.EuroPP()
+    src_crs = ccrs.PlateCarree()
+
+    # Exterior ring: a quadrilateral in western Europe that projects to a
+    # single boundary segment entering EuroPP's left edge.  Its d_start lies
+    # only ~1 % of the perimeter ahead of Singapore's projected d_end, making
+    # it the closest-forward candidate from Singapore's perspective.
+    exterior_ring = [(-21.0, 38.0), (0.0, 38.0), (-5.0, 55.0), (-25.0, 55.0)]
+    ocean_poly = sgeom.Polygon(exterior_ring, [_SINGAPORE_RING])
+
+    result = projection._project_polygon(ocean_poly, src_crs)
+
+    for i, poly in enumerate(result.geoms):
+        assert poly.is_valid, (
+            f"Polygon[{i}] (area={poly.area:.3e}) is invalid — "
+            "cross-source-ring artifact suspected "
+            "(pre-fix failure mode: invalid geometry, ~17 % coverage)")
+
 
 class TestQuality:
     def setup_class(self):
@@ -474,9 +625,11 @@ class TestHoles(PolygonTests):
         poly = sgeom.Polygon([(-180, -80), (180, -80), (180, 90), (-180, 90)],
                              [[(-50, -50), (-50, 0), (0, 0), (0, -50)]])
         multi_polygon = proj.project_geometry(poly)
-        # Should project to single polygon with multiple holes
+        # Should project to single polygon with the projected hole
+        # (The near-zero-area degenerate antimeridian exterior ring is correctly
+        # discarded; the remaining result is the LAEA domain minus the hole.)
         assert len(multi_polygon.geoms) == 1
-        assert len(multi_polygon.geoms[0].interiors) >= 2
+        assert len(multi_polygon.geoms[0].interiors) >= 1
 
     def test_inverted_poly_merged_holes(self):
         proj = ccrs.LambertAzimuthalEqualArea(central_latitude=-90)
@@ -486,6 +639,7 @@ class TestHoles(PolygonTests):
                               [(-50, 81), (-50, 85), (0, 85), (0, 81)]])
         # Smoke test that nearby holes do not cause side location conflict
         proj.project_geometry(poly, pc)
+
 
     def test_inverted_poly_clipped_hole(self):
         proj = ccrs.NorthPolarStereo()

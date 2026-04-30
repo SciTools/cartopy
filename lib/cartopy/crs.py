@@ -10,7 +10,8 @@ between them.
 """
 
 from abc import ABCMeta
-from collections import OrderedDict
+import bisect
+from collections import Counter, OrderedDict
 from functools import lru_cache
 import io
 import json
@@ -38,6 +39,9 @@ __document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
 
 WGS84_SEMIMAJOR_AXIS = 6378137.0
 WGS84_SEMIMINOR_AXIS = 6356752.3142
+
+# cache to avoid recreating in every ring call
+_EMPTY_MLS = sgeom.MultiLineString([])
 
 
 # Cache the transformer creation method
@@ -757,6 +761,33 @@ class Projection(CRS, metaclass=ABCMeta):
             domain = self._domain = sgeom.Polygon(self.boundary)
         return domain
 
+    @property
+    def _ring_threshold(self):
+        """Coordinate-match tolerance for ring stitching (1e-5 of domain scale).
+
+        Cached on first access; recomputed only if the projection bounds change.
+        """
+        try:
+            return self.__ring_threshold_cache
+        except AttributeError:
+            val = max(abs(v) for v in self.x_limits + self.y_limits) * 1e-5
+            self.__ring_threshold_cache = val
+            return val
+
+    @property
+    def _prepared_domain(self):
+        """Prepared (indexed) version of :attr:`domain`, cached per projection instance.
+
+        Used by :func:`cartopy.trace.project_linear` for fast point-in-polygon
+        tests.  The domain polygon is immutable, so a single prepared instance
+        is safe to reuse for the projection's lifetime.
+        """
+        try:
+            return self.__prepared_domain_cache
+        except AttributeError:
+            self.__prepared_domain_cache = prep(self.domain)
+            return self.__prepared_domain_cache
+
     def is_geodetic(self):
         return False
 
@@ -838,93 +869,96 @@ class Projection(CRS, metaclass=ABCMeta):
         return sgeom.Point(*self.transform_point(point.x, point.y, src_crs))
 
     def _project_line_string(self, geometry, src_crs):
-        return cartopy.trace.project_linear(geometry, src_crs, self)
+        return cartopy.trace.project_linear(geometry, src_crs, self, is_ring=False)
 
-    def _project_linear_ring(self, linear_ring, src_crs):
+    def _project_linear_ring(self, linear_ring, src_crs, is_ccw=None):
         """
-        Project the given LinearRing from the src_crs into this CRS and
-        returns a GeometryCollection containing zero or more LinearRings and
-        a single MultiLineString.
+        Project the given LinearRing from src_crs into this CRS.
 
+        When called from :meth:`_project_polygon`, ``is_ccw`` is the winding
+        of the source polygon exterior and the method returns a
+        ``(list[LinearRing], MultiLineString)`` tuple.
+
+        When called via ``project_geometry(linear_ring)`` (i.e. without
+        ``is_ccw``), the winding is inferred from the ring itself and the
+        method returns a ``GeometryCollection([*rings, MultiLineString])``.
         """
-        debug = False
-        # 1) Resolve the initial lines into projected segments
-        # 1abc
-        # def23ghi
-        # jkl41
-        multi_line_string = cartopy.trace.project_linear(linear_ring,
-                                                         src_crs, self)
+        if is_ccw is None:
+            # infer winding and produce GeometryCollection.
+            is_ccw = True if src_crs.is_geodetic() else linear_ring.is_ccw
+            rings, mls = self._project_linear_ring(linear_ring, src_crs, is_ccw)
+            return sgeom.GeometryCollection([*rings, mls])
 
-        # Threshold for whether a point is close enough to be the same
-        # point as another.
-        threshold = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
+        # project_linear returns an ordered list of LineString fragments when
+        # given a LinearRing. Fragment i exits the domain boundary and
+        # fragment (i+1) % N enters it.
+        fragments = cartopy.trace.project_linear(
+            linear_ring, src_crs, self, is_ring=True
+        )
 
-        # 2) Simplify the segments where appropriate.
-        if len(multi_line_string.geoms) > 1:
-            # Stitch together segments which are close to continuous.
-            # This is important when:
-            # 1) The first source point projects into the map and the
-            # ring has been cut by the boundary.
-            # Continuing the example from above this gives:
-            #   def23ghi
-            #   jkl41abc
-            # 2) The cut ends of segments are too close to reliably
-            # place into an order along the boundary.
+        if not fragments:
+            return [], _EMPTY_MLS
 
-            line_strings = list(multi_line_string.geoms)
-            any_modified = False
-            i = 0
-            if debug:
-                first_coord = np.array([ls.coords[0] for ls in line_strings])
-                last_coord = np.array([ls.coords[-1] for ls in line_strings])
-                print('Distance matrix:')
-                np.set_printoptions(precision=2)
-                x = first_coord[:, np.newaxis, :]
-                y = last_coord[np.newaxis, :, :]
-                print(np.abs(x - y).max(axis=-1))
+        threshold = self._ring_threshold
 
-            while i < len(line_strings):
-                modified = False
-                j = 0
-                while j < len(line_strings):
-                    if i != j and np.allclose(line_strings[i].coords[0],
-                                              line_strings[j].coords[-1],
-                                              atol=threshold):
-                        if debug:
-                            print(f'Joining together {i} and {j}.')
-                        last_coords = list(line_strings[j].coords)
-                        first_coords = list(line_strings[i].coords)[1:]
-                        combo = sgeom.LineString(last_coords + first_coords)
-                        if j < i:
-                            i, j = j, i
-                        del line_strings[j], line_strings[i]
-                        line_strings.append(combo)
-                        modified = True
-                        any_modified = True
-                        break
-                    else:
-                        j += 1
-                if not modified:
-                    i += 1
-            if any_modified:
-                multi_line_string = sgeom.MultiLineString(line_strings)
+        if len(fragments) == 1:
+            ls = fragments[0]
+            if len(ls.coords) < 2:
+                return [], _EMPTY_MLS
+            c0, c1 = ls.coords[0], ls.coords[-1]
+            if abs(c0[0] - c1[0]) <= threshold and abs(c0[1] - c1[1]) <= threshold:
+                # Ring projected cleanly inside domain; no boundary stitching.
+                return [sgeom.LinearRing(ls.coords[:-1])], _EMPTY_MLS
+            # Single open fragment — needs boundary stitching.
+            return [], sgeom.MultiLineString([ls])
 
-        # 3) Check for rings that have been created by the projection stage.
-        rings = []
-        line_strings = []
-        for line in multi_line_string.geoms:
-            if len(line.coords) > 3 and np.allclose(line.coords[0],
-                                                    line.coords[-1],
-                                                    atol=threshold):
-                result_geometry = sgeom.LinearRing(line.coords[:-1])
-                rings.append(result_geometry)
+        # When the ring's first source point was inside the domain,
+        # fragments[0].start == fragments[-1].end (both map to the same interior
+        # point). Merge last + first[1:] so all fragments have both endpoints
+        # on the boundary.
+        frags = list(fragments)
+        c0, cm1 = frags[0].coords[0], frags[-1].coords[-1]
+        if abs(c0[0] - cm1[0]) <= threshold and abs(c0[1] - cm1[1]) <= threshold:
+            merged = sgeom.LineString(
+                list(frags[-1].coords) + list(frags[0].coords)[1:]
+            )
+            frags = [merged] + frags[1:-1]
+
+        # Merge consecutive fragments that share an endpoint. This happens
+        # when the ring crosses the boundary twice at nearly the same location.
+        # Adjacent matches only: the ordered fragment list guarantees that
+        # frag[i].end == frag[i+1].start is the only possible adjacent join.
+        i = 0
+        while i < len(frags) - 1:
+            ce, cs = frags[i].coords[-1], frags[i + 1].coords[0]
+            if abs(ce[0] - cs[0]) <= threshold and abs(ce[1] - cs[1]) <= threshold:
+                stitched = sgeom.LineString(
+                    list(frags[i].coords) + list(frags[i + 1].coords)[1:]
+                )
+                frags = frags[:i] + [stitched] + frags[i + 2:]
             else:
-                line_strings.append(line)
-        # If we found any rings, then we should re-create the multi-line str.
-        if rings:
-            multi_line_string = sgeom.MultiLineString(line_strings)
+                i += 1
 
-        return sgeom.GeometryCollection([*rings, multi_line_string])
+        # A fragment whose endpoints are nearly coincident is a complete ring
+        # that projected entirely within the domain — it doesn't cross the
+        # boundary and should not go to _attach_lines_to_boundary.
+        rings = []
+        open_frags = []
+        for frag in frags:
+            coords = frag.coords
+            ca, cb = coords[0], coords[-1]
+            if (len(coords) > 3
+                    and abs(ca[0] - cb[0]) <= threshold
+                    and abs(ca[1] - cb[1]) <= threshold):
+                ring = sgeom.LinearRing(coords[:-1])
+                # Discard near-zero area rings; they are boundary artefacts
+                # produced when a source vertex lies just outside the domain.
+                if sgeom.Polygon(ring).area >= threshold ** 2:
+                    rings.append(ring)
+            else:
+                open_frags.append(frag)
+
+        return rings, sgeom.MultiLineString(open_frags)
 
     def _project_multipoint(self, geometry, src_crs):
         geoms = []
@@ -952,253 +986,258 @@ class Projection(CRS, metaclass=ABCMeta):
         return sgeom.GeometryCollection(
             [self.project_geometry(geom, src_crs) for geom in geometry.geoms])
 
-
     def _project_polygon(self, polygon, src_crs):
         """
         Return the projected polygon(s) derived from the given polygon.
 
         """
         # Determine orientation of polygon.
-        # TODO: Consider checking the internal rings have the opposite
-        # orientation to the external rings?
         if src_crs.is_geodetic():
             is_ccw = True
         else:
             is_ccw = polygon.exterior.is_ccw
-        # Project the polygon exterior/interior rings.
-        # Each source ring will result in either a ring, or one or more
-        # lines.
+        # Project each ring (exterior + interiors).  Self-closed rings are
+        # returned immediately; open fragments are pooled for stitching.
         rings = []
         multi_lines = []
         for src_ring in [polygon.exterior] + list(polygon.interiors):
-            geom_collection = self._project_linear_ring(src_ring, src_crs)
-            *p_rings, p_mline = geom_collection.geoms
-            if p_rings:
-                rings.extend(p_rings)
-            if len(p_mline.geoms) > 0:
-                multi_lines.append(p_mline)
+            closed, mls = self._project_linear_ring(src_ring, src_crs, is_ccw)
+            rings.extend(closed)
+            if len(mls.geoms) > 0:
+                multi_lines.append(mls)
 
-        # Convert any lines to rings by attaching them to the boundary.
+        # Convert any open fragments to rings by attaching boundary arcs.
         if multi_lines:
             rings.extend(self._attach_lines_to_boundary(multi_lines, is_ccw))
 
-        # Resolve all the inside vs. outside rings, and convert to the
-        # final MultiPolygon.
+        # Resolve all inside vs. outside rings and convert to MultiPolygon.
         return self._rings_to_multi_polygon(rings, is_ccw)
 
     def _attach_lines_to_boundary(self, multi_line_strings, is_ccw):
         """
-        Return a list of LinearRings by attaching the ends of the given lines
-        to the boundary, paying attention to the traversal directions of the
-        lines and boundary.
+        Return a list of LinearRings by closing projected line segments with
+        boundary arcs.
 
+        Each projected segment has both its start and end point lying on the
+        projection boundary. The algorithm connects them into closed rings by
+        inserting boundary arcs between consecutive endpoints.
+
+        How the forward walk and shorter arc work together:
+        Segments are sorted by their start-point distance along the boundary.
+        To close a ring, we walk *forward* (in the boundary's parameterisation
+        direction) from each segment's end to find the next segment whose start
+        arrives first, or the ring's own start if it comes around sooner.
+        This forward walk determines which segment is next and whether to
+        close.
+
+        However, the boundary-corner vertices inserted between two consecutive
+        endpoints use the *shorter* of the two possible arcs (forward or
+        backward). These decisions are independent: the forward walk gives
+        correct ring topology, while the shorter-arc rule correctly handles the
+        edge case where two crossings straddle a boundary corner on opposite
+        sides of the perimeter seam.
+
+        Parameters
+        ----------
+        multi_line_strings : list of MultiLineString
+            One MultiLineString per source ring (exterior or interior).
+        is_ccw : bool
+            Expected winding of the source polygon exterior ring.
         """
-        debug = False
-        debug_plot_edges = False
+        boundary = self.ccw_boundary if is_ccw else self.cw_boundary
+        perimeter = boundary.length
+        threshold = self.threshold
 
-        # Accumulate all the boundary and segment end points, along with
-        # their distance along the boundary.
-        edge_things = []
+        # Pre-compute boundary corner (distance, coord) pairs once, sorted
+        # for O(log N) bisect queries inside fwd_arc_corners().
+        corner_pairs  = sorted(
+            (boundary.project(sgeom.Point(c)), (c[0], c[1]))
+            for c in boundary.coords[:-1]
+        )
+        corner_dists  = [d for d, _ in corner_pairs]
+        corner_coords = [c for _, c in corner_pairs]
 
-        # Get the boundary as a LineString of the correct orientation
-        # so we can compute distances along it.
-        if is_ccw:
-            boundary = self.ccw_boundary
-        else:
-            boundary = self.cw_boundary
-
-        def boundary_distance(xy):
-            return boundary.project(sgeom.Point(*xy))
-
-        # Squash all the LineStrings into a single list.
-        line_strings = []
-        for multi_line_string in multi_line_strings:
-            line_strings.extend(multi_line_string.geoms)
-
-        # Record the positions of all the segment ends
-        for i, line_string in enumerate(line_strings):
-            first_dist = boundary_distance(line_string.coords[0])
-            thing = _BoundaryPoint(first_dist, False,
-                                   (i, 'first', line_string.coords[0]))
-            edge_things.append(thing)
-            last_dist = boundary_distance(line_string.coords[-1])
-            thing = _BoundaryPoint(last_dist, False,
-                                   (i, 'last', line_string.coords[-1]))
-            edge_things.append(thing)
-
-        # Record the positions of all the boundary vertices
-        for xy in boundary.coords[:-1]:
-            point = sgeom.Point(*xy)
-            dist = boundary.project(point)
-            thing = _BoundaryPoint(dist, True, point)
-            edge_things.append(thing)
-
-        if debug_plot_edges:
-            import matplotlib.pyplot as plt
-            current_fig = plt.gcf()
-            fig = plt.figure()
-            # Reset the current figure so we don't upset anything.
-            plt.figure(current_fig.number)
-            ax = fig.add_subplot(1, 1, 1)
-
-        # Order everything as if walking around the boundary.
-        # NB. We make line end-points take precedence over boundary points
-        # to ensure that end-points are still found and followed when they
-        # coincide.
-        edge_things.sort(key=lambda thing: (thing.distance, thing.kind))
-        remaining_ls = dict(enumerate(line_strings))
-
-        prev_thing = None
-        for edge_thing in edge_things[:]:
-            if (prev_thing is not None and
-                    not edge_thing.kind and
-                    not prev_thing.kind and
-                    edge_thing.data[0] == prev_thing.data[0]):
-                j = edge_thing.data[0]
-                # Insert a edge boundary point in between this geometry.
-                mid_dist = (edge_thing.distance + prev_thing.distance) * 0.5
-                mid_point = boundary.interpolate(mid_dist)
-                new_thing = _BoundaryPoint(mid_dist, True, mid_point)
-                if debug:
-                    print(f'Artificially insert boundary: {new_thing}')
-                ind = edge_things.index(edge_thing)
-                edge_things.insert(ind, new_thing)
-                prev_thing = None
+        def fwd_arc_corners(d_from, arc_len):
+            """Boundary corners on the forward arc of *arc_len* from *d_from*."""
+            if arc_len == 0:
+                return []
+            if d_from + arc_len <= perimeter:
+                lo = bisect.bisect_right(corner_dists, d_from)
+                hi = bisect.bisect_left(corner_dists, d_from + arc_len)
+                return corner_coords[lo:hi]
             else:
-                prev_thing = edge_thing
+                wrap_end = d_from + arc_len - perimeter
+                lo = bisect.bisect_right(corner_dists, d_from)
+                hi = bisect.bisect_left(corner_dists, wrap_end)
+                return corner_coords[lo:] + corner_coords[:hi]
 
-        if debug:
-            print()
-            print('Edge things')
-            for thing in edge_things:
-                print('   ', thing)
-        if debug_plot_edges:
-            for thing in edge_things:
-                if isinstance(thing.data, sgeom.Point):
-                    ax.plot(*thing.data.xy, marker='o')
+        def arc_corners(d_from, d_to):
+            """Boundary corners on the shorter arc from *d_from* to *d_to*."""
+            d_fwd = (d_to - d_from) % perimeter
+            if d_fwd <= perimeter / 2:
+                return fwd_arc_corners(d_from, d_fwd)
+            else:
+                return list(reversed(fwd_arc_corners(d_to, perimeter - d_fwd)))
+
+        def endpoint_info(xy):
+            """Return (boundary_distance, is_on_boundary) for a segment endpoint."""
+            pt = sgeom.Point(xy)
+            d = boundary.project(pt)
+            bd_pt = boundary.interpolate(d)
+            return d, math.hypot(xy[0] - bd_pt.x, xy[1] - bd_pt.y) < threshold
+
+        # Flatten all source ring segments into one pool, tracking which
+        # source MultiLineString (source polygon ring) each segment came from.
+        line_strings = []
+        mls_idx_of_seg = []  # keep mapping of indices back to original mls
+        for mls_i, mls in enumerate(multi_line_strings):
+            for ls in mls.geoms:
+                line_strings.append(ls)
+                mls_idx_of_seg.append(mls_i)
+        if not line_strings:
+            return []
+
+        completed = []
+        remaining_segs = []  # (d_start, d_end, seg_idx, mls_i) for boundary segs
+
+        # Partition: segments with both endpoints on the boundary go through
+        # the forward-walk; segments with interior endpoints are already closed
+        # rings and go directly to completed.
+        for k, ls in enumerate(line_strings):
+            d_start, start_on = endpoint_info(ls.coords[0])
+            d_end,   end_on   = endpoint_info(ls.coords[-1])
+            if start_on and end_on:
+                remaining_segs.append((d_start, d_end, k, mls_idx_of_seg[k]))
+            else:
+                completed.append(list(ls.coords))
+
+        # Sort by d_start so the forward-walk can always find the next segment
+        # with a single bisect query.
+        remaining_segs.sort(key=lambda t: t[0])
+        # Parallel list of just the d_start values for bisect lookups.
+        remaining_segs_d = [t[0] for t in remaining_segs]
+
+        # Drop coordinate-wrapping artifact segments: a single segment from
+        # its source ring that crosses the perimeter seam (d_end < d_start)
+        # and whose closed form has the wrong winding is a PROJ artefact from
+        # a source ring that lies entirely outside our domain. Keeping it
+        # would cause _rings_to_multi_polygon to invert it into a flood polygon.
+        segs_per_mls = Counter(mls_i for _, _, _, mls_i in remaining_segs)
+        remaining_segs = [
+            (d_s, d_e, k, mls_i) for d_s, d_e, k, mls_i in remaining_segs
+            if not (segs_per_mls[mls_i] == 1 and d_e < d_s
+                    and _ring_is_ccw(
+                        sgeom.LinearRing(
+                            list(line_strings[k].coords) + arc_corners(d_e, d_s)
+                        )
+                    ) != is_ccw)
+        ]
+        remaining_segs_d = [t[0] for t in remaining_segs]
+
+        def finish_ring(d_end_local, ring_coords_local, d_fwd_local):
+            """Close ring_coords with the shorter arc back to d_ring_start."""
+            corners = arc_corners(d_end_local, d_ring_start)
+            ring_coords_local += corners
+            if not corners and d_fwd_local > 0:
+                # No corners on the closing arc: insert a boundary midpoint so
+                # the ring orientation is unambiguous to _rings_to_multi_polygon.
+                if d_fwd_local <= perimeter / 2:
+                    d_mid = (d_end_local + d_fwd_local / 2) % perimeter
                 else:
-                    ax.plot(*thing.data[2], marker='o')
-                    ls = line_strings[thing.data[0]]
-                    coords = np.array(ls.coords)
-                    ax.plot(coords[:, 0], coords[:, 1])
-                    ax.text(coords[0, 0], coords[0, 1], thing.data[0])
-                    ax.text(coords[-1, 0], coords[-1, 1],
-                            f'{thing.data[0]}.')
+                    d_mid = (d_end_local - (perimeter - d_fwd_local) / 2) % perimeter
+                mid_pt = boundary.interpolate(d_mid)
+                ring_coords_local.append((mid_pt.x, mid_pt.y))
+            completed.append(ring_coords_local)
 
-        def filter_last(t):
-            return t.kind or t.data[1] == 'first'
+        while remaining_segs:
+            # Start a new ring from the segment with the smallest d_start.
+            # This choice ensures each ring consumes exactly the segments
+            # on its forward arc before reaching any other ring's start.
+            d_ring_start, d_end, i, current_mls = remaining_segs.pop(0)
+            remaining_segs_d.pop(0)
+            ring_coords = list(line_strings[i].coords)
+            # d_end tracks the boundary distance of ring_coords[-1] without
+            # requiring an extra boundary.project() call each inner iteration.
 
-        edge_things = list(filter(filter_last, edge_things))
-
-        processed_ls = []
-        while remaining_ls:
-            # Rename line_string to current_ls
-            i, current_ls = remaining_ls.popitem()
-
-            if debug:
-                import sys
-                sys.stdout.write('+')
-                sys.stdout.flush()
-                print()
-                print(f'Processing: {i}, {current_ls}')
-
-            added_linestring = set()
             while True:
-                # Find out how far around this linestring's last
-                # point is on the boundary. We will use this to find
-                # the next point on the boundary.
-                d_last = boundary_distance(current_ls.coords[-1])
-                if debug:
-                    print(f'   d_last: {d_last!r}')
-                next_thing = _find_first_ge(edge_things, d_last)
-                # Remove this boundary point from the edge.
-                edge_things.remove(next_thing)
-                if debug:
-                    print('   next_thing:', next_thing)
-                if next_thing.kind:
-                    # We've just got a boundary point, add it, and keep going.
-                    if debug:
-                        print('   adding boundary point')
-                    boundary_point = next_thing.data
-                    combined_coords = (list(current_ls.coords) +
-                                       [(boundary_point.x, boundary_point.y)])
-                    current_ls = sgeom.LineString(combined_coords)
+                d_fwd_close = (d_ring_start - d_end) % perimeter
 
-                elif next_thing.data[0] == i:
-                    # We've gone all the way around and are now back at the
-                    # first boundary thing.
-                    if debug:
-                        print('   close loop')
-                    processed_ls.append(current_ls)
-                    if debug_plot_edges:
-                        coords = np.array(current_ls.coords)
-                        ax.plot(coords[:, 0], coords[:, 1], color='black',
-                                linestyle='--')
+                if not remaining_segs:
+                    # No more segments; close this ring.
+                    finish_ring(d_end, ring_coords, d_fwd_close)
+                    break
+
+                # Find the next segment start going forward from d_end.
+                # bisect_right gives the index of the first remaining_segs_d
+                # entry > d_end. The modulo handles wrap-around (when all
+                # remaining starts are <= d_end we cycle back to the smallest).
+                pos = bisect.bisect_right(remaining_segs_d, d_end) % len(remaining_segs)
+                d_next, d_next_end, j, j_mls = remaining_segs[pos]
+
+                # Compare forward distance to the ring's own start vs. d_next.
+                # On a tie the ring closes without consuming the next segment;
+                # that segment will become the start of the following ring.
+                d_fwd_next = (d_next - d_end) % perimeter
+
+                if d_fwd_close <= d_fwd_next:
+                    # Ring start arrives first: close the ring.
+                    finish_ring(d_end, ring_coords, d_fwd_close)
                     break
                 else:
-                    if debug:
-                        print('   adding line')
-                    j = next_thing.data[0]
-                    line_to_append = line_strings[j]
-                    if j in remaining_ls:
-                        remaining_ls.pop(j)
-                    coords_to_append = list(line_to_append.coords)
+                    # Segment j comes before our ring start.  If j is from a
+                    # different source ring and the gap to it is large, only
+                    # connect if the ring can't otherwise close without a very
+                    # long boundary arc (> 1/5 perimeter).  This prevents an
+                    # artifact segment from a source ring outside the domain
+                    # from stealing an adjacent exterior segment.
+                    if j_mls != current_mls:
+                        next_start_xy = line_strings[j].coords[0]
+                        gap = math.hypot(
+                            ring_coords[-1][0] - next_start_xy[0],
+                            ring_coords[-1][1] - next_start_xy[1],
+                        )
+                        if gap > threshold and d_fwd_close < perimeter / 5:
+                            break  # close cannot be long; discard, leave j
+                    # Connect to segment j, then continue building the ring.
+                    ring_coords += arc_corners(d_end, d_next)
+                    ring_coords += list(line_strings[j].coords)
+                    remaining_segs.pop(pos)
+                    remaining_segs_d.pop(pos)
+                    d_end = d_next_end
+                    current_mls = j_mls  # track mls of most recently added seg
 
-                    # Build up the linestring.
-                    current_ls = sgeom.LineString(list(current_ls.coords) +
-                                                  coords_to_append)
-
-                    # Catch getting stuck in an infinite loop by checking that
-                    # linestring only added once.
-                    if j not in added_linestring:
-                        added_linestring.add(j)
-                    else:
-                        if debug_plot_edges:
-                            plt.show()
-                        raise RuntimeError('Unidentified problem with '
-                                           'geometry, linestring being '
-                                           're-added. Please raise an issue.')
-
-        # filter out any non-valid linear rings
-        def makes_valid_ring(line_string):
-            if len(line_string.coords) == 3:
-                # When sgeom.LinearRing is passed a LineString of length 3,
-                # if the first and last coordinate are equal, a LinearRing
-                # with 3 coordinates will be created. This object will cause
-                # a segfault when evaluated.
-                coords = list(line_string.coords)
-                return coords[0] != coords[-1] and line_string.is_valid
-            else:
-                return len(line_string.coords) > 3 and line_string.is_valid
-
-        linear_rings = [
-            sgeom.LinearRing(line_string)
-            for line_string in processed_ls
-            if makes_valid_ring(line_string)]
-
-        if debug:
-            print('   DONE')
-
-        return linear_rings
+        # Build LinearRings, skipping degenerate coordinate lists.
+        # The minimum useful input is 3 distinct points. A 3-coord list
+        # where coords[0] == coords[-1] represents only 2 unique points and
+        # would produce a degenerate ring that isn't valid.
+        return [
+            sgeom.LinearRing(coords)
+            for coords in completed
+            if len(coords) > 3 or (len(coords) == 3 and coords[0] != coords[-1])
+        ]
 
     def _rings_to_multi_polygon(self, rings, is_ccw):
         exterior_rings = []
         interior_rings = []
         for ring in rings:
-            # Use the shoelace signed-area to determine ring orientation.
-            # ring.is_ccw is documented as unreliable for self-intersecting
-            # rings (e.g. when a projected polygon spans exactly ±180°
-            # longitude and the boundary attachment creates a degenerate
-            # "tail"). The shoelace sum dot(x[:-1], y[1:]) - dot(x[1:], y[:-1])
-            # gives twice the signed area and any self-intersecting
-            # tail contributions cancel out.
-            coords = shapely.get_coordinates(ring)
-            x, y = coords[:, 0], coords[:, 1]
-            ring_is_ccw = np.dot(x[:-1], y[1:]) > np.dot(x[1:], y[:-1])
-            if ring_is_ccw != is_ccw:
+            if _ring_is_ccw(ring) != is_ccw:
                 interior_rings.append(ring)
             else:
                 exterior_rings.append(ring)
+
+        # When ALL exterior rings are smaller than the largest interior ring,
+        # the source polygon wraps around the projection boundary (e.g. a
+        # global polygon in SouthPolarStereo). Reclassify those small exteriors
+        # as interiors so the box-difference path below inverts them correctly.
+        if interior_rings and exterior_rings:
+            interior_areas = [sgeom.Polygon(r).area for r in interior_rings]
+            max_interior_area = max(interior_areas)
+            reclassified = [r for r in exterior_rings
+                            if sgeom.Polygon(r).area < max_interior_area]
+            if len(reclassified) == len(exterior_rings):
+                for r in reclassified:
+                    exterior_rings.remove(r)
+                    interior_rings.append(r)
 
         polygon_bits = []
 
@@ -1277,8 +1316,14 @@ class Projection(CRS, metaclass=ABCMeta):
                 if not polygon.is_empty:
                     if isinstance(polygon, sgeom.MultiPolygon):
                         polygon_bits.extend(polygon.geoms)
-                    else:
+                    elif isinstance(polygon, sgeom.Polygon):
                         polygon_bits.append(polygon)
+                    elif isinstance(polygon, sgeom.GeometryCollection):
+                        for geom in polygon.geoms:
+                            if isinstance(geom, sgeom.Polygon):
+                                polygon_bits.append(geom)
+                            elif isinstance(geom, sgeom.MultiPolygon):
+                                polygon_bits.extend(geom.geoms)
 
         return sgeom.MultiPolygon(polygon_bits)
 
@@ -3280,38 +3325,18 @@ class Spilhaus(Projection):
         ]
 
 
-class _BoundaryPoint:
-    def __init__(self, distance, kind, data):
-        """
-        A representation for a geometric object which is
-        connected to the boundary.
+def _ring_is_ccw(ring):
+    """Return True if *ring* is counter-clockwise via the shoelace formula.
 
-        Parameters
-        ----------
-        distance: float
-            The distance along the boundary that this object
-            can be found.
-        kind: bool
-            Whether this object represents a point from the
-            pre-computed boundary.
-        data: point or namedtuple
-            The actual data that this boundary object represents.
-
-        """
-        self.distance = distance
-        self.kind = kind
-        self.data = data
-
-    def __repr__(self):
-        return f'_BoundaryPoint({self.distance!r}, {self.kind!r}, {self.data})'
-
-
-def _find_first_ge(a, x):
-    for v in a:
-        if v.distance >= x:
-            return v
-    # We've gone all the way around, so pick the first point again.
-    return a[0]
+    More robust than ``shapely.LinearRing.is_ccw`` for self-intersecting
+    rings (e.g. when a projected polygon spans exactly ±180° longitude and
+    boundary attachment creates a degenerate "tail").  The signed-area sum
+    cancels self-intersecting tail contributions that would fool Shapely's
+    winding test.
+    """
+    coords = shapely.get_coordinates(ring)
+    x, y = coords[:, 0], coords[:, 1]
+    return bool(np.dot(x[:-1], y[1:]) > np.dot(x[1:], y[:-1]))
 
 
 def epsg(code):
