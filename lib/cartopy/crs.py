@@ -833,6 +833,8 @@ class Projection(CRS, metaclass=ABCMeta):
         return getattr(self, method_name)(geometry, src_crs)
 
     def _project_point(self, point, src_crs):
+        if point.is_empty:
+            return point
         return sgeom.Point(*self.transform_point(point.x, point.y, src_crs))
 
     def _project_line_string(self, geometry, src_crs):
@@ -1183,7 +1185,17 @@ class Projection(CRS, metaclass=ABCMeta):
         exterior_rings = []
         interior_rings = []
         for ring in rings:
-            if ring.is_ccw != is_ccw:
+            # Use the shoelace signed-area to determine ring orientation.
+            # ring.is_ccw is documented as unreliable for self-intersecting
+            # rings (e.g. when a projected polygon spans exactly ±180°
+            # longitude and the boundary attachment creates a degenerate
+            # "tail"). The shoelace sum dot(x[:-1], y[1:]) - dot(x[1:], y[:-1])
+            # gives twice the signed area and any self-intersecting
+            # tail contributions cancel out.
+            coords = shapely.get_coordinates(ring)
+            x, y = coords[:, 0], coords[:, 1]
+            ring_is_ccw = np.dot(x[:-1], y[1:]) > np.dot(x[1:], y[:-1])
+            if ring_is_ccw != is_ccw:
                 interior_rings.append(ring)
             else:
                 exterior_rings.append(ring)
@@ -1254,18 +1266,19 @@ class Projection(CRS, metaclass=ABCMeta):
 
             box = sgeom.box(x3, y3, x4, y4, ccw=is_ccw)
 
-            # Invert the polygons
-            multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
-            polygon = box.difference(multi_poly)
+            if interior_polys:
+                # Invert any valid interior polygons
+                multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
+                polygon = box.difference(multi_poly)
 
-            # Intersect the inverted polygon with the boundary
-            polygon = boundary_poly.intersection(polygon)
+                # Intersect the inverted polygon with the boundary
+                polygon = boundary_poly.intersection(polygon)
 
-            if not polygon.is_empty:
-                if isinstance(polygon, sgeom.MultiPolygon):
-                    polygon_bits.extend(polygon.geoms)
-                else:
-                    polygon_bits.append(polygon)
+                if not polygon.is_empty:
+                    if isinstance(polygon, sgeom.MultiPolygon):
+                        polygon_bits.extend(polygon.geoms)
+                    else:
+                        polygon_bits.append(polygon)
 
         return sgeom.MultiPolygon(polygon_bits)
 

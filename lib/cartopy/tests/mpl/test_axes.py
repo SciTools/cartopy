@@ -154,3 +154,26 @@ def test_geoaxes_set_boundary_clipping():
                      transform=ax1.transAxes)
 
     return fig
+
+
+def test_shared_axes_zoom_propagation():
+    fig = plt.figure()
+    proj = ccrs.PlateCarree()
+    ax1 = fig.add_subplot(1, 2, 1, projection=proj)
+    ax2 = fig.add_subplot(1, 2, 2, projection=proj,
+                          sharex=ax1, sharey=ax1)
+
+    fig.draw_without_rendering()
+
+    # Simulate interactive zoom tool behavior:
+    # set_xbound/set_ybound use auto=None (no-op for autoscale)
+    # set_autoscalex/y_on(False) only affects the calling axes
+    ax1.set_xbound(-20, 20)
+    ax1.set_autoscalex_on(False)
+    ax1.set_ybound(-10, 10)
+    ax1.set_autoscaley_on(False)
+
+    fig.draw_without_rendering()
+
+    assert ax2.get_xlim() == (-20, 20)
+    assert ax2.get_ylim() == (-10, 10)

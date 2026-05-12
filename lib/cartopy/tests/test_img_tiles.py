@@ -13,6 +13,12 @@ from numpy.testing import assert_array_almost_equal as assert_arr_almost
 import pytest
 import shapely.geometry as sgeom
 
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
+
 from cartopy import config
 import cartopy.crs as ccrs
 import cartopy.io.img_tiles as cimgt

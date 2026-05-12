@@ -23,7 +23,6 @@ if _HAS_PYKDTREE_OR_SCIPY:
     from cartopy.io.ogc_clients import _OWSLIB_AVAILABLE, WMTSRasterSource
 
 import cartopy.io.shapereader
-from cartopy.mpl import _MPL_38
 from cartopy.mpl.feature_artist import FeatureArtist
 import cartopy.mpl.geoaxes as cgeoaxes
 import cartopy.mpl.path
@@ -126,10 +125,7 @@ def test_contourf_transform_path_counting():
                     wraps=cartopy.mpl.path.path_to_shapely) as path_to_shapely_counter:
         x, y, z = sample_data((30, 60))
         cs = ax.contourf(x, y, z, 5, transform=ccrs.PlateCarree())
-        if not _MPL_38:
-            n_geom = sum(len(c.get_paths()) for c in cs.collections)
-        else:
-            n_geom = len(cs.get_paths())
+        n_geom = len(cs.get_paths())
 
         del cs
         fig.canvas.draw()

@@ -203,6 +203,9 @@ class TestBisect:
                 assert not any(np.isnan(coord)), \
                     'Unexpected NaN in projected coords.'
 
+    @pytest.mark.filterwarnings(
+        "ignore:invalid value encountered in linestrings:RuntimeWarning"
+    )
     def test_nan_rectangular(self):
         # Make sure rectangular projections can handle invalid geometries
         projection = ccrs.Robinson()

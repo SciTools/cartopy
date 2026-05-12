@@ -7,6 +7,7 @@ from io import BytesIO
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 import cartopy.crs as ccrs
 
@@ -19,6 +20,9 @@ def test_empty_plot():
     fig.savefig(BytesIO())
 
 
+@pytest.mark.filterwarnings(
+    "ignore:invalid value encountered in linestrings:RuntimeWarning"
+)
 def test_triplot_bbox_tight():
     """Test triplot with a tight bbox (#1060)."""
     x = np.degrees([-0.101, -0.090, -0.069])

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pytest
-from shapely.geos import geos_version
+from shapely import geos_version
 
 import cartopy.crs as ccrs
 from cartopy.mpl.geoaxes import GeoAxes
@@ -519,6 +519,25 @@ def test_gridliner_save_tight_bbox():
     fig.savefig(io.BytesIO(), bbox_inches='tight')
 
 
+def test_gridliner_ylabel_rotation_90_tight_bbox():
+    # Regression test for ylabel rotation=90 with bbox_inches=tight (gh2394).
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_extent([80, 170, -45, 30], crs=ccrs.PlateCarree())
+    gl = ax.gridlines(
+        draw_labels={"left": "y"},
+        ylabel_style={"rotation": 90},
+    )
+
+    fig.draw_without_rendering()
+    n_before = sum(1 for a in gl.label_artists if a.get_visible())
+    assert n_before > 0
+
+    fig.savefig(io.BytesIO(), bbox_inches='tight')
+    n_after = sum(1 for a in gl.label_artists if a.get_visible())
+
+    assert n_after == n_before
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
                                tolerance=grid_label_tol)
@@ -605,3 +624,20 @@ def test_gridliner_with_globe():
     fig.draw_without_rendering()
 
     assert gl in ax.artists
+
+
+def test_gridliner_geo_labels_respect_side_visibility():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
+    ax.set_global()
+    gl = ax.gridlines(draw_labels=True)
+    gl.ylocator = mticker.FixedLocator([-60, -30, 0, 30, 60])
+
+    fig.draw_without_rendering()
+    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
+    assert labels == ['60°S', '60°S', '60°N', '60°N']
+
+    gl.right_labels = False
+    fig.draw_without_rendering()
+    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
+    assert labels == ['60°S', '60°N']

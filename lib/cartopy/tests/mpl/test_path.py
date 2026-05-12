@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 from matplotlib.path import Path
+import numpy as np
 import pytest
 import shapely.geometry as sgeom
 
@@ -90,3 +91,14 @@ class Test_path_to_shapely:
             assert len(geoms.geoms) == 2
             assert len(geoms.geoms[0].interiors) == 1
             assert len(geoms.geoms[1].interiors) == 0
+
+
+no_polygon_path = Path([[0,0], [1,1]], codes=[Path.MOVETO, Path.LINETO])
+empty_path = Path(np.empty((0, 2)))
+
+class Test_ensure_path_closed:
+    @pytest.mark.parametrize('path', [no_polygon_path, empty_path])
+    def test_non_polygon_path_closing(self, path):
+        closed_path = cpath._ensure_path_closed(path)
+        assert isinstance(closed_path, Path)
+        assert closed_path.vertices.size == 0

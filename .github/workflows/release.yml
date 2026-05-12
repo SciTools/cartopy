@@ -37,7 +37,7 @@ jobs:
       SDIST_NAME: ${{ steps.sdist.outputs.SDIST_NAME }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           # We need the full history to generate the proper version number
           fetch-depth: 0
@@ -61,7 +61,7 @@ jobs:
         run: twine check dist/*
 
       - name: Upload sdist result
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
@@ -76,8 +76,10 @@ jobs:
         include:
           - os: ubuntu-latest
             cibw_archs: "x86_64"
+          - os: ubuntu-24.04-arm
+            cibw_archs: "aarch64"
           - os: windows-latest
-            cibw_archs: "auto64"
+            cibw_archs: "auto"
           - os: macos-latest
             cibw_archs: "x86_64"
           - os: macos-latest
@@ -88,22 +90,20 @@ jobs:
 
     steps:
       - name: Download sdist
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           name: cibw-sdist
           path: dist
 
       - name: Build wheels for CPython
-        uses: pypa/cibuildwheel@c923d83ad9c1bc00211c5041d0c3f73294ff88f6 # v3.1.4
+        uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
         env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
-          # Skip 32 bit builds and musllinux due to lack of numpy wheels
-          CIBW_SKIP: "*-win32 *_i686 *-musllinux*"
+          CIBW_SKIP: "*_i686 cp3*t-*"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ matrix.cibw_archs }}
           path: ./wheelhouse/*.whl
@@ -123,7 +123,7 @@ jobs:
 
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           pattern: cibw-*
           path: dist

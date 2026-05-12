@@ -281,6 +281,27 @@ class TestMisc:
         polygons = target.project_geometry(polygon, source)
         assert isinstance(polygons, sgeom.MultiPolygon)
 
+    def test_full_width_band_not_inverted(self):
+        # A polygon spanning exactly ±180° longitude creates a projected ring
+        # with a degenerate self-intersecting "tail" at the ±180 seam.
+        # Shapely's is_ccw is unreliable for such rings; the shoelace signed
+        # area must be used instead so the ring is classified correctly as an
+        # interior (not an exterior) ring. See GH-2483.
+        north_tropic = sgeom.Polygon(
+            [(-180, 0), (180, 0), (180, 20), (-180, 20)])
+        proj = ccrs.Orthographic(central_longitude=0.0, central_latitude=90.0)
+        result = proj.project_geometry(north_tropic, ccrs.PlateCarree())
+
+        # Convert points we expect to be inside vs out and check the
+        # containment of the result.
+        src = ccrs.PlateCarree()
+        inside_band = sgeom.Point(proj.transform_point(0, 10, src))
+        outside_band = sgeom.Point(proj.transform_point(0, 45, src))
+        assert result.contains(inside_band), \
+            '(0°E, 10°N) should be inside the projected tropical band'
+        assert not result.contains(outside_band), \
+            '(0°E, 45°N) should be outside the projected tropical band'
+
 
 class TestQuality:
     def setup_class(self):
@@ -508,3 +529,37 @@ class TestHoles(PolygonTests):
         source = ccrs.Geodetic()
 
         assert len(list(target.project_geometry(poly, source).geoms)) == 1
+
+    def test_small_patch_antimeridian_regression(self):
+        """
+        Test for regression where small patches near antimeridian would
+        incorrectly fill the entire globe instead of appearing as small patches.
+        """
+        # Test data from the original bug report - a tiny patch near Antarctica
+        # that crosses the antimeridian
+        coords = np.array([
+            [-180.00020734,  -63.5383884 ],
+            [-179.93611911,  -63.61745971],
+            [-179.77001049,  -63.62512738],
+            [-179.67109735,  -63.55616224],
+            [-179.74190981,  -63.49385818],
+            [-179.91362571,  -63.48807984],
+            [-180.00020734,  -63.5383884 ],
+            [-180.00020734,  -63.5383884 ],
+        ])
+
+        patch = sgeom.Polygon(coords)
+        proj = ccrs.PlateCarree()
+
+        # Project the geometry
+        projected = proj.project_geometry(patch, proj)
+
+        # The projected geometry should be small, not span the entire globe
+        bounds = projected.bounds
+        longitude_span = bounds[2] - bounds[0]  # x_max - x_min
+        latitude_span = bounds[3] - bounds[1]   # y_max - y_min
+
+        # The longitude span should be small (less than 1 degree), not ~360 degrees
+        # which would indicate the patch incorrectly fills the entire globe
+        assert longitude_span < 1.0
+        assert latitude_span < 1.0

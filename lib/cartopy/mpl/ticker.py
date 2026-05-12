@@ -145,10 +145,13 @@ class _PlateCarreeFormatter(Formatter):
         self._target_projection = ccrs.PlateCarree(globe=self._source_projection.globe)
 
     def set_locs(self, locs):
-        Formatter.set_locs(self, locs)
+        super().set_locs(locs)
         if not self._auto_hide:
             return
-        self.locs, degs, mins, secs = self._get_dms(self.locs)
+        locs, degs, mins, secs = self._get_dms(locs)
+
+        # locs dtype may have changed.
+        super().set_locs(locs)
         secs = np.round(secs, self._precision - 3).astype('i')
         secs0 = secs == 0
         mins0 = mins == 0

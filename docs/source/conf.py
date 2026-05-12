@@ -47,9 +47,15 @@ extensions = [
               'sphinx.ext.autosummary',
               'matplotlib.sphinxext.plot_directive',
               'matplotlib.sphinxext.roles',
+              'sphinx_copybutton',
               'sphinx_gallery.gen_gallery',
-              'sphinx.ext.napoleon'
+              'sphinx.ext.napoleon',
               ]
+
+
+# enable regular expression for the sphinx_copybutton extension
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True
 
 # generate autosummary even if no references
 autosummary_generate = True

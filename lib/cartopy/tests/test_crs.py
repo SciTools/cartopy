@@ -57,9 +57,6 @@ class TestCRS:
                 Path(pyproj.datadir.get_user_data_dir(), grid_name).exists()
             )
             if not available:
-                import warnings
-                warnings.warn(f'{grid_name} is unavailable; '
-                              'testing OSGB at reduced precision')
                 precision = -1
 
         ll = ccrs.Geodetic()
@@ -312,6 +309,11 @@ def test_transform_points_empty():
     result = crs.transform_points(ccrs.PlateCarree(),
                                   np.array([]), np.array([]))
     assert_array_equal(result, np.array([], dtype=np.float64).reshape(0, 3))
+
+
+def test_project_geometry_empty_point():
+    """Test with an empty shapely point."""
+    assert ccrs.PlateCarree().project_geometry(sgeom.Point()).is_empty
 
 
 def test_transform_points_outside_domain():
