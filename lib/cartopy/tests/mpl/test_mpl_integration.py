@@ -692,6 +692,45 @@ def test_pcolormesh_nan_wrap():
     assert len(pcolor.get_paths()) == 2
 
 
+def test_pcolormesh_remove():
+    # When a wrapped GeoQuadMesh is removed, its internal _wrapped_collection_fix
+    # must also be removed to prevent a memory leak.
+
+    # wrapped mesh
+    xs, ys = np.meshgrid([120, 160, 200], [-30, 0, 30])
+    data = np.ones((2, 2)) * np.nan
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    mesh = ax.pcolormesh(xs, ys, data)
+
+    assert hasattr(mesh, '_wrapped_collection_fix'), \
+        'Expected wrapping to add _wrapped_collection_fix'
+    assert len(ax.collections) == 2, \
+        'Expected 2 collections (mesh + wrapped fix) before remove'
+
+    mesh.remove()
+
+    assert len(ax.collections) == 0, \
+        'Expected 0 collections after remove (both mesh and wrapped fix)'
+
+    # no wrapped mesh
+    xs2, ys2 = np.meshgrid([-60, -30, 0], [-30, 0, 30])
+    data2 = np.ones((2, 2))
+
+    ax2 = plt.axes(projection=ccrs.PlateCarree())
+    mesh2 = ax2.pcolormesh(xs2, ys2, data2)
+
+    assert not hasattr(mesh2, '_wrapped_collection_fix'), \
+        'Expected no wrapping for non-wrapped mesh'
+    assert len(ax2.collections) == 1, \
+        'Expected 1 collection before remove'
+
+    mesh2.remove()
+
+    assert len(ax2.collections) == 0, \
+        'Expected 0 collections after remove'
+
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='pcolormesh_goode_wrap.png')
 def test_pcolormesh_goode_wrap():
