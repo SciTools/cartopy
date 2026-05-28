@@ -403,3 +403,146 @@ def add_cyclic(data, x=None, y=None, axis=-1,
         raise ValueError(estr)
     out_y = _add_cyclic_data(y, axis=yaxis)
     return out_data, out_x, out_y
+
+
+def extend_lons_xr(dsx, lonmin, lonmax, lon_name="longitude"):
+    """
+    Function to extend data to longitudes beyond 360 degrees in either
+    direction by duplicating data.
+
+    Version for xarray.  Use extend_lons_np for numpy arrays.
+
+    Parameters
+    ----------
+    dsx
+        an xarray dataset
+    lonmin
+        the lowest longitude desired in the extended xarray
+    lonmax
+        the highest longitude desired in the extended xarray
+    lon_name
+        the xarray coordinate name for longitude
+
+    """
+    import xarray as xr
+
+    # Check reasonableness
+    if lonmin >= lonmax:
+        print(
+            "lonmin must be less than lonmax, returning"
+            " original dataset unchanched"
+        )
+        return dsx
+
+    first_lon = dsx[lon_name][0]
+    last_lon = dsx[lon_name][-1]
+    extent = last_lon - first_lon
+    # Reset to a 360 degree extent before proceeding, otherwise
+    # we end up extending again the already extended array.
+    if extent >= 360:
+        last_lon = first_lon + 360
+        dsx = dsx.where(
+            (dsx[lon_name] < last_lon) & (dsx[lon_name] >= first_lon),
+            drop=True)
+
+    # Create the name dsx_new to avoid an error if
+    # neither condition is met.
+    dsx_new = dsx
+    if lonmax > last_lon:
+        nshifts = int((lonmax - last_lon)/360) + 2
+        if nshifts !=0:
+            for n in range(1, abs(nshifts)):
+                shift = np.sign(nshifts)*n*360
+                dsx_new = xr.concat(
+                    [dsx_new,
+                    dsx.assign_coords({lon_name: dsx[lon_name]+shift})],
+                    dim=lon_name)
+            dsx_new = dsx_new.where(dsx_new[lon_name] < lonmax, drop=True)
+
+    if lonmin < first_lon:
+        nshifts = int((lonmin - first_lon)/360) - 2
+        if nshifts !=0:
+            for n in range(1, abs(nshifts)):
+                shift = np.sign(nshifts)*n*360
+                dsx_new = xr.concat(
+                    [dsx.assign_coords({lon_name: dsx[lon_name]+shift}),
+                    dsx_new], dim=lon_name)
+            dsx_new = dsx_new.where(dsx_new[lon_name] > lonmin, drop=True)
+
+    return dsx_new
+
+
+def extend_lons_np(lons, lats, arr, lonmin, lonmax):
+    """
+    Function to extend data to longitudes beyond 360 degrees in either
+    direction by duplicating data.
+
+    Version for numpy arrays.  Use extend_lons_xr for xarrays.
+
+    Parameters
+    ----------
+    lons
+        a 1-d Numpy array of longitudes
+    lats
+        a 1-d Numpy array of latitudes
+    arr
+        a Numpy array of the variable to extend with dimension
+        (..., len(lons), len(lats))
+    lonmin
+        the lowest longitude desired in the extended ndarray
+    lonmax
+        the highest longitude desired in the extended ndarray
+
+    """
+    # Check reasonableness
+    if lonmin >= lonmax:
+        print(
+            "lonmin must be less than lonmax, returning"
+            " original dataset unchanched"
+        )
+        return lons, lats, arr
+
+    first_lon = lons[0]
+    last_lon = lons[-1]
+    extent = last_lon - first_lon
+    # Reset to a 360 degree extent before proceeding, otherwise
+    # we end up extending again the already extended array.
+    if extent >= 360:
+        last_lon = first_lon + 360
+        valid_lons = (lons < last_lon) & (lons >= first_lon)
+        arr = arr[..., valid_lons]
+        lons = lons[valid_lons]
+
+    new_arr = arr
+    new_lons = lons
+    if lonmax > last_lon:
+        nshifts = int((lonmax - last_lon)/360) + 2
+        if nshifts !=0:
+            for n in range(1, abs(nshifts)):
+                shift = np.sign(nshifts)*n*360
+                new_lons = np.concatenate(
+                    (new_lons, lons + shift))
+                new_arr = np.concatenate(
+                    (new_arr, arr),
+                    axis=-1
+                )
+            valid_lons = new_lons < lonmax
+            new_lons = new_lons[valid_lons]
+            new_arr = new_arr[...,valid_lons]
+
+    if lonmin < first_lon:
+        nshifts = int((lonmin - first_lon)/360) - 2
+        if nshifts !=0:
+            for n in range(1, abs(nshifts)):
+                shift = np.sign(nshifts)*n*360
+                new_lons = np.concatenate((
+                    lons + shift, new_lons))
+                new_arr = np.concatenate(
+                    (arr, new_arr),
+                    axis=-1
+                )
+            valid_lons = new_lons > lonmin
+            new_lons = new_lons[valid_lons]
+            new_arr = new_arr[..., valid_lons]
+
+    return new_lons, lats, new_arr
