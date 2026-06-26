@@ -210,9 +210,8 @@ def test_grid_labels():
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
-                               tolerance=2.9)
-def test_grid_labels_tight():
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png', style='mpl20')
+def test_grid_labels_tight(text_placeholders):
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
 
@@ -258,9 +257,8 @@ def test_grid_labels_tight():
 
 
 @pytest.mark.mpl_image_compare(
-    filename='gridliner_constrained_adjust_datalim.png',
-    tolerance=grid_label_tol)
-def test_gridliner_constrained_adjust_datalim():
+    filename='gridliner_constrained_adjust_datalim.png', style='mpl20')
+def test_gridliner_constrained_adjust_datalim(text_placeholders):
     fig = plt.figure(figsize=(8, 4), layout="constrained")
 
     # Make some axes that will fill the available space while maintaining
@@ -538,10 +536,11 @@ def test_gridliner_ylabel_rotation_90_tight_bbox():
 
     assert n_after == n_before
 
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
-                               tolerance=grid_label_tol)
-def test_gridliner_title_adjust():
+                               style='mpl20')
+def test_gridliner_title_adjust(text_placeholders):
     # Test that title do not overlap labels
     projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),
              ccrs.Orthographic()]
@@ -550,8 +549,8 @@ def test_gridliner_title_adjust():
     # not in these tests).
     plt.rcParams['axes.titley'] = None
 
-    fig = plt.figure(layout='constrained')
-    fig.get_layout_engine().set(h_pad=1/8)
+    fig = plt.figure(figsize=(8, 6), layout='constrained')
+    fig.get_layout_engine().set(h_pad=1 / 8)
     for n, proj in enumerate(projs, 1):
         ax = fig.add_subplot(2, 2, n, projection=proj)
         ax.coastlines()
