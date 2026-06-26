@@ -3172,7 +3172,7 @@ class ObliqueMercator(Projection):
 
     def __init__(self, central_longitude=0.0, central_latitude=0.0,
                  false_easting=0.0, false_northing=0.0,
-                 scale_factor=1.0, azimuth=0.0, globe=None):
+                 scale_factor=1.0, azimuth=0.0, gamma=None, globe=None):
         """
         Parameters
         ----------
@@ -3190,6 +3190,9 @@ class ObliqueMercator(Projection):
         azimuth: optional
             Azimuth of centerline clockwise from north at the center point of
             the centre line. Defaults to 0.
+        gamma: optional
+            Azimuth of centerline clockwise from north of the rectified bearing
+            of centre line. If omitted, `alpha` determines the values of `gamma`.
         globe: optional
             An instance of :class:`cartopy.crs.Globe`. If omitted, a default
             globe is created.
@@ -3209,6 +3212,9 @@ class ObliqueMercator(Projection):
                         ('lat_0', central_latitude), ('k', scale_factor),
                         ('x_0', false_easting), ('y_0', false_northing),
                         ('alpha', azimuth), ('units', 'm')]
+
+        if gamma is not None:
+            proj4_params.append(('gamma', gamma))
 
         super().__init__(proj4_params, globe=globe)
 
