@@ -11,6 +11,7 @@ dependencies:
   - cython>=3.0
   - numpy>=1.26
   - shapely>=2.0
+  - pip
   - pyshp>=2.3.1
   - pyproj>=3.6.0
   # PROJ 9.8 changes the way equicylindrical projections (PlateCarree)
