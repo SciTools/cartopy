@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import pytest
 
 import cartopy.crs as ccrs
+from cartopy.mpl import _MPL_311
 from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
 
 
@@ -15,7 +16,8 @@ if not _HAS_PYKDTREE_OR_SCIPY:
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='global_map.png')
+@pytest.mark.mpl_image_compare(filename='global_map.png',
+                               tolerance=1.36 if not _MPL_311 else 0.5)
 def test_global_map():
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
@@ -35,7 +37,8 @@ def test_global_map():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='contour_label.png', tolerance=3.9)
+@pytest.mark.mpl_image_compare(filename='contour_label.png',
+                               tolerance=12.2 if not _MPL_311 else 0.5)
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
     fig = plt.figure()

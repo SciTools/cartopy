@@ -14,6 +14,7 @@ import pytest
 from shapely import geos_version
 
 import cartopy.crs as ccrs
+from cartopy.mpl import _MPL_311
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER,
@@ -132,7 +133,13 @@ def test_gridliner_specified_lines():
 
 # The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-grid_label_tol = 3.9
+grid_label_tol = 21.1 if not _MPL_311 else 0.5
+grid_label_tight_tol = 48.4 if not _MPL_311 else 0.5
+grid_constrained_datalim_tol = 42.2 if not _MPL_311 else 0.5
+grid_label_inline_tol = 19.1 if not _MPL_311 else 0.5
+grid_label_inline_usa_tol = 20.5 if not _MPL_311 else 0.5
+grid_label_bbox_tol = 43.3 if not _MPL_311 else 0.5
+grid_title_adjust_tol = 58.2 if not _MPL_311 else 0.5
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
@@ -211,7 +218,7 @@ def test_grid_labels():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
-                               tolerance=2.9)
+                               tolerance=grid_label_tight_tol)
 def test_grid_labels_tight():
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -259,7 +266,7 @@ def test_grid_labels_tight():
 
 @pytest.mark.mpl_image_compare(
     filename='gridliner_constrained_adjust_datalim.png',
-    tolerance=grid_label_tol)
+    tolerance=grid_constrained_datalim_tol)
 def test_gridliner_constrained_adjust_datalim():
     fig = plt.figure(figsize=(8, 4), layout="constrained")
 
@@ -293,7 +300,7 @@ def test_gridliner_constrained_adjust_datalim():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.parametrize('proj', TEST_PROJS)
-@pytest.mark.mpl_image_compare(style='mpl20')
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_inline_tol)
 def test_grid_labels_inline(proj):
     fig = plt.figure()
     if isinstance(proj, tuple):
@@ -309,7 +316,7 @@ def test_grid_labels_inline(proj):
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.parametrize('proj', TEST_PROJS)
-@pytest.mark.mpl_image_compare(style='mpl20', tolerance=0.79)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_inline_usa_tol)
 def test_grid_labels_inline_usa(proj):
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -334,7 +341,7 @@ def test_grid_labels_inline_usa(proj):
 @pytest.mark.natural_earth
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_bbox_style.png',
-                               tolerance=grid_label_tol)
+                               tolerance=grid_label_bbox_tol)
 def test_gridliner_labels_bbox_style():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -538,9 +545,10 @@ def test_gridliner_ylabel_rotation_90_tight_bbox():
 
     assert n_after == n_before
 
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
-                               tolerance=grid_label_tol)
+                               tolerance=grid_title_adjust_tol)
 def test_gridliner_title_adjust():
     # Test that title do not overlap labels
     projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),

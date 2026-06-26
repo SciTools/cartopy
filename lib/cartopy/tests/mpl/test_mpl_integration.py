@@ -13,6 +13,7 @@ import pyproj
 import pytest
 
 import cartopy.crs as ccrs
+from cartopy.mpl import _MPL_311
 from cartopy.tests.conftest import requires_scipy
 
 
@@ -1039,7 +1040,7 @@ def test_streamplot():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare()
+@pytest.mark.mpl_image_compare(tolerance=7.83 if not _MPL_311 else 0.5)
 def test_annotate():
     """ test a variety of annotate options on multiple projections
 

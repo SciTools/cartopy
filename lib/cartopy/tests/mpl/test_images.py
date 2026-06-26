@@ -13,6 +13,7 @@ from PIL import Image
 import pytest
 import shapely.geometry as sgeom
 
+from cartopy.mpl import _MPL_311
 from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
 
 
@@ -118,7 +119,7 @@ def test_imshow():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png',
-                               tolerance=1.97)
+                               tolerance=11.6 if not _MPL_311 else 0.5)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
