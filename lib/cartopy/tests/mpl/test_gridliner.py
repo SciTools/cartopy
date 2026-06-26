@@ -134,12 +134,9 @@ def test_gridliner_specified_lines():
 # The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
 grid_label_tol = 16.0 if not _MPL_311 else 0.5
-grid_label_tight_tol = 26.5 if not _MPL_311 else 0.5
-grid_constrained_datalim_tol = 24.0 if not _MPL_311 else 0.5
 grid_label_inline_tol = 19.1 if not _MPL_311 else 0.5
 grid_label_inline_usa_tol = 20.5 if not _MPL_311 else 0.5
 grid_label_bbox_tol = 22.7 if not _MPL_311 else 0.5
-grid_title_adjust_tol = 37.6 if not _MPL_311 else 0.5
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
@@ -217,9 +214,8 @@ def test_grid_labels():
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png', style='mpl20',
-                               tolerance=grid_label_tight_tol)
-def test_grid_labels_tight():
+@pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png', style='mpl20')
+def test_grid_labels_tight(text_placeholders):
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
 
@@ -265,9 +261,8 @@ def test_grid_labels_tight():
 
 
 @pytest.mark.mpl_image_compare(
-    filename='gridliner_constrained_adjust_datalim.png', style='mpl20',
-    tolerance=grid_constrained_datalim_tol)
-def test_gridliner_constrained_adjust_datalim():
+    filename='gridliner_constrained_adjust_datalim.png', style='mpl20')
+def test_gridliner_constrained_adjust_datalim(text_placeholders):
     fig = plt.figure(figsize=(8, 4), layout="constrained")
 
     # Make some axes that will fill the available space while maintaining
@@ -548,8 +543,8 @@ def test_gridliner_ylabel_rotation_90_tight_bbox():
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
-                               style='mpl20', tolerance=grid_title_adjust_tol)
-def test_gridliner_title_adjust():
+                               style='mpl20')
+def test_gridliner_title_adjust(text_placeholders):
     # Test that title do not overlap labels
     projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),
              ccrs.Orthographic()]
