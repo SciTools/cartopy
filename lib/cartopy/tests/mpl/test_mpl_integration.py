@@ -1040,7 +1040,7 @@ def test_streamplot():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(tolerance=7.83 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=5.58 if not _MPL_311 else 0.5)
 def test_annotate():
     """ test a variety of annotate options on multiple projections
 

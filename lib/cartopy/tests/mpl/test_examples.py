@@ -16,8 +16,8 @@ if not _HAS_PYKDTREE_OR_SCIPY:
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='global_map.png',
-                               tolerance=1.36 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(filename='global_map.png', style='mpl20',
+                               tolerance=1.5 if not _MPL_311 else 0.5)
 def test_global_map():
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
@@ -37,11 +37,11 @@ def test_global_map():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='contour_label.png',
-                               tolerance=12.2 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(filename='contour_label.png', style='mpl20',
+                               tolerance=8.01 if not _MPL_311 else 0.5)
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
-    fig = plt.figure()
+    fig = plt.figure(figsize=(8, 6))
 
     # Setup a global EckertIII map with faint coastlines.
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.EckertIII())
@@ -54,7 +54,7 @@ def test_contour_label():
     z = z * -1.5 * y
 
     # Add colourful filled contours.
-    filled_c = ax.contourf(x, y, z, transform=ccrs.PlateCarree())
+    filled_c = ax.contourf(x, y, z, cmap='RdBu', transform=ccrs.PlateCarree())
 
     # And black line contours.
     line_c = ax.contour(x, y, z, levels=filled_c.levels,

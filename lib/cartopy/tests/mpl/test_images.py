@@ -118,18 +118,20 @@ def test_imshow():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png',
-                               tolerance=11.6 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png', style='mpl20',
+                               tolerance=7.14 if not _MPL_311 else 0.5)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
                   13.2301484511245, 30.766899999999502)
     img = plt.imread(REGIONAL_IMG)
-    ax = plt.axes(projection=ccrs.LambertConformal())
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_axes((0.125, 0.1, 0.9 - 0.125, 0.9 - 0.1),  # Preserve classic rect.
+                      projection=ccrs.LambertConformal())
     ax.set_extent(img_extent, crs=source_proj)
     ax.coastlines(resolution='50m')
     ax.imshow(img, extent=img_extent, transform=source_proj)
-    return ax.figure
+    return fig
 
 
 def test_imshow_wrapping():
