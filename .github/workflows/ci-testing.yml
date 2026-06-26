@@ -180,7 +180,7 @@ jobs:
       - name: Install Cartopy
         # All test and extra dependencies should come from the environment.yml file
         run: |
-          pip install -e .
+          python -m pip install -e .
           python -c "import cartopy; print('Version ', cartopy.__version__)"
 
       - name: Testing
