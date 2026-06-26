@@ -757,6 +757,20 @@ class Projection(CRS, metaclass=ABCMeta):
             domain = self._domain = sgeom.Polygon(self.boundary)
         return domain
 
+    @property
+    def _prepared_domain(self):
+        """Prepared (indexed) version of :attr:`domain`, cached per projection instance.
+
+        Used by :func:`cartopy.trace.project_linear` for fast point-in-polygon
+        tests.  The domain polygon is immutable, so a single prepared instance
+        is safe to reuse for the projection's lifetime.
+        """
+        try:
+            return self.__prepared_domain_cache
+        except AttributeError:
+            self.__prepared_domain_cache = prep(self.domain)
+            return self.__prepared_domain_cache
+
     def is_geodetic(self):
         return False
 
