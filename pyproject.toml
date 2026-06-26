@@ -1,6 +1,5 @@
 [build-system]
 requires = [
-    "wheel",
     "setuptools >= 77.0.3",
     "Cython >= 3.0",
     # numpy requirement for wheel builds for distribution on PyPI - building
