@@ -93,8 +93,12 @@ def text_placeholders(monkeypatch):
         if self.get_text() == '':
             return
         bbox = self.get_window_extent()
-        rect = Rectangle(bbox.p0, bbox.width, bbox.height,
-                         facecolor=self.get_color(), edgecolor='none')
+        # Keep the placeholder aligned with rotated labels as well.
+        rect = Rectangle(
+            bbox.p0, bbox.width, bbox.height,
+            angle=self.get_rotation(), rotation_point='center',
+            facecolor=self.get_color(), edgecolor='none',
+        )
         rect.draw(renderer)
 
     if _MPL_311:
