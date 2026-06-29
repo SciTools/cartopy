@@ -98,6 +98,7 @@ def text_placeholders(monkeypatch):
             bbox.p0, bbox.width, bbox.height,
             angle=self.get_rotation(), rotation_point='center',
             facecolor=self.get_color(), edgecolor='none',
+            antialiased=False,
         )
         rect.draw(renderer)
 
