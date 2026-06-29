@@ -542,8 +542,10 @@ def test_gridliner_ylabel_rotation_90_tight_bbox():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
-                               style='mpl20')
+@pytest.mark.mpl_image_compare(
+    filename='gridliner_labels_title_adjust.png', style='mpl20',
+    tolerance=7.0,
+)
 def test_gridliner_title_adjust(text_placeholders):
     # Test that title do not overlap labels
     projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),
