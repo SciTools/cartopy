@@ -52,7 +52,10 @@ def text_placeholders(monkeypatch):
     tests that depend on text geometries but not the actual text rendering, e.g. layout
     tests.
     """
-    from matplotlib.patches import Rectangle
+    from math import cos, radians, sin
+
+    from matplotlib.patches import Polygon
+    from matplotlib.transforms import IdentityTransform
 
     def patched_get_sfnt_table(font, name):
         """
@@ -93,14 +96,23 @@ def text_placeholders(monkeypatch):
         if self.get_text() == '':
             return
         bbox = self.get_window_extent(renderer)
-        # Keep the placeholder aligned with rotated labels as well.
-        rect = Rectangle(
-            bbox.p0, bbox.width, bbox.height,
-            angle=self.get_rotation(), rotation_point='center',
-            facecolor=self.get_color(), edgecolor='none',
-            antialiased=False,
+        angle = radians(self.get_rotation())
+        dx = bbox.width / 2
+        dy = bbox.height / 2
+        cx = bbox.x0 + dx
+        cy = bbox.y0 + dy
+        corners = [(-dx, -dy), (dx, -dy), (dx, dy), (-dx, dy)]
+        points = [
+            (cx + x * cos(angle) - y * sin(angle),
+             cy + x * sin(angle) + y * cos(angle))
+            for x, y in corners
+        ]
+        patch = Polygon(
+            points, closed=True, facecolor=self.get_color(),
+            edgecolor='none', antialiased=False,
+            transform=IdentityTransform(),
         )
-        rect.draw(renderer)
+        patch.draw(renderer)
 
     if _MPL_311:
         monkeypatch.setattr('matplotlib.ft2font.FT2Font.get_sfnt_table',
