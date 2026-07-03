@@ -247,13 +247,7 @@ cdef State get_state(const Point &point, object gp_domain, bool geom_fully_insid
         # Fast-path return because the geometry is fully inside
         return POINT_IN
     if isfinite(point.x) and isfinite(point.y):
-        if shapely.__version__ >= "2":
-            # Shapely 2.0 doesn't need to create/destroy a point
-            state = POINT_IN if shapely.intersects_xy(gp_domain.context, point.x, point.y) else POINT_OUT
-        else:
-            g_point = sgeom.Point((point.x, point.y))
-            state = POINT_IN if gp_domain.covers(g_point) else POINT_OUT
-            del g_point
+        state = POINT_IN if shapely.intersects_xy(gp_domain.context, point.x, point.y) else POINT_OUT
     else:
         state = POINT_NAN
     return state
