@@ -812,6 +812,11 @@ class Gridliner(matplotlib.artist.Artist):
                               for pt in intersection[-1:-n2 - 1:-n2 + 1]]]
                 elif isinstance(intersection, (sgeom.LineString,
                                                sgeom.MultiLineString)):
+                    orig_intersection = intersection
+                    if isinstance(intersection, sgeom.MultiLineString):
+                        # Sometimes Shapely produces multiple lines where the end points
+                        # coincide, so try to combine them into longer but fewer ones.
+                        intersection = shapely.line_merge(intersection)
                     if isinstance(intersection, sgeom.LineString):
                         intersection = [intersection]
                     elif len(intersection.geoms) > 4:
@@ -822,7 +827,8 @@ class Gridliner(matplotlib.artist.Artist):
                             # our merge still produced a multilinestring, so
                             # manually concatenate the original coordinates
                             xy = np.concatenate(
-                                [inter.coords for inter in intersection.geoms], axis=0)
+                                [inter.coords for inter in orig_intersection.geoms],
+                                axis=0)
                             merged_line = shapely.LineString(xy)
                         intersection = [merged_line]
                     else:
