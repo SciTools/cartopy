@@ -5,6 +5,7 @@
 
 from matplotlib.path import Path
 import numpy as np
+from numpy.testing import assert_array_equal
 import pytest
 import shapely.geometry as sgeom
 
@@ -102,3 +103,32 @@ class Test_ensure_path_closed:
         closed_path = cpath._ensure_path_closed(path)
         assert isinstance(closed_path, Path)
         assert closed_path.vertices.size == 0
+
+
+class Test_shapely_to_path:
+    def test_polygon_with_multiple_interiors(self):
+        exterior = sgeom.box(0, 0, 12, 12).exterior.coords
+        interiors = [sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords,
+                     sgeom.box(4, 4, 5, 6, ccw=False).exterior.coords,
+                     sgeom.box(8, 8, 9, 10, ccw=False).exterior.coords]
+        poly = sgeom.Polygon(exterior, interiors)
+
+        path = cpath.shapely_to_path(poly)
+
+        rings = [poly.exterior, *poly.interiors]
+        expected_vertices = np.concatenate([np.asarray(ring.coords)
+                                            for ring in rings])
+        assert_array_equal(path.vertices, expected_vertices)
+
+        # Each ring is 5 vertices long (a closed box), so the codes for
+        # each ring should be MOVETO, LINETO, LINETO, LINETO, CLOSEPOLY.
+        expected_codes = np.tile(
+            [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY],
+            len(rings))
+        assert_array_equal(path.codes, expected_codes)
+        assert path.codes.dtype == Path.code_type
+
+        # The path should round-trip back to an equivalent geometry.
+        result = cpath.path_to_shapely(path)
+        assert isinstance(result, sgeom.Polygon)
+        assert result.equals(poly)
