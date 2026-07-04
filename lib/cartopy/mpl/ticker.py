@@ -513,7 +513,8 @@ class LongitudeLocator(MaxNLocator):
     """
 
     def __init__(self, nbins=8, *, dms=False, **kwargs):
-        super().__init__(nbins=nbins, dms=dms, **kwargs)
+        super().__init__(nbins=nbins, **kwargs)
+        self._dms = dms
 
     def set_params(self, **kwargs):
         """Set parameters within this locator."""
