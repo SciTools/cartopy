@@ -180,7 +180,7 @@ def path_to_geos(path, force_ccw=False):
 
         if all(verts_same_as_first):
             geom = sgeom.Point(path_verts[0, :])
-        elif path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY:
+        elif path_verts.shape[0] >= 4 and path_codes[-1] == Path.CLOSEPOLY:
             geom = sgeom.Polygon(path_verts[:-1, :])
         else:
             geom = sgeom.LineString(path_verts)

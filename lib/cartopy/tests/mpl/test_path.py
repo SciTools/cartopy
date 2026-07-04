@@ -67,6 +67,35 @@ class Test_path_to_shapely:
             assert [type(geom) for geom in geoms.geoms] == [sgeom.Polygon, sgeom.Point]
             assert len(geoms.geoms[0].interiors) == 1
 
+    def test_closed_triangle_is_polygon(self, use_legacy_path_to_geos):
+        # A minimal closed triangle (3 distinct vertices plus the closing
+        # duplicate) should be classified as a Polygon, not a LineString.
+        p = Path([[0, 0], [1, 0], [0, 1], [0, 0]],
+                 codes=[Path.MOVETO, Path.LINETO, Path.LINETO, Path.CLOSEPOLY])
+        if use_legacy_path_to_geos:
+            with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+                geoms = cpatch.path_to_geos(p)
+            assert [type(geom) for geom in geoms] == [sgeom.Polygon]
+            assert geoms[0].area == pytest.approx(0.5)
+        else:
+            geom = cpath.path_to_shapely(p)
+            assert isinstance(geom, sgeom.Polygon)
+            assert geom.area == pytest.approx(0.5)
+
+    def test_degenerate_closed_path_is_linestring(self, use_legacy_path_to_geos):
+        # A closed path with only 2 distinct vertices is degenerate and
+        # should remain a LineString.
+        p = Path([[0, 0], [1, 1], [0, 0]],
+                 codes=[Path.MOVETO, Path.LINETO, Path.CLOSEPOLY])
+        if use_legacy_path_to_geos:
+            with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
+                geoms = cpatch.path_to_geos(p)
+            # A single LineString result is wrapped in a MultiLineString.
+            assert [type(geom) for geom in geoms] == [sgeom.MultiLineString]
+        else:
+            geom = cpath.path_to_shapely(p)
+            assert isinstance(geom, sgeom.LineString)
+
     def test_nested_polygons(self, use_legacy_path_to_geos):
         # A geometry with three nested squares.
         vertices = [[0, 0], [0, 10], [10, 10], [10, 0], [0, 0],
@@ -91,6 +120,16 @@ class Test_path_to_shapely:
             assert len(geoms.geoms) == 2
             assert len(geoms.geoms[0].interiors) == 1
             assert len(geoms.geoms[1].interiors) == 0
+
+
+def test_triangle_shapely_path_round_trip():
+    # A triangle Polygon should survive a round trip through
+    # shapely_to_path and back through path_to_shapely.
+    triangle = sgeom.Polygon([(0, 0), (1, 0), (0, 1)])
+    path = cpath.shapely_to_path(triangle)
+    geom = cpath.path_to_shapely(path)
+    assert isinstance(geom, sgeom.Polygon)
+    assert geom.equals(triangle)
 
 
 no_polygon_path = Path([[0,0], [1,1]], codes=[Path.MOVETO, Path.LINETO])
