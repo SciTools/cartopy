@@ -202,7 +202,7 @@ def _determine_bounds(x_coords, y_coords, source_cs):
     bounds = dict(x=[])
     half_px = abs(np.diff(x_coords[:2])).max() / 2.
 
-    if (((hasattr(source_cs, 'is_geodetic') and
+    if  source_cs.over is False and (((hasattr(source_cs, 'is_geodetic') and
             source_cs.is_geodetic()) or
             isinstance(source_cs, ccrs.PlateCarree)) and x_coords.max() > 180):
         if x_coords.min() < 180:
