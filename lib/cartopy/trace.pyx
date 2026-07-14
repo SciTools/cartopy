@@ -27,7 +27,6 @@ import warnings
 
 import numpy as np
 import shapely
-import shapely.prepared as sprep
 from pyproj import Geod, Transformer, proj_version_str
 from pyproj.exceptions import ProjError
 
@@ -245,7 +244,7 @@ cdef State get_state(const Point &point, object gp_domain, bool geom_fully_insid
         # Fast-path return because the geometry is fully inside
         return POINT_IN
     if isfinite(point.x) and isfinite(point.y):
-        state = POINT_IN if shapely.intersects_xy(gp_domain.context, point.x, point.y) else POINT_OUT
+        state = POINT_IN if shapely.intersects_xy(gp_domain, point.x, point.y) else POINT_OUT
     else:
         state = POINT_NAN
     return state
@@ -553,16 +552,15 @@ def project_linear(geometry not None, src_crs not None,
         object g_domain
         double[:, :] src_coords, dest_coords
         unsigned int src_size, src_idx
-        object gp_domain
         LineAccumulator lines
 
     g_domain = dest_projection.domain
+    shapely.prepare(g_domain)
 
     interpolator = _interpolator(src_crs, dest_projection)
 
     src_coords = np.asarray(geometry.coords)
     dest_coords = interpolator.project_points(src_coords)
-    gp_domain = sprep.prep(g_domain)
 
     src_size = len(src_coords)  # check exceptions
 
@@ -575,16 +573,14 @@ def project_linear(geometry not None, src_crs not None,
         if dest_line.is_valid:
             # We can only check for covers with valid geometries
             # some have nans/infs at this point still
-            geom_fully_inside = gp_domain.covers(dest_line)
+            geom_fully_inside = g_domain.covers(dest_line)
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
         _project_segment(src_coords[src_idx - 1, :2], src_coords[src_idx, :2],
                          dest_coords[src_idx - 1, :2], dest_coords[src_idx, :2],
-                         interpolator, gp_domain, threshold, lines,
+                         interpolator, g_domain, threshold, lines,
                          geom_fully_inside=geom_fully_inside);
-
-    del gp_domain
 
     multi_line_string = lines.as_geom()
 
@@ -603,10 +599,9 @@ class _Testing:
         # optimisations that are made in the real algorithm (in exchange for
         # a convenient signature).
 
-        cdef object gp_domain
-        gp_domain = sprep.prep(domain)
+        shapely.prepare(domain)
 
-        state = get_state(interpolator.project(l_start), gp_domain)
+        state = get_state(interpolator.project(l_start), domain)
         cdef bool p_start_inside_domain = state == POINT_IN
 
         # l_end and l_start should be un-projected.
@@ -618,9 +613,8 @@ class _Testing:
         valid = straightAndDomain(
             t_start, p0, t_end, p1,
             interpolator, threshold,
-            gp_domain, p_start_inside_domain)
+            domain, p_start_inside_domain)
 
-        del gp_domain
         return valid
 
     @staticmethod

@@ -23,7 +23,6 @@ from pyproj import Transformer
 import pyproj.crs
 from pyproj.exceptions import ProjError
 import shapely
-from shapely.prepared import prep
 
 import cartopy.trace
 
@@ -1197,10 +1196,10 @@ class Projection(CRS, metaclass=ABCMeta):
         # "slurping up" any interior rings they contain.
         for exterior_ring in exterior_rings:
             polygon = shapely.Polygon(exterior_ring)
-            prep_polygon = prep(polygon)
+            shapely.prepare(polygon)
             holes = []
             for interior_ring in interior_rings[:]:
-                if prep_polygon.contains(interior_ring):
+                if polygon.contains(interior_ring):
                     holes.append(interior_ring)
                     interior_rings.remove(interior_ring)
                 elif polygon.crosses(interior_ring):
