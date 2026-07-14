@@ -162,7 +162,7 @@ class TestMisc:
         tcrs = ccrs.PlateCarree()
         scrs = ccrs.PlateCarree()
 
-        *rings, mlinestr = tcrs._project_linear_ring(tring, scrs).geoms
+        rings, mlinestr = tcrs._project_linear_ring(tring, scrs, tring.is_ccw)
 
         # Number of linearstrings
         assert len(mlinestr.geoms) == 4
