@@ -23,7 +23,6 @@ from pyproj import Transformer
 import pyproj.crs
 from pyproj.exceptions import ProjError
 import shapely
-import shapely.geometry as sgeom
 from shapely.prepared import prep
 
 import cartopy.trace
@@ -701,8 +700,7 @@ class Projection(CRS, metaclass=ABCMeta):
         if self.bounds is None:
             raise NotImplementedError
         x0, x1, y0, y1 = self.bounds
-        return sgeom.LineString([(x0, y0), (x0, y1), (x1, y1), (x1, y0),
-                                 (x0, y0)])
+        return shapely.LineString([(x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0)])
 
     @property
     def x_limits(self):
@@ -731,7 +729,7 @@ class Projection(CRS, metaclass=ABCMeta):
         try:
             boundary = self._cw_boundary
         except AttributeError:
-            boundary = sgeom.LinearRing(self.boundary)
+            boundary = shapely.LinearRing(self.boundary)
             self._cw_boundary = boundary
         return boundary
 
@@ -740,7 +738,7 @@ class Projection(CRS, metaclass=ABCMeta):
         try:
             boundary = self._ccw_boundary
         except AttributeError:
-            boundary = sgeom.LinearRing(self.boundary.coords[::-1])
+            boundary = shapely.LinearRing(self.boundary.coords[::-1])
             self._ccw_boundary = boundary
         return boundary
 
@@ -749,7 +747,7 @@ class Projection(CRS, metaclass=ABCMeta):
         try:
             domain = self._domain
         except AttributeError:
-            domain = self._domain = sgeom.Polygon(self.boundary)
+            domain = self._domain = shapely.Polygon(self.boundary)
         return domain
 
     def is_geodetic(self):
@@ -830,7 +828,7 @@ class Projection(CRS, metaclass=ABCMeta):
     def _project_point(self, point, src_crs):
         if point.is_empty:
             return point
-        return sgeom.Point(*self.transform_point(point.x, point.y, src_crs))
+        return shapely.Point(*self.transform_point(point.x, point.y, src_crs))
 
     def _project_line_string(self, geometry, src_crs):
         return cartopy.trace.project_linear(geometry, src_crs, self)
@@ -889,7 +887,7 @@ class Projection(CRS, metaclass=ABCMeta):
                             print(f'Joining together {i} and {j}.')
                         last_coords = list(line_strings[j].coords)
                         first_coords = list(line_strings[i].coords)[1:]
-                        combo = sgeom.LineString(last_coords + first_coords)
+                        combo = shapely.LineString(last_coords + first_coords)
                         if j < i:
                             i, j = j, i
                         del line_strings[j], line_strings[i]
@@ -902,7 +900,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 if not modified:
                     i += 1
             if any_modified:
-                multi_line_string = sgeom.MultiLineString(line_strings)
+                multi_line_string = shapely.MultiLineString(line_strings)
 
         # 3) Check for rings that have been created by the projection stage.
         rings = []
@@ -911,21 +909,21 @@ class Projection(CRS, metaclass=ABCMeta):
             if len(line.coords) > 3 and np.allclose(line.coords[0],
                                                     line.coords[-1],
                                                     atol=threshold):
-                result_geometry = sgeom.LinearRing(line.coords[:-1])
+                result_geometry = shapely.LinearRing(line.coords[:-1])
                 rings.append(result_geometry)
             else:
                 line_strings.append(line)
         # If we found any rings, then we should re-create the multi-line str.
         if rings:
-            multi_line_string = sgeom.MultiLineString(line_strings)
+            multi_line_string = shapely.MultiLineString(line_strings)
 
-        return sgeom.GeometryCollection([*rings, multi_line_string])
+        return shapely.GeometryCollection([*rings, multi_line_string])
 
     def _project_multipoint(self, geometry, src_crs):
         geoms = []
         for geom in geometry.geoms:
             geoms.append(self._project_point(geom, src_crs))
-        return sgeom.MultiPoint(geoms)
+        return shapely.MultiPoint(geoms)
 
     def _project_multiline(self, geometry, src_crs):
         geoms = []
@@ -933,7 +931,7 @@ class Projection(CRS, metaclass=ABCMeta):
             r = self._project_line_string(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        return sgeom.MultiLineString(geoms)
+        return shapely.MultiLineString(geoms)
 
     def _project_multipolygon(self, geometry, src_crs):
         geoms = []
@@ -941,12 +939,11 @@ class Projection(CRS, metaclass=ABCMeta):
             r = self._project_polygon(geom, src_crs)
             if r:
                 geoms.extend(r.geoms)
-        return sgeom.MultiPolygon(geoms)
+        return shapely.MultiPolygon(geoms)
 
     def _project_geometry_collection(self, geometry, src_crs):
-        return sgeom.GeometryCollection(
+        return shapely.GeometryCollection(
             [self.project_geometry(geom, src_crs) for geom in geometry.geoms])
-
 
     def _project_polygon(self, polygon, src_crs):
         """
@@ -1003,7 +1000,7 @@ class Projection(CRS, metaclass=ABCMeta):
             boundary = self.cw_boundary
 
         def boundary_distance(xy):
-            return boundary.project(sgeom.Point(*xy))
+            return boundary.project(shapely.Point(*xy))
 
         # Squash all the LineStrings into a single list.
         line_strings = []
@@ -1023,7 +1020,7 @@ class Projection(CRS, metaclass=ABCMeta):
 
         # Record the positions of all the boundary vertices
         for xy in boundary.coords[:-1]:
-            point = sgeom.Point(*xy)
+            point = shapely.Point(*xy)
             dist = boundary.project(point)
             thing = _BoundaryPoint(dist, True, point)
             edge_things.append(thing)
@@ -1069,7 +1066,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 print('   ', thing)
         if debug_plot_edges:
             for thing in edge_things:
-                if isinstance(thing.data, sgeom.Point):
+                if isinstance(thing.data, shapely.Point):
                     ax.plot(*thing.data.xy, marker='o')
                 else:
                     ax.plot(*thing.data[2], marker='o')
@@ -1117,7 +1114,7 @@ class Projection(CRS, metaclass=ABCMeta):
                     boundary_point = next_thing.data
                     combined_coords = (list(current_ls.coords) +
                                        [(boundary_point.x, boundary_point.y)])
-                    current_ls = sgeom.LineString(combined_coords)
+                    current_ls = shapely.LineString(combined_coords)
 
                 elif next_thing.data[0] == i:
                     # We've gone all the way around and are now back at the
@@ -1137,11 +1134,10 @@ class Projection(CRS, metaclass=ABCMeta):
                     line_to_append = line_strings[j]
                     if j in remaining_ls:
                         remaining_ls.pop(j)
-                    coords_to_append = list(line_to_append.coords)
 
                     # Build up the linestring.
-                    current_ls = sgeom.LineString(list(current_ls.coords) +
-                                                  coords_to_append)
+                    current_ls = shapely.LineString([*current_ls.coords,
+                                                     *line_to_append.coords])
 
                     # Catch getting stuck in an infinite loop by checking that
                     # linestring only added once.
@@ -1157,7 +1153,7 @@ class Projection(CRS, metaclass=ABCMeta):
         # filter out any non-valid linear rings
         def makes_valid_ring(line_string):
             if len(line_string.coords) == 3:
-                # When sgeom.LinearRing is passed a LineString of length 3,
+                # When shapely.LinearRing is passed a LineString of length 3,
                 # if the first and last coordinate are equal, a LinearRing
                 # with 3 coordinates will be created. This object will cause
                 # a segfault when evaluated.
@@ -1167,7 +1163,7 @@ class Projection(CRS, metaclass=ABCMeta):
                 return len(line_string.coords) > 3 and line_string.is_valid
 
         linear_rings = [
-            sgeom.LinearRing(line_string)
+            shapely.LinearRing(line_string)
             for line_string in processed_ls
             if makes_valid_ring(line_string)]
 
@@ -1200,7 +1196,7 @@ class Projection(CRS, metaclass=ABCMeta):
         # Turn all the exterior rings into polygon definitions,
         # "slurping up" any interior rings they contain.
         for exterior_ring in exterior_rings:
-            polygon = sgeom.Polygon(exterior_ring)
+            polygon = shapely.Polygon(exterior_ring)
             prep_polygon = prep(polygon)
             holes = []
             for interior_ring in interior_rings[:]:
@@ -1230,17 +1226,17 @@ class Projection(CRS, metaclass=ABCMeta):
             interior_polys = []
 
             for ring in interior_rings:
-                polygon = shapely.make_valid(sgeom.Polygon(ring))
+                polygon = shapely.make_valid(shapely.Polygon(ring))
                 if not polygon.is_empty:
-                    if isinstance(polygon, sgeom.Polygon):
+                    if isinstance(polygon, shapely.Polygon):
                         interior_polys.append(polygon)
-                    elif isinstance(polygon, sgeom.MultiPolygon):
+                    elif isinstance(polygon, shapely.MultiPolygon):
                         interior_polys.extend(polygon.geoms)
-                    elif isinstance(polygon, sgeom.GeometryCollection):
+                    elif isinstance(polygon, shapely.GeometryCollection):
                         for geom in polygon.geoms:
-                            if isinstance(geom, sgeom.Polygon):
+                            if isinstance(geom, shapely.Polygon):
                                 interior_polys.append(geom)
-                            elif isinstance(geom, sgeom.MultiPolygon):
+                            elif isinstance(geom, shapely.MultiPolygon):
                                 interior_polys.extend(geom.geoms)
                     else:
                         # make_valid may produce some linestrings.  Ignore these
@@ -1259,23 +1255,23 @@ class Projection(CRS, metaclass=ABCMeta):
                     y3 = min(y1, y3)
                     y4 = max(y2, y4)
 
-            box = sgeom.box(x3, y3, x4, y4, ccw=is_ccw)
+            box = shapely.box(x3, y3, x4, y4, ccw=is_ccw)
 
             if interior_polys:
                 # Invert any valid interior polygons
-                multi_poly = shapely.make_valid(sgeom.MultiPolygon(interior_polys))
+                multi_poly = shapely.make_valid(shapely.MultiPolygon(interior_polys))
                 polygon = box.difference(multi_poly)
 
                 # Intersect the inverted polygon with the boundary
                 polygon = boundary_poly.intersection(polygon)
 
                 if not polygon.is_empty:
-                    if isinstance(polygon, sgeom.MultiPolygon):
+                    if isinstance(polygon, shapely.MultiPolygon):
                         polygon_bits.extend(polygon.geoms)
                     else:
                         polygon_bits.append(polygon)
 
-        return sgeom.MultiPolygon(polygon_bits)
+        return shapely.MultiPolygon(polygon_bits)
 
     def quick_vertices_transform(self, vertices, src_crs):
         """
@@ -1320,7 +1316,7 @@ class _RectangularProjection(Projection, metaclass=ABCMeta):
     @property
     def boundary(self):
         w, h = self._half_width, self._half_height
-        return sgeom.LinearRing([(-w, -h), (-w, h), (w, h), (w, -h), (-w, -h)])
+        return shapely.LinearRing([(-w, -h), (-w, h), (w, h), (w, -h), (-w, -h)])
 
     @property
     def x_limits(self):
@@ -1495,9 +1491,9 @@ class TransverseMercator(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LinearRing([(x0, y0), (x0, y1),
-                                 (x1, y1), (x1, y0),
-                                 (x0, y0)])
+        return shapely.LinearRing([(x0, y0), (x0, y1),
+                                   (x1, y1), (x1, y0),
+                                   (x0, y0)])
 
     @property
     def x_limits(self):
@@ -1520,7 +1516,7 @@ class OSGB(TransverseMercator):
     def boundary(self):
         w = self.x_limits[1] - self.x_limits[0]
         h = self.y_limits[1] - self.y_limits[0]
-        return sgeom.LinearRing([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
+        return shapely.LinearRing([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
 
     @property
     def x_limits(self):
@@ -1544,7 +1540,7 @@ class OSNI(TransverseMercator):
     def boundary(self):
         w = self.x_limits[1] - self.x_limits[0]
         h = self.y_limits[1] - self.y_limits[0]
-        return sgeom.LinearRing([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
+        return shapely.LinearRing([(0, 0), (0, h), (w, h), (w, 0), (0, 0)])
 
     @property
     def x_limits(self):
@@ -1587,9 +1583,9 @@ class UTM(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LinearRing([(x0, y0), (x0, y1),
-                                 (x1, y1), (x1, y0),
-                                 (x0, y0)])
+        return shapely.LinearRing([(x0, y0), (x0, y1),
+                                   (x1, y1), (x1, y0),
+                                   (x0, y0)])
 
     @property
     def x_limits(self):
@@ -1713,9 +1709,9 @@ class Mercator(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LinearRing([(x0, y0), (x0, y1),
-                                 (x1, y1), (x1, y0),
-                                 (x0, y0)])
+        return shapely.LinearRing([(x0, y0), (x0, y1),
+                                   (x1, y1), (x1, y0),
+                                   (x0, y0)])
 
     @property
     def x_limits(self):
@@ -1827,7 +1823,7 @@ class LambertConformal(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LinearRing(points)
+        self._boundary = shapely.LinearRing(points)
         mins = np.min(points, axis=0)
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
@@ -1919,7 +1915,7 @@ class LambertAzimuthalEqualArea(Projection):
 
         coords = _ellipse_boundary(a * 1.9999, max_y - false_northing,
                                    false_easting, false_northing, 61)
-        self._boundary = sgeom.polygon.LinearRing(coords.T)
+        self._boundary = shapely.LinearRing(coords.T)
         mins = np.min(coords, axis=1)
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
@@ -2011,7 +2007,7 @@ class Gnomonic(Projection):
 
     @property
     def boundary(self):
-        return sgeom.Point(0, 0).buffer(self._max).exterior
+        return shapely.Point(0, 0).buffer(self._max).exterior
 
     @property
     def x_limits(self):
@@ -2066,7 +2062,7 @@ class Stereographic(Projection):
                           b * y_axis_offset + false_northing)
         coords = _ellipse_boundary(self._x_limits[1], self._y_limits[1],
                                    false_easting, false_northing, 91)
-        self._boundary = sgeom.LinearRing(coords.T)
+        self._boundary = shapely.LinearRing(coords.T)
         self.threshold = np.diff(self._x_limits)[0] * 1e-3
 
     @property
@@ -2122,7 +2118,7 @@ class Orthographic(Projection):
         # To stabilise the projection of geometries, we reduce the boundary by
         # a tiny fraction at the cost of the extreme edges.
         coords = _ellipse_boundary(a * 0.99999, a * 0.99999, n=61)
-        self._boundary = sgeom.polygon.LinearRing(coords.T)
+        self._boundary = shapely.LinearRing(coords.T)
         mins = np.min(coords, axis=1)
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
@@ -2166,7 +2162,7 @@ class _WarpedRectangularProjection(Projection, metaclass=ABCMeta):
         lat[-1] = -90
         points = self.transform_points(self.as_geodetic(), lon, lat)
 
-        self._boundary = sgeom.LinearRing(points)
+        self._boundary = shapely.LinearRing(points)
 
         mins = np.min(points, axis=0)
         maxs = np.max(points, axis=0)
@@ -2649,7 +2645,7 @@ class InterruptedGoodeHomolosine(Projection):
         lats[-1] = -90
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
-        self._boundary = sgeom.LinearRing(points)
+        self._boundary = shapely.LinearRing(points)
 
         mins = np.min(points, axis=0)
         maxs = np.max(points, axis=0)
@@ -2685,7 +2681,7 @@ class _Satellite(Projection):
         super().__init__(proj4_params, globe=globe)
 
     def _set_boundary(self, coords):
-        self._boundary = sgeom.LinearRing(coords.T)
+        self._boundary = shapely.LinearRing(coords.T)
         mins = np.min(coords, axis=1)
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
@@ -2922,7 +2918,7 @@ class AlbersEqualArea(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LinearRing(points)
+        self._boundary = shapely.LinearRing(points)
         mins = np.min(points, axis=0)
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
@@ -2984,7 +2980,7 @@ class AzimuthalEquidistant(Projection):
 
         coords = _ellipse_boundary(a * np.pi, b * np.pi,
                                    false_easting, false_northing, 61)
-        self._boundary = sgeom.LinearRing(coords.T)
+        self._boundary = shapely.LinearRing(coords.T)
         mins = np.min(coords, axis=1)
         maxs = np.max(coords, axis=1)
         self._x_limits = mins[0], maxs[0]
@@ -3049,7 +3045,7 @@ class Sinusoidal(Projection):
         lat[-1] = -90
         points = self.transform_points(self.as_geodetic(), lon, lat)
 
-        self._boundary = sgeom.LinearRing(points)
+        self._boundary = shapely.LinearRing(points)
         mins = np.min(points, axis=0)
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
@@ -3137,7 +3133,7 @@ class EquidistantConic(Projection):
 
         points = self.transform_points(self.as_geodetic(), lons, lats)
 
-        self._boundary = sgeom.LinearRing(points)
+        self._boundary = shapely.LinearRing(points)
         mins = np.min(points, axis=0)
         maxs = np.max(points, axis=0)
         self._x_limits = mins[0], maxs[0]
@@ -3224,9 +3220,9 @@ class ObliqueMercator(Projection):
     def boundary(self):
         x0, x1 = self.x_limits
         y0, y1 = self.y_limits
-        return sgeom.LinearRing([(x0, y0), (x0, y1),
-                                 (x1, y1), (x1, y0),
-                                 (x0, y0)])
+        return shapely.LinearRing([(x0, y0), (x0, y1),
+                                   (x1, y1), (x1, y0),
+                                   (x0, y0)])
 
     @property
     def x_limits(self):
@@ -3235,6 +3231,7 @@ class ObliqueMercator(Projection):
     @property
     def y_limits(self):
         return self._y_limits
+
 
 class Spilhaus(Projection):
     """

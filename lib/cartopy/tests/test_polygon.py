@@ -5,7 +5,7 @@
 
 import numpy as np
 import pytest
-import shapely.geometry as sgeom
+import shapely
 import shapely.wkt
 
 import cartopy.crs as ccrs
@@ -17,7 +17,7 @@ class TestBoundary:
         # ordering when they are attached to the boundary.
         # Failure to do so will result in invalid polygons (their boundaries
         # cross-over).
-        polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = shapely.Polygon([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.5)
         multi_polygon = projection.project_geometry(polygon)
         for polygon in multi_polygon.geoms:
@@ -27,7 +27,7 @@ class TestBoundary:
         # Check the polygon is attached to the boundary even when no
         # intermediate point for one of the crossing segments would normally
         # exist.
-        polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = shapely.Polygon([(-10, 30), (10, 60), (10, 50)])
         projection = ccrs.Robinson(170.6)
         # This will raise an exception if the polygon/boundary intersection
         # fails.
@@ -51,7 +51,7 @@ class TestBoundary:
 
         # Try all four combinations of valid/NaN vs valid/NaN.
         for coords, expected_polys in polys:
-            polygon = sgeom.Polygon(coords)
+            polygon = shapely.Polygon(coords)
             multi_polygon = projection.project_geometry(polygon)
             assert len(multi_polygon.geoms) == expected_polys
 
@@ -60,12 +60,12 @@ class TestMisc:
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90,
                                              approx=False)
-        polygon = sgeom.Polygon([(-10, 30), (10, 60), (10, 50)])
+        polygon = shapely.Polygon([(-10, 30), (10, 60), (10, 50)])
         projection.project_geometry(polygon)
 
     def test_small(self):
         projection = ccrs.Mercator()
-        polygon = sgeom.Polygon([
+        polygon = shapely.Polygon([
             (-179.7933201090486079, -16.0208822567412312),
             (-180.0000000000000000, -16.0671326636424396),
             (-179.9173693847652942, -16.5017831356493616),
@@ -81,7 +81,7 @@ class TestMisc:
                   (360.0, 77.76848175458498), (0.0, 88.79068047337279),
                   (210.0, 90.0), (135.0, 88.79068047337279),
                   (260.625, 68.90383337092122)]
-        geom = sgeom.Polygon(coords)
+        geom = shapely.Polygon(coords)
 
         target_projection = ccrs.PlateCarree()
         source_crs = ccrs.Geodetic()
@@ -141,7 +141,7 @@ class TestMisc:
             left,
             bottom,
         ])
-        bad_path = sgeom.Polygon(verts)
+        bad_path = shapely.Polygon(verts)
 
         target = proj()
         source = ccrs.PlateCarree()
@@ -168,9 +168,9 @@ class TestMisc:
 
     def test_3pt_poly(self):
         projection = ccrs.OSGB(approx=True)
-        polygon = sgeom.Polygon([(-1000, -1000),
-                                 (-1000, 200000),
-                                 (200000, -1000)])
+        polygon = shapely.Polygon([(-1000, -1000),
+                                   (-1000, 200000),
+                                   (200000, -1000)])
         multi_polygon = projection.project_geometry(polygon,
                                                     ccrs.OSGB(approx=True))
         assert len(multi_polygon.geoms) == 1
@@ -229,8 +229,8 @@ class TestMisc:
         source = ccrs.PlateCarree()
         target = ccrs.PlateCarree(central_longitude=180)
 
-        geom = sgeom.Polygon([(-20, -20), (20, -20), (20, 20), (-20, 20)],
-                             [[(-10, 0), (0, 20), (10, 0), (0, -20)]])
+        geom = shapely.Polygon([(-20, -20), (20, -20), (20, 20), (-20, 20)],
+                               [[(-10, 0), (0, 20), (10, 0), (0, -20)]])
         projected = target.project_geometry(geom, source)
 
         assert abs(1200 - projected.area) < 1e-5
@@ -239,9 +239,9 @@ class TestMisc:
         source = ccrs.PlateCarree()
         target = ccrs.PlateCarree(central_longitude=180)
 
-        geom = sgeom.Polygon([(-20, -20), (20, -20), (20, 20), (-20, 20)],
-                             [[(0, 0), (-10, 10), (0, 20), (10, 10)],
-                              [(0, 0), (10, -10), (0, -20), (-10, -10)]])
+        geom = shapely.Polygon([(-20, -20), (20, -20), (20, 20), (-20, 20)],
+                               [[(0, 0), (-10, 10), (0, 20), (10, 10)],
+                                [(0, 0), (10, -10), (0, -20), (-10, -10)]])
         projected = target.project_geometry(geom, source)
 
         assert abs(1200 - projected.area) < 1e-5
@@ -279,7 +279,7 @@ class TestMisc:
         target = ccrs.PlateCarree()
         # Before fixing, this would cause a segmentation fault.
         polygons = target.project_geometry(polygon, source)
-        assert isinstance(polygons, sgeom.MultiPolygon)
+        assert isinstance(polygons, shapely.MultiPolygon)
 
     def test_full_width_band_not_inverted(self):
         # A polygon spanning exactly ±180° longitude creates a projected ring
@@ -287,7 +287,7 @@ class TestMisc:
         # Shapely's is_ccw is unreliable for such rings; the shoelace signed
         # area must be used instead so the ring is classified correctly as an
         # interior (not an exterior) ring. See GH-2483.
-        north_tropic = sgeom.Polygon(
+        north_tropic = shapely.Polygon(
             [(-180, 0), (180, 0), (180, 20), (-180, 20)])
         proj = ccrs.Orthographic(central_longitude=0.0, central_latitude=90.0)
         result = proj.project_geometry(north_tropic, ccrs.PlateCarree())
@@ -295,8 +295,8 @@ class TestMisc:
         # Convert points we expect to be inside vs out and check the
         # containment of the result.
         src = ccrs.PlateCarree()
-        inside_band = sgeom.Point(proj.transform_point(0, 10, src))
-        outside_band = sgeom.Point(proj.transform_point(0, 45, src))
+        inside_band = shapely.Point(proj.transform_point(0, 10, src))
+        outside_band = shapely.Point(proj.transform_point(0, 45, src))
         assert result.contains(inside_band), \
             '(0°E, 10°N) should be inside the projected tropical band'
         assert not result.contains(outside_band), \
@@ -307,7 +307,7 @@ class TestQuality:
     def setup_class(self):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
                                       pole_latitude=37.5)
-        polygon = sgeom.Polygon([
+        polygon = shapely.Polygon([
             (177.5, -57.38460319),
             (180.1, -57.445077),
             (175.0, -57.19913331),
@@ -364,7 +364,7 @@ class TestWrap(PolygonTests):
     # source data that extends outside the [-180, 180] range.
     def test_plate_carree_no_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = sgeom.box(0, 0, 10, 10)
+        poly = shapely.box(0, 0, 10, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         assert len(multi_polygon.geoms) == 1
@@ -374,7 +374,7 @@ class TestWrap(PolygonTests):
 
     def test_plate_carree_partial_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = sgeom.box(170, 0, 190, 10)
+        poly = shapely.box(170, 0, 190, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         assert len(multi_polygon.geoms) == 2
@@ -389,7 +389,7 @@ class TestWrap(PolygonTests):
 
     def test_plate_carree_wrap(self):
         proj = ccrs.PlateCarree()
-        poly = sgeom.box(200, 0, 220, 10)
+        poly = shapely.box(200, 0, 220, 10)
         multi_polygon = proj.project_geometry(poly, proj)
         # Check the structure
         assert len(multi_polygon.geoms) == 1
@@ -399,15 +399,15 @@ class TestWrap(PolygonTests):
 
 
 def ring(minx, miny, maxx, maxy, ccw):
-    box = sgeom.box(minx, miny, maxx, maxy, ccw)
+    box = shapely.box(minx, miny, maxx, maxy, ccw=ccw)
     return np.array(box.exterior.coords)
 
 
 class TestHoles(PolygonTests):
     def test_simple(self):
         proj = ccrs.PlateCarree()
-        poly = sgeom.Polygon(ring(-40, -40, 40, 40, True),
-                             [ring(-20, -20, 20, 20, False)])
+        poly = shapely.Polygon(ring(-40, -40, 40, 40, True),
+                               [ring(-20, -20, 20, 20, False)])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         assert len(multi_polygon.geoms) == 1
@@ -419,8 +419,8 @@ class TestHoles(PolygonTests):
 
     def test_wrapped_poly_simple_hole(self):
         proj = ccrs.PlateCarree(-150)
-        poly = sgeom.Polygon(ring(-40, -40, 40, 40, True),
-                             [ring(-20, -20, 20, 20, False)])
+        poly = shapely.Polygon(ring(-40, -40, 40, 40, True),
+                               [ring(-20, -20, 20, 20, False)])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         assert len(multi_polygon.geoms) == 2
@@ -440,8 +440,8 @@ class TestHoles(PolygonTests):
 
     def test_wrapped_poly_wrapped_hole(self):
         proj = ccrs.PlateCarree(-180)
-        poly = sgeom.Polygon(ring(-40, -40, 40, 40, True),
-                             [ring(-20, -20, 20, 20, False)])
+        poly = shapely.Polygon(ring(-40, -40, 40, 40, True),
+                               [ring(-20, -20, 20, 20, False)])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         assert len(multi_polygon.geoms) == 2
@@ -455,8 +455,8 @@ class TestHoles(PolygonTests):
 
     def test_inverted_poly_simple_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
-                             [[(0, -30), (90, -30), (180, -30), (270, -30)]])
+        poly = shapely.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
+                               [[(0, -30), (90, -30), (180, -30), (270, -30)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         assert len(multi_polygon.geoms) == 1
@@ -471,8 +471,8 @@ class TestHoles(PolygonTests):
         # Adapted from 1149
         proj = ccrs.LambertAzimuthalEqualArea(
             central_latitude=45, central_longitude=-100)
-        poly = sgeom.Polygon([(-180, -80), (180, -80), (180, 90), (-180, 90)],
-                             [[(-50, -50), (-50, 0), (0, 0), (0, -50)]])
+        poly = shapely.Polygon([(-180, -80), (180, -80), (180, 90), (-180, 90)],
+                               [[(-50, -50), (-50, 0), (0, 0), (0, -50)]])
         multi_polygon = proj.project_geometry(poly)
         # Should project to single polygon with multiple holes
         assert len(multi_polygon.geoms) == 1
@@ -481,17 +481,16 @@ class TestHoles(PolygonTests):
     def test_inverted_poly_merged_holes(self):
         proj = ccrs.LambertAzimuthalEqualArea(central_latitude=-90)
         pc = ccrs.PlateCarree()
-        poly = sgeom.Polygon([(-180, -80), (180, -80), (180, 90), (-180, 90)],
-                             [[(-50, 60), (-50, 80), (0, 80), (0, 60)],
-                              [(-50, 81), (-50, 85), (0, 85), (0, 81)]])
+        poly = shapely.Polygon([(-180, -80), (180, -80), (180, 90), (-180, 90)],
+                               [[(-50, 60), (-50, 80), (0, 80), (0, 60)],
+                                [(-50, 81), (-50, 85), (0, 85), (0, 81)]])
         # Smoke test that nearby holes do not cause side location conflict
         proj.project_geometry(poly, pc)
 
     def test_inverted_poly_clipped_hole(self):
         proj = ccrs.NorthPolarStereo()
-        poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
-                             [[(-135, -60), (-45, -60),
-                               (45, -60), (135, -60)]])
+        poly = shapely.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
+                               [[(-135, -60), (-45, -60), (45, -60), (135, -60)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         assert len(multi_polygon.geoms) == 1
@@ -505,9 +504,8 @@ class TestHoles(PolygonTests):
 
     def test_inverted_poly_removed_hole(self):
         proj = ccrs.NorthPolarStereo(globe=ccrs.Globe(ellipse='WGS84'))
-        poly = sgeom.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
-                             [[(-135, -75), (-45, -75),
-                               (45, -75), (135, -75)]])
+        poly = shapely.Polygon([(0, 0), (-90, 0), (-180, 0), (-270, 0)],
+                               [[(-135, -75), (-45, -75), (45, -75), (135, -75)]])
         multi_polygon = proj.project_geometry(poly)
         # Check the structure
         assert len(multi_polygon.geoms) == 1
@@ -523,7 +521,7 @@ class TestHoles(PolygonTests):
         exterior = ring(0, 0, 12, 12, True)
         interiors = [ring(1, 1, 2, 2, False), ring(1, 8, 2, 9, False)]
 
-        poly = sgeom.Polygon(exterior, interiors)
+        poly = shapely.Polygon(exterior, interiors)
 
         target = ccrs.PlateCarree()
         source = ccrs.Geodetic()
@@ -538,17 +536,17 @@ class TestHoles(PolygonTests):
         # Test data from the original bug report - a tiny patch near Antarctica
         # that crosses the antimeridian
         coords = np.array([
-            [-180.00020734,  -63.5383884 ],
-            [-179.93611911,  -63.61745971],
-            [-179.77001049,  -63.62512738],
-            [-179.67109735,  -63.55616224],
-            [-179.74190981,  -63.49385818],
-            [-179.91362571,  -63.48807984],
-            [-180.00020734,  -63.5383884 ],
-            [-180.00020734,  -63.5383884 ],
+            [-180.00020734, -63.53838840],
+            [-179.93611911, -63.61745971],
+            [-179.77001049, -63.62512738],
+            [-179.67109735, -63.55616224],
+            [-179.74190981, -63.49385818],
+            [-179.91362571, -63.48807984],
+            [-180.00020734, -63.53838840],
+            [-180.00020734, -63.53838840],
         ])
 
-        patch = sgeom.Polygon(coords)
+        patch = shapely.Polygon(coords)
         proj = ccrs.PlateCarree()
 
         # Project the geometry

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 from cartopy.mpl import _MPL_311
 from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
@@ -40,11 +40,11 @@ REGIONAL_IMG = (config['repo_data_dir'] / 'raster' / 'sample'
 @pytest.mark.mpl_image_compare(filename='web_tiles.png', tolerance=5.91)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
-    target_domain = sgeom.Polygon([[extent[0], extent[1]],
-                                   [extent[2], extent[1]],
-                                   [extent[2], extent[3]],
-                                   [extent[0], extent[3]],
-                                   [extent[0], extent[1]]])
+    target_domain = shapely.Polygon([[extent[0], extent[1]],
+                                     [extent[2], extent[1]],
+                                     [extent[2], extent[3]],
+                                     [extent[0], extent[3]],
+                                     [extent[0], extent[1]]])
     map_prj = cimgt.GoogleTiles().crs
     fig = plt.figure()
 

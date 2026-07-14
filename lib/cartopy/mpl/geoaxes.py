@@ -33,7 +33,7 @@ import matplotlib.spines as mspines
 import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
-import shapely.geometry as sgeom
+import shapely
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -669,7 +669,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         for lon, lat in zip(lons, lats):
             circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
-            geoms.append(sgeom.Polygon(circle))
+            geoms.append(shapely.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
                                                  **kwargs)
@@ -754,9 +754,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # Perform the calculations for get_extent(), which just repackages it.
         [x1, y1], [x2, y2] = self.viewLim.get_points()
 
-        domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
-                                            [x2, y2], [x1, y2],
-                                            [x1, y1]])
+        domain_in_src_proj = shapely.Polygon([[x1, y1], [x2, y1],
+                                              [x2, y2], [x1, y2],
+                                              [x1, y1]])
 
         # Determine target projection based on requested CRS.
         if crs is None:
@@ -780,7 +780,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                  f' coordinate system {crs!r}')
 
         # Calculate intersection with boundary and project if necessary.
-        boundary_poly = sgeom.Polygon(self.projection.boundary)
+        boundary_poly = shapely.Polygon(self.projection.boundary)
         if proj != self.projection:
             # Erode boundary by threshold to avoid transform issues.
             # This is a workaround for numerical issues at the boundary.
@@ -811,9 +811,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = sgeom.polygon.LineString([[x1, y1], [x2, y1],
-                                                  [x2, y2], [x1, y2],
-                                                  [x1, y1]])
+        domain_in_crs = shapely.LineString([[x1, y1], [x2, y1],
+                                            [x2, y2], [x1, y2],
+                                            [x1, y1]])
 
         projected = None
 

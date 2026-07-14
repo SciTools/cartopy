@@ -7,7 +7,7 @@ from matplotlib.path import Path
 import numpy as np
 from numpy.testing import assert_array_equal
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.mpl.patch as cpatch
 import cartopy.mpl.path as cpath
@@ -30,11 +30,11 @@ class Test_path_to_shapely:
         if use_legacy_path_to_geos:
             with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
                 geoms = cpatch.path_to_geos(p)
-            assert [type(geom) for geom in geoms] == [sgeom.Point] * 4
+            assert [type(geom) for geom in geoms] == [shapely.Point] * 4
             assert len(geoms) == 4
         else:
             geoms = cpath.path_to_shapely(p)
-            assert isinstance(geoms, sgeom.MultiPoint)
+            assert isinstance(geoms, shapely.MultiPoint)
             assert len(geoms.geoms) == 4
 
     def test_non_polygon_loop(self, use_legacy_path_to_geos):
@@ -44,11 +44,11 @@ class Test_path_to_shapely:
             with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
                 geoms = cpatch.path_to_geos(p)
 
-            assert [type(geom) for geom in geoms] == [sgeom.MultiLineString]
+            assert [type(geom) for geom in geoms] == [shapely.MultiLineString]
             assert len(geoms) == 1
         else:
             geoms = cpath.path_to_shapely(p)
-            assert isinstance(geoms, sgeom.LineString)
+            assert isinstance(geoms, shapely.LineString)
 
     def test_polygon_with_interior_and_singularity(self, use_legacy_path_to_geos):
         # A geometry with two interiors, one a single point.
@@ -60,12 +60,13 @@ class Test_path_to_shapely:
             with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
                 geoms = cpatch.path_to_geos(p)
 
-            assert [type(geom) for geom in geoms] == [sgeom.Polygon, sgeom.Point]
+            assert [type(geom) for geom in geoms] == [shapely.Polygon, shapely.Point]
             assert len(geoms[0].interiors) == 1
         else:
             geoms = cpath.path_to_shapely(p)
-            assert isinstance(geoms, sgeom.GeometryCollection)
-            assert [type(geom) for geom in geoms.geoms] == [sgeom.Polygon, sgeom.Point]
+            assert isinstance(geoms, shapely.GeometryCollection)
+            assert [type(geom) for geom in geoms.geoms] == [shapely.Polygon,
+                                                            shapely.Point]
             assert len(geoms.geoms[0].interiors) == 1
 
     def test_closed_triangle_is_polygon(self, use_legacy_path_to_geos):
@@ -76,11 +77,11 @@ class Test_path_to_shapely:
         if use_legacy_path_to_geos:
             with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
                 geoms = cpatch.path_to_geos(p)
-            assert [type(geom) for geom in geoms] == [sgeom.Polygon]
+            assert [type(geom) for geom in geoms] == [shapely.Polygon]
             assert geoms[0].area == pytest.approx(0.5)
         else:
             geom = cpath.path_to_shapely(p)
-            assert isinstance(geom, sgeom.Polygon)
+            assert isinstance(geom, shapely.Polygon)
             assert geom.area == pytest.approx(0.5)
 
     def test_degenerate_closed_path_is_linestring(self, use_legacy_path_to_geos):
@@ -92,10 +93,10 @@ class Test_path_to_shapely:
             with pytest.warns(DeprecationWarning, match="path_to_geos is deprecated"):
                 geoms = cpatch.path_to_geos(p)
             # A single LineString result is wrapped in a MultiLineString.
-            assert [type(geom) for geom in geoms] == [sgeom.MultiLineString]
+            assert [type(geom) for geom in geoms] == [shapely.MultiLineString]
         else:
             geom = cpath.path_to_shapely(p)
-            assert isinstance(geom, sgeom.LineString)
+            assert isinstance(geom, shapely.LineString)
 
     def test_nested_polygons(self, use_legacy_path_to_geos):
         # A geometry with three nested squares.
@@ -112,12 +113,12 @@ class Test_path_to_shapely:
                 geoms = cpatch.path_to_geos(p)
 
             assert len(geoms) == 2
-            assert all(isinstance(geom, sgeom.Polygon) for geom in geoms)
+            assert all(isinstance(geom, shapely.Polygon) for geom in geoms)
             assert len(geoms[0].interiors) == 1
             assert len(geoms[1].interiors) == 0
         else:
             geoms = cpath.path_to_shapely(p)
-            assert isinstance(geoms, sgeom.MultiPolygon)
+            assert isinstance(geoms, shapely.MultiPolygon)
             assert len(geoms.geoms) == 2
             assert len(geoms.geoms[0].interiors) == 1
             assert len(geoms.geoms[1].interiors) == 0
@@ -126,15 +127,16 @@ class Test_path_to_shapely:
 def test_triangle_shapely_path_round_trip():
     # A triangle Polygon should survive a round trip through
     # shapely_to_path and back through path_to_shapely.
-    triangle = sgeom.Polygon([(0, 0), (1, 0), (0, 1)])
+    triangle = shapely.Polygon([(0, 0), (1, 0), (0, 1)])
     path = cpath.shapely_to_path(triangle)
     geom = cpath.path_to_shapely(path)
-    assert isinstance(geom, sgeom.Polygon)
+    assert isinstance(geom, shapely.Polygon)
     assert geom.equals(triangle)
 
 
 no_polygon_path = Path([[0,0], [1,1]], codes=[Path.MOVETO, Path.LINETO])
 empty_path = Path(np.empty((0, 2)))
+
 
 class Test_ensure_path_closed:
     @pytest.mark.parametrize('path', [no_polygon_path, empty_path])
@@ -146,11 +148,11 @@ class Test_ensure_path_closed:
 
 class Test_shapely_to_path:
     def test_polygon_with_multiple_interiors(self):
-        exterior = sgeom.box(0, 0, 12, 12).exterior.coords
-        interiors = [sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords,
-                     sgeom.box(4, 4, 5, 6, ccw=False).exterior.coords,
-                     sgeom.box(8, 8, 9, 10, ccw=False).exterior.coords]
-        poly = sgeom.Polygon(exterior, interiors)
+        exterior = shapely.box(0, 0, 12, 12).exterior.coords
+        interiors = [shapely.box(1, 1, 2, 2, ccw=False).exterior.coords,
+                     shapely.box(4, 4, 5, 6, ccw=False).exterior.coords,
+                     shapely.box(8, 8, 9, 10, ccw=False).exterior.coords]
+        poly = shapely.Polygon(exterior, interiors)
 
         path = cpath.shapely_to_path(poly)
 
@@ -169,5 +171,5 @@ class Test_shapely_to_path:
 
         # The path should round-trip back to an equivalent geometry.
         result = cpath.path_to_shapely(path)
-        assert isinstance(result, sgeom.Polygon)
+        assert isinstance(result, shapely.Polygon)
         assert result.equals(poly)

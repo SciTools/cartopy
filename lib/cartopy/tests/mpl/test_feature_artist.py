@@ -9,7 +9,7 @@ import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.crs as ccrs
 from cartopy.feature import ShapelyFeature
@@ -32,9 +32,9 @@ def test_freeze(source, expected):
 
 @pytest.fixture
 def feature():
-    circle1 = sgeom.Point(0, 0).buffer(1)
-    circle2 = sgeom.Point(0, 0).buffer(10)
-    square = sgeom.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
+    circle1 = shapely.Point(0, 0).buffer(1)
+    circle2 = shapely.Point(0, 0).buffer(10)
+    square = shapely.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
     geoms = [circle1, circle2, square]
     feature = ShapelyFeature(geoms, ccrs.PlateCarree())
     return feature
@@ -137,7 +137,7 @@ def test_feature_artist_autolim(autolim):
     plot_crs = ccrs.PlateCarree(central_longitude=180)
     fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
 
-    square = sgeom.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
+    square = shapely.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
     ax.add_geometries([square], crs=ccrs.PlateCarree(), autolim=autolim)
 
     if autolim:

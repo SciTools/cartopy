@@ -6,10 +6,10 @@
 # cython: embedsignature=True
 
 """
-Trace pulls together proj, GEOS and ``_crs.pyx`` to implement a function
-to project a `~shapely.geometry.LinearRing` / `~shapely.geometry.LineString`.
-In general, this should never be called manually, instead leaving the
-processing to be done by the :class:`cartopy.crs.Projection` subclasses.
+Trace pulls together proj, GEOS and ``_crs.pyx`` to implement a function to project a
+`~shapely.LinearRing` / `~shapely.LineString`. In general, this should never be called
+manually, instead leaving the processing to be done by the
+:class:`cartopy.crs.Projection` subclasses.
 """
 from __future__ import print_function
 
@@ -27,11 +27,9 @@ import warnings
 
 import numpy as np
 import shapely
-import shapely.geometry as sgeom
 import shapely.prepared as sprep
 from pyproj import Geod, Transformer, proj_version_str
 from pyproj.exceptions import ProjError
-import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 
@@ -95,9 +93,9 @@ cdef class LineAccumulator:
         geoms = []
         for ilines in self.lines:
             coords = [(ipoints.x, ipoints.y) for ipoints in ilines]
-            geoms.append(sgeom.LineString(coords))
+            geoms.append(shapely.LineString(coords))
 
-        geom = sgeom.MultiLineString(geoms)
+        geom = shapely.MultiLineString(geoms)
         return geom
 
     cdef size_t size(self):
@@ -361,7 +359,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
             # TODO: Re-use geometries, instead of create-destroy!
 
             # Create a LineString for the current end-point.
-            g_segment = sgeom.LineString([
+            g_segment = shapely.LineString([
                 (p_start.x, p_start.y),
                 (p_end.x, p_end.y)])
 
@@ -535,7 +533,7 @@ def project_linear(geometry not None, src_crs not None,
 
     Parameters
     ----------
-    geometry : `shapely.geometry.LineString` or `shapely.geometry.LinearRing`
+    geometry : `shapely.LineString` or `shapely.LinearRing`
         A geometry to be projected.
     src_crs : cartopy.crs.CRS
         The coordinate system of the line to be projected.
@@ -544,7 +542,7 @@ def project_linear(geometry not None, src_crs not None,
 
     Returns
     -------
-    `shapely.geometry.MultiLineString`
+    `shapely.MultiLineString`
         The result of projecting the given geometry from the source projection
         into the destination projection.
 
@@ -573,7 +571,7 @@ def project_linear(geometry not None, src_crs not None,
     # TODO: Handle projections other than rectangular
     cdef bool geom_fully_inside = False
     if isinstance(dest_projection, (ccrs._RectangularProjection, ccrs._WarpedRectangularProjection)):
-        dest_line = sgeom.LineString([(x[0], x[1]) for x in dest_coords])
+        dest_line = shapely.LineString([(x[0], x[1]) for x in dest_coords])
         if dest_line.is_valid:
             # We can only check for covers with valid geometries
             # some have nans/infs at this point still

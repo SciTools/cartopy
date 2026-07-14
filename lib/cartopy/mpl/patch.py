@@ -16,7 +16,7 @@ import warnings
 
 from matplotlib.path import Path
 import numpy as np
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.mpl.path as cpath
 
@@ -32,16 +32,17 @@ def geos_to_path(shape):
     Parameters
     ----------
     shape
-        A list, tuple or single instance of any of the following
-        types: :class:`shapely.geometry.point.Point`,
-        :class:`shapely.geometry.linestring.LineString`,
-        :class:`shapely.geometry.polygon.LinearRing`,
-        :class:`shapely.geometry.polygon.Polygon`,
-        :class:`shapely.geometry.multipoint.MultiPoint`,
-        :class:`shapely.geometry.multipolygon.MultiPolygon`,
-        :class:`shapely.geometry.multilinestring.MultiLineString`,
-        :class:`shapely.geometry.collection.GeometryCollection`,
-        or any type with a _as_mpl_path() method.
+        A list, tuple or single instance of any of the following types:
+
+        - :class:`shapely.Point`,
+        - :class:`shapely.LineString`,
+        - :class:`shapely.LinearRing`,
+        - :class:`shapely.Polygon`,
+        - :class:`shapely.MultiPoint`,
+        - :class:`shapely.MultiPolygon`,
+        - :class:`shapely.MultiLineString`,
+        - :class:`shapely.GeometryCollection`,
+        - or any type with a _as_mpl_path() method.
 
     Returns
     -------
@@ -58,11 +59,11 @@ def geos_to_path(shape):
             paths.extend(geos_to_path(shp))
         return paths
 
-    if isinstance(shape, sgeom.LinearRing):
+    if isinstance(shape, shapely.LinearRing):
         return [Path(np.column_stack(shape.xy), closed=True)]
-    elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
+    elif isinstance(shape, (shapely.LineString, shapely.Point)):
         return [Path(np.column_stack(shape.xy))]
-    elif isinstance(shape, sgeom.Polygon):
+    elif isinstance(shape, shapely.Polygon):
         def poly_codes(poly):
             codes = np.ones(len(poly.xy[0])) * Path.LINETO
             codes[0] = Path.MOVETO
@@ -76,8 +77,8 @@ def geos_to_path(shape):
         codes = np.concatenate([poly_codes(shape.exterior)] +
                                [poly_codes(ring) for ring in shape.interiors])
         return [Path(vertices, codes)]
-    elif isinstance(shape, (sgeom.MultiPolygon, sgeom.GeometryCollection,
-                            sgeom.MultiLineString, sgeom.MultiPoint)):
+    elif isinstance(shape, (shapely.MultiPolygon, shapely.GeometryCollection,
+                            shapely.MultiLineString, shapely.MultiPoint)):
         paths = []
         for geom in shape.geoms:
             paths.extend(geos_to_path(geom))
@@ -143,10 +144,12 @@ def path_to_geos(path, force_ccw=False):
 
     Returns
     -------
-    A list of instances of the following type(s):
-        :class:`shapely.geometry.polygon.Polygon`,
-        :class:`shapely.geometry.linestring.LineString` and/or
-        :class:`shapely.geometry.multilinestring.MultiLineString`.
+    list
+        A list of instances of the following type(s):
+
+        - :class:`shapely.Polygon`,
+        - :class:`shapely.LineString` and/or
+        - :class:`shapely.MultiLineString`.
 
     """
     warnings.warn("path_to_geos is deprecated and will be removed in a future release."
@@ -179,11 +182,11 @@ def path_to_geos(path, force_ccw=False):
                                                     axis=1)
 
         if all(verts_same_as_first):
-            geom = sgeom.Point(path_verts[0, :])
+            geom = shapely.Point(path_verts[0, :])
         elif path_verts.shape[0] >= 4 and path_codes[-1] == Path.CLOSEPOLY:
-            geom = sgeom.Polygon(path_verts[:-1, :])
+            geom = shapely.Polygon(path_verts[:-1, :])
         else:
-            geom = sgeom.LineString(path_verts)
+            geom = shapely.LineString(path_verts)
 
         # If geom is a Polygon and is contained within the last geom in
         # collection, it usually needs to be an interior to that geom (e.g. a
@@ -193,14 +196,14 @@ def path_to_geos(path, force_ccw=False):
         if geom.is_empty:
             pass
         elif (len(collection) > 0 and
-                isinstance(collection[-1][0], sgeom.Polygon) and
-                isinstance(geom, sgeom.Polygon) and
+                isinstance(collection[-1][0], shapely.Polygon) and
+                isinstance(geom, shapely.Polygon) and
                 collection[-1][0].contains(geom.exterior)):
             if any(internal.contains(geom) for internal in collection[-1][1]):
                 collection.append((geom, []))
             else:
                 collection[-1][1].append(geom)
-        elif isinstance(geom, sgeom.Point):
+        elif isinstance(geom, shapely.Point):
             other_result_geoms.append(geom)
         else:
             collection.append((geom, []))
@@ -212,28 +215,28 @@ def path_to_geos(path, force_ccw=False):
     for external_geom, internal_polys in collection:
         if internal_polys:
             exteriors = [geom.exterior for geom in internal_polys]
-            geom = sgeom.Polygon(external_geom.exterior, exteriors)
+            geom = shapely.Polygon(external_geom.exterior, exteriors)
         else:
             geom = external_geom
 
         # Correctly orientate the polygon (ccw)
-        if isinstance(geom, sgeom.Polygon):
+        if isinstance(geom, shapely.Polygon):
             if force_ccw and not geom.exterior.is_ccw:
-                geom = sgeom.polygon.orient(geom)
+                geom = shapely.geometry.polygon.orient(geom)
 
         geom_collection.append(geom)
 
     # If the geom_collection only contains LineStrings combine them
     # into a single MultiLinestring.
-    if geom_collection and all(isinstance(geom, sgeom.LineString) for
+    if geom_collection and all(isinstance(geom, shapely.LineString) for
                                geom in geom_collection):
-        geom_collection = [sgeom.MultiLineString(geom_collection)]
+        geom_collection = [shapely.MultiLineString(geom_collection)]
 
     # Remove any zero area Polygons
     def not_zero_poly(geom):
-        return ((isinstance(geom, sgeom.Polygon) and not geom.is_empty and
+        return ((isinstance(geom, shapely.Polygon) and not geom.is_empty and
                  geom.area != 0) or
-                not isinstance(geom, sgeom.Polygon))
+                not isinstance(geom, shapely.Polygon))
 
     result = list(filter(not_zero_poly, geom_collection))
 

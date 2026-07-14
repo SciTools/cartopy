@@ -22,7 +22,6 @@ import matplotlib.ticker as mticker
 import matplotlib.transforms as mtrans
 import numpy as np
 import shapely
-import shapely.geometry as sgeom
 
 import cartopy
 from cartopy.crs import PlateCarree, Projection, _RectangularProjection
@@ -758,7 +757,7 @@ class Gridliner(matplotlib.artist.Artist):
         self.axes.spines["geo"].get_window_extent(renderer)  # update coords
         map_boundary_path = self.axes.spines["geo"].get_path().transformed(
             self.axes.spines["geo"].get_transform())
-        map_boundary = sgeom.Polygon(map_boundary_path.vertices)
+        map_boundary = shapely.Polygon(map_boundary_path.vertices)
 
         if self.x_inline:
             y_midpoints = self._find_midpoints(lat_lim, lat_ticks)
@@ -795,14 +794,14 @@ class Gridliner(matplotlib.artist.Artist):
                 line_coords = line_coords.compress(~infs, axis=0)
                 if line_coords.size == 0:
                     continue
-                line = sgeom.LineString(line_coords)
+                line = shapely.LineString(line_coords)
                 if not line.intersects(map_boundary):
                     continue
                 intersection = line.intersection(map_boundary)
                 del line
                 if intersection.is_empty:
                     continue
-                if isinstance(intersection, sgeom.MultiPoint):
+                if isinstance(intersection, shapely.MultiPoint):
                     if len(intersection) < 2:
                         continue
                     n2 = min(len(intersection), 3)
@@ -810,20 +809,20 @@ class Gridliner(matplotlib.artist.Artist):
                               for pt in intersection[:n2:n2 - 1]]]
                     heads = [[(pt.x, pt.y)
                               for pt in intersection[-1:-n2 - 1:-n2 + 1]]]
-                elif isinstance(intersection, (sgeom.LineString,
-                                               sgeom.MultiLineString)):
+                elif isinstance(intersection, (shapely.LineString,
+                                               shapely.MultiLineString)):
                     orig_intersection = intersection
-                    if isinstance(intersection, sgeom.MultiLineString):
+                    if isinstance(intersection, shapely.MultiLineString):
                         # Sometimes Shapely produces multiple lines where the end points
                         # coincide, so try to combine them into longer but fewer ones.
                         intersection = shapely.line_merge(intersection)
-                    if isinstance(intersection, sgeom.LineString):
+                    if isinstance(intersection, shapely.LineString):
                         intersection = [intersection]
                     elif len(intersection.geoms) > 4:
                         # If lines are parallel, there will be many intersections
                         # merge them to get only one for the calculations below
                         merged_line = shapely.line_merge(intersection)
-                        if isinstance(merged_line, sgeom.MultiLineString):
+                        if isinstance(merged_line, shapely.MultiLineString):
                             # our merge still produced a multilinestring, so
                             # manually concatenate the original coordinates
                             xy = np.concatenate(
@@ -843,7 +842,7 @@ class Gridliner(matplotlib.artist.Artist):
                         heads.append(inter.coords[-1:-n2 - 1:-n2 + 1])
                     if not tails:
                         continue
-                elif isinstance(intersection, sgeom.GeometryCollection):
+                elif isinstance(intersection, shapely.GeometryCollection):
                     # This is a collection of Point and LineString that
                     # represent the same gridline.  We only consider the first
                     # geometries, merge their coordinates and keep first two

@@ -15,7 +15,7 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 from numpy.testing import assert_array_almost_equal as assert_arr_almost_eq
 import pyproj
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.crs as ccrs
 
@@ -212,8 +212,8 @@ class TestCRS:
         assert_arr_almost_eq(footy_pt, (155657, 193479), decimal=0)
 
     def test_project_point(self):
-        point = sgeom.Point([0, 45])
-        multi_point = sgeom.MultiPoint([point, sgeom.Point([180, 45])])
+        point = shapely.Point([0, 45])
+        multi_point = shapely.MultiPoint([point, shapely.Point([180, 45])])
 
         pc = ccrs.PlateCarree()
         pc_rotated = ccrs.PlateCarree(central_longitude=180)
@@ -222,7 +222,7 @@ class TestCRS:
         assert_arr_almost_eq(result.xy, [[-180.], [45.]])
 
         result = pc_rotated.project_geometry(multi_point, pc)
-        assert isinstance(result, sgeom.MultiPoint)
+        assert isinstance(result, shapely.MultiPoint)
         assert len(result.geoms) == 2
         assert_arr_almost_eq(result.geoms[0].xy, [[-180.], [45.]])
         assert_arr_almost_eq(result.geoms[1].xy, [[0], [45.]])
@@ -313,7 +313,7 @@ def test_transform_points_empty():
 
 def test_project_geometry_empty_point():
     """Test with an empty shapely point."""
-    assert ccrs.PlateCarree().project_geometry(sgeom.Point()).is_empty
+    assert ccrs.PlateCarree().project_geometry(shapely.Point()).is_empty
 
 
 def test_transform_points_outside_domain():
