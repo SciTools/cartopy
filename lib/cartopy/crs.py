@@ -20,6 +20,7 @@ import warnings
 import numpy as np
 import pyproj
 from pyproj import Transformer
+import pyproj.crs
 from pyproj.exceptions import ProjError
 import shapely
 import shapely.geometry as sgeom
@@ -27,12 +28,6 @@ from shapely.prepared import prep
 
 import cartopy.trace
 
-
-try:
-    # https://github.com/pyproj4/pyproj/pull/912
-    from pyproj.crs import CustomConstructorCRS as _CRS
-except ImportError:
-    from pyproj import CRS as _CRS
 
 __document_these__ = ['CRS', 'Geocentric', 'Geodetic', 'Globe']
 
@@ -125,7 +120,7 @@ class Globe:
         return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
 
-class CRS(_CRS):
+class CRS(pyproj.crs.CustomConstructorCRS):
     """
     Define a Coordinate Reference System using proj. The :class:`cartopy.crs.CRS`
     class is the very core of cartopy, all coordinate reference systems in cartopy
