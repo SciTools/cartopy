@@ -6,7 +6,6 @@
 import numpy as np
 import pytest
 import shapely
-import shapely.wkt
 
 import cartopy.crs as ccrs
 
@@ -91,7 +90,7 @@ class TestMisc:
         assert not multi_polygon.is_empty
 
     def test_project_previous_infinite_loop(self):
-        mstring1 = shapely.wkt.loads(
+        mstring1 = shapely.from_wkt(
             'MULTILINESTRING ('
             '(-179.9999990464349651 -80.2000000000000171, '
             '-179.5000000001111005 -80.2000000000000171, '
@@ -107,7 +106,7 @@ class TestMisc:
             '179.5000000000000000 -80.0999999999999943, '
             '179.5000000000000000 -80.2000000000000171, '
             '179.9999990463256836 -80.2000000000000171))')
-        mstring2 = shapely.wkt.loads(
+        mstring2 = shapely.from_wkt(
             'MULTILINESTRING ('
             '(179.9999996185302678 -79.9999999904632659, '
             '179.5999999999999943 -79.9899999999999949, '
@@ -188,7 +187,7 @@ class TestMisc:
                '366.74765799 -9.019999500000001, '
                '366.5094086 -9.63175386, '
                '366.22000122 -9.692636309999999))')
-        geom = shapely.wkt.loads(wkt)
+        geom = shapely.from_wkt(wkt)
         source, target = ccrs.RotatedPole(198.0, 39.25), ccrs.EuroPP()
         projected = target.project_geometry(geom, source)
         # Before handling self intersecting interiors, the area would be
@@ -202,7 +201,7 @@ class TestMisc:
         wkt = ('POLYGON ((343 20, 345 23, 342 25, 343 22, '
                '340 25, 341 25, 340 25, 343 20), (343 21, '
                '343 22, 344 23, 343 21))')
-        geom = shapely.wkt.loads(wkt)
+        geom = shapely.from_wkt(wkt)
         source = target = ccrs.RotatedPole(193.0, 41.0)
         projected = target.project_geometry(geom, source)
         # Before handling self intersecting interiors, the area would be
@@ -214,7 +213,7 @@ class TestMisc:
         target = ccrs.Orthographic(0, -75)
         source = ccrs.PlateCarree()
         wkt = 'POLYGON ((132 -40, 133 -6, 125.3 1, 115 -6, 132 -40))'
-        geom = shapely.wkt.loads(wkt)
+        geom = shapely.from_wkt(wkt)
 
         target = ccrs.Orthographic(central_latitude=90., central_longitude=0)
         source = ccrs.PlateCarree()
@@ -248,7 +247,7 @@ class TestMisc:
 
     def test_attach_short_loop(self):
         # Geometry comes from a matplotlib contourf.
-        mstring = shapely.wkt.loads(
+        mstring = shapely.from_wkt(
             'MULTILINESTRING ('
             '(-179.9999982118607 71.87500000000001,'
             '-179.0625 71.87500000000001,'
@@ -266,7 +265,7 @@ class TestMisc:
         # This test calls only the public API, but will cause a
         # segmentation fault when it fails.
         # Geometry comes from a matplotlib contourf.
-        polygon = shapely.wkt.loads(
+        polygon = shapely.from_wkt(
             'POLYGON (('
             '178.9687499944748 70.625, '
             '179.0625 71.875, '
