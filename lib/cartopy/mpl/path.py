@@ -14,6 +14,7 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 
 from matplotlib.path import Path
 import numpy as np
+import shapely
 import shapely.geometry as sgeom
 
 
@@ -106,20 +107,20 @@ def shapely_to_path(shape):
     if shape.is_empty:
         return Path(np.empty([0, 2]))
     elif isinstance(shape, sgeom.LinearRing):
-        return Path(np.column_stack(shape.xy), closed=True)
+        return Path(shapely.get_coordinates(shape), closed=True)
     elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
-        return Path(np.column_stack(shape.xy))
+        return Path(shapely.get_coordinates(shape))
     elif isinstance(shape, sgeom.Polygon):
-        def poly_codes(poly):
-            codes = np.ones(len(poly.xy[0])) * Path.LINETO
-            codes[0] = Path.MOVETO
-            codes[-1] = Path.CLOSEPOLY
-            return codes
-        vertices = np.concatenate([np.array(shape.exterior.xy)] +
-                                  [np.array(ring.xy) for ring in
-                                   shape.interiors], 1).T
-        codes = np.concatenate([poly_codes(shape.exterior)] +
-                               [poly_codes(ring) for ring in shape.interiors])
+        rings = [shape.exterior, *shape.interiors]
+        # Shapely rings include the closing duplicate point, so len(ring.coords)
+        # gives the number of vertices contributed by each ring.
+        counts = np.fromiter((len(ring.coords) for ring in rings), dtype=np.intp,
+                             count=len(rings))
+        vertices = shapely.get_coordinates(shape)
+        codes = np.full(len(vertices), Path.LINETO, dtype=Path.code_type)
+        starts = np.cumsum(counts) - counts
+        codes[starts] = Path.MOVETO
+        codes[starts + counts - 1] = Path.CLOSEPOLY
         return Path(vertices, codes)
     elif isinstance(shape, (sgeom.MultiPolygon, sgeom.GeometryCollection,
                             sgeom.MultiLineString, sgeom.MultiPoint)):
