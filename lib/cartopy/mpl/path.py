@@ -181,7 +181,7 @@ def path_to_shapely(path):
 
         if all(verts_same_as_first):
             points.append(sgeom.Point(path_verts[0, :]))
-        elif not(path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY):
+        elif not(path_verts.shape[0] >= 4 and path_codes[-1] == Path.CLOSEPOLY):
             linestrings.append(sgeom.LineString(path_verts))
         else:
             geom = sgeom.Polygon(path_verts[:-1, :])
