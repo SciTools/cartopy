@@ -16,8 +16,7 @@ if not _HAS_PYKDTREE_OR_SCIPY:
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='global_map.png', style='mpl20',
-                               tolerance=1.5 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=1.5 if not _MPL_311 else 0.5)
 def test_global_map():
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
@@ -37,8 +36,7 @@ def test_global_map():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='contour_label.png', style='mpl20',
-                               tolerance=8.01 if not _MPL_311 else 1.74)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=8.01 if not _MPL_311 else 1.74)
 def test_contour_label():
     from cartopy.tests.mpl.test_caching import sample_data
     fig = plt.figure(figsize=(8, 6))

@@ -13,7 +13,7 @@ from cartopy.feature.nightshade import Nightshade
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='nightshade_platecarree.png')
+@pytest.mark.mpl_image_compare
 def test_nightshade_image():
     # Test the actual creation of the image
     ax = plt.axes(projection=ccrs.PlateCarree())

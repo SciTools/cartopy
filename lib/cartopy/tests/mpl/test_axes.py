@@ -121,7 +121,7 @@ def test_geoaxes_subplot():
     assert isinstance(ax, GeoAxesSubplot)
 
 
-@pytest.mark.mpl_image_compare(filename='geoaxes_subslice.png')
+@pytest.mark.mpl_image_compare
 def test_geoaxes_no_subslice():
     """Test that we do not trigger matplotlib's line subslice optimization."""
     # This behavior caused lines with > 1000 points and
@@ -136,7 +136,7 @@ def test_geoaxes_no_subslice():
     return fig
 
 
-@pytest.mark.mpl_image_compare(filename='geoaxes_set_boundary_clipping.png')
+@pytest.mark.mpl_image_compare
 def test_geoaxes_set_boundary_clipping():
     """Test that setting the boundary works properly for clipping #1620."""
     lon, lat = np.meshgrid(np.linspace(-180., 180., 361),

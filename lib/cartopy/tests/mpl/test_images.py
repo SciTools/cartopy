@@ -37,7 +37,7 @@ REGIONAL_IMG = (config['repo_data_dir'] / 'raster' / 'sample'
 # care that it is putting images onto the map which are roughly correct.
 @pytest.mark.natural_earth
 @pytest.mark.network
-@pytest.mark.mpl_image_compare(filename='web_tiles.png', tolerance=5.91)
+@pytest.mark.mpl_image_compare(tolerance=5.91)
 def test_web_tiles():
     extent = [-15, 0.1, 50, 60]
     target_domain = shapely.Polygon([[extent[0], extent[1]],
@@ -76,7 +76,7 @@ def test_web_tiles():
 
 @pytest.mark.natural_earth
 @pytest.mark.network
-@pytest.mark.mpl_image_compare(filename='image_merge.png', tolerance=0.03)
+@pytest.mark.mpl_image_compare
 def test_image_merge():
     # tests the basic image merging functionality
     tiles = []
@@ -118,8 +118,7 @@ def test_imshow():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='imshow_regional_projected.png', style='mpl20',
-                               tolerance=7.14 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=7.14 if not _MPL_311 else 0.5)
 def test_imshow_projected():
     source_proj = ccrs.PlateCarree()
     img_extent = (-120.67660000000001, -106.32104523100001,
