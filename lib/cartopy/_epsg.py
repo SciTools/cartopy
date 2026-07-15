@@ -6,14 +6,14 @@
 Provide support for converting EPSG codes to Projection instances.
 
 """
-from pyproj.crs import CRS as _CRS
+from pyproj.crs import CRS
 
 import cartopy.crs as ccrs
 
 
 class _EPSGProjection(ccrs.Projection):
     def __init__(self, code):
-        crs = _CRS.from_epsg(code)
+        crs = CRS.from_epsg(code)
         if not crs.is_projected:
             raise ValueError('EPSG code does not define a projection')
         if not crs.area_of_use:

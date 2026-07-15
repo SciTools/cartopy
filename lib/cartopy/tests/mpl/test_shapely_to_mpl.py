@@ -9,7 +9,7 @@ from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.crs as ccrs
 import cartopy.mpl.patch as cpatch
@@ -48,7 +48,7 @@ def test_polygon_interiors(use_legacy_geos_funcs):
                         patches_native.append(mpatches.PathPatch(pth))
     else:
         geom = cpath.path_to_shapely(pth)
-        assert isinstance(geom, sgeom.Polygon)
+        assert isinstance(geom, shapely.Polygon)
         path = cpath.shapely_to_path(geom)
         patches = [mpatches.PathPatch(path)]
 
@@ -71,10 +71,10 @@ def test_polygon_interiors(use_legacy_geos_funcs):
                          xlim=[-5, 15], ylim=[-5, 15])
     ax.coastlines(resolution="110m")
 
-    exterior = np.array(sgeom.box(0, 0, 12, 12).exterior.coords)
-    interiors = [np.array(sgeom.box(1, 1, 2, 2, ccw=False).exterior.coords),
-                 np.array(sgeom.box(1, 8, 2, 9, ccw=False).exterior.coords)]
-    poly = sgeom.Polygon(exterior, interiors)
+    exterior = np.array(shapely.box(0, 0, 12, 12).exterior.coords)
+    interiors = [np.array(shapely.box(1, 1, 2, 2, ccw=False).exterior.coords),
+                 np.array(shapely.box(1, 8, 2, 9, ccw=False).exterior.coords)]
+    poly = shapely.Polygon(exterior, interiors)
 
     if use_legacy_geos_funcs:
         patches = []

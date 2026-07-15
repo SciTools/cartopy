@@ -14,7 +14,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from PIL import Image
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 from cartopy import config
 import cartopy.io.img_nest as cimg_nest
@@ -150,9 +150,9 @@ def test_intersect(tmp_path):
         assert image_names == fnames
 
     # Check image retrieval for specific domain.
-    items = [(sgeom.box(20, 20, 80, 80), 3),
-             (sgeom.box(20, 20, 75, 75), 1),
-             (sgeom.box(40, 40, 85, 85), 3)]
+    items = [(shapely.box(20, 20, 80, 80), 3),
+             (shapely.box(20, 20, 75, 75), 1),
+             (shapely.box(40, 40, 85, 85), 3)]
     for domain, expected in items:
         result = [image for image in nic.find_images(domain, 'dummy-z-2')]
         assert len(result) == expected

@@ -13,7 +13,7 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image
-import shapely.geometry as sgeom
+import shapely
 
 
 _img_class_attrs = ['filename', 'extent', 'origin', 'pixel_size']
@@ -67,14 +67,10 @@ class Img(collections.namedtuple('Img', _img_class_attrs)):
         return self.__dict__
 
     def bbox(self):
-        """
-        Return a :class:`~shapely.geometry.polygon.Polygon` instance for
-        this image's extents.
-
-        """
+        """Return a :class:`~shapely.Polygon` instance for this image's extents."""
         if self._bbox is None:
             x0, x1, y0, y1 = self.extent
-            self._bbox = sgeom.box(x0, y0, x1, y1)
+            self._bbox = shapely.box(x0, y0, x1, y1)
         return self._bbox
 
     @staticmethod
@@ -321,9 +317,8 @@ class NestedImageCollection:
         Parameters
         ----------
         target_domain
-            A :class:`~shapely.geometry.linestring.LineString`
-            instance that specifies the target location requiring image
-            coverage.
+            A :class:`~shapely.LineString` instance that specifies the target location
+            requiring image coverage.
         target_z
             The name of the target :class`~cartopy.io.img_nest.ImageCollection`
             which specifies the target zoom level (resolution) of the required
@@ -371,8 +366,8 @@ class NestedImageCollection:
         Parameters
         ----------
         target_domain
-            A :class:`~shapely.geometry.linestring.LineString` instance that
-            specifies the target location requiring image coverage.
+            A :class:`~shapely.LineString` instance that specifies the target location
+            requiring image coverage.
 
         target_z
             The name of the target

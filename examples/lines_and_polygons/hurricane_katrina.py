@@ -8,7 +8,7 @@ have been significantly impacted by Hurricane Katrina.
 """
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
@@ -57,7 +57,7 @@ def main():
                  'Hurricane Katrina (2005)')
 
     # turn the lons and lats into a shapely LineString
-    track = sgeom.LineString(zip(lons, lats))
+    track = shapely.LineString(zip(lons, lats))
 
     # buffer the linestring by two degrees (note: this is a non-physical
     # distance)

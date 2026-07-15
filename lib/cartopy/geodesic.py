@@ -13,7 +13,7 @@ for more background information.
 """
 import numpy as np
 import pyproj
-import shapely.geometry as sgeom
+import shapely
 
 
 class Geodesic:
@@ -202,7 +202,7 @@ class Geodesic:
 
         Parameters
         ----------
-        geometry : `shapely.geometry.BaseGeometry`
+        geometry : `shapely.geometry.base.BaseGeometry`
             The Shapely geometry to compute the length of. For polygons, the
             exterior length will be calculated. For multi-part geometries, the
             sum of the parts will be computed.
@@ -217,8 +217,7 @@ class Geodesic:
             # Polygon.
             result = self.geometry_length(geometry.exterior)
 
-        elif (hasattr(geometry, 'coords') and
-                not isinstance(geometry, sgeom.Point)):
+        elif hasattr(geometry, 'coords') and not isinstance(geometry, shapely.Point):
             coords = np.array(geometry.coords)
             result = self.geometry_length(coords)
 

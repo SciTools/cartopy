@@ -8,7 +8,7 @@ import time
 
 import numpy as np
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.crs as ccrs
 
@@ -26,7 +26,7 @@ class TestLineString:
 
         # Try all four combinations of valid/NaN vs valid/NaN.
         for start, end in itertools.product(start_points, end_points):
-            line_string = sgeom.LineString([start, end])
+            line_string = shapely.LineString([start, end])
             multi_line_string = projection.project_geometry(line_string)
             if start[0] == 130 and end[0] == 120:
                 expected = 0
@@ -46,7 +46,7 @@ class TestLineString:
         ]
 
         for coords, pieces in tests:
-            line_string = sgeom.LineString(coords)
+            line_string = shapely.LineString(coords)
             multi_line_string = projection.project_geometry(line_string)
             # from cartopy.tests.mpl import show
             # show(projection, multi_line_string)
@@ -54,7 +54,7 @@ class TestLineString:
 
     def test_split(self):
         projection = ccrs.Robinson(170.5)
-        line_string = sgeom.LineString([(-10, 30), (10, 60)])
+        line_string = shapely.LineString([(-10, 30), (10, 60)])
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
@@ -66,7 +66,7 @@ class TestLineString:
         # Because the south pole projects to an *enormous* circle
         # (radius ~ 1e23) this will take a *long* time to project if the
         # within-domain exactness criteria are used.
-        line_string = sgeom.LineString([(0, -90), (2, -90)])
+        line_string = shapely.LineString([(0, -90), (2, -90)])
         tgt_proj = ccrs.NorthPolarStereo()
         src_proj = ccrs.PlateCarree()
         cutoff_time = time.time() + 1
@@ -77,8 +77,8 @@ class TestLineString:
         # Check that the return type of project_geometry is a MultiLineString
         # and not an empty list
         multi_line_string = ccrs.Mercator().project_geometry(
-            sgeom.MultiLineString(), ccrs.PlateCarree())
-        assert isinstance(multi_line_string, sgeom.MultiLineString)
+            shapely.MultiLineString(), ccrs.PlateCarree())
+        assert isinstance(multi_line_string, shapely.MultiLineString)
 
 
 class FakeProjection(ccrs.PlateCarree):
@@ -94,11 +94,11 @@ class FakeProjection(ccrs.PlateCarree):
     def boundary(self):
         # XXX Should this be a LinearRing?
         w, h = self._half_width, self._half_height
-        return sgeom.LineString([(-w + self.left_offset, -h),
-                                 (-w + self.left_offset, h),
-                                 (w - self.right_offset, h),
-                                 (w - self.right_offset, -h),
-                                 (-w + self.left_offset, -h)])
+        return shapely.LineString([(-w + self.left_offset, -h),
+                                   (-w + self.left_offset, h),
+                                   (w - self.right_offset, h),
+                                   (w - self.right_offset, -h),
+                                   (-w + self.left_offset, -h)])
 
 
 class TestBisect:
@@ -107,48 +107,48 @@ class TestBisect:
 
     def test_repeated_point(self):
         projection = FakeProjection()
-        line_string = sgeom.LineString([(10, 0), (10, 0)])
+        line_string = shapely.LineString([(10, 0), (10, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_interior_repeated_point(self):
         projection = FakeProjection()
-        line_string = sgeom.LineString([(0, 0), (10, 0), (10, 0), (20, 0)])
+        line_string = shapely.LineString([(0, 0), (10, 0), (10, 0), (20, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 4
 
     def test_circular_repeated_point(self):
         projection = FakeProjection()
-        line_string = sgeom.LineString([(0, 0), (360, 0)])
+        line_string = shapely.LineString([(0, 0), (360, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_short(self):
         projection = FakeProjection()
-        line_string = sgeom.LineString([(0, 0), (1e-12, 0)])
+        line_string = shapely.LineString([(0, 0), (1e-12, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_empty(self):
         projection = FakeProjection(right_offset=10)
-        line_string = sgeom.LineString([(175, 0), (175, 10)])
+        line_string = shapely.LineString([(175, 0), (175, 10)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 0
 
     def test_simple_run_in(self):
         projection = FakeProjection(right_offset=10)
-        line_string = sgeom.LineString([(160, 0), (175, 0)])
+        line_string = shapely.LineString([(160, 0), (175, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_simple_wrap(self):
         projection = FakeProjection()
-        line_string = sgeom.LineString([(160, 0), (-160, 0)])
+        line_string = shapely.LineString([(160, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 2
         assert len(multi_line_string.geoms[0].coords) == 2
@@ -156,14 +156,14 @@ class TestBisect:
 
     def test_simple_run_out(self):
         projection = FakeProjection(left_offset=10)
-        line_string = sgeom.LineString([(-175, 0), (-160, 0)])
+        line_string = shapely.LineString([(-175, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_point_on_boundary(self):
         projection = FakeProjection()
-        line_string = sgeom.LineString([(180, 0), (-160, 0)])
+        line_string = shapely.LineString([(180, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
@@ -171,7 +171,7 @@ class TestBisect:
         # Add a small offset to the left-hand boundary to make things
         # even more pathological.
         projection = FakeProjection(left_offset=5)
-        line_string = sgeom.LineString([(180, 0), (-160, 0)])
+        line_string = shapely.LineString([(180, 0), (-160, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
@@ -179,7 +179,7 @@ class TestBisect:
     def test_nan_start(self):
         projection = ccrs.TransverseMercator(central_longitude=-90,
                                              approx=False)
-        line_string = sgeom.LineString([(10, 50), (-10, 30)])
+        line_string = shapely.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         for line_string in multi_line_string.geoms:
@@ -190,7 +190,7 @@ class TestBisect:
     def test_nan_end(self):
         projection = ccrs.TransverseMercator(central_longitude=-90,
                                              approx=False)
-        line_string = sgeom.LineString([(-10, 30), (10, 50)])
+        line_string = shapely.LineString([(-10, 30), (10, 50)])
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
@@ -206,8 +206,8 @@ class TestBisect:
     def test_nan_rectangular(self):
         # Make sure rectangular projections can handle invalid geometries
         projection = ccrs.Robinson()
-        line_string = sgeom.LineString([(0, 0), (1, 1), (np.nan, np.nan),
-                                        (2, 2), (3, 3)])
+        line_string = shapely.LineString([(0, 0), (1, 1), (np.nan, np.nan),
+                                          (2, 2), (3, 3)])
         multi_line_string = projection.project_geometry(line_string,
                                                         ccrs.PlateCarree())
         assert len(multi_line_string.geoms) == 2
@@ -217,7 +217,7 @@ class TestMisc:
     def test_misc(self):
         projection = ccrs.TransverseMercator(central_longitude=-90,
                                              approx=False)
-        line_string = sgeom.LineString([(10, 50), (-10, 30)])
+        line_string = shapely.LineString([(10, 50), (-10, 30)])
         multi_line_string = projection.project_geometry(line_string)
         # from cartopy.tests.mpl import show
         # show(projection, multi_line_string)
@@ -229,14 +229,14 @@ class TestMisc:
     def test_something(self):
         projection = ccrs.RotatedPole(pole_longitude=177.5,
                                       pole_latitude=37.5)
-        line_string = sgeom.LineString([(0, 0), (1e-14, 0)])
+        line_string = shapely.LineString([(0, 0), (1e-14, 0)])
         multi_line_string = projection.project_geometry(line_string)
         assert len(multi_line_string.geoms) == 1
         assert len(multi_line_string.geoms[0].coords) == 2
 
     def test_global_boundary(self):
-        linear_ring = sgeom.LineString([(-180, -180), (-180, 180),
-                                        (180, 180), (180, -180)])
+        linear_ring = shapely.LineString([(-180, -180), (-180, 180),
+                                          (180, 180), (180, -180)])
         pc = ccrs.PlateCarree()
         merc = ccrs.Mercator()
         multi_line_string = pc.project_geometry(linear_ring, merc)
@@ -253,11 +253,11 @@ class TestSymmetry:
         # Obtain a simple, curved path.
         projection = ccrs.PlateCarree()
         coords = [(-0.08, 51.53), (132.00, 43.17)]  # London to Vladivostock
-        line_string = sgeom.LineString(coords)
+        line_string = shapely.LineString(coords)
         multi_line_string = projection.project_geometry(line_string)
 
         # Compute the reverse path.
-        line_string = sgeom.LineString(coords[::-1])
+        line_string = shapely.LineString(coords[::-1])
         multi_line_string2 = projection.project_geometry(line_string)
 
         # Make sure that they generated the same points.
