@@ -11,8 +11,6 @@ Trace pulls together proj, GEOS and ``_crs.pyx`` to implement a function to proj
 manually, instead leaving the processing to be done by the
 :class:`cartopy.crs.Projection` subclasses.
 """
-from __future__ import print_function
-
 from functools import lru_cache
 
 cimport cython
