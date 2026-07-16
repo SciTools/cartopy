@@ -9,6 +9,8 @@ on:
     - cron: "0 0 10 * *"
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   tests:
     if: github.repository == 'scitools/cartopy'
@@ -27,12 +29,13 @@ jobs:
             use-network: false
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
@@ -120,7 +123,7 @@ jobs:
           coveralls --service=github
 
       - name: Upload image results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         if: failure()
         with:
           name: image-failures-${{ matrix.os }}-${{ matrix.python-version }}
@@ -137,7 +140,7 @@ jobs:
 
     steps:
       - name: Create issue on failure
-        uses: imjohnbo/issue-bot@v3
+        uses: imjohnbo/issue-bot@3188c6ce06249206709d3b1f274d0d4c5a521601  # v3.4.5
         with:
           title: "[TST] Upcoming dependency test failures"
           body: |
@@ -162,12 +165,13 @@ jobs:
         shell: bash -l {0}
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up conda
-        uses: conda-incubator/setup-miniconda@v4
+        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5  # v4.0.1
         with:
           auto-update-conda: true
           python-version: '3.14'
@@ -194,7 +198,7 @@ jobs:
               --mpl-results-path="cartopy_test_output-conda"
 
       - name: Upload image results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         if: failure()
         with:
           name: image-failures-conda

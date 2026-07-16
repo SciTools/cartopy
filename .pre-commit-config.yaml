@@ -46,3 +46,7 @@ repos:
     hooks:
       - id: yamllint
         args: ["--strict", "--config-file=.yamllint.yml"]
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: a4727cbbcd26d7098e96b9cb738169b59711ae51  # frozen: v1.24.1
+    hooks:
+      - id: zizmor

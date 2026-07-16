@@ -1,0 +1,6 @@
+---
+rules:
+  template-injection:
+    ignore:
+      # Remove after https://github.com/zizmorcore/zizmor/issues/2197
+      - ci-testing.yml:77:20
