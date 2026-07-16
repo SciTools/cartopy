@@ -19,6 +19,7 @@ from cartopy.tests.conftest import requires_scipy
 
 proj_version = parse_version(pyproj.proj_version_str)
 
+
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
                                style='mpl20', tolerance=2.25)
@@ -175,7 +176,7 @@ def test_simple_global():
                  id='InterruptedGoodeHomolosine'),
     ccrs.LambertCylindrical,
     ccrs.LambertZoneII,
-    pytest.param(ccrs.Spilhaus,marks=pytest.mark.skipif(
+    pytest.param(ccrs.Spilhaus, marks=pytest.mark.skipif(
             (proj_version < parse_version("9.6.0")),
             reason="Requires PROJ >= 9.6.0"
         )),
@@ -248,6 +249,7 @@ def test_cursor_values():
 
 PARAMETRIZE_PCOLORMESH_WRAP = pytest.mark.parametrize(
     'mesh_data_kind', ['standard', 'rgb', 'rgba'])
+
 
 def _to_rgb(data, mesh_data_kind):
     """

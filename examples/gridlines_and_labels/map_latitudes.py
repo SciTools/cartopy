@@ -18,6 +18,7 @@ import cartopy.crs as ccrs
 
 PC_PROJ = ccrs.PlateCarree()
 
+
 def map_and_latitudes(map_proj):
     """
     Create a map with the given projection, together with a rectangular axes

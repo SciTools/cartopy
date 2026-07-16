@@ -59,7 +59,7 @@ if __name__ == "__main__":
     depths = depths_str.astype(int)
     N = len(depths)
     nudge = 0.01  # shift bin edge slightly to include data
-    boundaries = [min(depths)] + sorted(depths+nudge)  # low to high
+    boundaries = [min(depths)] + sorted(depths + nudge)  # low to high
     norm = matplotlib.colors.BoundaryNorm(boundaries, N)
     blues_cm = matplotlib.colormaps['Blues_r'].resampled(N)
     colors_depths = blues_cm(norm(depths))

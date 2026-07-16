@@ -28,11 +28,11 @@ def main():
     nlon = 24
     nlat = 12
     # 7.5, 22.5, ..., 337.5, 352.5
-    dlon = 360//nlon
-    lon = np.linspace(dlon/2., 360.-dlon/2., nlon)
-# -82.5, -67.5, ..., 67.5, 82.5
-    dlat = 180//nlat
-    lat = np.linspace(-90.+dlat/2., 90.-dlat/2., nlat)
+    dlon = 360 // nlon
+    lon = np.linspace(dlon / 2, 360 - dlon / 2, nlon)
+    # -82.5, -67.5, ..., 67.5, 82.5
+    dlat = 180 // nlat
+    lat = np.linspace(-90 + dlat / 2, 90 - dlat / 2, nlat)
     # 0, 1, ..., 10, 11, 11, 10, ..., 1, 0
     data = np.concatenate((np.arange(nlon // 2),
                            np.arange(nlon // 2)[::-1]))
