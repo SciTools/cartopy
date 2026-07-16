@@ -1,6 +1,7 @@
 # Reference:
 #   - https://github.com/actions/checkout
 
+---
 name: ci-manifest
 
 on:

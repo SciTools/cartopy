@@ -1,3 +1,4 @@
+---
 ci:
   autofix_prs: false
   autoupdate_schedule: 'quarterly'
@@ -5,32 +6,31 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
-        # Prevent giant files from being committed
+      # Prevent giant files from being committed
       - id: check-added-large-files
-        # Check whether files parse as valid Python
+      # Check whether files parse as valid Python
       - id: check-ast
-        # Check for files that contain merge conflict strings
+      # Check for files that contain merge conflict strings
       - id: check-merge-conflict
-        # Attempts to load all TOML files to verify syntax
+      # Attempts to load all TOML files to verify syntax
       - id: check-toml
-        # Attempts to load all yaml files to verify syntax
+      # Attempts to load all yaml files to verify syntax
       - id: check-yaml
-        # Check for debugger imports and py37+ breakpoint() calls in python source
+      # Check for debugger imports and py37+ breakpoint() calls in python source
       - id: debug-statements
-        # Makes sure files end in a newline and only a newline
+      # Makes sure files end in a newline and only a newline
       - id: end-of-file-fixer
-        # Replaces or checks mixed line ending
+      # Replaces or checks mixed line ending
       - id: mixed-line-ending
-        # Protect specific branches from direct checkins (main)
+      # Protect specific branches from direct checkins (main)
       - id: no-commit-to-branch
-        # Trims trailing whitespace
+      # Trims trailing whitespace
       - id: trailing-whitespace
   - repo: https://github.com/codespell-project/codespell
     rev: 2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a  # frozen: v2.4.2
     hooks:
-    - id: codespell
-      types_or: [python, markdown, rst]
-      additional_dependencies: [tomli]
+      - id: codespell
+        types_or: [python, markdown, rst]
   - repo: https://github.com/aio-libs/sort-all
     rev: 5d8f20f6bb58adc5f2d74542bdfade65a0244366  # frozen: v1.3.0
     hooks:
@@ -39,5 +39,10 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: c59bba8fb259db0fec2bbb77ad8ba51ea7341b56  # frozen: v0.15.20
     hooks:
-    - id: ruff-check
-      args: [--fix]
+      - id: ruff-check
+        args: [--fix]
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+        args: ["--strict", "--config-file=.yamllint.yml"]
