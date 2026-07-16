@@ -11,8 +11,7 @@ from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='xticks_no_transform.png', style='mpl20',
-                               tolerance=5.20 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=5.20 if not _MPL_311 else 0.5)
 def test_set_xticks_no_transform():
     plt.rc('figure.subplot', left=0.125, right=0.9, bottom=0.1, top=0.9)
     fig = plt.figure(figsize=(8, 6))
@@ -25,8 +24,7 @@ def test_set_xticks_no_transform():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='xticks_cylindrical.png', style='mpl20',
-                               tolerance=5.04 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=5.04 if not _MPL_311 else 0.5)
 def test_set_xticks_cylindrical():
     plt.rc('figure.subplot', left=0.125, right=0.9, bottom=0.1, top=0.9)
     fig = plt.figure(figsize=(8, 6))
@@ -47,8 +45,7 @@ def test_set_xticks_non_cylindrical():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='yticks_no_transform.png', style='mpl20',
-                               tolerance=4.90 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=4.90 if not _MPL_311 else 0.5)
 def test_set_yticks_no_transform():
     plt.rc('figure.subplot', left=0.125, right=0.9, bottom=0.1, top=0.9)
     fig = plt.figure(figsize=(8, 6))
@@ -61,8 +58,7 @@ def test_set_yticks_no_transform():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='yticks_cylindrical.png', style='mpl20',
-                               tolerance=4.89 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=4.89 if not _MPL_311 else 0.5)
 def test_set_yticks_cylindrical():
     plt.rc('figure.subplot', left=0.125, right=0.9, bottom=0.1, top=0.9)
     fig = plt.figure(figsize=(8, 6))
@@ -85,8 +81,7 @@ def test_set_yticks_non_cylindrical():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='xyticks.png', style='mpl20',
-                               tolerance=5.42 if not _MPL_311 else 0.5)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=5.42 if not _MPL_311 else 0.5)
 def test_set_xyticks():
     plt.rc('figure.subplot', left=0.125, right=0.9, bottom=0.1, top=0.9)
     plt.rc('axes.formatter', limits=(-7, 7))

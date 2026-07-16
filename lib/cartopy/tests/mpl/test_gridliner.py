@@ -60,7 +60,7 @@ TEST_PROJS = [
 
 @pytest.mark.natural_earth
 # Robinson projection is slightly better in Proj 6+.
-@pytest.mark.mpl_image_compare(filename='gridliner1.png', tolerance=0.73)
+@pytest.mark.mpl_image_compare(tolerance=0.73)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -141,8 +141,7 @@ grid_label_bbox_tol = 43.3 if not _MPL_311 else 0.5
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels.png', style='mpl20',
-                               tolerance=grid_label_tol)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_tol)
 def test_grid_labels():
     fig = plt.figure(figsize=(10, 10))
 
@@ -214,7 +213,7 @@ def test_grid_labels():
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png', style='mpl20')
+@pytest.mark.mpl_image_compare(style='mpl20')
 def test_grid_labels_tight(text_placeholders):
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
@@ -260,8 +259,7 @@ def test_grid_labels_tight(text_placeholders):
     return fig
 
 
-@pytest.mark.mpl_image_compare(
-    filename='gridliner_constrained_adjust_datalim.png', style='mpl20')
+@pytest.mark.mpl_image_compare(style='mpl20')
 def test_gridliner_constrained_adjust_datalim(text_placeholders):
     fig = plt.figure(figsize=(8, 4), layout="constrained")
 
@@ -335,8 +333,7 @@ def test_grid_labels_inline_usa(proj):
 
 @pytest.mark.natural_earth
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_bbox_style.png',
-                               style='mpl20', tolerance=grid_label_bbox_tol)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_bbox_tol)
 def test_gridliner_labels_bbox_style():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -497,7 +494,7 @@ def test_gridliner_count_draws():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     baseline_dir='baseline_images/mpl/test_mpl_integration',
-    filename='simple_global.png')
+    filename='test_simple_global.png')
 def test_gridliner_remove():
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
@@ -542,8 +539,7 @@ def test_gridliner_ylabel_rotation_90_tight_bbox():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
-                               style='mpl20')
+@pytest.mark.mpl_image_compare(style='mpl20')
 def test_gridliner_title_adjust(text_placeholders):
     # Test that title do not overlap labels
     projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),

@@ -19,7 +19,7 @@ import cartopy.mpl.path as cpath
 # Note: Matplotlib is broken here
 # https://github.com/matplotlib/matplotlib/issues/15946
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='poly_interiors.png', tolerance=3.1)
+@pytest.mark.mpl_image_compare(filename='test_polygon_interiors.png', tolerance=3.1)
 @pytest.mark.parametrize('use_legacy_geos_funcs', [False, True])
 def test_polygon_interiors(use_legacy_geos_funcs):
     fig = plt.figure()
@@ -93,7 +93,7 @@ def test_polygon_interiors(use_legacy_geos_funcs):
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='contour_with_interiors.png')
+@pytest.mark.mpl_image_compare
 def test_contour_interiors():
     # produces a polygon with multiple holes:
     nx, ny = 10, 10
