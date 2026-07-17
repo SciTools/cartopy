@@ -36,7 +36,7 @@ class TestSinusoidal:
         expected_y = [-1216.60, 1216.60]
         if pyproj.__proj_version__ >= '9.2.0':
             expected_x = [-3141.60, 3141.60]
-            expected_y = [-1211.05,  1211.05]
+            expected_y = [-1211.05, 1211.05]
         assert_almost_equal(np.array(crs.x_limits),
                             expected_x, decimal=2)
         assert_almost_equal(np.array(crs.y_limits),

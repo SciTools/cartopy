@@ -45,7 +45,7 @@ class Geodesic:
 
     def __str__(self):
         return (f'<Geodesic: radius={self.radius:0.3f}, '
-                f'flattening=1/{1/self.flattening:0.3f}>')
+                f'flattening=1/{1 / self.flattening:0.3f}>')
 
     def direct(self, points, azimuths, distances):
         """

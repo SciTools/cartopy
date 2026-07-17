@@ -42,12 +42,12 @@ def _ensure_path_closed(path):
         path.should_simplify = should_simplify
 
     if len(polygons) == 0:
-        return Path(np.empty((0,2)))
+        return Path(np.empty((0, 2)))
 
     codes, vertices = [], []
     for poly in polygons:
         vertices.extend([poly[0], *poly])
-        codes.extend([Path.MOVETO, *[Path.LINETO]*(len(poly) - 1), Path.CLOSEPOLY])
+        codes.extend([Path.MOVETO, *[Path.LINETO] * (len(poly) - 1), Path.CLOSEPOLY])
 
     return Path(vertices, codes)
 

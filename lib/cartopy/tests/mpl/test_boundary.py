@@ -33,7 +33,7 @@ circle_verts = np.array([
 
 circle_codes = [
     Path.MOVETO,
-    *[Path.LINETO]*(len(circle_verts)),
+    *[Path.LINETO] * len(circle_verts),
     Path.CLOSEPOLY
     ]
 
@@ -47,7 +47,7 @@ rectangle_verts = np.array([
 
 rectangle_codes = [
     Path.MOVETO,
-    *[Path.LINETO]*(len(rectangle_verts)),
+    *[Path.LINETO] * len(rectangle_verts),
     Path.CLOSEPOLY
     ]
 
@@ -65,17 +65,17 @@ def test_multi_path_boundary():
         c = circle_verts + offset
         if close:
             vertices.extend([c[0], *c, c[-1]])
-            codes.extend([Path.MOVETO, *[Path.LINETO]*len(c), Path.CLOSEPOLY])
+            codes.extend([Path.MOVETO, *[Path.LINETO] * len(c), Path.CLOSEPOLY])
         else:
             vertices.extend([c[0], *c])
-            codes.extend([Path.MOVETO, *[Path.LINETO]*len(c)])
+            codes.extend([Path.MOVETO, *[Path.LINETO] * len(c)])
 
     # add rectangle
     vertices.extend(
         [rectangle_verts[0], *rectangle_verts, rectangle_verts[-1]]
         )
     codes.extend(
-        [Path.MOVETO, *[Path.LINETO]*len(rectangle_verts), Path.CLOSEPOLY]
+        [Path.MOVETO, *[Path.LINETO] * len(rectangle_verts), Path.CLOSEPOLY]
         )
 
     bnds = [*map(min, zip(*vertices)), *map(max, zip(*vertices))]

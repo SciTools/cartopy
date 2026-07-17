@@ -134,7 +134,7 @@ def test_triangle_shapely_path_round_trip():
     assert geom.equals(triangle)
 
 
-no_polygon_path = Path([[0,0], [1,1]], codes=[Path.MOVETO, Path.LINETO])
+no_polygon_path = Path([[0, 0], [1, 1]], codes=[Path.MOVETO, Path.LINETO])
 empty_path = Path(np.empty((0, 2)))
 
 

@@ -352,7 +352,7 @@ def test_wmts_cache(cache_dir, tmp_path):
     # URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     # layer_name = 'VIIRS_CityLights_2012'
     URI = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/1.0.0/WMTSCapabilities.xml'
-    layer_name='USGSImageryOnly'
+    layer_name = 'USGSImageryOnly'
     projection = ccrs.PlateCarree()
 
     # Fetch tiles and save them in the cache
