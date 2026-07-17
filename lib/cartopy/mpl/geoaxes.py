@@ -514,6 +514,12 @@ class GeoAxes(matplotlib.axes.Axes):
         if self._autotitlepos is not None and not self._autotitlepos:
             return
 
+        titles = (self.title, self._left_title, self._right_title)
+
+        if not any(title.get_text() for title in titles):
+            # If the titles are all empty, there is no need to update their positions.
+            return
+
         from cartopy.mpl.gridliner import Gridliner
         gridliners = [a for a in self.artists if isinstance(a, Gridliner)]
         if not gridliners:
@@ -542,7 +548,6 @@ class GeoAxes(matplotlib.axes.Axes):
             return
 
         # Loop on titles to adjust
-        titles = (self.title, self._left_title, self._right_title)
         for title in titles:
             x, y0 = title.get_position()
             y = max(1.0, yn)
