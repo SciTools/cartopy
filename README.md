@@ -28,9 +28,6 @@
  alt="zenodo" /></a>
 <a href="https://discourse.matplotlib.org/chat/c/cartopy/11">
 <img src="https://img.shields.io/badge/chat-Discourse-brightgreen" alt="Discourse Chat" /></a>
-<a href="https://results.pre-commit.ci/latest/github/SciTools/cartopy/main">
-<img src="https://results.pre-commit.ci/badge/github/SciTools/cartopy/main.svg"
- alt="pre-commit.ci" /></a>
 </p>
 <br>
 

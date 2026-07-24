@@ -4,6 +4,7 @@
 #   conda activate cartopy-dev
 #   pip install -e .
 #
+---
 name: cartopy-dev
 channels:
   - conda-forge
@@ -38,7 +39,7 @@ dependencies:
   - sphinx-gallery
   # Extras
   - fiona
-  - pre-commit
+  - prek
   - pykdtree
   - ruff
   - setuptools_scm
