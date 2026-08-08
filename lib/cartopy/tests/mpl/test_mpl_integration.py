@@ -237,7 +237,7 @@ def test_cursor_values():
     x, y = np.array([-181.5, 50.])
     r = ax.format_coord(x, y)
     assert (r.encode('ascii', 'ignore') ==
-            b'-181.5, 50 (50.000000N, 178.500000E)')
+            b'-181.5, 50 (50.000000N, 181.500000W)')
 
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2, 2363093.4])
@@ -275,8 +275,7 @@ def _to_rgb(data, mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap1.png',
-                               tolerance=1.27)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap1.png')
 def test_pcolormesh_global_with_wrap1(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -363,8 +362,7 @@ def test_pcolormesh_get_array_with_mask(mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap2.png',
-                               tolerance=1.87)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap2.png')
 def test_pcolormesh_global_with_wrap2(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -397,8 +395,7 @@ def test_pcolormesh_global_with_wrap2(mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png',
-                               tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png')
 def test_pcolormesh_global_with_wrap3(mesh_data_kind):
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -443,8 +440,7 @@ def test_pcolormesh_global_with_wrap3(mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png',
-                               tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png')
 def test_pcolormesh_set_array_with_mask(mesh_data_kind):
     """Testing that set_array works with masked arrays properly."""
     nx, ny = 33, 17
@@ -531,8 +527,7 @@ def test_pcolormesh_set_array_nowrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png',
-                               tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png')
 def test_pcolormesh_set_clim_with_mask():
     """Testing that set_clim works with masked arrays properly."""
     nx, ny = 33, 17
