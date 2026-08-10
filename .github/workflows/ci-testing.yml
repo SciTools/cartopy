@@ -11,6 +11,10 @@ on:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   tests:
     if: github.repository == 'scitools/cartopy'
@@ -72,7 +76,6 @@ jobs:
 
       - name: Install Cartopy
         id: install
-        shell: bash
         run: |
           if [ ${{ steps.minimum-packages.conclusion }} == 'skipped' ]; then
               # Default is to install just the minimum testing requirements,
@@ -93,7 +96,6 @@ jobs:
         id: test
         if: matrix.use-network
         # we need to force bash to use line continuations on Windows
-        shell: bash
         run: |
           # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
           python -m cartopy.feature.download gshhs physical --dry-run
@@ -162,6 +164,8 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
+        # The miniconda action will require a login shell for all subsequent steps.
+        # https://github.com/conda-incubator/setup-miniconda#important
         shell: bash -l {0}
 
     steps:
