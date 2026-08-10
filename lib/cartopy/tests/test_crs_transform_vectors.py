@@ -6,8 +6,7 @@
 import warnings
 
 import numpy as np
-from numpy.testing import assert_array_almost_equal
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
