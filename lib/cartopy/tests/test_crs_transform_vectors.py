@@ -7,6 +7,7 @@ import warnings
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_allclose
 import pytest
 
 import cartopy.crs as ccrs
@@ -63,6 +64,35 @@ class TestTransformVectors:
         utt, vtt = src_proj.transform_vectors(target_proj, xt, yt, ut, vt)
         assert_array_almost_equal(u, utt, decimal=4)
         assert_array_almost_equal(v, vtt, decimal=4)
+
+    def test_transform_linear(self):
+        # Vector transforms should be linear in the input components.
+        src_proj = ccrs.RotatedPole(pole_longitude=180, pole_latitude=45.0)
+        target_proj = ccrs.PlateCarree()
+        x = np.array([0.])
+        y = np.array([0.])
+        zero = np.array([0.])
+        one = np.array([1.])
+
+        u10, v10 = target_proj.transform_vectors(src_proj, x, y, one, zero)
+        u01, v01 = target_proj.transform_vectors(src_proj, x, y, zero, one)
+        u11, v11 = target_proj.transform_vectors(src_proj, x, y, one, one)
+
+        assert_allclose(u11, u10 + u01, atol=1e-8)
+        assert_allclose(v11, v10 + v01, atol=1e-8)
+
+    def test_transform_plate_carree_near_pole(self):
+        src_proj = ccrs.PlateCarree()
+        target_proj = ccrs.NorthPolarStereo()
+        lon = np.array([0.])
+        lat = np.array([89.])
+        u = np.array([-3.])
+        v = np.array([0.1])
+
+        ut, vt = target_proj.transform_vectors(src_proj, lon, lat, u, v)
+
+        assert_allclose(ut, u, atol=1e-3)
+        assert_allclose(vt, v, atol=1e-3)
 
     def test_invalid_input_domain(self):
         # If an input coordinate is outside the input projection domain
