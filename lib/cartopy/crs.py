@@ -437,6 +437,50 @@ class CRS(pyproj.crs.CustomConstructorCRS):
 
         return result
 
+    def _transform_vectors_approx(self, src_proj, x, y, u, v):
+        proj_xyz = self.transform_points(src_proj, x, y)
+        target_x, target_y = proj_xyz[..., 0], proj_xyz[..., 1]
+        vector_magnitudes = np.hypot(u, v)
+        vector_angles = np.arctan2(v, u)
+        factor = 360000.
+        delta = (src_proj.x_limits[1] - src_proj.x_limits[0]) / factor
+        x_perturbations = delta * np.cos(vector_angles)
+        y_perturbations = delta * np.sin(vector_angles)
+        proj_xyz = src_proj.transform_points(src_proj, x, y)
+        source_x, source_y = proj_xyz[..., 0], proj_xyz[..., 1]
+        eps = 1e-9
+        invalid_x = np.logical_or(
+            source_x + x_perturbations < src_proj.x_limits[0] - eps,
+            source_x + x_perturbations > src_proj.x_limits[1] + eps)
+        if invalid_x.any():
+            x_perturbations[invalid_x] *= -1
+            y_perturbations[invalid_x] *= -1
+        invalid_y = np.logical_or(
+            source_y + y_perturbations < src_proj.y_limits[0] - eps,
+            source_y + y_perturbations > src_proj.y_limits[1] + eps)
+        if invalid_y.any():
+            x_perturbations[invalid_y] *= -1
+            y_perturbations[invalid_y] *= -1
+        reversed_vectors = np.logical_xor(invalid_x, invalid_y)
+        problem_points = np.logical_or(
+            source_x + x_perturbations < src_proj.x_limits[0] - eps,
+            source_x + x_perturbations > src_proj.x_limits[1] + eps)
+        if problem_points.any():
+            warnings.warn('Some vectors at source domain corners '
+                          'may not have been transformed correctly')
+        proj_xyz = self.transform_points(src_proj,
+                                         source_x + x_perturbations,
+                                         source_y + y_perturbations)
+        target_x_perturbed = proj_xyz[..., 0]
+        target_y_perturbed = proj_xyz[..., 1]
+        projected_angles = np.arctan2(target_y_perturbed - target_y,
+                                      target_x_perturbed - target_x)
+        if reversed_vectors.any():
+            projected_angles[reversed_vectors] += np.pi
+        projected_u = vector_magnitudes * np.cos(projected_angles)
+        projected_v = vector_magnitudes * np.sin(projected_angles)
+        return projected_u, projected_v
+
     def transform_vectors(self, src_proj, x, y, u, v):
         """
         transform_vectors(src_proj, x, y, u, v)
@@ -481,81 +525,88 @@ class CRS(pyproj.crs.CustomConstructorCRS):
             raise ValueError('x, y, u and v arrays must be the same shape')
         if x.ndim not in (1, 2):
             raise ValueError('x, y, u and v must be 1 or 2 dimensional')
-        # Transform the coordinates to the target projection.
+        src_is_angular = (isinstance(src_proj, _CylindricalProjection) or
+                          src_proj.is_geodetic())
+        target_is_angular = (isinstance(self, _CylindricalProjection) or
+                             self.is_geodetic())
+        if not src_is_angular and not target_is_angular:
+            return self._transform_vectors_approx(src_proj, x, y, u, v)
+
         proj_xyz = self.transform_points(src_proj, x, y)
         target_x, target_y = proj_xyz[..., 0], proj_xyz[..., 1]
-        # Rotate the input vectors to the projection.
-        #
-        # 1: Find the magnitude and direction of the input vectors.
-        vector_magnitudes = np.hypot(u, v)
-        vector_angles = np.arctan2(v, u)
-        # 2: Find a point in the direction of the original vector that is
-        #    a small distance away from the base point of the vector (near
-        #    the poles the point may have to be in the opposite direction
-        #    to be valid).
-        factor = 360000.
-        delta = (src_proj.x_limits[1] - src_proj.x_limits[0]) / factor
-        x_perturbations = delta * np.cos(vector_angles)
-        y_perturbations = delta * np.sin(vector_angles)
-        # 3: Handle points that are invalid. These come from picking a new
-        #    point that is outside the domain of the CRS. The first step is
-        #    to apply the native transform to the input coordinates to make
-        #    sure they are in the appropriate range. Then detect all the
-        #    coordinates where the perturbation takes the point out of the
-        #    valid x-domain and fix them. After that do the same for points
-        #    that are outside the valid y-domain, which may reintroduce some
-        #    points outside of the valid x-domain
         proj_xyz = src_proj.transform_points(src_proj, x, y)
         source_x, source_y = proj_xyz[..., 0], proj_xyz[..., 1]
-        #    Detect all the coordinates where the perturbation takes the point
-        #    outside of the valid x-domain, and reverse the direction of the
-        #    perturbation to fix this.
+
+        factor = 360000.
+        delta = (src_proj.x_limits[1] - src_proj.x_limits[0]) / factor
         eps = 1e-9
-        invalid_x = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0] - eps,
-            source_x + x_perturbations > src_proj.x_limits[1] + eps)
-        if invalid_x.any():
-            x_perturbations[invalid_x] *= -1
-            y_perturbations[invalid_x] *= -1
-        #    Do the same for coordinates where the perturbation takes the point
-        #    outside of the valid y-domain. This may reintroduce some points
-        #    that will be outside the x-domain when the perturbation is
-        #    applied.
-        invalid_y = np.logical_or(
-            source_y + y_perturbations < src_proj.y_limits[0] - eps,
-            source_y + y_perturbations > src_proj.y_limits[1] + eps)
-        if invalid_y.any():
-            x_perturbations[invalid_y] *= -1
-            y_perturbations[invalid_y] *= -1
-        #    Keep track of the points where the perturbation direction was
-        #    reversed.
-        reversed_vectors = np.logical_xor(invalid_x, invalid_y)
-        #    See if there were any points where we cannot reverse the direction
-        #    of the perturbation to get the perturbed point within the valid
-        #    domain of the projection, and issue a warning if there are.
-        problem_points = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0] - eps,
-            source_x + x_perturbations > src_proj.x_limits[1] + eps)
-        if problem_points.any():
-            warnings.warn('Some vectors at source domain corners '
-                          'may not have been transformed correctly')
-        # 4: Transform this set of points to the projection coordinates and
-        #    find the angle between the base point and the perturbed point
-        #    in the projection coordinates (reversing the direction at any
-        #    points where the original was reversed in step 3).
-        proj_xyz = self.transform_points(src_proj,
-                                         source_x + x_perturbations,
-                                         source_y + y_perturbations)
-        target_x_perturbed = proj_xyz[..., 0]
-        target_y_perturbed = proj_xyz[..., 1]
-        projected_angles = np.arctan2(target_y_perturbed - target_y,
-                                      target_x_perturbed - target_x)
-        if reversed_vectors.any():
-            projected_angles[reversed_vectors] += np.pi
-        # 5: Form the projected vector components, preserving the magnitude
-        #    of the original vectors.
-        projected_u = vector_magnitudes * np.cos(projected_angles)
-        projected_v = vector_magnitudes * np.sin(projected_angles)
+
+        def projected_basis(x_delta, y_delta):
+            x_perturbations = np.full(source_x.shape, x_delta)
+            y_perturbations = np.full(source_y.shape, y_delta)
+
+            invalid_x = np.logical_or(
+                source_x + x_perturbations < src_proj.x_limits[0] - eps,
+                source_x + x_perturbations > src_proj.x_limits[1] + eps)
+            if invalid_x.any():
+                x_perturbations[invalid_x] *= -1
+                y_perturbations[invalid_x] *= -1
+
+            invalid_y = np.logical_or(
+                source_y + y_perturbations < src_proj.y_limits[0] - eps,
+                source_y + y_perturbations > src_proj.y_limits[1] + eps)
+            if invalid_y.any():
+                x_perturbations[invalid_y] *= -1
+                y_perturbations[invalid_y] *= -1
+
+            reversed_vectors = np.logical_xor(invalid_x, invalid_y)
+            proj_xyz = self.transform_points(
+                src_proj,
+                source_x + x_perturbations,
+                source_y + y_perturbations)
+            x_basis = proj_xyz[..., 0] - target_x
+            y_basis = proj_xyz[..., 1] - target_y
+            if target_is_angular:
+                x_basis *= np.cos(np.deg2rad(target_y))
+            if reversed_vectors.any():
+                x_basis[reversed_vectors] *= -1
+                y_basis[reversed_vectors] *= -1
+
+            norm = np.hypot(x_basis, y_basis)
+            x_basis = np.divide(
+                x_basis, norm,
+                out=np.full(x_basis.shape, np.nan),
+                where=norm > 0)
+            y_basis = np.divide(
+                y_basis, norm,
+                out=np.full(y_basis.shape, np.nan),
+                where=norm > 0)
+            valid = np.isfinite(x_basis) & np.isfinite(y_basis)
+            return x_basis, y_basis, valid
+
+        x_basis_u, x_basis_v, x_valid = projected_basis(delta, 0)
+        y_basis_u, y_basis_v, y_valid = projected_basis(0, delta)
+
+        x_angles = np.arctan2(x_basis_v, x_basis_u)
+        y_angles = np.arctan2(y_basis_v, y_basis_u) - np.pi / 2
+        x_sin = np.where(x_valid, np.sin(x_angles), 0)
+        x_cos = np.where(x_valid, np.cos(x_angles), 0)
+        y_sin = np.where(y_valid, np.sin(y_angles), 0)
+        y_cos = np.where(y_valid, np.cos(y_angles), 0)
+
+        rotation = np.arctan2(x_sin + y_sin, x_cos + y_cos)
+        projected_u = u * np.cos(rotation) - v * np.sin(rotation)
+        projected_v = u * np.sin(rotation) + v * np.cos(rotation)
+
+        invalid = (~x_valid & (u != 0)) | (~y_valid & (v != 0))
+        invalid |= ~np.isfinite(projected_u) | ~np.isfinite(projected_v)
+
+        if invalid.any():
+            fallback_u, fallback_v = self._transform_vectors_approx(
+                src_proj, x, y, u, v)
+            projected_u[invalid] = fallback_u[invalid]
+            projected_v[invalid] = fallback_v[invalid]
+
         return projected_u, projected_v
 
 
