@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 #
 # cython: embedsignature=True
+# cython: freethreading_compatible = True
 
 """
 Trace pulls together proj, GEOS and ``_crs.pyx`` to implement a function to project a
