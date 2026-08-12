@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ['3.11', '3.12', '3.13', '3.14']
+        python-version: ['3.11', '3.12', '3.13', '3.14', '3.14t']
         use-network: [true]
         include:
           - os: ubuntu-latest
@@ -80,8 +80,8 @@ jobs:
           if [ ${{ steps.minimum-packages.conclusion }} == 'skipped' ]; then
               # Default is to install just the minimum testing requirements,
               # but we want to get as much coverage as possible.
-              if [ ${{ matrix.python-version }} == '3.14' ]; then
-                  # remove this if loop when fiona wheels are available for py3.14
+              if [[ "${{ matrix.python-version }}" == '3.14' || "${{ matrix.python-version }}" == '3.14t' ]]; then
+                  # remove this if condition when fiona wheels are available for py3.14
                   # https://github.com/Toblerity/Fiona/issues/1504
                   EXTRA_PACKAGES=',ows,plotting'
                   pip install pykdtree
@@ -97,6 +97,9 @@ jobs:
         if: matrix.use-network
         # we need to force bash to use line continuations on Windows
         run: |
+          if [[ "${{ matrix.python-version }}" == '3.14t' ]]; then
+              export PYTHON_GIL=0
+          fi
           # Check that the downloader tool at least knows where to get the data from (but don't actually download it)
           python -m cartopy.feature.download gshhs physical --dry-run
           # It should also be available as a script
