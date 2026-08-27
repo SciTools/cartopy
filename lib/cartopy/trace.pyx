@@ -47,6 +47,7 @@ cdef bool close(double a, double b):
 
 
 @cython.final
+@cython.auto_pickle(False)
 cdef class LineAccumulator:
     cdef list[Line] lines
 
