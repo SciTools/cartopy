@@ -3011,7 +3011,7 @@ class AzimuthalEquidistant(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
 
-        self.threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
+        self.threshold = min(a, b) / 637.8137  # About 1e4 for defaults.
 
     @property
     def boundary(self):
