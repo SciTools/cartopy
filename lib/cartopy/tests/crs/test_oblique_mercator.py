@@ -105,6 +105,13 @@ class TestCrsArgs:
             (35364.23322, 5615460.21872),
         ),
         ParamTuple(
+            "gamma",
+            dict(azimuth=40.0, gamma=10.0),
+            dict(alpha="40.0", gamma="10.0"),
+            (-2858342.5567, 5224575.9255),
+            (-2537638.5498, 5292899.6039),
+        ),
+        ParamTuple(
             "combo",
             dict(
                 azimuth=90.0,
