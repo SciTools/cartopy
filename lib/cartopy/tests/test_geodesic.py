@@ -6,7 +6,7 @@
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 from cartopy import geodesic
 
@@ -132,36 +132,36 @@ def test_geometry_length_ndarray():
 
 def test_geometry_length_linestring():
     geod = geodesic.Geodesic()
-    geom = sgeom.LineString(np.array([lhr, jfk, lhr]))
+    geom = shapely.LineString(np.array([lhr, jfk, lhr]))
     expected = pytest.approx(lhr_to_jfk * 2, abs=1)
     assert geod.geometry_length(geom) == expected
 
 
 def test_geometry_length_multilinestring():
     geod = geodesic.Geodesic()
-    geom = sgeom.MultiLineString(
-        [sgeom.LineString(np.array([lhr, jfk])),
-         sgeom.LineString(np.array([tul, jfk]))])
+    geom = shapely.MultiLineString(
+        [shapely.LineString(np.array([lhr, jfk])),
+         shapely.LineString(np.array([tul, jfk]))])
     expected = pytest.approx(lhr_to_jfk + jfk_to_tul, abs=1)
     assert geod.geometry_length(geom) == expected
 
 
 def test_geometry_length_linearring():
     geod = geodesic.Geodesic()
-    geom = sgeom.LinearRing(np.array([lhr, jfk, tul]))
+    geom = shapely.LinearRing(np.array([lhr, jfk, tul]))
     expected = pytest.approx(lhr_to_jfk + jfk_to_tul + tul_to_lhr, abs=1)
     assert geod.geometry_length(geom) == expected
 
 
 def test_geometry_length_polygon():
     geod = geodesic.Geodesic()
-    geom = sgeom.Polygon(np.array([lhr, jfk, tul]))
+    geom = shapely.Polygon(np.array([lhr, jfk, tul]))
     expected = pytest.approx(lhr_to_jfk + jfk_to_tul + tul_to_lhr, abs=1)
     assert geod.geometry_length(geom) == expected
 
 
 def test_geometry_length_point():
     geod = geodesic.Geodesic()
-    geom = sgeom.Point(lhr)
+    geom = shapely.Point(lhr)
     with pytest.raises(TypeError):
         geod.geometry_length(geom)

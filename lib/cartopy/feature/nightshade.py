@@ -6,7 +6,7 @@
 import datetime
 
 import numpy as np
-import shapely.geometry as sgeom
+import shapely
 
 from .. import crs as ccrs
 from . import ShapelyFeature
@@ -93,7 +93,7 @@ class Nightshade(ShapelyFeature):
         kwargs.setdefault('facecolor', color)
         kwargs.setdefault('alpha', alpha)
 
-        geom = sgeom.Polygon(np.column_stack((x, y)))
+        geom = shapely.Polygon(np.column_stack((x, y)))
         return super().__init__(
             [geom], rotated_pole, **kwargs)
 

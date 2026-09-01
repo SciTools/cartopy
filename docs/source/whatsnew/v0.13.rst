@@ -10,7 +10,7 @@ Features
 * Peter Killick fixed the cartopy.crs.Mercator projection for non-zero central longitudes. (:pull:`633`)
 
 * Conversion between Matplotlib :class:`matplotlib.path.Path` and
-  :class:`shapely.geometry.Geometry <Shapely geometry>` using
+  :class:`shapely.Geometry <Shapely geometry>` using
   :func:`cartopy.mpl.patch.path_to_geos` and :func:`cartopy.mpl.patch.geos_to_path` now
   handles degenerate point paths.
 

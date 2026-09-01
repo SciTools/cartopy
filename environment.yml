@@ -4,6 +4,7 @@
 #   conda activate cartopy-dev
 #   pip install -e .
 #
+---
 name: cartopy-dev
 channels:
   - conda-forge
@@ -11,6 +12,7 @@ dependencies:
   - cython>=3.0
   - numpy>=1.26
   - shapely>=2.0
+  - pip
   - pyshp>=2.3.1
   - pyproj>=3.6.0
   # The testing label has the proper version of freetype included
@@ -32,7 +34,8 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery
   # Extras
-  - pre-commit
+  - fiona
+  - prek
   - pykdtree
   - ruff
   - setuptools_scm

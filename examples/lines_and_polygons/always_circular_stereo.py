@@ -41,7 +41,7 @@ def main():
     # Compute a circle in axes coordinates, which we can use as a boundary
     # for the map. We can pan/zoom as much as we like - the boundary will be
     # permanently circular.
-    theta = np.linspace(0, 2*np.pi, 100)
+    theta = np.linspace(0, 2 * np.pi, 100)
     center, radius = [0.5, 0.5], 0.5
     verts = np.vstack([np.sin(theta), np.cos(theta)]).T
     circle = mpath.Path(verts * radius + center)

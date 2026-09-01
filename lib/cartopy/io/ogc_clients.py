@@ -26,7 +26,7 @@ from xml.etree import ElementTree
 
 import numpy as np
 from PIL import Image
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy
 
@@ -149,13 +149,13 @@ def _target_extents(extent, requested_projection, available_projection):
     """
     # Start with the requested area.
     min_x, max_x, min_y, max_y = extent
-    target_box = sgeom.box(min_x, min_y, max_x, max_y)
+    target_box = shapely.box(min_x, min_y, max_x, max_y)
 
     # If the requested area (i.e. target_box) is bigger (or nearly bigger) than
     # the entire output requested_projection domain, then we erode the request
     # area to avoid re-projection instabilities near the projection boundary.
     buffered_target_box = target_box.buffer(requested_projection.threshold,
-                                            resolution=1)
+                                            quad_segs=1)
     fudge_mode = buffered_target_box.contains(requested_projection.domain)
     if fudge_mode:
         target_box = requested_projection.domain.buffer(
@@ -174,7 +174,7 @@ def _target_extents(extent, requested_projection, available_projection):
             # need to re-inflate.
             radius = min(max_x - min_x, max_y - min_y) / 5.0
             radius = min(radius, available_projection.threshold * 15)
-            poly = poly.buffer(radius, resolution=1)
+            poly = poly.buffer(radius, quad_segs=1)
             # Prevent the expanded request going beyond the
             # limits of the requested_projection.
             poly = available_projection.domain.intersection(poly)
@@ -923,17 +923,14 @@ class WFSGeometrySource:
                         data = self._find_polygon_coords(node, find_str)
                         points_data.extend(data)
 
-        geoms_by_srs = {}
+        geoms_by_srs = collections.defaultdict(list)
         for srs, x, y in linear_rings_data:
-            geoms_by_srs.setdefault(srs, []).append(
-                sgeom.LinearRing(zip(x, y)))
+            geoms_by_srs[srs].append(shapely.LinearRing(zip(x, y)))
         for srs, x, y in linestrings_data:
-            geoms_by_srs.setdefault(srs, []).append(
-                sgeom.LineString(zip(x, y)))
+            geoms_by_srs[srs].append(shapely.LineString(zip(x, y)))
         for srs, x, y in points_data:
-            geoms_by_srs.setdefault(srs, []).append(
-                sgeom.Point(zip(x, y)))
-        return geoms_by_srs
+            geoms_by_srs[srs].append(shapely.Point(zip(x, y)))
+        return dict(geoms_by_srs)
 
     def _find_polygon_coords(self, node, find_str):
         """

@@ -298,7 +298,7 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
         new_array[mask] = np.ma.masked
     else:
         new_array = temp_array[indices]
-    new_array.shape = (desired_ny, desired_nx) + (array.shape[2:])
+    new_array = new_array.reshape((desired_ny, desired_nx, *array.shape[2:]))
 
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.

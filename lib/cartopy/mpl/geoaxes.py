@@ -33,7 +33,7 @@ import matplotlib.spines as mspines
 import matplotlib.transforms as mtransforms
 import numpy as np
 import numpy.ma as ma
-import shapely.geometry as sgeom
+import shapely
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -59,6 +59,7 @@ _BACKG_IMG_CACHE = {}
 # A dictionary of background images in the directory specified by the
 # CARTOPY_USER_BACKGROUNDS environment variable.
 _USER_BG_IMGS = {}
+
 
 # XXX call this InterCRSTransform
 class InterProjectionTransform(mtransforms.Transform):
@@ -459,6 +460,7 @@ class GeoAxes(matplotlib.axes.Axes):
         # then we should autoscale the view.
         if self.get_autoscale_on() and self.ignore_existing_data_limits:
             self.autoscale_view()
+            self.ignore_existing_data_limits = False
 
         # apply_aspect may change the x or y data limits, so must be called
         # before the patch is updated.
@@ -513,6 +515,12 @@ class GeoAxes(matplotlib.axes.Axes):
         if self._autotitlepos is not None and not self._autotitlepos:
             return
 
+        titles = (self.title, self._left_title, self._right_title)
+
+        if not any(title.get_text() for title in titles):
+            # If the titles are all empty, there is no need to update their positions.
+            return
+
         from cartopy.mpl.gridliner import Gridliner
         gridliners = [a for a in self.artists if isinstance(a, Gridliner)]
         if not gridliners:
@@ -527,6 +535,8 @@ class GeoAxes(matplotlib.axes.Axes):
                 gl._draw_gridliner(renderer=renderer)
                 for label in (gl.top_label_artists +
                               gl.geo_label_artists):
+                    if not label.get_visible() or label.get_text() == "":
+                        continue
                     bb = label.get_tightbbox(renderer)
                     top = max(top, bb.ymax)
         if top < 0:
@@ -539,7 +549,6 @@ class GeoAxes(matplotlib.axes.Axes):
             return
 
         # Loop on titles to adjust
-        titles = (self.title, self._left_title, self._right_title)
         for title in titles:
             x, y0 = title.get_position()
             y = max(1.0, yn)
@@ -564,6 +573,8 @@ class GeoAxes(matplotlib.axes.Axes):
 
         self.dataLim.intervalx = self.projection.x_limits
         self.dataLim.intervaly = self.projection.y_limits
+        self.viewLim.intervalx = self.projection.x_limits
+        self.viewLim.intervaly = self.projection.y_limits
 
     def clear(self):
         """Clear the current Axes and add boundary lines."""
@@ -664,7 +675,7 @@ class GeoAxes(matplotlib.axes.Axes):
 
         for lon, lat in zip(lons, lats):
             circle = geod.circle(lon, lat, rad_km * 1e3, n_samples=n_samples)
-            geoms.append(sgeom.Polygon(circle))
+            geoms.append(shapely.Polygon(circle))
 
         feature = cartopy.feature.ShapelyFeature(geoms, ccrs.Geodetic(),
                                                  **kwargs)
@@ -747,14 +758,11 @@ class GeoAxes(matplotlib.axes.Axes):
 
     def _get_extent_geom(self, crs=None):
         # Perform the calculations for get_extent(), which just repackages it.
-        with self.hold_limits():
-            if self.get_autoscale_on():
-                self.autoscale_view()
-            [x1, y1], [x2, y2] = self.viewLim.get_points()
+        [x1, y1], [x2, y2] = self.viewLim.get_points()
 
-        domain_in_src_proj = sgeom.Polygon([[x1, y1], [x2, y1],
-                                            [x2, y2], [x1, y2],
-                                            [x1, y1]])
+        domain_in_src_proj = shapely.Polygon([[x1, y1], [x2, y1],
+                                              [x2, y2], [x1, y2],
+                                              [x1, y1]])
 
         # Determine target projection based on requested CRS.
         if crs is None:
@@ -778,7 +786,7 @@ class GeoAxes(matplotlib.axes.Axes):
                                  f' coordinate system {crs!r}')
 
         # Calculate intersection with boundary and project if necessary.
-        boundary_poly = sgeom.Polygon(self.projection.boundary)
+        boundary_poly = shapely.Polygon(self.projection.boundary)
         if proj != self.projection:
             # Erode boundary by threshold to avoid transform issues.
             # This is a workaround for numerical issues at the boundary.
@@ -809,9 +817,9 @@ class GeoAxes(matplotlib.axes.Axes):
         # plt.ylim - allowing users to set None for a minimum and/or
         # maximum value
         x1, x2, y1, y2 = extents
-        domain_in_crs = sgeom.polygon.LineString([[x1, y1], [x2, y1],
-                                                  [x2, y2], [x1, y2],
-                                                  [x1, y1]])
+        domain_in_crs = shapely.LineString([[x1, y1], [x2, y1],
+                                            [x2, y2], [x1, y2],
+                                            [x1, y1]])
 
         projected = None
 

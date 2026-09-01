@@ -9,6 +9,7 @@ include .gitattributes
 include .gitignore
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
+exclude .yamllint.yml
 include CHANGES
 include LICENSE
 include environment.yml

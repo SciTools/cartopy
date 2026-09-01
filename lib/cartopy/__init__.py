@@ -103,5 +103,5 @@ except ImportError:
 
 # Commonly used sub-modules. Imported here to provide end-user
 # convenience.
-import cartopy.crs  # noqa: E402  module-level imports
-import cartopy.feature  # noqa: E402,F401  (unused import)
+import cartopy.crs  # noqa: E402, F401
+import cartopy.feature  # noqa: E402,F401

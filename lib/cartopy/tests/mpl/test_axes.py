@@ -121,7 +121,7 @@ def test_geoaxes_subplot():
     assert isinstance(ax, GeoAxesSubplot)
 
 
-@pytest.mark.mpl_image_compare(filename='geoaxes_subslice.png')
+@pytest.mark.mpl_image_compare
 def test_geoaxes_no_subslice():
     """Test that we do not trigger matplotlib's line subslice optimization."""
     # This behavior caused lines with > 1000 points and
@@ -136,7 +136,7 @@ def test_geoaxes_no_subslice():
     return fig
 
 
-@pytest.mark.mpl_image_compare(filename='geoaxes_set_boundary_clipping.png')
+@pytest.mark.mpl_image_compare
 def test_geoaxes_set_boundary_clipping():
     """Test that setting the boundary works properly for clipping #1620."""
     lon, lat = np.meshgrid(np.linspace(-180., 180., 361),
@@ -154,3 +154,26 @@ def test_geoaxes_set_boundary_clipping():
                      transform=ax1.transAxes)
 
     return fig
+
+
+def test_shared_axes_zoom_propagation():
+    fig = plt.figure()
+    proj = ccrs.PlateCarree()
+    ax1 = fig.add_subplot(1, 2, 1, projection=proj)
+    ax2 = fig.add_subplot(1, 2, 2, projection=proj,
+                          sharex=ax1, sharey=ax1)
+
+    fig.draw_without_rendering()
+
+    # Simulate interactive zoom tool behavior:
+    # set_xbound/set_ybound use auto=None (no-op for autoscale)
+    # set_autoscalex/y_on(False) only affects the calling axes
+    ax1.set_xbound(-20, 20)
+    ax1.set_autoscalex_on(False)
+    ax1.set_ybound(-10, 10)
+    ax1.set_autoscaley_on(False)
+
+    fig.draw_without_rendering()
+
+    assert ax2.get_xlim() == (-20, 20)
+    assert ax2.get_ylim() == (-10, 10)

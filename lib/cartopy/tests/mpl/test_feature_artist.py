@@ -9,7 +9,7 @@ import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.crs as ccrs
 from cartopy.feature import ShapelyFeature
@@ -32,26 +32,12 @@ def test_freeze(source, expected):
 
 @pytest.fixture
 def feature():
-    circle1 = sgeom.Point(0, 0).buffer(1)
-    circle2 = sgeom.Point(0, 0).buffer(10)
-    square = sgeom.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
+    circle1 = shapely.Point(0, 0).buffer(1)
+    circle2 = shapely.Point(0, 0).buffer(10)
+    square = shapely.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
     geoms = [circle1, circle2, square]
     feature = ShapelyFeature(geoms, ccrs.PlateCarree())
     return feature
-
-
-def robinson_map():
-    """
-    Set up a common map for the image tests.  The extent is chosen to include
-    only the square geometry from `feature`.  This means that we can check that
-    `array` or a list of facecolors remains 1-to-1 with the list of geometries.
-    """
-    prj_crs = ccrs.Robinson()
-    fig, ax = plt.subplots(subplot_kw={'projection':prj_crs})
-    ax.set_extent([20, 180, -90, 90])
-    ax.coastlines()
-
-    return fig, ax
 
 
 def cached_paths(geom, target_projection):
@@ -63,58 +49,49 @@ def cached_paths(geom, target_projection):
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='feature_artist.png')
-def test_feature_artist_draw(feature):
-    fig, ax = robinson_map()
-    ax.add_feature(feature, facecolor='blue')
+@pytest.mark.parametrize(
+    'method',
+    ['default', 'facecolor_list', 'cmap', 'styled_feature', 'styler'])
+def test_feature_artist(feature, method):
+    # Set up a common map for the image tests.
+    # The extent is chosen to include only the square geometry from `feature`.
+    # This means that we can check that `array` or a list of facecolors remains 1-to-1
+    # with the list of geometries.
+    prj_crs = ccrs.Robinson()
+    fig, ax = plt.subplots(subplot_kw={'projection': prj_crs})
+    ax.set_extent([20, 180, -90, 90])
+    ax.coastlines()
 
-    return fig
+    match method:
+        case 'default':
+            ax.add_feature(feature, facecolor='blue')
 
+        case 'facecolor_list':
+            ax.add_feature(feature, facecolor=['red', 'green', 'blue'])
 
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='feature_artist.png')
-def test_feature_artist_draw_facecolor_list(feature):
-    fig, ax = robinson_map()
-    ax.add_feature(feature, facecolor=['red', 'green', 'blue'])
+        case 'cmap':
+            cmap = mcolors.ListedColormap(['red', 'gray', 'blue'])
+            ax.add_feature(feature, cmap=cmap, array=[0, 0, 1])
 
-    return fig
+        case 'styled_feature':
+            geoms = list(feature.geometries())
+            styled_feature = ShapelyFeature(geoms, crs=ccrs.PlateCarree(),
+                                            facecolor='blue')
+            ax.add_feature(styled_feature)
 
+        case 'styler':
+            geoms = list(feature.geometries())
 
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='feature_artist.png')
-def test_feature_artist_draw_cmap(feature):
-    fig, ax = robinson_map()
+            def styler(geom):
+                if geom == geoms[1]:
+                    return {'facecolor': 'red'}
+                else:
+                    return {'facecolor': 'blue'}
 
-    cmap = mcolors.ListedColormap(['red', 'gray', 'blue'])
-    ax.add_feature(feature, cmap=cmap, array=[0, 0, 1])
+            ax.add_feature(feature, facecolor='grey', styler=styler)
 
-    return fig
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='feature_artist.png')
-def test_feature_artist_draw_styled_feature(feature):
-    geoms = list(feature.geometries())
-    styled_feature = ShapelyFeature(geoms, crs=ccrs.PlateCarree(), facecolor='blue')
-
-    fig, ax = robinson_map()
-    ax.add_feature(styled_feature)
-
-    return fig
-
-
-@pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='feature_artist.png')
-def test_feature_artist_draw_styler(feature):
-    geoms = list(feature.geometries())
-
-    def styler(geom):
-        if geom == geoms[1]:
-            return {'facecolor': 'red'}
-        else:
-            return {'facecolor':'blue'}
-
-    fig, ax = robinson_map()
-    ax.add_feature(feature, facecolor='grey', styler=styler)
+        case _:
+            raise ValueError(f'Unknown feature artist draw method {method!r}')
 
     return fig
 
@@ -137,7 +114,7 @@ def test_feature_artist_autolim(autolim):
     plot_crs = ccrs.PlateCarree(central_longitude=180)
     fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
 
-    square = sgeom.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
+    square = shapely.Polygon([(30, 0), (50, 0), (50, 20), (30, 20), (30, 0)])
     ax.add_geometries([square], crs=ccrs.PlateCarree(), autolim=autolim)
 
     if autolim:

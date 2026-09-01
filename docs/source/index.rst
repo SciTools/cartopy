@@ -50,4 +50,4 @@ There are many ways to get involved in the development of cartopy:
    re-designing its layout/logos etc. The `documentation source <https://github.com/SciTools/cartopy>`_ is kept in the same repository as the source code.
  * Contribute bug fixes (:issues:`a list of outstanding bugs can be found on GitHub <Type%3A%20bug>`).
  * :ref:`contribute` describes some simple steps to get started when contributing code to Cartopy.
- * Chat with users and developers in the `Gitter chat room <https://gitter.im/SciTools/cartopy>`_.
+ * Chat with users and developers in the `Discourse chat channel <https://discourse.matplotlib.org/chat/c/cartopy/11>`_ (direct link works after Discourse login).

@@ -11,7 +11,13 @@ import warnings
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
 import pytest
-import shapely.geometry as sgeom
+import shapely
+
+from cartopy.tests.conftest import _HAS_PYKDTREE_OR_SCIPY
+
+
+if not _HAS_PYKDTREE_OR_SCIPY:
+    pytest.skip('pykdtree or scipy is required', allow_module_level=True)
 
 from cartopy import config
 import cartopy.crs as ccrs
@@ -93,7 +99,7 @@ def test_google_tile_styles():
 def test_google_wts():
     gt = cimgt.GoogleTiles()
 
-    ll_target_domain = sgeom.box(-15, 50, 0, 60)
+    ll_target_domain = shapely.box(-15, 50, 0, 60)
     multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 
@@ -130,7 +136,7 @@ def test_tile_bbox_y0_at_south_pole():
 def test_tile_find_images():
     gt = cimgt.GoogleTiles()
     # Test the find_images method on a GoogleTiles instance.
-    ll_target_domain = sgeom.box(-10, 50, 10, 60)
+    ll_target_domain = shapely.box(-10, 50, 10, 60)
     multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 
@@ -143,7 +149,7 @@ def test_image_for_domain():
     gt = cimgt.GoogleTiles()
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
 
-    ll_target_domain = sgeom.box(-10, 50, 10, 60)
+    ll_target_domain = shapely.box(-10, 50, 10, 60)
     multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 
@@ -160,7 +166,7 @@ def test_image_for_domain():
 def test_quadtree_wts():
     qt = cimgt.QuadtreeTiles()
 
-    ll_target_domain = sgeom.box(-15, 50, 0, 60)
+    ll_target_domain = shapely.box(-15, 50, 0, 60)
     multi_poly = qt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 
@@ -346,7 +352,7 @@ def test_wmts_cache(cache_dir, tmp_path):
     # URI = 'https://map1c.vis.earthdata.nasa.gov/wmts-geo/wmts.cgi'
     # layer_name = 'VIIRS_CityLights_2012'
     URI = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/WMTS/1.0.0/WMTSCapabilities.xml'
-    layer_name='USGSImageryOnly'
+    layer_name = 'USGSImageryOnly'
     projection = ccrs.PlateCarree()
 
     # Fetch tiles and save them in the cache
@@ -424,7 +430,7 @@ def test_cache(cache_dir, tmp_path):
         gt = cimgt.GoogleTiles(cache=tmpdir_str)
     gt._image_url = types.MethodType(GOOGLE_IMAGE_URL_REPLACEMENT, gt)
 
-    ll_target_domain = sgeom.box(-10, 50, 10, 60)
+    ll_target_domain = shapely.box(-10, 50, 10, 60)
     multi_poly = gt.crs.project_geometry(ll_target_domain, ccrs.PlateCarree())
     target_domain = multi_poly.geoms[0]
 

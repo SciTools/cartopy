@@ -18,7 +18,7 @@ from matplotlib.lines import Line2D as Line
 from matplotlib.patheffects import Stroke
 import matplotlib.pyplot as plt
 import numpy as np
-import shapely.geometry as sgeom
+import shapely
 from shapely.ops import transform as geom_transform
 
 import cartopy.crs as ccrs
@@ -104,7 +104,7 @@ def main():
     # Add the land, coastlines and the extent of the Solomon Islands.
     sub_ax.add_feature(cfeature.LAND)
     sub_ax.coastlines()
-    extent_box = sgeom.box(extent[0], extent[2], extent[1], extent[3])
+    extent_box = shapely.box(extent[0], extent[2], extent[1], extent[3])
     sub_ax.add_geometries([extent_box], ccrs.PlateCarree(), facecolor='none',
                           edgecolor='blue', linewidth=2)
 

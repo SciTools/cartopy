@@ -14,7 +14,7 @@ and `Matplotlib Path API <https://matplotlib.org/stable/api/path_api.html>`_.
 
 from matplotlib.path import Path
 import numpy as np
-import shapely.geometry as sgeom
+import shapely
 
 
 def _ensure_path_closed(path):
@@ -42,12 +42,12 @@ def _ensure_path_closed(path):
         path.should_simplify = should_simplify
 
     if len(polygons) == 0:
-        return Path(np.empty((0,2)))
+        return Path(np.empty((0, 2)))
 
     codes, vertices = [], []
     for poly in polygons:
         vertices.extend([poly[0], *poly])
-        codes.extend([Path.MOVETO, *[Path.LINETO]*(len(poly) - 1), Path.CLOSEPOLY])
+        codes.extend([Path.MOVETO, *[Path.LINETO] * (len(poly) - 1), Path.CLOSEPOLY])
 
     return Path(vertices, codes)
 
@@ -88,14 +88,16 @@ def shapely_to_path(shape):
     Parameters
     ----------
     shape
-        :class:`shapely.Point`,
-        :class:`shapely.LineString`,
-        :class:`shapely.LinearRing`,
-        :class:`shapely.Polygon`,
-        :class:`shapely.MultiPoint`,
-        :class:`shapely.MultiPolygon`,
-        :class:`shapely.MultiLineString`,
-        :class:`shapely.GeometryCollection`.
+        One of the following Shapely objects:
+
+        - :class:`shapely.Point`,
+        - :class:`shapely.LineString`,
+        - :class:`shapely.LinearRing`,
+        - :class:`shapely.Polygon`,
+        - :class:`shapely.MultiPoint`,
+        - :class:`shapely.MultiPolygon`,
+        - :class:`shapely.MultiLineString`,
+        - :class:`shapely.GeometryCollection`.
 
     Returns
     -------
@@ -105,24 +107,24 @@ def shapely_to_path(shape):
     """
     if shape.is_empty:
         return Path(np.empty([0, 2]))
-    elif isinstance(shape, sgeom.LinearRing):
-        return Path(np.column_stack(shape.xy), closed=True)
-    elif isinstance(shape, (sgeom.LineString, sgeom.Point)):
-        return Path(np.column_stack(shape.xy))
-    elif isinstance(shape, sgeom.Polygon):
-        def poly_codes(poly):
-            codes = np.ones(len(poly.xy[0])) * Path.LINETO
-            codes[0] = Path.MOVETO
-            codes[-1] = Path.CLOSEPOLY
-            return codes
-        vertices = np.concatenate([np.array(shape.exterior.xy)] +
-                                  [np.array(ring.xy) for ring in
-                                   shape.interiors], 1).T
-        codes = np.concatenate([poly_codes(shape.exterior)] +
-                               [poly_codes(ring) for ring in shape.interiors])
+    elif isinstance(shape, shapely.LinearRing):
+        return Path(shapely.get_coordinates(shape), closed=True)
+    elif isinstance(shape, (shapely.LineString, shapely.Point)):
+        return Path(shapely.get_coordinates(shape))
+    elif isinstance(shape, shapely.Polygon):
+        rings = [shape.exterior, *shape.interiors]
+        # Shapely rings include the closing duplicate point, so len(ring.coords)
+        # gives the number of vertices contributed by each ring.
+        counts = np.fromiter((len(ring.coords) for ring in rings), dtype=np.intp,
+                             count=len(rings))
+        vertices = shapely.get_coordinates(shape)
+        codes = np.full(len(vertices), Path.LINETO, dtype=Path.code_type)
+        starts = np.cumsum(counts) - counts
+        codes[starts] = Path.MOVETO
+        codes[starts + counts - 1] = Path.CLOSEPOLY
         return Path(vertices, codes)
-    elif isinstance(shape, (sgeom.MultiPolygon, sgeom.GeometryCollection,
-                            sgeom.MultiLineString, sgeom.MultiPoint)):
+    elif isinstance(shape, (shapely.MultiPolygon, shapely.GeometryCollection,
+                            shapely.MultiLineString, shapely.MultiPoint)):
         return Path.make_compound_path(*[shapely_to_path(geom) for geom in shape.geoms])
     else:
         raise ValueError(f'Unsupported shape type {type(shape)}.')
@@ -139,15 +141,16 @@ def path_to_shapely(path):
 
     Returns
     -------
-    One of the following Shapely objects:
+    Geometry
+        One of the following Shapely objects:
 
-        :class:`shapely.Polygon`,
-        :class:`shapely.LineString`
-        :class:`shapely.Point`,
-        :class:`shapely.MultiPolygon`
-        :class:`shapely.MultiLineString`
-        :class:`shapely.MultiPoint`
-        :class:`shapely.GeometryCollection`.
+        - :class:`shapely.Polygon`,
+        - :class:`shapely.LineString`
+        - :class:`shapely.Point`,
+        - :class:`shapely.MultiPolygon`
+        - :class:`shapely.MultiLineString`
+        - :class:`shapely.MultiPoint`
+        - :class:`shapely.GeometryCollection`.
 
     """
     # Convert path into numpy array of vertices (and associated codes)
@@ -179,11 +182,11 @@ def path_to_shapely(path):
                                                     axis=1)
 
         if all(verts_same_as_first):
-            points.append(sgeom.Point(path_verts[0, :]))
-        elif not(path_verts.shape[0] > 4 and path_codes[-1] == Path.CLOSEPOLY):
-            linestrings.append(sgeom.LineString(path_verts))
+            points.append(shapely.Point(path_verts[0, :]))
+        elif not (path_verts.shape[0] >= 4 and path_codes[-1] == Path.CLOSEPOLY):
+            linestrings.append(shapely.LineString(path_verts))
         else:
-            geom = sgeom.Polygon(path_verts[:-1, :])
+            geom = shapely.Polygon(path_verts[:-1, :])
             # If geom is a Polygon and is contained within the last geom in
             # polygon_bits, it usually needs to be an interior to that geom (e.g. a
             # lake within a land mass).  Sometimes there is a further geom within
@@ -203,7 +206,7 @@ def path_to_shapely(path):
     for external_poly, internal_polys in polygon_bits:
         if internal_polys:
             exteriors = [geom.exterior for geom in internal_polys]
-            geom = sgeom.Polygon(external_poly.exterior, exteriors)
+            geom = shapely.Polygon(external_poly.exterior, exteriors)
         else:
             geom = external_poly
 
@@ -220,23 +223,23 @@ def path_to_shapely(path):
         if not linestrings:
             if not points:
                 # No geometries.  Return an empty point
-                return sgeom.Point()
+                return shapely.Point()
             elif len(points) > 1:
-                return sgeom.MultiPoint(points)
+                return shapely.MultiPoint(points)
             else:
                 return points[0]
         elif not points:
             if len(linestrings) > 1:
-                return sgeom.MultiLineString(linestrings)
+                return shapely.MultiLineString(linestrings)
             else:
                 return linestrings[0]
     else:
         if not linestrings and not points:
             if len(polygons) > 1:
-                return sgeom.MultiPolygon(polygons)
+                return shapely.MultiPolygon(polygons)
             else:
                 return polygons[0]
 
     # If we got to here, we have at least two types of geometry, so return
     # a geometry collection.
-    return sgeom.GeometryCollection(polygons + linestrings + points)
+    return shapely.GeometryCollection(polygons + linestrings + points)

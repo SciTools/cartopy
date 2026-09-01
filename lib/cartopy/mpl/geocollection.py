@@ -93,6 +93,13 @@ class GeoQuadMesh(QuadMesh):
         # Update color limits for the rest of the cells.
         super().set_clim(vmin, vmax)
 
+    def remove(self):
+        # Also remove the wrapped collection fix if it exists, otherwise it
+        # will be orphaned in the axes and cause a memory leak.
+        if hasattr(self, '_wrapped_collection_fix'):
+            self._wrapped_collection_fix.remove()
+        super().remove()
+
     def get_datalim(self, transData):
         # Return the corners that were calculated in
         # the pcolormesh routine.

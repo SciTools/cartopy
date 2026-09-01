@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pytest
-from shapely.geos import geos_version
+from shapely import geos_version
 
 import cartopy.crs as ccrs
+from cartopy.mpl import _MPL_311
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import (
     LATITUDE_FORMATTER,
@@ -59,7 +60,7 @@ TEST_PROJS = [
 
 @pytest.mark.natural_earth
 # Robinson projection is slightly better in Proj 6+.
-@pytest.mark.mpl_image_compare(filename='gridliner1.png', tolerance=0.73)
+@pytest.mark.mpl_image_compare(tolerance=0.73)
 def test_gridliner():
     ny, nx = 2, 4
 
@@ -132,13 +133,15 @@ def test_gridliner_specified_lines():
 
 # The tolerance on these tests are particularly high because of the high number
 # of text objects. A new testing strategy is needed for this kind of test.
-grid_label_tol = 3.9
+grid_label_tol = 21.1 if not _MPL_311 else 0.5
+grid_label_inline_tol = 19.1 if not _MPL_311 else 0.5
+grid_label_inline_usa_tol = 20.5 if not _MPL_311 else 0.5
+grid_label_bbox_tol = 43.3 if not _MPL_311 else 0.5
 
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels.png',
-                               tolerance=grid_label_tol)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_tol)
 def test_grid_labels():
     fig = plt.figure(figsize=(10, 10))
 
@@ -210,9 +213,8 @@ def test_grid_labels():
 
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_tight.png',
-                               tolerance=2.9)
-def test_grid_labels_tight():
+@pytest.mark.mpl_image_compare(style='mpl20')
+def test_grid_labels_tight(text_placeholders):
     # Ensure tight layout accounts for gridlines
     fig = plt.figure(figsize=(7, 5))
 
@@ -257,10 +259,8 @@ def test_grid_labels_tight():
     return fig
 
 
-@pytest.mark.mpl_image_compare(
-    filename='gridliner_constrained_adjust_datalim.png',
-    tolerance=grid_label_tol)
-def test_gridliner_constrained_adjust_datalim():
+@pytest.mark.mpl_image_compare(style='mpl20')
+def test_gridliner_constrained_adjust_datalim(text_placeholders):
     fig = plt.figure(figsize=(8, 4), layout="constrained")
 
     # Make some axes that will fill the available space while maintaining
@@ -293,7 +293,7 @@ def test_gridliner_constrained_adjust_datalim():
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.parametrize('proj', TEST_PROJS)
-@pytest.mark.mpl_image_compare(style='mpl20')
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_inline_tol)
 def test_grid_labels_inline(proj):
     fig = plt.figure()
     if isinstance(proj, tuple):
@@ -309,7 +309,7 @@ def test_grid_labels_inline(proj):
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
 @pytest.mark.natural_earth
 @pytest.mark.parametrize('proj', TEST_PROJS)
-@pytest.mark.mpl_image_compare(style='mpl20', tolerance=0.79)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_inline_usa_tol)
 def test_grid_labels_inline_usa(proj):
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -333,8 +333,7 @@ def test_grid_labels_inline_usa(proj):
 
 @pytest.mark.natural_earth
 @pytest.mark.skipif(geos_version == (3, 9, 0), reason="GEOS intersection bug")
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_bbox_style.png',
-                               tolerance=grid_label_tol)
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=grid_label_bbox_tol)
 def test_gridliner_labels_bbox_style():
     top = 49.3457868  # north lat
     left = -124.7844079  # west long
@@ -495,7 +494,7 @@ def test_gridliner_count_draws():
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(
     baseline_dir='baseline_images/mpl/test_mpl_integration',
-    filename='simple_global.png')
+    filename='test_simple_global.png')
 def test_gridliner_remove():
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
@@ -519,10 +518,29 @@ def test_gridliner_save_tight_bbox():
     fig.savefig(io.BytesIO(), bbox_inches='tight')
 
 
+def test_gridliner_ylabel_rotation_90_tight_bbox():
+    # Regression test for ylabel rotation=90 with bbox_inches=tight (gh2394).
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    ax.set_extent([80, 170, -45, 30], crs=ccrs.PlateCarree())
+    gl = ax.gridlines(
+        draw_labels={"left": "y"},
+        ylabel_style={"rotation": 90},
+    )
+
+    fig.draw_without_rendering()
+    n_before = sum(1 for a in gl.label_artists if a.get_visible())
+    assert n_before > 0
+
+    fig.savefig(io.BytesIO(), bbox_inches='tight')
+    n_after = sum(1 for a in gl.label_artists if a.get_visible())
+
+    assert n_after == n_before
+
+
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='gridliner_labels_title_adjust.png',
-                               tolerance=grid_label_tol)
-def test_gridliner_title_adjust():
+@pytest.mark.mpl_image_compare(style='mpl20')
+def test_gridliner_title_adjust(text_placeholders):
     # Test that title do not overlap labels
     projs = [ccrs.Mercator(), ccrs.AlbersEqualArea(), ccrs.LambertConformal(),
              ccrs.Orthographic()]
@@ -531,8 +549,8 @@ def test_gridliner_title_adjust():
     # not in these tests).
     plt.rcParams['axes.titley'] = None
 
-    fig = plt.figure(layout='constrained')
-    fig.get_layout_engine().set(h_pad=1/8)
+    fig = plt.figure(figsize=(8, 6), layout='constrained')
+    fig.get_layout_engine().set(h_pad=1 / 8)
     for n, proj in enumerate(projs, 1):
         ax = fig.add_subplot(2, 2, n, projection=proj)
         ax.coastlines()
@@ -605,3 +623,20 @@ def test_gridliner_with_globe():
     fig.draw_without_rendering()
 
     assert gl in ax.artists
+
+
+def test_gridliner_geo_labels_respect_side_visibility():
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.Robinson())
+    ax.set_global()
+    gl = ax.gridlines(draw_labels=True)
+    gl.ylocator = mticker.FixedLocator([-60, -30, 0, 30, 60])
+
+    fig.draw_without_rendering()
+    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
+    assert labels == ['60°S', '60°S', '60°N', '60°N']
+
+    gl.right_labels = False
+    fig.draw_without_rendering()
+    labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
+    assert labels == ['60°S', '60°N']

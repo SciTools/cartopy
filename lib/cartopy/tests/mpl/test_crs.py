@@ -10,8 +10,7 @@ import cartopy.crs as ccrs
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(
-    filename="igh_land.png", tolerance=0.5)
+@pytest.mark.mpl_image_compare
 def test_igh_land():
     crs = ccrs.InterruptedGoodeHomolosine(emphasis="land")
     ax = plt.axes(projection=crs)
@@ -21,7 +20,7 @@ def test_igh_land():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename="igh_ocean.png", tolerance=0.5)
+@pytest.mark.mpl_image_compare
 def test_igh_ocean():
     crs = ccrs.InterruptedGoodeHomolosine(
         central_longitude=-160, emphasis="ocean"
@@ -33,7 +32,7 @@ def test_igh_ocean():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='lambert_conformal_south.png')
+@pytest.mark.mpl_image_compare
 def test_lambert_south():
     # Reference image: https://www.icsm.gov.au/mapping/map_projections.html
     crs = ccrs.LambertConformal(central_longitude=140, cutoff=65,

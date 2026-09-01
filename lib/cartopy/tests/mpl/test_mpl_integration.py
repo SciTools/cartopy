@@ -13,10 +13,12 @@ import pyproj
 import pytest
 
 import cartopy.crs as ccrs
+from cartopy.mpl import _MPL_311
 from cartopy.tests.conftest import requires_scipy
 
 
 proj_version = parse_version(pyproj.proj_version_str)
+
 
 @pytest.mark.natural_earth
 @pytest.mark.mpl_image_compare(filename='global_contour_wrap.png',
@@ -129,9 +131,7 @@ def test_global_hexbin_wrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(
-    filename='global_hexbin_wrap.png',
-    tolerance=0.5)
+@pytest.mark.mpl_image_compare(filename='global_hexbin_wrap.png')
 def test_global_hexbin_wrap_transform():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines(zorder=2)
@@ -151,7 +151,7 @@ def test_global_hexbin_wrap_transform():
 
 @pytest.mark.filterwarnings("ignore:Unable to determine extent")
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='simple_global.png')
+@pytest.mark.mpl_image_compare
 def test_simple_global():
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
@@ -176,7 +176,7 @@ def test_simple_global():
                  id='InterruptedGoodeHomolosine'),
     ccrs.LambertCylindrical,
     ccrs.LambertZoneII,
-    pytest.param(ccrs.Spilhaus,marks=pytest.mark.skipif(
+    pytest.param(ccrs.Spilhaus, marks=pytest.mark.skipif(
             (proj_version < parse_version("9.6.0")),
             reason="Requires PROJ >= 9.6.0"
         )),
@@ -237,7 +237,7 @@ def test_cursor_values():
     x, y = np.array([-181.5, 50.])
     r = ax.format_coord(x, y)
     assert (r.encode('ascii', 'ignore') ==
-            b'-181.5, 50 (50.000000N, 178.500000E)')
+            b'-181.5, 50 (50.000000N, 181.500000W)')
 
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2, 2363093.4])
@@ -249,6 +249,7 @@ def test_cursor_values():
 
 PARAMETRIZE_PCOLORMESH_WRAP = pytest.mark.parametrize(
     'mesh_data_kind', ['standard', 'rgb', 'rgba'])
+
 
 def _to_rgb(data, mesh_data_kind):
     """
@@ -274,8 +275,7 @@ def _to_rgb(data, mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap1.png',
-                               tolerance=1.27)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap1.png')
 def test_pcolormesh_global_with_wrap1(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -362,8 +362,7 @@ def test_pcolormesh_get_array_with_mask(mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap2.png',
-                               tolerance=1.87)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap2.png')
 def test_pcolormesh_global_with_wrap2(mesh_data_kind):
     # make up some realistic data with bounds (such as data from the UM)
     nx, ny = 36, 18
@@ -396,8 +395,7 @@ def test_pcolormesh_global_with_wrap2(mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png')
 def test_pcolormesh_global_with_wrap3(mesh_data_kind):
     nx, ny = 33, 17
     xbnds = np.linspace(-1.875, 358.125, nx, endpoint=True)
@@ -442,8 +440,7 @@ def test_pcolormesh_global_with_wrap3(mesh_data_kind):
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png')
 def test_pcolormesh_set_array_with_mask(mesh_data_kind):
     """Testing that set_array works with masked arrays properly."""
     nx, ny = 33, 17
@@ -530,8 +527,7 @@ def test_pcolormesh_set_array_nowrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_global_wrap3.png',
-                               tolerance=1.42)
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_global_with_wrap3.png')
 def test_pcolormesh_set_clim_with_mask():
     """Testing that set_clim works with masked arrays properly."""
     nx, ny = 33, 17
@@ -579,8 +575,7 @@ def test_pcolormesh_set_clim_with_mask():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_limited_area_wrap.png',
-                               tolerance=1.83)
+@pytest.mark.mpl_image_compare(tolerance=1.83)
 def test_pcolormesh_limited_area_wrap():
     # make up some realistic data with bounds (such as data from the UM's North
     # Atlantic Europe model)
@@ -623,7 +618,7 @@ def test_pcolormesh_limited_area_wrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_single_column_wrap.png')
+@pytest.mark.mpl_image_compare
 def test_pcolormesh_single_column_wrap():
     # Check a wrapped mesh like test_pcolormesh_limited_area_wrap, but only use
     # a single column, which could break depending on how wrapping is
@@ -657,7 +652,8 @@ def test_pcolormesh_wrap_gouraud_shading_failing_mask_creation():
 
     fig = plt.figure(figsize=(10, 6))
     ax = fig.add_subplot(1, 1, 1, projection=ccrs.Mercator())
-    ax.pcolormesh(x, y, data, transform=ccrs.PlateCarree(), shading='gouraud')
+    with pytest.warns(UserWarning, match="Handling wrapped coordinates with gouraud"):
+        ax.pcolormesh(x, y, data, transform=ccrs.PlateCarree(), shading='gouraud')
 
 
 def test_pcolormesh_diagonal_wrap():
@@ -691,8 +687,47 @@ def test_pcolormesh_nan_wrap():
     assert len(pcolor.get_paths()) == 2
 
 
+def test_pcolormesh_remove():
+    # When a wrapped GeoQuadMesh is removed, its internal _wrapped_collection_fix
+    # must also be removed to prevent a memory leak.
+
+    # wrapped mesh
+    xs, ys = np.meshgrid([120, 160, 200], [-30, 0, 30])
+    data = np.ones((2, 2)) * np.nan
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    mesh = ax.pcolormesh(xs, ys, data)
+
+    assert hasattr(mesh, '_wrapped_collection_fix'), \
+        'Expected wrapping to add _wrapped_collection_fix'
+    assert len(ax.collections) == 2, \
+        'Expected 2 collections (mesh + wrapped fix) before remove'
+
+    mesh.remove()
+
+    assert len(ax.collections) == 0, \
+        'Expected 0 collections after remove (both mesh and wrapped fix)'
+
+    # no wrapped mesh
+    xs2, ys2 = np.meshgrid([-60, -30, 0], [-30, 0, 30])
+    data2 = np.ones((2, 2))
+
+    ax2 = plt.axes(projection=ccrs.PlateCarree())
+    mesh2 = ax2.pcolormesh(xs2, ys2, data2)
+
+    assert not hasattr(mesh2, '_wrapped_collection_fix'), \
+        'Expected no wrapping for non-wrapped mesh'
+    assert len(ax2.collections) == 1, \
+        'Expected 1 collection before remove'
+
+    mesh2.remove()
+
+    assert len(ax2.collections) == 0, \
+        'Expected 0 collections after remove'
+
+
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_goode_wrap.png')
+@pytest.mark.mpl_image_compare
 def test_pcolormesh_goode_wrap():
     # global data on an Interrupted Goode Homolosine projection
     # shouldn't spill outside projection boundary
@@ -709,7 +744,7 @@ def test_pcolormesh_goode_wrap():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png')
+@pytest.mark.mpl_image_compare
 def test_pcolormesh_mercator_wrap():
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
@@ -724,7 +759,7 @@ def test_pcolormesh_mercator_wrap():
 
 @PARAMETRIZE_PCOLORMESH_WRAP
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='pcolormesh_mercator_wrap.png')
+@pytest.mark.mpl_image_compare(filename='test_pcolormesh_mercator_wrap.png')
 def test_pcolormesh_wrap_set_array(mesh_data_kind):
     x = np.linspace(0, 360, 73)
     y = np.linspace(-87.5, 87.5, 36)
@@ -786,7 +821,7 @@ def test__wrap_args_default_shading():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='quiver_plate_carree.png')
+@pytest.mark.mpl_image_compare
 def test_quiver_plate_carree():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -810,7 +845,7 @@ def test_quiver_plate_carree():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='quiver_rotated_pole.png')
+@pytest.mark.mpl_image_compare
 def test_quiver_rotated_pole():
     nx, ny = 22, 36
     x = np.linspace(311.91998291, 391.11999512, nx, endpoint=True)
@@ -837,7 +872,7 @@ def test_quiver_rotated_pole():
 
 @requires_scipy
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='quiver_regrid.png')
+@pytest.mark.mpl_image_compare
 def test_quiver_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -857,8 +892,7 @@ def test_quiver_regrid():
 
 @requires_scipy
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='quiver_regrid_with_extent.png',
-                               tolerance=0.54)
+@pytest.mark.mpl_image_compare(tolerance=0.54)
 def test_quiver_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -879,8 +913,8 @@ def test_quiver_regrid_with_extent():
 
 @requires_scipy
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='barbs_plate_carree.png')
-def test_barbs():
+@pytest.mark.mpl_image_compare
+def test_barbs_plate_carree():
     x = np.arange(-60, 45, 5)
     y = np.arange(30, 75, 5)
     x2d, y2d = np.meshgrid(x, y)
@@ -903,7 +937,7 @@ def test_barbs():
 
 @requires_scipy
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='barbs_regrid.png')
+@pytest.mark.mpl_image_compare
 def test_barbs_regrid():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -923,8 +957,7 @@ def test_barbs_regrid():
 
 @requires_scipy
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='barbs_regrid_with_extent.png',
-                               tolerance=0.54)
+@pytest.mark.mpl_image_compare(tolerance=0.54)
 def test_barbs_regrid_with_extent():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -945,7 +978,7 @@ def test_barbs_regrid_with_extent():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='barbs_1d.png')
+@pytest.mark.mpl_image_compare
 def test_barbs_1d():
     x = np.array([20., 30., -17., 15.])
     y = np.array([-1., 35., 11., 40.])
@@ -962,7 +995,7 @@ def test_barbs_1d():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='barbs_1d_transformed.png')
+@pytest.mark.mpl_image_compare
 def test_barbs_1d_transformed():
     x = np.array([20., 30., -17., 15.])
     y = np.array([-1., 35., 11., 40.])
@@ -980,7 +1013,7 @@ def test_barbs_1d_transformed():
 
 @requires_scipy
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='streamplot.png', style='mpl20')
+@pytest.mark.mpl_image_compare(style='mpl20')
 def test_streamplot():
     x = np.arange(-60, 42.5, 2.5)
     y = np.arange(30, 72.5, 2.5)
@@ -999,7 +1032,7 @@ def test_streamplot():
 
 
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare()
+@pytest.mark.mpl_image_compare(style='mpl20', tolerance=5.58 if not _MPL_311 else 0.5)
 def test_annotate():
     """ test a variety of annotate options on multiple projections
 

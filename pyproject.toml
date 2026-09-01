@@ -1,6 +1,5 @@
 [build-system]
 requires = [
-    "wheel",
     "setuptools >= 77.0.3",
     "Cython >= 3.0",
     # numpy requirement for wheel builds for distribution on PyPI - building
@@ -39,6 +38,7 @@ classifiers = [
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
     'Programming Language :: Python :: 3 :: Only',
     'Topic :: Scientific/Engineering',
     'Topic :: Scientific/Engineering :: GIS',
@@ -48,6 +48,7 @@ dependencies = [
     "numpy>=1.26",
     "matplotlib>=3.8",
     "shapely>=2.0",
+    "packaging>=21",
     "pyshp>=2.3.1",
     "pyproj>=3.6",
 ]
@@ -95,12 +96,14 @@ ignore = [
 addopts = "--mpl"
 testpaths = ["lib"]
 python_files = ["test_*.py"]
-
-[tool.ruff]
-lint.select = ["E", "F", "I", "UP", "W"]
-lint.ignore = [
-    "UP038",  # deprecated rule that should be ignored
+filterwarnings = [
+    # owslib uses lxml element truth-testing which is deprecated
+    "ignore:Truth-testing of elements:FutureWarning",
 ]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "W"]
+preview = true
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true

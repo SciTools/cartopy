@@ -25,7 +25,7 @@ import warnings
 
 import numpy as np
 from PIL import Image
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy
 import cartopy.crs as ccrs
@@ -164,7 +164,7 @@ class GoogleWTS(metaclass=ABCMeta):
 
         # Recursively drill down to the images at the target zoom.
         x0, x1, y0, y1 = self._tileextent(start_tile)
-        domain = sgeom.box(x0, y0, x1, y1)
+        domain = shapely.box(x0, y0, x1, y1)
         if domain.intersects(target_domain):
             if start_tile[2] == target_z:
                 yield start_tile

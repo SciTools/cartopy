@@ -386,7 +386,7 @@ intersphinx_mapping = {
 }
 
 
-############ extlinks extension ############
+# ########### extlinks extension ############
 extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
                        'issues labeled with %s'),
             'issue': ('https://github.com/SciTools/cartopy/issues/%s',
@@ -395,7 +395,7 @@ extlinks = {'issues': ('https://github.com/SciTools/cartopy/labels/%s',
             }
 
 
-############ plot directive ##############
+# ########### plot directive ##############
 
 plot_html_show_formats = False
 # plot_rcparams = {'figure.autolayout': True}
@@ -409,7 +409,7 @@ plot_formats = ['png',
                 ]
 
 
-############ autodoc config ##############
+# ########### autodoc config ##############
 
 # Napoleon settings
 # napoleon_google_docstring = True

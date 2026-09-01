@@ -83,7 +83,7 @@ class TestRegrid:
 
 # Bug in latest Matplotlib that we don't consider correct.
 @pytest.mark.natural_earth
-@pytest.mark.mpl_image_compare(filename='regrid_image.png', tolerance=5.55)
+@pytest.mark.mpl_image_compare(tolerance=5.55)
 def test_regrid_image():
     # Source data
     fname = (config["repo_data_dir"] / 'raster' / 'natural_earth'

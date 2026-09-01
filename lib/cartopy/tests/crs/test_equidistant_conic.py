@@ -26,8 +26,8 @@ class TestEquidistantConic:
         expected_x = (-22784919.35600352, 22784919.35600352)
         expected_y = (-10001965.729313632, 17558791.85156368)
         if pyproj.__proj_version__ >= '9.2.0':
-            expected_x = (-22784919.3559981,  22784919.3559981)
-            expected_y = (-10001965.72931272,  17558791.85157471)
+            expected_x = (-22784919.3559981, 22784919.3559981)
+            expected_y = (-10001965.72931272, 17558791.85157471)
         assert_almost_equal(np.array(eqdc.x_limits),
                             expected_x,
                             decimal=7)
@@ -45,8 +45,8 @@ class TestEquidistantConic:
         expected_x = (-3016.869847713461, 3016.869847713461)
         expected_y = (-1216.6029342241113, 2511.0574375797723)
         if pyproj.__proj_version__ >= '9.2.0':
-            expected_x = (-2960.1009481,  2960.1009481)
-            expected_y = (-1211.05573766,  2606.04249537)
+            expected_x = (-2960.1009481, 2960.1009481)
+            expected_y = (-1211.05573766, 2606.04249537)
         assert_almost_equal(np.array(eqdc.x_limits),
                             expected_x,
                             decimal=7)
@@ -139,8 +139,8 @@ class TestEquidistantConic:
         expected_x = (-22421870.719894886, 22421870.719894886)
         expected_y = (-12546277.778958388, 17260638.403203618)
         if pyproj.__proj_version__ >= '9.2.0':
-            expected_x = (-22421870.71988974,  22421870.71988976)
-            expected_y = (-12546277.77895742,  17260638.403216)
+            expected_x = (-22421870.71988974, 22421870.71988976)
+            expected_y = (-12546277.77895742, 17260638.403216)
         assert_almost_equal(np.array(eqdc.x_limits),
                             expected_x,
                             decimal=7)

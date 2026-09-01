@@ -17,7 +17,7 @@ above images and patches, but below lines and text.
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
-import shapely.geometry as sgeom
+import shapely
 
 import cartopy.crs
 import cartopy.io.shapereader as shapereader
@@ -107,8 +107,7 @@ class Feature(metaclass=ABCMeta):
         # shapely 2.0 returns tuple of NaNs instead of None for empty geometry
         # -> check for both
         if extent is not None and not np.isnan(extent[0]):
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
+            extent_geom = shapely.box(extent[0], extent[2], extent[1], extent[3])
             return (geom for geom in self.geometries() if
                     geom is not None and extent_geom.intersects(geom))
         else:
@@ -223,7 +222,7 @@ class ShapelyFeature(Feature):
 
         """
         super().__init__(crs, **kwargs)
-        if isinstance(geometries, sgeom.base.BaseGeometry):
+        if isinstance(geometries, shapely.geometry.base.BaseGeometry):
             geometries = [geometries]
         self._geoms = tuple(geometries)
 
@@ -417,8 +416,7 @@ class GSHHSFeature(Feature):
             scale = self._scale[0]
 
         if extent is not None:
-            extent_geom = sgeom.box(extent[0], extent[2],
-                                    extent[1], extent[3])
+            extent_geom = shapely.box(extent[0], extent[2], extent[1], extent[3])
         for level in self._levels:
             geoms = GSHHSFeature._geometries_cache.get((scale, level))
             if geoms is None:

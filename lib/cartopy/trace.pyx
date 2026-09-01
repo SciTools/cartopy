@@ -6,13 +6,11 @@
 # cython: embedsignature=True
 
 """
-Trace pulls together proj, GEOS and ``_crs.pyx`` to implement a function
-to project a `~shapely.geometry.LinearRing` / `~shapely.geometry.LineString`.
-In general, this should never be called manually, instead leaving the
-processing to be done by the :class:`cartopy.crs.Projection` subclasses.
+Trace pulls together proj, GEOS and ``_crs.pyx`` to implement a function to project a
+`~shapely.LinearRing` / `~shapely.LineString`. In general, this should never be called
+manually, instead leaving the processing to be done by the
+:class:`cartopy.crs.Projection` subclasses.
 """
-from __future__ import print_function
-
 from functools import lru_cache
 
 cimport cython
@@ -27,11 +25,8 @@ import warnings
 
 import numpy as np
 import shapely
-import shapely.geometry as sgeom
-import shapely.prepared as sprep
 from pyproj import Geod, Transformer, proj_version_str
 from pyproj.exceptions import ProjError
-import shapely.geometry as sgeom
 
 import cartopy.crs as ccrs
 
@@ -52,6 +47,7 @@ cdef bool close(double a, double b):
 
 
 @cython.final
+@cython.auto_pickle(False)
 cdef class LineAccumulator:
     cdef list[Line] lines
 
@@ -95,9 +91,9 @@ cdef class LineAccumulator:
         geoms = []
         for ilines in self.lines:
             coords = [(ipoints.x, ipoints.y) for ipoints in ilines]
-            geoms.append(sgeom.LineString(coords))
+            geoms.append(shapely.LineString(coords))
 
-        geom = sgeom.MultiLineString(geoms)
+        geom = shapely.MultiLineString(geoms)
         return geom
 
     cdef size_t size(self):
@@ -247,13 +243,7 @@ cdef State get_state(const Point &point, object gp_domain, bool geom_fully_insid
         # Fast-path return because the geometry is fully inside
         return POINT_IN
     if isfinite(point.x) and isfinite(point.y):
-        if shapely.__version__ >= "2":
-            # Shapely 2.0 doesn't need to create/destroy a point
-            state = POINT_IN if shapely.intersects_xy(gp_domain.context, point.x, point.y) else POINT_OUT
-        else:
-            g_point = sgeom.Point((point.x, point.y))
-            state = POINT_IN if gp_domain.covers(g_point) else POINT_OUT
-            del g_point
+        state = POINT_IN if shapely.intersects_xy(gp_domain, point.x, point.y) else POINT_OUT
     else:
         state = POINT_NAN
     return state
@@ -367,7 +357,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
             # TODO: Re-use geometries, instead of create-destroy!
 
             # Create a LineString for the current end-point.
-            g_segment = sgeom.LineString([
+            g_segment = shapely.LineString([
                 (p_start.x, p_start.y),
                 (p_end.x, p_end.y)])
 
@@ -541,7 +531,7 @@ def project_linear(geometry not None, src_crs not None,
 
     Parameters
     ----------
-    geometry : `shapely.geometry.LineString` or `shapely.geometry.LinearRing`
+    geometry : `shapely.LineString` or `shapely.LinearRing`
         A geometry to be projected.
     src_crs : cartopy.crs.CRS
         The coordinate system of the line to be projected.
@@ -550,7 +540,7 @@ def project_linear(geometry not None, src_crs not None,
 
     Returns
     -------
-    `shapely.geometry.MultiLineString`
+    `shapely.MultiLineString`
         The result of projecting the given geometry from the source projection
         into the destination projection.
 
@@ -561,16 +551,15 @@ def project_linear(geometry not None, src_crs not None,
         object g_domain
         double[:, :] src_coords, dest_coords
         unsigned int src_size, src_idx
-        object gp_domain
         LineAccumulator lines
 
     g_domain = dest_projection.domain
+    shapely.prepare(g_domain)
 
     interpolator = _interpolator(src_crs, dest_projection)
 
     src_coords = np.asarray(geometry.coords)
     dest_coords = interpolator.project_points(src_coords)
-    gp_domain = sprep.prep(g_domain)
 
     src_size = len(src_coords)  # check exceptions
 
@@ -579,20 +568,18 @@ def project_linear(geometry not None, src_crs not None,
     # TODO: Handle projections other than rectangular
     cdef bool geom_fully_inside = False
     if isinstance(dest_projection, (ccrs._RectangularProjection, ccrs._WarpedRectangularProjection)):
-        dest_line = sgeom.LineString([(x[0], x[1]) for x in dest_coords])
+        dest_line = shapely.LineString([(x[0], x[1]) for x in dest_coords])
         if dest_line.is_valid:
             # We can only check for covers with valid geometries
             # some have nans/infs at this point still
-            geom_fully_inside = gp_domain.covers(dest_line)
+            geom_fully_inside = g_domain.covers(dest_line)
 
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
         _project_segment(src_coords[src_idx - 1, :2], src_coords[src_idx, :2],
                          dest_coords[src_idx - 1, :2], dest_coords[src_idx, :2],
-                         interpolator, gp_domain, threshold, lines,
+                         interpolator, g_domain, threshold, lines,
                          geom_fully_inside=geom_fully_inside);
-
-    del gp_domain
 
     multi_line_string = lines.as_geom()
 
@@ -611,10 +598,9 @@ class _Testing:
         # optimisations that are made in the real algorithm (in exchange for
         # a convenient signature).
 
-        cdef object gp_domain
-        gp_domain = sprep.prep(domain)
+        shapely.prepare(domain)
 
-        state = get_state(interpolator.project(l_start), gp_domain)
+        state = get_state(interpolator.project(l_start), domain)
         cdef bool p_start_inside_domain = state == POINT_IN
 
         # l_end and l_start should be un-projected.
@@ -626,9 +612,8 @@ class _Testing:
         valid = straightAndDomain(
             t_start, p0, t_end, p1,
             interpolator, threshold,
-            gp_domain, p_start_inside_domain)
+            domain, p_start_inside_domain)
 
-        del gp_domain
         return valid
 
     @staticmethod

@@ -158,6 +158,7 @@ def test_sphere_transform():
     inverse_result = geodetic.transform_point(result[0], result[1], ortho)
     assert_almost_equal(inverse_result, [-110.0, 30.0])
 
+
 def test_sphere_rotate():
     globe = ccrs.Globe(semimajor_axis=1.0, semiminor_axis=1.0,
                        ellipse=None)
@@ -175,8 +176,8 @@ def test_sphere_rotate():
                         [-0.99999, 0.99999])
 
     result = ortho.transform_point(-110.0, 30.0, geodetic)
-    if pyproj.__proj_version__ >= '9.5.0': # support for alpha (azimuthal rotation)
-        assert_almost_equal(result, np.array([ 0.1503837,  0.1651911]))
+    if pyproj.__proj_version__ >= '9.5.0':  # support for alpha (azimuthal rotation)
+        assert_almost_equal(result, np.array([0.1503837, 0.1651911]))
     else:
         assert_almost_equal(result, np.array([-0.1503837, -0.1651911]))
 
