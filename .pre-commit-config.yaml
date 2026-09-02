@@ -37,7 +37,7 @@ repos:
       - id: sort-all
         types: [file, python]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c  # frozen: v0.16.0
+    rev: aab412d509121cb5f7533134b7e67f9fab59c682  # frozen: v0.16.4
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -47,6 +47,6 @@ repos:
       - id: yamllint
         args: ["--strict", "--config-file=.yamllint.yml"]
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: 067260dc5fe6ea86b7551bfd6f8b3ba4e6c93129  # frozen: v1.28.0
+    rev: 451b56af716f9f0d0c2b816503a3fd0cf8b036fa  # frozen: v1.29.0
     hooks:
       - id: zizmor
