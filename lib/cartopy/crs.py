@@ -1755,7 +1755,26 @@ GOOGLE_MERCATOR = Mercator.GOOGLE
 
 
 class LambertCylindrical(_RectangularProjection):
+    """
+    A Lambert Cylindrical Equal Area projection.
+
+    This is a cylindrical equal-area projection where the equator is
+    the standard parallel. Meridians are equally spaced straight lines.
+    Parallels are unequally spaced straight lines that become progressively
+    closer together near the poles.
+
+    """
+
     def __init__(self, central_longitude=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+        """
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'cea'), ('lon_0', central_longitude),
                         ('to_meter', math.radians(1) * (
