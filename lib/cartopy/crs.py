@@ -1350,7 +1350,25 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 
 
 class PlateCarree(_CylindricalProjection):
+    """
+    A Plate Carree projection.
+
+    This is an equidistant cylindrical projection where the standard parallel
+    is the equator. Meridians and parallels are equally spaced straight lines,
+    and the scale is true along the equator.
+
+    """
+
     def __init__(self, central_longitude=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+        """
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'latlong'), ('pm', central_longitude)]
         x_max = 180
