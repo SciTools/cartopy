@@ -1957,9 +1957,27 @@ class LambertAzimuthalEqualArea(Projection):
 
 
 class Miller(_RectangularProjection):
+    """
+    A Miller cylindrical projection.
+
+    This projection is a modified Mercator projection where polar distortion
+    is reduced as compared to Mercator. It is is a useful compromise
+    for world maps between equal-area and conformal but it isnt either.
+
+    """
+
     _handles_ellipses = False
 
     def __init__(self, central_longitude=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+        """
         if globe is None:
             globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
 
