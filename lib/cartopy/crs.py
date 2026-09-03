@@ -1980,8 +1980,8 @@ class Miller(_RectangularProjection):
     A Miller cylindrical projection.
 
     This projection is a modified Mercator projection where polar distortion
-    is reduced as compared to Mercator. It is is a useful compromise
-    for world maps between equal-area and conformal but it isnt either.
+    is reduced as compared to Mercator. It is a useful compromise
+    for world maps between equal-area and conformal but it isn't either.
 
     """
 
