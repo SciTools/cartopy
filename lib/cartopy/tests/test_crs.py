@@ -255,7 +255,8 @@ class TestCRS:
     [ccrs.NorthPolarStereo, dict(central_longitude=42.5,
                                  globe=ccrs.Globe(ellipse="helmert"))],
     [ccrs.CRS, dict(proj4_params="3088")],
-    [ccrs.epsg, dict(code="3088")]
+    [ccrs.epsg, dict(code="3088")],
+    [ccrs.Projection, dict(proj4_params=pyproj.CRS.from_epsg(4326))],
 ])
 def proj_to_copy(request):
     cls, kwargs = request.param

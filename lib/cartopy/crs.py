@@ -118,6 +118,12 @@ class Globe:
         return OrderedDict((k, v) for k, v in proj4_params if v is not None)
 
 
+def _CRS_reconstruct(cls, state):
+    obj = cls.__new__(cls)
+    obj.__setstate__(state)
+    return obj
+
+
 class CRS(pyproj.crs.CustomConstructorCRS):
     """
     Define a Coordinate Reference System using proj. The :class:`cartopy.crs.CRS`
@@ -214,11 +220,9 @@ class CRS(pyproj.crs.CustomConstructorCRS):
             # State can be reproduced by the proj4_params and globe inputs.
             return self.__class__, self.input
         else:
-            # Produces a stateless instance of this class (e.g. an empty tuple).
-            # The state will then be added via __getstate__ and __setstate__.
-            # We are forced to this approach because a CRS does not store
-            # the constructor keyword arguments in its state.
-            return self.__class__, (), self.__getstate__()
+            # Use a factory that calls __new__ then __setstate__, avoiding
+            # __init__ which subclasses may not support with zero arguments.
+            return _CRS_reconstruct, (self.__class__, self.__getstate__())
 
     def __getstate__(self):
         """Return the full state of this instance for reconstruction
@@ -232,7 +236,7 @@ class CRS(pyproj.crs.CustomConstructorCRS):
         # be re-created (in __setstate__) from the other arguments.
         state.pop('proj4', None)
         state.pop('proj4_init', None)
-        state['proj4_params'] = self.proj4_params
+        state['proj4_params'] = self.proj4_params or self.proj4_init
         return state
 
     def __setstate__(self, state):
