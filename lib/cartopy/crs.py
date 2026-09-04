@@ -1350,7 +1350,25 @@ def _ellipse_boundary(semimajor=2, semiminor=1, easting=0, northing=0, n=201):
 
 
 class PlateCarree(_CylindricalProjection):
+    """
+    A Plate Carree projection.
+
+    This is an equidistant cylindrical projection where the standard parallel
+    is the equator. Meridians and parallels are equally spaced straight lines,
+    and the scale is true along the equator.
+
+    """
+
     def __init__(self, central_longitude=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+        """
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'latlong'), ('pm', central_longitude)]
         x_max = 180
@@ -1737,7 +1755,26 @@ GOOGLE_MERCATOR = Mercator.GOOGLE
 
 
 class LambertCylindrical(_RectangularProjection):
+    """
+    A Lambert Cylindrical Equal Area projection.
+
+    This is a cylindrical equal-area projection where the equator is
+    the standard parallel. Meridians are equally spaced straight lines.
+    Parallels are unequally spaced straight lines that become progressively
+    closer together near the poles.
+
+    """
+
     def __init__(self, central_longitude=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+        """
         globe = globe or Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS)
         proj4_params = [('proj', 'cea'), ('lon_0', central_longitude),
                         ('to_meter', math.radians(1) * (
@@ -1939,9 +1976,27 @@ class LambertAzimuthalEqualArea(Projection):
 
 
 class Miller(_RectangularProjection):
+    """
+    A Miller cylindrical projection.
+
+    This projection is a modified Mercator projection where polar distortion
+    is reduced as compared to Mercator. It is a useful compromise
+    for world maps between equal-area and conformal but it isn't either.
+
+    """
+
     _handles_ellipses = False
 
     def __init__(self, central_longitude=0.0, globe=None):
+        """
+        Parameters
+        ----------
+        central_longitude: float, optional
+            The central longitude. Defaults to 0.
+        globe: :class:`cartopy.crs.Globe`, optional
+            If omitted, a default globe is created.
+
+        """
         if globe is None:
             globe = Globe(semimajor_axis=WGS84_SEMIMAJOR_AXIS, ellipse=None)
 
