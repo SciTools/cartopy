@@ -96,6 +96,18 @@ def test_google_tile_styles():
         cimgt.GoogleTiles(style="random_style")
 
 
+def test_google_tiles_desired_tile_form_defaults():
+    '''
+    See issue https://github.com/SciTools/cartopy/issues/762
+
+    Before this only_streets would have a black background not
+    a map.  the RGBA makes it see through so the map is visible
+    '''
+    assert cimgt.GoogleTiles().desired_tile_form == "RGB"
+    assert cimgt.GoogleTiles(style="only_streets").desired_tile_form == "RGBA"
+    assert cimgt.GoogleTiles(desired_tile_form="L").desired_tile_form == "L"
+
+
 def test_google_wts():
     gt = cimgt.GoogleTiles()
 

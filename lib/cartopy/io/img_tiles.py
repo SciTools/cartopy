@@ -273,7 +273,7 @@ class GoogleWTS(metaclass=ABCMeta):
 
 class GoogleTiles(GoogleWTS):
     def __init__(self,
-                 desired_tile_form='RGB',
+                 desired_tile_form=None,
                  style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
                       '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
@@ -282,7 +282,9 @@ class GoogleTiles(GoogleWTS):
         Parameters
         ----------
         desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
+            The desired format of the tile. Defaults to "RGBA" for the
+            'only_streets' style to preserve transparency, and "RGB"
+            for all other styles.
         style : str, optional
             The style for the Google Maps tiles.  One of 'street',
             'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
@@ -313,6 +315,12 @@ class GoogleTiles(GoogleWTS):
             raise ValueError(
                 f"The {style!r} style requires pillow with jpeg decoding "
                 "support.")
+        if desired_tile_form is None:
+            if style == "only_streets":
+                desired_tile_form = "RGBA"
+            else:
+                desired_tile_form = "RGB"
+
         super().__init__(style=style,
                          desired_tile_form=desired_tile_form, cache=cache)
 
