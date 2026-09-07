@@ -3186,7 +3186,7 @@ class ObliqueMercator(Projection):
             the centre line. Defaults to 0.
         gamma: optional
             Azimuth of centerline clockwise from north of the rectified bearing
-            of centre line. If omitted, `azimuth` determines the values of `gamma`.
+            of centre line. If omitted, ``azimuth`` determines the values of ``gamma``.
         globe: optional
             An instance of :class:`cartopy.crs.Globe`. If omitted, a default
             globe is created.
