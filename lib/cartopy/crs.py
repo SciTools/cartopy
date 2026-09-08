@@ -2868,8 +2868,11 @@ class NearsidePerspective(_Satellite):
     Perspective view looking directly down from above a point on the globe.
 
     In this projection, the projected coordinates are x and y measured from
-    the origin of a plane tangent to the Earth directly below the perspective
-    point (e.g. a satellite).
+    the origin of a plane tangent to the Earth (or other solar system body)
+    directly below the perspective point (e.g. a satellite). At the tangent
+    point, the +x axis points due east, the +y axis points due north, and
+    the +z axis completes the right-handed coordinate frame, pointing from
+    the surface toward the observer. Projected coordinates are in meters.
 
     """
 
