@@ -96,7 +96,6 @@ jobs:
       - name: Testing
         id: test
         if: matrix.use-network
-        # we need to force bash to use line continuations on Windows
         run: |
           if [[ "${{ matrix.python-version }}" == 3.*t ]]; then
               export PYTHON_GIL=0
