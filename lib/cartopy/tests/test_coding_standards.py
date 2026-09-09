@@ -48,8 +48,8 @@ class TestLicenseHeaders:
             or cannot be found by subprocess, an IOError may also be raised.
 
         """
-        # Check the ".git" folder exists at the repo dir.
-        if not (REPO_DIR / '.git').is_dir():
+        # Check the repo dir is under git.
+        if not (REPO_DIR / '.git').exists():
             raise ValueError(f'{REPO_DIR} is not a git repository.')
 
         output = subprocess.check_output(['git', 'ls-tree', '-z', '-r',
