@@ -46,9 +46,12 @@ def transform_fn_factory(target_crs, source_crs):
 
 
 def main():
-    # Define the two coordinate systems with different ellipses.
+    # Define the two coordinate systems with different ellipses. towgs84
+    # anchors the sphere to WGS84's centre, so PROJ actually converts
+    # between the two ellipses instead of treating them as unrelated.
     wgs84 = ccrs.PlateCarree(globe=ccrs.Globe(ellipse='WGS84'))
-    sphere = ccrs.PlateCarree(globe=ccrs.Globe(ellipse='sphere'))
+    sphere = ccrs.PlateCarree(
+        globe=ccrs.Globe(ellipse='sphere', towgs84='0,0,0'))
 
     # Define the coordinate system of the data we have from Natural Earth and
     # acquire the 1:10m physical coastline shapefile.
@@ -81,12 +84,14 @@ def main():
 
     # Using these differently referenced geometries, assume that they are
     # both referenced to WGS84.
-    ax.add_geometries(wgs84_geoms, wgs84, edgecolor='white', facecolor='none')
-    ax.add_geometries(sphere_geoms, wgs84, edgecolor='gray', facecolor='none')
+    ax.add_geometries(wgs84_geoms, wgs84, edgecolor='white', facecolor='none',
+                      linewidth=1.5)
+    ax.add_geometries(sphere_geoms, wgs84, edgecolor='red', facecolor='none',
+                      linewidth=1.5)
 
     # Create a legend for the coastlines.
     legend_artists = [Line([0], [0], color=color, linewidth=3)
-                      for color in ('white', 'gray')]
+                      for color in ('white', 'red')]
     legend_texts = ['Correct ellipse\n(WGS84)', 'Incorrect ellipse\n(sphere)']
     legend = ax.legend(legend_artists, legend_texts, fancybox=True,
                        loc='lower left', framealpha=0.75)
