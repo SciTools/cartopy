@@ -759,7 +759,7 @@ class Projection(CRS, metaclass=ABCMeta):
     def _determine_longitude_bounds(self, central_longitude):
         # In new proj, using exact limits will wrap-around, so subtract a
         # small epsilon:
-        epsilon = 1e-10
+        epsilon = 1e-7
         minlon = -180 + central_longitude
         maxlon = 180 + central_longitude
         if central_longitude > 0:
@@ -2656,7 +2656,7 @@ class InterruptedGoodeHomolosine(Projection):
             raise ValueError(msg)
 
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
-        epsilon = 1e-10
+        epsilon = 1e-7
 
         # Obtain boundary points
         n = 31

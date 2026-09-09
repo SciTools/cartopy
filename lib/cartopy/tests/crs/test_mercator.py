@@ -92,3 +92,16 @@ def test_scale_factor():
 
     assert_almost_equal(crs.boundary.bounds,
                         [-18808021, -14585266, 18808021, 17653216], decimal=0)
+
+
+def test_high_precision_central_longitude():
+    '''
+    For the fix to github issue #2576
+
+    How precise should we accept as an input to a map?
+    '''
+    clon = -169.40000000042403
+    proj = ccrs.Mercator(central_longitude=clon, max_latitude=54.11250000143449)
+    bounds = proj.boundary.bounds
+    width = bounds[2] - bounds[0]
+    assert width > 1, f"Boundary width {width} is to small small"
