@@ -61,6 +61,19 @@ def fh_getter(fh, mode='r', needs_filename=False):
     return fh, filename
 
 
+def _ensure_tile_form(img, desired_tile_form=None):
+    """Convert a PIL image to ``desired_tile_form``.
+
+    If ``desired_tile_form`` is None, auto-detect: 'RGBA' if the image
+    has an alpha channel or palette transparency, else 'RGB'.
+    """
+    if desired_tile_form is None:
+        has_alpha = 'A' in img.mode or (
+            img.mode == 'P' and 'transparency' in img.info)
+        desired_tile_form = 'RGBA' if has_alpha else 'RGB'
+    return img.convert(desired_tile_form)
+
+
 class DownloadWarning(Warning):
     """Issued when a file is being downloaded by a :class:`Downloader`."""
     pass

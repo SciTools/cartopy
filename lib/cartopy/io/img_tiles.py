@@ -29,13 +29,14 @@ import shapely
 
 import cartopy
 import cartopy.crs as ccrs
+from cartopy.io import _ensure_tile_form
 
 
 class GoogleWTS(metaclass=ABCMeta):
     _MAX_THREADS = 24
 
     def __init__(self,
-                 desired_tile_form='RGB',
+                 desired_tile_form=None,
                  user_agent=f'CartoPy/{cartopy.__version__}',
                  cache=False,
                  *,
@@ -48,7 +49,11 @@ class GoogleWTS(metaclass=ABCMeta):
         Parameters
         ----------
         desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
+            The desired format of the tile. If None (the default), the
+            format is auto-detected per tile: "RGBA" if the fetched image
+            has an alpha channel or palette transparency, otherwise "RGB".
+            Pass "RGB" or "RGBA" explicitly to force a particular form for
+            every tile regardless of its own transparency.
         user_agent : str, optional
             Some providers (like OSM) need a "user_agent" in the request (see
             Issue #1341). OSM may reject requests if there are too many of them,
@@ -263,7 +268,7 @@ class GoogleWTS(metaclass=ABCMeta):
                 img = Image.fromarray(np.full((256, 256, 3), (250, 250, 250),
                                               dtype=np.uint8))
 
-            img = img.convert(self.desired_tile_form)
+            img = _ensure_tile_form(img, self.desired_tile_form)
             if self.cache_path is not None:
                 np.save(cached_file, img, allow_pickle=False)
                 self.cache.add(cached_file)
@@ -273,7 +278,7 @@ class GoogleWTS(metaclass=ABCMeta):
 
 class GoogleTiles(GoogleWTS):
     def __init__(self,
-                 desired_tile_form='RGB',
+                 desired_tile_form=None,
                  style="street",
                  url=('https://mts0.google.com/vt/lyrs={style}'
                       '@177000000&hl=en&src=api&x={x}&y={y}&z={z}&s=G'),
@@ -282,7 +287,9 @@ class GoogleTiles(GoogleWTS):
         Parameters
         ----------
         desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
+            The desired format of the tile. If None (the default), the
+            format is auto-detected from each tile (see
+            :class:`GoogleWTS`).
         style : str, optional
             The style for the Google Maps tiles.  One of 'street',
             'satellite', 'terrain', and 'only_streets'.  Defaults to 'street'.
@@ -369,6 +376,7 @@ class StadiaMapsTiles(GoogleWTS):
                  apikey,
                  style="alidade_smooth",
                  resolution="",
+                 desired_tile_form=None,
                  cache=False):
         """Retrieves tiles from stadiamaps.com.
 
@@ -401,6 +409,10 @@ class StadiaMapsTiles(GoogleWTS):
             Resolution of the images to return. Defaults to an empty string,
             standard resolution (256x256). You can also specify "@2x" for high
             resolution (512x512) tiles.
+        desired_tile_form : str, optional
+            The desired format of the tile. If None (the default), the
+            format is auto-detected from each tile (see
+            :class:`GoogleWTS`).
         cache : bool or pathlib.Path or str, optional
             To allow offline use, as well as not spam tile providers, Cartopy
             can create a local cache of previously fetched tiles. The default
@@ -410,7 +422,7 @@ class StadiaMapsTiles(GoogleWTS):
             the tiles are downloaded each time.
         """
 
-        super().__init__(desired_tile_form="RGBA", cache=cache,
+        super().__init__(desired_tile_form=desired_tile_form, cache=cache,
                          resolution=resolution, style=style)
         self.apikey = apikey
         if style == "stamen_watercolor":
@@ -462,35 +474,23 @@ class Stamen(GoogleWTS):
                       "StadiaMapsTiles class instead.")
 
         # preset layer configuration
-        layer_config = {
-          'terrain':            {'extension': 'png', 'opaque': True},
-          'terrain-background': {'extension': 'png', 'opaque': True},
-          'terrain-labels':     {'extension': 'png', 'opaque': False},
-          'terrain-lines':      {'extension': 'png', 'opaque': False},
-          'toner-background':   {'extension': 'png', 'opaque': True},
-          'toner':              {'extension': 'png', 'opaque': True},
-          'toner-hybrid':       {'extension': 'png', 'opaque': False},
-          'toner-labels':       {'extension': 'png', 'opaque': False},
-          'toner-lines':        {'extension': 'png', 'opaque': False},
-          'toner-lite':         {'extension': 'png', 'opaque': True},
-          'watercolor':         {'extension': 'jpg', 'opaque': True},
+        layer_extensions = {
+          'terrain':            'png',
+          'terrain-background': 'png',
+          'terrain-labels':     'png',
+          'terrain-lines':      'png',
+          'toner-background':   'png',
+          'toner':              'png',
+          'toner-hybrid':       'png',
+          'toner-labels':       'png',
+          'toner-lines':        'png',
+          'toner-lite':         'png',
+          'watercolor':         'jpg',
         }
-
-        # get layer information from dict
-        layer_info = layer_config.get(
-            style, {'extension': '.png', 'opaque': True})
-
-        # use optional desired_tile_form input if available
-        # otherwise, use preset value based on the layer name
-        if desired_tile_form is None:
-            if layer_info['opaque']:
-                desired_tile_form = 'RGB'
-            else:
-                desired_tile_form = 'RGBA'
 
         super().__init__(desired_tile_form=desired_tile_form, cache=cache,
                          style=style)
-        self.extension = layer_info['extension']
+        self.extension = layer_extensions.get(style, 'png')
 
     def _image_url(self, tile):
         x, y, z = tile
@@ -606,7 +606,7 @@ class MapboxStyleTiles(GoogleWTS):
                  access_token,
                  username,
                  map_id,
-                 desired_tile_form='RGB',
+                 desired_tile_form=None,
                  cache=False):
         """
         Set up a new instance to retrieve tiles from a Mapbox style.
@@ -631,7 +631,9 @@ class MapboxStyleTiles(GoogleWTS):
             may be private and if your access token does not have permissions
             to view this style, then map tile retrieval will fail.
         desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
+            The desired format of the tile. If None (the default), the
+            format is auto-detected from each tile (see
+            :class:`GoogleWTS`).
         cache : bool or pathlib.Path or str, optional
             To allow offline use, as well as not spam tile providers, Cartopy
             can create a local cache of previously fetched tiles. The default
@@ -767,7 +769,7 @@ class OrdnanceSurvey(GoogleWTS):
     def __init__(self,
                  apikey,
                  layer='Road_3857',
-                 desired_tile_form='RGB',
+                 desired_tile_form=None,
                  cache=False):
         """
         Parameters
@@ -782,7 +784,9 @@ class OrdnanceSurvey(GoogleWTS):
             - https://apidocs.os.uk/docs/layer-information
             - https://apidocs.os.uk/docs/map-styles
         desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
+            The desired format of the tile. If None (the default), the
+            format is auto-detected from each tile (see
+            :class:`GoogleWTS`).
         cache : bool or pathlib.Path or str, optional
             To allow offline use, as well as not spam tile providers, Cartopy
             can create a local cache of previously fetched tiles. The default
@@ -870,7 +874,7 @@ class AzureMapsTiles(GoogleWTS):
                  subscription_key,
                  tileset_id="microsoft.imagery",
                  api_version="2.0",
-                 desired_tile_form='RGB',
+                 desired_tile_form=None,
                  cache=False):
         """
         Set up a new instance to retrieve tiles from Azure Maps.
@@ -890,7 +894,9 @@ class AzureMapsTiles(GoogleWTS):
         api_version
             API version to use. Defaults to 2.0 as recommended by Microsoft.
         desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
+            The desired format of the tile. If None (the default), the
+            format is auto-detected from each tile (see
+            :class:`GoogleWTS`).
         cache : bool or pathlib.Path or str, optional
             To allow offline use, as well as not spam tile providers, Cartopy
             can create a local cache of previously fetched tiles. The default
@@ -926,7 +932,7 @@ class LINZMapsTiles(GoogleWTS):
                  apikey,
                  layer_id,
                  api_version="v4",
-                 desired_tile_form='RGB',
+                 desired_tile_form=None,
                  cache=False):
         """
         Set up a new instance to retrieve tiles from The LINZ
@@ -946,7 +952,9 @@ class LINZMapsTiles(GoogleWTS):
         api_version
             API version to use. Defaults to v4 for now.
         desired_tile_form : str, optional
-            The desired format of the tile (defaults to "RGB").
+            The desired format of the tile. If None (the default), the
+            format is auto-detected from each tile (see
+            :class:`GoogleWTS`).
         cache : bool or pathlib.Path or str, optional
             To allow offline use, as well as not spam tile providers, Cartopy
             can create a local cache of previously fetched tiles. The default
