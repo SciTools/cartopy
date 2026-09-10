@@ -1510,7 +1510,13 @@ class TransverseMercator(Projection):
             proj4_params += [('approx', None)]
         super().__init__(proj4_params, globe=globe)
 
-        self.threshold = 1e4
+        # TODO: Let the globe return the semimajor axis always.
+        a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = self.globe.semiminor_axis or a
+
+        self._x_limits = (-np.pi * a, np.pi * a)
+        self._y_limits = (-np.pi / 2 * b, np.pi / 2 * b)
+        self.threshold = min(a, b) / 637.8137  # Approximately 1e4 for defaults.
 
     @property
     def boundary(self):
@@ -1522,11 +1528,11 @@ class TransverseMercator(Projection):
 
     @property
     def x_limits(self):
-        return (-2e7, 2e7)
+        return self._x_limits
 
     @property
     def y_limits(self):
-        return (-1e7, 1e7)
+        return self._y_limits
 
 
 class OSGB(TransverseMercator):
@@ -2280,7 +2286,11 @@ class Aitoff(_WarpedRectangularProjection):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self.threshold = 1e5
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = self.globe.semiminor_axis or a
+        self.threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
 
 
 class _Eckert(_WarpedRectangularProjection, metaclass=ABCMeta):
@@ -2318,7 +2328,11 @@ class _Eckert(_WarpedRectangularProjection, metaclass=ABCMeta):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self.threshold = 1e5
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = self.globe.semiminor_axis or a
+        self.threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
 
 
 class EckertI(_Eckert):
@@ -2479,7 +2493,11 @@ class Hammer(_WarpedRectangularProjection):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self.threshold = 1e5
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = self.globe.semiminor_axis or a
+        self.threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
 
 
 class Mollweide(_WarpedRectangularProjection):
@@ -2520,7 +2538,11 @@ class Mollweide(_WarpedRectangularProjection):
                          false_easting=false_easting,
                          false_northing=false_northing,
                          globe=globe)
-        self.threshold = 1e5
+
+        # TODO: Let the globe return the semimajor axis always.
+        a = self.globe.semimajor_axis or WGS84_SEMIMAJOR_AXIS
+        b = self.globe.semiminor_axis or a
+        self.threshold = min(a, b) / 63.78137  # About 1e5 for defaults.
 
 
 class Robinson(_WarpedRectangularProjection):
@@ -3051,7 +3073,7 @@ class AzimuthalEquidistant(Projection):
         self._x_limits = mins[0], maxs[0]
         self._y_limits = mins[1], maxs[1]
 
-        self.threshold = 1e5
+        self.threshold = min(a, b) / 637.8137  # About 1e4 for defaults.
 
     @property
     def boundary(self):
