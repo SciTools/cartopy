@@ -132,9 +132,12 @@ def test_google_wts():
     ("RGB", {}, "RGB"),
     ("RGBA", {}, "RGBA"),
     ("LA", {}, "RGBA"),
+    ("RGBa", {}, "RGBA"),
+    ("La", {}, "RGBA"),
     ("L", {}, "RGB"),
     ("P", {}, "RGB"),
     ("P", {"transparency": 0}, "RGBA"),
+    ("LAB", {}, "RGB"),
 ])
 def test_ensure_tile_form_auto_detect(mode, info, expected):
     img = Image.new(mode, (1, 1))

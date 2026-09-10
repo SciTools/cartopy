@@ -61,6 +61,10 @@ def fh_getter(fh, mode='r', needs_filename=False):
     return fh, filename
 
 
+# PIL modes that carry a genuine alpha channel.
+_ALPHA_MODES = frozenset({'RGBA', 'LA', 'PA', 'RGBa', 'La'})
+
+
 def _ensure_tile_form(img, desired_tile_form=None):
     """Convert a PIL image to ``desired_tile_form``.
 
@@ -68,9 +72,13 @@ def _ensure_tile_form(img, desired_tile_form=None):
     has an alpha channel or palette transparency, else 'RGB'.
     """
     if desired_tile_form is None:
-        has_alpha = 'A' in img.mode or (
+        has_alpha = img.mode in _ALPHA_MODES or (
             img.mode == 'P' and 'transparency' in img.info)
         desired_tile_form = 'RGBA' if has_alpha else 'RGB'
+    if img.mode == 'La':
+        # Pillow cannot convert the premultiplied 'La' mode directly to
+        # RGB/RGBA; go via its straight-alpha equivalent 'LA' first.
+        img = img.convert('LA')
     return img.convert(desired_tile_form)
 
 
