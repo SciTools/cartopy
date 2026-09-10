@@ -3267,10 +3267,11 @@ class ObliqueMercator(Projection):
             Scale factor at the central meridian. Defaults to 1.
         azimuth: optional
             Azimuth of centerline clockwise from north at the center point of
-            the centre line. Defaults to 0.
+            the centre line. Defaults to 0. EPSG calls this ``alpha``.
         gamma: optional
-            Azimuth of centerline clockwise from north of the rectified bearing
-            of centre line. If omitted, ``azimuth`` determines the values of ``gamma``.
+            Angle from the rectified grid to the skew grid in degrees, which
+            sets which way is up on the map. If omitted, PROJ uses
+            ``azimuth``. Real Hotine systems quote the two separately.
         globe: optional
             An instance of :class:`cartopy.crs.Globe`. If omitted, a default
             globe is created.
@@ -3282,9 +3283,12 @@ class ObliqueMercator(Projection):
 
         """
 
-        if np.isclose(azimuth, 90):
-            # Exactly 90 causes coastline 'folding'.
-            azimuth -= 1e-3
+        # PROJ cannot build an omerc whose centre line runs due east or west:
+        # its origin comes from asin(G * tan(gamma0)), and at sin(alpha) = 1
+        # the tangent overruns the outer asin. Nudge off the singular value.
+        singular = 90.0 + 180.0 * round((azimuth - 90.0) / 180.0)
+        if abs(azimuth - singular) < 1e-3:
+            azimuth = singular - 1e-3
 
         proj4_params = [('proj', 'omerc'), ('lonc', central_longitude),
                         ('lat_0', central_latitude), ('k', scale_factor),
