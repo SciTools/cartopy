@@ -15,6 +15,8 @@ import numpy as np
 from PIL import Image
 import shapely
 
+from cartopy.io import _ensure_tile_form
+
 
 _img_class_attrs = ['filename', 'extent', 'origin', 'pixel_size']
 
@@ -432,7 +434,7 @@ class NestedImageCollection:
         """
         return iter(self._ancestry.get(collection_image, []))
 
-    desired_tile_form = 'RGB'
+    desired_tile_form = None
 
     def get_image(self, collection_image):
         """
@@ -455,13 +457,13 @@ class NestedImageCollection:
         Note
         ----
           The format of the retrieved image file data is controlled by
-          :attr:`~cartopy.io.img_nest.NestedImageCollection.desired_tile_form`,
-          which defaults to 'RGB' format.
+          :attr:`~cartopy.io.img_nest.NestedImageCollection.desired_tile_form`.
+          Defaults to ``None``, which auto-detects 'RGB' vs 'RGBA'.
 
         """
         img = collection_image[1]
         img_data = Image.open(img.filename)
-        img_data = img_data.convert(self.desired_tile_form)
+        img_data = _ensure_tile_form(img_data, self.desired_tile_form)
         return img_data, img.extent, img.origin
 
     @classmethod

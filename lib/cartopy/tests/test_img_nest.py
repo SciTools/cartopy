@@ -255,6 +255,27 @@ def test_nest(nest_from_config):
     assert nest_z0_z1._ancestry == nest_z0_z1_from_pickle._ancestry
 
 
+def test_nested_image_collection_get_image_auto_detects_tile_form(tmp_path):
+    opaque_path = tmp_path / 'opaque.png'
+    Image.new('RGB', (2, 2), (255, 0, 0)).save(opaque_path)
+    transparent_path = tmp_path / 'transparent.png'
+    Image.new('RGBA', (2, 2), (255, 0, 0, 128)).save(transparent_path)
+
+    collection_image = (
+        'test', cimg_nest.Img(opaque_path, (0, 1, 0, 1), 'lower', (1, 1)))
+    nest = cimg_nest.NestedImageCollection('test', None, [])
+    assert nest.desired_tile_form is None
+
+    img_data, _, _ = nest.get_image(collection_image)
+    assert img_data.mode == 'RGB'
+
+    collection_image = (
+        'test',
+        cimg_nest.Img(transparent_path, (0, 1, 0, 1), 'lower', (1, 1)))
+    img_data, _, _ = nest.get_image(collection_image)
+    assert img_data.mode == 'RGBA'
+
+
 def test_img_pickle_round_trip():
     """Check that __getstate__ for Img instances is working correctly."""
 

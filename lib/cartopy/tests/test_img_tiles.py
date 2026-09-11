@@ -4,12 +4,14 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 import hashlib
+import io
 import os
 import types
 import warnings
 
 import numpy as np
 from numpy.testing import assert_array_almost_equal as assert_arr_almost
+from PIL import Image
 import pytest
 import shapely
 
@@ -21,6 +23,7 @@ if not _HAS_PYKDTREE_OR_SCIPY:
 
 from cartopy import config
 import cartopy.crs as ccrs
+from cartopy.io import _ensure_tile_form
 import cartopy.io.img_tiles as cimgt
 import cartopy.io.ogc_clients as ogc
 
@@ -123,6 +126,77 @@ def test_google_wts():
     assert_arr_almost(gt.tileextent((0, 2, 2)), KNOWN_EXTENTS[(0, 2, 2)])
     assert_arr_almost(gt.tileextent((2, 2, 2)), KNOWN_EXTENTS[(2, 2, 2)])
     assert_arr_almost(gt.tileextent((8, 9, 4)), KNOWN_EXTENTS[(8, 9, 4)])
+
+
+@pytest.mark.parametrize("mode,info,expected", [
+    ("RGB", {}, "RGB"),
+    ("RGBA", {}, "RGBA"),
+    ("LA", {}, "RGBA"),
+    ("RGBa", {}, "RGBA"),
+    ("La", {}, "RGBA"),
+    ("L", {}, "RGB"),
+    ("P", {}, "RGB"),
+    ("P", {"transparency": 0}, "RGBA"),
+    ("LAB", {}, "RGB"),
+])
+def test_ensure_tile_form_auto_detect(mode, info, expected):
+    img = Image.new(mode, (1, 1))
+    img.info.update(info)
+    assert _ensure_tile_form(img).mode == expected
+
+
+@pytest.mark.parametrize("desired_tile_form", ["RGB", "RGBA"])
+def test_ensure_tile_form_explicit(desired_tile_form):
+    img = Image.new("P", (1, 1))
+    assert _ensure_tile_form(img, desired_tile_form).mode == desired_tile_form
+
+
+def _png_bytes(mode, color):
+    img = Image.new(mode, (2, 2), color)
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
+def _fake_urlopen(img_bytes):
+    class _Response:
+        def read(self):
+            return img_bytes
+
+        def close(self):
+            pass
+
+    def urlopen(request, *args, **kwargs):
+        return _Response()
+
+    return urlopen
+
+
+def test_get_image_auto_detects_tile_form(monkeypatch):
+    gt = cimgt.GoogleTiles()
+    assert gt.desired_tile_form is None
+
+    monkeypatch.setattr(
+        "urllib.request.urlopen",
+        _fake_urlopen(_png_bytes("RGB", (255, 0, 0))))
+    img, _, _ = gt.get_image((0, 0, 0))
+    assert img.mode == "RGB"
+
+    monkeypatch.setattr(
+        "urllib.request.urlopen",
+        _fake_urlopen(_png_bytes("RGBA", (255, 0, 0, 128))))
+    img, _, _ = gt.get_image((0, 0, 0))
+    assert img.mode == "RGBA"
+
+
+def test_get_image_explicit_tile_form_overrides_detection(monkeypatch):
+    gt = cimgt.GoogleTiles(desired_tile_form="RGB")
+
+    monkeypatch.setattr(
+        "urllib.request.urlopen",
+        _fake_urlopen(_png_bytes("RGBA", (255, 0, 0, 128))))
+    img, _, _ = gt.get_image((0, 0, 0))
+    assert img.mode == "RGB"
 
 
 def test_tile_bbox_y0_at_south_pole():
