@@ -476,90 +476,146 @@ class CRS(pyproj.crs.CustomConstructorCRS):
 
         Note
         ----
-           The algorithm used to transform vectors is an approximation
-           rather than an exact transform, but the accuracy should be
-           good enough for visualization purposes.
+           The vectors are transformed by estimating the local Jacobian
+           of the source to target transform, one column per source
+           axis, using finite differences. Only the rotation part of
+           that Jacobian is applied to the input, so the output keeps
+           the input's magnitude instead of picking up the transform's
+           local scale factor. This is an approximation rather than an
+           exact transform, but it should be good enough for
+           visualization purposes. Magnitude is treated as a physical
+           quantity, such as wind speed, that does not depend on the map
+           projection. Direction does depend on the projection, so only
+           direction is changed.
 
         """
         if not (x.shape == y.shape == u.shape == v.shape):
             raise ValueError('x, y, u and v arrays must be the same shape')
         if x.ndim not in (1, 2):
             raise ValueError('x, y, u and v must be 1 or 2 dimensional')
-        # Transform the coordinates to the target projection.
+
+        eps = 1e-9
+        factor = 360000.
+
+        # 1: The base point, in both target coordinates and native
+        # (wrapped) source coordinates.
         proj_xyz = self.transform_points(src_proj, x, y)
         target_x, target_y = proj_xyz[..., 0], proj_xyz[..., 1]
-        # Rotate the input vectors to the projection.
-        #
-        # 1: Find the magnitude and direction of the input vectors.
-        vector_magnitudes = np.hypot(u, v)
-        vector_angles = np.arctan2(v, u)
-        # 2: Find a point in the direction of the original vector that is
-        #    a small distance away from the base point of the vector (near
-        #    the poles the point may have to be in the opposite direction
-        #    to be valid).
-        factor = 360000.
-        delta = (src_proj.x_limits[1] - src_proj.x_limits[0]) / factor
-        x_perturbations = delta * np.cos(vector_angles)
-        y_perturbations = delta * np.sin(vector_angles)
-        # 3: Handle points that are invalid. These come from picking a new
-        #    point that is outside the domain of the CRS. The first step is
-        #    to apply the native transform to the input coordinates to make
-        #    sure they are in the appropriate range. Then detect all the
-        #    coordinates where the perturbation takes the point out of the
-        #    valid x-domain and fix them. After that do the same for points
-        #    that are outside the valid y-domain, which may reintroduce some
-        #    points outside of the valid x-domain
         proj_xyz = src_proj.transform_points(src_proj, x, y)
         source_x, source_y = proj_xyz[..., 0], proj_xyz[..., 1]
-        #    Detect all the coordinates where the perturbation takes the point
-        #    outside of the valid x-domain, and reverse the direction of the
-        #    perturbation to fix this.
-        eps = 1e-9
-        invalid_x = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0] - eps,
-            source_x + x_perturbations > src_proj.x_limits[1] + eps)
-        if invalid_x.any():
-            x_perturbations[invalid_x] *= -1
-            y_perturbations[invalid_x] *= -1
-        #    Do the same for coordinates where the perturbation takes the point
-        #    outside of the valid y-domain. This may reintroduce some points
-        #    that will be outside the x-domain when the perturbation is
-        #    applied.
-        invalid_y = np.logical_or(
-            source_y + y_perturbations < src_proj.y_limits[0] - eps,
-            source_y + y_perturbations > src_proj.y_limits[1] + eps)
-        if invalid_y.any():
-            x_perturbations[invalid_y] *= -1
-            y_perturbations[invalid_y] *= -1
-        #    Keep track of the points where the perturbation direction was
-        #    reversed.
-        reversed_vectors = np.logical_xor(invalid_x, invalid_y)
-        #    See if there were any points where we cannot reverse the direction
-        #    of the perturbation to get the perturbed point within the valid
-        #    domain of the projection, and issue a warning if there are.
-        problem_points = np.logical_or(
-            source_x + x_perturbations < src_proj.x_limits[0] - eps,
-            source_x + x_perturbations > src_proj.x_limits[1] + eps)
+
+        # 2: A step in target x and a step in target y do not usually
+        # cover the same ground distance. This is most obvious for
+        # longitude versus latitude away from the equator, but it can
+        # also happen, more gently, for a non-conformal projected CRS.
+        # Work out the ratio between them using PROJ's own scale factors
+        # for the target projection (get_factors), by comparing how far
+        # a step in x and a step in y each go in the target's own
+        # longitude and latitude, where ground distance is easy to work
+        # out (the usual cosine of latitude).
+        base_ll = self.as_geodetic().transform_points(self, target_x, target_y)
+        lat0 = base_ll[..., 1]
+        factors = pyproj.Proj(self).get_factors(base_ll[..., 0], lat0)
+        coslat0 = np.cos(np.deg2rad(lat0))
+        y_dist = np.hypot(factors.dy_dphi * coslat0, factors.dy_dlam)
+        x_dist = np.hypot(factors.dx_dphi * coslat0, factors.dx_dlam)
+        # get_factors, and the reverse projection feeding it base_ll,
+        # can fail and return inf or nan for a base point right at the
+        # target's own domain edge. inf still passes an x_dist > 0
+        # check, so that has to be excluded explicitly, or the inf/inf
+        # division below produces a nan x_scale that silently corrupts
+        # every jacobian column, not just this one, since dx from each
+        # column is scaled by it.
+        valid_scale = np.isfinite(x_dist) & np.isfinite(y_dist) & (x_dist > 0)
+        x_scale = np.divide(y_dist, x_dist, out=np.ones_like(x_dist),
+                            where=valid_scale)
+
+        # 3: Estimate one column of the Jacobian at a time. Take a
+        # central difference of the forward transform along a single
+        # source axis. If the source domain does not reach far enough on
+        # one side for a central difference (for example near a pole or
+        # a domain edge), fall back to a one-sided difference instead.
+        # Only the direction each source axis maps to is used below, not
+        # its length.
+        def jacobian_column(h, limits, perturb):
+            # perturb(step) returns px, py, and moved. moved is whichever
+            # of px or py is actually being stepped, and is the one to
+            # check against limits.
+            plus_x, plus_y, plus_moved = perturb(h / 2)
+            minus_x, minus_y, minus_moved = perturb(-h / 2)
+            plus_ok = ((plus_moved >= limits[0] - eps) &
+                      (plus_moved <= limits[1] + eps))
+            minus_ok = ((minus_moved >= limits[0] - eps) &
+                       (minus_moved <= limits[1] + eps))
+
+            plus_xyz = self.transform_points(src_proj, plus_x, plus_y)
+            minus_xyz = self.transform_points(src_proj, minus_x, minus_y)
+
+            # The source domain edge is not the only place a probe can
+            # go bad. The target projection has its own coordinate cut
+            # (for example the antimeridian of a projection centred on
+            # a different longitude than the source), and that cut can
+            # fall anywhere in the source domain's interior. A probe
+            # that crosses it lands far from the base point, while its
+            # sibling, stepped the same tiny distance in source
+            # coordinates, still lands close by. Flag whichever probe
+            # is the outlier so the one-sided fallback below is used
+            # instead of differencing across the cut.
+            dist_plus_sq = ((plus_xyz[..., 0] - target_x) ** 2 +
+                            (plus_xyz[..., 1] - target_y) ** 2)
+            dist_minus_sq = ((minus_xyz[..., 0] - target_x) ** 2 +
+                             (minus_xyz[..., 1] - target_y) ** 2)
+            jump_ratio_sq = 100. ** 2
+            plus_ok &= ~((dist_minus_sq > 0) &
+                        (dist_plus_sq > jump_ratio_sq * dist_minus_sq))
+            minus_ok &= ~((dist_plus_sq > 0) &
+                         (dist_minus_sq > jump_ratio_sq * dist_plus_sq))
+
+            central = plus_ok & minus_ok
+            forward = plus_ok & ~minus_ok
+            backward = minus_ok & ~plus_ok
+            dx = np.select(
+                [central, forward, backward],
+                [plus_xyz[..., 0] - minus_xyz[..., 0],
+                 plus_xyz[..., 0] - target_x,
+                 target_x - minus_xyz[..., 0]],
+                default=np.nan) * x_scale
+            dy = np.select(
+                [central, forward, backward],
+                [plus_xyz[..., 1] - minus_xyz[..., 1],
+                 plus_xyz[..., 1] - target_y,
+                 target_y - minus_xyz[..., 1]],
+                default=np.nan)
+
+            norm = np.hypot(dx, dy)
+            valid = norm > 0
+            dx_hat = np.divide(dx, norm, out=np.zeros_like(dx), where=valid)
+            dy_hat = np.divide(dy, norm, out=np.zeros_like(dy), where=valid)
+            return dx_hat, dy_hat, valid
+
+        hx = (src_proj.x_limits[1] - src_proj.x_limits[0]) / factor
+        hy = (src_proj.y_limits[1] - src_proj.y_limits[0]) / factor
+        x_col_u, x_col_v, x_valid = jacobian_column(
+            hx, src_proj.x_limits,
+            lambda step: (source_x + step, source_y, source_x + step))
+        y_col_u, y_col_v, y_valid = jacobian_column(
+            hy, src_proj.y_limits,
+            lambda step: (source_x, source_y + step, source_y + step))
+
+        problem_points = ~x_valid & ~y_valid
         if problem_points.any():
             warnings.warn('Some vectors at source domain corners '
                           'may not have been transformed correctly')
-        # 4: Transform this set of points to the projection coordinates and
-        #    find the angle between the base point and the perturbed point
-        #    in the projection coordinates (reversing the direction at any
-        #    points where the original was reversed in step 3).
-        proj_xyz = self.transform_points(src_proj,
-                                         source_x + x_perturbations,
-                                         source_y + y_perturbations)
-        target_x_perturbed = proj_xyz[..., 0]
-        target_y_perturbed = proj_xyz[..., 1]
-        projected_angles = np.arctan2(target_y_perturbed - target_y,
-                                      target_x_perturbed - target_x)
-        if reversed_vectors.any():
-            projected_angles[reversed_vectors] += np.pi
-        # 5: Form the projected vector components, preserving the magnitude
-        #    of the original vectors.
-        projected_u = vector_magnitudes * np.cos(projected_angles)
-        projected_v = vector_magnitudes * np.sin(projected_angles)
+
+        # 4: Combine the two Jacobian columns into the single rotation
+        # angle that best fits them both. A column that could not be
+        # determined was already zeroed out above, so it just drops out
+        # of the fit.
+        theta = np.arctan2(x_col_v - y_col_u, x_col_u + y_col_v)
+
+        # 5: Rotate the input vector by that angle, keeping its magnitude.
+        projected_u = u * np.cos(theta) - v * np.sin(theta)
+        projected_v = u * np.sin(theta) + v * np.cos(theta)
         return projected_u, projected_v
 
 
