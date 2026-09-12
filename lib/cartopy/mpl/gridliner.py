@@ -168,10 +168,12 @@ class Gridliner(matplotlib.artist.Artist):
         collection_kwargs: optional
             Dictionary controlling line properties, passed to
             :class:`matplotlib.collections.Collection`. Defaults to None.
-        dms: bool
-            When default locators and formatters are used,
-            ticks are able to stop on minutes and seconds if minutes
-            is set to True, and not fraction of degrees.
+        dms: bool or str
+            When default locators and formatters are used, ticks are able
+            to stop on minutes and seconds instead of fractions of degrees.
+            Use ``'d'`` for decimal degrees, ``'dm'`` for degrees and
+            decimal minutes, or ``'dms'`` for degrees-minutes-seconds.
+            ``False`` is an alias for ``'d'`` and ``True`` for ``'dms'``.
         x_inline: optional
             Toggle whether the x labels drawn should be inline.
         y_inline: optional
