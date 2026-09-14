@@ -175,6 +175,18 @@ class TestMisc:
         assert len(multi_polygon.geoms) == 1
         assert len(multi_polygon.geoms[0].exterior.coords) == 4
 
+    def test_self_intersecting_exterior(self):
+        poly = shapely.Polygon([(10, 0), (30, 0), (30, 20), (31, 19), (10, 19)])
+        pc_0 = ccrs.PlateCarree(central_longitude=0)
+        pc_180 = ccrs.PlateCarree(central_longitude=180)
+
+        projected = pc_0.project_geometry(poly, pc_180)
+
+        # Should be a single polygon with no holes
+        assert len(projected.geoms) == 1
+        poly, = projected.geoms
+        assert not poly.interiors
+
     def test_self_intersecting_1(self):
         # Geometry comes from a matplotlib contourf (see #537)
         wkt = ('POLYGON ((366.22000122 -9.71489298, '
