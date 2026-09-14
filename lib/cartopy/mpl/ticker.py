@@ -21,6 +21,7 @@ class _PlateCarreeFormatter(Formatter):
     def __init__(self, direction_label=True, degree_symbol='°',
                  number_format='g', transform_precision=1e-8, dms=False,
                  minute_symbol='′', second_symbol='″',
+                 minutes_number_format='g',
                  seconds_number_format='g',
                  auto_hide=True, decimal_point=None, cardinal_labels=None):
         """
@@ -28,6 +29,12 @@ class _PlateCarreeFormatter(Formatter):
         for latitude and longitude axes.
 
         """
+        _valid_dms = {True, False, 'dm'}
+        if dms not in _valid_dms:
+            raise ValueError(
+                f"Invalid value for dms: {dms!r}. "
+                f"Expected one of {_valid_dms}."
+            )
         self._direction_labels = direction_label
         self._degree_symbol = degree_symbol
         self._degrees_number_format = number_format
@@ -35,6 +42,7 @@ class _PlateCarreeFormatter(Formatter):
         self._dms = dms
         self._minute_symbol = minute_symbol
         self._second_symbol = second_symbol
+        self._minutes_num_format = minutes_number_format
         self._seconds_num_format = seconds_number_format
         self._auto_hide = auto_hide
         self._auto_hide_degrees = False
@@ -88,6 +96,15 @@ class _PlateCarreeFormatter(Formatter):
             return (sign + self._format_degrees(abs(value)) +
                     hemisphere)
 
+        if self._dms == 'dm':
+            value, deg, decimal_mn = self._get_dm(abs(value))
+            label = ''
+            if decimal_mn:
+                label = self._format_minutes(decimal_mn)
+            if not self._auto_hide_degrees or not label:
+                label = sign + self._format_degrees(deg) + label + hemisphere
+            return label
+
         value, deg, mn, sec = self._get_dms(abs(value))
 
         # Format
@@ -126,6 +143,21 @@ class _PlateCarreeFormatter(Formatter):
         secs = np.round((y - mins) * 60, self._precision - 3)
         return x, degs, mins, secs
 
+    def _get_dm(self, x):
+        self._precision = 6
+        x = np.asarray(x, 'd')
+        degs = np.round(x, self._precision).astype('i')
+        mins = np.round((x - degs) * 60, self._precision)
+        return x, degs, mins
+
+    @staticmethod
+    def _auto_hide_dm(mins0, degs):
+        if not mins0.any():
+            return False
+        if mins0.sum() == 1:
+            return True
+        return np.diff(degs.compress(mins0)).max() == 1
+
     def set_axis(self, axis):
         super().set_axis(axis)
 
@@ -148,6 +180,14 @@ class _PlateCarreeFormatter(Formatter):
         super().set_locs(locs)
         if not self._auto_hide:
             return
+
+        if self._dms == 'dm':
+            locs, degs, mins = self._get_dm(locs)
+            super().set_locs(locs)
+            mins0 = np.round(mins, self._precision).astype('i') == 0
+            self._auto_hide_degrees = self._auto_hide_dm(mins0, degs)
+            return
+
         locs, degs, mins, secs = self._get_dms(locs)
 
         # locs dtype may have changed.
@@ -183,7 +223,11 @@ class _PlateCarreeFormatter(Formatter):
         return value
 
     def _format_minutes(self, mn):
-        """Format minutes as an integer"""
+        if self._dms == 'dm':
+            value = f'{mn:{self._minutes_num_format}}{self._minute_symbol}'
+            if self._decimal_point is not None:
+                value = value.replace(".", self._decimal_point)
+            return value
         return f'{int(mn):d}{self._minute_symbol}'
 
     def _format_seconds(self, sec):
@@ -218,6 +262,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
                  degree_symbol='°', number_format='g',
                  transform_precision=1e-8, dms=False,
                  minute_symbol='′', second_symbol='″',
+                 minutes_number_format='g',
                  seconds_number_format='g', auto_hide=True,
                  decimal_point=None, cardinal_labels=None
                  ):
@@ -247,13 +292,18 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
-        dms: bool, optional
+        dms: bool or str, optional
             Whether or not formatting as degrees-minutes-seconds and not
-            as decimal degrees.
+            as decimal degrees. Set to ``True`` for degrees-minutes-seconds,
+            ``'dm'`` for degrees and decimal minutes, or ``False`` for
+            decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.
         second_symbol: str, optional
             The character(s) used to represent the second symbol.
+        minutes_number_format: optional
+            Format string to represent the "minutes" component when using
+            ``dms='dm'`` mode. Defaults to 'g'.
         seconds_number_format: optional
             Format string to represent the "seconds" component of the longitude
             values. Defaults to 'g'.
@@ -309,6 +359,7 @@ class LatitudeFormatter(_PlateCarreeFormatter):
             dms=dms,
             minute_symbol=minute_symbol,
             second_symbol=second_symbol,
+            minutes_number_format=minutes_number_format,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
             decimal_point=decimal_point,
@@ -342,6 +393,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
                  dms=False,
                  minute_symbol='′',
                  second_symbol='″',
+                 minutes_number_format='g',
                  seconds_number_format='g',
                  auto_hide=True,
                  decimal_point=None,
@@ -380,13 +432,18 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             values are rounded. The default is 1e-7, and should be
             suitable for most use cases. To control the appearance of
             tick labels use the *number_format* keyword.
-        dms: bool, optional
+        dms: bool or str, optional
             Whether or not formatting as degrees-minutes-seconds and not
-            as decimal degrees.
+            as decimal degrees. Set to ``True`` for degrees-minutes-seconds,
+            ``'dm'`` for degrees and decimal minutes, or ``False`` for
+            decimal degrees.
         minute_symbol: str, optional
             The character(s) used to represent the minute symbol.
         second_symbol: str, optional
             The character(s) used to represent the second symbol.
+        minutes_number_format: optional
+            Format string to represent the "minutes" component when using
+            ``dms='dm'`` mode. Defaults to 'g'.
         seconds_number_format: optional
             Format string to represent the "seconds" component of the latitude
             values. Defaults to 'g'.
@@ -443,6 +500,7 @@ class LongitudeFormatter(_PlateCarreeFormatter):
             dms=dms,
             minute_symbol=minute_symbol,
             second_symbol=second_symbol,
+            minutes_number_format=minutes_number_format,
             seconds_number_format=seconds_number_format,
             auto_hide=auto_hide,
             decimal_point=decimal_point,
