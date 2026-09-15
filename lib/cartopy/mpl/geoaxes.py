@@ -529,6 +529,8 @@ class GeoAxes(matplotlib.axes.Axes):
         # Get the max ymax of all top labels
         top = -1
         for gl in gridliners:
+            if not gl.get_visible():
+                continue
             # Both top and geo labels can appear at the top of the axes
             if gl.top_labels or gl.geo_labels:
                 # Make sure Gridliner is populated and up-to-date
