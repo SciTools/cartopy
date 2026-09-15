@@ -1,0 +1,10 @@
+Version 0.26 (unreleased)
+=========================
+
+Bug Fixes
+---------
+
+* Fixed vector transformations for angular coordinate systems so that
+  transformed vector components vary linearly with the input components.
+  This improves vector directions for rotated latitude/longitude grids and
+  PlateCarree vectors near the poles.
