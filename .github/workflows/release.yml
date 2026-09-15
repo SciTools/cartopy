@@ -101,7 +101,7 @@ jobs:
         with:
           package-dir: dist/${{ needs.build_sdist.outputs.SDIST_NAME }}
         env:
-          CIBW_SKIP: "*_i686 cp3*t-*"
+          CIBW_SKIP: "*_i686"
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
