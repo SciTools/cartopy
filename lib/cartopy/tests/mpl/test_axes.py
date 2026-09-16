@@ -156,6 +156,35 @@ def test_geoaxes_set_boundary_clipping():
     return fig
 
 
+def test_geoaxes_set_boundary_survives_panning():
+    """A transAxes boundary must survive panning far from the initial view."""
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.SouthPolarStereo())
+    ax.set_extent([-180, 180, -90, -60], ccrs.PlateCarree())
+    circle = mpath.Path.circle(center=(0.5, 0.5), radius=0.5)
+    ax.set_boundary(circle, transform=ax.transAxes)
+
+    xlim0 = ax.get_xlim()
+    ylim0 = ax.get_ylim()
+    width = xlim0[1] - xlim0[0]
+    height = ylim0[1] - ylim0[0]
+
+    # Pan well past the initial view.
+    ax.set_xlim(xlim0[0] - width, xlim0[1] - width)
+    ax.set_ylim(ylim0[0] + height, ylim0[1] + height)
+
+    fig.draw_without_rendering()
+
+    for artist in (ax.patch, ax.spines['geo']):
+        path = artist.get_path()
+        assert len(path.vertices) > 0
+        bbox = path.get_extents()
+        assert bbox.x0 == pytest.approx(0, abs=1e-9)
+        assert bbox.x1 == pytest.approx(1, abs=1e-9)
+        assert bbox.y0 == pytest.approx(0, abs=1e-9)
+        assert bbox.y1 == pytest.approx(1, abs=1e-9)
+
+
 def test_shared_axes_zoom_propagation():
     fig = plt.figure()
     proj = ccrs.PlateCarree()

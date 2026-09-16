@@ -203,6 +203,7 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
         self._original_path = mpath.Path(np.empty((0, 2)))
         super().__init__(self._original_path, **kwargs)
         self._axes = axes
+        self._boundary_in_data_coords = True
 
         # We need to use a TransformWrapper as our transform so that we can
         # update the transform without breaking others' references to this one.
@@ -214,14 +215,19 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
 
     def set_boundary(self, path, transform):
         self._original_path = cpath._ensure_path_closed(path)
+        # viewLim is in data coordinates, so only clip to it when the
+        # boundary itself is in data coordinates.
+        self._boundary_in_data_coords = transform is self._axes.transData
         self.set_transform(transform)
         self.stale = True
 
     def _adjust_location(self):
         if self.stale:
-            self.set_path(
-                cpath._ensure_path_closed(
-                    self._original_path.clip_to_bbox(self.axes.viewLim)))
+            path = self._original_path
+            if self._boundary_in_data_coords:
+                path = cpath._ensure_path_closed(
+                    path.clip_to_bbox(self.axes.viewLim))
+            self.set_path(path)
             # Some places in matplotlib's transform stack cache the actual
             # path so we trigger an update by invalidating the transform.
             self._trans_wrap.invalidate()
@@ -235,20 +241,24 @@ class _ViewClippedPathPatch(mpatches.PathPatch):
 class GeoSpine(mspines.Spine):
     def __init__(self, axes, **kwargs):
         self._original_path = mpath.Path(np.empty((0, 2)))
+        self._boundary_in_data_coords = True
         kwargs.setdefault('clip_on', False)
         super().__init__(axes, 'geo', self._original_path, **kwargs)
 
     def set_boundary(self, path, transform):
         # Make sure path is closed (required by "Path.clip_to_bbox")
         self._original_path = cpath._ensure_path_closed(path)
+        self._boundary_in_data_coords = transform is self.axes.transData
         self.set_transform(transform)
         self.stale = True
 
     def _adjust_location(self):
         if self.stale:
-            self._path = cpath._ensure_path_closed(
-                self._original_path.clip_to_bbox(self.axes.viewLim)
-                )
+            path = self._original_path
+            if self._boundary_in_data_coords:
+                path = cpath._ensure_path_closed(
+                    path.clip_to_bbox(self.axes.viewLim))
+            self._path = path
 
     def get_window_extent(self, renderer=None):
         # make sure the location is updated so that transforms etc are
