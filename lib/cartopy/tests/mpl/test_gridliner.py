@@ -14,11 +14,9 @@ import pytest
 from shapely import geos_version
 
 import cartopy.crs as ccrs
-from cartopy.mpl import _MPL_311
+from cartopy.mpl import _MPL_311, gridliner
 from cartopy.mpl.geoaxes import GeoAxes
 from cartopy.mpl.gridliner import (
-    LATITUDE_FORMATTER,
-    LONGITUDE_FORMATTER,
     Gridliner,
     classic_formatter,
     classic_locator,
@@ -174,8 +172,10 @@ def test_grid_labels():
     gl.right_labels = True
     gl.xlines = False
     gl.xlocator = mticker.FixedLocator([-180, -45, 45, 180])
-    gl.xformatter = LONGITUDE_FORMATTER
-    gl.yformatter = LATITUDE_FORMATTER
+    with pytest.warns(DeprecationWarning):
+        gl.xformatter = gridliner.LONGITUDE_FORMATTER
+    with pytest.warns(DeprecationWarning):
+        gl.yformatter = gridliner.LATITUDE_FORMATTER
     gl.xlabel_style = {'color': 'red'}
     gl.xpadding = 10
     gl.ypadding = 15
