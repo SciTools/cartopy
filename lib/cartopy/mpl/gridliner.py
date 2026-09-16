@@ -60,49 +60,6 @@ _ROTATE_LABEL_PROJS = _POLAR_PROJS + (
 )
 
 
-def _lon_hemisphere(longitude):
-    """Return the hemisphere (E, W or '' for 0) for the given longitude."""
-    # Wrap the longitude to the range -180 to 180, keeping positive 180s
-    lon_wrapped = ((longitude + 180) % 360) - 180
-    longitude = 180 if (longitude > 0 and lon_wrapped == -180) else lon_wrapped
-    if longitude > 0:
-        hemisphere = 'E'
-    elif longitude < 0:
-        hemisphere = 'W'
-    else:
-        hemisphere = ''
-    return hemisphere
-
-
-def _lat_hemisphere(latitude):
-    """Return the hemisphere (N, S or '' for 0) for the given latitude."""
-    if latitude > 0:
-        hemisphere = 'N'
-    elif latitude < 0:
-        hemisphere = 'S'
-    else:
-        hemisphere = ''
-    return hemisphere
-
-
-def _east_west_formatted(longitude, num_format='g'):
-    hemisphere = _lon_hemisphere(longitude)
-    return f'{abs(longitude):{num_format}}\N{Degree Sign}{hemisphere}'
-
-
-def _north_south_formatted(latitude, num_format='g'):
-    hemisphere = _lat_hemisphere(latitude)
-    return f'{abs(latitude):{num_format}}\N{Degree Sign}{hemisphere}'
-
-
-#: A formatter which turns longitude values into nice longitudes such as 110W
-LONGITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
-                                            _east_west_formatted(v))
-#: A formatter which turns longitude values into nice longitudes such as 45S
-LATITUDE_FORMATTER = mticker.FuncFormatter(lambda v, pos:
-                                           _north_south_formatted(v))
-
-
 class Gridliner(matplotlib.artist.Artist):
     def __init__(self, axes, crs, draw_labels=False, xlocator=None,
                  ylocator=None, collection_kwargs=None,
@@ -1301,3 +1258,65 @@ class Label:
         if overlapping:
             self.set_visible(False)
         return overlapping
+
+
+# ######################################################################################
+# Deprecated formatters and their helpers.
+
+def _lon_hemisphere(longitude):
+    """Return the hemisphere (E, W or '' for 0) for the given longitude."""
+    # Wrap the longitude to the range -180 to 180, keeping positive 180s
+    lon_wrapped = ((longitude + 180) % 360) - 180
+    longitude = 180 if (longitude > 0 and lon_wrapped == -180) else lon_wrapped
+    if longitude > 0:
+        hemisphere = 'E'
+    elif longitude < 0:
+        hemisphere = 'W'
+    else:
+        hemisphere = ''
+    return hemisphere
+
+
+def _lat_hemisphere(latitude):
+    """Return the hemisphere (N, S or '' for 0) for the given latitude."""
+    if latitude > 0:
+        hemisphere = 'N'
+    elif latitude < 0:
+        hemisphere = 'S'
+    else:
+        hemisphere = ''
+    return hemisphere
+
+
+def _east_west_formatted(longitude, num_format='g'):
+    hemisphere = _lon_hemisphere(longitude)
+    return f'{abs(longitude):{num_format}}\N{Degree Sign}{hemisphere}'
+
+
+def _north_south_formatted(latitude, num_format='g'):
+    hemisphere = _lat_hemisphere(latitude)
+    return f'{abs(latitude):{num_format}}\N{Degree Sign}{hemisphere}'
+
+
+def __getattr__(name):
+    match name:
+        case 'LONGITUDE_FORMATTER':
+            warnings.warn(
+                "The LONGITUDE_FORMATTER module-level attribute was deprecated in "
+                "Cartopy 0.26. Use LongitudeFormatter instead.",
+                DeprecationWarning,
+                stacklevel=2)
+            # A formatter which turns longitude values into nice longitudes such as 110W
+            return mticker.FuncFormatter(lambda v, pos: _east_west_formatted(v))
+        case 'LATITUDE_FORMATTER':
+            warnings.warn(
+                "The LATITUDE_FORMATTER module-level attribute was deprecated in "
+                "Cartopy 0.26. Use LatitudeFormatter instead.",
+                DeprecationWarning,
+                stacklevel=2)
+            # A formatter which turns longitude values into nice longitudes such as 45S
+            return mticker.FuncFormatter(lambda v, pos: _north_south_formatted(v))
+    raise AttributeError(f"module {Gridliner.__module__!r} has no attribute {name!r}")
+
+# Remove everything between these comments when removing the deprecation.
+# ######################################################################################
