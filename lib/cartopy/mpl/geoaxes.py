@@ -1414,10 +1414,13 @@ class GeoAxes(matplotlib.axes.Axes):
             used to determine the locations of the gridlines in the
             y-coordinate of the given CRS. Defaults to None, which
             implies automatic locating of the gridlines.
-        dms: bool
+        dms: bool or str
             When default longitude and latitude locators and formatters are
-            used, ticks are able to stop on minutes and seconds if minutes is
-            set to True, and not fraction of degrees. This keyword is passed
+            used, ticks are able to stop on minutes and seconds instead of
+            fractions of degrees. Use ``'d'`` for decimal degrees, ``'dm'``
+            for degrees and decimal minutes, or ``'dms'`` for
+            degrees-minutes-seconds. ``False`` is an alias for ``'d'`` and
+            ``True`` for ``'dms'``. This keyword is passed
             to :class:`~cartopy.mpl.gridliner.Gridliner` and has no effect
             if xlocs and ylocs are explicitly set.
         x_inline: optional
