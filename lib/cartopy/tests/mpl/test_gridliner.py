@@ -301,7 +301,13 @@ def test_grid_labels_inline(proj):
     else:
         kwargs = {}
     ax = fig.add_subplot(projection=proj(**kwargs))
-    ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, auto_inline=True)
+    # OSGB/OSNI baselines predate rotate_labels being inherited from their
+    # TransverseMercator parent; keep this image test on the un-rotated
+    # style and rely on test_projection_subclass_inherits_label_rotation
+    # to cover the new inheritance behavior.
+    rotate_labels = False if proj in (ccrs.OSGB, ccrs.OSNI) else None
+    ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, auto_inline=True,
+                 rotate_labels=rotate_labels)
     ax.coastlines(resolution="110m")
     return fig
 
@@ -640,3 +646,46 @@ def test_gridliner_geo_labels_respect_side_visibility():
     fig.draw_without_rendering()
     labels = [a.get_text() for a in gl.geo_label_artists if a.get_visible()]
     assert labels == ['60°S', '60°N']
+
+
+def test_gridliner_visibility_after_draw():
+    fig = plt.figure()
+    ax = fig.add_subplot(projection=ccrs.PlateCarree())
+    ax.set_global()
+    ax.set_title('Map title')
+    fig.canvas.draw()
+    bare = np.array(fig.canvas.buffer_rgba(), copy=True)
+    bare_title = ax.title.get_position()
+
+    grid = ax.gridlines(draw_labels=True)
+    fig.canvas.draw()
+    assert not np.array_equal(bare, fig.canvas.buffer_rgba())
+    assert not grid.stale
+
+    grid.set_visible(False)
+    fig.canvas.draw()
+    np.testing.assert_array_equal(bare, fig.canvas.buffer_rgba())
+    assert ax.title.get_position() == bare_title
+
+    grid.set_visible(True)
+    fig.canvas.draw()
+    assert not np.array_equal(bare, fig.canvas.buffer_rgba())
+    assert not grid.stale
+
+
+@pytest.mark.parametrize('projection', [ccrs.OSGB, ccrs.OSNI])
+def test_projection_subclass_inherits_label_rotation(projection):
+    fig = plt.figure()
+    ax = fig.add_subplot(projection=projection())
+    assert ax.gridlines().rotate_labels is True
+    assert ax.gridlines(rotate_labels=False).rotate_labels is False
+
+
+def test_custom_projection_subclass_inherits_label_rotation():
+    class RegionalLambert(ccrs.LambertConformal):
+        pass
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection=RegionalLambert())
+    assert ax.gridlines().rotate_labels is True
+    assert ax.gridlines(rotate_labels=20).rotate_labels == 20

@@ -363,8 +363,7 @@ class Gridliner(matplotlib.artist.Artist):
 
         #: Control the rotation of labels.
         if rotate_labels is None:
-            rotate_labels = (
-                axes.projection.__class__ in _ROTATE_LABEL_PROJS)
+            rotate_labels = isinstance(axes.projection, _ROTATE_LABEL_PROJS)
         if not isinstance(rotate_labels, (bool, float, int)):
             raise ValueError("Invalid rotate_labels argument")
         self.rotate_labels = rotate_labels
@@ -1223,10 +1222,14 @@ class Gridliner(matplotlib.artist.Artist):
         else:
             return mtrans.Bbox.null()
 
+    @matplotlib.artist.allow_rasterization
     def draw(self, renderer=None):
+        if not self.get_visible():
+            return
         self._draw_gridliner(renderer=renderer)
         for c in self.get_visible_children():
             c.draw(renderer=renderer)
+        self.stale = False
 
 
 class Label:
