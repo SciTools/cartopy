@@ -197,6 +197,13 @@ class FeatureArtist(matplotlib.collections.Collection):
             extent_geom = shapely.box(extent[0], extent[2], extent[1], extent[3])
             shapely.prepare(extent_geom)
 
+        # Use the CRS of the feature from before the geometries are read above
+        # (which is deferred until iterating over ``geoms``), as reading them
+        # can replace it with an equivalent CRS, e.g. from the .prj file of a
+        # Natural Earth shapefile, that no longer compares equal to the
+        # projection of the axes.
+        src_crs = feature_crs if ax.projection != feature_crs else None
+
         # Project (if necessary) and convert geometries to matplotlib paths.
         for geom in geoms:
             mapping = self._get_path_mapping(geom)
@@ -211,10 +218,10 @@ class FeatureArtist(matplotlib.collections.Collection):
                     parts = mapping[_PARTS_KEY] = shapely.get_parts(geom)
                 visible_parts = parts[shapely.intersects(extent_geom, parts)]
                 geom_path = Path.make_compound_path(
-                    *[self._get_path(part, self._get_path_mapping(part))
+                    *[self._get_path(part, self._get_path_mapping(part), src_crs)
                       for part in visible_parts])
             else:
-                geom_path = self._get_path(geom, mapping)
+                geom_path = self._get_path(geom, mapping, src_crs)
 
             yield geom, geom_path
 
@@ -240,18 +247,19 @@ class FeatureArtist(matplotlib.collections.Collection):
         FeatureArtist._geom_key_to_geometry_cache.setdefault(geom_key, geom)
         return FeatureArtist._geom_key_to_path_cache.setdefault(geom_key, {})
 
-    def _get_path(self, geom, mapping):
+    def _get_path(self, geom, mapping, src_crs):
         """
         Return the path of the given geometry in the projection of the axes,
         using and updating the cache in ``mapping``.
+
+        The geometry is projected from ``src_crs``, unless that is None.
 
         """
         key = self.axes.projection
         geom_path = mapping.get(key)
         if geom_path is None:
-            feature_crs = self._feature.crs
-            if key != feature_crs:
-                projected_geom = key.project_geometry(geom, feature_crs)
+            if src_crs is not None:
+                projected_geom = key.project_geometry(geom, src_crs)
             else:
                 projected_geom = geom
 

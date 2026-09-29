@@ -3,16 +3,18 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
+from unittest import mock
 
 import matplotlib.colors as mcolors
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
+import pyproj
 import pytest
 import shapely
 
 import cartopy.crs as ccrs
-from cartopy.feature import ShapelyFeature
+from cartopy.feature import Feature, ShapelyFeature
 from cartopy.mpl.feature_artist import (
     _PARTS_KEY,
     FeatureArtist,
@@ -175,6 +177,47 @@ def test_feature_artist_multipart_styler(multipart_feature):
     fig.draw_without_rendering()
 
     assert seen == list(multipart_feature.geometries())
+
+
+# The contents of the .prj files of the Natural Earth shapefiles.
+NATURAL_EARTH_WKT = (
+    'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",'
+    'SPHEROID["WGS_1984",6378137.0,298.257223563]],'
+    'PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]')
+
+
+class CRSOnReadFeature(Feature):
+    """
+    A feature that replaces its CRS with an equivalent one when reading its
+    geometries, like NaturalEarthFeature does with the CRS of the shapefile.
+
+    """
+
+    def __init__(self, geoms):
+        super().__init__(ccrs.PlateCarree())
+        self._geoms = geoms
+
+    def geometries(self):
+        self._crs = ccrs.Projection(pyproj.CRS.from_wkt(NATURAL_EARTH_WKT))
+        return iter(self._geoms)
+
+
+def test_feature_artist_crs_changed_by_reading_geometries(multipart_feature):
+    # Geometries are read lazily while drawing. The CRS of the feature from
+    # before reading them has to be used, so that no projection is needed
+    # if it matches the projection of the axes.
+    # The CRS after reading is equivalent, but does not compare equal.
+    assert ccrs.PlateCarree() != ccrs.Projection(
+        pyproj.CRS.from_wkt(NATURAL_EARTH_WKT))
+    feature = CRSOnReadFeature(list(multipart_feature.geometries()))
+
+    fig, ax = plt.subplots(subplot_kw={'projection': ccrs.PlateCarree()})
+    ax.set_extent([-10, 50, -5, 20])
+    ax.add_feature(feature)
+
+    with mock.patch.object(ccrs.PlateCarree, 'project_geometry') as project:
+        fig.draw_without_rendering()
+    project.assert_not_called()
 
 
 @pytest.mark.parametrize('autolim', [False, True])

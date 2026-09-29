@@ -3,10 +3,13 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
+import io
+
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+import cartopy.io.shapereader as shpreader
 from cartopy.mpl.feature_artist import FeatureArtist
 
 
@@ -49,3 +52,53 @@ class DrawNaturalEarthFeature:
 
     def time_draw(self, extent, resolution):
         self.figure.canvas.draw()
+
+
+class DrawNaturalEarthFeaturesLazily:
+    """
+    The example from issue #2102: 10m ocean, land and borders around Italy.
+
+    Like in a script, the geometries are only read when the figure is drawn,
+    which also replaces the CRS of each feature with the one from its
+    shapefile.
+
+    """
+    params = ['PlateCarree', 'Mercator']
+    param_names = ['projection']
+    number = 1
+    repeat = (1, 3, 120.0)
+    timeout = 600
+
+    def setup(self, projection):
+        features = [
+            cfeature.OCEAN.with_scale('10m'),
+            cfeature.LAND.with_scale('10m'),
+            cfeature.BORDERS.with_scale('10m'),
+        ]
+        # Download the shapefiles if necessary, but read them in the timing.
+        for feature in features:
+            shpreader.natural_earth(resolution='10m', category=feature.category,
+                                    name=feature.name)
+        cfeature._NATURAL_EARTH_GEOM_CACHE.clear()
+        FeatureArtist._geom_key_to_geometry_cache.clear()
+        FeatureArtist._geom_key_to_path_cache.clear()
+
+        fig = plt.figure(figsize=(15, 10))
+        if projection == 'PlateCarree':
+            proj = ccrs.PlateCarree()
+        else:
+            proj = ccrs.Mercator(central_longitude=5, min_latitude=30,
+                                 max_latitude=75)
+        ax = fig.add_subplot(projection=proj)
+        ax.set_extent([6, 19, 36, 48], ccrs.PlateCarree())
+        ax.add_feature(features[0], facecolor='#2081C3', zorder=2)
+        ax.add_feature(features[1], facecolor='lightgray', zorder=0)
+        ax.add_feature(features[2], edgecolor='black', zorder=2)
+        self.figure = fig
+
+    def teardown(self, projection):
+        plt.close(self.figure)
+
+    def time_savefig(self, projection):
+        self.figure.savefig(io.BytesIO(), format='png', bbox_inches='tight',
+                            dpi=100)
