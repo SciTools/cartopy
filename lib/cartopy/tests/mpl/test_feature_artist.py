@@ -143,7 +143,7 @@ def test_feature_artist_multipart_projects_visible_parts(multipart_feature):
 
     # The combined path is the same as projecting the visible parts together.
     expected = shapely_to_path(plot_crs.project_geometry(
-        shapely.MultiPolygon(parts[1:3]), ccrs.PlateCarree()))
+        shapely.MultiPolygon(list(parts[1:3])), ccrs.PlateCarree()))
     np.testing.assert_array_equal(path.vertices, expected.vertices)
     np.testing.assert_array_equal(path.codes, expected.codes)
 
