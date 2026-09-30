@@ -1239,7 +1239,17 @@ class Projection(CRS, metaclass=ABCMeta):
 
             interior_polys = []
 
+            # The same tolerance for points being equal as in
+            # _project_linear_ring.
+            point_tolerance = max(np.abs(self.x_limits + self.y_limits)) * 1e-5
+
             for ring in interior_rings:
+                x1, y1, x2, y2 = ring.bounds
+                if x2 - x1 < point_tolerance and y2 - y1 < point_tolerance:
+                    # The ring has collapsed to a single point in the
+                    # projection. This is not a hole, and inverting it would
+                    # cover the whole domain.
+                    continue
                 polygon = shapely.make_valid(shapely.Polygon(ring))
                 if not polygon.is_empty:
                     if isinstance(polygon, shapely.Polygon):
@@ -1279,11 +1289,14 @@ class Projection(CRS, metaclass=ABCMeta):
                 # Intersect the inverted polygon with the boundary
                 polygon = boundary_poly.intersection(polygon)
 
-                if not polygon.is_empty:
-                    if isinstance(polygon, shapely.MultiPolygon):
-                        polygon_bits.extend(polygon.geoms)
-                    else:
-                        polygon_bits.append(polygon)
+                # The intersection may be a GeometryCollection containing
+                # linestrings or points where the polygon touches the
+                # boundary.  Only keep the polygonal parts.
+                for geom in shapely.get_parts(polygon):
+                    if isinstance(geom, shapely.Polygon):
+                        polygon_bits.append(geom)
+                    elif isinstance(geom, shapely.MultiPolygon):
+                        polygon_bits.extend(geom.geoms)
 
         return shapely.MultiPolygon(polygon_bits)
 
