@@ -3,7 +3,10 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
+from unittest import mock
+
 import matplotlib.pyplot as plt
+from matplotlib.transforms import Bbox
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pytest
@@ -146,3 +149,23 @@ def test_contourf_transform_first(func):
     test_func(xx, yy, z, transform=ccrs.PlateCarree(),
               transform_first=False)
     assert_array_almost_equal(ax.get_extent(), (-180, 180, -25, 25))
+
+
+def test_transform_first_preserves_masked_data():
+    """The transform-first fast path must preserve a data mask."""
+    x, y = np.meshgrid(np.arange(4), np.arange(3))
+    z = np.ma.masked_where(x > 1, x + y)
+    result = mock.Mock()
+    result.get_datalim.return_value = Bbox.from_extents(0, 0, 1, 1)
+    result.sticky_edges.x = [None, None]
+    result.sticky_edges.y = [None, None]
+    with mock.patch('matplotlib.axes.Axes.contourf',
+                    return_value=result) as contourf:
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        ax.contourf(x, y, z, transform=ccrs.PlateCarree(),
+                    transform_first=True)
+
+    transformed_z = contourf.call_args.args[2]
+    assert np.ma.isMaskedArray(transformed_z)
+    np.testing.assert_array_equal(np.ma.getmaskarray(transformed_z),
+                                  np.ma.getmaskarray(z))

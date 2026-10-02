@@ -322,7 +322,10 @@ def _add_transform_first(func):
                 # For the fast-path we need X and Y input points
                 raise ValueError("The X and Y arguments must be provided to "
                                  "use the transform_first=True fast-path.")
-            x, y, z = (np.array(i) for i in args[:3])
+            x, y = (np.array(i) for i in args[:2])
+            # Keep a MaskedArray as-is so that the fast path does not
+            # accidentally turn masked values into regular data.
+            z = np.asanyarray(args[2])
             if not (x.ndim == y.ndim == 2):
                 raise ValueError("The X and Y arguments must be gridded "
                                  "2-dimensional arrays")
