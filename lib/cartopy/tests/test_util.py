@@ -44,6 +44,29 @@ class Test_add_cyclic_point:
         assert_array_equal(c_data, r_data)
         assert_array_equal(c_lons, r_lons)
 
+    def test_coordinate_tolerance(self):
+        coord = np.array([0., 1., 2.0001])
+
+        with pytest.raises(ValueError, match='equally spaced'):
+            add_cyclic_point(self.data2d[:, :3], coord=coord)
+
+        c_data, c_coord = add_cyclic_point(
+            self.data2d[:, :3], coord=coord, rtol=0, atol=1e-3)
+        assert_array_equal(
+            c_data, np.concatenate((self.data2d[:, :3], self.data2d[:, :1]),
+                                   axis=1))
+        assert_array_equal(c_coord, np.array([0., 1., 2.0001, 3.0001]))
+
+    def test_coordinate_relative_tolerance(self):
+        coord = np.array([100., 200., 300.01])
+
+        with pytest.raises(ValueError, match='equally spaced'):
+            add_cyclic_point(self.data2d[:, :3], coord=coord)
+
+        _, c_coord = add_cyclic_point(
+            self.data2d[:, :3], coord=coord, rtol=2e-4, atol=0)
+        assert_array_equal(c_coord, np.array([100., 200., 300.01, 400.01]))
+
     def test_masked_data(self):
         new_data = ma.masked_less(self.data2d, 3)
         c_data = add_cyclic_point(new_data)

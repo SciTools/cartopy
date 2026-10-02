@@ -10,7 +10,7 @@ import numpy as np
 import numpy.ma as ma
 
 
-def add_cyclic_point(data, coord=None, axis=-1):
+def add_cyclic_point(data, coord=None, axis=-1, *, rtol=1e-5, atol=1e-8):
     """
     Add a cyclic point to an array and optionally a corresponding
     coordinate.
@@ -26,6 +26,14 @@ def add_cyclic_point(data, coord=None, axis=-1):
     axis : optional
         Specifies the axis of the data array to add the cyclic point to.
         Defaults to the right-most axis.
+    rtol : float, optional
+        The relative tolerance used to check whether the coordinate is
+        regularly spaced. Passed to :func:`numpy.allclose`. Defaults to
+        ``1e-5``.
+    atol : float, optional
+        The absolute tolerance used to check whether the coordinate is
+        regularly spaced. Passed to :func:`numpy.allclose`. Defaults to
+        ``1e-8``.
 
     Returns
     -------
@@ -73,7 +81,7 @@ def add_cyclic_point(data, coord=None, axis=-1):
                              f'the data array: len(coord) = {len(coord)}, '
                              f'data.shape[{axis}] = {data.shape[axis]}.')
         delta_coord = np.diff(coord)
-        if not np.allclose(delta_coord, delta_coord[0]):
+        if not np.allclose(delta_coord, delta_coord[0], rtol=rtol, atol=atol):
             raise ValueError('The coordinate must be equally spaced.')
         new_coord = ma.concatenate((coord, coord[-1:] + delta_coord[0]))
     slicer = [slice(None)] * data.ndim
