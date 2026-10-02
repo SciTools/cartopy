@@ -132,6 +132,9 @@ class BasicReader:
     :meth:`~cartopy.io.shapereader.BasicReader.records` and
     :meth:`~cartopy.io.shapereader.BasicReader.geometries`.
 
+    A BasicReader can also be used as a context manager; the reader is closed
+    when exiting the ``with`` block.
+
     """
 
     def __init__(self, filename, bbox=None, **kwargs):
@@ -152,6 +155,14 @@ class BasicReader:
 
     def close(self):
         return self._reader.close()
+
+    def __enter__(self):
+        """Enter the context manager and return this reader."""
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Close the reader when exiting the context manager."""
+        self.close()
 
     def __len__(self):
         return len(self._reader)
@@ -198,6 +209,9 @@ class FionaReader:
     :meth:`~cartopy.io.shapereader.FionaReader.records` and
     :meth:`~cartopy.io.shapereader.FionaReader.geometries`.
 
+    A FionaReader can also be used as a context manager; the reader is closed
+    when exiting the ``with`` block.
+
     """
 
     def __init__(self, filename, bbox=None, **kwargs):
@@ -243,6 +257,14 @@ class FionaReader:
         # This will enable us to pass down calls for bounding box queries,
         # rather than having to have it all in memory.
         pass
+
+    def __enter__(self):
+        """Enter the context manager and return this reader."""
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Close the reader when exiting the context manager."""
+        self.close()
 
     def __len__(self):
         return len(self._data)

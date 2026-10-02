@@ -81,6 +81,42 @@ class TestLakes:
             pytest.skip("Fiona reader doesn't support lazy loading")
 
 
+@pytest.mark.parametrize(
+    "reader_class",
+    [
+        pytest.param(shp.BasicReader, id="pyshp"),
+        pytest.param(
+            shp.FionaReader,
+            id="fiona",
+            marks=pytest.mark.skipif(
+                not shp._HAS_FIONA, reason="Fiona library not available")),
+    ])
+def test_reader_context_manager(reader_class):
+    lakes_path = (Path(__file__).parent / 'lakes_shapefile'
+                  / 'ne_110m_lakes.shp')
+    reader = reader_class(lakes_path)
+
+    with reader as entered_reader:
+        assert entered_reader is reader
+        assert len(entered_reader) > 0
+        assert next(entered_reader.records()).geometry is not None
+
+    if isinstance(reader, shp.BasicReader):
+        assert reader._reader.shp.closed
+
+
+def test_basic_reader_context_manager_closes_on_exception():
+    lakes_path = (Path(__file__).parent / 'lakes_shapefile'
+                  / 'ne_110m_lakes.shp')
+    reader = shp.BasicReader(lakes_path)
+
+    with pytest.raises(RuntimeError, match="test exception"):
+        with reader:
+            raise RuntimeError("test exception")
+
+    assert reader._reader.shp.closed
+
+
 @pytest.mark.filterwarnings("ignore:Downloading")
 @pytest.mark.natural_earth
 class TestRivers:
