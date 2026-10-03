@@ -57,3 +57,28 @@ class TestQuiverShapes:
         with pytest.raises(ValueError):
             self.ax.quiver(self.x, self.y,
                            self.u.ravel(), self.v.ravel(), transform=self.rp)
+
+
+class TestBarbsArrayLike:
+    def test_barbs_transform_coerces_array_like_inputs(self):
+        class ArrayLike:
+            def __init__(self, data):
+                self._data = np.asarray(data)
+
+            def __array__(self, dtype=None):
+                return np.asarray(self._data, dtype=dtype)
+
+        arrays = [ArrayLike(np.ones((2, 2))) for _ in range(4)]
+
+        def transform_vectors(src_crs, x, y, u, v):
+            assert all(isinstance(a, np.ndarray) for a in (x, y, u, v))
+            return u, v
+
+        ax = plt.axes(projection=ccrs.PlateCarree())
+        with mock.patch.object(ax.projection, 'transform_vectors',
+                               side_effect=transform_vectors), \
+             mock.patch('matplotlib.axes.Axes.barbs') as barbs:
+            ax.barbs(*arrays, transform=ccrs.RotatedPole(
+                pole_longitude=177.5, pole_latitude=37.5))
+
+        assert barbs.call_count == 1
