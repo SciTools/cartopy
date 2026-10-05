@@ -3,17 +3,25 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
+from unittest import mock
 
 import matplotlib.colors as mcolors
 import matplotlib.path as mpath
 import matplotlib.pyplot as plt
 import numpy as np
+import pyproj
 import pytest
 import shapely
 
 import cartopy.crs as ccrs
-from cartopy.feature import ShapelyFeature
-from cartopy.mpl.feature_artist import FeatureArtist, _freeze, _GeomKey
+from cartopy.feature import Feature, ShapelyFeature
+from cartopy.mpl.feature_artist import (
+    _PARTS_KEY,
+    FeatureArtist,
+    _freeze,
+    _GeomKey,
+)
+from cartopy.mpl.path import shapely_to_path
 
 
 @pytest.mark.parametrize("source, expected", [
@@ -107,6 +115,109 @@ def test_feature_artist_geom_single_path(feature):
     # plotted as one compound path to ensure style consistency.
     for geom in feature.geometries():
         assert isinstance(cached_paths(geom, plot_crs), mpath.Path)
+
+
+@pytest.fixture
+def multipart_feature():
+    # One MultiPolygon with parts spread around the globe, like the records
+    # of the Natural Earth land dataset.
+    squares = [shapely.box(x, 0, x + 10, 10) for x in (-170, 0, 30, 160)]
+    return ShapelyFeature([shapely.MultiPolygon(squares)], ccrs.PlateCarree())
+
+
+def test_feature_artist_multipart_projects_visible_parts(multipart_feature):
+    plot_crs = ccrs.LambertConformal(central_longitude=15)
+    fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
+    ax.set_extent([-10, 50, -5, 20], crs=ccrs.PlateCarree())
+    artist = ax.add_feature(multipart_feature)
+
+    fig.draw_without_rendering()
+
+    [geom] = multipart_feature.geometries()
+    [(yielded_geom, path)] = list(artist._get_geoms_paths())
+    # The styler and array handling still see the original geometry.
+    assert yielded_geom is geom
+    # Only the parts in view are projected, the whole geometry is not.
+    assert cached_paths(geom, plot_crs) is None
+    parts = FeatureArtist._geom_key_to_path_cache[_GeomKey(geom)][_PARTS_KEY]
+    projected = [cached_paths(part, plot_crs) is not None for part in parts]
+    assert projected == [False, True, True, False]
+
+    # The combined path is the same as projecting the visible parts together.
+    expected = shapely_to_path(plot_crs.project_geometry(
+        shapely.MultiPolygon(list(parts[1:3])), ccrs.PlateCarree()))
+    np.testing.assert_array_equal(path.vertices, expected.vertices)
+    np.testing.assert_array_equal(path.codes, expected.codes)
+
+
+def test_feature_artist_multipart_in_view_not_split(multipart_feature):
+    plot_crs = ccrs.Robinson()
+    fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
+    ax.set_global()
+    ax.add_feature(multipart_feature)
+
+    fig.draw_without_rendering()
+
+    [geom] = multipart_feature.geometries()
+    assert isinstance(cached_paths(geom, plot_crs), mpath.Path)
+    assert _PARTS_KEY not in FeatureArtist._geom_key_to_path_cache[_GeomKey(geom)]
+
+
+def test_feature_artist_multipart_styler(multipart_feature):
+    seen = []
+
+    def styler(geom):
+        seen.append(geom)
+        return {'facecolor': 'red'}
+
+    fig, ax = plt.subplots(subplot_kw={'projection': ccrs.PlateCarree()})
+    ax.set_extent([-10, 50, -5, 20])
+    ax.add_feature(multipart_feature, styler=styler)
+
+    fig.draw_without_rendering()
+
+    assert seen == list(multipart_feature.geometries())
+
+
+# The contents of the .prj files of the Natural Earth shapefiles.
+NATURAL_EARTH_WKT = (
+    'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",'
+    'SPHEROID["WGS_1984",6378137.0,298.257223563]],'
+    'PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]')
+
+
+class CRSOnReadFeature(Feature):
+    """
+    A feature that replaces its CRS with an equivalent one when reading its
+    geometries, like NaturalEarthFeature does with the CRS of the shapefile.
+
+    """
+
+    def __init__(self, geoms):
+        super().__init__(ccrs.PlateCarree())
+        self._geoms = geoms
+
+    def geometries(self):
+        self._crs = ccrs.Projection(pyproj.CRS.from_wkt(NATURAL_EARTH_WKT))
+        return iter(self._geoms)
+
+
+def test_feature_artist_crs_changed_by_reading_geometries(multipart_feature):
+    # Geometries are read lazily while drawing. The CRS of the feature from
+    # before reading them has to be used, so that no projection is needed
+    # if it matches the projection of the axes.
+    # The CRS after reading is equivalent, but does not compare equal.
+    assert ccrs.PlateCarree() != ccrs.Projection(
+        pyproj.CRS.from_wkt(NATURAL_EARTH_WKT))
+    feature = CRSOnReadFeature(list(multipart_feature.geometries()))
+
+    fig, ax = plt.subplots(subplot_kw={'projection': ccrs.PlateCarree()})
+    ax.set_extent([-10, 50, -5, 20])
+    ax.add_feature(feature)
+
+    with mock.patch.object(ccrs.PlateCarree, 'project_geometry') as project:
+        fig.draw_without_rendering()
+    project.assert_not_called()
 
 
 @pytest.mark.parametrize('autolim', [False, True])

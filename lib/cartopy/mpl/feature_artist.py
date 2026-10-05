@@ -14,10 +14,17 @@ import weakref
 
 import matplotlib.artist
 import matplotlib.collections
+from matplotlib.path import Path
 import numpy as np
+import shapely
 
 import cartopy.feature as cfeature
 import cartopy.mpl.path as cpath
+
+
+# Key in the per-geometry mapping of FeatureArtist._geom_key_to_path_cache
+# under which the parts of a multi-part geometry are stored.
+_PARTS_KEY = object()
 
 
 class _GeomKey:
@@ -39,6 +46,18 @@ class _GeomKey:
 
     def __hash__(self):
         return hash(self._id)
+
+
+def _is_partially_outside(geom, extent):
+    """
+    Return whether the given geometry consists of multiple parts, and does not
+    lie completely within the given extent (x0, x1, y0, y1).
+
+    """
+    if not isinstance(geom, (shapely.MultiPolygon, shapely.MultiLineString)):
+        return False
+    x0, y0, x1, y1 = geom.bounds
+    return x0 < extent[0] or x1 > extent[1] or y0 < extent[2] or y1 > extent[3]
 
 
 def _freeze(obj):
@@ -78,6 +97,10 @@ class FeatureArtist(matplotlib.collections.Collection):
 
     This provides a significant boost when producing multiple maps of the
     same projection.
+
+    For multi-part geometries, the mapping additionally stores the parts of
+    the geometry under ``_PARTS_KEY``, so that the paths of the individual
+    parts can be cached in the same way.
 
     """
 
@@ -167,37 +190,82 @@ class FeatureArtist(matplotlib.collections.Collection):
             # in view.
             geoms = self._feature.intersecting_geometries(extent)
 
-        # Project (if necessary) and convert geometries to matplotlib paths.
-        key = ax.projection
-        for geom in geoms:
-            # As Shapely geometries cannot be relied upon to be
-            # hashable, we have to use a WeakValueDictionary to manage
-            # their weak references. The key can then be a simple,
-            # "disposable", hashable geom-key object that just uses the
-            # id() of a geometry to determine equality and hash value.
-            # The only persistent, strong reference to the geom-key is
-            # in the WeakValueDictionary, so when the geometry is
-            # garbage collected so is the geom-key.
-            # The geom-key is also used to access the WeakKeyDictionary
-            # cache of transformed geometries. So when the geom-key is
-            # garbage collected so are the transformed geometries.
-            geom_key = _GeomKey(geom)
-            FeatureArtist._geom_key_to_geometry_cache.setdefault(
-                geom_key, geom)
-            mapping = FeatureArtist._geom_key_to_path_cache.setdefault(
-                geom_key, {})
-            geom_path = mapping.get(key)
-            if geom_path is None:
-                if ax.projection != feature_crs:
-                    projected_geom = ax.projection.project_geometry(
-                        geom, feature_crs)
-                else:
-                    projected_geom = geom
+        extent_geom = None
+        # shapely 2.0 returns tuple of NaNs instead of None for empty geometry
+        # -> check for both
+        if extent is not None and not np.isnan(extent[0]):
+            extent_geom = shapely.box(extent[0], extent[2], extent[1], extent[3])
+            shapely.prepare(extent_geom)
 
-                geom_path = cpath.shapely_to_path(projected_geom)
-                mapping[key] = geom_path
+        # Use the CRS of the feature from before the geometries are read above
+        # (which is deferred until iterating over ``geoms``), as reading them
+        # can replace it with an equivalent CRS, e.g. from the .prj file of a
+        # Natural Earth shapefile, that no longer compares equal to the
+        # projection of the axes.
+        src_crs = feature_crs if ax.projection != feature_crs else None
+
+        # Project (if necessary) and convert geometries to matplotlib paths.
+        for geom in geoms:
+            mapping = self._get_path_mapping(geom)
+            if extent_geom is not None and _is_partially_outside(geom, extent):
+                # Multi-part geometries, e.g. from Natural Earth, often span
+                # the whole globe even if only a few of their parts are in
+                # view. Only project the parts that are in view and combine
+                # their paths, which gives the same path as projecting the
+                # whole geometry, minus the parts that are not visible.
+                parts = mapping.get(_PARTS_KEY)
+                if parts is None:
+                    parts = mapping[_PARTS_KEY] = shapely.get_parts(geom)
+                visible_parts = parts[shapely.intersects(extent_geom, parts)]
+                geom_path = Path.make_compound_path(
+                    *[self._get_path(part, self._get_path_mapping(part), src_crs)
+                      for part in visible_parts])
+            else:
+                geom_path = self._get_path(geom, mapping, src_crs)
 
             yield geom, geom_path
+
+    @staticmethod
+    def _get_path_mapping(geom):
+        """
+        Return the cached mapping from target projection to the path of the
+        given geometry.
+
+        """
+        # As Shapely geometries cannot be relied upon to be
+        # hashable, we have to use a WeakValueDictionary to manage
+        # their weak references. The key can then be a simple,
+        # "disposable", hashable geom-key object that just uses the
+        # id() of a geometry to determine equality and hash value.
+        # The only persistent, strong reference to the geom-key is
+        # in the WeakValueDictionary, so when the geometry is
+        # garbage collected so is the geom-key.
+        # The geom-key is also used to access the WeakKeyDictionary
+        # cache of transformed geometries. So when the geom-key is
+        # garbage collected so are the transformed geometries.
+        geom_key = _GeomKey(geom)
+        FeatureArtist._geom_key_to_geometry_cache.setdefault(geom_key, geom)
+        return FeatureArtist._geom_key_to_path_cache.setdefault(geom_key, {})
+
+    def _get_path(self, geom, mapping, src_crs):
+        """
+        Return the path of the given geometry in the projection of the axes,
+        using and updating the cache in ``mapping``.
+
+        The geometry is projected from ``src_crs``, unless that is None.
+
+        """
+        key = self.axes.projection
+        geom_path = mapping.get(key)
+        if geom_path is None:
+            if src_crs is not None:
+                projected_geom = key.project_geometry(geom, src_crs)
+            else:
+                projected_geom = geom
+
+            geom_path = cpath.shapely_to_path(projected_geom)
+            mapping[key] = geom_path
+        return geom_path
 
     def get_paths(self):
         paths = super().get_paths()
