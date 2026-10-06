@@ -327,7 +327,13 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
         along = (seg_dx*mid_dx + seg_dy*mid_dy) / seg_hypot_sq
 
         if isnan(along):
-            valid = True
+            mid_hypot_sq = mid_dx*mid_dx + mid_dy*mid_dy
+            if mid_hypot_sq > 0.0 and seg_hypot_sq == 0.0:
+               # End points project to the same location, but the midpoint is
+               # elsewhere.
+               valid = False
+            else:
+                valid = True
         else:
             valid = 0.0 < along < 1.0
             if valid:
@@ -476,6 +482,7 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
             print("   => ", t_min, "to", t_max)
             print("   => (", p_min.x, ", ", p_min.y, ") to (",
                   p_max.x, ", ", p_max.y, ")")
+            print("p_current.x", p_current.x, "p_current.y", p_current.y)
 
         if state == POINT_IN:
             lines.add_point_if_empty(p_current)
