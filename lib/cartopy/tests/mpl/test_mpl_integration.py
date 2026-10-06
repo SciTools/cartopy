@@ -237,7 +237,7 @@ def test_cursor_values():
     x, y = np.array([-181.5, 50.])
     r = ax.format_coord(x, y)
     assert (r.encode('ascii', 'ignore') ==
-            b'-181.5, 50 (50.000000N, 181.500000W)')
+            b'-181.5, 50 (50.000000N, 178.500000E)')
 
     ax = plt.axes(projection=ccrs.Robinson())
     x, y = np.array([16060595.2, 2363093.4])
