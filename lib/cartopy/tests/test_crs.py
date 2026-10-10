@@ -385,3 +385,17 @@ def test_geographic_bounds_with_area_of_use():
     p_cartopy = ccrs.Projection(p)
     x0, x1, y0, y1 = p_cartopy.bounds
     assert_array_equal((x1, y0, x0, y1), p.area_of_use.bounds)
+
+
+@pytest.mark.parametrize('proj', [ccrs.Mercator, ccrs.Robinson,
+                                  ccrs.Sinusoidal, ccrs.EquidistantConic,
+                                  ccrs.InterruptedGoodeHomolosine])
+@pytest.mark.parametrize('lon', [-169.40000000042403, 169.3999999996])
+def test_central_longitude_rounded_by_proj(proj, lon):
+    # PROJ rounds a central longitude that is within 1e-9 degrees of one
+    # decimal place, which used to collapse the projection boundary.
+    crs = proj(central_longitude=lon)
+    expected = proj(central_longitude=round(lon, 1))
+    assert_almost_equal(crs.boundary.bounds, expected.boundary.bounds,
+                        decimal=0)
+    assert crs.domain.area == pytest.approx(expected.domain.area)

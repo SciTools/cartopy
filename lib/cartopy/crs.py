@@ -778,6 +778,12 @@ class Projection(CRS, metaclass=ABCMeta):
         return False
 
     def _determine_longitude_bounds(self, central_longitude):
+        # PROJ rounds a central longitude that is within 1e-9 degrees of one
+        # decimal place (e.g. -169.40000000042 becomes -169.4) when it sets
+        # up the transformation, so use the value that it projects with.
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', UserWarning)
+            central_longitude = self.to_dict().get('lon_0', central_longitude)
         # In new proj, using exact limits will wrap-around, so subtract a
         # small epsilon:
         epsilon = 1e-10
@@ -2689,7 +2695,8 @@ class InterruptedGoodeHomolosine(Projection):
             raise ValueError(msg)
 
         minlon, maxlon = self._determine_longitude_bounds(central_longitude)
-        epsilon = 1e-10
+        # Larger than the rounding PROJ may apply to the central longitude.
+        epsilon = 1e-8
 
         # Obtain boundary points
         n = 31
