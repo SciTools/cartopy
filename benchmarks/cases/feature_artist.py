@@ -3,8 +3,6 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
-import io
-
 import matplotlib.pyplot as plt
 
 import cartopy.crs as ccrs
@@ -99,6 +97,5 @@ class DrawNaturalEarthFeaturesLazily:
     def teardown(self, projection):
         plt.close(self.figure)
 
-    def time_savefig(self, projection):
-        self.figure.savefig(io.BytesIO(), format='png', bbox_inches='tight',
-                            dpi=100)
+    def time_draw(self, projection):
+        self.figure.canvas.draw()
