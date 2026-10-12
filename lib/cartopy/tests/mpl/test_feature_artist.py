@@ -242,16 +242,25 @@ class CRSOnReadFeature(Feature):
 def test_feature_artist_crs_changed_by_reading_geometries(multipart_feature):
     # Geometries are read lazily while drawing. The CRS of the feature from
     # before reading them has to be used, so that no projection is needed
-    # if it matches the projection of the axes.
-    # The CRS after reading is equivalent, but does not compare equal.
-    assert ccrs.PlateCarree() != ccrs.Projection(
-        pyproj.CRS.from_wkt(NATURAL_EARTH_WKT))
+    # if it matches the projection of the axes. Projecting them anyway made
+    # the DrawNaturalEarthFeaturesLazily benchmark in
+    # benchmarks/cases/feature_artist.py several times slower.
     feature = CRSOnReadFeature(list(multipart_feature.geometries()))
+    crs_before = feature.crs
 
     fig, ax = plt.subplots(subplot_kw={'projection': ccrs.PlateCarree()})
     ax.set_extent([-10, 50, -5, 20])
     ax.add_feature(feature)
 
+    with mock.patch.object(ccrs.PlateCarree, 'project_geometry') as project:
+        fig.draw_without_rendering()
+    project.assert_not_called()
+    # The CRS after reading is equivalent, but does not compare equal.
+    assert feature.crs != crs_before
+
+    # Subsequent draws, here of other parts of the geometry, also use the
+    # original CRS.
+    ax.set_extent([150, 180, -5, 20])
     with mock.patch.object(ccrs.PlateCarree, 'project_geometry') as project:
         fig.draw_without_rendering()
     project.assert_not_called()

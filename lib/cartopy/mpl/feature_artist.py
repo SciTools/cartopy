@@ -149,6 +149,12 @@ class FeatureArtist(matplotlib.collections.Collection):
         self.set(**self._kwargs)
 
         self._feature = feature
+        # Reading the geometries of a feature can replace its CRS with an
+        # equivalent one, e.g. from the .prj file of a Natural Earth
+        # shapefile, which no longer compares equal to the projection of the
+        # axes. Keep the original CRS, so that no projection is needed for
+        # every draw if it matches the projection of the axes.
+        self._feature_crs = feature.crs
 
     def set_facecolor(self, c):
         """
@@ -179,7 +185,7 @@ class FeatureArtist(matplotlib.collections.Collection):
 
         """
         ax = self.axes
-        feature_crs = self._feature.crs
+        feature_crs = self._feature_crs
 
         # Get geometries that we need to draw.
         extent = None
@@ -209,11 +215,6 @@ class FeatureArtist(matplotlib.collections.Collection):
             extent_geom = shapely.box(extent[0], extent[2], extent[1], extent[3])
             shapely.prepare(extent_geom)
 
-        # Use the CRS of the feature from before the geometries are read above
-        # (which is deferred until iterating over ``geoms``), as reading them
-        # can replace it with an equivalent CRS, e.g. from the .prj file of a
-        # Natural Earth shapefile, that no longer compares equal to the
-        # projection of the axes.
         src_crs = feature_crs if ax.projection != feature_crs else None
 
         # Project (if necessary) and convert geometries to matplotlib paths.
