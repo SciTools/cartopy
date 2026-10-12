@@ -134,7 +134,8 @@ def test_feature_artist_multipart_projects_visible_parts(multipart_feature):
     fig.draw_without_rendering()
 
     [geom] = multipart_feature.geometries()
-    [(yielded_geom, path)] = list(artist._get_geoms_paths())
+    [(yielded_geom, path)] = list(
+        artist._get_geoms_paths(visible_parts_only=True))
     # The styler and array handling still see the original geometry.
     assert yielded_geom is geom
     # Only the parts in view are projected, the whole geometry is not.
@@ -148,6 +149,42 @@ def test_feature_artist_multipart_projects_visible_parts(multipart_feature):
         shapely.MultiPolygon(list(parts[1:3])), ccrs.PlateCarree()))
     np.testing.assert_array_equal(path.vertices, expected.vertices)
     np.testing.assert_array_equal(path.codes, expected.codes)
+
+
+def test_feature_artist_multipart_get_paths_all_parts(multipart_feature):
+    # get_paths is used for autolim, so it has to include the parts that are
+    # out of view.
+    plot_crs = ccrs.LambertConformal(central_longitude=15)
+    fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
+    ax.set_extent([-10, 50, -5, 20], crs=ccrs.PlateCarree())
+    artist = ax.add_feature(multipart_feature)
+
+    [geom] = multipart_feature.geometries()
+    [path] = artist.get_paths()
+    expected = shapely_to_path(
+        plot_crs.project_geometry(geom, ccrs.PlateCarree()))
+    np.testing.assert_array_equal(path.vertices, expected.vertices)
+    np.testing.assert_array_equal(path.codes, expected.codes)
+
+
+def test_feature_artist_multipart_reuses_whole_path(multipart_feature):
+    plot_crs = ccrs.LambertConformal(central_longitude=15)
+    fig, ax = plt.subplots(subplot_kw={'projection': plot_crs})
+    ax.set_global()
+    ax.add_feature(multipart_feature)
+    fig.draw_without_rendering()
+
+    [geom] = multipart_feature.geometries()
+    assert isinstance(cached_paths(geom, plot_crs), mpath.Path)
+
+    # After zooming in, the geometry is not split into its parts, as the path
+    # of the whole geometry is already cached.
+    ax.set_extent([-10, 50, -5, 20], crs=ccrs.PlateCarree())
+    with mock.patch.object(ccrs.LambertConformal,
+                           'project_geometry') as project:
+        fig.draw_without_rendering()
+    project.assert_not_called()
+    assert _PARTS_KEY not in FeatureArtist._geom_key_to_path_cache[_GeomKey(geom)]
 
 
 def test_feature_artist_multipart_in_view_not_split(multipart_feature):

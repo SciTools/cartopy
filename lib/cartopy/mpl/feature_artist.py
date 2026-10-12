@@ -167,7 +167,17 @@ class FeatureArtist(matplotlib.collections.Collection):
         else:
             super().set_facecolor(c)
 
-    def _get_geoms_paths(self):
+    def _get_geoms_paths(self, visible_parts_only=False):
+        """
+        Yield each geometry to draw together with its path in the projection
+        of the axes.
+
+        If ``visible_parts_only`` is True, the path of a multi-part geometry
+        that is partially outside of the view only contains the parts that
+        intersect with the view.  This is only suitable for drawing, as e.g.
+        autolim needs the whole geometries.
+
+        """
         ax = self.axes
         feature_crs = self._feature.crs
 
@@ -191,9 +201,11 @@ class FeatureArtist(matplotlib.collections.Collection):
             geoms = self._feature.intersecting_geometries(extent)
 
         extent_geom = None
-        # shapely 2.0 returns tuple of NaNs instead of None for empty geometry
-        # -> check for both
-        if extent is not None and not np.isnan(extent[0]):
+        # The extent is a tuple of NaNs if the view does not intersect the
+        # domain of the feature CRS, as these are the bounds of an empty
+        # geometry in shapely 2 (see Feature.intersecting_geometries).
+        if (visible_parts_only and extent is not None
+                and not np.isnan(extent[0])):
             extent_geom = shapely.box(extent[0], extent[2], extent[1], extent[3])
             shapely.prepare(extent_geom)
 
@@ -207,7 +219,10 @@ class FeatureArtist(matplotlib.collections.Collection):
         # Project (if necessary) and convert geometries to matplotlib paths.
         for geom in geoms:
             mapping = self._get_path_mapping(geom)
-            if extent_geom is not None and _is_partially_outside(geom, extent):
+            # If the whole geometry has already been projected, e.g. for an
+            # earlier draw with a larger extent, reuse its path.
+            if (extent_geom is not None and ax.projection not in mapping
+                    and _is_partially_outside(geom, extent)):
                 # Multi-part geometries, e.g. from Natural Earth, often span
                 # the whole globe even if only a few of their parts are in
                 # view. Only project the parts that are in view and combine
@@ -215,6 +230,9 @@ class FeatureArtist(matplotlib.collections.Collection):
                 # whole geometry, minus the parts that are not visible.
                 parts = mapping.get(_PARTS_KEY)
                 if parts is None:
+                    # shapely.get_parts creates new objects on every call,
+                    # whose paths could not be found again in the id() based
+                    # cache. Keep the parts so their cached paths are reused.
                     parts = mapping[_PARTS_KEY] = shapely.get_parts(geom)
                 visible_parts = parts[shapely.intersects(extent_geom, parts)]
                 geom_path = Path.make_compound_path(
@@ -294,7 +312,7 @@ class FeatureArtist(matplotlib.collections.Collection):
         # used.  Freeze it so that we can use it as a dict key.  We will need
         # to unfreeze all style dicts with dict(frozen) before passing to mpl.
         no_style = _freeze({})
-        for geom, geom_path in self._get_geoms_paths():
+        for geom, geom_path in self._get_geoms_paths(visible_parts_only=True):
             if self._styler is None:
                 stylised_paths.setdefault(no_style, []).append(geom_path)
             else:
