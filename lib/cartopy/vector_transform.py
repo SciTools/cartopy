@@ -11,9 +11,27 @@ import numpy as np
 
 
 try:
-    from scipy.interpolate import griddata
+    from scipy.interpolate import LinearNDInterpolator
+    from scipy.spatial import Delaunay
 except ImportError as e:
     raise ImportError("Regridding vectors requires scipy.") from e
+
+
+def _interpolate_fields(points, fields, xi):
+    """
+    Linearly interpolate zero or more fields from *points* to *xi*.
+
+    This gives the same result as calling
+    ``griddata(points, s.ravel(), xi, method='linear')`` for each field
+    ``s``, but the Delaunay triangulation of *points*, which dominates the
+    cost for large inputs, is only computed once and shared by all fields.
+
+    """
+    if not fields:
+        return ()
+    triangulation = Delaunay(points)
+    return tuple(LinearNDInterpolator(triangulation, s.ravel())(xi)
+                 for s in fields)
 
 
 def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
@@ -52,10 +70,7 @@ def _interpolate_to_grid(nx, ny, x, y, *scalars, **kwargs):
     points = np.column_stack([(x.ravel() - x0) / xr, (y.ravel() - y0) / yr])
     x_grid, y_grid = np.meshgrid(np.linspace(0, 1, nx),
                                  np.linspace(0, 1, ny))
-    s_grid_tuple = tuple()
-    for s in scalars:
-        s_grid_tuple += (griddata(points, s.ravel(), (x_grid, y_grid),
-                                  method='linear'),)
+    s_grid_tuple = _interpolate_fields(points, scalars, (x_grid, y_grid))
     return (x_grid * xr + x0, y_grid * yr + y0) + s_grid_tuple
 
 
@@ -165,10 +180,8 @@ def vector_scalar_to_grid(src_crs, target_proj, regrid_shape, x, y, u, v,
                               (y.ravel() - y0) / yr])
     newx = (sourcex - x0) / xr
     newy = (sourcey - y0) / yr
-    s_grid_tuple = tuple()
-    for s in (u, v) + scalars:
-        s_grid_tuple += (griddata(points, s.ravel(), (newx, newy),
-                                  method='linear'),)
+    s_grid_tuple = _interpolate_fields(points, (u, v) + scalars,
+                                       (newx, newy))
 
     u, v = s_grid_tuple[0], s_grid_tuple[1]
     # Finally, transform the vectors (in the source frame) to the target CRS.
