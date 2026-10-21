@@ -178,16 +178,15 @@ class TestCRS:
         assert_arr_almost_eq(glon, soly)
         assert_arr_almost_eq(galt, solz)
 
-    def test_transform_points_180(self):
-        # Test that values less than -180 and more than 180
-        # get mapped to the -180, 180 interval
-        x = np.array([-190, 190])
-        y = np.array([0, 0])
-
-        proj = ccrs.PlateCarree()
-
-        res = proj.transform_points(x=x, y=y, src_crs=proj)
-        assert_array_equal(res[..., :2], [[170, 0], [-170, 0]])
+    @pytest.mark.parametrize('src, tgt', [
+        (ccrs.PlateCarree(), ccrs.PlateCarree()),
+        (ccrs.Geodetic(), ccrs.PlateCarree()),
+        (ccrs.PlateCarree(), ccrs.Geodetic()),
+    ])
+    def test_transform_points_wraps_longitude(self, src, tgt):
+        x = np.array([350, -190, 180, -180, 540, 10], dtype=float)
+        result = tgt.transform_points(src, x, np.zeros_like(x))
+        assert_arr_almost_eq(result[:, 0], [-10, 170, 180, -180, -180, 10])
 
     def test_globe(self):
         # Ensure the globe affects output.
