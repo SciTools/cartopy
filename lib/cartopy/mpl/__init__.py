@@ -9,3 +9,4 @@ import packaging.version
 
 _MPL_VERSION = packaging.version.parse(matplotlib.__version__)
 _MPL_311 = _MPL_VERSION.release[:2] >= (3, 11)
+_MPL_312 = _MPL_VERSION.release[:2] >= (3, 12)
