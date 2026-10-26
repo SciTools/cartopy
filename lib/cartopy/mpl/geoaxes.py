@@ -800,9 +800,16 @@ class GeoAxes(matplotlib.axes.Axes):
         # Calculate intersection with boundary and project if necessary.
         boundary_poly = shapely.Polygon(self.projection.boundary)
         if proj != self.projection:
-            # Erode boundary by threshold to avoid transform issues.
-            # This is a workaround for numerical issues at the boundary.
-            eroded_boundary = boundary_poly.buffer(-self.projection.threshold)
+            # Erode the boundary slightly, to avoid transform issues for
+            # points exactly on it (e.g. at the dateline). This has to be much
+            # smaller than the threshold of the projection: close to the
+            # boundary of e.g. Orthographic, a small distance in the
+            # projection covers a large part of the globe, which would then
+            # be missing from the extent.
+            x0, x1 = self.projection.x_limits
+            y0, y1 = self.projection.y_limits
+            eroded_boundary = boundary_poly.buffer(
+                -1e-6 * max(x1 - x0, y1 - y0))
             geom_in_src_proj = eroded_boundary.intersection(
                 domain_in_src_proj)
             geom_in_crs = proj.project_geometry(geom_in_src_proj,
