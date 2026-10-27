@@ -51,12 +51,20 @@
         "pyproj": [],
         "pykdtree": [""],
         "scipy": [""],
-        "fiona": [""]
+        "fiona": [""],
+        "pyshp": [""],
+        "shapely": [""]
     },
 
     // Change the build command to pre-install build-time dependencies. We
     // don't put this in matrix, because these are not things we will ever want
     // to compare versions.
+    // Install cartopy without its dependencies: by default asv reinstalls them
+    // from PyPI, replacing the conda packages from the matrix above.
+    "install_command": [
+        "in-dir={env_dir} python -mpip install {wheel_file} --force-reinstall --no-deps"
+    ],
+
     "build_command": [
         "python -mpip install cython setuptools-scm",
         "python setup.py build",
