@@ -407,6 +407,10 @@ class CRS(pyproj.crs.CustomConstructorCRS):
             Array of shape ``x.shape + (3, )`` in this coordinate system.
 
         """
+        if isinstance(src_crs, type):
+            name = src_crs.__name__
+            raise TypeError(f'Source CRS must be an instance, not a class: '
+                            f'use {name}() instead of {name}.')
         result_shape = tuple(x.shape[i] for i in range(x.ndim)) + (3, )
 
         if z is None:
