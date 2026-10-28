@@ -487,6 +487,23 @@ def test_wmts_cache(cache_dir, tmp_path):
     assert (np.array(located_image_cache.image) == 255).all()
 
 
+def test_cache_dir_created_concurrently(tmp_path, monkeypatch):
+    # Another process may create the cache directory between the exists()
+    # check and mkdir(); that must not raise FileExistsError.
+    cache_dir = tmp_path / 'GoogleTiles' / 'street'
+    cache_dir.mkdir(parents=True)
+    real_exists = type(cache_dir).exists
+
+    def exists(self, *args, **kwargs):
+        if self == cache_dir:
+            return False
+        return real_exists(self, *args, **kwargs)
+
+    monkeypatch.setattr(type(cache_dir), 'exists', exists)
+    gt = cimgt.GoogleTiles(cache=tmp_path)
+    assert gt.cache == set()
+
+
 @pytest.mark.network
 @pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
 def test_cache(cache_dir, tmp_path):
