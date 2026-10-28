@@ -33,7 +33,7 @@
 
     // The list of conda channel names to be searched for benchmark
     // dependency packages in the specified order
-    //"conda_channels": ["conda-forge", "defaults"],
+    "conda_channels": ["conda-forge"],
 
     // The matrix of dependencies to test.  Each key is the name of a
     // package (in PyPI) and the values are version numbers.  An empty
@@ -51,8 +51,16 @@
         "pyproj": [],
         "pykdtree": [""],
         "scipy": [""],
-        "fiona": [""]
+        "fiona": [""],
+        "pyshp": [""],
+        "shapely": [""]
     },
+
+    // Install cartopy without its dependencies: by default asv reinstalls them
+    // from PyPI, replacing the conda packages from the matrix above.
+    "install_command": [
+        "in-dir={env_dir} python -mpip install {wheel_file} --force-reinstall --no-deps"
+    ],
 
     // Change the build command to pre-install build-time dependencies. We
     // don't put this in matrix, because these are not things we will ever want
