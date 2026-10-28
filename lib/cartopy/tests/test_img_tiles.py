@@ -504,6 +504,26 @@ def test_cache_dir_created_concurrently(tmp_path, monkeypatch):
     assert gt.cache == set()
 
 
+def test_cache_dir_created_concurrently_does_not_warn(tmp_path, monkeypatch):
+    # Only the process that actually creates the default cache directory
+    # should warn about it.
+    monkeypatch.setitem(config, 'cache_dir', str(tmp_path))
+    cache_dir = tmp_path / 'GoogleTiles' / 'street'
+    cache_dir.mkdir(parents=True)
+    real_exists = type(cache_dir).exists
+
+    def exists(self, *args, **kwargs):
+        if self == cache_dir:
+            return False
+        return real_exists(self, *args, **kwargs)
+
+    monkeypatch.setattr(type(cache_dir), 'exists', exists)
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        gt = cimgt.GoogleTiles(cache=True)
+    assert gt.cache == set()
+
+
 @pytest.mark.network
 @pytest.mark.parametrize('cache_dir', ["tmpdir", True, False])
 def test_cache(cache_dir, tmp_path):

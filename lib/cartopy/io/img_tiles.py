@@ -153,11 +153,16 @@ class GoogleWTS(metaclass=ABCMeta):
         if self.cache_path is not None:
             cache_dir = self._cache_dir
             if not cache_dir.exists():
-                cache_dir.mkdir(parents=True, exist_ok=True)
-                if self._default_cache:
-                    warnings.warn(
-                        'Cartopy created the following directory to cache '
-                        f'GoogleWTS tiles: {cache_dir}')
+                try:
+                    cache_dir.mkdir(parents=True)
+                except FileExistsError:
+                    # Another process created it in the meantime.
+                    pass
+                else:
+                    if self._default_cache:
+                        warnings.warn(
+                            'Cartopy created the following directory to '
+                            f'cache GoogleWTS tiles: {cache_dir}')
             self.cache = self.cache.union(set(cache_dir.iterdir()))
 
     def _find_images(self, target_domain, target_z, start_tile=(0, 0, 0)):
