@@ -206,6 +206,57 @@ def test_LatitudeFormatter_minutes_seconds(test_ticks, expected):
     assert result == expected
 
 
+@pytest.mark.parametrize('direction_label', [False, True])
+@pytest.mark.parametrize('test_ticks,expected', [
+    pytest.param([-159.5, -158], ['30′', '158°W'], id='dm_hide'),
+    pytest.param([-159.75, -159.5], ['159°45′W', '159°30′W'],
+                 id='dm_no_hide'),
+    pytest.param([-158], ['158°W'], id='dm_whole_degree'),
+])
+def test_LongitudeFormatter_dm(test_ticks, direction_label, expected):
+    """
+    added for https://github.com/SciTools/cartopy/issues/944
+
+    Tests the core dms='dm' formatting option
+    """
+    formatter = LongitudeFormatter(dms='dm', auto_hide=True,
+                                   direction_label=direction_label)
+    formatter.set_locs(test_ticks)
+    result = [formatter(tick) for tick in test_ticks]
+    prefix = '' if direction_label else '-'
+    suffix = 'W' if direction_label else ''
+    expected = [
+        f'{prefix}{text[:-1]}{suffix}' if text[-1] == 'W' else text
+        for text in expected
+    ]
+    assert result == expected
+
+
+def test_LongitudeFormatter_dm_minutes_number_format():
+    """
+    added for https://github.com/SciTools/cartopy/issues/944
+
+    Tests the float minutes options
+    """
+    formatter = LongitudeFormatter(dms='dm', auto_hide=True,
+                                   minutes_number_format='.1f')
+    test_ticks = [-159.5, -158]
+    formatter.set_locs(test_ticks)
+    result = [formatter(tick) for tick in test_ticks]
+    assert result == ['30.0′', '158°W']
+
+
+@pytest.mark.parametrize("cls", [LongitudeFormatter, LatitudeFormatter])
+def test_formatter_invalid_dms(cls):
+    """
+    added for https://github.com/SciTools/cartopy/issues/944
+
+    Make sure we catch bad dms options
+    """
+    with pytest.raises(ValueError, match="Invalid value for dms"):
+        cls(dms='invalid')
+
+
 @pytest.mark.parametrize("cls,letter",
                          [(LongitudeFormatter, 'E'), (LatitudeFormatter, 'N')])
 def test_lonlatformatter_non_geoaxes(cls, letter):
