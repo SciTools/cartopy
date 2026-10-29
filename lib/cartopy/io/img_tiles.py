@@ -152,8 +152,12 @@ class GoogleWTS(metaclass=ABCMeta):
 
         if self.cache_path is not None:
             cache_dir = self._cache_dir
-            if not cache_dir.exists():
+            try:
                 cache_dir.mkdir(parents=True)
+            except FileExistsError:
+                # Already made, possibly by another process at the same time.
+                pass
+            else:
                 if self._default_cache:
                     warnings.warn(
                         'Cartopy created the following directory to cache '
