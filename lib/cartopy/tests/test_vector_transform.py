@@ -229,3 +229,114 @@ class Test_vector_scalar_to_grid:
         assert_array_almost_equal(u_grid, expected_u_grid)
         assert_array_almost_equal(v_grid, expected_v_grid)
         assert_array_almost_equal(s_grid, expected_s_grid)
+
+
+def _griddata_per_field(points, fields, xi):
+    # The previous implementation, which triangulated once per field.
+    from scipy.interpolate import griddata
+    return tuple(griddata(points, s.ravel(), xi, method='linear')
+                 for s in fields)
+
+
+def _assert_identical(actual, expected):
+    assert len(actual) == len(expected)
+    for a, e in zip(actual, expected):
+        assert_array_equal(np.ma.getdata(a), np.ma.getdata(e))
+        assert_array_equal(np.ma.getmaskarray(a), np.ma.getmaskarray(e))
+
+
+class Test_interpolate_fields:
+
+    @classmethod
+    def setup_class(cls):
+        rng = np.random.default_rng(2481)
+        # A regular grid has four co-circular points in every cell, so the
+        # triangulation is not unique and depends on the full point set.
+        x, y = np.meshgrid(np.linspace(-0.1, 1.1, 37),
+                           np.linspace(-0.2, 1.2, 23))
+        cls.regular = np.column_stack([x.ravel(), y.ravel()])
+        cls.scattered = rng.uniform(-0.1, 1.1, size=(500, 2))
+        qx, qy = np.meshgrid(np.linspace(-0.3, 1.3, 31),
+                             np.linspace(-0.3, 1.3, 29))
+        # Some target points can not be projected back to the source
+        # CRS; they come through as masked non-finite coordinates.
+        qx = np.ma.masked_invalid(np.where(qx > 1.2, np.nan, qx))
+        cls.xi = (qx, qy)
+
+    def _fields(self, n):
+        s = np.sin(7 * np.random.default_rng(n).random(n)) * 10
+        with_nan = s.copy()
+        with_nan[::17] = np.nan
+        masked = np.ma.masked_greater(s, 5)
+        return (s, s.astype(np.float32), (s * 100).astype(int), with_nan,
+                masked)
+
+    @pytest.mark.parametrize('points', ['regular', 'scattered'])
+    def test_same_as_griddata(self, points):
+        points = getattr(self, points)
+        fields = self._fields(len(points))
+        actual = vec_trans._interpolate_fields(points, fields, self.xi)
+        expected = _griddata_per_field(points, fields, self.xi)
+        _assert_identical(actual, expected)
+
+    def test_no_fields(self, monkeypatch):
+        def fail(points):
+            raise AssertionError('no triangulation is needed')
+
+        monkeypatch.setattr(vec_trans, 'Delaunay', fail)
+        assert vec_trans._interpolate_fields(self.scattered, (),
+                                             self.xi) == ()
+
+    def test_single_triangulation(self, monkeypatch):
+        calls = []
+        delaunay = vec_trans.Delaunay
+
+        def counting_delaunay(points):
+            calls.append(points.shape)
+            return delaunay(points)
+
+        monkeypatch.setattr(vec_trans, 'Delaunay', counting_delaunay)
+        x, y = _sample_plate_carree_coordinates()
+        u, v = _sample_plate_carree_vector_field()
+        s = _sample_plate_carree_scalar_field()
+        vec_trans.vector_scalar_to_grid(ccrs.PlateCarree(),
+                                        ccrs.NorthPolarStereo(), (5, 3),
+                                        x, y, u, v, s, s)
+        assert calls == [(6, 2)]
+
+
+@pytest.mark.parametrize('target_crs', [
+    ccrs.PlateCarree(),
+    ccrs.LambertConformal(central_longitude=-10),
+    ccrs.Robinson(central_longitude=180),
+], ids=['same_crs', 'lambert', 'robinson_180'])
+def test_vector_scalar_to_grid_unchanged(target_crs, monkeypatch):
+    # Regridding a regular lat/lon grid with several fields, masked
+    # values and NaNs must give exactly the same result as interpolating
+    # each field separately.
+    lon = np.linspace(-80, 40, 61)
+    lat = np.linspace(85, 20, 34)
+    x, y = np.meshgrid(lon, lat)
+    u = np.ma.masked_less(10 * np.sin(np.deg2rad(4 * x)) *
+                          np.cos(np.deg2rad(4 * y)), -8)
+    v = 5 * np.sin(np.deg2rad(2 * x + 3 * y))
+    v[11:14, 28:31] = np.nan
+    speed = np.hypot(u, v)
+    src_crs = ccrs.PlateCarree()
+    extent = (-50, 15, 50, 70)
+    if target_crs != src_crs:
+        extent = target_crs.transform_points(
+            src_crs, np.array(extent[:2]), np.array(extent[2:]))
+        extent = (*extent[:, 0], *extent[:, 1])
+
+    def regrid():
+        return vec_trans.vector_scalar_to_grid(
+            src_crs, target_crs, (30, 20), lon, lat, u, v, speed, -speed,
+            target_extent=extent)
+
+    actual = regrid()
+    monkeypatch.setattr(vec_trans, '_interpolate_fields',
+                        _griddata_per_field)
+    expected = regrid()
+    _assert_identical(actual, expected)
+    assert np.isfinite(actual[2]).any()
