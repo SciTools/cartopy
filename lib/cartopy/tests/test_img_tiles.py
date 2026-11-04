@@ -6,6 +6,7 @@
 import hashlib
 import io
 import os
+from pathlib import Path
 import types
 import warnings
 
@@ -485,6 +486,24 @@ def test_wmts_cache(cache_dir, tmp_path):
     # Check that the new fetch_raster() call used cached images
     assert wmts_cache.cache == set([cache_dir_res / c for c in source.cache])
     assert (np.array(located_image_cache.image) == 255).all()
+
+
+def test_cache_dir_made_by_another_process(tmp_path, monkeypatch):
+    # Another process makes the cache directory just before this one does.
+    real_mkdir = Path.mkdir
+
+    def mkdir_after_another_process(self, *args, **kwargs):
+        real_mkdir(self, *args, **kwargs)
+        real_mkdir(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, 'mkdir', mkdir_after_another_process)
+    monkeypatch.setitem(config, 'cache_dir', str(tmp_path))
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        gt = cimgt.GoogleTiles(cache=True)
+    assert gt.cache == set()
+    # Only the process that made the directory warns about it.
+    assert len(w) == 0
 
 
 @pytest.mark.network
