@@ -7,6 +7,8 @@ Generic functionality to support Cartopy image transformations.
 
 """
 
+from functools import lru_cache
+
 import numpy as np
 
 
@@ -160,6 +162,13 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
         projection and the (x-lower, x-upper, y-lower, y-upper) target
         projection extent.
 
+    Notes
+    -----
+    The nearest-neighbour mapping between the source and target grids is
+    cached for the most recently used grids, so repeated calls with the same
+    projections, array shape, resolution and extents (e.g. the frames of an
+    animation) only need to look up the new data values.
+
     """
 
     # source_extent is in source coordinates.
@@ -169,31 +178,48 @@ def warp_array(array, target_proj, source_proj=None, target_res=(400, 200),
     if target_extent is None:
         target_extent = [None] * 4
 
-    source_x_extents = source_extent[:2]
-    source_y_extents = source_extent[2:]
-
-    target_x_extents = target_extent[:2]
-    target_y_extents = target_extent[2:]
-
     if source_proj is None:
         source_proj = ccrs.PlateCarree()
 
-    ny, nx = array.shape[:2]
+    source_extent = tuple(source_extent)
+    target_extent = tuple(target_extent)
+    mapping, extent = _warp_mapping(
+        source_proj, array.shape[:2], source_extent,
+        target_proj, tuple(target_res), target_extent,
+        mask_extrapolated,
+        # Projections that compare equal may still differ in their limits,
+        # and the dtype of the extents carries through np.linspace.
+        (source_proj.x_limits, source_proj.y_limits,
+         target_proj.x_limits, target_proj.y_limits,
+         tuple(map(type, source_extent)), tuple(map(type, target_extent))))
+
+    array = _apply_mapping(array, mapping)
+    return array, list(extent)
+
+
+# Only a few grids are kept, which covers repeated frames of an animation and
+# the separate image and alpha warps in GeoAxes.imshow.
+@lru_cache(maxsize=4)
+def _warp_mapping(source_proj, source_shape, source_extent,
+                  target_proj, target_res, target_extent,
+                  mask_extrapolated, key_extras):
+    # The extra key items are only there to tell grids apart in the cache.
+    ny, nx = source_shape
     source_native_xy = mesh_projection(source_proj, nx, ny,
-                                       x_extents=source_x_extents,
-                                       y_extents=source_y_extents)
+                                       x_extents=source_extent[:2],
+                                       y_extents=source_extent[2:])
 
     # XXX Take into account the extents of the original to determine
     # target_extents?
     target_native_x, target_native_y, extent = mesh_projection(
         target_proj, target_res[0], target_res[1],
-        x_extents=target_x_extents, y_extents=target_y_extents)
+        x_extents=target_extent[:2], y_extents=target_extent[2:])
 
-    array = regrid(array, source_native_xy[0], source_native_xy[1],
-                   source_proj, target_proj,
-                   target_native_x, target_native_y,
-                   mask_extrapolated)
-    return array, extent
+    mapping = _regrid_mapping(source_native_xy[0], source_native_xy[1],
+                              source_proj, target_proj,
+                              target_native_x, target_native_y,
+                              mask_extrapolated)
+    return mapping, tuple(extent)
 
 
 def _determine_bounds(x_coords, y_coords, source_cs):
@@ -258,7 +284,24 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
         The data array regridded in the target projection.
 
     """
+    mapping = _regrid_mapping(source_x_coords, source_y_coords,
+                              source_proj, target_proj,
+                              target_x_points, target_y_points,
+                              mask_extrapolated)
+    return _apply_mapping(array, mapping)
 
+
+def _regrid_mapping(source_x_coords, source_y_coords, source_proj,
+                    target_proj, target_x_points, target_y_points,
+                    mask_extrapolated):
+    """
+    Return the nearest-neighbour mapping used by :func:`regrid`.
+
+    This only depends on the source and target grids, not on the data, so it
+    can be reused for any array on the same source grid. The mask arrays are
+    None when no points need masking.
+
+    """
     # Stack our original xyz array, this will also wrap coords when necessary
     xyz = source_proj.transform_points(source_proj,
                                        source_x_coords.flatten(),
@@ -291,15 +334,6 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
 
     desired_ny, desired_nx = target_x_points.shape
 
-    # Squash the first two dims of the source array into one
-    temp_array = array.reshape((-1,) + array.shape[2:])
-    if np.any(mask):
-        new_array = np.ma.array(temp_array[indices])
-        new_array[mask] = np.ma.masked
-    else:
-        new_array = temp_array[indices]
-    new_array = new_array.reshape((desired_ny, desired_nx, *array.shape[2:]))
-
     # Do double transform to clip points that do not map back and forth
     # to the same point to within a fixed fractional offset.
     # NOTE: This only needs to be done for (pseudo-)cylindrical projections,
@@ -320,14 +354,10 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
                                  x_extent) > FRACTIONAL_OFFSET_THRESHOLD) |
                                ((np.abs(target_y_points - back_to_target_y) /
                                  y_extent) > FRACTIONAL_OFFSET_THRESHOLD))
-    if np.any(non_self_inverse_points):
-        if not np.ma.isMaskedArray(new_array):
-            new_array = np.ma.array(new_array, mask=False)
-
-        new_array[non_self_inverse_points] = np.ma.masked
 
     # Transform the target points to the source projection and mask any points
     # that fall outside the original source domain.
+    outside_source_domain = None
     if mask_extrapolated:
         target_in_source_x = target_xyz[:, 0].reshape(desired_ny,
                                                       desired_nx)
@@ -346,9 +376,38 @@ def regrid(array, source_x_coords, source_y_coords, source_proj, target_proj,
                                        (target_in_source_x >= bound_x[0]))
         outside_source_domain = outside_source_domain | ~tmp_inside
 
-        if np.any(outside_source_domain):
-            if not np.ma.isMaskedArray(new_array):
-                new_array = np.ma.array(new_array, mask=False)
-            new_array[outside_source_domain] = np.ma.masked
+    masks = [m if np.any(m) else None
+             for m in (mask, non_self_inverse_points, outside_source_domain)]
+    # The mapping may be shared between calls, so keep it read-only.
+    for arr in (indices, *masks):
+        if arr is not None:
+            arr.flags.writeable = False
+    return (desired_ny, desired_nx), indices, *masks
+
+
+def _apply_mapping(array, mapping):
+    """Regrid the data array with a mapping from :func:`_regrid_mapping`."""
+    ((desired_ny, desired_nx), indices, mask, non_self_inverse_points,
+     outside_source_domain) = mapping
+
+    # Squash the first two dims of the source array into one
+    temp_array = array.reshape((-1,) + array.shape[2:])
+    if mask is not None:
+        new_array = np.ma.array(temp_array[indices])
+        new_array[mask] = np.ma.masked
+    else:
+        new_array = temp_array[indices]
+    new_array = new_array.reshape((desired_ny, desired_nx, *array.shape[2:]))
+
+    if non_self_inverse_points is not None:
+        if not np.ma.isMaskedArray(new_array):
+            new_array = np.ma.array(new_array, mask=False)
+
+        new_array[non_self_inverse_points] = np.ma.masked
+
+    if outside_source_domain is not None:
+        if not np.ma.isMaskedArray(new_array):
+            new_array = np.ma.array(new_array, mask=False)
+        new_array[outside_source_domain] = np.ma.masked
 
     return new_array

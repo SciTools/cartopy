@@ -140,3 +140,118 @@ def test_regridding_with_invalid_extent(target_prj, use_scipy, monkeypatch):
         monkeypatch.setattr(img_trans, "_kdtreeClass", scipy.spatial.cKDTree)
     _ = img_trans.regrid(data, lons, lats, data_trans, target_prj,
                          target_x, target_y)
+
+
+@pytest.fixture
+def warp_cache():
+    img_trans._warp_mapping.cache_clear()
+    yield img_trans._warp_mapping
+    img_trans._warp_mapping.cache_clear()
+
+
+def _warp_array_uncached(array, target_proj, source_proj, target_res,
+                         source_extent, target_extent, mask_extrapolated):
+    source_x, source_y, _ = img_trans.mesh_projection(
+        source_proj, array.shape[1], array.shape[0],
+        x_extents=source_extent[:2], y_extents=source_extent[2:])
+    target_x, target_y, extent = img_trans.mesh_projection(
+        target_proj, *target_res,
+        x_extents=target_extent[:2], y_extents=target_extent[2:])
+    new_array = img_trans.regrid(array, source_x, source_y, source_proj,
+                                 target_proj, target_x, target_y,
+                                 mask_extrapolated)
+    return new_array, extent
+
+
+def _assert_same_result(actual, expected):
+    assert type(actual) is type(expected)
+    assert actual.dtype == expected.dtype
+    assert_array_equal(np.ma.getdata(actual), np.ma.getdata(expected))
+    assert_array_equal(np.ma.getmaskarray(actual),
+                       np.ma.getmaskarray(expected))
+
+
+@pytest.mark.parametrize('mask_extrapolated', [False, True])
+@pytest.mark.parametrize('target_prj', [ccrs.Mercator(), ccrs.Robinson(),
+                                        ccrs.Orthographic(30, 40)])
+def test_warp_array_reuses_mapping(target_prj, mask_extrapolated, warp_cache):
+    source_prj = ccrs.PlateCarree()
+    source_extent = (-180, 180, -60, 80)
+    rng = np.random.default_rng(0)
+    nan_data = rng.random((18, 36))
+    nan_data[::4, ::5] = np.nan
+    frames = [
+        rng.random((18, 36)),
+        nan_data,
+        np.ma.masked_greater(rng.random((18, 36)), 0.8),
+        rng.integers(0, 256, (18, 36, 4), dtype=np.uint8),
+    ]
+
+    for frame in frames:
+        expected, expected_extent = _warp_array_uncached(
+            frame, target_prj, source_prj, (30, 20), source_extent,
+            [None] * 4, mask_extrapolated)
+        result, extent = img_trans.warp_array(
+            frame, target_prj, source_prj, target_res=(30, 20),
+            source_extent=source_extent, mask_extrapolated=mask_extrapolated)
+        _assert_same_result(result, expected)
+        assert extent == expected_extent
+
+    info = warp_cache.cache_info()
+    assert (info.misses, info.hits) == (1, len(frames) - 1)
+
+
+@pytest.mark.parametrize('change', [
+    dict(target_proj=ccrs.Mollweide()),
+    dict(source_proj=ccrs.PlateCarree(central_longitude=180)),
+    dict(target_res=(20, 30)),
+    dict(source_extent=(-170, 190, -90, 90)),
+    dict(source_extent=np.array([-180, 180, -90, 90], dtype=np.float32)),
+    dict(target_extent=(-1e7, 1e7, -5e6, 5e6)),
+    dict(mask_extrapolated=True),
+    dict(array=np.arange(17 * 36.).reshape(17, 36)),
+])
+def test_warp_array_mapping_cache_key(change, warp_cache):
+    kwargs = dict(array=np.arange(18 * 36.).reshape(18, 36),
+                  target_proj=ccrs.Robinson(),
+                  source_proj=ccrs.PlateCarree(),
+                  target_res=(30, 20),
+                  source_extent=(-180, 180, -90, 90),
+                  target_extent=(-1.5e7, 1.5e7, -8e6, 8e6),
+                  mask_extrapolated=False)
+    img_trans.warp_array(**kwargs)
+    img_trans.warp_array(**kwargs)
+    assert warp_cache.cache_info().misses == 1
+
+    kwargs.update(change)
+    result, extent = img_trans.warp_array(**kwargs)
+    assert warp_cache.cache_info().misses == 2
+    expected, expected_extent = _warp_array_uncached(**kwargs)
+    _assert_same_result(result, expected)
+    assert extent == expected_extent
+
+
+def test_warp_array_mapping_cache_is_not_modified(warp_cache):
+    data = np.arange(18 * 36.).reshape(18, 36)
+    kwargs = dict(target_proj=ccrs.Robinson(), source_proj=ccrs.PlateCarree(),
+                  target_res=(30, 20), source_extent=(-180, 180, -90, 90))
+    expected, expected_extent = img_trans.warp_array(data, **kwargs)
+
+    # The corners of the target grid are outside of Robinson, so masked.
+    assert np.ma.is_masked(expected)
+
+    result, extent = img_trans.warp_array(data, **kwargs)
+    result[:] = -1
+    result.mask = True
+    extent[0] = 0
+    result, extent = img_trans.warp_array(data, **kwargs)
+    _assert_same_result(result, expected)
+    assert extent == expected_extent
+
+
+def test_warp_array_mapping_cache_size(warp_cache):
+    data = np.zeros((9, 18))
+    maxsize = warp_cache.cache_info().maxsize
+    for i in range(maxsize + 2):
+        img_trans.warp_array(data, ccrs.Robinson(), target_res=(10 + i, 10))
+    assert warp_cache.cache_info().currsize == maxsize
