@@ -80,6 +80,21 @@ class TestLineString:
             shapely.MultiLineString(), ccrs.PlateCarree())
         assert isinstance(multi_line_string, shapely.MultiLineString)
 
+    def test_start_end_project_equal(self):
+        # Here the start and end points project to the same point in the target domain,
+        # but we should get a line that encircles the equator.
+        tgt_proj = ccrs.NorthPolarStereo(central_longitude=180)
+        src_proj = ccrs.PlateCarree(central_longitude=180)
+        start = [-180, 0]
+        end = [180, 0]
+
+        # Verify these points project to same point, otherwise the test is invalid
+        assert (tgt_proj.transform_point(*start, src_proj) ==
+                tgt_proj.transform_point(*end, src_proj))
+
+        line_string = shapely.LineString([start, end])
+        assert tgt_proj.project_geometry(line_string, src_proj).length > 7e7
+
 
 class FakeProjection(ccrs.PlateCarree):
     def __init__(self, left_offset=0, right_offset=0):
