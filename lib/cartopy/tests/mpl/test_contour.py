@@ -114,6 +114,36 @@ def test_contour_update_bounds():
     plt.draw()
 
 
+def _filled_areas(paths):
+    areas = []
+    for path in paths:
+        area = 0.0
+        for ring in path.to_polygons():
+            if len(ring) > 2:
+                x, y = ring[:, 0], ring[:, 1]
+                # Signed shoelace area: holes have the opposite orientation.
+                area += 0.5 * np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y)
+        areas.append(abs(area))
+    return np.array(areas)
+
+
+def test_contourf_transform_first_masked():
+    # GH2468: the mask was dropped, so masked points were contoured.
+    xx, yy = np.meshgrid(np.arange(0, 360, 2.0), np.arange(-80, 81, 2.0))
+    z = np.cos(np.radians(yy)) * np.cos(np.radians(xx - 40))
+    hole = (yy > 20) & (yy < 50) & (xx > 30) & (xx < 90)
+    zm = np.ma.masked_where(hole, z)
+    zn = np.where(hole, np.nan, z)
+
+    ax = plt.axes(projection=ccrs.Robinson(central_longitude=10))
+    masked = ax.contourf(xx, yy, zm, levels=7, transform=ccrs.PlateCarree(),
+                         transform_first=True)
+    nan = ax.contourf(xx, yy, zn, levels=masked.levels,
+                      transform=ccrs.PlateCarree(), transform_first=True)
+    np.testing.assert_allclose(_filled_areas(masked.get_paths()),
+                               _filled_areas(nan.get_paths()), rtol=1e-9)
+
+
 @pytest.mark.parametrize('func', ['contour', 'contourf'])
 def test_contourf_transform_first(func):
     """Test the fast-path option for filled contours."""
