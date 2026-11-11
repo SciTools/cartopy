@@ -114,6 +114,54 @@ def test_contour_update_bounds():
     plt.draw()
 
 
+def _filled_areas(paths):
+    areas = []
+    for path in paths:
+        area = 0.0
+        for ring in path.to_polygons():
+            if len(ring) > 2:
+                x, y = ring[:, 0], ring[:, 1]
+                # Signed shoelace area: holes have the opposite orientation.
+                area += 0.5 * np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y)
+        areas.append(abs(area))
+    return np.array(areas)
+
+
+@pytest.mark.parametrize('data_crs, map_crs, xx, yy', [
+    pytest.param(
+        ccrs.PlateCarree(), ccrs.NorthPolarStereo(central_longitude=10),
+        *np.meshgrid(np.arange(0, 360, 2.0), np.arange(20, 81, 2.0)),
+        id='latlon-on-polar'),
+    pytest.param(
+        ccrs.Stereographic(central_latitude=90, central_longitude=-80,
+                           true_scale_latitude=60),
+        ccrs.Stereographic(central_latitude=90, central_longitude=10,
+                           true_scale_latitude=60),
+        *np.meshgrid(np.linspace(-1.5e6, 4e6, 111),
+                     np.linspace(-5.5e6, -0.5e6, 101)),
+        id='stereo-rotated-90'),
+])
+def test_contourf_transform_first_keeps_grid_order(data_crs, map_crs, xx, yy):
+    # GH2606: sorting each row by projected x scrambled grids whose rows
+    # project to (nearly) vertical lines, so the filled areas were wrong.
+    lon, lat = (ccrs.Geodetic().transform_points(data_crs, xx, yy)[..., i]
+                for i in range(2))
+    z = (np.cos(np.radians(lat)) * np.cos(np.radians(lon - 40)) +
+         np.sin(np.radians(2 * lat)))
+    levels = np.linspace(z.min(), z.max(), 7)
+
+    ax = plt.axes(projection=map_crs)
+    ref = ax.contourf(xx, yy, z, levels=levels, transform=data_crs)
+    to_map = ref.get_transform() - ax.transData
+    expected = _filled_areas(to_map.transform_path(p) for p in ref.get_paths())
+    fast = ax.contourf(xx, yy, z, levels=levels, transform=data_crs,
+                       transform_first=True)
+    actual = _filled_areas(fast.get_paths())
+
+    big = expected > 0.01 * expected.sum()
+    np.testing.assert_allclose(actual[big], expected[big], rtol=0.02)
+
+
 @pytest.mark.parametrize('func', ['contour', 'contourf'])
 def test_contourf_transform_first(func):
     """Test the fast-path option for filled contours."""
