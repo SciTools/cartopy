@@ -360,7 +360,8 @@ class WMTSRasterSource(RasterSource):
 
     """
 
-    def __init__(self, wmts, layer_name, gettile_extra_kwargs=None, cache=False):
+    def __init__(self, wmts, layer_name, max_tm_identifier=None,
+                 gettile_extra_kwargs=None, cache=False):
         """
         Parameters
         ----------
@@ -368,6 +369,9 @@ class WMTSRasterSource(RasterSource):
             The URL of the WMTS, or an owslib.wmts.WebMapTileService instance.
         layer_name
             The name of the layer to use.
+        max_tm_identifier: int, optional
+            Integer denoting maximum tile matrix identifier, i.e. zoom level,
+            since some WMTS provide empty images at high zoom levels.
         gettile_extra_kwargs: dict, optional
             Extra keywords (e.g. time) to pass through to the
             service's gettile method.
@@ -396,6 +400,9 @@ class WMTSRasterSource(RasterSource):
         #: The layer to fetch.
         self.layer = layer
 
+        #: restriction to zoom level
+        self.max_tm_identifier = max_tm_identifier
+        #
         #: Extra kwargs passed through to the service's gettile request.
         if gettile_extra_kwargs is None:
             gettile_extra_kwargs = {}
@@ -511,7 +518,8 @@ class WMTSRasterSource(RasterSource):
             wmts_image, wmts_actual_extent = self._wmts_images(
                 self.wmts, self.layer, matrix_set_name,
                 extent=wmts_desired_extent,
-                max_pixel_span=max_pixel_span)
+                max_pixel_span=max_pixel_span,
+                max_tm_identifier=self.max_tm_identifier)
 
             # Return each (image, extent) as a LocatedImage.
             if wmts_projection == projection:
@@ -545,7 +553,8 @@ class WMTSRasterSource(RasterSource):
                         f'WMTSRasterSource tiles: {cache_dir}')
             self.cache = self.cache.union(set(cache_dir.iterdir()))
 
-    def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span):
+    def _choose_matrix(self, tile_matrices, meters_per_unit, max_pixel_span,
+                       max_tm_identifier=None):
         # Get the tile matrices in order of increasing resolution.
         tile_matrices = sorted(tile_matrices,
                                key=lambda tm: tm.scaledenominator,
@@ -554,6 +563,9 @@ class WMTSRasterSource(RasterSource):
         # Find which tile matrix has the appropriate resolution.
         max_scale = max_pixel_span * meters_per_unit / METERS_PER_PIXEL
         for tm in tile_matrices:
+            if max_tm_identifier is not None:
+                if int(tm.identifier) >= max_tm_identifier:
+                    return tm
             if tm.scaledenominator <= max_scale:
                 return tm
         return tile_matrices[-1]
@@ -594,7 +606,8 @@ class WMTSRasterSource(RasterSource):
         return min_col, max_col, min_row, max_row
 
     def _wmts_images(self, wmts, layer, matrix_set_name, extent,
-                     max_pixel_span):
+                     max_pixel_span,
+                     max_tm_identifier=None):
         """
         Add images from the specified WMTS layer and matrix set to cover
         the specified extent at an appropriate resolution.
@@ -616,7 +629,9 @@ class WMTSRasterSource(RasterSource):
             Tuple of (left, right, bottom, top) in Axes coordinates.
         max_pixel_span
             Preferred maximum pixel width or height in Axes coordinates.
-
+        max_tm_identifier
+            Integer denoting maximum tile matrix identifier, i.e. zoom level,
+            since some WMTS provide empty images at high zoom levels.
         """
 
         # Find which tile matrix has the appropriate resolution.
@@ -642,7 +657,8 @@ class WMTSRasterSource(RasterSource):
             raise ValueError(f'Unknown coordinate reference system string:'
                              f' {tile_matrix_set.crs}')
         tile_matrix = self._choose_matrix(tile_matrices, meters_per_unit,
-                                          max_pixel_span)
+                                          max_pixel_span,
+                                          max_tm_identifier=max_tm_identifier)
 
         # Determine which tiles are required to cover the requested extent.
         tile_span_x, tile_span_y = self._tile_span(tile_matrix,
