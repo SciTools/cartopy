@@ -312,6 +312,19 @@ def test_transform_points_empty():
     assert_array_equal(result, np.array([], dtype=np.float64).reshape(0, 3))
 
 
+def test_transform_points_crs_class():
+    """Passing a CRS class instead of an instance gives a clear error."""
+    crs = ccrs.LambertConformal()
+    x, y = np.array([-72.]), np.array([42.])
+    msg = r'use PlateCarree\(\) instead of PlateCarree'
+    with pytest.raises(TypeError, match=msg):
+        crs.transform_points(ccrs.PlateCarree, x, y)
+    with pytest.raises(TypeError, match=msg):
+        crs.transform_point(-72, 42, ccrs.PlateCarree)
+    with pytest.raises(TypeError, match=msg):
+        crs.transform_vectors(ccrs.PlateCarree, x, y, x, y)
+
+
 def test_project_geometry_empty_point():
     """Test with an empty shapely point."""
     assert ccrs.PlateCarree().project_geometry(shapely.Point()).is_empty
