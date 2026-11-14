@@ -488,22 +488,23 @@ def test_wmts_cache(cache_dir, tmp_path):
     assert (np.array(located_image_cache.image) == 255).all()
 
 
-def test_cache_dir_made_by_another_process(tmp_path, monkeypatch):
-    # Another process makes the cache directory just before this one does.
+def test_cache_dir_created_concurrently(tmp_path, monkeypatch):
+    # Simulate losing a race with another process: the cache directory does
+    # not exist when GoogleTiles looks for it, but does by the time it calls
+    # mkdir, so that call raises FileExistsError.
     real_mkdir = Path.mkdir
 
-    def mkdir_after_another_process(self, *args, **kwargs):
-        real_mkdir(self, *args, **kwargs)
-        real_mkdir(self, *args, **kwargs)
+    def mkdir_that_loses_the_race(self, *args, **kwargs):
+        os.makedirs(self)  # the "other process" creates the directory
+        real_mkdir(self, *args, **kwargs)  # our call: FileExistsError
 
-    monkeypatch.setattr(Path, 'mkdir', mkdir_after_another_process)
+    monkeypatch.setattr(Path, 'mkdir', mkdir_that_loses_the_race)
     monkeypatch.setitem(config, 'cache_dir', str(tmp_path))
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        gt = cimgt.GoogleTiles(cache=True)
-    assert gt.cache == set()
-    # Only the process that made the directory warns about it.
-    assert len(w) == 0
+    # There should be no error, and no "Cartopy created the following
+    # directory" warning either, because this process did not create it.
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        cimgt.GoogleTiles(cache=True)
 
 
 @pytest.mark.network
