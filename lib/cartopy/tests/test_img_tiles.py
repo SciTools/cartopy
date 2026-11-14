@@ -6,6 +6,7 @@
 import hashlib
 import io
 import os
+from pathlib import Path
 import types
 import warnings
 
@@ -485,6 +486,25 @@ def test_wmts_cache(cache_dir, tmp_path):
     # Check that the new fetch_raster() call used cached images
     assert wmts_cache.cache == set([cache_dir_res / c for c in source.cache])
     assert (np.array(located_image_cache.image) == 255).all()
+
+
+def test_cache_dir_created_concurrently(tmp_path, monkeypatch):
+    # Simulate losing a race with another process: the cache directory does
+    # not exist when GoogleTiles looks for it, but does by the time it calls
+    # mkdir, so that call raises FileExistsError.
+    real_mkdir = Path.mkdir
+
+    def mkdir_that_loses_the_race(self, *args, **kwargs):
+        os.makedirs(self)  # the "other process" creates the directory
+        real_mkdir(self, *args, **kwargs)  # our call: FileExistsError
+
+    monkeypatch.setattr(Path, 'mkdir', mkdir_that_loses_the_race)
+    monkeypatch.setitem(config, 'cache_dir', str(tmp_path))
+    # There should be no error, and no "Cartopy created the following
+    # directory" warning either, because this process did not create it.
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        cimgt.GoogleTiles(cache=True)
 
 
 @pytest.mark.network
