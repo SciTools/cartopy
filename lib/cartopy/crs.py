@@ -1118,12 +1118,17 @@ class Projection(CRS, metaclass=ABCMeta):
                 print()
                 print(f'Processing: {i}, {current_ls}')
 
+            # Collect the coordinates of the pieces of the ring and only
+            # create a LineString from them once it is closed, as creating one
+            # for every added piece takes quadratic time for rings with many
+            # pieces or boundary points.
+            current_coords = [shapely.get_coordinates(current_ls)]
             added_linestring = set()
             while True:
                 # Find out how far around this linestring's last
                 # point is on the boundary. We will use this to find
                 # the next point on the boundary.
-                d_last = boundary_distance(current_ls.coords[-1])
+                d_last = boundary_distance(current_coords[-1][-1])
                 if debug:
                     print(f'   d_last: {d_last!r}')
                 next_thing = _find_first_ge(edge_things, d_last)
@@ -1136,15 +1141,14 @@ class Projection(CRS, metaclass=ABCMeta):
                     if debug:
                         print('   adding boundary point')
                     boundary_point = next_thing.data
-                    combined_coords = (list(current_ls.coords) +
-                                       [(boundary_point.x, boundary_point.y)])
-                    current_ls = shapely.LineString(combined_coords)
+                    current_coords.append(shapely.get_coordinates(boundary_point))
 
                 elif next_thing.data[0] == i:
                     # We've gone all the way around and are now back at the
                     # first boundary thing.
                     if debug:
                         print('   close loop')
+                    current_ls = shapely.LineString(np.concatenate(current_coords))
                     processed_ls.append(current_ls)
                     if debug_plot_edges:
                         coords = np.array(current_ls.coords)
@@ -1160,8 +1164,7 @@ class Projection(CRS, metaclass=ABCMeta):
                         remaining_ls.pop(j)
 
                     # Build up the linestring.
-                    current_ls = shapely.LineString([*current_ls.coords,
-                                                     *line_to_append.coords])
+                    current_coords.append(shapely.get_coordinates(line_to_append))
 
                     # Catch getting stuck in an infinite loop by checking that
                     # linestring only added once.
