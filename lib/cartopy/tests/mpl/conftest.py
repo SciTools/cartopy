@@ -7,7 +7,7 @@ from contextlib import ExitStack
 import matplotlib.pyplot as plt
 import pytest
 
-from cartopy.mpl import _MPL_311
+from cartopy.mpl import _MPL_311, _MPL_312
 
 
 @pytest.fixture(autouse=True)
@@ -63,6 +63,15 @@ def text_placeholders(monkeypatch):
         """
         return None
 
+    def patched_get_font_height_metrics(font, fontsize, dpi):
+        """
+        Replace ``_get_font_height_metrics`` with empty results.
+
+        It caches what it reads from the tables emptied out above, so patching
+        those alone would leave a font measured earlier with its real metrics.
+        """
+        return None, None, None
+
     def patched_get_text_metrics_with_cache(renderer, text, fontprop, ismath, dpi):
         """
         Replace ``_get_text_metrics_with_cache`` with fixed results.
@@ -97,6 +106,9 @@ def text_placeholders(monkeypatch):
                          facecolor=self.get_color(), edgecolor='none')
         rect.draw(renderer)
 
+    if _MPL_312:
+        monkeypatch.setattr('matplotlib.text._get_font_height_metrics',
+                            patched_get_font_height_metrics)
     if _MPL_311:
         monkeypatch.setattr('matplotlib.ft2font.FT2Font.get_sfnt_table',
                             patched_get_sfnt_table)
