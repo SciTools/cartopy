@@ -1724,12 +1724,15 @@ class Mercator(Projection):
         # Need to have x/y limits defined for the initial hash which
         # gets used within transform_points for caching
         self._x_limits = self._y_limits = None
-        # Calculate limits.
-        minlon, maxlon = self._determine_longitude_bounds(central_longitude)
+        # Mercator x is linear in longitude. Sample away from the wrapping
+        # meridian: PROJ can round lon_0 when constructing the transform, so
+        # points at central_longitude +/- 180 can wrap to the same side.
+        longitude = (central_longitude + 180) % 360 - 180
         limits = self.transform_points(self.as_geodetic(),
-                                       np.array([minlon, maxlon]),
+                                       np.array([longitude - 90, longitude + 90]),
                                        np.array([min_latitude, max_latitude]))
-        self._x_limits = tuple(limits[..., 0])
+        half_width = limits[1, 0] - limits[0, 0]
+        self._x_limits = (false_easting - half_width, false_easting + half_width)
         self._y_limits = tuple(limits[..., 1])
         self.threshold = min(np.diff(self.x_limits)[0] / 720,
                              np.diff(self.y_limits)[0] / 360)

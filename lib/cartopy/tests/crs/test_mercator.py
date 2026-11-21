@@ -3,7 +3,8 @@
 # This file is part of Cartopy and is released under the BSD 3-clause license.
 # See LICENSE in the root of the repository for full licensing details.
 
-from numpy.testing import assert_almost_equal
+import numpy as np
+from numpy.testing import assert_allclose, assert_almost_equal
 import pytest
 
 import cartopy.crs as ccrs
@@ -92,3 +93,27 @@ def test_scale_factor():
 
     assert_almost_equal(crs.boundary.bounds,
                         [-18808021, -14585266, 18808021, 17653216], decimal=0)
+
+
+@pytest.mark.parametrize('lon', [
+    -529.40000000042403, -190.59999999957597, -169.40000000042403,
+    169.40000000042403, 190.59999999957597, 529.40000000042403,
+    -360.0, -180.0, 180.0, 360.0,
+])
+@pytest.mark.parametrize('kwargs', [
+    {},
+    {'latitude_true_scale': 20.0},
+    {'scale_factor': 0.8},
+    {'false_easting': 1000000, 'false_northing': -2000000},
+])
+def test_high_precision_longitude_bounds(lon, kwargs):
+    reference = ccrs.Mercator(**kwargs)
+    crs = ccrs.Mercator(central_longitude=lon, **kwargs)
+
+    # Moving the central meridian must not change the projected world size.
+    assert_allclose(crs.x_limits, reference.x_limits, rtol=1e-12)
+    assert_allclose(crs.y_limits, reference.y_limits, rtol=1e-12)
+    assert np.isfinite(crs.boundary.bounds).all()
+    assert crs.x_limits[0] < crs.x_limits[1]
+    assert crs.threshold > 0
+    assert crs.proj4_params['lon_0'] == lon
