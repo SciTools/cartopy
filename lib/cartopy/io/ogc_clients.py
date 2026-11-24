@@ -789,7 +789,7 @@ class WFSGeometrySource:
             default_urn = {self.service.contents[feature].crsOptions[0] for
                            feature in self.features}
             if len(default_urn) != 1:
-                ValueError('Failed to find a single common default SRS '
+                raise ValueError('Failed to find a single common default SRS '
                            'across all features (typenames).')
             else:
                 default_urn = default_urn.pop()
