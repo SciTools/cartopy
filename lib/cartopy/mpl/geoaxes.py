@@ -302,6 +302,25 @@ def _add_transform(func):
     return wrapper
 
 
+def _wrap_column(projection, x):
+    """
+    Return the column index where projected x wraps around the projection, or 0.
+
+    A wrap is a jump between neighbouring columns of more than half the
+    projection's x range.  The column after the jump found in most rows is
+    returned.
+    """
+    if x.shape[1] < 2:
+        return 0
+    x_min, x_max = projection.x_limits
+    with np.errstate(invalid='ignore'):
+        jumps = np.abs(np.diff(x, axis=1)) > (x_max - x_min) / 2
+    cols = np.nonzero(jumps)[1]
+    if cols.size == 0:
+        return 0
+    return int(np.bincount(cols).argmax()) + 1
+
+
 def _add_transform_first(func):
     """
     A decorator that adds and validates the transform_first keyword argument.
@@ -333,12 +352,15 @@ def _add_transform_first(func):
             pts = self.projection.transform_points(t, x, y)
             x = pts[..., 0].reshape(x.shape)
             y = pts[..., 1].reshape(y.shape)
-            # The x coordinates could be wrapped, but matplotlib expects
-            # them to be sorted, so we will reorganize the arrays based on x
-            ind = np.argsort(x, axis=1)
-            x = np.take_along_axis(x, ind, axis=1)
-            y = np.take_along_axis(y, ind, axis=1)
-            z = np.take_along_axis(z, ind, axis=1)
+            # The x coordinates could be wrapped (e.g. 0-360 data on a map
+            # centred on 0), so move the columns after the wrap to the
+            # front.  The same shift is applied to every row so the grid
+            # stays structured; sorting each row by x instead scrambles rows
+            # whose projected x is (nearly) constant, e.g. a polar grid
+            # rotated by 90 degrees.
+            shift = _wrap_column(self.projection, x)
+            if shift:
+                x, y, z = (np.roll(a, -shift, axis=1) for a in (x, y, z))
 
             # Use the new points as the input arguments
             args = (x, y, z) + args[3:]
