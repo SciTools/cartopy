@@ -44,6 +44,7 @@ the package wouldn't be as rich or diverse as it is today:
  * John Krasting
  * Matthias Cuntz
  * Thomas Guymer
+ * Michael Niklas
 
 Thank you!
 
