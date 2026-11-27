@@ -195,11 +195,45 @@ cdef class Interpolator:
         # Destination xy [ncoords, 2]
         return np.stack([xx, yy], axis=-1) * self.dest_scale
 
+    cdef object project_array(self, xx, yy):
+        """
+        Project the given arrays of x and y coordinates, like :meth:`project`
+        does for a single point, and return an array of shape ``(n, 2)``.
+
+        Points that cannot be projected are returned as non-finite values
+        instead of raising an error.
+
+        """
+        xx, yy = self.transformer.transform(xx * self.src_scale,
+                                            yy * self.src_scale)
+        xx = np.array(xx, dtype=np.float64)
+        yy = np.asarray(yy, dtype=np.float64)
+        if self.to_180:
+            wrap_locs = ((xx > 180) | (xx < -180)) & (xx != HUGE_VAL)
+            xx[wrap_locs] = (((xx[wrap_locs] + 180) % 360) - 180)
+        return np.stack([xx * self.dest_scale, yy * self.dest_scale], axis=-1)
+
+    cdef object project_midpoints(self, double[:, :] src_xy):
+        """
+        Return the projected mid-points (``t=0.5``) of all segments between
+        consecutive points of ``src_xy``, like :meth:`interpolate` does for
+        a single segment, as an array of shape ``(n - 1, 2)``.
+
+        """
+        raise NotImplementedError
+
     cdef Point interpolate(self, double t) except *:
         raise NotImplementedError
 
 
 cdef class CartesianInterpolator(Interpolator):
+    cdef object project_midpoints(self, double[:, :] src_xy):
+        src = np.asarray(src_xy)
+        start, end = src[:-1], src[1:]
+        mid_x = start[:, 0] + (end[:, 0] - start[:, 0]) * 0.5
+        mid_y = start[:, 1] + (end[:, 1] - start[:, 1]) * 0.5
+        return self.project_array(mid_x, mid_y)
+
     cdef Point interpolate(self, double t) except *:
         cdef Point xy
         xy.x = self.start.x + (self.end.x - self.start.x) * t
@@ -225,6 +259,15 @@ cdef class SphericalInterpolator(Interpolator):
         Interpolator.set_line(self, start, end)
         self.azim, _, self.s12 = self.geod.inv(start.x, start.y, end.x, end.y)
 
+    cdef object project_midpoints(self, double[:, :] src_xy):
+        src = np.asarray(src_xy)
+        start, end = src[:-1], src[1:]
+        azim, _, s12 = self.geod.inv(start[:, 0], start[:, 1],
+                                     end[:, 0], end[:, 1])
+        lon, lat, _ = self.geod.fwd(start[:, 0], start[:, 1], azim,
+                                    np.asarray(s12) * 0.5)
+        return self.project_array(np.asarray(lon), np.asarray(lat))
+
     cdef Point interpolate(self, double t) except *:
         cdef Point lonlat
 
@@ -248,6 +291,91 @@ cdef State get_state(const Point &point, object gp_domain, bool geom_fully_insid
     else:
         state = POINT_NAN
     return state
+
+
+@cython.cdivision(True)  # Want divide-by-zero to produce NaN.
+cdef bool is_straight(const Point &p_start, const Point &p_mid,
+                      const Point &p_end, double threshold, bool inside):
+    """
+    Return whether the line segment from ``p_start`` to ``p_end`` is a
+    suitable approximation of a projected line, whose projected mid-point is
+    ``p_mid``. All points are projected and ``p_start`` and ``p_end`` must be
+    finite.
+
+    threshold: Lateral tolerance in target projection coordinates.
+    inside: Whether the start point is within the map domain.
+
+    """
+    cdef bool valid
+    cdef double seg_dx, seg_dy
+    cdef double mid_dx, mid_dy
+    cdef double seg_hypot_sq
+    cdef double along
+    cdef double separation
+    cdef double hypot
+
+    # Determine the closest point on the segment to the midpoint, in
+    # normalized coordinates.
+    #     ○̩ (x1, y1) (assume that this is not necessarily vertical)
+    #     │
+    #     │   D
+    #    ╭├───────○ (x, y)
+    #    ┊│┘     ╱
+    #    ┊│     ╱
+    #    ┊│    ╱
+    #    L│   ╱
+    #    ┊│  ╱
+    #    ┊│θ╱
+    #    ┊│╱
+    #    ╰̍○̍
+    #  (x0, y0)
+    # The angle θ can be found by arctan2:
+    #     θ = arctan2(y1 - y0, x1 - x0) - arctan2(y - y0, x - x0)
+    # and the projection onto the line is simply:
+    #     L = hypot(x - x0, y - y0) * cos(θ)
+    # with the normalized form being:
+    #     along = L / hypot(x1 - x0, y1 - y0)
+    #
+    # Plugging those into SymPy and .expand().simplify(), we get the
+    # following equations (with a slight refactoring to reuse some
+    # intermediate values):
+    seg_dx = p_end.x - p_start.x
+    seg_dy = p_end.y - p_start.y
+    mid_dx = p_mid.x - p_start.x
+    mid_dy = p_mid.y - p_start.y
+    seg_hypot_sq = seg_dx*seg_dx + seg_dy*seg_dy
+
+    along = (seg_dx*mid_dx + seg_dy*mid_dy) / seg_hypot_sq
+
+    if isnan(along):
+        valid = True
+    else:
+        valid = 0.0 < along < 1.0
+        if valid:
+            # For the distance of the point from the line segment, using
+            # the same geometry above, use sin instead of cos:
+            #     D = hypot(x - x0, y - y0) * sin(θ)
+            # and then simplify with SymPy again:
+            separation = (abs(mid_dx*seg_dy - mid_dy*seg_dx) /
+                          sqrt(seg_hypot_sq))
+            if inside:
+                # Scale the lateral threshold by the distance from
+                # the nearest end. I.e. Near the ends the lateral
+                # threshold is much smaller; it only has its full
+                # value in the middle.
+                valid = (separation <=
+                         threshold * 2.0 * (0.5 - abs(0.5 - along)))
+            else:
+                # Check if the mid-point makes less than ~11 degree
+                # angle with the straight line.
+                # sin(11') => 0.2
+                # To save the square-root we just use the square of
+                # the lengths, hence:
+                # 0.2 ^ 2 => 0.04
+                hypot = mid_dx*mid_dx + mid_dy*mid_dy
+                valid = ((separation * separation) / hypot) < 0.04
+
+    return valid
 
 
 @cython.cdivision(True)  # Want divide-by-zero to produce NaN.
@@ -276,12 +404,6 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
     cdef bool valid
     cdef double t_mid
     cdef Point p_mid
-    cdef double seg_dx, seg_dy
-    cdef double mid_dx, mid_dy
-    cdef double seg_hypot_sq
-    cdef double along
-    cdef double separation
-    cdef double hypot
 
     # This could be optimised out of the loop.
     if not (isfinite(p_start.x) and isfinite(p_start.y)):
@@ -293,66 +415,7 @@ cdef bool straightAndDomain(double t_start, const Point &p_start,
         t_mid = (t_start + t_end) * 0.5
         p_mid = interpolator.interpolate(t_mid)
 
-        # Determine the closest point on the segment to the midpoint, in
-        # normalized coordinates.
-        #     ○̩ (x1, y1) (assume that this is not necessarily vertical)
-        #     │
-        #     │   D
-        #    ╭├───────○ (x, y)
-        #    ┊│┘     ╱
-        #    ┊│     ╱
-        #    ┊│    ╱
-        #    L│   ╱
-        #    ┊│  ╱
-        #    ┊│θ╱
-        #    ┊│╱
-        #    ╰̍○̍
-        #  (x0, y0)
-        # The angle θ can be found by arctan2:
-        #     θ = arctan2(y1 - y0, x1 - x0) - arctan2(y - y0, x - x0)
-        # and the projection onto the line is simply:
-        #     L = hypot(x - x0, y - y0) * cos(θ)
-        # with the normalized form being:
-        #     along = L / hypot(x1 - x0, y1 - y0)
-        #
-        # Plugging those into SymPy and .expand().simplify(), we get the
-        # following equations (with a slight refactoring to reuse some
-        # intermediate values):
-        seg_dx = p_end.x - p_start.x
-        seg_dy = p_end.y - p_start.y
-        mid_dx = p_mid.x - p_start.x
-        mid_dy = p_mid.y - p_start.y
-        seg_hypot_sq = seg_dx*seg_dx + seg_dy*seg_dy
-
-        along = (seg_dx*mid_dx + seg_dy*mid_dy) / seg_hypot_sq
-
-        if isnan(along):
-            valid = True
-        else:
-            valid = 0.0 < along < 1.0
-            if valid:
-                # For the distance of the point from the line segment, using
-                # the same geometry above, use sin instead of cos:
-                #     D = hypot(x - x0, y - y0) * sin(θ)
-                # and then simplify with SymPy again:
-                separation = (abs(mid_dx*seg_dy - mid_dy*seg_dx) /
-                              sqrt(seg_hypot_sq))
-                if inside:
-                    # Scale the lateral threshold by the distance from
-                    # the nearest end. I.e. Near the ends the lateral
-                    # threshold is much smaller; it only has its full
-                    # value in the middle.
-                    valid = (separation <=
-                             threshold * 2.0 * (0.5 - abs(0.5 - along)))
-                else:
-                    # Check if the mid-point makes less than ~11 degree
-                    # angle with the straight line.
-                    # sin(11') => 0.2
-                    # To save the square-root we just use the square of
-                    # the lengths, hence:
-                    # 0.2 ^ 2 => 0.04
-                    hypot = mid_dx*mid_dx + mid_dy*mid_dy
-                    valid = ((separation * separation) / hypot) < 0.04
+        valid = is_straight(p_start, p_mid, p_end, threshold, inside)
 
         if valid and not geom_fully_inside:
             # TODO: Re-use geometries, instead of create-destroy!
@@ -509,6 +572,75 @@ cdef void _project_segment(double[:] src_from, double[:] src_to,
                 lines.new_line()
 
 
+cdef enum SegmentKind:
+    SEGMENT_BISECT = 0,
+    SEGMENT_INSIDE,
+    SEGMENT_OUTSIDE
+
+
+cdef object simple_segments(double[:, :] src_coords, double[:, :] dest_coords,
+                            Interpolator interpolator, object gp_domain,
+                            double threshold, bool geom_fully_inside):
+    """
+    Return an array of the :class:`SegmentKind` of each segment between
+    consecutive points.
+
+    These are the segments that :func:`_project_segment` would accept as a
+    whole in the first step of the bisection, because the segment is straight
+    enough and either its start point is within the domain and the segment is
+    covered by the domain (``SEGMENT_INSIDE``), or its start point is outside
+    of the domain and the segment is disjoint from it (``SEGMENT_OUTSIDE``).
+    The checks are the same, but they are done for all segments at once,
+    which avoids creating a geometry and projecting a mid-point separately
+    for each segment. The other segments (``SEGMENT_BISECT``) still need to be
+    bisected.
+
+    """
+    cdef Py_ssize_t n = dest_coords.shape[0] - 1
+    cdef Py_ssize_t i
+    cdef Point p_start, p_mid, p_end
+    cdef bool inside
+    kinds = np.zeros(max(n, 0), dtype=np.uint8)
+    if n < 1:
+        return kinds
+
+    dest = np.asarray(dest_coords)
+    if geom_fully_inside:
+        starts_inside = np.ones(n, dtype=np.bool_)
+    else:
+        starts_inside = shapely.intersects_xy(gp_domain, dest[:-1, 0], dest[:-1, 1])
+    cdef const unsigned char[:] starts_inside_view = starts_inside.view(np.uint8)
+    cdef double[:, :] mid = interpolator.project_midpoints(src_coords)
+
+    cdef unsigned char[:] kinds_view = kinds
+    for i in range(n):
+        p_start.x = dest_coords[i, 0]
+        p_start.y = dest_coords[i, 1]
+        p_mid.x = mid[i, 0]
+        p_mid.y = mid[i, 1]
+        p_end.x = dest_coords[i + 1, 0]
+        p_end.y = dest_coords[i + 1, 1]
+        # Leave any segment with a point that could not be projected to
+        # the bisection, which handles these cases.
+        if not (isfinite(p_start.x) and isfinite(p_start.y) and
+                isfinite(p_mid.x) and isfinite(p_mid.y) and
+                isfinite(p_end.x) and isfinite(p_end.y)):
+            continue
+        inside = starts_inside_view[i]
+        if is_straight(p_start, p_mid, p_end, threshold, inside):
+            kinds_view[i] = SEGMENT_INSIDE if inside else SEGMENT_OUTSIDE
+
+    if not geom_fully_inside:
+        for kind, predicate in ((SEGMENT_INSIDE, shapely.covers),
+                                (SEGMENT_OUTSIDE, shapely.disjoint)):
+            idx = np.flatnonzero(kinds == kind)
+            if len(idx):
+                segments = shapely.linestrings(
+                    np.stack([dest[idx], dest[idx + 1]], axis=1))
+                kinds[idx[~predicate(gp_domain, segments)]] = SEGMENT_BISECT
+    return kinds
+
+
 @lru_cache(maxsize=4)
 def _interpolator(src_crs, dest_projection):
     # Get an Interpolator from the given CRS and projection.
@@ -575,8 +707,25 @@ def project_linear(geometry not None, src_crs not None,
             # some have nans/infs at this point still
             geom_fully_inside = g_domain.covers(dest_line)
 
+    cdef const unsigned char[:] kinds = simple_segments(
+        src_coords[:, :2], dest_coords[:, :2], interpolator, g_domain, threshold,
+        geom_fully_inside)
+    cdef Point p_start, p_end
+
     lines = LineAccumulator()
     for src_idx in range(1, src_size):
+        # Do the same as _project_segment for the segments that do not need
+        # to be bisected.
+        if kinds[src_idx - 1] == SEGMENT_INSIDE:
+            p_start.x = dest_coords[src_idx - 1, 0]
+            p_start.y = dest_coords[src_idx - 1, 1]
+            p_end.x = dest_coords[src_idx, 0]
+            p_end.y = dest_coords[src_idx, 1]
+            lines.add_point_if_empty(p_start)
+            lines.add_point(p_end)
+            continue
+        elif kinds[src_idx - 1] == SEGMENT_OUTSIDE:
+            continue
         _project_segment(src_coords[src_idx - 1, :2], src_coords[src_idx, :2],
                          dest_coords[src_idx - 1, :2], dest_coords[src_idx, :2],
                          interpolator, g_domain, threshold, lines,
