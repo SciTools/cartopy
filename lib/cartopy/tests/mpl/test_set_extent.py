@@ -6,6 +6,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+import pytest
+import shapely
 
 import cartopy.crs as ccrs
 
@@ -62,6 +64,42 @@ def test_get_extent():
                                            max_latitude=uk[3]))
     ax.set_extent(uk, crs=uk_crs)
     assert_array_almost_equal(ax.get_extent(uk_crs), uk, decimal=1)
+
+
+@pytest.mark.parametrize('projection', [
+    ccrs.Orthographic(central_longitude=0, central_latitude=0),
+    ccrs.Geostationary(central_longitude=0),
+])
+def test_get_extent_near_boundary(projection):
+    # Close to the horizon, a narrow strip of the map covers a large part of
+    # the globe. It must not be dropped from the extent.
+    ax = plt.axes(projection=projection)
+    x0, x1 = projection.x_limits
+    y0, y1 = projection.y_limits
+    ax.set_xlim(0, x1 / 2)
+    ax.set_ylim(y1 * 0.9, y1)
+    lon0, lon1, lat0, lat1 = ax.get_extent(ccrs.PlateCarree())
+
+    # All visible points of the map have to be within the extent.
+    x, y = np.meshgrid(np.linspace(0, x1 / 2, 100),
+                       np.linspace(y1 * 0.9, y1, 100))
+    visible = shapely.contains_xy(shapely.Polygon(projection.boundary), x, y)
+    lonlat = ccrs.PlateCarree().transform_points(
+        projection, x[visible], y[visible])
+    assert np.all(lonlat[:, 0] >= lon0 - 0.1)
+    assert np.all(lonlat[:, 0] <= lon1 + 0.1)
+    assert np.all(lonlat[:, 1] >= lat0 - 0.1)
+    assert np.all(lonlat[:, 1] <= lat1 + 0.1)
+
+
+def test_get_extent_wrapped_global():
+    # The left and right edges of the map lie on the same meridian. The
+    # boundary is eroded slightly when calculating the extent, as otherwise
+    # the extent would collapse to that meridian.
+    ax = plt.axes(projection=ccrs.PlateCarree(central_longitude=180))
+    ax.set_global()
+    np.testing.assert_allclose(ax.get_extent(ccrs.PlateCarree()),
+                               [-180, 180, -90, 90], atol=1)
 
 
 def test_domain_extents():
