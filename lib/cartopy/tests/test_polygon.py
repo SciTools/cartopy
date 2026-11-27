@@ -313,6 +313,33 @@ class TestMisc:
         assert not result.contains(outside_band), \
             '(0°E, 45°N) should be outside the projected tropical band'
 
+    def test_ring_collapsed_to_point_not_inverted(self):
+        # A polygon only a few centimetres across projects to a ring that is
+        # smaller than the point tolerance, and whose orientation is then
+        # effectively random. It must not be treated as a hole and inverted,
+        # which would fill the whole domain.
+        tiny = shapely.Polygon([(83.9879673376648, 6.606920415301314),
+                                (83.98796785523894, 6.606920051994665),
+                                (83.98796814246417, 6.606920327125239)])
+        proj = ccrs.Orthographic()
+        result = proj.project_geometry(tiny, ccrs.PlateCarree())
+        assert result.area < 1e-6 * proj.domain.area
+
+    def test_inverted_ring_touching_boundary(self):
+        # A polygon touching the antipode of the projection centre has an
+        # inverted ring that runs along the domain boundary. Intersecting it
+        # with the boundary produces a GeometryCollection containing
+        # linestrings, which must not end up in the returned MultiPolygon.
+        polygon = shapely.Polygon([(-75, 90), (-90, 77), (-70, 68), (-64, 66)])
+        proj = ccrs.LambertAzimuthalEqualArea(central_latitude=-90)
+        src = ccrs.PlateCarree()
+        result = proj.project_geometry(polygon, src)
+
+        assert isinstance(result, shapely.MultiPolygon)
+        assert result.is_valid
+        assert result.contains(shapely.Point(proj.transform_point(-78, 75, src)))
+        assert not result.contains(shapely.Point(proj.transform_point(0, 0, src)))
+
 
 class TestQuality:
     def setup_class(self):
